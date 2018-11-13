@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Harrier Central</string>
+
+    <!-- Replace "000000000000" with your Facebook App ID here. -->
+    <string name="facebook_app_id">373948579725920</string>
+    
+    <!-- Replace "000000000000" with your Facebook App ID here. -->
+    <string name="fb_login_protocol_scheme">fb373948579725920</string>
+</resources>
