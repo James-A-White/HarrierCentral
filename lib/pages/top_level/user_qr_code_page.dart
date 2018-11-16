@@ -8,8 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/remote_api_data/process_qr_scan_service.dart';
 import 'package:harrier_central/data_models/process_qr_scan_model.dart';
+import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 
 import 'package:qr_flutter/qr_flutter.dart';
+
+import 'package:flutter/services.dart';
 
 class UserQrCodePage extends StatefulWidget {
   UserQrCodePage({Key key}) : super(key: key);
@@ -19,15 +22,6 @@ class UserQrCodePage extends StatefulWidget {
 }
 
 class _UserQrCodePageState extends State<UserQrCodePage> {
-  // final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  PageController _pageController;
-
-  Color left = Colors.white;
-  Color right = Colors.white;
-
-  String barcode = '';
-
   @override
   void initState() {
     super.initState();
@@ -36,147 +30,166 @@ class _UserQrCodePageState extends State<UserQrCodePage> {
     //   DeviceOrientation.portraitUp,
     //   DeviceOrientation.portraitDown,
     // ]);
-
-    _pageController = PageController();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      //key: _scaffoldKey,
+    return QrTabs();
+  }
 
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: Theme.of(context).primaryColor,
-        title: Text(
-          'My QR Code',
-          style: TextStyle(
-            color: Colors.white,
-          ),
-        ),
-      ),
+  @override
+  void dispose() {
+    super.dispose();
+  }
+}
 
-      body:
+class TabIndicationPainter extends CustomPainter {
+  Paint painter;
+  final double dxTarget;
+  final double dxEntry;
+  final double radius;
+  final double dy;
+  BuildContext context;
 
-          // NotificationListener<OverscrollIndicatorNotification>(
-          //   onNotification: (OverscrollIndicatorNotification overscroll) {
-          //     overscroll.disallowGlow();
-          //   },
-          //   child:
+  final PageController pageController;
 
-          SingleChildScrollView(
-        child: Container(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height - 100,
-          // height: MediaQuery.of(context).size.height >= 300.0
-          //     ? MediaQuery.of(context).size.height
-          //     : 300.0,
-          // decoration: BoxDecoration(
-          //   gradient: LinearGradient(
-          //       colors: <Color>[
-          //         LoginColors.loginGradientStart,
-          //         LoginColors.loginGradientEnd
-          //       ],
-          //       begin: const FractionalOffset(0.0, 0.0),
-          //       end: const FractionalOffset(1.0, 1.0),
-          //       stops: const <double>[0.0, 1.0],
-          //       tileMode: TileMode.clamp),
-          // ),
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(top: 20.0),
-                child: _buildMenuBar(context),
-              ),
-              Expanded(
-                flex: 2,
-                child: PageView(
-                  controller: _pageController,
-                  onPageChanged: (int i) {
-                    if (i == 0) {
-                      setState(() {
-                        right = Colors.white;
-                        left = Colors.white;
-                      });
-                    } else if (i == 1) {
-                      setState(() {
-                        right = Colors.white;
-                        left = Colors.white;
-                      });
-                    }
-                  },
-                  children: <Widget>[
-                    ConstrainedBox(
-                      constraints: const BoxConstraints.expand(),
-                      child: _buildMyQrCode(context),
-                    ),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints.expand(),
-                      child: _buildSignIn(context),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      //),
-    );
+  TabIndicationPainter(
+      {this.context,
+      this.dxTarget = 125.0,
+      this.dxEntry = 25.0,
+      this.radius = 21.0,
+      this.dy = 25.0,
+      this.pageController})
+      : super(repaint: pageController) {
+    painter = Paint()
+      ..color = Theme.of(context).accentColor
+      ..style = PaintingStyle.fill;
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final ScrollPosition pos = pageController.position;
+    final double fullExtent =
+        pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
+
+    final double pageOffset = pos.extentBefore / fullExtent;
+
+    final bool left2right = dxEntry < dxTarget;
+    final Offset entry = Offset(left2right ? dxEntry : dxTarget, dy);
+    final Offset target = Offset(left2right ? dxTarget : dxEntry, dy);
+
+    final Path path = Path();
+    path.addArc(
+        Rect.fromCircle(center: entry, radius: radius), 0.5 * pi, 1 * pi);
+    path.addRect(Rect.fromLTRB(entry.dx, dy - radius, target.dx, dy + radius));
+    path.addArc(
+        Rect.fromCircle(center: target, radius: radius), 1.5 * pi, 1 * pi);
+
+    canvas.translate(size.width * pageOffset, 0.0);
+    canvas.drawShadow(path, const Color(0xFFfbab66), 3.0, true);
+    canvas.drawPath(path, painter);
+  }
+
+  @override
+  bool shouldRepaint(TabIndicationPainter oldDelegate) => true;
+}
+
+class QrTabs extends StatefulWidget {
+  const QrTabs({Key key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return QrTabsState();
+  }
+}
+
+const double detailsFontSize = 16.0;
+const double detailLineSpace = 1.0;
+const double detailLineSpaceForBold = 0.892;
+
+class QrTabsState extends State<QrTabs> with SingleTickerProviderStateMixin {
+  final List<Tab> tabs = <Tab>[];
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  GlobalKey packListBox = GlobalKey();
+
+  PageController _pageController;
+
+  Color left = Colors.white;
+  Color right = Colors.white;
+
+  String barcode = '';
+
+  bool isAdmin = true;
+
+  void _initTabs() {
+    tabs.clear();
+
+    tabs.add(Tab(text: 'My QR Code'));
+    tabs.add(Tab(text: 'QR Scanner'));
+  }
+
+  TabController _tabController;
+
+  bool _loadingPack = false;
+
+  final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+
+  @override
+  void initState() {
+    super.initState();
+    _initTabs();
+
+    _pageController = PageController();
+    _tabController = TabController(vsync: this, length: tabs.length);
   }
 
   @override
   void dispose() {
     _pageController?.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
-  Widget _buildMenuBar(BuildContext context) {
-    return Container(
-      width: 300.0,
-      height: 50.0,
-      decoration: const BoxDecoration(
-        color: Color(0x552B2B2B),
-        borderRadius: BorderRadius.all(Radius.circular(25.0)),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      key: _scaffoldKey,
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).primaryColor,
+        title: Text('My Code & Scanner'),
+        automaticallyImplyLeading: false,
+        bottom: TabBar(
+            labelStyle: const TextStyle(
+                fontFamily: 'AvenirNextCondensedMedium',
+                fontStyle: FontStyle.normal,
+                fontSize: 18.0,
+                height: 1.0),
+            unselectedLabelStyle: const TextStyle(
+                fontFamily: 'AvenirNextCondensedMedium',
+                fontStyle: FontStyle.normal,
+                fontSize: 18.0,
+                height: 1.0),
+            isScrollable: false,
+            unselectedLabelColor: Colors.grey,
+            labelColor: Colors.white,
+            indicatorSize: TabBarIndicatorSize.tab,
+            indicator: BubbleTabIndicator(
+              indicatorHeight: 35.0,
+              indicatorColor: Theme.of(context).buttonColor,
+              tabBarIndicatorSize: TabBarIndicatorSize.tab,
+            ),
+            tabs: tabs,
+            controller: _tabController,
+          ),
       ),
-      child: CustomPaint(
-        painter: TabIndicationPainter(
-            context: context, pageController: _pageController),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Expanded(
-              child: FlatButton(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onPressed: _onSignInTabPress,
-                child: Text(
-                  'My QR Code',
-                  style: TextStyle(
-                      color: left,
-                      fontSize: 16.0,
-                      fontFamily: 'WorkSansSemiBold'),
-                ),
-              ),
-            ),
-            //Container(height: 33.0, width: 1.0, color: Colors.white),
-            Expanded(
-              child: FlatButton(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onPressed: _onSignUpTabPress,
-                child: Text(
-                  'My Scanner',
-                  style: TextStyle(
-                      color: right,
-                      fontSize: 16.0,
-                      fontFamily: 'WorkSansSemiBold'),
-                ),
-              ),
-            ),
-          ],
-        ),
+      body: TabBarView(
+        controller: _tabController,
+        children: <Widget>[
+          _buildMyQrCode(context),
+          _buildQrScanner(context)
+        ],
       ),
     );
   }
@@ -210,7 +223,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> {
               textColor: Theme.of(context).buttonColor,
               child: Text("Learn more about this feature"),
               onPressed: () {
-                this._displayInstructions(context);
+                //this._displayInstructions(context);
               },
             ),
           ),
@@ -219,7 +232,56 @@ class _UserQrCodePageState extends State<UserQrCodePage> {
     );
   }
 
-  Widget _buildSignIn(BuildContext context) {
+  Widget _buildMenuBar(BuildContext context) {
+    return Container(
+      width: 300.0,
+      height: 50.0,
+      decoration: const BoxDecoration(
+        color: Color(0x552B2B2B),
+        borderRadius: BorderRadius.all(Radius.circular(25.0)),
+      ),
+      child: CustomPaint(
+        painter: TabIndicationPainter(
+            context: context, pageController: _pageController),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            Expanded(
+              child: FlatButton(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                onPressed: _onSignInTabPress,
+                child: Text(
+                  'My QR Code',
+                  style: TextStyle(
+                      color: left,
+                      fontSize: 14.0,
+                      fontFamily: 'WorkSansSemiBold'),
+                ),
+              ),
+            ),
+            //Container(height: 33.0, width: 1.0, color: Colors.white),
+            Expanded(
+              child: FlatButton(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                onPressed: _onSignUpTabPress,
+                child: Text(
+                  'My Scanner',
+                  style: TextStyle(
+                      color: right,
+                      fontSize: 14.0,
+                      fontFamily: 'WorkSansSemiBold'),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQrScanner(BuildContext context) {
     String userName = Preferences.getStringPref(StringPrefsEnum.displayName);
 
     return Center(
@@ -241,7 +303,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> {
           new Center(
             child: new Column(
               children: <Widget>[
-                Container(
+ Container(
                   width: 150.0,
                   child: RaisedButton(
                       child: const Text(
@@ -250,18 +312,20 @@ class _UserQrCodePageState extends State<UserQrCodePage> {
                       ),
                       onPressed: scanUserBarcode),
                 ),
-                Padding( 
-                  padding: EdgeInsets.only(left:24.0, right: 24.0, top:35.0),
-                  child:Text(
-                  barcode,
-                  textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontFamily: 'AvenirNextDemiBold',
-                  fontStyle: FontStyle.normal,
-                  fontSize: 24.0,
-                  height: 1.0),
-            
-                  ),),
+
+                
+                Padding(
+                  padding: EdgeInsets.only(left: 24.0, right: 24.0, top: 35.0),
+                  child: Text(
+                    barcode,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontFamily: 'AvenirNextDemiBold',
+                        fontStyle: FontStyle.normal,
+                        fontSize: 24.0,
+                        height: 1.0),
+                  ),
+                ),
               ],
             ),
           ),
@@ -281,8 +345,11 @@ class _UserQrCodePageState extends State<UserQrCodePage> {
   }
 
   Future<void> scanUserBarcode() async {
-    Future<String> scanAction = BarcodeScanner.scan();
-    scanAction.then((String s) {
+      try{
+      String s = await  BarcodeScanner.scan();
+      
+   // Future<String> scanAction = BarcodeScanner.scan();
+
       ProcessQrScanService srv = ProcessQrScanService();
       Future<ProcessQrScanModel> apiCall =
           srv.processQrScan('', s, 'UserScan', '', '', '');
@@ -290,7 +357,20 @@ class _UserQrCodePageState extends State<UserQrCodePage> {
         setState(() => barcode = result.resultStr1);
       });
       setState(() => barcode = "Processing QR Scan");
-    });
+      } on PlatformException catch (e) {
+      if (e.code == BarcodeScanner.CameraAccessDenied) {
+        setState(() {
+          this.barcode = 'The user did not grant the camera permission!';
+        });
+      } else {
+        setState(() => this.barcode = 'Unknown error: $e');
+      }
+    } on FormatException{
+      setState(() => this.barcode = 'null (User returned using the "back"-button before scanning anything. Result)');
+    } catch (e) {
+      setState(() => this.barcode = 'Unknown error: $e');
+    }
+
     // try {
     //   Future<String> scanAction = BarcodeScanner.scan();
     //   scanAction.then((String s) {
@@ -356,55 +436,21 @@ class _UserQrCodePageState extends State<UserQrCodePage> {
       },
     );
   }
-}
 
-class TabIndicationPainter extends CustomPainter {
-  Paint painter;
-  final double dxTarget;
-  final double dxEntry;
-  final double radius;
-  final double dy;
-  BuildContext context;
-
-  final PageController pageController;
-
-  TabIndicationPainter(
-      {this.context,
-      this.dxTarget = 125.0,
-      this.dxEntry = 25.0,
-      this.radius = 21.0,
-      this.dy = 25.0,
-      this.pageController})
-      : super(repaint: pageController) {
-    painter = Paint()
-      ..color = Theme.of(context).accentColor
-      ..style = PaintingStyle.fill;
+  void showInSnackBar(String value) {
+    FocusScope.of(context).requestFocus(FocusNode());
+    _scaffoldKey.currentState?.removeCurrentSnackBar();
+    _scaffoldKey.currentState.showSnackBar(SnackBar(
+      content: Text(
+        value,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16.0,
+            fontFamily: 'WorkSansSemiBold'),
+      ),
+      backgroundColor: Colors.blue,
+      duration: Duration(seconds: 3),
+    ));
   }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final ScrollPosition pos = pageController.position;
-    final double fullExtent =
-        pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
-
-    final double pageOffset = pos.extentBefore / fullExtent;
-
-    final bool left2right = dxEntry < dxTarget;
-    final Offset entry = Offset(left2right ? dxEntry : dxTarget, dy);
-    final Offset target = Offset(left2right ? dxTarget : dxEntry, dy);
-
-    final Path path = Path();
-    path.addArc(
-        Rect.fromCircle(center: entry, radius: radius), 0.5 * pi, 1 * pi);
-    path.addRect(Rect.fromLTRB(entry.dx, dy - radius, target.dx, dy + radius));
-    path.addArc(
-        Rect.fromCircle(center: target, radius: radius), 1.5 * pi, 1 * pi);
-
-    canvas.translate(size.width * pageOffset, 0.0);
-    canvas.drawShadow(path, const Color(0xFFfbab66), 3.0, true);
-    canvas.drawPath(path, painter);
-  }
-
-  @override
-  bool shouldRepaint(TabIndicationPainter oldDelegate) => true;
 }

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:harrier_central/remote_api_data/main_navigation_scoped_model.dart';
+import 'package:harrier_central/util/preferences.dart';
+
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 
 class MainNavigationPage extends StatelessWidget {
   void onTabTapped(int index) {
     homePageModel.currentIndex = index;
+    Preferences.setIntPref(IntPrefsEnum.selectedTab,index);
   }
 
   final MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
@@ -165,11 +168,12 @@ class MainNavigationPage extends StatelessWidget {
                             ? Theme.of(context).highlightColor
                             : Theme.of(context).iconTheme.color,
                         onPressed: () {
-                          Navigator.push<dynamic>(
-                              context,
-                              MaterialPageRoute<dynamic>(
-                                  builder: (context) => UserQrCodePage(
-                                      )));
+                          // Navigator.push<dynamic>(
+                          //     context,
+                          //     MaterialPageRoute<dynamic>(
+                          //         builder: (context) => UserQrCodePage(
+                          //             )));
+                          onTabTapped(4);
                         },
                       ),
                       IconButton(

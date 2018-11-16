@@ -20,6 +20,37 @@ class Utilities
          return '$digest'.toUpperCase();
     }
 
+    static String getFormattedMoney(double amount, int decimalPlaces, String currencySymbol) {
+    String formatDecimals = '#####0.00';
+    switch (decimalPlaces) {
+      case 0:
+        formatDecimals = '#####0';
+        break;
+      case 1:
+        formatDecimals = '#####0.0';
+        break;
+      case 2:
+        formatDecimals = '#####0.00';
+        break;
+      case 3:
+        formatDecimals = '#####0.000';
+        break;
+      case 4:
+        formatDecimals = '#####0.0000';
+        break;
+      default:
+        formatDecimals = '#####0.00';
+        break;
+    }
+
+    String amountStr = NumberFormat(formatDecimals).format(amount);
+
+    String finalStr =
+        currencySymbol.replaceAll('^', amountStr);
+
+    return finalStr;
+  }
+
     static String getDistance(int meters, BuildContext context)
     {
       const bool isMetric = true;

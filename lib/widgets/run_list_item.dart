@@ -340,36 +340,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     }
   }
 
-  String getFormattedMoney(double amount) {
-    String formatDecimals = '######.00';
-    switch (widget.futureRun.digitsAfterDecimal) {
-      case 0:
-        formatDecimals = '######';
-        break;
-      case 1:
-        formatDecimals = '######.0';
-        break;
-      case 2:
-        formatDecimals = '######.00';
-        break;
-      case 3:
-        formatDecimals = '######.000';
-        break;
-      case 4:
-        formatDecimals = '######.0000';
-        break;
-      default:
-        formatDecimals = '######.00';
-        break;
-    }
 
-    String amountStr = NumberFormat(formatDecimals).format(amount);
-
-    String finalStr =
-        widget.futureRun.currencySymbol.replaceAll('^', amountStr);
-
-    return finalStr;
-  }
 
   @override
   void initState() {
@@ -588,7 +559,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 ),
                                 Text(
                                   (widget.futureRun.eventPriceForMembers > 0)
-                                      ? '${getFormattedMoney(widget.futureRun.eventPriceForMembers)} (members)'
+                                      ? '${Utilities.getFormattedMoney(widget.futureRun.eventPriceForMembers, widget.futureRun.digitsAfterDecimal, widget.futureRun.currencySymbol)} (members)'
                                       : '',
                                   style: const TextStyle(
                                       fontFamily: 'AvenirNextDemiBold',
@@ -599,7 +570,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 ),
                                 Text(
                                   (widget.futureRun.eventPriceForNonMembers > 0)
-                                      ? '${getFormattedMoney(widget.futureRun.eventPriceForNonMembers)} (non-members)'
+                                      ? '${Utilities.getFormattedMoney(widget.futureRun.eventPriceForNonMembers, widget.futureRun.digitsAfterDecimal, widget.futureRun.currencySymbol)} (non-members)'
                                       : '',
                                   style: const TextStyle(
                                       fontFamily: 'AvenirNextDemiBold',

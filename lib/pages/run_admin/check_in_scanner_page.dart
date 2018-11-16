@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 
 import 'package:harrier_central/remote_api_data/process_qr_scan_service.dart';
 import 'package:harrier_central/data_models/process_qr_scan_model.dart';
+import 'package:harrier_central/pages/run_admin/payment_popup.dart';
+import 'package:harrier_central/remote_api_data/pay_for_event_service.dart';
+import 'package:harrier_central/data_models/pay_for_event_model.dart';
 
 class CheckInScannerPage extends StatefulWidget {
   CheckInScannerPage(
@@ -22,7 +25,7 @@ class CheckInScannerPage extends StatefulWidget {
 }
 
 class _CheckInScannerPageState extends State<CheckInScannerPage> {
-  String barcode = "";
+  String barcode = '';
 
   @override
   initState() {
@@ -42,8 +45,6 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
           ),
         ),
       ),
-
-
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -76,18 +77,22 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                           'Start Scanning: RUN START',
                           style: TextStyle(color: Colors.white),
                         ),
-                        onPressed: (){scanUserBarcode(true,widget.eventId);}),
+                        onPressed: () {
+                          scanUserBarcode(true, widget.eventId);
+                        }),
                   ),
 
                   Container(
-                    padding: EdgeInsets.only(top:30.0),
+                    padding: EdgeInsets.only(top: 30.0),
                     width: 320.0,
                     child: RaisedButton(
                         child: const Text(
                           'Start Scanning: RUN END',
                           style: TextStyle(color: Colors.white),
                         ),
-                        onPressed: (){scanUserBarcode(false,widget.eventId);}),
+                        onPressed: () {
+                          scanUserBarcode(false, widget.eventId);
+                        }),
                   ),
 
                   // new Container(
@@ -95,18 +100,19 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                   //       onPressed: scan, child: new Text("Scan")),
                   //   padding: const EdgeInsets.all(8.0),
                   // ),
-               Padding( 
-                  padding: EdgeInsets.only(left:24.0, right: 24.0, top:35.0),
-                  child:Text(
-                  barcode,
-                  textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontFamily: 'AvenirNextDemiBold',
-                  fontStyle: FontStyle.normal,
-                  fontSize: 24.0,
-                  height: 1.0),
-            
-                  ),),
+                  Padding(
+                    padding:
+                        EdgeInsets.only(left: 24.0, right: 24.0, top: 35.0),
+                    child: Text(
+                      barcode,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontFamily: 'AvenirNextDemiBold',
+                          fontStyle: FontStyle.normal,
+                          fontSize: 24.0,
+                          height: 1.0),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -126,10 +132,8 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
     );
   }
 
-Future<void> scanUserBarcode(bool isRunStart, String eventId) async {
-
+  Future<void> scanUserBarcode(bool isRunStart, String eventId) async {
     String context2 = isRunStart ? '0' : '1';
-
     Future<String> scanAction = BarcodeScanner.scan();
     scanAction.then((String s) {
       ProcessQrScanService srv = ProcessQrScanService();
@@ -137,12 +141,44 @@ Future<void> scanUserBarcode(bool isRunStart, String eventId) async {
           srv.processQrScan(eventId, s, 'CheckInOut', context2, '', '');
       apiCall.then((ProcessQrScanModel result) {
         setState(() => barcode = result.resultStr2);
+        if (result.resultInt2 == 0) {
+          PaymentPopup pp = new PaymentPopup(
+            amount: result.resultDecimal1,
+            creditAllowed: result.resultInt3,
+            creditRemaining: result.resultDecimal2,
+            currencySymbol: result.resultStr1,
+            hemId: result.resultGuid2,
+            decimalDigits: result.resultInt4,
+          );
+
+          Future<bool> dlg = showDialog<bool>(
+              context: context,
+              barrierDismissible: false, // user must tap button!
+              builder: (BuildContext context) {
+                return pp;
+              });
+
+          dlg.then((bool x) {
+            PayForEventService paySrv = PayForEventService();
+            Future<List<PayForEventModel>> retVal = paySrv.payForEvent(
+                result.resultGuid1,
+                eventId,
+                result.resultGuid2,
+                pp.selectedValue,
+                pp.amount);
+            retVal.then((List<PayForEventModel> paymentResult) {
+              if (paymentResult.isNotEmpty) {
+                setState(() => barcode = paymentResult[0].result);
+              } else {
+                setState(() => barcode = 'Error processing payment');
+              }
+            });
+          });
+        }
       });
       setState(() => barcode = "Processing QR Scan");
     });
   }
-
- 
 
   Future<bool> _displayInstructions(BuildContext context) async {
     return showDialog<bool>(

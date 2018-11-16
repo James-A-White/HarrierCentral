@@ -31,7 +31,7 @@ class ProcessQrScanService {
     });
 
     final http.Response response = await http
-        .post(BASE_API_URL + 'process_qr_scan',
+        .post(BASE_API_URL + 'process_qr_scan_2',
             headers: <String,String> {'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
@@ -55,8 +55,9 @@ class ProcessQrScanService {
           resultInt1: user['resultInt1'],
           resultInt2: user['resultInt2'],
           resultInt3: user['resultInt3'],
-          resultDecimal1: user['resultDecimal1'],
-          resultDecimal2: user['resultDecimal2'],
+          resultInt4: user['resultInt4'],
+          resultDecimal1: user['resultDecimal1'] * 1.0,
+          resultDecimal2: user['resultDecimal2'] * 1.0,
         );
       },
     );

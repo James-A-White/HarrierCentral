@@ -10,7 +10,11 @@ enum StringPrefsEnum {
   lastName,
   hashName,
   email,
-  facebookId,
+  facebookId
+}
+
+enum IntPrefsEnum {
+  selectedTab
 }
 
 class Preferences {
@@ -27,5 +31,14 @@ class Preferences {
 
   static Future<bool> setStringPref(StringPrefsEnum key, String value) async {
     return _sharedPreferences.setString(key.toString(), value);
+  }
+
+  static int getIntPref(IntPrefsEnum key) {
+    final String test = key.toString();
+    return _sharedPreferences.getInt(test);
+  }
+
+  static Future<bool> setIntPref(IntPrefsEnum key, int value) async {
+    return _sharedPreferences.setInt(key.toString(), value);
   }
 }

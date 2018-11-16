@@ -10,6 +10,7 @@ class ProcessQrScanModel {
   final int resultInt1;
   final int resultInt2;
   final int resultInt3;
+  final int resultInt4;
   final double resultDecimal1;
   final double resultDecimal2;
 
@@ -23,6 +24,7 @@ class ProcessQrScanModel {
         this.resultInt1,
         this.resultInt2,
         this.resultInt3,
+        this.resultInt4,
         this.resultDecimal1,
         this.resultDecimal2
     });
