@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:harrier_central/remote_api_data/future_run_scoped_model.dart';
 import 'package:harrier_central/widgets/run_list_item.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:harrier_central/remote_api_data/main_navigation_scoped_model.dart';
 //
 
 class FutureRunsListPage extends StatelessWidget {
@@ -10,10 +11,12 @@ class FutureRunsListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final FutureRunScopedModel futureRunModel = FutureRunScopedModel();
     futureRunModel.getFutureRunsFromBackend(1, true);
-
-    return ScopedModel<FutureRunScopedModel>(
-        model: futureRunModel, child: FutureRunListPageBody()
-        );
+    return ScopedModelDescendant<MainNavigationScopedModel>(builder:
+        (BuildContext context, Widget child, MainNavigationScopedModel model) {
+      model.appBarTitle = 'Upcoming Runs';
+      return ScopedModel<FutureRunScopedModel>(
+          model: futureRunModel, child: FutureRunListPageBody());
+    });
   }
 }
 
@@ -28,7 +31,8 @@ class FutureRunListPageBody extends StatelessWidget {
     this.context = context;
 
     return ScopedModelDescendant<FutureRunScopedModel>(
-      builder: (BuildContext context, Widget child, FutureRunScopedModel model) {
+      builder:
+          (BuildContext context, Widget child, FutureRunScopedModel model) {
         this.model = model;
         return model.isLoading
             ? _buildCircularProgressIndicator()
@@ -60,10 +64,9 @@ class FutureRunListPageBody extends StatelessWidget {
             : RefreshIndicator(
                 onRefresh: () => _handleRefresh(),
                 displacement: 40.0,
-                child: 
-                ListView.builder(
+                child: ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.only(top: 40.0, bottom:40.0),
+                    padding: EdgeInsets.only(top: 40.0, bottom: 40.0),
                     itemCount: model.getFutureRunsCount(),
                     itemBuilder: (BuildContext context, int index) {
                       if (model.futureRunsList[index].daysUntilNextRun < 9999) {

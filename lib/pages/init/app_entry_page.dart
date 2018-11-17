@@ -47,7 +47,8 @@ class _AppEntryPageState extends State<AppEntryPage>
 
   dynamic startTimeout() async {
     Preferences.initPrefs().then((void dummy) {
-      Preferences.setIntPref(IntPrefsEnum.selectedTab,3);
+      Preferences.setIntPref(IntPrefsEnum.mainViewCurrentTab,3);
+      Preferences.setIntPref(IntPrefsEnum.qrCodeViewCurrentTab,0);
     });
 
     return Timer(Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME), handleTimeout);

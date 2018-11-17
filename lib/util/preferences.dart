@@ -14,7 +14,8 @@ enum StringPrefsEnum {
 }
 
 enum IntPrefsEnum {
-  selectedTab
+  mainViewCurrentTab,
+  qrCodeViewCurrentTab
 }
 
 class Preferences {

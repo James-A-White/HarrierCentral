@@ -25,7 +25,7 @@ void main() {
           // ... other locales the app supports
         ],
         home: AppEntryPage(),
-        routes: Routes.routes,
+        //routes: Routes.routes,
         theme: ThemeData(
             primaryColor: Colors.grey[700],
             primaryColorDark: Colors.grey[900],

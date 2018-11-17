@@ -26,6 +26,10 @@ enum EnumAppPages {
 class MainNavigationScopedModel extends Model {
   final MainNavigation _mainNavigation = MainNavigation();
 
+  GlobalKey<ScaffoldState> mainAppScaffoldKey =  GlobalKey<ScaffoldState>();
+
+  //String mainPageTitle = 'Home Page';
+
   MainNavigationScopedModel() {
       _mainNavigation.children = <Widget>[
       const PlaceholderWidget(Colors.red),
@@ -38,7 +42,7 @@ class MainNavigationScopedModel extends Model {
       const PlaceholderWidget(Colors.red),
       FbLoginPage()
     ];
-    _mainNavigation.currentIndex = Preferences.getIntPref(IntPrefsEnum.selectedTab);
+    _mainNavigation.currentIndex = Preferences.getIntPref(IntPrefsEnum.mainViewCurrentTab);
   }
 
   set currentIndex(int ci) {
@@ -50,6 +54,16 @@ class MainNavigationScopedModel extends Model {
 
   int get currentIndex {
     return _mainNavigation.currentIndex;
+  }
+
+  set appBarTitle (String title)
+  {
+     _mainNavigation.appBarTitle = title;
+     notifyListeners();
+  }
+
+  String get appBarTitle {
+    return _mainNavigation.appBarTitle;
   }
 
   MainNavigation get homePage => _mainNavigation;

@@ -8,29 +8,33 @@ import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 class MainNavigationPage extends StatelessWidget {
   void onTabTapped(int index) {
     homePageModel.currentIndex = index;
-    Preferences.setIntPref(IntPrefsEnum.selectedTab,index);
+    Preferences.setIntPref(IntPrefsEnum.mainViewCurrentTab,index);
   }
 
   final MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
 
   @override
   Widget build(BuildContext context) {
+    
+    homePageModel.mainAppScaffoldKey =  GlobalKey<ScaffoldState>();
+
     return ScopedModel<MainNavigationScopedModel>(
       model: homePageModel,
       child: ScopedModelDescendant<MainNavigationScopedModel>(
         builder: (BuildContext context, Widget child,
                 MainNavigationScopedModel model) =>
             Scaffold(
-              // appBar: AppBar(
-              //   centerTitle: true,
-              //   backgroundColor: Colors.white,
-              //   title: const Text(
-              //     'Home Page',
-              //     style: TextStyle(
-              //       color: Colors.black,
-              //     ),
-              //   ),
-              // ),
+              key: homePageModel.mainAppScaffoldKey,
+              appBar: AppBar(
+                centerTitle: true,
+                backgroundColor: Theme.of(context).primaryColor,
+                title:  Text(
+                  homePageModel.appBarTitle ?? '',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
               body: homePageModel
                   .homePage.children[homePageModel.homePage.currentIndex],
               floatingActionButtonLocation:
@@ -168,11 +172,6 @@ class MainNavigationPage extends StatelessWidget {
                             ? Theme.of(context).highlightColor
                             : Theme.of(context).iconTheme.color,
                         onPressed: () {
-                          // Navigator.push<dynamic>(
-                          //     context,
-                          //     MaterialPageRoute<dynamic>(
-                          //         builder: (context) => UserQrCodePage(
-                          //             )));
                           onTabTapped(4);
                         },
                       ),

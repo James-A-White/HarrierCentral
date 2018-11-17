@@ -21,7 +21,7 @@ class CheckInScannerPage extends StatefulWidget {
   String eventName;
   int eventNumber;
 
-  _CheckInScannerPageState createState() => new _CheckInScannerPageState();
+  _CheckInScannerPageState createState() => _CheckInScannerPageState();
 }
 
 class _CheckInScannerPageState extends State<CheckInScannerPage> {
