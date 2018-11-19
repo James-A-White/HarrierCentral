@@ -34,8 +34,25 @@ class RunListItem extends StatefulWidget {
   _RunListItemState createState() => _RunListItemState();
 }
 
-class _RunListItemState extends State<RunListItem> {
+class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   _RunListItemState();
+
+  @override
+  void initState() {
+      // TODO: implement initState
+      super.initState();
+      WidgetsBinding.instance.addObserver(this);
+    }
+
+  @override void dispose() {
+      WidgetsBinding.instance.removeObserver(this);
+      super.dispose();
+    }
+
+  @override void didChangeAppLifecycleState(AppLifecycleState state) {
+      print('App lifecycle state => ' + state.toString());
+      super.didChangeAppLifecycleState(state);
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -264,7 +281,7 @@ class RunTabs extends StatefulWidget {
   final FutureRun futureRun;
 
   @override
-  State<StatefulWidget> createState() {
+  State<RunTabs> createState() {
     return RunTabsState();
   }
 }

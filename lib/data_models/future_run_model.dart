@@ -41,10 +41,6 @@ class FutureRun {
   final int runSequence;
   int distanceToEvent;
 
-  // set followingState(int newState) {
-  //   followingBool = newState;
-  // }
-
   // state
   bool _isExpanded = false;
 

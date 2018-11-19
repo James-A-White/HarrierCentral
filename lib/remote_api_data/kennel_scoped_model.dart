@@ -12,8 +12,10 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:geolocator/geolocator.dart';
 
 class KennelScopedModel extends Model {
+
   final List<Kennel> _kennelsList = <Kennel>[];
   List<Kennel> get kennelsList => _kennelsList;
+
 
   bool _isLoading = true;
 

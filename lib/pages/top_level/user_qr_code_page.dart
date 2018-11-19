@@ -1,64 +1,35 @@
-// import 'dart:async';
-//import 'dart:core';
 import 'dart:math';
-// import 'dart:ui';
 
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:harrier_central/data_models/process_qr_scan_model.dart';
-import 'package:harrier_central/remote_api_data/main_navigation_scoped_model.dart';
 import 'package:harrier_central/remote_api_data/process_qr_scan_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:scoped_model/scoped_model.dart';
 
-const double detailLineSpace = 1.0;
-
-const double detailLineSpaceForBold = 0.892;
-
-const double detailsFontSize = 16.0;
-
-class QrTabs extends StatefulWidget {
-  //const QrTabs({Key key}) : super(key: key);
+class UserQrCodePage extends StatefulWidget {
+  UserQrCodePage({Key key}) : super(key: key);
 
   @override
-  _QrTabsState createState() => _QrTabsState();
+  _UserQrCodePageState createState() => _UserQrCodePageState();
 }
 
-class _QrTabsState extends State<QrTabs> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
-  //_QrTabsState();
-
-  final List<Tab> tabs = <Tab>[];
-
-  @override
-  bool get wantKeepAlive => true;
-
-
-  //final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  //GlobalKey packListBox = GlobalKey();
-
-  PageController _pageController;
-
-  Color left = Colors.white;
-  Color right = Colors.white;
+class _UserQrCodePageState extends State<UserQrCodePage>
+    with SingleTickerProviderStateMixin {
+  List<Tab> tabs = <Tab>[];
 
   String barcode = '';
-
   bool isAdmin = true;
 
+  PageController _pageController;
   TabController _tabController;
-
-  bool _loadingPack = false;
 
   final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return Scaffold(
-      //key: _scaffoldKey,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(120.0),
         child: Padding(
@@ -99,13 +70,14 @@ class _QrTabsState extends State<QrTabs> with AutomaticKeepAliveClientMixin, Sin
           ),
         ),
       ),
-      body: Stack(children: <Widget>[TabBarView(
-        controller: _tabController,
+      body: Stack(
         children: <Widget>[
-          QrCodeTab(),
-          QrScannerTab()
-          ],
-      ),],),
+          TabBarView(
+            controller: _tabController,
+            children: <Widget>[QrCodeTab(), QrScannerTab()],
+          ),
+        ],
+      ),
     );
   }
 
@@ -121,29 +93,12 @@ class _QrTabsState extends State<QrTabs> with AutomaticKeepAliveClientMixin, Sin
     super.initState();
     _initTabs();
 
-    int currentTab = Preferences.getIntPref(IntPrefsEnum.qrCodeViewCurrentTab);
-
-    _pageController = PageController(initialPage: currentTab, keepPage: true);
+    _pageController = PageController(initialPage: 0, keepPage: true);
     _tabController = TabController(vsync: this, length: tabs.length);
-    _tabController.addListener(_handleTabSelection);
   }
 
-  // void showInSnackBar(String value) {
-  //   FocusScope.of(context).requestFocus(FocusNode());
-  //   _scaffoldKey.currentState?.removeCurrentSnackBar();
-  //   _scaffoldKey.currentState.showSnackBar(SnackBar(
-  //     content: Text(
-  //       value,
-  //       textAlign: TextAlign.center,
-  //       style: const TextStyle(
-  //           color: Colors.white,
-  //           fontSize: 16.0,
-  //           fontFamily: 'WorkSansSemiBold'),
-  //     ),
-  //     backgroundColor: Colors.blue,
-  //     duration: Duration(seconds: 3),
-  //   ));
-  // }
+  Color left = Colors.white;
+  Color right = Colors.white;
 
   Widget _buildMenuBar(BuildContext context) {
     return Container(
@@ -173,7 +128,6 @@ class _QrTabsState extends State<QrTabs> with AutomaticKeepAliveClientMixin, Sin
                 ),
               ),
             ),
-            //Container(height: 33.0, width: 1.0, color: Colors.white),
             Expanded(
               child: FlatButton(
                 splashColor: Colors.transparent,
@@ -193,107 +147,6 @@ class _QrTabsState extends State<QrTabs> with AutomaticKeepAliveClientMixin, Sin
       ),
     );
   }
-
-  Widget _buildMyQrCode() {
-    String userName = Preferences.getStringPref(StringPrefsEnum.displayName);
-    String userQrCode = Preferences.getStringPref(StringPrefsEnum.qrCode);
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          Text(
-            'QR Code for: $userName',
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-                fontFamily: 'AvenirNextDemiBold',
-                fontStyle: FontStyle.normal,
-                fontSize: 24.0,
-                height: 1.0),
-          ),
-          QrImage(
-              padding: EdgeInsets.all(10.0),
-              data: userQrCode,
-              version: 4,
-              size: 200.0,
-              errorCorrectionLevel: 3),
-          Padding(
-            padding: EdgeInsets.only(left: 32.0, right: 32.0),
-            child: FlatButton(
-              textColor: Theme.of(context).buttonColor,
-              child: Text("Learn more about this feature"),
-              onPressed: () {
-                //this._displayInstructions(context);
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Widget _buildQrScanner() {
-  //   String userName = Preferences.getStringPref(StringPrefsEnum.displayName);
-
-  //   return Center(
-  //     child: Column(
-  //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //       children: <Widget>[
-  //         Padding(
-  //           padding: EdgeInsets.only(left: 24.0, right: 24.0),
-  //           child: Text(
-  //             'Scan to add friends and scan to check yourself in at the start and end of runs.',
-  //             textAlign: TextAlign.center,
-  //             style: const TextStyle(
-  //                 fontFamily: 'AvenirNextDemiBold',
-  //                 fontStyle: FontStyle.normal,
-  //                 fontSize: 24.0,
-  //                 height: 1.0),
-  //           ),
-  //         ),
-  //         new Center(
-  //           child: new Column(
-  //             children: <Widget>[
-  //               Container(
-  //                 width: 150.0,
-  //                 child: RaisedButton(
-  //                     child: const Text(
-  //                       'Start Scanning',
-  //                       style: TextStyle(color: Colors.white),
-  //                     ),
-  //                     onPressed: () {
-  //                       scanUserBarcode();
-  //                     }),
-  //               ),
-  //               Padding(
-  //                 padding: EdgeInsets.only(left: 24.0, right: 24.0, top: 35.0),
-  //                 child: Text(
-  //                   barcode,
-  //                   textAlign: TextAlign.center,
-  //                   style: const TextStyle(
-  //                       fontFamily: 'AvenirNextDemiBold',
-  //                       fontStyle: FontStyle.normal,
-  //                       fontSize: 24.0,
-  //                       height: 1.0),
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //         Padding(
-  //           padding: EdgeInsets.only(left: 32.0, right: 32.0, bottom: 16.0),
-  //           child: FlatButton(
-  //             textColor: Theme.of(context).buttonColor,
-  //             child: Text("Learn more about this feature"),
-  //             onPressed: () {
-  //               this._displayInstructions(context);
-  //             },
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   Future<bool> _displayInstructions(BuildContext context) async {
     return showDialog<bool>(
@@ -330,27 +183,19 @@ class _QrTabsState extends State<QrTabs> with AutomaticKeepAliveClientMixin, Sin
     );
   }
 
-  void _handleTabSelection() {
-    Preferences.setIntPref(
-        IntPrefsEnum.qrCodeViewCurrentTab, _tabController.index);
-    print("Changed tab to: ${_tabController.index}");
-  }
-
   void _initTabs() {
-    tabs.clear();
-
-    tabs.add(Tab(text: 'My QR Code'));
-    tabs.add(Tab(text: 'QR Scanner'));
+    if (tabs.isEmpty) {
+      tabs.add(Tab(text: 'My QR Code'));
+      tabs.add(Tab(text: 'QR Scanner'));
+    }
   }
 
   void _onSwitchToQrCode() {
-    Preferences.setIntPref(IntPrefsEnum.qrCodeViewCurrentTab, 0);
     _pageController.animateToPage(0,
         duration: Duration(milliseconds: 500), curve: Curves.decelerate);
   }
 
   void _onSwitchToQrScanner() {
-    Preferences.setIntPref(IntPrefsEnum.qrCodeViewCurrentTab, 1);
     _pageController?.animateToPage(1,
         duration: Duration(milliseconds: 500), curve: Curves.decelerate);
   }
@@ -407,48 +252,6 @@ class TabIndicationPainter extends CustomPainter {
   bool shouldRepaint(TabIndicationPainter oldDelegate) => true;
 }
 
-class UserQrCodePage extends StatefulWidget {
-  UserQrCodePage({Key key}) : super(key: key);
-
-  @override
-  _UserQrCodePageState createState() => _UserQrCodePageState();
-}
-
-class _UserQrCodePageState extends State<UserQrCodePage> with AutomaticKeepAliveClientMixin {
- 
-  @override
-  bool get wantKeepAlive => true;
- 
- @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    // return ScopedModelDescendant<MainNavigationScopedModel>(builder:
-    //     (BuildContext context, Widget child, MainNavigationScopedModel model) {
-    //   model.appBarTitle = 'My QR Code & Scanner';
-
-      return QrTabs();
-    //});
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    // SystemChrome.setPreferredOrientations(<DeviceOrientation>[
-    //   DeviceOrientation.portraitUp,
-    //   DeviceOrientation.portraitDown,
-    // ]);
-  }
-}
-
-
-
-
 class QrCodeTab extends StatefulWidget {
   const QrCodeTab({Key key}) : super(key: key);
 
@@ -456,19 +259,51 @@ class QrCodeTab extends StatefulWidget {
   _QrCodeTabState createState() => _QrCodeTabState();
 }
 
-class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
-
+class _QrCodeTabState extends State<QrCodeTab>
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   @override
   bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Container(color:Colors.red);
+    String userName = Preferences.getStringPref(StringPrefsEnum.displayName);
+    String userQrCode = Preferences.getStringPref(StringPrefsEnum.qrCode);
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          Text(
+            'QR Code for: $userName',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+                fontFamily: 'AvenirNextDemiBold',
+                fontStyle: FontStyle.normal,
+                fontSize: 24.0,
+                height: 1.0),
+          ),
+          QrImage(
+              padding: EdgeInsets.all(10.0),
+              data: userQrCode,
+              version: 4,
+              size: 200.0,
+              errorCorrectionLevel: 3),
+          Padding(
+            padding: EdgeInsets.only(left: 32.0, right: 32.0),
+            child: FlatButton(
+              textColor: Theme.of(context).buttonColor,
+              child: Text("Learn more about this feature"),
+              onPressed: () {
+                //this._displayInstructions(context);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
-
-
 
 class QrScannerTab extends StatefulWidget {
   const QrScannerTab({Key key}) : super(key: key);
@@ -477,15 +312,14 @@ class QrScannerTab extends StatefulWidget {
   _QrScannerTabState createState() => _QrScannerTabState();
 }
 
-class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
-
+class _QrScannerTabState extends State<QrScannerTab>
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   String barcode = 'Waiting';
 
   @override
   bool get wantKeepAlive => true;
 
-    void scanUserBarcode() {
-    //String context2 = true ? '0' : '1';
+  void scanUserBarcode() {
     final Future<String> scanAction = BarcodeScanner.scan();
     scanAction.then((String s) {
       ProcessQrScanService srv = ProcessQrScanService();
@@ -497,8 +331,6 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
       setState(() => barcode = 'Processing QR Scan');
     });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -553,5 +385,3 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
     );
   }
 }
-
-

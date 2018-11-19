@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:harrier_central/pages/init/app_entry_page.dart';
 import 'package:harrier_central/util/routes.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -10,6 +11,12 @@ import 'package:flutter/rendering.dart';
 
 void main() {
   //debugPaintSizeEnabled=true;
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight
+    ]);
+
   runApp(
     MaterialApp(
         localizationsDelegates: const <LocalizationsDelegate<dynamic>> [
@@ -25,7 +32,7 @@ void main() {
           // ... other locales the app supports
         ],
         home: AppEntryPage(),
-        //routes: Routes.routes,
+        routes: Routes.routes,
         theme: ThemeData(
             primaryColor: Colors.grey[700],
             primaryColorDark: Colors.grey[900],

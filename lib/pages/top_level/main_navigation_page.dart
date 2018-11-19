@@ -5,19 +5,28 @@ import 'package:harrier_central/util/preferences.dart';
 
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 
-class MainNavigationPage extends StatelessWidget {
-  void onTabTapped(int index) {
-    homePageModel.currentIndex = index;
-    Preferences.setIntPref(IntPrefsEnum.mainViewCurrentTab,index);
+class MainNavigationPage extends StatefulWidget {
+  MainNavigationPage({Key key}) : super(key: key);
+
+  @override
+  _MainNavigationPageState createState() => _MainNavigationPageState();
+}
+
+class _MainNavigationPageState extends State<MainNavigationPage> {
+  MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
+
+  void initState() {
+    homePageModel.init();
+    homePageModel.mainAppScaffoldKey = GlobalKey<ScaffoldState>();
   }
 
-  final MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
+  void onTabTapped(int index) {
+    homePageModel.currentIndex = index;
+    //Preferences.setIntPref(IntPrefsEnum.mainViewCurrentTab, index);
+  }
 
   @override
   Widget build(BuildContext context) {
-    
-    homePageModel.mainAppScaffoldKey =  GlobalKey<ScaffoldState>();
-
     return ScopedModel<MainNavigationScopedModel>(
       model: homePageModel,
       child: ScopedModelDescendant<MainNavigationScopedModel>(
@@ -28,7 +37,7 @@ class MainNavigationPage extends StatelessWidget {
               appBar: AppBar(
                 centerTitle: true,
                 backgroundColor: Theme.of(context).primaryColor,
-                title:  Text(
+                title: Text(
                   homePageModel.appBarTitle ?? '',
                   style: TextStyle(
                     color: Colors.white,
@@ -46,7 +55,6 @@ class MainNavigationPage extends StatelessWidget {
                   onTabTapped(6);
                 },
               ),
-
               bottomNavigationBar: BottomAppBar(
                 shape: const CircularNotchedRectangle(),
                 notchMargin: 5.0,

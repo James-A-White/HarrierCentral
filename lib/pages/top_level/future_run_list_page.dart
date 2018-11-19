@@ -7,15 +7,19 @@ import 'package:harrier_central/remote_api_data/main_navigation_scoped_model.dar
 //
 
 class FutureRunsListPage extends StatelessWidget {
+
+  final FutureRunScopedModel futureRunsModel;
+
+  const FutureRunsListPage({Key key, @required this.futureRunsModel}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    final FutureRunScopedModel futureRunModel = FutureRunScopedModel();
-    futureRunModel.getFutureRunsFromBackend(1, true);
+    
     return ScopedModelDescendant<MainNavigationScopedModel>(builder:
         (BuildContext context, Widget child, MainNavigationScopedModel model) {
       model.appBarTitle = 'Upcoming Runs';
       return ScopedModel<FutureRunScopedModel>(
-          model: futureRunModel, child: FutureRunListPageBody());
+          model: futureRunsModel, child: FutureRunListPageBody());
     });
   }
 }

@@ -7,7 +7,6 @@ import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/util/preferences.dart';
 
 class AppEntryPage extends StatefulWidget {
-  //static String splash = 'splash';
 
   @override
   _AppEntryPageState createState() => _AppEntryPageState();
@@ -47,8 +46,6 @@ class _AppEntryPageState extends State<AppEntryPage>
 
   dynamic startTimeout() async {
     Preferences.initPrefs().then((void dummy) {
-      Preferences.setIntPref(IntPrefsEnum.mainViewCurrentTab,3);
-      Preferences.setIntPref(IntPrefsEnum.qrCodeViewCurrentTab,0);
     });
 
     return Timer(Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME), handleTimeout);
