@@ -47,4 +47,18 @@ void main() {
   );
 }
 
+class LoginColors {
+  const LoginColors();
+
+  static Color loginGradientStart = Colors.grey[400];
+  static Color loginGradientEnd = Colors.blueGrey[900];
+
+  static final LinearGradient primaryGradient = LinearGradient(
+    colors: <Color>[loginGradientStart, loginGradientEnd],
+    stops: const <double>[0.0, 1.0],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+}
+
 

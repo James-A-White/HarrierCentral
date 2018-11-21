@@ -12,6 +12,7 @@ import 'package:harrier_central/remote_api_data/add_user_service.dart';
 import 'package:harrier_central/data_models/add_user_model.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
+import 'package:harrier_central/main.dart';
 
 //import 'package:the_gorgeous_login/style/theme.dart' as Theme;
 
@@ -142,6 +143,11 @@ class _LoginPageState extends State<LoginPage>
   void initState() {
     super.initState();
 
+    signupFirstNameController.text = 'delete';
+    signupLastNameController.text = 'delete';
+    signupHashNameController.text = 'delete';
+    signupEmailController.text = 'delete_' + Random.secure().nextInt(99999999).toString() + '@test.com';
+
     SystemChrome.setPreferredOrientations(<DeviceOrientation>[
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -238,82 +244,7 @@ class _LoginPageState extends State<LoginPage>
                 ),
               ),
 
-              // Card(
-              //   elevation: 2.0,
-              //   color: Colors.white,
-              //   shape: RoundedRectangleBorder(
-              //     borderRadius: BorderRadius.circular(8.0),
-              //   ),
-              //   child: Container(
-              //     width: 300.0,
-              //     height: 190.0,
-              //     child: Column(
-              //       children: <Widget>[
-              //         Padding(
-              //           padding: const EdgeInsets.only(
-              //               top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
-              //           child: TextField(
-              //             focusNode: myFocusNodeEmailLogin,
-              //             controller: loginEmailController,
-              //             keyboardType: TextInputType.emailAddress,
-              //             style: TextStyle(
-              //                 fontFamily: 'WorkSansSemiBold',
-              //                 fontSize: 16.0,
-              //                 color: Colors.black),
-              //             decoration: InputDecoration(
-              //               border: InputBorder.none,
-              //               icon: Icon(
-              //                 FontAwesomeIcons.envelope,
-              //                 color: Colors.black,
-              //                 size: 22.0,
-              //               ),
-              //               hintText: 'Email Address',
-              //               hintStyle: TextStyle(
-              //                   fontFamily: 'WorkSansSemiBold', fontSize: 17.0),
-              //             ),
-              //           ),
-              //         ),
-              //         Container(
-              //           width: 250.0,
-              //           height: 1.0,
-              //           color: Colors.grey[400],
-              //         ),
-              //         Padding(
-              //           padding: const EdgeInsets.only(
-              //               top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
-              //           child: TextField(
-              //             focusNode: myFocusNodePasswordLogin,
-              //             controller: loginPasswordController,
-              //             obscureText: _obscureTextLogin,
-              //             style: TextStyle(
-              //                 fontFamily: 'WorkSansSemiBold',
-              //                 fontSize: 16.0,
-              //                 color: Colors.black),
-              //             decoration: InputDecoration(
-              //               border: InputBorder.none,
-              //               icon: Icon(
-              //                 FontAwesomeIcons.lock,
-              //                 size: 22.0,
-              //                 color: Colors.black,
-              //               ),
-              //               hintText: 'Password',
-              //               hintStyle: TextStyle(
-              //                   fontFamily: 'WorkSansSemiBold', fontSize: 17.0),
-              //               suffixIcon: GestureDetector(
-              //                 onTap: _toggleLogin,
-              //                 child: Icon(
-              //                   FontAwesomeIcons.eye,
-              //                   size: 15.0,
-              //                   color: Colors.black,
-              //                 ),
-              //               ),
-              //             ),
-              //           ),
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // ),
+             
               Container(
                 margin: const EdgeInsets.only(top: 170.0),
                 decoration:  BoxDecoration(
@@ -359,19 +290,6 @@ class _LoginPageState extends State<LoginPage>
               ),
             ],
           ),
-          // Padding(
-          //   padding: const EdgeInsets.only(top: 10.0),
-          //   child: FlatButton(
-          //       onPressed: () {},
-          //       child: Text(
-          //         'Forgot Password?',
-          //         style: TextStyle(
-          //             decoration: TextDecoration.underline,
-          //             color: Colors.white,
-          //             fontSize: 16.0,
-          //             fontFamily: 'WorkSansMedium'),
-          //       )),
-          // ),
           Padding(
             padding: const EdgeInsets.only(top: 10.0),
             child: Row(
@@ -590,52 +508,10 @@ class _LoginPageState extends State<LoginPage>
                             hintText: 'Hash Name (optional)',
                             hintStyle: TextStyle(
                                 fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                            // suffixIcon: GestureDetector(
-                            //   onTap: _toggleSignup,
-                            //   child: Icon(
-                            //     FontAwesomeIcons.eye,
-                            //     size: 15.0,
-                            //     color: Colors.black,
-                            //   ),
-                            // ),
                           ),
                         ),
                       ),
-                      // Container(
-                      //   width: 250.0,
-                      //   height: 1.0,
-                      //   color: Colors.grey[400],
-                      // ),
-                      // Padding(
-                      //   padding: const EdgeInsets.only(
-                      //       top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
-                      //   child: TextField(
-                      //     controller: signupConfirmPasswordController,
-                      //     obscureText: _obscureTextSignupConfirm,
-                      //     style: TextStyle(
-                      //         fontFamily: 'WorkSansSemiBold',
-                      //         fontSize: 16.0,
-                      //         color: Colors.black),
-                      //     decoration: InputDecoration(
-                      //       border: InputBorder.none,
-                      //       icon: Icon(
-                      //         FontAwesomeIcons.lock,
-                      //         color: Colors.black,
-                      //       ),
-                      //       hintText: 'Confirmation',
-                      //       hintStyle: TextStyle(
-                      //           fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                      //       suffixIcon: GestureDetector(
-                      //         onTap: _toggleSignupConfirm,
-                      //         child: Icon(
-                      //           FontAwesomeIcons.eye,
-                      //           size: 15.0,
-                      //           color: Colors.black,
-                      //         ),
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
+
                     ],
                   ),
                 ),
@@ -669,7 +545,6 @@ class _LoginPageState extends State<LoginPage>
                 child: MaterialButton(
                     highlightColor: Colors.transparent,
                     splashColor: LoginColors.loginGradientEnd,
-                    //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
                     child: const Padding(
                       padding: EdgeInsets.symmetric(
                           vertical: 10.0, horizontal: 42.0),
@@ -831,8 +706,7 @@ class _LoginPageState extends State<LoginPage>
             StringPrefsEnum.qrSecretCode, user.qrSecretCode);
         Preferences.setStringPref(StringPrefsEnum.facebookId, user.facebookId);
 
-        Navigator.pushReplacementNamed(
-            context, RouteNames.MAIN_NAVIGATION.toString());
+        Navigator.of(context).pushReplacementNamed(RouteNames.CHOOSE_AVATAR.toString());
       });
     }
   }
@@ -906,16 +780,3 @@ class TabIndicationPainter extends CustomPainter {
   bool shouldRepaint(TabIndicationPainter oldDelegate) => true;
 }
 
-class LoginColors {
-  const LoginColors();
-
-  static Color loginGradientStart = Colors.grey[400];
-  static Color loginGradientEnd = Colors.blueGrey[900];
-
-  static final LinearGradient primaryGradient = LinearGradient(
-    colors: <Color>[loginGradientStart, loginGradientEnd],
-    stops: const <double>[0.0, 1.0],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-  );
-}
