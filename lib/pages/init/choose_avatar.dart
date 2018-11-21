@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
@@ -8,12 +7,7 @@ import 'package:flutter/services.dart';
 
 import 'package:harrier_central/main.dart';
 
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
-import 'package:harrier_central/remote_api_data/add_user_service.dart';
-import 'package:harrier_central/data_models/add_user_model.dart';
-import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/routes.dart';
+import 'package:harrier_central/pages/init/avatar_icons_page.dart';
 
 //import 'package:the_gorgeous_login/style/theme.dart' as Theme;
 
@@ -27,11 +21,11 @@ class ChooseAvatarPage extends StatefulWidget {
 class _ChooseAvatarState extends State<ChooseAvatarPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  int selectedValue = 0;
-  num thumbnailSize = 85.0;
-  num previewAvatarSize = 120.0;
+  int _selectedValue = 0;
+  num _thumbnailSize = 85.0;
+  num _previewAvatarSize = 120.0;
 
-  String avatarIconName = 'Avatar-1.png';
+  int _selectedAvatarIcon = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -88,13 +82,13 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
                                   value: 0,
                                   materialTapTargetSize:
                                       MaterialTapTargetSize.padded,
-                                  groupValue: selectedValue,
+                                  groupValue: _selectedValue,
                                   onChanged: _handleRadioValueChange1,
                                 ),
                                 Image.asset(
                                   'images/icons/avatar_icon.png',
-                                  width: thumbnailSize,
-                                  height: thumbnailSize,
+                                  width: _thumbnailSize,
+                                  height: _thumbnailSize,
                                 ),
                               ],
                             ),
@@ -104,13 +98,13 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
                                   value: 1,
                                   materialTapTargetSize:
                                       MaterialTapTargetSize.padded,
-                                  groupValue: selectedValue,
+                                  groupValue: _selectedValue,
                                   onChanged: _handleRadioValueChange1,
                                 ),
                                 Image.asset(
                                   'images/icons/avatar_ios_camera.png',
-                                  width: thumbnailSize,
-                                  height: thumbnailSize,
+                                  width: _thumbnailSize,
+                                  height: _thumbnailSize,
                                 ),
                               ],
                             ),
@@ -120,13 +114,13 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
                                   value: 2,
                                   materialTapTargetSize:
                                       MaterialTapTargetSize.padded,
-                                  groupValue: selectedValue,
+                                  groupValue: _selectedValue,
                                   onChanged: _handleRadioValueChange1,
                                 ),
                                 Image.asset(
                                   'images/icons/avatar_ios_camera_roll.png',
-                                  width: thumbnailSize,
-                                  height: thumbnailSize,
+                                  width: _thumbnailSize,
+                                  height: _thumbnailSize,
                                 ),
                               ],
                             ),
@@ -136,13 +130,13 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
                                   value: 3,
                                   materialTapTargetSize:
                                       MaterialTapTargetSize.padded,
-                                  groupValue: selectedValue,
+                                  groupValue: _selectedValue,
                                   onChanged: _handleRadioValueChange1,
                                 ),
                                 Image.asset(
                                   'images/icons/avatar_facebook_profile_pic.png',
-                                  width: thumbnailSize,
-                                  height: thumbnailSize,
+                                  width: _thumbnailSize,
+                                  height: _thumbnailSize,
                                 ),
                               ],
                             ),
@@ -150,12 +144,46 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
                         ),
                         Expanded(
                           child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[_getPreviewAvatar()]),
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Text(
+                                'Selected\r\nAvatar',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20.0,
+                                    fontFamily: 'WorkSansSemiBold'),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.only(top: 10.0),
+                              ),
+                              Container(
+                                child: _getPreviewAvatar(),
+                                color: Colors.white,
+                                height: _previewAvatarSize + 6,
+                                width: _previewAvatarSize + 6,
+                                padding: EdgeInsets.all(6.0),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.only(top: 60.0),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(bottom:20.0),
+                    child: RaisedButton(
+                        child: const Text(
+                          'Next',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {
+                          int i = 0;
+                        }),
                   ),
                 ],
               ),
@@ -169,27 +197,41 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
   Widget _getPreviewAvatar() {
     Widget returnWidget;
 
-    switch (selectedValue) {
+    switch (_selectedValue) {
       case 0:
         returnWidget = Image.asset(
-                                  'images/avatars/$avatarIconName',width: previewAvatarSize, height: previewAvatarSize,);
+          'images/avatars/avatar-$_selectedAvatarIcon.png',
+          width: _previewAvatarSize,
+          height: _previewAvatarSize,
+        );
         break;
       default:
-        returnWidget =
-            Container(color: Colors.green, height: previewAvatarSize, width: previewAvatarSize);
+        returnWidget = Container(
+            color: Colors.green,
+            height: _previewAvatarSize,
+            width: _previewAvatarSize);
     }
     return returnWidget;
   }
 
   void _handleRadioValueChange1(int value) {
     setState(() {
-      selectedValue = value;
-      switch (selectedValue) {
+      _selectedValue = value;
+      switch (_selectedValue) {
         case 0:
-          Navigator.of(context)
-              .pushNamed<dynamic>(RouteNames.AVATAR_ICON_PAGE.toString())
-              .then((dynamic onValue) {
-            avatarIconName = 'avatar-$onValue.png';
+          // Navigator.of(context)
+          //     .pushNamed<dynamic>(RouteNames.AVATAR_ICON_PAGE.toString())
+          //     .then((dynamic onValue) {
+          //   avatarIconName = 'avatar-$onValue.png';
+          // });
+          Navigator.push<dynamic>(
+            context,
+            MaterialPageRoute<dynamic>(
+              builder: (context) =>
+                  AvatarIconsPage(selectedAvatarIcon: _selectedAvatarIcon),
+            ),
+          ).then((dynamic onValue) {
+            _selectedAvatarIcon = onValue;
           });
           break;
         case 1:
@@ -211,6 +253,8 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
 
     SystemChrome.setPreferredOrientations(<DeviceOrientation>[
       DeviceOrientation.portraitUp,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
       DeviceOrientation.portraitDown,
     ]);
   }
