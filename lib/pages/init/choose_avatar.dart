@@ -1,4 +1,8 @@
 import 'dart:ui';
+import 'dart:async';
+import 'dart:io';
+
+import 'package:image_picker/image_picker.dart';
 
 import 'package:flutter/cupertino.dart';
 
@@ -8,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:harrier_central/main.dart';
 
 import 'package:harrier_central/pages/init/avatar_icons_page.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 //import 'package:the_gorgeous_login/style/theme.dart' as Theme;
 
@@ -26,6 +31,8 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
   num _previewAvatarSize = 120.0;
 
   int _selectedAvatarIcon = 1;
+
+  Future<File> _imageFile;
 
   @override
   Widget build(BuildContext context) {
@@ -175,7 +182,7 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(bottom:20.0),
+                    padding: EdgeInsets.only(bottom: 20.0),
                     child: RaisedButton(
                         child: const Text(
                           'Next',
@@ -204,6 +211,12 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
           width: _previewAvatarSize,
           height: _previewAvatarSize,
         );
+        break;
+      case 1:
+        returnWidget = _previewImage();
+        break;     
+      case 2:
+        returnWidget = _previewImage();
         break;
       default:
         returnWidget = Container(
@@ -235,11 +248,58 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
           });
           break;
         case 1:
+          _onImageButtonPressed(ImageSource.camera);
           break;
         case 2:
+          //                 Navigator.push<dynamic>(
+          //   context,
+          //   MaterialPageRoute<dynamic>(
+          //     builder: (context) =>
+          //         ImageFromGallery(),
+          //   ),
+          // ).then((dynamic onValue) {
+          //   _selectedAvatarIcon = onValue;
+          // });
+          _onImageButtonPressed(ImageSource.gallery);
           break;
       }
     });
+  }
+
+  void _onImageButtonPressed(ImageSource source) {
+    setState(() {
+      ImagePicker.pickImage(source: source).then((File image) {
+       setState(() {
+        _imageFile = ImageCropper.cropImage(
+          sourcePath: image.path,
+          ratioX: 1.0,
+          ratioY: 1.0,
+          maxWidth: 512,
+          maxHeight: 512,
+        );});
+      });
+    });
+  }
+
+  Widget _previewImage() {
+    return FutureBuilder<File>(
+        future: _imageFile,
+        builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
+          if (snapshot.connectionState == ConnectionState.done &&
+              snapshot.data != null) {
+            return Image.file(snapshot.data);
+          } else if (snapshot.error != null) {
+            return const Text(
+              'Error picking image.',
+              textAlign: TextAlign.center,
+            );
+          } else {
+            return const Text(
+              'You have not yet picked an image.',
+              textAlign: TextAlign.center,
+            );
+          }
+        });
   }
 
   @override

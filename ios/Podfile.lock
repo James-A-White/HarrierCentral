@@ -20,6 +20,11 @@ PODS:
     - Flutter
   - google_api_availability (1.0.3):
     - Flutter
+  - image_cropper (0.0.1):
+    - Flutter
+    - TOCropViewController (~> 2.3.8)
+  - image_picker (0.0.1):
+    - Flutter
   - MTBBarcodeScanner (5.0.6)
   - path_provider (0.0.1):
     - Flutter
@@ -27,6 +32,7 @@ PODS:
     - Flutter
   - shared_preferences (0.0.1):
     - Flutter
+  - TOCropViewController (2.3.8)
   - url_launcher (0.0.1):
     - Flutter
 
@@ -36,6 +42,8 @@ DEPENDENCIES:
   - flutter_facebook_login (from `.symlinks/plugins/flutter_facebook_login/ios`)
   - geolocator (from `.symlinks/plugins/geolocator/ios`)
   - google_api_availability (from `.symlinks/plugins/google_api_availability/ios`)
+  - image_cropper (from `.symlinks/plugins/image_cropper/ios`)
+  - image_picker (from `.symlinks/plugins/image_picker/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
@@ -47,6 +55,7 @@ SPEC REPOS:
     - FBSDKCoreKit
     - FBSDKLoginKit
     - MTBBarcodeScanner
+    - TOCropViewController
 
 EXTERNAL SOURCES:
   barcode_scan:
@@ -59,6 +68,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/geolocator/ios"
   google_api_availability:
     :path: ".symlinks/plugins/google_api_availability/ios"
+  image_cropper:
+    :path: ".symlinks/plugins/image_cropper/ios"
+  image_picker:
+    :path: ".symlinks/plugins/image_picker/ios"
   path_provider:
     :path: ".symlinks/plugins/path_provider/ios"
   permission_handler:
@@ -77,10 +90,13 @@ SPEC CHECKSUMS:
   flutter_facebook_login: e3d2f0a348889fe0f49c302bc044b8cc66c691be
   geolocator: 11c9ccc9524fe2882c1fd28d38afcb9a1d47ecdb
   google_api_availability: c978d282fd8e0b99a6f112a503521cdb267ff6a6
+  image_cropper: 046482c5501fc775e17f792d5af4b46c19bb774e
+  image_picker: ee00aab0487cedc80a304085219503cc6d0f2e22
   MTBBarcodeScanner: bb0bb62e18b57f8a571a482248adc20722b70a91
   path_provider: 09407919825bfe3c2deae39453b7a5b44f467873
   permission_handler: d18559f3fbbc767b9c3af4849bf7b95c92467b22
   shared_preferences: 5a1d487c427ee18fcd3ea1f2a131569481834b53
+  TOCropViewController: 0a075f02c253e88095143bbac7b013fc6fba5090
   url_launcher: 92b89c1029a0373879933c21642958c874539095
 
 PODFILE CHECKSUM: 7765ea4305eaab0b3dfd384c7de11902aa3195fd
