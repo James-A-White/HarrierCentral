@@ -1,20 +1,19 @@
-import 'dart:ui';
+
 import 'dart:async';
 import 'dart:io';
-
-import 'package:image_picker/image_picker.dart';
+import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:harrier_central/main.dart';
-
 import 'package:harrier_central/pages/init/avatar_icons_page.dart';
-import 'package:image_cropper/image_cropper.dart';
+import 'package:harrier_central/util/preferences.dart';
 
-//import 'package:the_gorgeous_login/style/theme.dart' as Theme;
+import 'package:http/http.dart' as http;
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ChooseAvatarPage extends StatefulWidget {
   const ChooseAvatarPage({Key key}) : super(key: key);
@@ -188,8 +187,14 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
                           'Next',
                           style: TextStyle(color: Colors.white),
                         ),
-                        onPressed: () {
-                          int i = 0;
+                        onPressed: () async {
+                          _imageFile.then((File file) {
+                            String fileName = Preferences.getStringPref(
+                                        StringPrefsEnum.qrCode)
+                                    .replaceAll('UQR:', '') +
+                                '_thumb.jpg';
+                            _upload(file, fileName);
+                          });
                         }),
                   ),
                 ],
@@ -199,6 +204,25 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
         ),
       ),
     );
+  }
+
+  void _upload(File imageFile, String fileName) async {
+    final uri = Uri.parse(
+        'http://harriercentral.blob.core.windows.net/profile-photos/$fileName?st=2018-11-22T07%3A36%3A49Z&se=2028-11-23T07%3A36%3A00Z&sp=rwl&sv=2018-03-28&sr=c&sig=GdHEgSU7Qbp6nEMbOeuxnTjKVVIXw1AImXUff8GPq2U%3D');
+
+    var request = http.Request('PUT', uri);
+
+    Map<String, String> headers = {
+      'content-type': 'image/jpeg',
+      'x-ms-blob-type': 'BlockBlob'
+    };
+
+    request.headers.addAll(headers);
+
+    request.bodyBytes = imageFile.readAsBytesSync();
+    request.send().then((http.StreamedResponse response) {
+      print('Avatar thumbnail upload response = ${response.statusCode}');
+    });
   }
 
   Widget _getPreviewAvatar() {
@@ -214,7 +238,7 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
         break;
       case 1:
         returnWidget = _previewImage();
-        break;     
+        break;
       case 2:
         returnWidget = _previewImage();
         break;
@@ -238,7 +262,7 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
           //   avatarIconName = 'avatar-$onValue.png';
           // });
           Navigator.push<dynamic>(
-            context,
+            this.context,
             MaterialPageRoute<dynamic>(
               builder: (context) =>
                   AvatarIconsPage(selectedAvatarIcon: _selectedAvatarIcon),
@@ -269,14 +293,15 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
   void _onImageButtonPressed(ImageSource source) {
     setState(() {
       ImagePicker.pickImage(source: source).then((File image) {
-       setState(() {
-        _imageFile = ImageCropper.cropImage(
-          sourcePath: image.path,
-          ratioX: 1.0,
-          ratioY: 1.0,
-          maxWidth: 512,
-          maxHeight: 512,
-        );});
+        setState(() {
+          _imageFile = ImageCropper.cropImage(
+            sourcePath: image.path,
+            ratioX: 1.0,
+            ratioY: 1.0,
+            maxWidth: 512,
+            maxHeight: 512,
+          );
+        });
       });
     });
   }
@@ -319,3 +344,45 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
     ]);
   }
 }
+
+// print(file.path);
+// http.MultipartFile.fromPath('image', file.path,
+//         contentType: MediaType('image', 'jpeg'))
+//     .then((http.MultipartFile mpFile) {
+//   var request = http.MultipartRequest(
+//       'PUT',
+//       Uri.parse(
+//           'http://harriercentral.blob.core.windows.net/profile-photos/test5.jpg?st=2018-11-22T07%3A36%3A49Z&se=2028-11-23T07%3A36%3A00Z&sp=rwl&sv=2018-03-28&sr=c&sig=GdHEgSU7Qbp6nEMbOeuxnTjKVVIXw1AImXUff8GPq2U%3D'));
+
+//   try {
+//     //request.contentLength = mpFile.length;
+//     request.files.add(mpFile);
+
+//     // Map<String, String> headers = {
+//     //   'Content-Length':
+//     //       request.contentLength.toString(),
+//     //   'Content-Type': 'image/jpeg',
+//     //   'x-ms-blob-type': 'BlockBlob'
+//     // };
+
+//     request.fields.addAll({
+//       'Content-Length':
+//           request.contentLength.toString()
+//     });
+
+//     request.headers
+//         .addAll({'x-ms-blob-type': 'BlockBlob'});
+//     request.headers
+//         .addAll({'Content-Type': 'image/jpeg'});
+//     request.headers.addAll({
+//       'Content-Length':
+//           request.contentLength.toString()
+//     });
+
+//     request.send().then((response) {
+//       print(response.statusCode);
+//     });
+//   } catch (Exception) {
+//     print(Exception);
+//   }
+// });
