@@ -27,6 +27,7 @@ class Kennel {
   final double longitude;
   final int activeHaberdasheryItems;
   final int archiveHaberdasheryItems;
+  final DateTime dateNextRun;
   String locationName;
   int isMember;
   final int mismanagementRoleFlags;
@@ -71,6 +72,7 @@ class Kennel {
       this.longitude,
       this.activeHaberdasheryItems,
       this.archiveHaberdasheryItems,
+      this.dateNextRun,
       this.locationName,
       this.isMember,
       this.mismanagementRoleFlags,

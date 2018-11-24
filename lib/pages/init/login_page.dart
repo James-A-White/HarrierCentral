@@ -705,6 +705,7 @@ class _LoginPageState extends State<LoginPage>
         Preferences.setStringPref(
             StringPrefsEnum.qrSecretCode, user.qrSecretCode);
         Preferences.setStringPref(StringPrefsEnum.facebookId, user.facebookId);
+        Preferences.setStringPref(StringPrefsEnum.avatarUrl, 'bundle://Avatar-1');
 
         Navigator.of(context).pushReplacementNamed(RouteNames.CHOOSE_AVATAR.toString());
       });

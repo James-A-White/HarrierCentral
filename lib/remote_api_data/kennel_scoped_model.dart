@@ -175,6 +175,7 @@ class KennelScopedModel extends Model {
           longitude: (newKennel['longitude'] ?? -1).toDouble(),
           activeHaberdasheryItems: newKennel['activeHaberdasheryItems'] ?? 0,
           archiveHaberdasheryItems: newKennel['archiveHaberdasheryItems'] ?? 0,
+          dateNextRun: DateTime.parse(newKennel['dateNextRun']),
           locationName: newKennel['locationName'],
           isMember: newKennel['isMember'] ?? 0,
           // mismanagementRoleFlags: newKennel['mismanagementRoleFlags'],

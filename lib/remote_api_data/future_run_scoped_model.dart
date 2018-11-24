@@ -7,8 +7,8 @@ import 'package:harrier_central/data_models/future_run_model.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/remote_api_data/join_event_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/data_models/join_event_model.dart';
@@ -34,8 +34,7 @@ class FutureRunScopedModel extends Model {
     run.requestedRsvpState = rsvpState;
     run.rsvpState = 0;
     int isHare = 0;
-    if (rsvpState == rsvpHare.value)
-    {
+    if (rsvpState == rsvpHare.value) {
       //rsvpState = rsvpYes.value;
       isHare = 1;
     }
@@ -51,7 +50,7 @@ class FutureRunScopedModel extends Model {
       run.notAttendingEvent = result.notAttendingEvent;
       run.maybeAttendingEvent = result.maybeAttendingEvent;
       run.haresCount = result.haresCount;
-      
+
       notifyListeners();
     });
   }
@@ -63,11 +62,21 @@ class FutureRunScopedModel extends Model {
           orElse: () => null);
 
       if (run != null) {
-        if (run.hareList != futureRun.hareList) {run.hareList = futureRun.hareList;}
-        if (run.eventStartDatetime != futureRun.eventStartDatetime) {run.eventStartDatetime = futureRun.eventStartDatetime;}
-        if (run.eventNumber != futureRun.eventNumber) {run.eventNumber = futureRun.eventNumber;}
-        if (run.daysUntilNextRun != futureRun.daysUntilNextRun) {run.daysUntilNextRun = futureRun.daysUntilNextRun;}
-        if (run.distanceToEvent != futureRun.distanceToEvent) {run.distanceToEvent = futureRun.distanceToEvent;}
+        if (run.hareList != futureRun.hareList) {
+          run.hareList = futureRun.hareList;
+        }
+        if (run.eventStartDatetime != futureRun.eventStartDatetime) {
+          run.eventStartDatetime = futureRun.eventStartDatetime;
+        }
+        if (run.eventNumber != futureRun.eventNumber) {
+          run.eventNumber = futureRun.eventNumber;
+        }
+        if (run.daysUntilNextRun != futureRun.daysUntilNextRun) {
+          run.daysUntilNextRun = futureRun.daysUntilNextRun;
+        }
+        if (run.distanceToEvent != futureRun.distanceToEvent) {
+          run.distanceToEvent = futureRun.distanceToEvent;
+        }
         // // add fields here that might have been updated
         // if (ken.followingBool != kennel.followingBool) {ken.followingBool = kennel.followingBool;}
         // //if (ken.kennelName != kennel.kennelName) {ken.kennelName = kennel.kennelName;}
@@ -84,10 +93,18 @@ class FutureRunScopedModel extends Model {
   }
 
   Future<dynamic> _getFutureRunsByDistance(int distance) async {
-    //TODO: Check to see if the app has permission to access location before trying to read it.
+    Position position;
 
-    final Position position = await Geolocator()
-        .getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
+    PermissionStatus permission = await PermissionHandler()
+        .checkPermissionStatus(PermissionGroup.location);
+    if (permission == PermissionStatus.granted) {
+      position = await Geolocator()
+          .getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
+    } else {
+      Map<PermissionGroup, PermissionStatus> permissions =
+          await PermissionHandler()
+              .requestPermissions([PermissionGroup.location]);
+    }
 
     double latitude = DEFAULT_LATITUDE;
     double longitude = DEFAULT_LONGITUDE;
@@ -154,14 +171,11 @@ class FutureRunScopedModel extends Model {
           locationCity: run['locationCity'],
           locationStreet: run['locationStreet'],
           locationPostCode: run['locationPostCode'],
-
           attendingEvent: run['attendingEvent'],
           notAttendingEvent: run['notAttendingEvent'],
           maybeAttendingEvent: run['maybeAttendingEvent'],
           haresCount: run['haresCount'],
-
           hareList: run['hareList'],
-
           latitude: run['latitude'],
           longitude: run['longitude'],
           kennelLogo: run['kennelLogo'],

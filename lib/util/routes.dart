@@ -10,7 +10,7 @@ import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 
 enum RouteNames {
   FACEBOOK_LOGIN,
-  MAIN_NAVIGATION,
+  MAIN_LANDING_PAGE,
   CHOOSE_AVATAR,
   AVATAR_ICON_PAGE,
   NEW_ACCOUNT,
@@ -20,7 +20,7 @@ enum RouteNames {
 class Routes {
   static final Map<String, WidgetBuilder>routes = <String, WidgetBuilder>{
     RouteNames.FACEBOOK_LOGIN.toString(): (BuildContext context) => FbLoginPage(),
-    RouteNames.MAIN_NAVIGATION.toString(): (BuildContext context) => MainNavigationPage(),
+    RouteNames.MAIN_LANDING_PAGE.toString(): (BuildContext context) => MainNavigationPage(),
     RouteNames.NEW_ACCOUNT.toString(): (BuildContext context) => const LoginPage(),
     RouteNames.CHOOSE_AVATAR.toString(): (BuildContext context) => const ChooseAvatarPage(),
     RouteNames.USER_QR_CODE.toString(): (BuildContext context) => UserQrCodePage(),

@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
@@ -10,6 +9,10 @@ import 'package:flutter/services.dart';
 import 'package:harrier_central/main.dart';
 import 'package:harrier_central/pages/init/avatar_icons_page.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/remote_api_data/update_avatar_service.dart';
+import 'package:harrier_central/data_models/single_result_model.dart';
+import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/routes.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
@@ -22,10 +25,17 @@ class ChooseAvatarPage extends StatefulWidget {
   _ChooseAvatarState createState() => _ChooseAvatarState();
 }
 
+enum _SelectedAvatarTypeEnum {
+  avatar,
+  fromCamera,
+  fromGallery,
+  facebookProfilePic
+}
+
 class _ChooseAvatarState extends State<ChooseAvatarPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  int _selectedValue = 0;
+  _SelectedAvatarTypeEnum _selectedAvatarType = _SelectedAvatarTypeEnum.avatar;
   num _thumbnailSize = 85.0;
   num _previewAvatarSize = 120.0;
 
@@ -84,12 +94,12 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
                           children: <Widget>[
                             Row(
                               children: <Widget>[
-                                Radio<int>(
-                                  value: 0,
+                                Radio<_SelectedAvatarTypeEnum>(
+                                  value: _SelectedAvatarTypeEnum.avatar,
                                   materialTapTargetSize:
                                       MaterialTapTargetSize.padded,
-                                  groupValue: _selectedValue,
-                                  onChanged: _handleRadioValueChange1,
+                                  groupValue: _selectedAvatarType,
+                                  onChanged: _handleRadioValueChange,
                                 ),
                                 Image.asset(
                                   'images/icons/avatar_icon.png',
@@ -100,12 +110,12 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
                             ),
                             Row(
                               children: <Widget>[
-                                Radio<int>(
-                                  value: 1,
+                                Radio<_SelectedAvatarTypeEnum>(
+                                  value: _SelectedAvatarTypeEnum.fromCamera,
                                   materialTapTargetSize:
                                       MaterialTapTargetSize.padded,
-                                  groupValue: _selectedValue,
-                                  onChanged: _handleRadioValueChange1,
+                                  groupValue: _selectedAvatarType,
+                                  onChanged: _handleRadioValueChange,
                                 ),
                                 Image.asset(
                                   'images/icons/avatar_ios_camera.png',
@@ -116,12 +126,12 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
                             ),
                             Row(
                               children: <Widget>[
-                                Radio<int>(
-                                  value: 2,
+                                Radio<_SelectedAvatarTypeEnum>(
+                                  value: _SelectedAvatarTypeEnum.fromGallery,
                                   materialTapTargetSize:
                                       MaterialTapTargetSize.padded,
-                                  groupValue: _selectedValue,
-                                  onChanged: _handleRadioValueChange1,
+                                  groupValue: _selectedAvatarType,
+                                  onChanged: _handleRadioValueChange,
                                 ),
                                 Image.asset(
                                   'images/icons/avatar_ios_camera_roll.png',
@@ -130,22 +140,23 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
                                 ),
                               ],
                             ),
-                            Row(
-                              children: <Widget>[
-                                Radio<int>(
-                                  value: 3,
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.padded,
-                                  groupValue: _selectedValue,
-                                  onChanged: _handleRadioValueChange1,
-                                ),
-                                Image.asset(
-                                  'images/icons/avatar_facebook_profile_pic.png',
-                                  width: _thumbnailSize,
-                                  height: _thumbnailSize,
-                                ),
-                              ],
-                            ),
+                            // Row(
+                            //   children: <Widget>[
+                            //     Radio<_SelectedAvatarTypeEnum>(
+                            //       value: _SelectedAvatarTypeEnum
+                            //           .facebookProfilePic,
+                            //       materialTapTargetSize:
+                            //           MaterialTapTargetSize.padded,
+                            //       groupValue: _selectedAvatarType,
+                            //       onChanged: _handleRadioValueChange,
+                            //     ),
+                            //     Image.asset(
+                            //       'images/icons/avatar_facebook_profile_pic.png',
+                            //       width: _thumbnailSize,
+                            //       height: _thumbnailSize,
+                            //     ),
+                            //   ],
+                            // ),
                           ],
                         ),
                         Expanded(
@@ -188,13 +199,7 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
                           style: TextStyle(color: Colors.white),
                         ),
                         onPressed: () async {
-                          _imageFile.then((File file) {
-                            String fileName = Preferences.getStringPref(
-                                        StringPrefsEnum.qrCode)
-                                    .replaceAll('UQR:', '') +
-                                '_thumb.jpg';
-                            _upload(file, fileName);
-                          });
+                          _updateAvatar();
                         }),
                   ),
                 ],
@@ -204,6 +209,40 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
         ),
       ),
     );
+  }
+
+  void _updateAvatar() {
+    String avatarUrl = '';
+
+    String fileName = Preferences.getStringPref(StringPrefsEnum.qrCode)
+            .replaceAll('UQR:', '') +
+        '_thumb.jpg';
+
+    switch (_selectedAvatarType) {
+      case _SelectedAvatarTypeEnum.avatar:
+        avatarUrl = 'bundle://Avatar-$_selectedAvatarIcon';
+        break;
+      case _SelectedAvatarTypeEnum.fromCamera:
+      case _SelectedAvatarTypeEnum.fromGallery:
+        avatarUrl = BASE_PROFILE_PHOTOS_URL + fileName;
+        break;
+      case _SelectedAvatarTypeEnum.facebookProfilePic:
+        break;
+    }
+
+    Preferences.setStringPref(StringPrefsEnum.avatarUrl, avatarUrl);
+
+    String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    UpdateAvatarService svc = UpdateAvatarService();
+    svc.updateAvatar(avatarUrl, userId).then((SingleResultModel result) {
+      if ((_selectedAvatarType == _SelectedAvatarTypeEnum.fromCamera) ||
+          (_selectedAvatarType == _SelectedAvatarTypeEnum.fromGallery)) {
+        _imageFile.then((File file) {
+          _upload(file, fileName);
+        });
+      }
+      Navigator.of(context).pushReplacementNamed(RouteNames.MAIN_LANDING_PAGE.toString());
+    });
   }
 
   void _upload(File imageFile, String fileName) async {
@@ -228,20 +267,21 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
   Widget _getPreviewAvatar() {
     Widget returnWidget;
 
-    switch (_selectedValue) {
-      case 0:
+    switch (_selectedAvatarType) {
+      case _SelectedAvatarTypeEnum.avatar:
         returnWidget = Image.asset(
           'images/avatars/avatar-$_selectedAvatarIcon.png',
           width: _previewAvatarSize,
           height: _previewAvatarSize,
         );
         break;
-      case 1:
+      case _SelectedAvatarTypeEnum.fromCamera:
         returnWidget = _previewImage();
         break;
-      case 2:
+      case _SelectedAvatarTypeEnum.fromGallery:
         returnWidget = _previewImage();
         break;
+      case _SelectedAvatarTypeEnum.facebookProfilePic:
       default:
         returnWidget = Container(
             color: Colors.green,
@@ -251,16 +291,11 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
     return returnWidget;
   }
 
-  void _handleRadioValueChange1(int value) {
+  void _handleRadioValueChange(_SelectedAvatarTypeEnum value) {
     setState(() {
-      _selectedValue = value;
-      switch (_selectedValue) {
-        case 0:
-          // Navigator.of(context)
-          //     .pushNamed<dynamic>(RouteNames.AVATAR_ICON_PAGE.toString())
-          //     .then((dynamic onValue) {
-          //   avatarIconName = 'avatar-$onValue.png';
-          // });
+      _selectedAvatarType = value;
+      switch (_selectedAvatarType) {
+        case _SelectedAvatarTypeEnum.avatar:
           Navigator.push<dynamic>(
             this.context,
             MaterialPageRoute<dynamic>(
@@ -271,19 +306,14 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
             _selectedAvatarIcon = onValue;
           });
           break;
-        case 1:
+        case _SelectedAvatarTypeEnum.fromCamera:
           _onImageButtonPressed(ImageSource.camera);
           break;
-        case 2:
-          //                 Navigator.push<dynamic>(
-          //   context,
-          //   MaterialPageRoute<dynamic>(
-          //     builder: (context) =>
-          //         ImageFromGallery(),
-          //   ),
-          // ).then((dynamic onValue) {
-          //   _selectedAvatarIcon = onValue;
-          // });
+        case _SelectedAvatarTypeEnum.fromGallery:
+          _onImageButtonPressed(ImageSource.gallery);
+          break;
+        case _SelectedAvatarTypeEnum.facebookProfilePic:
+        default:
           _onImageButtonPressed(ImageSource.gallery);
           break;
       }

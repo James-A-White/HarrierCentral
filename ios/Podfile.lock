@@ -28,7 +28,7 @@ PODS:
   - MTBBarcodeScanner (5.0.6)
   - path_provider (0.0.1):
     - Flutter
-  - permission_handler (2.0.0):
+  - permission_handler (2.1.1):
     - Flutter
   - shared_preferences (0.0.1):
     - Flutter
@@ -94,11 +94,11 @@ SPEC CHECKSUMS:
   image_picker: ee00aab0487cedc80a304085219503cc6d0f2e22
   MTBBarcodeScanner: bb0bb62e18b57f8a571a482248adc20722b70a91
   path_provider: 09407919825bfe3c2deae39453b7a5b44f467873
-  permission_handler: d18559f3fbbc767b9c3af4849bf7b95c92467b22
+  permission_handler: 53f3e6914afaa63e0d7b90a76f30cb733f962f3f
   shared_preferences: 5a1d487c427ee18fcd3ea1f2a131569481834b53
   TOCropViewController: 0a075f02c253e88095143bbac7b013fc6fba5090
   url_launcher: 92b89c1029a0373879933c21642958c874539095
 
-PODFILE CHECKSUM: 7765ea4305eaab0b3dfd384c7de11902aa3195fd
+PODFILE CHECKSUM: 6dc952f4e329e4efede07b370ff9d46e94f98f7c
 
 COCOAPODS: 1.5.3

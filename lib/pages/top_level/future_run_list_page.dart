@@ -18,6 +18,10 @@ class FutureRunsListPage extends StatelessWidget {
     return ScopedModelDescendant<MainNavigationScopedModel>(builder:
         (BuildContext context, Widget child, MainNavigationScopedModel model) {
       model.appBarTitle = 'Upcoming Runs';
+       if ((futureRunsModel?.futureRunsList?.length ?? 0) == 0)
+       {
+           futureRunsModel.getFutureRunsFromBackend(1, true);
+       }
       return ScopedModel<FutureRunScopedModel>(
           model: futureRunsModel, child: FutureRunListPageBody());
     });

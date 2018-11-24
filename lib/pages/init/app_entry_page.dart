@@ -20,8 +20,8 @@ class _AppEntryPageState extends State<AppEntryPage>
   void handleTimeout() {
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
-    //if (userId == null) {
-    if (true) {
+    if (userId == null) {
+    //if (true) {
       Navigator.of(context)
           .pushNamed(RouteNames.NEW_ACCOUNT.toString());
       //     .then<dynamic>((void test) {

@@ -75,7 +75,7 @@ class _LoginPageState extends State<FbLoginPage> {
         // print(profile.toString());
 
         // onLoginStatusChanged(true, profileData: profile, accessToken: facebookLoginResult.accessToken.token );
-        Navigator.pushReplacementNamed(context, RouteNames.MAIN_NAVIGATION.toString());
+        Navigator.pushReplacementNamed(context, RouteNames.MAIN_LANDING_PAGE.toString());
         break;
     }
   }

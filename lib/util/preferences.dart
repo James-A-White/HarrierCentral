@@ -10,6 +10,7 @@ enum StringPrefsEnum {
   lastName,
   hashName,
   email,
+  avatarUrl,
   facebookId
 }
 

@@ -17,6 +17,11 @@ class KennelsListPage extends StatelessWidget {
         (BuildContext context, Widget child, MainNavigationScopedModel model) {
       model.appBarTitle = 'My Kennels';
 
+      if ((kennelModel?.kennelsList?.length ?? 0) == 0)
+       {
+           kennelModel.getKennelsFromBackend(1, true);
+       }
+
       return ScopedModel<KennelScopedModel>(
           model: kennelModel, child: KennelsListPageBody());
     });
