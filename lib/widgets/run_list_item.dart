@@ -109,35 +109,6 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: <Widget>[
                           Stack(alignment: Alignment.center, children: <Widget>[
-                            // Padding(
-                            //   padding: widget.futureRun.daysUntilNextRun <= 9
-                            //       ? const EdgeInsets.only(left:5.0, top: 22.0)
-                            //       : const EdgeInsets.only(left:5.0, top: 14.0, right: 7.0),
-                            //   child: Text(
-                            //     widget.futureRun.daysUntilNextRun <= 9
-                            //         ? '${widget.futureRun.daysUntilNextRun.toString()}'
-                            //         : widget.futureRun.daysUntilNextRun <= 30
-                            //             ? (widget.futureRun.daysUntilNextRun ~/ 7.0)
-                            //                 .toString()
-                            //             : widget.futureRun.daysUntilNextRun <= 365
-                            //                 ? (widget.futureRun.daysUntilNextRun ~/
-                            //                         30.0)
-                            //                     .toString()
-                            //                 : (widget.futureRun.daysUntilNextRun ~/
-                            //                         365.0)
-                            //                     .toString(),
-                            //     style: TextStyle(
-                            //         fontSize: 38.0,
-                            //         fontWeight: FontWeight.w700,
-                            //         color: widget.futureRun.daysUntilNextRun <= 3
-                            //             ? Colors.red
-                            //             : widget.futureRun.daysUntilNextRun <= 5
-                            //                 ? Colors.blue
-                            //                 : (widget.futureRun.isExpanded ?? false)
-                            //                     ? Theme.of(context).accentColor
-                            //                     : Theme.of(context).primaryColor),
-                            //   ),
-                            // ),
 
                             KennelLogo(
                               kennelLogoUrl: widget.futureRun.kennelLogo,
@@ -145,33 +116,6 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                               logoHeight: 70.0,
                               leftPadding: 0.0,
                             ),
-
-                            // Padding(
-                            //   padding: EdgeInsets.only(left:10.0),
-                            //   child: widget.futureRun.daysUntilNextRun <= 9
-                            //     ? ImageIcon(
-                            //         const AssetImage(
-                            //             'images/icons/calendar_icon_days.png'),
-                            //         size: 45.0,
-                            //         color: widget.futureRun.daysUntilNextRun <= 3
-                            //             ? Colors.red
-                            //             : widget.futureRun.daysUntilNextRun <= 5
-                            //                 ? Colors.blue
-                            //                 : Theme.of(context).primaryColor)
-                            //     : widget.futureRun.daysUntilNextRun <= 30
-                            //         ? const ImageIcon(
-                            //             AssetImage(
-                            //                 'images/icons/calendar_icon_weeks.png'),
-                            //             size: 45.0)
-                            //         : widget.futureRun.daysUntilNextRun <= 365
-                            //             ? const ImageIcon(
-                            //                 AssetImage(
-                            //                     'images/icons/calendar_icon_months.png'),
-                            //                 size: 45.0)
-                            //             : const ImageIcon(
-                            //                 AssetImage(
-                            //                     'images/icons/calendar_icon_years.png'),
-                            //                 size: 45.0),),
                           ]),
                           Padding(
                             padding:
@@ -254,21 +198,16 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                 ),
                 children: <Widget>[
                   Container(
-                    //padding: EdgeInsets.only(top: 15.0, bottom: 10.0),
                     margin: EdgeInsets.only(top: 0.0, bottom: 0.0),
                     height: 1.0,
                     color: Colors.grey[300],
                   ),
-                  Container(
-                    height: 350.0,
-                    child: RunTabs(
-                      futureRun: widget.futureRun,
-                    ),
-                  ),
-                  //  Container(
-                  //    color:Colors.lightGreen[300],
-                  //     height: 250.0,
-                  //    )
+                  // Container(
+                  //   height: 350.0,
+                  //   child: RunTabs(
+                  //     futureRun: widget.futureRun,
+                  //   ),
+                  // ),
                 ],
               ),
             ]));
@@ -291,13 +230,6 @@ const double detailLineSpace = 1.0;
 const double detailLineSpaceForBold = 0.892;
 
 class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
-  // final List<Tab> tabs = <Tab>[
-  //   Tab(text: 'Photo'),
-  //   Tab(text: 'Detail'),
-  //   Tab(text: 'RSVP'),
-  //   Tab(text: 'Desc'),
-  //   Tab(text: 'Map'),
-  // ];
 
   final List<Tab> tabs = <Tab>[];
 
