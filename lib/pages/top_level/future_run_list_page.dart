@@ -4,24 +4,23 @@ import 'package:harrier_central/remote_api_data/future_run_scoped_model.dart';
 import 'package:harrier_central/widgets/run_list_item.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:harrier_central/remote_api_data/main_navigation_scoped_model.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 //
 
 class FutureRunsListPage extends StatelessWidget {
-
   final FutureRunScopedModel futureRunsModel;
 
-  const FutureRunsListPage({Key key, @required this.futureRunsModel}) : super(key: key);
+  const FutureRunsListPage({Key key, @required this.futureRunsModel})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    
     return ScopedModelDescendant<MainNavigationScopedModel>(builder:
         (BuildContext context, Widget child, MainNavigationScopedModel model) {
       model.appBarTitle = 'Upcoming Runs';
-       if ((futureRunsModel?.futureRunsList?.length ?? 0) == 0)
-       {
-           futureRunsModel.getFutureRunsFromBackend(1, true);
-       }
+      if ((futureRunsModel?.futureRunsList?.length ?? 0) == 0) {
+        futureRunsModel.getFutureRunsFromBackend(1, true);
+      }
       return ScopedModel<FutureRunScopedModel>(
           model: futureRunsModel, child: FutureRunListPageBody());
     });
@@ -50,8 +49,16 @@ class FutureRunListPageBody extends StatelessWidget {
   }
 
   Widget _buildCircularProgressIndicator() {
-    return const Center(
-      child: CircularProgressIndicator(),
+    return Center(
+      child: SpinKitFadingCircle(
+        itemBuilder: (_, int index) {
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              color: index.isEven ? Colors.red : Colors.green,
+            ),
+          );
+        },
+      ),
     );
   }
 

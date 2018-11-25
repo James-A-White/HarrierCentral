@@ -14,18 +14,20 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/main.dart';
 
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+
 //import 'package:the_gorgeous_login/style/theme.dart' as Theme;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key key}) : super(key: key);
 
   @override
-  _LoginPageState createState() =>  _LoginPageState();
+  _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
-  final GlobalKey<ScaffoldState> _scaffoldKey =  GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final FocusNode myFocusNodeEmailLogin = FocusNode();
   final FocusNode myFocusNodePasswordLogin = FocusNode();
@@ -35,26 +37,27 @@ class _LoginPageState extends State<LoginPage>
   final FocusNode myFocusNodeFirstName = FocusNode();
   final FocusNode myFocusNodeLastName = FocusNode();
 
-  TextEditingController loginEmailController =  TextEditingController();
-  TextEditingController loginPasswordController =  TextEditingController();
+  TextEditingController loginEmailController = TextEditingController();
+  TextEditingController loginPasswordController = TextEditingController();
 
   //bool _obscureTextLogin = true;
   final bool _obscureTextSignup = false;
   //final bool _obscureTextSignupConfirm = true;
 
-  TextEditingController signupEmailController =  TextEditingController();
-  TextEditingController signupFirstNameController =  TextEditingController();
-  TextEditingController signupLastNameController =  TextEditingController();
-  TextEditingController signupHashNameController =  TextEditingController();
+  TextEditingController signupEmailController = TextEditingController();
+  TextEditingController signupFirstNameController = TextEditingController();
+  TextEditingController signupLastNameController = TextEditingController();
+  TextEditingController signupHashNameController = TextEditingController();
 
   PageController _pageController;
+  bool _isCreatingAccount = false;
 
   Color left = Colors.black;
   Color right = Colors.white;
 
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
+    return Scaffold(
       key: _scaffoldKey,
       body: NotificationListener<OverscrollIndicatorNotification>(
         onNotification: (OverscrollIndicatorNotification overscroll) {
@@ -66,8 +69,8 @@ class _LoginPageState extends State<LoginPage>
             height: MediaQuery.of(context).size.height >= 500.0
                 ? MediaQuery.of(context).size.height
                 : 500.0,
-            decoration:  BoxDecoration(
-              gradient:  LinearGradient(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
                   colors: <Color>[
                     LoginColors.loginGradientStart,
                     LoginColors.loginGradientEnd
@@ -77,52 +80,54 @@ class _LoginPageState extends State<LoginPage>
                   stops: const <double>[0.0, 1.0],
                   tileMode: TileMode.clamp),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                const Padding(
-                  padding: EdgeInsets.only(top: 75.0),
-                  child:  Image(
-                      width: 100.0,
-                      height: 100.0,
-                      fit: BoxFit.fill,
-                      image:  AssetImage('images/other/hc_app_icon.png')),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 20.0),
-                  child: _buildMenuBar(context),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: PageView(
-                    controller: _pageController,
-                    onPageChanged: (int i) {
-                      if (i == 0) {
-                        setState(() {
-                          right = Colors.white;
-                          left = Colors.black;
-                        });
-                      } else if (i == 1) {
-                        setState(() {
-                          right = Colors.black;
-                          left = Colors.white;
-                        });
-                      }
-                    },
+            child: _isCreatingAccount
+                ? _buildProgressIndicator()
+                : Column(
+                    mainAxisSize: MainAxisSize.max,
                     children: <Widget>[
-                       ConstrainedBox(
-                        constraints: const BoxConstraints.expand(),
-                        child: _buildSignUp(context),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 75.0),
+                        child: Image(
+                            width: 100.0,
+                            height: 100.0,
+                            fit: BoxFit.fill,
+                            image: AssetImage('images/other/hc_app_icon.png')),
                       ),
-                       ConstrainedBox(
-                        constraints: const BoxConstraints.expand(),
-                        child: _buildSignIn(context),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20.0),
+                        child: _buildMenuBar(context),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: PageView(
+                          controller: _pageController,
+                          onPageChanged: (int i) {
+                            if (i == 0) {
+                              setState(() {
+                                right = Colors.white;
+                                left = Colors.black;
+                              });
+                            } else if (i == 1) {
+                              setState(() {
+                                right = Colors.black;
+                                left = Colors.white;
+                              });
+                            }
+                          },
+                          children: <Widget>[
+                            ConstrainedBox(
+                              constraints: const BoxConstraints.expand(),
+                              child: _buildSignUp(context),
+                            ),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints.expand(),
+                              child: _buildSignIn(context),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
           ),
         ),
       ),
@@ -146,7 +151,8 @@ class _LoginPageState extends State<LoginPage>
     signupFirstNameController.text = 'delete';
     signupLastNameController.text = 'delete';
     signupHashNameController.text = 'delete';
-    signupEmailController.text = 'delete_' + Random.secure().nextInt(99999999).toString() + '@test.com';
+    signupEmailController.text =
+        'delete_' + Random.secure().nextInt(99999999).toString() + '@test.com';
 
     SystemChrome.setPreferredOrientations(<DeviceOrientation>[
       DeviceOrientation.portraitUp,
@@ -157,10 +163,10 @@ class _LoginPageState extends State<LoginPage>
   }
 
   void showInSnackBar(String value) {
-    FocusScope.of(context).requestFocus( FocusNode());
+    FocusScope.of(context).requestFocus(FocusNode());
     _scaffoldKey.currentState?.removeCurrentSnackBar();
-    _scaffoldKey.currentState.showSnackBar( SnackBar(
-      content:  Text(
+    _scaffoldKey.currentState.showSnackBar(SnackBar(
+      content: Text(
         value,
         textAlign: TextAlign.center,
         style: const TextStyle(
@@ -233,7 +239,7 @@ class _LoginPageState extends State<LoginPage>
               const Padding(
                 padding: EdgeInsets.only(top: 50.0),
                 child: RotationTransition(
-                  turns:  AlwaysStoppedAnimation<double>(45.0 / 360.0),
+                  turns: AlwaysStoppedAnimation<double>(45.0 / 360.0),
                   child: Text(
                     'IN DEVELOPMENT',
                     style: TextStyle(
@@ -243,11 +249,9 @@ class _LoginPageState extends State<LoginPage>
                   ),
                 ),
               ),
-
-             
               Container(
                 margin: const EdgeInsets.only(top: 170.0),
-                decoration:  BoxDecoration(
+                decoration: BoxDecoration(
                   borderRadius: const BorderRadius.all(Radius.circular(5.0)),
                   boxShadow: <BoxShadow>[
                     BoxShadow(
@@ -261,14 +265,14 @@ class _LoginPageState extends State<LoginPage>
                       blurRadius: 20.0,
                     ),
                   ],
-                  gradient:  LinearGradient(
+                  gradient: LinearGradient(
                       colors: <Color>[
                         LoginColors.loginGradientEnd,
                         LoginColors.loginGradientStart
                       ],
                       begin: const FractionalOffset(0.2, 0.2),
                       end: const FractionalOffset(1.0, 1.0),
-                      stops: const <double> [0.0, 1.0],
+                      stops: const <double>[0.0, 1.0],
                       tileMode: TileMode.clamp),
                 ),
                 child: MaterialButton(
@@ -499,7 +503,7 @@ class _LoginPageState extends State<LoginPage>
                               fontFamily: 'WorkSansSemiBold',
                               fontSize: 16.0,
                               color: Colors.black),
-                          decoration: const  InputDecoration(
+                          decoration: const InputDecoration(
                             border: InputBorder.none,
                             icon: Icon(
                               FontAwesomeIcons.dove,
@@ -511,15 +515,14 @@ class _LoginPageState extends State<LoginPage>
                           ),
                         ),
                       ),
-
                     ],
                   ),
                 ),
               ),
               Container(
                 margin: const EdgeInsets.only(top: 210.0),
-                decoration:  BoxDecoration(
-                  borderRadius: const  BorderRadius.all(Radius.circular(5.0)),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(5.0)),
                   boxShadow: <BoxShadow>[
                     BoxShadow(
                       color: LoginColors.loginGradientStart,
@@ -532,14 +535,14 @@ class _LoginPageState extends State<LoginPage>
                       blurRadius: 20.0,
                     ),
                   ],
-                  gradient:  LinearGradient(
+                  gradient: LinearGradient(
                       colors: <Color>[
                         LoginColors.loginGradientEnd,
                         LoginColors.loginGradientStart
                       ],
                       begin: const FractionalOffset(0.2, 0.2),
                       end: const FractionalOffset(1.0, 1.0),
-                      stops: const <double> [0.0, 1.0],
+                      stops: const <double>[0.0, 1.0],
                       tileMode: TileMode.clamp),
                 ),
                 child: MaterialButton(
@@ -592,7 +595,7 @@ class _LoginPageState extends State<LoginPage>
                 ),
                 Container(
                   decoration: const BoxDecoration(
-                    gradient:  LinearGradient(
+                    gradient: LinearGradient(
                         colors: <Color>[
                           Colors.white,
                           Colors.white10,
@@ -617,7 +620,7 @@ class _LoginPageState extends State<LoginPage>
                   onTap: () => showInSnackBar('Facebook button pressed'),
                   child: Container(
                     padding: const EdgeInsets.all(15.0),
-                    decoration: const  BoxDecoration(
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white,
                     ),
@@ -628,23 +631,6 @@ class _LoginPageState extends State<LoginPage>
                   ),
                 ),
               ),
-              // Padding(
-              //   padding: const EdgeInsets.only(top: 10.0),
-              //   child: GestureDetector(
-              //     onTap: () => showInSnackBar('Google button pressed'),
-              //     child: Container(
-              //       padding: const EdgeInsets.all(15.0),
-              //       decoration:  BoxDecoration(
-              //         shape: BoxShape.circle,
-              //         color: Colors.white,
-              //       ),
-              //       child:  Icon(
-              //         FontAwesomeIcons.google,
-              //         color: const Color(0xFF0084ff),
-              //       ),
-              //     ),
-              //   ),
-              // ),
             ],
           ),
         ],
@@ -663,6 +649,9 @@ class _LoginPageState extends State<LoginPage>
   }
 
   void _onSignUpButtonPress() {
+    setState(() {
+      _isCreatingAccount = true;
+    });
     bool canProcess = true;
 
     if (signupFirstNameController.text.isEmpty) {
@@ -684,7 +673,7 @@ class _LoginPageState extends State<LoginPage>
     }
 
     if (canProcess) {
-      final AddUserService t =  AddUserService();
+      final AddUserService t = AddUserService();
       final Future<AddUserModel> x = t.addUser(
           signupFirstNameController.text,
           signupLastNameController.text,
@@ -705,30 +694,100 @@ class _LoginPageState extends State<LoginPage>
         Preferences.setStringPref(
             StringPrefsEnum.qrSecretCode, user.qrSecretCode);
         Preferences.setStringPref(StringPrefsEnum.facebookId, user.facebookId);
-        Preferences.setStringPref(StringPrefsEnum.avatarUrl, 'bundle://Avatar-1');
+        Preferences.setStringPref(
+            StringPrefsEnum.avatarUrl, 'bundle://Avatar-1');
 
-        Navigator.of(context).pushReplacementNamed(RouteNames.CHOOSE_AVATAR.toString());
+        Future<dynamic>.delayed(const Duration(milliseconds: 3500))
+            .then((void dummy) {
+          Navigator.of(context)
+              .pushReplacementNamed(RouteNames.CHOOSE_AVATAR.toString());
+        });
       });
     }
   }
 
-  // void _toggleLogin() {
-  //   setState(() {
-  //     _obscureTextLogin = !_obscureTextLogin;
-  //   });
-  // }
-
-  // void _toggleSignup() {
-  //   setState(() {
-  //     _obscureTextSignup = !_obscureTextSignup;
-  //   });
-  // }
-
-  // void _toggleSignupConfirm() {
-  //   setState(() {
-  //     _obscureTextSignupConfirm = !_obscureTextSignupConfirm;
-  //   });
-  // }
+  Widget _buildProgressIndicator() {
+    return Column(
+    
+      children: <Widget>[
+        Column(
+          children: <Widget>[
+            Container(width: 10.0,height: 40.0,),
+            Padding(
+              padding: EdgeInsets.only(top: 0.0),
+              child: Text(
+                'Creating\r\nHarrier Central\r\nAccount',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 32.0,
+                    fontFamily: 'WorkSansSemiBold'),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 10.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                          colors: <Color>[
+                            Colors.white10,
+                            Colors.white,
+                          ],
+                          begin: FractionalOffset(0.0, 0.0),
+                          end: FractionalOffset(1.0, 1.0),
+                          stops: <double>[0.0, 1.0],
+                          tileMode: TileMode.clamp),
+                    ),
+                    width: 100.0,
+                    height: 1.0,
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(left: 15.0, right: 15.0),
+                    child: const Icon(FontAwesomeIcons.circle,
+                        color: Color(0xFFFFFFFF), size: 10.0),
+                  ),
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                          colors: <Color>[
+                            Colors.white,
+                            Colors.white10,
+                          ],
+                          begin: FractionalOffset(0.0, 0.0),
+                          end: FractionalOffset(1.0, 1.0),
+                          stops: <double>[0.0, 1.0],
+                          tileMode: TileMode.clamp),
+                    ),
+                    width: 100.0,
+                    height: 1.0,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        Expanded(
+        child:Center(
+          child: SpinKitCircle(
+            size: 75.0,
+            itemBuilder: (_, int index) {
+              return DecoratedBox(
+                decoration: BoxDecoration(
+                  color: index.isEven
+                      ? Colors.white
+                      : Theme.of(context).accentColor,
+                ),
+              );
+            },
+          ),
+        ),
+        ),
+      ],
+    );
+  }
 }
 
 class TabIndicationPainter extends CustomPainter {
@@ -747,7 +806,7 @@ class TabIndicationPainter extends CustomPainter {
       this.dy = 25.0,
       this.pageController})
       : super(repaint: pageController) {
-    painter =  Paint()
+    painter = Paint()
       ..color = const Color(0xFFFFFFFF)
       ..style = PaintingStyle.fill;
   }
@@ -761,16 +820,15 @@ class TabIndicationPainter extends CustomPainter {
     final double pageOffset = pos.extentBefore / fullExtent;
 
     final bool left2right = dxEntry < dxTarget;
-    final Offset entry =  Offset(left2right ? dxEntry : dxTarget, dy);
-    final Offset target =  Offset(left2right ? dxTarget : dxEntry, dy);
+    final Offset entry = Offset(left2right ? dxEntry : dxTarget, dy);
+    final Offset target = Offset(left2right ? dxTarget : dxEntry, dy);
 
-    final Path path =  Path();
+    final Path path = Path();
     path.addArc(
-         Rect.fromCircle(center: entry, radius: radius), 0.5 * pi, 1 * pi);
-    path.addRect(
-         Rect.fromLTRB(entry.dx, dy - radius, target.dx, dy + radius));
+        Rect.fromCircle(center: entry, radius: radius), 0.5 * pi, 1 * pi);
+    path.addRect(Rect.fromLTRB(entry.dx, dy - radius, target.dx, dy + radius));
     path.addArc(
-         Rect.fromCircle(center: target, radius: radius), 1.5 * pi, 1 * pi);
+        Rect.fromCircle(center: target, radius: radius), 1.5 * pi, 1 * pi);
 
     canvas.translate(size.width * pageOffset, 0.0);
     canvas.drawShadow(path, const Color(0xFFfbab66), 3.0, true);
@@ -780,4 +838,3 @@ class TabIndicationPainter extends CustomPainter {
   @override
   bool shouldRepaint(TabIndicationPainter oldDelegate) => true;
 }
-
