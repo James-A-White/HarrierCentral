@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:harrier_central/widgets/run_tabs.dart';
+
 import 'package:harrier_central/data_models/future_run_model.dart';
-import 'package:harrier_central/remote_api_data/future_run_scoped_model.dart';
+import 'package:harrier_central/widgets/run_tabs.dart';
 
 class RunDetailsPage extends StatelessWidget {
   final FutureRun futureRun;

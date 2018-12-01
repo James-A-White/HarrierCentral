@@ -1,15 +1,17 @@
+
+
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:harrier_central/util/utilities.dart';
+
+import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/data_models/kennel_model.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:scoped_model/scoped_model.dart';
-import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/utilities.dart';
 
-import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+import 'package:scoped_model/scoped_model.dart';
 
 class KennelScopedModel extends Model {
 

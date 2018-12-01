@@ -1,14 +1,17 @@
+
 import 'dart:core';
 
-import 'package:flutter/material.dart';
-import 'package:harrier_central/data_models/future_run_model.dart';
-import 'package:harrier_central/remote_api_data/get_users_by_event_service.dart';
-import 'package:harrier_central/data_models/get_users_by_event_model.dart';
-
 import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+import 'package:harrier_central/data_models/future_run_model.dart';
+import 'package:harrier_central/data_models/get_users_by_event_model.dart';
+import 'package:harrier_central/remote_api_data/get_users_by_event_service.dart';
 
 class CheckInPackPage extends StatefulWidget {
   CheckInPackPage({

@@ -1,16 +1,16 @@
+
 import 'dart:core';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import 'package:harrier_central/data_models/future_run_model.dart';
-import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/widgets/kennel_logo.dart';
-import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 import 'package:harrier_central/remote_api_data/future_run_scoped_model.dart';
-import 'package:harrier_central/remote_api_data/main_navigation_scoped_model.dart';
+import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/widgets/kennel_logo.dart';
+
+import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class RunListItem extends StatefulWidget {

@@ -1,20 +1,19 @@
+
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/cupertino.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import 'package:harrier_central/remote_api_data/add_user_service.dart';
 import 'package:harrier_central/data_models/add_user_model.dart';
+import 'package:harrier_central/main.dart';
+import 'package:harrier_central/remote_api_data/add_user_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
-import 'package:harrier_central/main.dart';
-
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 //import 'package:the_gorgeous_login/style/theme.dart' as Theme;
 

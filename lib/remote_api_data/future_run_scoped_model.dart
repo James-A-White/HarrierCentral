@@ -1,18 +1,20 @@
+
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:harrier_central/util/utilities.dart';
-
-import 'package:harrier_central/data_models/future_run_model.dart';
-import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/preferences.dart';
-import 'package:scoped_model/scoped_model.dart';
-import 'package:harrier_central/remote_api_data/join_event_service.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import 'package:geolocator/geolocator.dart';
+
+import 'package:harrier_central/data_models/future_run_model.dart';
 import 'package:harrier_central/data_models/join_event_model.dart';
+import 'package:harrier_central/remote_api_data/join_event_service.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/utilities.dart';
+
+import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:scoped_model/scoped_model.dart';
 
 class FutureRunScopedModel extends Model {
   final List<FutureRun> _futureRunsList = <FutureRun>[];

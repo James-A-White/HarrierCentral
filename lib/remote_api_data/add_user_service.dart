@@ -1,13 +1,12 @@
+
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:harrier_central/util/utilities.dart';
 
 import 'package:harrier_central/data_models/add_user_model.dart';
 import 'package:harrier_central/util/constants.dart';
-//import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/utilities.dart';
 
-//import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
 
 class AddUserService {
 

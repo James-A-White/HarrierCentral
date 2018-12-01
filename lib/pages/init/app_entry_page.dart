@@ -1,10 +1,12 @@
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/routes.dart';
 
 class AppEntryPage extends StatefulWidget {
 

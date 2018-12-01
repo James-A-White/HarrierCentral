@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:harrier_central/util/utilities.dart';
 
 import 'package:harrier_central/data_models/get_pack_model.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/utilities.dart';
+
+import 'package:http/http.dart' as http;
 
 class GetPackService {
 

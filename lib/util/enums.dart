@@ -7,7 +7,6 @@ abstract class Enum<T> {
 }
 
 
-
 class EnumRsvpType<int> extends Enum<int> {
    const EnumRsvpType(int val) : super (val);
 }
