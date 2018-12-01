@@ -6,11 +6,16 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:harrier_central/localization.dart';
 //import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter/rendering.dart';
+import 'package:harrier_central/remote_api_data/future_run_scoped_model.dart';
+import 'package:scoped_model/scoped_model.dart';
 
 
 
 void main() {
   //debugPaintSizeEnabled=true;
+
+  FutureRunScopedModel _futureRunScopedModel = FutureRunScopedModel();
+
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.landscapeLeft,
@@ -18,6 +23,11 @@ void main() {
     ]);
 
   runApp(
+       
+    ScopedModel<FutureRunScopedModel>(
+      model: _futureRunScopedModel,
+      child: 
+
     MaterialApp(
         localizationsDelegates: const <LocalizationsDelegate<dynamic>> [
           AppLocalizationsDelegate(),
@@ -34,6 +44,7 @@ void main() {
         home: AppEntryPage(),
         routes: Routes.routes,
         theme: ThemeData(
+            
             primaryColor: Colors.grey[700],
             primaryColorDark: Colors.grey[900],
             primaryColorLight: Colors.grey[400],
@@ -44,7 +55,8 @@ void main() {
             buttonColor: Colors.red[900],
             iconTheme: const IconThemeData(color: Colors.white, size: 30.0),
             scaffoldBackgroundColor: Colors.brown[50])),
-  );
+   ), );
+  
 }
 
 class LoginColors {

@@ -1,0 +1,27 @@
+import 'package:flutter/material.dart';
+import 'package:harrier_central/widgets/run_tabs.dart';
+import 'package:harrier_central/data_models/future_run_model.dart';
+import 'package:harrier_central/remote_api_data/future_run_scoped_model.dart';
+
+class RunDetailsPage extends StatelessWidget {
+  final FutureRun futureRun;
+
+  const RunDetailsPage({Key key, @required this.futureRun}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        //key: homePageModel.mainAppScaffoldKey,
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: Theme.of(context).primaryColor,
+          title: Text(
+            'Run Details',
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+        ),
+        body: RunTabs(futureRun: futureRun));
+  }
+}

@@ -6,6 +6,8 @@ import 'package:harrier_central/pages/init/choose_avatar.dart';
 import 'package:harrier_central/pages/init/avatar_icons_page.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
+import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
+
 
 
 enum RouteNames {
@@ -14,7 +16,9 @@ enum RouteNames {
   CHOOSE_AVATAR,
   AVATAR_ICON_PAGE,
   NEW_ACCOUNT,
-  USER_QR_CODE
+  USER_QR_CODE,
+  //RUN_DETAILS_PAGE,
+  //KENNEL_ADMIN_PAGE
 }
 
 class Routes {
@@ -25,6 +29,7 @@ class Routes {
     RouteNames.CHOOSE_AVATAR.toString(): (BuildContext context) => const ChooseAvatarPage(),
     RouteNames.USER_QR_CODE.toString(): (BuildContext context) => UserQrCodePage(),
     RouteNames.AVATAR_ICON_PAGE.toString(): (BuildContext context) => AvatarIconsPage(),
+    //RouteNames.RUN_DETAILS_PAGE.toString(): (BuildContext context) => RunDetailsPage(),
 
   };
 }
