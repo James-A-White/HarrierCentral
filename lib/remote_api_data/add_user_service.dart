@@ -11,7 +11,7 @@ import 'package:http/http.dart' as http;
 class AddUserService {
 
   Future<AddUserModel> addUser(String firstName, String lastName, String email,
-      String hashName, String facebookId, String gender, String photo) async {
+      String hashName, String facebookId, String gender, String photo, String homeKennelId) async {
 
     final String accessToken = Utilities.generateToken(
         '00000000-0000-0000-0000-000000000000', 'addUser');
@@ -25,7 +25,8 @@ class AddUserService {
       'hashHandle': hashName,
       'facebookId': facebookId,
       'gender': gender,
-      'photo': photo
+      'photo': photo,
+      'homeKennelId': homeKennelId
     });
 
     final http.Response response = await http

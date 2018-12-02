@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -7,6 +6,7 @@ import 'package:harrier_central/pages/kennel_admin/kennel_admin_main.dart';
 import 'package:harrier_central/remote_api_data/kennel_scoped_model.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
+import 'package:harrier_central/remote_api_data/future_run_scoped_model.dart';
 
 import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
@@ -55,43 +55,50 @@ class KennelsListItem extends StatelessWidget {
                 children: <Widget>[
                   Container(
                     padding: const EdgeInsets.only(top: 12.0),
-                    child: ScopedModelDescendant<KennelScopedModel>(
-                      builder: (BuildContext context, Widget child,
-                              KennelScopedModel model) =>
-                          IconButton(
-                            icon: Icon(
-                                (kennel.followingRequested ??
-                                            kennel.followingBool) ==
-                                        1
-                                    ? const Icon(
-                                            FontAwesomeIcons.solidCheckCircle)
-                                        .icon
-                                    : (kennel.followingRequested ??
-                                                kennel.followingBool) ==
-                                            2
-                                        ? const Icon(FontAwesomeIcons
-                                                .solidTimesCircle)
-                                            .icon
-                                        : const Icon(FontAwesomeIcons.circle)
-                                            .icon,
-                                color: kennel.followingRequested != null
-                                    ? Colors.blue
-                                    : kennel.followingBool == 1
-                                        ? Colors.green
-                                        : kennel.followingBool == 2
-                                            ? Colors.red
-                                            : Colors.grey.shade700),
-                            tooltip: 'Select to follow a Kennel',
-                            iconSize: 35.0,
-                            alignment: Alignment.topCenter,
-                            splashColor: Colors.greenAccent,
-                            onPressed: () {
-                              model.toggleFollowing(kennel);
+                    child: ScopedModelDescendant<FutureRunScopedModel>(
+                      builder: (BuildContext runContext, Widget runChild,
+                              FutureRunScopedModel runModel) =>
+                          ScopedModelDescendant<KennelScopedModel>(
+                            builder:
+                                (BuildContext context, Widget child,
+                                        KennelScopedModel model) =>
+                                    IconButton(
+                                      icon: Icon(
+                                          (kennel.followingRequested ??
+                                                      kennel.followingBool) ==
+                                                  1
+                                              ? const Icon(FontAwesomeIcons.solidCheckCircle)
+                                                  .icon
+                                              : (kennel.followingRequested ??
+                                                          kennel
+                                                              .followingBool) ==
+                                                      2
+                                                  ? const Icon(FontAwesomeIcons
+                                                          .solidTimesCircle)
+                                                      .icon
+                                                  : const Icon(FontAwesomeIcons.circle)
+                                                      .icon,
+                                          color: kennel.followingRequested !=
+                                                  null
+                                              ? Colors.blue
+                                              : kennel.followingBool == 1
+                                                  ? Colors.green
+                                                  : kennel.followingBool == 2
+                                                      ? Colors.red
+                                                      : Colors.grey.shade700),
+                                      tooltip: 'Select to follow a Kennel',
+                                      iconSize: 35.0,
+                                      alignment: Alignment.topCenter,
+                                      splashColor: Colors.greenAccent,
+                                      onPressed: () {
+                                        model.toggleFollowing(kennel);
+                                        runModel.clearFutureRunsList();
 
-                              // setState(() {
-                              // kennel.followingBool = kennel.followingBool == 0 ? 1 : 0;
-                              // });
-                            },
+                                        // setState(() {
+                                        // kennel.followingBool = kennel.followingBool == 0 ? 1 : 0;
+                                        // });
+                                      },
+                                    ),
                           ),
                     ),
                     // child: IconButton(
@@ -175,7 +182,7 @@ class KennelsListItem extends StatelessWidget {
               ),
             ],
           ),
-                  Align(
+          Align(
             alignment: Alignment.centerRight,
             child: IconButton(
               icon: const Icon(Icons.settings),
@@ -183,13 +190,12 @@ class KennelsListItem extends StatelessWidget {
               color: Colors.black54,
               splashColor: Theme.of(context).highlightColor,
               onPressed: () {
-                  Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      builder: (context) =>
-                          KennelAdminMainPage(kennel: kennel),
-                    ),
-                  );
+                Navigator.push<dynamic>(
+                  context,
+                  MaterialPageRoute<dynamic>(
+                    builder: (context) => KennelAdminMainPage(kennel: kennel),
+                  ),
+                );
               },
             ),
           ),

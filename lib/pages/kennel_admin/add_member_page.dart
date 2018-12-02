@@ -17,14 +17,18 @@ import 'package:harrier_central/util/routes.dart';
 
 //import 'package:the_gorgeous_login/style/theme.dart' as Theme;
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({Key key}) : super(key: key);
+class AddMemberPage extends StatefulWidget {
+
+  String kennelId;
+
+  AddMemberPage({Key key, this.kennelId }) : super(key: key);
+
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _AddMemberPageState createState() => _AddMemberPageState();
 }
 
-class _LoginPageState extends State<LoginPage>
+class _AddMemberPageState extends State<AddMemberPage>
     with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -551,7 +555,7 @@ class _LoginPageState extends State<LoginPage>
                       padding: EdgeInsets.symmetric(
                           vertical: 10.0, horizontal: 42.0),
                       child: Text(
-                        'SIGN UP',
+                        'ADD MEMBER',
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 25.0,
@@ -562,76 +566,78 @@ class _LoginPageState extends State<LoginPage>
               ),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 10.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: <Color>[
-                          Colors.white10,
-                          Colors.white,
-                        ],
-                        begin: FractionalOffset(0.0, 0.0),
-                        end: FractionalOffset(1.0, 1.0),
-                        stops: <double>[0.0, 1.0],
-                        tileMode: TileMode.clamp),
-                  ),
-                  width: 100.0,
-                  height: 1.0,
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(left: 15.0, right: 15.0),
-                  child: Text(
-                    'Or',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.0,
-                        fontFamily: 'WorkSansMedium'),
-                  ),
-                ),
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: <Color>[
-                          Colors.white,
-                          Colors.white10,
-                        ],
-                        begin: FractionalOffset(0.0, 0.0),
-                        end: FractionalOffset(1.0, 1.0),
-                        stops: <double>[0.0, 1.0],
-                        tileMode: TileMode.clamp),
-                  ),
-                  width: 100.0,
-                  height: 1.0,
-                ),
-              ],
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0, right: 0.0),
-                child: GestureDetector(
-                  onTap: () => showInSnackBar('Facebook button pressed'),
-                  child: Container(
-                    padding: const EdgeInsets.all(15.0),
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
-                    child: const Icon(
-                      FontAwesomeIcons.facebookF,
-                      color: Color(0xFF0084ff),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.only(top: 10.0),
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.center,
+          //     children: <Widget>[
+          //       Container(
+          //         decoration: const BoxDecoration(
+          //           gradient: LinearGradient(
+          //               colors: <Color>[
+          //                 Colors.white10,
+          //                 Colors.white,
+          //               ],
+          //               begin: FractionalOffset(0.0, 0.0),
+          //               end: FractionalOffset(1.0, 1.0),
+          //               stops: <double>[0.0, 1.0],
+          //               tileMode: TileMode.clamp),
+          //         ),
+          //         width: 100.0,
+          //         height: 1.0,
+          //       ),
+          //       const Padding(
+          //         padding: EdgeInsets.only(left: 15.0, right: 15.0),
+          //         child: Text(
+          //           'Or',
+          //           style: TextStyle(
+          //               color: Colors.white,
+          //               fontSize: 16.0,
+          //               fontFamily: 'WorkSansMedium'),
+          //         ),
+          //       ),
+          //       Container(
+          //         decoration: const BoxDecoration(
+          //           gradient: LinearGradient(
+          //               colors: <Color>[
+          //                 Colors.white,
+          //                 Colors.white10,
+          //               ],
+          //               begin: FractionalOffset(0.0, 0.0),
+          //               end: FractionalOffset(1.0, 1.0),
+          //               stops: <double>[0.0, 1.0],
+          //               tileMode: TileMode.clamp),
+          //         ),
+          //         width: 100.0,
+          //         height: 1.0,
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.center,
+          //   children: <Widget>[
+          //     Padding(
+          //       padding: const EdgeInsets.only(top: 10.0, right: 0.0),
+          //       child: GestureDetector(
+          //         onTap: () => showInSnackBar('Facebook button pressed'),
+          //         child: Container(
+          //           padding: const EdgeInsets.all(15.0),
+          //           decoration: const BoxDecoration(
+          //             shape: BoxShape.circle,
+          //             color: Colors.white,
+          //           ),
+          //           child: const Icon(
+          //             FontAwesomeIcons.facebookF,
+          //             color: Color(0xFF0084ff),
+          //           ),
+          //         ),
+          //       ),
+          //     ),
+          //   ],
+          // ),
+       
         ],
       ),
     );
@@ -655,12 +661,12 @@ class _LoginPageState extends State<LoginPage>
 
     if (signupFirstNameController.text.isEmpty) {
       canProcess = false;
-      showInSnackBar('Please enter your first name');
+      showInSnackBar('Please enter first name');
     }
 
     if (signupLastNameController.text.isEmpty) {
       canProcess = false;
-      showInSnackBar('Please enter your last name');
+      showInSnackBar('Please enter last name');
     }
 
     final bool emailValid = RegExp(
@@ -680,27 +686,13 @@ class _LoginPageState extends State<LoginPage>
           signupHashNameController.text,
           '',
           '',
-          '',
-          '00000000-0000-0000-0000-000000000000');
+          'bundle://Avatar-1',
+          widget.kennelId);
       x.then((AddUserModel user) {
-        Preferences.setStringPref(StringPrefsEnum.userId, user.userId);
-        Preferences.setStringPref(StringPrefsEnum.firstName, user.firstName);
-        Preferences.setStringPref(StringPrefsEnum.lastName, user.lastName);
-        Preferences.setStringPref(StringPrefsEnum.hashName, user.hashName);
-        Preferences.setStringPref(
-            StringPrefsEnum.displayName, user.displayName);
-        Preferences.setStringPref(StringPrefsEnum.email, user.email);
-        Preferences.setStringPref(StringPrefsEnum.qrCode, user.qrCode);
-        Preferences.setStringPref(
-            StringPrefsEnum.qrSecretCode, user.qrSecretCode);
-        Preferences.setStringPref(StringPrefsEnum.facebookId, user.facebookId);
-        Preferences.setStringPref(
-            StringPrefsEnum.avatarUrl, 'bundle://Avatar-1');
-
+        // Preferences.setStringPref(StringPrefsEnum.userId, user.userId);
         Future<dynamic>.delayed(const Duration(milliseconds: 3500))
             .then((void dummy) {
-          Navigator.of(context)
-              .pushReplacementNamed(RouteNames.CHOOSE_AVATAR.toString());
+          Navigator.of(context).pop();
         });
       });
     }
