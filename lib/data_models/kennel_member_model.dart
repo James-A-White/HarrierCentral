@@ -1,6 +1,6 @@
 import 'dart:core';
 
-class GetKennelMembersModel {
+class KennelMemberModel {
   final String hasherId;
   String hashName;
   String firstName;
@@ -8,8 +8,10 @@ class GetKennelMembersModel {
   String displayName;
   final int dispPref;
   String photo;
+  String qr_code;
+  String qr_secret_code;
 
-  GetKennelMembersModel({
+  KennelMemberModel({
     this.hasherId,
     this.hashName,
     this.firstName,
@@ -17,6 +19,8 @@ class GetKennelMembersModel {
     this.displayName,
     this.dispPref,
     this.photo,
+    this.qr_code,
+    this.qr_secret_code
   });
 
   @override

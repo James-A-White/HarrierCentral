@@ -1,4 +1,3 @@
-
 import 'dart:math';
 import 'dart:ui';
 
@@ -14,6 +13,8 @@ import 'package:harrier_central/main.dart';
 import 'package:harrier_central/remote_api_data/add_user_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
+
+import 'package:permission_handler/permission_handler.dart';
 
 //import 'package:the_gorgeous_login/style/theme.dart' as Theme;
 
@@ -147,16 +148,19 @@ class _LoginPageState extends State<LoginPage>
   void initState() {
     super.initState();
 
-    // signupFirstNameController.text = 'delete';
-    // signupLastNameController.text = 'delete';
-    // signupHashNameController.text = 'delete';
-    // signupEmailController.text =
-    //     'delete_' + Random.secure().nextInt(99999999).toString() + '@test.com';
+    signupFirstNameController.text = 'delete';
+    signupLastNameController.text = 'delete';
+    signupHashNameController.text = 'delete';
+    signupEmailController.text =
+        'delete_' + Random.secure().nextInt(99999999).toString() + '@test.com';
 
     SystemChrome.setPreferredOrientations(<DeviceOrientation>[
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+
+    PermissionHandler()
+        .requestPermissions([PermissionGroup.camera, PermissionGroup.location]);
 
     _pageController = PageController();
   }
@@ -648,9 +652,6 @@ class _LoginPageState extends State<LoginPage>
   }
 
   void _onSignUpButtonPress() {
-    setState(() {
-      _isCreatingAccount = true;
-    });
     bool canProcess = true;
 
     if (signupFirstNameController.text.isEmpty) {
@@ -672,6 +673,10 @@ class _LoginPageState extends State<LoginPage>
     }
 
     if (canProcess) {
+      setState(() {
+        _isCreatingAccount = true;
+      });
+
       final AddUserService t = AddUserService();
       final Future<AddUserModel> x = t.addUser(
           signupFirstNameController.text,
@@ -708,11 +713,13 @@ class _LoginPageState extends State<LoginPage>
 
   Widget _buildProgressIndicator() {
     return Column(
-    
       children: <Widget>[
         Column(
           children: <Widget>[
-            Container(width: 10.0,height: 40.0,),
+            Container(
+              width: 10.0,
+              height: 40.0,
+            ),
             Padding(
               padding: EdgeInsets.only(top: 0.0),
               child: Text(
@@ -770,20 +777,20 @@ class _LoginPageState extends State<LoginPage>
           ],
         ),
         Expanded(
-        child:Center(
-          child: SpinKitCircle(
-            size: 75.0,
-            itemBuilder: (_, int index) {
-              return DecoratedBox(
-                decoration: BoxDecoration(
-                  color: index.isEven
-                      ? Colors.white
-                      : Theme.of(context).accentColor,
-                ),
-              );
-            },
+          child: Center(
+            child: SpinKitCircle(
+              size: 75.0,
+              itemBuilder: (_, int index) {
+                return DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: index.isEven
+                        ? Colors.white
+                        : Theme.of(context).accentColor,
+                  ),
+                );
+              },
+            ),
           ),
-        ),
         ),
       ],
     );

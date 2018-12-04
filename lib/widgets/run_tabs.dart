@@ -455,11 +455,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     child: ScopedModelDescendant<FutureRunScopedModel>(
                       builder: (BuildContext context, Widget child,
                           FutureRunScopedModel futureRunScopedModel) {
-                        if ((futureRunScopedModel.futureRunsList?.length ??
-                                0) ==
-                            0) {
+                        if (!futureRunScopedModel.isLoading) {
                           futureRunScopedModel.getFutureRunsFromBackend(
-                              1, true);
+                              false);
                         }
                         return Column(
                           //mainAxisAlignment: MainAxisAlignment.start,

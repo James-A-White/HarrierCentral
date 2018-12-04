@@ -558,14 +558,6 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
 
   void _onImageButtonPressed(ImageSource source) {
     setState(() async {
-      PermissionStatus permission = await PermissionHandler()
-          .checkPermissionStatus(PermissionGroup.camera);
-      if (permission != PermissionStatus.granted) {
-        Map<PermissionGroup, PermissionStatus> permissions =
-            await PermissionHandler()
-                .requestPermissions([PermissionGroup.camera]);
-      }
-
       ImagePicker.pickImage(source: source).then((File image) {
         setState(() {
           var img = ImageCropper.cropImage(

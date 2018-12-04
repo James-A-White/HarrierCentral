@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:convert';
 
@@ -17,15 +16,21 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class FutureRunScopedModel extends Model {
-  final List<FutureRun> _futureRunsList = <FutureRun>[];
+  List<FutureRun> _futureRunsList;
   List<FutureRun> get futureRunsList => _futureRunsList;
 
-  bool _isLoading = true;
+  bool _isLoading = false;
 
   bool get isLoading => _isLoading;
 
+  PermissionStatus _location_permission;
+
   void clearFutureRunsList() {
+    if (_futureRunsList != null)
+    {
     _futureRunsList.clear();
+    _futureRunsList = null;
+    }
   }
 
   int getFutureRunsCount() {
@@ -97,15 +102,13 @@ class FutureRunScopedModel extends Model {
   Future<dynamic> _getFutureRunsByDistance(int distance) async {
     Position position;
 
-    PermissionStatus permission = await PermissionHandler()
-        .checkPermissionStatus(PermissionGroup.location);
-    if (permission == PermissionStatus.granted) {
+    if (_location_permission == null) {
+      _location_permission = await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
+    }
+
+    if (_location_permission == PermissionStatus.granted) {
       position = await Geolocator()
           .getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
-    } else {
-      Map<PermissionGroup, PermissionStatus> permissions =
-          await PermissionHandler()
-              .requestPermissions([PermissionGroup.location]);
     }
 
     double latitude = DEFAULT_LATITUDE;
@@ -144,13 +147,17 @@ class FutureRunScopedModel extends Model {
     return json.decode(response.body);
   }
 
-  Future<void> getFutureRunsFromBackend(
-      int pageIndex, bool showLoadingIndicator) async {
-    if ((pageIndex == 1) && showLoadingIndicator) {
-      _isLoading = true;
-      notifyListeners();
+  Future<void> getFutureRunsFromBackend(bool forceRefresh) async {
+    if (!forceRefresh && (_futureRunsList != null)) {
+      return null;
     }
 
+    _futureRunsList ??= <FutureRun>[];
+
+    _isLoading = true;
+    if (forceRefresh) {
+      notifyListeners();
+    }
     final dynamic dataFromResponse = await _getFutureRunsByDistance(50);
 
     dataFromResponse.forEach(
@@ -198,9 +205,7 @@ class FutureRunScopedModel extends Model {
       },
     );
 
-    if (pageIndex == 1) {
-      _isLoading = false;
-    }
+    _isLoading = false;
 
     notifyListeners();
 

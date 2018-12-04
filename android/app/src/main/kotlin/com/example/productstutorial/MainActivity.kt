@@ -1,4 +1,4 @@
-package com.example.harriercentral
+package com.harriercentral.app
 
 import android.os.Bundle
 

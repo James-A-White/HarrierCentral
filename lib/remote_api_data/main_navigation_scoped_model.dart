@@ -20,10 +20,6 @@ class MainNavigationScopedModel extends Model {
   GlobalKey<ScaffoldState> mainAppScaffoldKey = GlobalKey<ScaffoldState>();
 
   final KennelScopedModel kennelModel = KennelScopedModel();
-  //final FutureRunScopedModel futureRunsModel = FutureRunScopedModel();
-  //final Futurerun
-
-  //String mainPageTitle = 'Home Page';
 
   void init() {
     if (_mainNavigation?.children == null) {

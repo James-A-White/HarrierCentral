@@ -84,7 +84,7 @@ class KennelMembersListPageBody extends StatelessWidget {
       children: <Widget>[
         Expanded(
         child:Padding(
-          padding: const EdgeInsets.only(top: 0.0),
+          padding: const EdgeInsets.only(top: 10.0),
           child: model.getKennelMembersListCount() == 0
               ? const Center(child: Text('No Kennels available.'))
               : RefreshIndicator(
@@ -95,7 +95,7 @@ class KennelMembersListPageBody extends StatelessWidget {
                     itemCount: model.getKennelMembersListCount(),
                     itemBuilder: (BuildContext context, int index) {
                       return Container(
-                        height: 130.0,
+                        height: 85.0,
                         padding: const EdgeInsets.all(0.0),
                         child: ListView(
                             scrollDirection: Axis.horizontal,

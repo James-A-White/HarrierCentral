@@ -14,7 +14,6 @@ class MainNavigationPage extends StatefulWidget {
 
 class _MainNavigationPageState extends State<MainNavigationPage> {
   MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
-  //FutureRunScopedModel _futureRunScopedModel = FutureRunScopedModel();
 
   void initState() {
     homePageModel.init();

@@ -2,24 +2,18 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:geolocator/geolocator.dart';
 
-import 'package:harrier_central/data_models/future_run_model.dart';
-import 'package:harrier_central/data_models/join_event_model.dart';
-import 'package:harrier_central/remote_api_data/join_event_service.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/data_models/kennel_member_model.dart';
 
 import 'package:http/http.dart' as http;
-import 'package:permission_handler/permission_handler.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class KennelMemberScopedModel extends Model {
-  final List<GetKennelMembersModel> _kennelMembersList = <GetKennelMembersModel>[];
-  List<GetKennelMembersModel> get kennelMembersList => _kennelMembersList;
+  final List<KennelMemberModel> _kennelMembersList = <KennelMemberModel>[];
+  List<KennelMemberModel> get kennelMembersList => _kennelMembersList;
 
   bool _isLoading = true;
 
@@ -33,10 +27,10 @@ class KennelMemberScopedModel extends Model {
     return _kennelMembersList.length;
   }
 
-  void addEditKennelMemberList(GetKennelMembersModel member) {
+  void addEditKennelMemberList(KennelMemberModel member) {
     if (_kennelMembersList.isNotEmpty) {
-      final GetKennelMembersModel kennelMember = _kennelMembersList.firstWhere(
-          (GetKennelMembersModel thisMember) => thisMember.hasherId == member.hasherId,
+      final KennelMemberModel kennelMember = _kennelMembersList.firstWhere(
+          (KennelMemberModel thisMember) => thisMember.hasherId == member.hasherId,
           orElse: () => null);
 
       if (kennelMember != null) {
@@ -109,7 +103,7 @@ class KennelMemberScopedModel extends Model {
     dataFromResponse.forEach(
       (dynamic item) {
         //parse new kennel's details
-        final GetKennelMembersModel kennelMember = GetKennelMembersModel(
+        final KennelMemberModel kennelMember = KennelMemberModel(
             hasherId: item['hasherId'],
             hashName: item['hashName'],
             firstName: item['firstName'],
@@ -117,6 +111,8 @@ class KennelMemberScopedModel extends Model {
             displayName: item['displayName'],
             dispPref: item['dispPref'],
             photo: item['photo'],
+            qr_code: item['qr_code'],
+            qr_secret_code: item['qr_secret_code']
         );
 
         addEditKennelMemberList(kennelMember);

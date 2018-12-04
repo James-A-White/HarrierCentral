@@ -1,4 +1,3 @@
-
 import 'dart:math';
 import 'dart:ui';
 
@@ -18,11 +17,9 @@ import 'package:harrier_central/util/routes.dart';
 //import 'package:the_gorgeous_login/style/theme.dart' as Theme;
 
 class AddMemberPage extends StatefulWidget {
-
   String kennelId;
 
-  AddMemberPage({Key key, this.kennelId }) : super(key: key);
-
+  AddMemberPage({Key key, this.kennelId}) : super(key: key);
 
   @override
   _AddMemberPageState createState() => _AddMemberPageState();
@@ -614,7 +611,7 @@ class _AddMemberPageState extends State<AddMemberPage>
           //     ],
           //   ),
           // ),
-          
+
           // Row(
           //   mainAxisAlignment: MainAxisAlignment.center,
           //   children: <Widget>[
@@ -637,7 +634,6 @@ class _AddMemberPageState extends State<AddMemberPage>
           //     ),
           //   ],
           // ),
-       
         ],
       ),
     );
@@ -654,9 +650,6 @@ class _AddMemberPageState extends State<AddMemberPage>
   }
 
   void _onSignUpButtonPress() {
-    setState(() {
-      _isCreatingAccount = true;
-    });
     bool canProcess = true;
 
     if (signupFirstNameController.text.isEmpty) {
@@ -678,6 +671,10 @@ class _AddMemberPageState extends State<AddMemberPage>
     }
 
     if (canProcess) {
+      setState(() {
+        _isCreatingAccount = true;
+      });
+
       final AddUserService t = AddUserService();
       final Future<AddUserModel> x = t.addUser(
           signupFirstNameController.text,
@@ -700,11 +697,13 @@ class _AddMemberPageState extends State<AddMemberPage>
 
   Widget _buildProgressIndicator() {
     return Column(
-    
       children: <Widget>[
         Column(
           children: <Widget>[
-            Container(width: 10.0,height: 40.0,),
+            Container(
+              width: 10.0,
+              height: 40.0,
+            ),
             Padding(
               padding: EdgeInsets.only(top: 0.0),
               child: Text(
@@ -762,20 +761,20 @@ class _AddMemberPageState extends State<AddMemberPage>
           ],
         ),
         Expanded(
-        child:Center(
-          child: SpinKitCircle(
-            size: 75.0,
-            itemBuilder: (_, int index) {
-              return DecoratedBox(
-                decoration: BoxDecoration(
-                  color: index.isEven
-                      ? Colors.white
-                      : Theme.of(context).accentColor,
-                ),
-              );
-            },
+          child: Center(
+            child: SpinKitCircle(
+              size: 75.0,
+              itemBuilder: (_, int index) {
+                return DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: index.isEven
+                        ? Colors.white
+                        : Theme.of(context).accentColor,
+                  ),
+                );
+              },
+            ),
           ),
-        ),
         ),
       ],
     );

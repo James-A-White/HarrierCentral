@@ -25,8 +25,8 @@ class FutureRunsListPage extends StatelessWidget {
           (BuildContext context, Widget child,
               FutureRunScopedModel futureRunsScopedModel) {
 
-        if ((futureRunsScopedModel?.futureRunsList?.length ?? 0) == 0) {
-          futureRunsScopedModel.getFutureRunsFromBackend(1, true);
+        if (!futureRunsScopedModel.isLoading) {
+          futureRunsScopedModel.getFutureRunsFromBackend(false);
         }
 
         return FutureRunListPageBody();
@@ -73,7 +73,7 @@ class FutureRunListPageBody extends StatelessWidget {
   }
 
   Future<Null> _handleRefresh() async {
-    model.getFutureRunsFromBackend(1, false);
+    model.getFutureRunsFromBackend(true);
     model.notifyListeners();
 
     return null;

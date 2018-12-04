@@ -7,7 +7,7 @@ packages:
       name: analyzer
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.33.3+2"
+    version: "0.33.6"
   ansicolor:
     dependency: transitive
     description:
@@ -206,14 +206,14 @@ packages:
       name: front_end
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.6+5"
+    version: "0.1.6+8"
   geolocator:
     dependency: "direct main"
     description:
       name: geolocator
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.1.0"
+    version: "2.1.1"
   glob:
     dependency: transitive
     description:
@@ -255,7 +255,7 @@ packages:
       name: image
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.4"
+    version: "2.0.5"
   image_cropper:
     dependency: "direct main"
     description:
@@ -290,7 +290,7 @@ packages:
       name: kernel
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.6+5"
+    version: "0.3.6+8"
   latlong:
     dependency: transitive
     description:
@@ -346,7 +346,7 @@ packages:
       name: permission_handler
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.1.1"
+    version: "2.1.2"
   petitparser:
     dependency: transitive
     description:
@@ -361,6 +361,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.2.0+3"
+  pub_semver:
+    dependency: transitive
+    description:
+      name: pub_semver
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.4.2"
   qr:
     dependency: transitive
     description:
@@ -477,7 +484,7 @@ packages:
       name: url_launcher
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.0.1"
+    version: "4.0.2"
   utf:
     dependency: "direct main"
     description:

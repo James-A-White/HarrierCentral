@@ -23,6 +23,7 @@ void main() {
     DeviceOrientation.landscapeRight
     ]);
 
+
   runApp(
        
     ScopedModel<FutureRunScopedModel>(
