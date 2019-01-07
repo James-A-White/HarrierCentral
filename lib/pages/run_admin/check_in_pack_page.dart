@@ -1,4 +1,3 @@
-
 import 'dart:core';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -34,6 +33,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   GlobalKey packListBox = GlobalKey();
 
   List<GetUsersByEventModel> packList;
+
+  num snackBarButtonSize = 35.0;
 
   Future<Null> _getPackWithRefresh() async {
     _getPackService
@@ -152,18 +153,451 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                             ;
 
                             final snackBar = SnackBar(
-                              duration: Duration(seconds: 2),
-                              content: Text(
-                                packList[index].displayName + actionText,
-                                style: const TextStyle(
-                                    fontFamily: 'AvenirNextCondensedDemiBold',
-                                    fontStyle: FontStyle.normal,
-                                    fontSize: 20.0,
-                                    height: 0.85),
+                              duration: Duration(seconds: 5),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Text(
+                                    packList[index].displayName,
+                                    style: const TextStyle(
+                                        fontFamily:
+                                            'AvenirNextCondensedDemiBold',
+                                        fontStyle: FontStyle.normal,
+                                        fontSize: 35.0,
+                                        height: 1.0),
+                                  ),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: <Widget>[
+                                            Padding(
+                                              padding: EdgeInsets.only(
+                                                  top: 1.0, bottom: 1.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: <Widget>[
+                                                  IconButton(
+                                                    icon: Icon(FontAwesomeIcons
+                                                        .solidCheckCircle),
+                                                    color: widget.futureRun
+                                                                .requestedRsvpState ==
+                                                            1
+                                                        ? Colors.blue
+                                                        : widget.futureRun
+                                                                    .rsvpState ==
+                                                                2
+                                                            ? Colors.green
+                                                            : Colors.grey,
+                                                    //tooltip: 'Select to follow a Kennel',
+                                                    iconSize: 35.0,
+                                                    alignment:
+                                                        Alignment.topCenter,
+                                                    splashColor:
+                                                        Colors.greenAccent,
+                                                    onPressed: () {
+                                                      // futureRunScopedModel.setRsvpState(
+                                                      //     rsvpYes.value,
+                                                      //     widget.futureRun);
+                                                    },
+                                                  ),
+                                                  Text(
+                                                    "Not at Hash",
+                                                    style: const TextStyle(
+                                                        fontFamily:
+                                                            'AvenirNextCondensedDemiBold',
+                                                        fontStyle:
+                                                            FontStyle.normal,
+                                                        fontSize: 20.0,
+                                                        height: 1.0),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.only(
+                                                  top: 1.0, bottom: 1.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: <Widget>[
+                                                  IconButton(
+                                                    icon: Icon(FontAwesomeIcons
+                                                        .solidCheckCircle),
+                                                    color: widget.futureRun
+                                                                .requestedRsvpState ==
+                                                            1
+                                                        ? Colors.blue
+                                                        : widget.futureRun
+                                                                    .rsvpState ==
+                                                                2
+                                                            ? Colors.green
+                                                            : Colors.grey,
+                                                    //tooltip: 'Select to follow a Kennel',
+                                                    iconSize: 35.0,
+                                                    alignment:
+                                                        Alignment.topCenter,
+                                                    splashColor:
+                                                        Colors.greenAccent,
+                                                    onPressed: () {
+                                                      // futureRunScopedModel.setRsvpState(
+                                                      //     rsvpYes.value,
+                                                      //     widget.futureRun);
+                                                    },
+                                                  ),
+                                                  Text(
+                                                    "At Hash",
+                                                    style: const TextStyle(
+                                                        fontFamily:
+                                                            'AvenirNextCondensedDemiBold',
+                                                        fontStyle:
+                                                            FontStyle.normal,
+                                                        fontSize: 20.0,
+                                                        height: 1.0),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: <Widget>[
+                                            Padding(
+                                              padding: EdgeInsets.only(
+                                                  top: 1.0, bottom: 1.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: <Widget>[
+                                                  IconButton(
+                                                    icon: Icon(FontAwesomeIcons
+                                                        .solidCheckCircle),
+                                                    color: widget.futureRun
+                                                                .requestedRsvpState ==
+                                                            1
+                                                        ? Colors.blue
+                                                        : widget.futureRun
+                                                                    .rsvpState ==
+                                                                2
+                                                            ? Colors.green
+                                                            : Colors.grey,
+                                                    //tooltip: 'Select to follow a Kennel',
+                                                    iconSize: 35.0,
+                                                    alignment:
+                                                        Alignment.topCenter,
+                                                    splashColor:
+                                                        Colors.greenAccent,
+                                                    onPressed: () {
+                                                      // futureRunScopedModel.setRsvpState(
+                                                      //     rsvpYes.value,
+                                                      //     widget.futureRun);
+                                                    },
+                                                  ),
+                                                  Text(
+                                                    "On In",
+                                                    style: const TextStyle(
+                                                        fontFamily:
+                                                            'AvenirNextCondensedDemiBold',
+                                                        fontStyle:
+                                                            FontStyle.normal,
+                                                        fontSize: 20.0,
+                                                        height: 1.0),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        top: 15.0, bottom: 15.0),
+                                    child: Container(
+                                        color: Colors.white, height: 3.0),
+                                  ),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: <Widget>[
+                                            Padding(
+                                              padding: EdgeInsets.only(
+                                                  top: 1.0, bottom: 1.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: <Widget>[
+                                                  IconButton(
+                                                    icon: Icon(FontAwesomeIcons
+                                                        .solidCheckCircle),
+                                                    color: widget.futureRun
+                                                                .requestedRsvpState ==
+                                                            1
+                                                        ? Colors.blue
+                                                        : widget.futureRun
+                                                                    .rsvpState ==
+                                                                2
+                                                            ? Colors.green
+                                                            : Colors.grey,
+                                                    //tooltip: 'Select to follow a Kennel',
+                                                    iconSize: 35.0,
+                                                    alignment:
+                                                        Alignment.topCenter,
+                                                    splashColor:
+                                                        Colors.greenAccent,
+                                                    onPressed: () {
+                                                      // futureRunScopedModel.setRsvpState(
+                                                      //     rsvpYes.value,
+                                                      //     widget.futureRun);
+                                                    },
+                                                  ),
+                                                  Text(
+                                                    "Not Paid",
+                                                    style: const TextStyle(
+                                                        fontFamily:
+                                                            'AvenirNextCondensedDemiBold',
+                                                        fontStyle:
+                                                            FontStyle.normal,
+                                                        fontSize: 20.0,
+                                                        height: 1.0),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: <Widget>[
+                                            Padding(
+                                              padding: EdgeInsets.only(
+                                                  top: 1.0, bottom: 1.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: <Widget>[
+                                                  IconButton(
+                                                    icon: Icon(FontAwesomeIcons
+                                                        .solidCheckCircle),
+                                                    color: widget.futureRun
+                                                                .requestedRsvpState ==
+                                                            1
+                                                        ? Colors.blue
+                                                        : widget.futureRun
+                                                                    .rsvpState ==
+                                                                2
+                                                            ? Colors.green
+                                                            : Colors.grey,
+                                                    //tooltip: 'Select to follow a Kennel',
+                                                    iconSize: 35.0,
+                                                    alignment:
+                                                        Alignment.topCenter,
+                                                    splashColor:
+                                                        Colors.greenAccent,
+                                                    onPressed: () {
+                                                      // futureRunScopedModel.setRsvpState(
+                                                      //     rsvpYes.value,
+                                                      //     widget.futureRun);
+                                                    },
+                                                  ),
+                                                  Text(
+                                                    "Free Run",
+                                                    style: const TextStyle(
+                                                        fontFamily:
+                                                            'AvenirNextCondensedDemiBold',
+                                                        fontStyle:
+                                                            FontStyle.normal,
+                                                        fontSize: 20.0,
+                                                        height: 1.0),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: <Widget>[
+                                            Padding(
+                                              padding: EdgeInsets.only(
+                                                  top: 1.0, bottom: 1.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: <Widget>[
+                                                  IconButton(
+                                                    icon: Icon(FontAwesomeIcons
+                                                        .solidCheckCircle),
+                                                    color: widget.futureRun
+                                                                .requestedRsvpState ==
+                                                            1
+                                                        ? Colors.blue
+                                                        : widget.futureRun
+                                                                    .rsvpState ==
+                                                                2
+                                                            ? Colors.green
+                                                            : Colors.grey,
+                                                    //tooltip: 'Select to follow a Kennel',
+                                                    iconSize: 35.0,
+                                                    alignment:
+                                                        Alignment.topCenter,
+                                                    splashColor:
+                                                        Colors.greenAccent,
+                                                    onPressed: () {
+                                                      // futureRunScopedModel.setRsvpState(
+                                                      //     rsvpYes.value,
+                                                      //     widget.futureRun);
+                                                    },
+                                                  ),
+                                                  Text(
+                                                    "Paid €5,00 cash",
+                                                    style: const TextStyle(
+                                                        fontFamily:
+                                                            'AvenirNextCondensedDemiBold',
+                                                        fontStyle:
+                                                            FontStyle.normal,
+                                                        fontSize: 20.0,
+                                                        height: 1.0),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                                                                     Padding(
+                                              padding: EdgeInsets.only(
+                                                  top: 1.0, bottom: 1.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: <Widget>[
+                                                  IconButton(
+                                                    icon: Icon(FontAwesomeIcons
+                                                        .solidCheckCircle),
+                                                    color: widget.futureRun
+                                                                .requestedRsvpState ==
+                                                            1
+                                                        ? Colors.blue
+                                                        : widget.futureRun
+                                                                    .rsvpState ==
+                                                                2
+                                                            ? Colors.green
+                                                            : Colors.grey,
+                                                    //tooltip: 'Select to follow a Kennel',
+                                                    iconSize: 35.0,
+                                                    alignment:
+                                                        Alignment.topCenter,
+                                                    splashColor:
+                                                        Colors.greenAccent,
+                                                    onPressed: () {
+                                                      // futureRunScopedModel.setRsvpState(
+                                                      //     rsvpYes.value,
+                                                      //     widget.futureRun);
+                                                    },
+                                                  ),
+                                                  Text(
+                                                    "Paid €5,00 bank transfer",
+                                                    style: const TextStyle(
+                                                        fontFamily:
+                                                            'AvenirNextCondensedDemiBold',
+                                                        fontStyle:
+                                                            FontStyle.normal,
+                                                        fontSize: 20.0,
+                                                        height: 1.0),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                                                                     Padding(
+                                              padding: EdgeInsets.only(
+                                                  top: 1.0, bottom: 1.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: <Widget>[
+                                                  IconButton(
+                                                    icon: Icon(FontAwesomeIcons
+                                                        .solidCheckCircle),
+                                                    color: widget.futureRun
+                                                                .requestedRsvpState ==
+                                                            1
+                                                        ? Colors.blue
+                                                        : widget.futureRun
+                                                                    .rsvpState ==
+                                                                2
+                                                            ? Colors.green
+                                                            : Colors.grey,
+                                                    //tooltip: 'Select to follow a Kennel',
+                                                    iconSize: 35.0,
+                                                    alignment:
+                                                        Alignment.topCenter,
+                                                    splashColor:
+                                                        Colors.greenAccent,
+                                                    onPressed: () {
+                                                      // futureRunScopedModel.setRsvpState(
+                                                      //     rsvpYes.value,
+                                                      //     widget.futureRun);
+                                                    },
+                                                  ),
+                                                  Text(
+                                                    "Owes €5,00",
+                                                    style: const TextStyle(
+                                                        fontFamily:
+                                                            'AvenirNextCondensedDemiBold',
+                                                        fontStyle:
+                                                            FontStyle.normal,
+                                                        fontSize: 20.0,
+                                                        height: 1.0),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                               backgroundColor: Theme.of(context).accentColor,
                             );
-
+                            Scaffold.of(context).removeCurrentSnackBar(
+                                reason: SnackBarClosedReason.remove);
                             Scaffold.of(context).showSnackBar(snackBar);
                           },
                           child: Stack(

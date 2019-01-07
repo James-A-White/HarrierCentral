@@ -3,7 +3,7 @@ description: A mobile app to manage your Hash House Harriers life.
 
 environment:
   sdk: ">=1.19.0 <3.0.0"
-  flutter: ^0.11.3
+  flutter: ^1.0.0
 
 dependencies:
   flutter:
