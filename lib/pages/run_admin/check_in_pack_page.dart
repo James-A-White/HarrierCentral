@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data_models/future_run_model.dart';
 import 'package:harrier_central/data_models/get_users_by_event_model.dart';
 import 'package:harrier_central/remote_api_data/get_users_by_event_service.dart';
@@ -132,7 +133,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                             if (packList[index].isHare == 1) {
                               actionText = ' will hare the Hash';
                             } else {
-                              switch (packList[index].userStatus) {
+                              switch (packList[index].rsvpState) {
                                 case 1:
                                   actionText = ' will not join the Hash';
                                   break;
@@ -643,20 +644,20 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                               ),
                               Positioned(
                                 right: 3.0,
-                                bottom: packList[index].userStatus <= 0
+                                bottom: packList[index].rsvpState <= 0
                                     ? 2.5
                                     : packList[index].isHare == 1 ? 3.0 : 3.5,
-                                child: packList[index].userStatus <= 0
+                                child: packList[index].rsvpState <= 0
                                     ? CircleAvatar(
                                         backgroundColor: Colors.blue,
                                         radius: 10.0,
                                       )
-                                    : packList[index].userStatus == 1
+                                    : packList[index].rsvpState == 1
                                         ? Icon(
                                             FontAwesomeIcons.solidTimesCircle,
                                             color: Colors.red,
                                             size: 20.0)
-                                        : packList[index].userStatus == 2
+                                        : packList[index].rsvpState == 2
                                             ? Icon(
                                                 FontAwesomeIcons
                                                     .solidQuestionCircle,

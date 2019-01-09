@@ -21,9 +21,9 @@ class FutureRun {
   final String locationStreet;
   final String locationPostCode;
 
-  int attendingEvent;
-  int notAttendingEvent;
-  int maybeAttendingEvent;
+  int rsvpYesCount;
+  int rsvpNoCount;
+  int rsvpMaybeCount;
   int haresCount;
 
   String hareList;
@@ -34,8 +34,11 @@ class FutureRun {
   DateTime eventStartDatetime;
   int daysUntilNextRun;
   final int friendsAttending;
-  final int userStatus;
+
   int rsvpState;
+  int attendenceState;
+  int isHare;
+
   final int totalRunsThisKennel;
   final String kennelShortName;
   final int runSequence;
@@ -69,9 +72,9 @@ class FutureRun {
     this.locationStreet,
     this.locationPostCode,
 
-    this.attendingEvent,
-    this.notAttendingEvent,
-    this.maybeAttendingEvent,
+    this.rsvpYesCount,
+    this.rsvpNoCount,
+    this.rsvpMaybeCount,
     this.haresCount,
 
     this.hareList,
@@ -83,19 +86,27 @@ class FutureRun {
     this.eventStartDatetime,
     this.friendsAttending,
     this.rsvpState,
-    this.userStatus,
+    this.attendenceState,
+    this.isHare,
     this.totalRunsThisKennel,
     this.kennelShortName,
     this.runSequence,
     this.distanceToEvent,
+
   });
 
-  int _requestedRsvpState = 0;
+  int _requestedRsvpState = -1;
+  int _requestedHaringState = -1;
 
   int get requestedRsvpState => _requestedRsvpState;
+  int get requestedHaringState => _requestedHaringState;
 
   set requestedRsvpState(int rsvpState) {
     this._requestedRsvpState = rsvpState;
+  }
+
+  set requestedHaringState(int haringState) {
+    this._requestedHaringState = haringState;
   }
 
   @override

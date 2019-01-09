@@ -456,8 +456,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                       builder: (BuildContext context, Widget child,
                           FutureRunScopedModel futureRunScopedModel) {
                         if (!futureRunScopedModel.isLoading) {
-                          futureRunScopedModel.getFutureRunsFromBackend(
-                              false);
+                          futureRunScopedModel.getFutureRunsFromBackend(false);
                         }
                         return Column(
                           //mainAxisAlignment: MainAxisAlignment.start,
@@ -475,14 +474,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       children: <Widget>[
                                         Text(
                                           'Going: ' +
-                                              (widget.futureRun.attendingEvent +
-                                                          widget.futureRun
-                                                              .haresCount >=
+                                              (widget.futureRun.rsvpYesCount >=
                                                       0
                                                   ? (widget.futureRun
-                                                              .attendingEvent +
-                                                          widget.futureRun
-                                                              .haresCount)
+                                                          .rsvpYesCount)
                                                       .toString()
                                                   : ''),
                                           style: const TextStyle(
@@ -510,6 +505,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                           onPressed: () {
                                             futureRunScopedModel.setRsvpState(
                                                 rsvpYes.value,
+                                                isHareNo.value,
                                                 widget.futureRun);
                                           },
                                           // ),
@@ -538,10 +534,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                         Text(
                                           'Maybe: ' +
                                               (widget.futureRun
-                                                          .maybeAttendingEvent >=
+                                                          .rsvpMaybeCount >=
                                                       0
-                                                  ? widget.futureRun
-                                                      .maybeAttendingEvent
+                                                  ? widget
+                                                      .futureRun.rsvpMaybeCount
                                                       .toString()
                                                   : ''),
                                           style: const TextStyle(
@@ -570,6 +566,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                             setState(() {
                                               futureRunScopedModel.setRsvpState(
                                                   rsvpMaybe.value,
+                                                  isHareNo.value,
                                                   widget.futureRun);
                                             });
 
@@ -601,11 +598,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       children: <Widget>[
                                         Text(
                                           "Not go: " +
-                                              (widget.futureRun
-                                                          .notAttendingEvent >=
-                                                      0
-                                                  ? widget.futureRun
-                                                      .notAttendingEvent
+                                              (widget.futureRun.rsvpNoCount >= 0
+                                                  ? widget.futureRun.rsvpNoCount
                                                       .toString()
                                                   : ''),
                                           style: const TextStyle(
@@ -632,7 +626,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                           splashColor: Colors.greenAccent,
                                           onPressed: () {
                                             futureRunScopedModel.setRsvpState(
-                                                rsvpNo.value, widget.futureRun);
+                                                rsvpNo.value,
+                                                isHareNo.value,
+                                                widget.futureRun);
                                             //model.toggleFollowing(kennel);
 
                                             // setState(() {
@@ -676,11 +672,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                           icon: ImageIcon(AssetImage(
                                               'images/icons/hare_icon.png')),
                                           color: widget.futureRun
-                                                      .requestedRsvpState ==
-                                                  rsvpHare.value
+                                                      .requestedHaringState ==
+                                                  1
                                               ? Colors.blue
-                                              : widget.futureRun.rsvpState ==
-                                                      rsvpHare.value
+                                              : widget.futureRun.isHare == 1
                                                   ? Colors.deepPurple
                                                   : Colors.grey,
                                           //tooltip: 'Select to follow a Kennel',
@@ -694,7 +689,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                               if (willHare) {
                                                 futureRunScopedModel
                                                     .setRsvpState(
-                                                        rsvpHare.value,
+                                                        rsvpYes.value,
+                                                        isHareYes.value,
                                                         widget.futureRun);
                                               }
                                             });
@@ -725,8 +721,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                               ),
                             ),
                             Expanded(
-                              child: 
-                              Container(
+                              child: Container(
                                 key: packListBox,
                                 margin: const EdgeInsets.only(
                                     left: 16.0, right: 16.0, bottom: 15.0),
@@ -758,15 +753,17 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                             (BuildContext context, int index) {
                                           if (packList[index].hasherId ==
                                               userId) {
-                                            packList[index].userStatus =
+                                            packList[index].rsvpState =
                                                 widget.futureRun.rsvpState;
+                                            packList[index].isHare =
+                                                widget.futureRun.isHare;
 
-                                            if (widget.futureRun.rsvpState ==
-                                                4) {
-                                              packList[index].isHare = 1;
-                                            } else {
-                                              packList[index].isHare = 0;
-                                            }
+                                            // if (widget.futureRun.rsvpState ==
+                                            //     4) {
+                                            //   packList[index].isHare = 1;
+                                            // } else {
+                                            //   packList[index].isHare = 0;
+                                            // }
                                           }
 
                                           return packList.isEmpty
@@ -793,7 +790,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                           ' will hare the Hash';
                                                     } else {
                                                       switch (packList[index]
-                                                          .userStatus) {
+                                                          .rsvpState) {
                                                         case 1:
                                                           actionText =
                                                               ' will not join the Hash';
@@ -902,7 +899,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                       Positioned(
                                                         right: 3.0,
                                                         bottom: packList[index]
-                                                                    .userStatus <=
+                                                                    .rsvpState <=
                                                                 0
                                                             ? 2.5
                                                             : packList[index]
@@ -911,21 +908,21 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                                 ? 3.0
                                                                 : 3.5,
                                                         child: packList[index]
-                                                                    .userStatus <=
+                                                                    .rsvpState <=
                                                                 0
                                                             ? CircleAvatar(
                                                                 backgroundColor:
                                                                     Colors.blue,
                                                                 radius: 10.0,
                                                               )
-                                                            : packList[index].userStatus == 1
+                                                            : packList[index].rsvpState == 1
                                                                 ? Icon(
                                                                     FontAwesomeIcons
                                                                         .solidTimesCircle,
                                                                     color: Colors
                                                                         .red,
                                                                     size: 20.0)
-                                                                : packList[index].userStatus == 2
+                                                                : packList[index].rsvpState == 2
                                                                     ? Icon(FontAwesomeIcons.solidQuestionCircle,
                                                                         color: Colors
                                                                             .orange,
@@ -952,7 +949,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                 ); //TODO: Replace this with another avatar for missing image
                                         },
                                         staggeredTileBuilder: (int index) {
-                                          return packList[index].isHare == 0
+                                          return packList[index].isHare != 1
                                               ? new StaggeredTile.count(1, 1)
                                               : new StaggeredTile.count(2, 2);
                                         },
@@ -963,7 +960,6 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                   ),
                                 ),
                               ),
-                            
                             ),
                           ],
                         );
@@ -1051,18 +1047,16 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             Container(
                               width: 150.0,
                               child: RaisedButton(
-                                  child: const Text(
-                                    'Check in Pack',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
+                                child: const Text(
+                                  'Check in Pack',
+                                  style: TextStyle(color: Colors.white),
+                                ),
                                 onPressed: () {
                                   Navigator.push<dynamic>(
                                     context,
                                     MaterialPageRoute<dynamic>(
                                       builder: (context) => CheckInPackPage(
-                                            futureRun: widget
-                                                .futureRun
-                                          ),
+                                          futureRun: widget.futureRun),
                                     ),
                                   );
                                 },

@@ -7,12 +7,34 @@ abstract class Enum<T> {
 }
 
 
-class EnumRsvpType<int> extends Enum<int> {
-   const EnumRsvpType(int val) : super (val);
+class EnumRsvpState<int> extends Enum<int> {
+   const EnumRsvpState(int val) : super (val);
 }
 
- EnumRsvpType rsvpUnknown =  EnumRsvpType<int>(0);
- EnumRsvpType rsvpNo =  EnumRsvpType<int>(1);
- EnumRsvpType rsvpMaybe =  EnumRsvpType<int>(2);
- EnumRsvpType rsvpYes =  EnumRsvpType<int>(3);
- EnumRsvpType rsvpHare =  EnumRsvpType<int>(4);
+const EnumRsvpState<int> rsvpUnknown =  EnumRsvpState<int>(0);
+const EnumRsvpState<int> rsvpNo =  EnumRsvpState<int>(1);
+const EnumRsvpState<int> rsvpMaybe =  EnumRsvpState<int>(2);
+const EnumRsvpState<int> rsvpYes =  EnumRsvpState<int>(3);
+
+//////////////////////////
+
+class EnumIsHare<int> extends Enum<int> {
+   const EnumIsHare(int val) : super (val);
+}
+
+ const EnumIsHare<int> isHareNo =  EnumIsHare<int>(0);
+ const EnumIsHare<int> isHareYes =  EnumIsHare<int>(1);
+
+/////////////////////////
+
+
+class EnumAttendenceState<int> extends Enum<int> {
+   const EnumAttendenceState(int val) : super (val);
+}
+
+ const EnumAttendenceState<int> attndenceUnknown =  EnumAttendenceState<int>(0);
+ const EnumAttendenceState<int> attendenceNo =  EnumAttendenceState<int>(10);
+ const EnumAttendenceState<int> attendenceAtHash =  EnumAttendenceState<int>(20);
+ const EnumAttendenceState<int> attendenceOnIn =  EnumAttendenceState<int>(30); 
+ const EnumAttendenceState<int> attendenceGone =  EnumAttendenceState<int>(40);
+

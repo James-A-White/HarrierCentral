@@ -7,7 +7,7 @@ import 'package:harrier_central/data_models/future_run_model.dart';
 import 'package:harrier_central/data_models/join_event_model.dart';
 import 'package:harrier_central/remote_api_data/join_event_service.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/enums.dart';
+
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 
@@ -37,25 +37,24 @@ class FutureRunScopedModel extends Model {
     return _futureRunsList.length;
   }
 
-  void setRsvpState(int rsvpState, FutureRun run) {
+  void setRsvpState(int rsvpState, int isHare, FutureRun run) {
     run.requestedRsvpState = rsvpState;
-    run.rsvpState = 0;
-    int isHare = 0;
-    if (rsvpState == rsvpHare.value) {
-      //rsvpState = rsvpYes.value;
-      isHare = 1;
-    }
+    run.rsvpState = -1;
+    run.requestedHaringState = isHare;
+    run.isHare = -1;
     notifyListeners();
     JoinEventService srv = new JoinEventService();
     srv
         .joinEvent(run.eventId, rsvpState, isHare, -1)
         .then<dynamic>((JoinEventModel result) {
       run.rsvpState = rsvpState;
-      run.requestedRsvpState = 0;
+      run.requestedRsvpState = -1;
+      run.isHare = isHare;
+      run.requestedHaringState = -1;
 
-      run.attendingEvent = result.attendingEvent;
-      run.notAttendingEvent = result.notAttendingEvent;
-      run.maybeAttendingEvent = result.maybeAttendingEvent;
+      run.rsvpYesCount = result.rsvpYesCount;
+      run.rsvpNoCount = result.rsvpNoCount;
+      run.rsvpMaybeCount = result.rsvpMaybeCount;
       run.haresCount = result.haresCount;
 
       notifyListeners();
@@ -180,9 +179,9 @@ class FutureRunScopedModel extends Model {
           locationCity: run['locationCity'],
           locationStreet: run['locationStreet'],
           locationPostCode: run['locationPostCode'],
-          attendingEvent: run['attendingEvent'],
-          notAttendingEvent: run['notAttendingEvent'],
-          maybeAttendingEvent: run['maybeAttendingEvent'],
+          rsvpYesCount: run['attendingEvent'],
+          rsvpNoCount: run['notAttendingEvent'],
+          rsvpMaybeCount: run['maybeAttendingEvent'],
           haresCount: run['haresCount'],
           hareList: run['hareList'],
           latitude: run['latitude'],
@@ -192,7 +191,8 @@ class FutureRunScopedModel extends Model {
           eventStartDatetime: DateTime.parse(run['eventStartDatetime']),
           friendsAttending: run['friendsAttending'],
           rsvpState: run['rsvpState'],
-          userStatus: run['userStatus'],
+          attendenceState: run['attendenceState'],
+          isHare: run['isHare'],
           totalRunsThisKennel: run['totalRunsThisKennel'],
           kennelShortName: run['kennelShortName'],
           runSequence: run['runSequence'],

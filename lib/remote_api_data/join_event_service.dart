@@ -9,23 +9,12 @@ import 'package:harrier_central/util/utilities.dart';
 
 import 'package:http/http.dart' as http;
 
-//import 'package:harrier_central/util/constants.dart';
-
-//import 'package:geolocator/geolocator.dart';
 
 class JoinEventService {
-//    @userId uniqueidentifier,
-//  @accessToken nvarchar(1000),
-//  @eventId uniqueidentifier,
 
-//  @state VARCHAR(10) = '-1',
-//  @isHare VARCHAR(10) = '-1',
-//  @isAttending VARCHAR(10) = '-1',
-
-//  @resultRequested nvarchar(25) = 'Attendance totals'
 
   Future<JoinEventModel> joinEvent(
-      String eventId, int rsvpState, int isHare, int isAttending) async {
+      String eventId, int rsvpState, int isHare, int attendenceState) async {
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
     final String accessToken =
@@ -35,9 +24,9 @@ class JoinEventService {
       'userId': userId,
       'accessToken': accessToken,
       'eventId': eventId,
-      'state': rsvpState,
       'isHare' : isHare,
-      'isAttending': isAttending,
+      'rsvpState': rsvpState,
+      'attendenceState': attendenceState,
       'resultsRequested': 'Attendance totals'
     });
 
@@ -59,9 +48,9 @@ class JoinEventService {
     json.decode(response.body).forEach(
       (dynamic user) {
         thisUser = JoinEventModel(
-          attendingEvent: user['attendingEvent'],
-          notAttendingEvent: user['notAttendingEvent'],
-          maybeAttendingEvent: user['maybeAttendingEvent'],
+          rsvpYesCount: user['rsvpYesCount'],
+          rsvpNoCount: user['rsvpNoCount'],
+          rsvpMaybeCount: user['rsvpMaybeCount'],
           haresCount: user['haresCount'],
         );
       },

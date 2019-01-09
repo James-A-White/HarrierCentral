@@ -43,7 +43,8 @@ class GetPackService {
         packMember = GetPackModel(
           hasherId: pack['hasherId'],
           hasherEventMapId: pack['hasherEventMapId'],
-          userStatus: pack['userStatus'],
+          rsvpState: pack['rsvpState'],
+          attendenceState: pack['attendenceState'],
           displayName: pack['displayName'],
           photo: pack['photo'],
           isHare: pack['isHare']

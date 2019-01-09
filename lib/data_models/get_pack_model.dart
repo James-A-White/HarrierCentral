@@ -4,7 +4,8 @@ class GetPackModel {
 
   final String hasherId;
   final String hasherEventMapId;
-  int userStatus;
+  int rsvpState;
+  int attendenceState;
   final String displayName;
   final String photo;
   int isHare;
@@ -13,7 +14,8 @@ class GetPackModel {
     {
         this.hasherId,
         this.hasherEventMapId,
-        this.userStatus,
+        this.rsvpState,
+        this.attendenceState,
         this.displayName,
         this.photo,
         this.isHare,

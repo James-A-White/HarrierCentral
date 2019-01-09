@@ -12,7 +12,8 @@ class GetUsersByEventModel {
   final int virginVisitorType;
   final DateTime userStartEvent;
   final DateTime userEndEvent;
-  final int userStatus;
+  int rsvpState;
+  int attendenceState;
   final int isPaid;
   final String displayName;
   final String photo;
@@ -41,7 +42,8 @@ class GetUsersByEventModel {
       this.virginVisitorType,
       this.userStartEvent,
       this.userEndEvent,
-      this.userStatus,
+      this.rsvpState,
+      this.attendenceState,
       this.isPaid,
       this.displayName,
       this.photo,
