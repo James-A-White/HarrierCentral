@@ -1,14 +1,14 @@
 import 'dart:core';
 
-class GetUsersByEventModel {
+class PackModel {
 
   final String eventId;
-  final String userId;
+  final String hasherId;
   final int isFollowing;
   final int isMember;
   final int isRsvped;
   final String hasherEventMapId;
-  final int isHare;
+  int isHare;
   final int virginVisitorType;
   final DateTime userStartEvent;
   final DateTime userEndEvent;
@@ -30,10 +30,10 @@ class GetUsersByEventModel {
   final String currencySymbol;
   final int digitsAfterDecimal;
 
-  GetUsersByEventModel(
+  PackModel(
     {
       this.eventId,
-      this.userId,
+      this.hasherId,
       this.isFollowing,
       this.isMember,
       this.isRsvped,
@@ -63,5 +63,25 @@ class GetUsersByEventModel {
 
   @override
   String toString() => '$displayName';
+
+  int _requestedRsvpState = -1;
+  int _requestedHaringState = -1;
+  int _requestedAttendenceState = -1;
+
+  int get requestedRsvpState => _requestedRsvpState;
+  int get requestedHaringState => _requestedHaringState;
+  int get requestedAttendenceState => _requestedAttendenceState;
+
+  set requestedRsvpState(int rsvpState) {
+    this._requestedRsvpState = rsvpState;
+  }
+
+  set requestedHaringState(int haringState) {
+    this._requestedHaringState = haringState;
+  }
+
+  set requestedAttendenceState(int attendenceState) {
+    this._requestedAttendenceState = attendenceState;
+  }
 
 }

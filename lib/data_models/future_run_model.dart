@@ -97,9 +97,11 @@ class FutureRun {
 
   int _requestedRsvpState = -1;
   int _requestedHaringState = -1;
+  int _requestedAttendenceState = -1;
 
   int get requestedRsvpState => _requestedRsvpState;
   int get requestedHaringState => _requestedHaringState;
+  int get requestedAttendenceState => _requestedAttendenceState;
 
   set requestedRsvpState(int rsvpState) {
     this._requestedRsvpState = rsvpState;
@@ -107,6 +109,10 @@ class FutureRun {
 
   set requestedHaringState(int haringState) {
     this._requestedHaringState = haringState;
+  }
+
+  set requestedAttendenceState(int attendenceState) {
+    this._requestedAttendenceState = attendenceState;
   }
 
   @override

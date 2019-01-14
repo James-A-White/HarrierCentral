@@ -10,7 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:latlong/latlong.dart';
 
 import 'package:harrier_central/data_models/future_run_model.dart';
-import 'package:harrier_central/data_models/get_pack_model.dart';
+import 'package:harrier_central/data_models/pack_model.dart';
 import 'package:harrier_central/pages/run_admin/run_start_end_qr_codes_page.dart';
 import 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
 import 'package:harrier_central/remote_api_data/future_run_scoped_model.dart';
@@ -70,7 +70,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 
   bool _loadingPack = false;
 
-  List<GetPackModel> packList;
+  List<PackModel> packList;
 
   GetPackService _getPackService = GetPackService();
 
@@ -79,7 +79,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   Future<Null> _getPackWithRefresh() async {
     _getPackService
         .getPack(widget.futureRun.eventId)
-        .then((List<GetPackModel> _thePack) {
+        .then((List<PackModel> _thePack) {
       packList = _thePack;
       setState(() {});
     });
@@ -93,7 +93,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     if ((packList == null) || forceRefresh) {
       _getPackService
           .getPack(widget.futureRun.eventId)
-          .then((List<GetPackModel> _thePack) {
+          .then((List<PackModel> _thePack) {
         packList = _thePack;
         setState(() {});
       });
@@ -506,6 +506,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                             futureRunScopedModel.setRsvpState(
                                                 rsvpYes.value,
                                                 isHareNo.value,
+                                                -1,
                                                 widget.futureRun);
                                           },
                                           // ),
@@ -567,6 +568,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                               futureRunScopedModel.setRsvpState(
                                                   rsvpMaybe.value,
                                                   isHareNo.value,
+                                                  -1,
                                                   widget.futureRun);
                                             });
 
@@ -628,6 +630,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                             futureRunScopedModel.setRsvpState(
                                                 rsvpNo.value,
                                                 isHareNo.value,
+                                                -1,
                                                 widget.futureRun);
                                             //model.toggleFollowing(kennel);
 
@@ -691,6 +694,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                     .setRsvpState(
                                                         rsvpYes.value,
                                                         isHareYes.value,
+                                                        -1,
                                                         widget.futureRun);
                                               }
                                             });

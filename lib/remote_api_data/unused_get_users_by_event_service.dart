@@ -2,16 +2,16 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:harrier_central/data_models/get_users_by_event_model.dart';
+import 'package:harrier_central/data_models/pack_model.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 
 import 'package:http/http.dart' as http;
 
-class GetUsersByEvent {
+class GetPack {
 
-  Future<List<GetUsersByEventModel>> getUsersByEvent(String eventId, String targetUserId) async {
+  Future<List<PackModel>> getUsersByEvent(String eventId, String targetUserId) async {
 
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
@@ -37,15 +37,15 @@ class GetUsersByEvent {
       },
     );
 
-    final List<GetUsersByEventModel> usersList =  List<GetUsersByEventModel>();
+    final List<PackModel> usersList =  List<PackModel>();
 
-    GetUsersByEventModel item;
+    PackModel item;
     json.decode(response.body).forEach(
       (dynamic jsonItem) {
-        item = GetUsersByEventModel(
+        item = PackModel(
 
         eventId: jsonItem['eventId'],
-        userId: jsonItem['userId'],
+        hasherId: jsonItem['userId'],
         isFollowing: jsonItem['isFollowing'],
         isMember: jsonItem['isMember'],
         isRsvped: jsonItem['isRsvped'],

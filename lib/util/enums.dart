@@ -38,3 +38,12 @@ class EnumAttendenceState<int> extends Enum<int> {
  const EnumAttendenceState<int> attendenceOnIn =  EnumAttendenceState<int>(30); 
  const EnumAttendenceState<int> attendenceGone =  EnumAttendenceState<int>(40);
 
+ //////////////////////////
+
+class EnumIsPaid<int> extends Enum<int> {
+   const EnumIsPaid(int val) : super (val);
+}
+
+ const EnumIsPaid<int> isPaidNo =  EnumIsPaid<int>(0);
+ const EnumIsPaid<int> isPaidYes =  EnumIsPaid<int>(1);
+

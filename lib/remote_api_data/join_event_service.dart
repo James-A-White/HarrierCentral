@@ -14,7 +14,7 @@ class JoinEventService {
 
 
   Future<JoinEventModel> joinEvent(
-      String eventId, int rsvpState, int isHare, int attendenceState) async {
+      String eventId, int rsvpState, int isHare, int attendenceState, [String hasherId]) async {
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
     final String accessToken =
@@ -24,6 +24,7 @@ class JoinEventService {
       'userId': userId,
       'accessToken': accessToken,
       'eventId': eventId,
+      'hasherId': hasherId ?? userId,
       'isHare' : isHare,
       'rsvpState': rsvpState,
       'attendenceState': attendenceState,

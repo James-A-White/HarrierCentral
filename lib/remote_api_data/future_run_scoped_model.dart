@@ -15,7 +15,8 @@ import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:scoped_model/scoped_model.dart';
 
-class FutureRunScopedModel extends Model {
+class FutureRunScopedModel
+ extends Model {
   List<FutureRun> _futureRunsList;
   List<FutureRun> get futureRunsList => _futureRunsList;
 
@@ -26,10 +27,9 @@ class FutureRunScopedModel extends Model {
   PermissionStatus _location_permission;
 
   void clearFutureRunsList() {
-    if (_futureRunsList != null)
-    {
-    _futureRunsList.clear();
-    _futureRunsList = null;
+    if (_futureRunsList != null) {
+      _futureRunsList.clear();
+      _futureRunsList = null;
     }
   }
 
@@ -37,20 +37,42 @@ class FutureRunScopedModel extends Model {
     return _futureRunsList.length;
   }
 
-  void setRsvpState(int rsvpState, int isHare, FutureRun run) {
-    run.requestedRsvpState = rsvpState;
-    run.rsvpState = -1;
-    run.requestedHaringState = isHare;
-    run.isHare = -1;
+  void setRsvpState(
+      int rsvpState, int isHare, int attendenceState, FutureRun run) {
+    if (rsvpState != -1) {
+      run.requestedRsvpState = rsvpState;
+      run.rsvpState = -1;
+    }
+
+    if (isHare != -1) {
+      run.requestedHaringState = isHare;
+      run.isHare = -1;
+    }
+
+    if (attendenceState != -1) {
+      run.attendenceState = -1;
+      run.requestedAttendenceState = attendenceState;
+    }
+
     notifyListeners();
     JoinEventService srv = new JoinEventService();
     srv
-        .joinEvent(run.eventId, rsvpState, isHare, -1)
+        .joinEvent(run.eventId, rsvpState, isHare, attendenceState)
         .then<dynamic>((JoinEventModel result) {
-      run.rsvpState = rsvpState;
-      run.requestedRsvpState = -1;
-      run.isHare = isHare;
-      run.requestedHaringState = -1;
+      if (rsvpState != -1) {
+        run.rsvpState = rsvpState;
+        run.requestedRsvpState = -1;
+      }
+
+      if (isHare != -1) {
+        run.isHare = isHare;
+        run.requestedHaringState = -1;
+      }
+
+      if (attendenceState != -1) {
+        run.attendenceState = attendenceState;
+        run.requestedAttendenceState = -1;
+      }
 
       run.rsvpYesCount = result.rsvpYesCount;
       run.rsvpNoCount = result.rsvpNoCount;
@@ -102,7 +124,8 @@ class FutureRunScopedModel extends Model {
     Position position;
 
     if (_location_permission == null) {
-      _location_permission = await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
+      _location_permission = await PermissionHandler()
+          .checkPermissionStatus(PermissionGroup.location);
     }
 
     if (_location_permission == PermissionStatus.granted) {
