@@ -14,7 +14,7 @@ class PackModel {
   final DateTime userEndEvent;
   int rsvpState;
   int attendenceState;
-  final int isPaid;
+  int isPaid;
   final String displayName;
   final String photo;
   final int userRunCount;

@@ -47,3 +47,22 @@ class EnumIsPaid<int> extends Enum<int> {
  const EnumIsPaid<int> isPaidNo =  EnumIsPaid<int>(0);
  const EnumIsPaid<int> isPaidYes =  EnumIsPaid<int>(1);
 
+ //////////////////////////
+
+class EnumPaymentType<int> extends Enum<int> {
+   const EnumPaymentType(int val) : super (val);
+}
+
+ const EnumPaymentType<int> paymentNotPaid =  EnumPaymentType<int>(1);
+ const EnumPaymentType<int> paymentFreeRun =  EnumPaymentType<int>(2);
+ const EnumPaymentType<int> paymentCash =  EnumPaymentType<int>(3);
+ const EnumPaymentType<int> paymentBankTransfer =  EnumPaymentType<int>(4);
+ const EnumPaymentType<int> paymentCashOtherAmount =  EnumPaymentType<int>(5);
+ const EnumPaymentType<int> paymentHashCredit =  EnumPaymentType<int>(6);
+ const EnumPaymentType<int> paymentBankTransferOtherAmount =  EnumPaymentType<int>(7);
+
+
+
+
+
+
