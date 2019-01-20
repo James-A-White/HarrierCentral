@@ -23,7 +23,7 @@ class Utilities
          return '$digest'.toUpperCase();
     }
 
-    static String getFormattedMoney(double amount, int decimalPlaces, String currencySymbol) {
+    static String getFormattedMoney(num amount, num decimalPlaces, String currencySymbol) {
     String formatDecimals = '#####0.00';
     switch (decimalPlaces) {
       case 0:

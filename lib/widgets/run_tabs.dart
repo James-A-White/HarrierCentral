@@ -469,7 +469,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 children: <Widget>[
                                   Container(
                                     width:
-                                        MediaQuery.of(context).size.width / 5.5,
+                                        MediaQuery.of(context).size.width /5.5,
                                     child: Column(
                                       children: <Widget>[
                                         Text(

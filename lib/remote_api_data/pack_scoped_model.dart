@@ -36,6 +36,11 @@ class PackScopedModel extends Model {
     return _packList.length;
   }
 
+  void forceRefresh()
+  {
+    notifyListeners();
+  }
+
   void setRsvpState(
       int rsvpState, int isHare, int attendenceState, PackModel run) {
     bool isDirty = false;

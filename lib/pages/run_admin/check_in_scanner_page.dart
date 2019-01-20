@@ -138,7 +138,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
     scanAction.then((String s) {
       ProcessQrScanService srv = ProcessQrScanService();
       Future<ProcessQrScanModel> apiCall =
-          srv.processQrScan(eventId, s, 'CheckInOut', context2, '', '');
+          srv.processQrScan(eventId, s, 'CheckInOut', context2, 'user', '');
       apiCall.then((ProcessQrScanModel result) {
         setState(() => barcode = result.resultStr2);
         if (result.resultInt2 == 0) {

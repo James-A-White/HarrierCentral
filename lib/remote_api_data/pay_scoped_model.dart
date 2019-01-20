@@ -16,6 +16,7 @@ import 'package:harrier_central/util/enums.dart';
 // import 'package:http/http.dart' as http;
 // import 'package:permission_handler/permission_handler.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:flutter/material.dart';
 
 class PayScopedModel extends Model {
   PayForEventModel _payResult;
@@ -25,7 +26,7 @@ class PayScopedModel extends Model {
   //   return _payResult.length;
   // }
 
-  void payForEvent(
+  Future<void> payForEvent(
       List<PackModel> packList, int index, int paymentType, num paymentAmount) {
     // if ((rsvpState != -1) && (rsvpState != run.rsvpState)) {
     //   run.requestedRsvpState = rsvpState;
@@ -59,6 +60,8 @@ class PayScopedModel extends Model {
         packList[index].isPaid = 1;
       } 
 
+      
+
       // if ((rsvpState != -1) && (rsvpState != run.rsvpState)) {
       //   run.rsvpState = rsvpState;
       //   run.requestedRsvpState = -1;
@@ -81,5 +84,7 @@ class PayScopedModel extends Model {
 
       notifyListeners();
     });
+
+    return Future<void>((){});
   }
 }

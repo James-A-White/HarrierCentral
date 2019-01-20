@@ -275,7 +275,9 @@ class _AddMemberPageState extends State<AddMemberPage>
                       stops: const <double>[0.0, 1.0],
                       tileMode: TileMode.clamp),
                 ),
-                child: MaterialButton(
+                child: 
+                
+                MaterialButton(
                     highlightColor: Colors.transparent,
                     splashColor: LoginColors.loginGradientEnd,
                     //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
