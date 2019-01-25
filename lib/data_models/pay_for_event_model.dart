@@ -11,6 +11,7 @@ final int onTrailCount;
 final int paidCount;
 final int buttonState;
 final int totalRunsThisKennel;
+final int isPaid;
 
 PayForEventModel(
     {
@@ -22,6 +23,7 @@ PayForEventModel(
         this.paidCount,
         this.buttonState,
         this.totalRunsThisKennel,
+        this.isPaid,
     });
 
   @override

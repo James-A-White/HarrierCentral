@@ -1,4 +1,3 @@
-
 import 'dart:core';
 
 import 'package:flutter/foundation.dart';
@@ -12,6 +11,7 @@ import 'package:harrier_central/widgets/kennel_logo.dart';
 
 import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:flip_panel/flip_panel.dart';
 
 class RunListItem extends StatefulWidget {
   RunListItem({Key key, @required FutureRun this.futureRun}) : super(key: key);
@@ -72,6 +72,21 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          // Stack(children: <Widget>[
+          //   Positioned(top:10.0,
+          //   child:FlipClock.reverseCountdown(
+          //     //startTime: DateTime.now(),
+          //     duration: widget.futureRun.eventStartDatetime
+          //         .difference(DateTime.now()),
+          //     digitColor: Colors.black,
+          //     backgroundColor: Colors.white,
+          //     digitSize: 30.0,
+          //     width: 20.0,
+          //     flipDirection: FlipDirection.down,
+          //     borderRadius: const BorderRadius.all(Radius.circular(2.0)),
+          //     //onDone: () => print('ih'),
+          //   ),),
+          // ]),
           Container(
             //padding: EdgeInsets.only(top: 15.0, bottom: 10.0),
             margin: EdgeInsets.only(top: 7.0, bottom: 0.0),
@@ -132,32 +147,25 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                     (widget.futureRun.daysUntilNextRun <= 14
                                         ? widget.futureRun.daysUntilNextRun == 0
                                             ? 'TODAY'
-                                            : widget.futureRun
-                                                        .daysUntilNextRun ==
-                                                    1
+                                            : widget.futureRun.daysUntilNextRun == 1
                                                 ? 'Tomorrow'
                                                 : '${widget.futureRun.daysUntilNextRun.toString()} days'
-                                        : widget.futureRun.daysUntilNextRun <=
-                                                30
-                                            ? (widget.futureRun
-                                                            .daysUntilNextRun ~/
+                                        : widget.futureRun.daysUntilNextRun <= 30
+                                            ? (widget.futureRun.daysUntilNextRun ~/
                                                         7.0)
                                                     .toString() +
-                                                ((widget.futureRun
-                                                                .daysUntilNextRun ~/
+                                                ((widget.futureRun.daysUntilNextRun ~/
                                                             7.0) ==
                                                         1
                                                     ? ' week'
                                                     : ' weeks')
-                                            : widget.futureRun
-                                                        .daysUntilNextRun <=
+                                            : widget.futureRun.daysUntilNextRun <=
                                                     365
                                                 ? (widget.futureRun
                                                                 .daysUntilNextRun ~/
                                                             30.0)
                                                         .toString() +
-                                                    ((widget.futureRun
-                                                                    .daysUntilNextRun ~/
+                                                    ((widget.futureRun.daysUntilNextRun ~/
                                                                 30.0) ==
                                                             1
                                                         ? ' month'
@@ -166,10 +174,11 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                                                 .daysUntilNextRun ~/
                                                             365.0)
                                                         .toString() +
-                                                        ((widget.futureRun
-                                                                .daysUntilNextRun ~/
-                                                            365.0) == 1 ? ' year' :
-                                                    ' years')),
+                                                    ((widget.futureRun.daysUntilNextRun ~/
+                                                                365.0) ==
+                                                            1
+                                                        ? ' year'
+                                                        : ' years')),
                                 style: const TextStyle(
                                     color: Colors.black87,
                                     fontFamily: 'AvenirNextDemiBold',

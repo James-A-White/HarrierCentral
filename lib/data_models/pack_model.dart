@@ -6,7 +6,7 @@ class PackModel {
   final String hasherId;
   final int isFollowing;
   final int isMember;
-  final int isRsvped;
+  // final int isRsvped;
   final String hasherEventMapId;
   int isHare;
   final int virginVisitorType;
@@ -15,6 +15,7 @@ class PackModel {
   int rsvpState;
   int attendenceState;
   int isPaid;
+  int paymentType;
   final String displayName;
   final String photo;
   final int userRunCount;
@@ -36,7 +37,7 @@ class PackModel {
       this.hasherId,
       this.isFollowing,
       this.isMember,
-      this.isRsvped,
+      // this.isRsvped,
       this.hasherEventMapId,
       this.isHare,
       this.virginVisitorType,
@@ -45,6 +46,7 @@ class PackModel {
       this.rsvpState,
       this.attendenceState,
       this.isPaid,
+      this.paymentType,
       this.displayName,
       this.photo,
       this.userRunCount,

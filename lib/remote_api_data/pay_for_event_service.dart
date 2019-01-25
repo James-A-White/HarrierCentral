@@ -58,7 +58,8 @@ class PayForEventService {
             onTrailCount: items['onTrailCount'],
             paidCount: items['paidCount'],
             buttonState: items['buttonState'],
-            totalRunsThisKennel: items['totalRunsThisKennel']);
+            totalRunsThisKennel: items['totalRunsThisKennel'],
+            isPaid: items['isPaid']);
 
         itemList.add(item);
       },
