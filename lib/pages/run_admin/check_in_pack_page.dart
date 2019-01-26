@@ -403,7 +403,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                                                                     rsvpYes
                                                                         .value
                                                                 ? Container()
-                                                                : packList[index].attendenceState <= attendenceNo.value
+                                                                : ((packList[index].attendenceState <= attendenceNo.value) && (packList[index].requestedAttendenceState <= attendenceNo.value))
                                                                     ? Image.asset(
                                                                         'images/icons/dollar_sign_icon.png',
                                                                         height:
@@ -636,13 +636,17 @@ class CheckInPackPageState extends State<CheckInPackPage> {
               });
 
           dlg.then((bool x) {
+            int minimumAttendenceValue = checkinType == checkinTypeRunStart.value ? attendenceAtHash.value : attendenceOnIn.value;
+
+
             PayForEventService paySrv = PayForEventService();
             Future<List<PayForEventModel>> retVal = paySrv.payForEvent(
                 result.targetUserId,
                 widget.futureRun.eventId,
                 result.hasherEventMapId,
                 pp.selectedValue,
-                pp.amount);
+                pp.amount,
+                minimumAttendenceValue);
             retVal.then((List<PayForEventModel> paymentResult) {
               if (paymentResult.isNotEmpty) {
                 showScanResults(
@@ -1134,7 +1138,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              payForEvent(
+                              processPayment(
                                   index,
                                   _packScopedModel,
                                   _payScopedModel,
@@ -1174,7 +1178,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              payForEvent(
+                              processPayment(
                                   index,
                                   _packScopedModel,
                                   _payScopedModel,
@@ -1206,8 +1210,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                                 'images/icons/paid_other_icon.png',
                                 height: 30.0,
                                 width: 30.0,
-                                color: packList[index].paymentType ==
-                                        paymentCashOtherAmount.value
+                                color: ((packList[index].paymentType ==
+                                        paymentCashOtherAmount.value) || (packList[index].paymentType ==
+                                        paymentBankTransferOtherAmount.value))
                                     ? Colors.yellow
                                     : Colors.white),
                             //tooltip: 'Select to follow a Kennel',
@@ -1256,7 +1261,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              payForEvent(
+                              processPayment(
                                   index,
                                   _packScopedModel,
                                   _payScopedModel,
@@ -1299,7 +1304,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              payForEvent(
+                              processPayment(
                                   index,
                                   _packScopedModel,
                                   _payScopedModel,
@@ -1343,7 +1348,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              payForEvent(
+                              processPayment(
                                   index,
                                   _packScopedModel,
                                   _payScopedModel,
@@ -1402,14 +1407,14 @@ class CheckInPackPageState extends State<CheckInPackPage> {
         int t = int.tryParse(type);
 
         if ((v != null) && (t != null)) {
-          payForEvent(index, _packScopedModel, _payScopedModel, context,
+          processPayment(index, _packScopedModel, _payScopedModel, context,
               t, v);
         }
       }
     });
   }
 
-  void payForEvent(
+  void processPayment(
       int index,
       PackScopedModel _packScopedModel,
       PayScopedModel _payScopedModel,
@@ -1418,9 +1423,45 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       num paymentAmount) {
     PackModel hasher = packList[index];
 
+    if (hasher.rsvpState < rsvpYes.value)
+    {
+      hasher.rsvpState = -1;
+      hasher.requestedRsvpState = rsvpYes.value;
+    }
+
+    // if (hasher.attendenceState < attendenceAtHash.value)
+    // {
+    //   hasher.attendenceState = -1;
+    //   hasher.requestedAttendenceState = attendenceAtHash.value;
+    // }
+
+    _packScopedModel.forceRefresh();
+
     _payScopedModel
-        .payForEvent(packList, index, paymentType, paymentAmount)
-        .then((void dummy) {
+        .payForEvent(packList, index, paymentType, paymentAmount,attendenceAtHash.value)
+        .then((List<PayForEventModel> result) {
+
+      if (paymentType == paymentNotPaid.value) {
+        hasher.isPaid = 0;
+      } else {
+        hasher.isPaid = 1;
+      } 
+
+      if (hasher.hasherEventMapId != result[0].hasherEventMapId)
+      {
+        hasher.hasherEventMapId = result[0].hasherEventMapId;
+      }
+
+      hasher.rsvpState = rsvpYes.value;
+      hasher.requestedRsvpState = -1;
+
+      if (hasher.attendenceState < attendenceAtHash.value)
+      {
+        hasher.attendenceState = attendenceAtHash.value;
+      }
+
+       _packScopedModel.forceRefresh();
+      
       packList[index].paymentType = paymentType;
       if ((paymentType == paymentCashOtherAmount.value) ||(paymentType == paymentBankTransferOtherAmount.value)) {
         final num fundsDifference = paymentAmount -
@@ -1446,6 +1487,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             paymentAmount,
             widget.futureRun.digitsAfterDecimal,
             widget.futureRun.currencySymbol);
+
+       
 
         String paymentMethod = paymentType == paymentCashOtherAmount.value ? 'in cash' : 'by bank transfer';
 
@@ -1477,12 +1520,12 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
     packList[index].isPaid = -1;
 
-    int attendenceState = -1;
-    if (packList[index].attendenceState < attendenceAtHash.value) {
-      attendenceState = attendenceAtHash.value;
-    }
-    _packScopedModel.setRsvpState(
-        rsvpYes.value, -1, attendenceState, packList[index]);
+    // int attendenceState = -1;
+    // if (packList[index].attendenceState < attendenceAtHash.value) {
+    //   attendenceState = attendenceAtHash.value;
+    // }
+    // _packScopedModel.setRsvpState(
+    //     rsvpYes.value, -1, attendenceState, packList[index]);
 
     Scaffold.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
   }

@@ -26,8 +26,8 @@ class PayScopedModel extends Model {
   //   return _payResult.length;
   // }
 
-  Future<void> payForEvent(
-      List<PackModel> packList, int index, int paymentType, num paymentAmount) {
+  Future<List<PayForEventModel>> payForEvent(
+      List<PackModel> packList, int index, int paymentType, num paymentAmount, num minimumAttendenceValue) {
     // if ((rsvpState != -1) && (rsvpState != run.rsvpState)) {
     //   run.requestedRsvpState = rsvpState;
     //   run.rsvpState = -1;
@@ -49,16 +49,16 @@ class PayScopedModel extends Model {
     notifyListeners();
     PayForEventService srv = new PayForEventService();
 
-    srv
+    return srv
         .payForEvent(packList[index].hasherId, packList[index].eventId,
-            packList[index].hasherEventMapId, paymentType, paymentAmount)
-        .then<dynamic>((List<PayForEventModel> result) {
+            packList[index].hasherEventMapId, paymentType, paymentAmount, minimumAttendenceValue);
+       // .then<dynamic>((List<PayForEventModel> result) {
 
-      if (paymentType == paymentNotPaid.value) {
-        packList[index].isPaid = 0;
-      } else {
-        packList[index].isPaid = 1;
-      } 
+      // if (paymentType == paymentNotPaid.value) {
+      //   packList[index].isPaid = 0;
+      // } else {
+      //   packList[index].isPaid = 1;
+      // } 
 
       
 
@@ -82,9 +82,9 @@ class PayScopedModel extends Model {
       // run.rsvpMaybeCount = result.rsvpMaybeCount;
       // run.haresCount = result.haresCount;
 
-      notifyListeners();
-    });
+    //   notifyListeners();
+    // });
 
-    return Future<void>((){});
+    //return Future<void>((){});
   }
 }

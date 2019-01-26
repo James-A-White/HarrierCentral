@@ -8,6 +8,7 @@ import 'package:harrier_central/data_models/process_qr_scan_model.dart';
 import 'package:harrier_central/pages/run_admin/payment_popup.dart';
 import 'package:harrier_central/remote_api_data/pay_for_event_service.dart';
 import 'package:harrier_central/data_models/pay_for_event_model.dart';
+import 'package:harrier_central/util/enums.dart';
 
 class CheckInScannerPage extends StatefulWidget {
   CheckInScannerPage(
@@ -165,7 +166,8 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                 eventId,
                 result.resultGuid2,
                 pp.selectedValue,
-                pp.amount);
+                pp.amount,
+                isRunStart == 1 ? attendenceAtHash.value : attendenceOnIn.value);
             retVal.then((List<PayForEventModel> paymentResult) {
               if (paymentResult.isNotEmpty) {
                 setState(() => barcode = paymentResult[0].result);

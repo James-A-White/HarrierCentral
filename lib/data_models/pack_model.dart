@@ -7,7 +7,7 @@ class PackModel {
   final int isFollowing;
   final int isMember;
   // final int isRsvped;
-  final String hasherEventMapId;
+  String hasherEventMapId;
   int isHare;
   final int virginVisitorType;
   final DateTime userStartEvent;

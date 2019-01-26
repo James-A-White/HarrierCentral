@@ -12,6 +12,7 @@ final int paidCount;
 final int buttonState;
 final int totalRunsThisKennel;
 final int isPaid;
+final String hasherEventMapId;
 
 PayForEventModel(
     {
@@ -24,6 +25,7 @@ PayForEventModel(
         this.buttonState,
         this.totalRunsThisKennel,
         this.isPaid,
+        this.hasherEventMapId,
     });
 
   @override

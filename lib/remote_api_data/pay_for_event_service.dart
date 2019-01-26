@@ -16,7 +16,8 @@ class PayForEventService {
       String eventId,
       String hasherEventMapId,
       int paymentType,
-      num paymentAmount) async {
+      num paymentAmount,
+      int minimumAttendenceValue) async {
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
     final String accessToken = Utilities.generateToken(userId, 'payForEvent');
@@ -29,6 +30,7 @@ class PayForEventService {
       'hasherEventMapId': hasherEventMapId,
       'paymentType': paymentType.toString(),
       'paymentAmount': paymentAmount.toString(),
+      'minimumAttendenceValue': minimumAttendenceValue.toString(),
     });
 
     final http.Response response = await http
@@ -59,7 +61,9 @@ class PayForEventService {
             paidCount: items['paidCount'],
             buttonState: items['buttonState'],
             totalRunsThisKennel: items['totalRunsThisKennel'],
-            isPaid: items['isPaid']);
+            isPaid: items['isPaid'],
+            hasherEventMapId: items['hasherEventMapId'],
+            );
 
         itemList.add(item);
       },
