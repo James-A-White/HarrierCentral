@@ -57,7 +57,6 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
   List<PackModel> packList;
 
-
   num snackBarButtonSize = 35.0;
 
   Future<Null> _getPackWithRefresh() async {
@@ -616,11 +615,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     final Future<String> scanAction = BarcodeScanner.scan();
     scanAction.then((String scanText) {
       ProcessQrScanForCheckinService srv = ProcessQrScanForCheckinService();
-      final Future<ProcessQrScanForCheckinModel> apiCall = srv.processQrScan(
-          widget.futureRun.eventId,
-          scanText,
-          checkinType,
-          0);
+      final Future<ProcessQrScanForCheckinModel> apiCall =
+          srv.processQrScan(widget.futureRun.eventId, scanText, checkinType, 0);
       apiCall.then((ProcessQrScanForCheckinModel result) {
         if (result.isPaid == 0) {
           PaymentPopup pp = new PaymentPopup(
@@ -648,9 +644,15 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 pp.selectedValue,
                 pp.amount);
             retVal.then((List<PayForEventModel> paymentResult) {
-              
               if (paymentResult.isNotEmpty) {
-                showScanResults(snackBar, scanContext, result, checkinType, paymentResult[0].isPaid,paymentResult[0].result);
+                showScanResults(
+                    snackBar,
+                    scanContext,
+                    result,
+                    checkinType,
+                    paymentResult[0].isPaid,
+                    paymentResult[0].result,
+                    pp.selectedValue);
                 //_packScopedModel.forceRefresh();
               } else {
                 //setState(() => barcode = 'Error processing payment');
@@ -658,7 +660,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             });
           });
         } else {
-          showScanResults(snackBar, scanContext, result, checkinType, 1, result.paymentInstructions);
+          showScanResults(snackBar, scanContext, result, checkinType, 1,
+              result.paymentInstructions, result.paymentType);
           //_packScopedModel.forceRefresh();
         }
       });
@@ -669,60 +672,65 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     });
   }
 
-  Widget showScanResults(Widget snackBar, BuildContext scanContext, ProcessQrScanForCheckinModel result, num checkinType, num isPaid, String userMessage) {
-    
-    snackBar = buildScanResultSnackbar(
-        scanContext, _packScopedModel, userMessage);
-    
+  Widget showScanResults(
+      Widget snackBar,
+      BuildContext scanContext,
+      ProcessQrScanForCheckinModel result,
+      num checkinType,
+      num isPaid,
+      String userMessage,
+      int paymentType) {
+    snackBar =
+        buildScanResultSnackbar(scanContext, _packScopedModel, userMessage);
+
     Scaffold.of(scanContext)
         .removeCurrentSnackBar(reason: SnackBarClosedReason.remove);
     Scaffold.of(scanContext).showSnackBar(snackBar);
-    
-    var packItem = packList.firstWhere((PackModel packMember) =>
-        packMember.hasherId.toUpperCase() ==
-        result.targetUserId.toUpperCase(), orElse: () => null);
 
-    if (packItem == null)
-    {
-       packItem = PackModel(
-         hasherId: result.targetUserId,
-         photo: result.photo,
-         rsvpState: result.rsvpState,
-         attendenceState: result.attendenceState,
-         displayName: result.scannedUserName,
-         eventId: widget.futureRun.eventId,
-         isMember: result.isMember,
-         isHare: result.isHare,
-         hasherEventMapId: result.hasherEventMapId,
-         isFollowing: result.isFollowing,
-         currencySymbol: widget.futureRun.currencySymbol,
-         eventPrice: result.runPriceThisUser,
-         digitsAfterDecimal: widget.futureRun.digitsAfterDecimal,
-         virginVisitorType: result.virginVisitorType,
-         userStartEvent: result.userStartEvent,
-         userEndEvent: result.userEndEvent,
-         userRunCount: result.userRunCountThisKennel,
-         credit: result.remainingCredit,
-         allowNegativeCredit: result.allowNegativeCredit,
-         isPaid: result.isPaid,
-         paymentType: result.paymentType
+    var packItem = packList.firstWhere(
+        (PackModel packMember) =>
+            packMember.hasherId.toUpperCase() ==
+            result.targetUserId.toUpperCase(),
+        orElse: () => null);
 
-         );
-       
-       packList.add(packItem);
+    if (packItem == null) {
+      packItem = PackModel(
+          hasherId: result.targetUserId,
+          photo: result.photo,
+          rsvpState: result.rsvpState,
+          attendenceState: result.attendenceState,
+          displayName: result.scannedUserName,
+          eventId: widget.futureRun.eventId,
+          isMember: result.isMember,
+          isHare: result.isHare,
+          hasherEventMapId: result.hasherEventMapId,
+          isFollowing: result.isFollowing,
+          currencySymbol: widget.futureRun.currencySymbol,
+          eventPrice: result.runPriceThisUser,
+          digitsAfterDecimal: widget.futureRun.digitsAfterDecimal,
+          virginVisitorType: result.virginVisitorType,
+          userStartEvent: result.userStartEvent,
+          userEndEvent: result.userEndEvent,
+          userRunCount: result.userRunCountThisKennel,
+          credit: result.remainingCredit,
+          allowNegativeCredit: result.allowNegativeCredit,
+          isPaid: result.isPaid,
+          paymentType: paymentType);
+
+      packList.add(packItem);
     }
-    
-      packItem.rsvpState = rsvpYes.value;
 
-      if (isPaid >= 0) packItem.isPaid = isPaid;
+    packItem.paymentType = paymentType;
+    packItem.rsvpState = rsvpYes.value;
 
-      if (checkinType == 0) {
-        packItem.attendenceState = attendenceAtHash.value;
-      } else {
-        packItem.attendenceState = attendenceOnIn.value;
-      }
-      _packScopedModel.forceRefresh();
+    if (isPaid >= 0) packItem.isPaid = isPaid;
 
+    if (checkinType == 0) {
+      packItem.attendenceState = attendenceAtHash.value;
+    } else {
+      packItem.attendenceState = attendenceOnIn.value;
+    }
+    _packScopedModel.forceRefresh();
 
     return snackBar;
   }
@@ -1113,13 +1121,14 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                         children: <Widget>[
                           IconButton(
                             icon: Image.asset('images/icons/x_icon.png',
-                                height: 30.0, width: 30.0,
-                                color: ((packList[index].isPaid == 0) || (packList[index].paymentType == paymentNotPaid.value))
-                                ? Colors.yellow
-                                : Colors.white
-                                
-                             ),
- 
+                                height: 30.0,
+                                width: 30.0,
+                                color: ((packList[index].isPaid == 0) ||
+                                        (packList[index].paymentType ==
+                                            paymentNotPaid.value))
+                                    ? Colors.yellow
+                                    : Colors.white),
+
                             //tooltip: 'Select to follow a Kennel',
                             iconSize: 30.0,
                             alignment: Alignment.topCenter,
@@ -1154,13 +1163,12 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                         children: <Widget>[
                           IconButton(
                             icon: Image.asset('images/icons/free_run_icon.png',
-                                height: 30.0, width: 30.0,
-                                
-                                                                color: packList[index].paymentType == paymentFreeRun.value
-                                ? Colors.yellow
-                                : Colors.white
-                                
-                             ),
+                                height: 30.0,
+                                width: 30.0,
+                                color: packList[index].paymentType ==
+                                        paymentFreeRun.value
+                                    ? Colors.yellow
+                                    : Colors.white),
                             //tooltip: 'Select to follow a Kennel',
                             iconSize: 30.0,
                             alignment: Alignment.topCenter,
@@ -1198,11 +1206,10 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                                 'images/icons/paid_other_icon.png',
                                 height: 30.0,
                                 width: 30.0,
-                                color: packList[index].paymentType == paymentCashOtherAmount.value
-                                ? Colors.yellow
-                                : Colors.white
-                                
-                             ),
+                                color: packList[index].paymentType ==
+                                        paymentCashOtherAmount.value
+                                    ? Colors.yellow
+                                    : Colors.white),
                             //tooltip: 'Select to follow a Kennel',
                             iconSize: 30.0,
                             alignment: Alignment.topCenter,
@@ -1240,11 +1247,10 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                                 'images/icons/dollar_sign_icon.png',
                                 height: 30.0,
                                 width: 30.0,
-                                color: packList[index].paymentType == paymentCash.value
-                                ? Colors.yellow
-                                : Colors.white
-                                
-                             ),
+                                color: packList[index].paymentType ==
+                                        paymentCash.value
+                                    ? Colors.yellow
+                                    : Colors.white),
                             //tooltip: 'Select to follow a Kennel',
                             iconSize: 30.0,
                             alignment: Alignment.topCenter,
@@ -1282,13 +1288,12 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                         children: <Widget>[
                           IconButton(
                             icon: Image.asset('images/icons/bank_icon.png',
-                                height: 30.0, width: 30.0,
-                                
-                                color: packList[index].paymentType == paymentBankTransfer.value
-                                ? Colors.yellow
-                                : Colors.white
-                                
-                             ),
+                                height: 30.0,
+                                width: 30.0,
+                                color: packList[index].paymentType ==
+                                        paymentBankTransfer.value
+                                    ? Colors.yellow
+                                    : Colors.white),
                             //tooltip: 'Select to follow a Kennel',
                             iconSize: 30.0,
                             alignment: Alignment.topCenter,
@@ -1329,11 +1334,10 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                                 'images/icons/borrow_money_icon.png',
                                 height: 30.0,
                                 width: 30.0,
-                                color: packList[index].paymentType == paymentHashCredit.value
-                                ? Colors.yellow
-                                : Colors.white
-                                
-                             ),
+                                color: packList[index].paymentType ==
+                                        paymentHashCredit.value
+                                    ? Colors.yellow
+                                    : Colors.white),
                             //tooltip: 'Select to follow a Kennel',
                             iconSize: 30.0,
                             alignment: Alignment.topCenter,
@@ -1379,21 +1383,28 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
   void payOther(
       int index, PackScopedModel _packScopedModel, BuildContext context) {
-    OtherPaymentPopup pp = new OtherPaymentPopup(currencySymbol: '€');
+    OtherPaymentPopup otherPaymentPopup =
+        new OtherPaymentPopup(currencySymbol: widget.futureRun.currencySymbol);
 
-    Future<String> dlg = showDialog<String>(
+    Future<Map<String,String>> dlg = showDialog<Map<String,String>>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
-          return pp;
+          return otherPaymentPopup;
         });
 
-    dlg.then((String x) {
-      num amount = num.tryParse(x);
+    dlg.then((Map<String,String> x) {
+      String amount = x['amount'];
+      String type = x['type'];
 
-      if (amount != null) {
-        payForEvent(index, _packScopedModel, _payScopedModel, context,
-            paymentCashOtherAmount.value, num.tryParse(x));
+      if (type != 'cancel') {
+        num v = num.tryParse(amount);
+        int t = int.tryParse(type);
+
+        if ((v != null) && (t != null)) {
+          payForEvent(index, _packScopedModel, _payScopedModel, context,
+              t, v);
+        }
       }
     });
   }
@@ -1410,8 +1421,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     _payScopedModel
         .payForEvent(packList, index, paymentType, paymentAmount)
         .then((void dummy) {
-          packList[index].paymentType = paymentType;
-      if (paymentType == paymentCashOtherAmount.value) {
+      packList[index].paymentType = paymentType;
+      if ((paymentType == paymentCashOtherAmount.value) ||(paymentType == paymentBankTransferOtherAmount.value)) {
         final num fundsDifference = paymentAmount -
             (hasher.isMember == 1
                 ? widget.futureRun.eventPriceForMembers
@@ -1436,6 +1447,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             widget.futureRun.digitsAfterDecimal,
             widget.futureRun.currencySymbol);
 
+        String paymentMethod = paymentType == paymentCashOtherAmount.value ? 'in cash' : 'by bank transfer';
+
         if (fundsDifference > 0.0) {
           showDialog<void>(
               context: context,
@@ -1444,10 +1457,12 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 return AlertDialog(
                   title: new Text("Credit applied to account"),
                   content: new Text(
-                      '$amountPaid was paid. $hashCash was used to pay for the run\r\nand $credit has been credited\r\nto your Hash account\r\nfor ${widget.futureRun.kennelShortName}'),
+                      '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${widget.futureRun.kennelShortName}'),
                   actions: <Widget>[
                     // usually buttons at the bottom of the dialog
                     new FlatButton(
+                      color:Colors.blue,
+                      textColor: Colors.white,
                       child: new Text("Close"),
                       onPressed: () {
                         Navigator.of(context).pop();

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:harrier_central/util/utilities.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:harrier_central/util/enums.dart';
 
 class OtherPaymentPopup extends StatefulWidget {
   final String currencySymbol;
@@ -15,7 +16,7 @@ class OtherPaymentPopup extends StatefulWidget {
 
 class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
   final FocusNode myFocusNodeFirstName = FocusNode();
-  TextEditingController signupFirstNameController = TextEditingController();
+  TextEditingController otherPaymentAmountTextController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
       content: TextField(
         autofocus: true,
         focusNode: myFocusNodeFirstName,
-        controller: signupFirstNameController,
+        controller: otherPaymentAmountTextController,
         keyboardType: TextInputType.number,
         style: const TextStyle(
             fontFamily: 'WorkSansSemiBold',
@@ -33,7 +34,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
         decoration: const InputDecoration(
           border: InputBorder.none,
           icon: Icon(
-            FontAwesomeIcons.coins,
+            FontAwesomeIcons.moneyBillWave,
             color: Colors.white,
           ),
           hintText: 'Other amount',
@@ -41,30 +42,53 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
         ),
       ),
       actions: <Widget>[
-        Padding(
-          padding: EdgeInsets.only(right: 60.0),
-          child: Container(
-            width: 100.0,
-            child: RaisedButton(
-              color: Colors.red,
-              child: Text("Cancel"),
-              textColor: Colors.white,
-              onPressed: () {
-                Navigator.of(context).pop(signupFirstNameController.text);
-              },
-            ),
-          ),
+        // Padding(
+        //   padding: EdgeInsets.only(right: 0.0),
+        //   child: Container(
+        //     width: 60.0,
+        //     child:
+
+        FlatButton(
+          color: Colors.red,
+          child: Text("Cancel"),
+          textColor: Colors.white,
+          onPressed: () {
+            Navigator.of(context)
+                .pop(<String, String>{'type': 'cancel', 'amount': ''});
+          },
         ),
-        Container(
-          width: 100.0,
-          child: RaisedButton(
-            child: Text("Process"),
+        //   ),
+        // ),
+        // Container(
+        //   width: 60.0,
+        //child:
+
+        FlatButton(
+            color: Colors.blue,
+            child: Text("Cash"),
             textColor: Colors.white,
             onPressed: () {
-              Navigator.of(context).pop(signupFirstNameController.text);
-            },
-          ),
-        ),
+              Navigator.of(context).pop(<String, String>{
+                'type': paymentCashOtherAmount.value.toString(),
+                'amount': otherPaymentAmountTextController.text
+              });
+            }),
+        // ),
+        // Container(
+        //   width: 60.0,
+        //child:
+
+        FlatButton(
+          color: Colors.blue,
+          child: Text("Bank transfer"),
+          textColor: Colors.white,
+            onPressed: () {
+              Navigator.of(context).pop(<String, String>{
+                'type': paymentBankTransferOtherAmount.value.toString(),
+                'amount': otherPaymentAmountTextController.text
+              });
+            }),
+        // ),
       ],
     );
 
