@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data_models/add_user_model.dart';
 import 'package:harrier_central/main.dart';
 import 'package:harrier_central/remote_api_data/add_user_service.dart';
@@ -18,8 +19,11 @@ import 'package:harrier_central/util/routes.dart';
 
 class AddMemberPage extends StatefulWidget {
   String kennelId;
+  String eventId;
+  EnumAttendenceState<int> attendenceState;
+  String profileImageUrl;
 
-  AddMemberPage({Key key, this.kennelId}) : super(key: key);
+  AddMemberPage({Key key, this.kennelId, this.eventId, this.attendenceState = attndenceUnknown, this.profileImageUrl = ''}) : super(key: key);
 
   @override
   _AddMemberPageState createState() => _AddMemberPageState();
@@ -677,6 +681,7 @@ class _AddMemberPageState extends State<AddMemberPage>
         _isCreatingAccount = true;
       });
 
+
       final AddUserService t = AddUserService();
       final Future<AddUserModel> x = t.addUser(
           signupFirstNameController.text,
@@ -685,13 +690,16 @@ class _AddMemberPageState extends State<AddMemberPage>
           signupHashNameController.text,
           '',
           '',
-          'bundle://Avatar-1',
-          widget.kennelId);
+          widget.profileImageUrl.isEmpty ? 'bundle://Avatar-1' : widget.profileImageUrl,
+          widget.kennelId,
+          widget.eventId,
+          hasherTypeMember,
+          attendenceState: widget.attendenceState);
       x.then((AddUserModel user) {
         // Preferences.setStringPref(StringPrefsEnum.userId, user.userId);
-        Future<dynamic>.delayed(const Duration(milliseconds: 3500))
+        Future<dynamic>.delayed(const Duration(milliseconds: 1500))
             .then((void dummy) {
-          Navigator.of(context).pop();
+          Navigator.of(context).pop(user);
         });
       });
     }

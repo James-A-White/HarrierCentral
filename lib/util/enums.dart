@@ -53,6 +53,8 @@ class EnumPaymentType<int> extends Enum<int> {
    const EnumPaymentType(int val) : super (val);
 }
 
+
+ const EnumPaymentType<int> paymentTypeUnknown =  EnumPaymentType<int>(0);
  const EnumPaymentType<int> paymentNotPaid =  EnumPaymentType<int>(1);
  const EnumPaymentType<int> paymentFreeRun =  EnumPaymentType<int>(2);
  const EnumPaymentType<int> paymentCash =  EnumPaymentType<int>(3);
@@ -69,6 +71,16 @@ class EnumCheckInType<int> extends Enum<int> {
 
  const EnumCheckInType<int> checkinTypeRunStart =  EnumCheckInType<int>(0);
  const EnumCheckInType<int> checkinTypeRunEnd =  EnumCheckInType<int>(1);
+
+   //////////////////////////
+
+class EnumHasherType<int> extends Enum<int> {
+   const EnumHasherType(int val) : super (val);
+}
+
+ const EnumHasherType<int> hasherTypeMember =  EnumHasherType<int>(0);
+ const EnumHasherType<int> hasherTypeVisitor =  EnumHasherType<int>(1);
+ const EnumHasherType<int> hasherTypeVirgin =  EnumHasherType<int>(2);
 
 
 

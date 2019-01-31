@@ -13,6 +13,7 @@ import 'package:harrier_central/data_models/future_run_model.dart';
 import 'package:harrier_central/data_models/pack_model.dart';
 import 'package:harrier_central/pages/run_admin/run_start_end_qr_codes_page.dart';
 import 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
+import 'package:harrier_central/pages/run_admin/payment_report.dart';
 import 'package:harrier_central/remote_api_data/future_run_scoped_model.dart';
 import 'package:harrier_central/remote_api_data/get_pack_service.dart';
 import 'package:harrier_central/util/enums.dart';
@@ -1111,12 +1112,24 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                               width: 150.0,
                               child: RaisedButton(
                                   child: const Text(
-                                    '<tbd>',
+                                    'Run fee report',
                                     style: TextStyle(color: Colors.white),
                                   ),
-                                  onPressed: () {
-                                    int i = 0;
-                                  }),
+                                onPressed: () {
+                                  Navigator.push<dynamic>(
+                                    context,
+                                    MaterialPageRoute<dynamic>(
+                                      builder: (context) => PaymentReportPage(
+
+                                            eventId: widget.futureRun.eventId,
+                                            currencySymbol: widget.futureRun.currencySymbol,
+                                            digitsAfterDecimal: widget.futureRun.digitsAfterDecimal,
+
+                                          ),
+                                    ),
+                                  );
+                                },
+                                  ),
                             ),
                           ],
                         ),

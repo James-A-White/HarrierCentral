@@ -8,8 +8,8 @@ class FutureRun {
   final String locationOneLineDesc;
   final String eventDescription;
 
-  final double eventPriceForMembers;
-  final double eventPriceForNonMembers;
+  final num eventPriceForMembers;
+  final num eventPriceForNonMembers;
   final String eventCurrencyType;
 
   final String currencySymbol;

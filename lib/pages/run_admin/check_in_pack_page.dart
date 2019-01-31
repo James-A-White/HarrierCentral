@@ -24,6 +24,9 @@ import 'package:harrier_central/data_models/process_qr_scan_for_checkin_model.da
 import 'package:harrier_central/remote_api_data/process_qr_scan_for_checkin_service.dart';
 import 'package:harrier_central/pages/run_admin/payment_popup.dart';
 import 'package:harrier_central/data_models/pay_for_event_model.dart';
+import 'package:harrier_central/pages/kennel_admin/add_member_page.dart';
+import 'package:harrier_central/data_models/add_user_model.dart';
+import 'package:harrier_central/pages/init/choose_profile_image.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 
@@ -590,7 +593,36 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                                             fontFamily: 'WorkSansBold'),
                                       ),
                                     ),
-                                    onPressed: () {}),
+                onPressed: () {
+                   Navigator.push<String>(
+                    context,
+                    MaterialPageRoute<String>(
+                      builder: (context) => ChooseProfileImage(false,
+                            // kennelId: widget.futureRun.kennelId,
+                            // eventId: widget.futureRun.eventId,
+                            // attendenceState: attendenceAtHash,
+                          ),
+                    ),
+                  ).then<dynamic>((String profileImageUrl){
+                    Navigator.push<AddUserModel>(
+                    context,
+                    MaterialPageRoute<AddUserModel>(
+                      builder: (context) => AddMemberPage(
+                            kennelId: widget.futureRun.kennelId,
+                            eventId: widget.futureRun.eventId,
+                            attendenceState: attendenceAtHash,
+                            profileImageUrl: profileImageUrl
+                          ),
+                    ),
+                  ).then<dynamic>((AddUserModel test){
+                    num i = 0;
+                  });
+
+
+                  });
+
+                },
+             ),
                               ]),
                         ),
                       )
@@ -1124,7 +1156,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: <Widget>[
                           IconButton(
-                            icon: Image.asset('images/icons/x_icon.png',
+                            icon: Image.asset('images/icons/payment_type_1.png',
                                 height: 30.0,
                                 width: 30.0,
                                 color: ((packList[index].isPaid == 0) ||
@@ -1166,7 +1198,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: <Widget>[
                           IconButton(
-                            icon: Image.asset('images/icons/free_run_icon.png',
+                            icon: Image.asset('images/icons/payment_type_2.png',
                                 height: 30.0,
                                 width: 30.0,
                                 color: packList[index].paymentType ==
@@ -1207,7 +1239,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                         children: <Widget>[
                           IconButton(
                             icon: Image.asset(
-                                'images/icons/paid_other_icon.png',
+                                'images/icons/payment_type_5.png',
                                 height: 30.0,
                                 width: 30.0,
                                 color: ((packList[index].paymentType ==
@@ -1249,7 +1281,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                         children: <Widget>[
                           IconButton(
                             icon: Image.asset(
-                                'images/icons/dollar_sign_icon.png',
+                                'images/icons/payment_type_3.png',
                                 height: 30.0,
                                 width: 30.0,
                                 color: packList[index].paymentType ==
@@ -1292,7 +1324,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: <Widget>[
                           IconButton(
-                            icon: Image.asset('images/icons/bank_icon.png',
+                            icon: Image.asset('images/icons/payment_type_4.png',
                                 height: 30.0,
                                 width: 30.0,
                                 color: packList[index].paymentType ==
@@ -1336,7 +1368,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                         children: <Widget>[
                           IconButton(
                             icon: Image.asset(
-                                'images/icons/borrow_money_icon.png',
+                                'images/icons/payment_type_6.png',
                                 height: 30.0,
                                 width: 30.0,
                                 color: packList[index].paymentType ==

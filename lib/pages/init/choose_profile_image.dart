@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
@@ -7,6 +6,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -24,11 +24,13 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class ChooseAvatarPage extends StatefulWidget {
-  const ChooseAvatarPage({Key key}) : super(key: key);
+class ChooseProfileImage extends StatefulWidget {
+  bool isInitFlow;
+
+  ChooseProfileImage(this.isInitFlow, {Key key}) : super(key: key);
 
   @override
-  _ChooseAvatarState createState() => _ChooseAvatarState();
+  _ChooseProfileImageState createState() => _ChooseProfileImageState();
 }
 
 enum _SelectedImageTypeEnum {
@@ -38,7 +40,7 @@ enum _SelectedImageTypeEnum {
   facebookProfilePic
 }
 
-class _ChooseAvatarState extends State<ChooseAvatarPage> {
+class _ChooseProfileImageState extends State<ChooseProfileImage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   _SelectedImageTypeEnum _selectedImageType = _SelectedImageTypeEnum.avatar;
@@ -439,6 +441,12 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
             .replaceAll('UQR:', '') +
         '_thumb.jpg';
 
+     if (widget.isInitFlow == false)
+     {
+        var uuid = Uuid();
+        fileName = uuid.v1().toString() + '_thumb.jpg';
+     }
+
     switch (_selectedImageType) {
       case _SelectedImageTypeEnum.avatar:
         avatarUrl = 'bundle://Avatar-$_selectedAvatarIcon';
@@ -453,25 +461,40 @@ class _ChooseAvatarState extends State<ChooseAvatarPage> {
 
     Preferences.setStringPref(StringPrefsEnum.avatarUrl, avatarUrl);
 
-    String userId = Preferences.getStringPref(StringPrefsEnum.userId);
-    UpdateAvatarService svc = UpdateAvatarService();
-    svc.updateAvatar(avatarUrl, userId).then((SingleResultModel result) {
-      if (_selectedImageType == _SelectedImageTypeEnum.fromCamera) {
-        _imageFromCamera.then((File file) {
-          _upload(file, fileName);
-        });
-      } else if (_selectedImageType == _SelectedImageTypeEnum.fromGallery) {
-        _imageFromGallery.then((File file) {
-          _upload(file, fileName);
-        });
-      }
+    if (widget.isInitFlow == true) {
+      String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+      UpdateAvatarService svc = UpdateAvatarService();
+      svc.updateAvatar(avatarUrl, userId).then((SingleResultModel result) {
+        if (_selectedImageType == _SelectedImageTypeEnum.fromCamera) {
+          _imageFromCamera.then((File file) {
+            _upload(file, fileName);
+          });
+        } else if (_selectedImageType == _SelectedImageTypeEnum.fromGallery) {
+          _imageFromGallery.then((File file) {
+            _upload(file, fileName);
+          });
+        }
 
-      Future<dynamic>.delayed(const Duration(milliseconds: 3500))
-          .then((void dummy) {
-        Navigator.of(context)
-            .pushReplacementNamed(RouteNames.MAIN_LANDING_PAGE.toString());
+        Future<dynamic>.delayed(const Duration(milliseconds: 3500))
+            .then((void dummy) {
+          Navigator.of(context)
+              .pushReplacementNamed(RouteNames.MAIN_LANDING_PAGE.toString());
+        });
       });
-    });
+    } else {
+      if (_selectedImageType == _SelectedImageTypeEnum.fromCamera) {
+          _imageFromCamera.then((File file) {
+            _upload(file, fileName);
+          });
+        } else if (_selectedImageType == _SelectedImageTypeEnum.fromGallery) {
+          _imageFromGallery.then((File file) {
+            _upload(file, fileName);
+          });
+        }
+        Navigator.of(context)
+              .pop(avatarUrl);
+
+    }
   }
 
   void _upload(File imageFile, String fileName) async {

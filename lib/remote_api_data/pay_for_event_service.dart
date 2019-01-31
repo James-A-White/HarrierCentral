@@ -20,7 +20,9 @@ class PayForEventService {
       int minimumAttendenceValue) async {
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
-    final String accessToken = Utilities.generateToken(userId, 'payForEvent');
+    final String tokenParameterString = userIdWhoPaid.toUpperCase() + '#' + paymentAmount.toInt().toString() + '#' + eventId.toUpperCase();
+
+    final String accessToken = Utilities.generateToken(userId, 'payForEvent', paramString: tokenParameterString);
 
     final String body = jsonEncode(<String, String>{
       'userId': userId,

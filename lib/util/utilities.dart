@@ -12,12 +12,16 @@ import 'package:intl/intl.dart';
 class Utilities
 {
 
-    static String generateToken(String userId, String procName)
+    static String generateToken(String userId, String procName, {String paramString = ''})
     {
          final Duration difference = DateTime.now().toUtc().difference(DateTime.utc(1993,7,25,15,0,0));
          //final int timeBlocks = (difference.inSeconds / 5760).toInt();
          final int timeBlocks = difference.inSeconds ~/ 5760;
-         final String accessString = '${userId.toUpperCase()}#$procName#${timeBlocks.toString()}';
+         if (paramString.isNotEmpty)
+         {
+           paramString = '#'+paramString;
+         }
+         final String accessString = '${userId.toUpperCase()}#$procName#${timeBlocks.toString()}$paramString';
          final List<int> bytes = utf8.encode(accessString); // data being hashed
          final Digest digest = sha256.convert(bytes);
          return '$digest'.toUpperCase();

@@ -8,13 +8,16 @@ import 'package:flutter/services.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data_models/add_user_model.dart';
 import 'package:harrier_central/main.dart';
 import 'package:harrier_central/remote_api_data/add_user_service.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/pages/init/choose_profile_image.dart';
 import 'package:harrier_central/util/routes.dart';
 
 import 'package:permission_handler/permission_handler.dart';
+
 
 //import 'package:the_gorgeous_login/style/theme.dart' as Theme;
 
@@ -686,7 +689,10 @@ class _LoginPageState extends State<LoginPage>
           '',
           '',
           '',
-          '00000000-0000-0000-0000-000000000000');
+          '00000000-0000-0000-0000-000000000000',
+          '',
+          hasherTypeMember
+          );
       x.then((AddUserModel user) {
         Preferences.setStringPref(StringPrefsEnum.userId, user.userId);
         Preferences.setStringPref(StringPrefsEnum.firstName, user.firstName);
@@ -704,8 +710,27 @@ class _LoginPageState extends State<LoginPage>
 
         Future<dynamic>.delayed(const Duration(milliseconds: 3500))
             .then((void dummy) {
-          Navigator.of(context)
-              .pushReplacementNamed(RouteNames.CHOOSE_AVATAR.toString());
+          // Navigator.of(context,
+          //     //.pushReplacementNamed(RouteNames.CHOOSE_PROFILE_IMAGE.toString());
+          //     MaterialPageRoute<String>(
+          //             builder: (context) => ChooseProfileImage(isInitFlow: false,
+          //                   // kennelId: widget.futureRun.kennelId,
+          //                   // eventId: widget.futureRun.eventId,
+          //                   // attendenceState: attendenceAtHash,
+          //                 ),
+          //           )
+          // );
+
+          Navigator.push<String>(
+                    context,
+                    MaterialPageRoute<String>(
+                      builder: (context) => ChooseProfileImage(true,
+                            // kennelId: widget.futureRun.kennelId,
+                            // eventId: widget.futureRun.eventId,
+                            // attendenceState: attendenceAtHash,
+                          ),
+                    ),
+                  );
         });
       });
     }
