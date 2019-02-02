@@ -26,6 +26,8 @@ class CheckInScannerPage extends StatefulWidget {
 }
 
 class _CheckInScannerPageState extends State<CheckInScannerPage> {
+  
+  
   String barcode = '';
 
   @override

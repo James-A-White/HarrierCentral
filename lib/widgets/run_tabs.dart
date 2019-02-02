@@ -1124,6 +1124,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                             eventId: widget.futureRun.eventId,
                                             currencySymbol: widget.futureRun.currencySymbol,
                                             digitsAfterDecimal: widget.futureRun.digitsAfterDecimal,
+                                            eventName: widget.futureRun.eventName,
 
                                           ),
                                     ),

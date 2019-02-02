@@ -63,6 +63,15 @@ class EnumPaymentType<int> extends Enum<int> {
  const EnumPaymentType<int> paymentHashCredit =  EnumPaymentType<int>(6);
  const EnumPaymentType<int> paymentBankTransferOtherAmount =  EnumPaymentType<int>(7);
 
+ const EnumPaymentType<int> paymentTypeUnknownTotals =  EnumPaymentType<int>(100);
+ const EnumPaymentType<int> paymentNotPaidTotals =  EnumPaymentType<int>(101);
+ const EnumPaymentType<int> paymentFreeRunTotals =  EnumPaymentType<int>(102);
+ const EnumPaymentType<int> paymentCashTotals =  EnumPaymentType<int>(103);
+ const EnumPaymentType<int> paymentBankTransferTotals =  EnumPaymentType<int>(104);
+ const EnumPaymentType<int> paymentCashOtherAmountTotals =  EnumPaymentType<int>(105);
+ const EnumPaymentType<int> paymentHashCreditTotals =  EnumPaymentType<int>(106);
+ const EnumPaymentType<int> paymentBankTransferOtherAmountTotals =  EnumPaymentType<int>(107);
+
   //////////////////////////
 
 class EnumCheckInType<int> extends Enum<int> {

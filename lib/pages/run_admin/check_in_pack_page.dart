@@ -420,7 +420,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                                                                             height: 24.0,
                                                                             width: 24.0,
                                                                             color: Colors.red)
-                                                                        : packList[index].isPaid == isPaidYes.value ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.green) : Container()
+                                                                        : packList[index].isPaid == isPaidYes.value ? Image.asset('images/icons/payment_type_${packList[index].paymentType}.png', height: 24.0, width: 24.0, color: Colors.green) : Container()
 
                                                         // AssetImage(
                                                         //     'images/icons/hare_icon.png'),
@@ -534,46 +534,47 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                           child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: <Widget>[
-                                MaterialButton(
-                                    //highlightColor: Colors.transparent,
-                                    color: Theme.of(topContext).accentColor,
-                                    splashColor: Colors.yellow,
-                                    minWidth:
-                                        MediaQuery.of(topContext).size.width /
-                                            3.2,
-                                    //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
-                                    child: const Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: 0.0, horizontal: 0.0),
-                                      child: Text(
-                                        'Add Virgin',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 14.0,
-                                            fontFamily: 'WorkSansBold'),
-                                      ),
-                                    ),
-                                    onPressed: () {}),
-                                MaterialButton(
-                                    //highlightColor: Colors.transparent,
-                                    color: Theme.of(topContext).accentColor,
-                                    splashColor: Colors.yellow,
-                                    minWidth:
-                                        MediaQuery.of(topContext).size.width /
-                                            3.2,
-                                    //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
-                                    child: const Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: 0.0, horizontal: 0.0),
-                                      child: Text(
-                                        'Add Visitor',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 14.0,
-                                            fontFamily: 'WorkSansBold'),
-                                      ),
-                                    ),
-                                    onPressed: () {}),
+                                // MaterialButton(
+                                //     //highlightColor: Colors.transparent,
+                                //     color: Theme.of(topContext).accentColor,
+                                //     splashColor: Colors.yellow,
+                                //     minWidth:
+                                //         MediaQuery.of(topContext).size.width /
+                                //             3.2,
+                                //     //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                                //     child: const Padding(
+                                //       padding: EdgeInsets.symmetric(
+                                //           vertical: 0.0, horizontal: 0.0),
+                                //       child: Text(
+                                //         'Add Virgin',
+                                //         style: TextStyle(
+                                //             color: Colors.white,
+                                //             fontSize: 14.0,
+                                //             fontFamily: 'WorkSansBold'),
+                                //       ),
+                                //     ),
+                                //     onPressed: () {}),
+                                // MaterialButton(
+                                //     //highlightColor: Colors.transparent,
+                                //     color: Theme.of(topContext).accentColor,
+                                //     splashColor: Colors.yellow,
+                                //     minWidth:
+                                //         MediaQuery.of(topContext).size.width /
+                                //             3.2,
+                                //     //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                                //     child: const Padding(
+                                //       padding: EdgeInsets.symmetric(
+                                //           vertical: 0.0, horizontal: 0.0),
+                                //       child: Text(
+                                //         'Add Visitor',
+                                //         style: TextStyle(
+                                //             color: Colors.white,
+                                //             fontSize: 14.0,
+                                //             fontFamily: 'WorkSansBold'),
+                                //       ),
+                                //     ),
+                                //     onPressed: () {}),
+                                
                                 MaterialButton(
                                     //highlightColor: Colors.transparent,
                                     color: Theme.of(topContext).accentColor,

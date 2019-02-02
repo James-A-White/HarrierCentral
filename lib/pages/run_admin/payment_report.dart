@@ -2,10 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/remote_api_data/payment_report_scoped_model.dart';
 import 'package:harrier_central/pages/kennel_admin/add_member_page.dart';
 import 'package:harrier_central/widgets/payment_report_list_item.dart';
-import 'package:harrier_central/data_models/kennel_model.dart';
+import 'package:harrier_central/data_models/payment_report_model.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 
@@ -13,8 +14,15 @@ class PaymentReportPage extends StatelessWidget {
   final String eventId;
   final String currencySymbol;
   final int digitsAfterDecimal;
+  final String eventName;
 
-  PaymentReportPage({Key key, @required this.eventId, @required this.currencySymbol, @required this.digitsAfterDecimal}) : super(key: key);
+  PaymentReportPage(
+      {Key key,
+      @required this.eventId,
+      @required this.currencySymbol,
+      @required this.digitsAfterDecimal,
+      @required this.eventName})
+      : super(key: key);
 
   final PaymentReportScopedModel paymentReportModel =
       PaymentReportScopedModel();
@@ -30,7 +38,7 @@ class PaymentReportPage extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Theme.of(context).primaryColor,
         title: Text(
-          'test',
+          eventName,
           style: TextStyle(
             color: Colors.white,
           ),
@@ -47,18 +55,29 @@ class PaymentReportPage extends StatelessWidget {
   }
 }
 
-class PaymentReportsListPageBody extends StatelessWidget {
+class PaymentReportsListPageBody extends StatefulWidget {
   final String eventId;
   final String currencySymbol;
   final int digitsAfterDecimal;
 
-  PaymentReportsListPageBody({Key key, @required this.eventId, @required this.currencySymbol, @required this.digitsAfterDecimal})
+  PaymentReportsListPageBody(
+      {Key key,
+      @required this.eventId,
+      @required this.currencySymbol,
+      @required this.digitsAfterDecimal})
       : super(key: key);
 
+  _PaymentReportsListPageBodyState createState() =>
+      _PaymentReportsListPageBodyState();
+}
+
+class _PaymentReportsListPageBodyState
+    extends State<PaymentReportsListPageBody> {
   BuildContext context;
   PaymentReportScopedModel model;
-
   int pageIndex = 1;
+
+  int filterValue = 127;
 
   @override
   Widget build(BuildContext context) {
@@ -82,69 +101,169 @@ class PaymentReportsListPageBody extends StatelessWidget {
   }
 
   Future<Null> _handleRefresh() async {
-    model.getPaymentReportsFromBackend(1, false, eventId);
+    model.getPaymentReportsFromBackend(1, false, widget.eventId);
     model.notifyListeners();
 
     return null;
   }
 
+  void filterTapped(int positionFlag, EnumPaymentType paymentType) {
+    if (filterValue == 127) {
+      filterValue = positionFlag;
+    } else {
+      filterValue = filterValue ^ positionFlag;
+    }
+
+    if (filterValue == 0) {
+      filterValue = 127;
+    }
+
+    setState(() {});
+  }
+
   Widget _buildListView() {
+    List<PaymentReportModel> filteredList = model.paymentReportsList
+        .where((PaymentReportModel evt) =>
+            ((filterValue & 1) != 0 &&
+                (evt.paymentType.value == paymentNotPaid.value)) ||
+            ((filterValue & 2) != 0 &&
+                (evt.paymentType.value == paymentCash.value)) ||
+            ((filterValue & 4) != 0 &&
+                (evt.paymentType.value == paymentCashOtherAmount.value)) ||
+            ((filterValue & 8) != 0 &&
+                (evt.paymentType.value == paymentFreeRun.value)) ||
+            ((filterValue & 16) != 0 &&
+                (evt.paymentType.value == paymentBankTransfer.value)) ||
+            ((filterValue & 32) != 0 &&
+                (evt.paymentType.value ==
+                    paymentBankTransferOtherAmount.value)) ||
+            ((filterValue & 64) != 0 &&
+                (evt.paymentType.value == paymentHashCredit.value)))
+        .toList();
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>[
+        Container(
+          padding: EdgeInsets.only(top: 10),
+          color: Colors.white,
+          height: 120.0,
+          child: Column(
+            children: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  TotalsCell(
+                    model.paymentReportTotalsList,
+                    color: (filterValue & 1) != 0 ? Colors.red : Colors.black26,
+                    paymentRecordType: paymentNotPaid,
+                    currencySymbol: widget.currencySymbol,
+                    digitsAfterDecimal: widget.digitsAfterDecimal,
+                    onTap: () {
+                      filterTapped(1, paymentNotPaid);
+                    },
+                  ),
+                  TotalsCell(
+                    model.paymentReportTotalsList,
+                    color:
+                        (filterValue & 2) != 0 ? Colors.green : Colors.black26,
+                    paymentRecordType: paymentCash,
+                    currencySymbol: widget.currencySymbol,
+                    digitsAfterDecimal: widget.digitsAfterDecimal,
+                    onTap: () {
+                      filterTapped(2, paymentNotPaid);
+                    },
+                  ),
+                  TotalsCell(
+                    model.paymentReportTotalsList,
+                    color:
+                        (filterValue & 4) != 0 ? Colors.green : Colors.black26,
+                    paymentRecordType: paymentCashOtherAmount,
+                    currencySymbol: widget.currencySymbol,
+                    digitsAfterDecimal: widget.digitsAfterDecimal,
+                    onTap: () {
+                      filterTapped(4, paymentNotPaid);
+                    },
+                  ),
+                  TotalsCell(
+                    model.paymentReportTotalsList,
+                    color:
+                        (filterValue & 8) != 0 ? Colors.green : Colors.black26,
+                    paymentRecordType: paymentFreeRun,
+                    currencySymbol: widget.currencySymbol,
+                    digitsAfterDecimal: widget.digitsAfterDecimal,
+                    onTap: () {
+                      filterTapped(8, paymentNotPaid);
+                    },
+                  ),
+                  TotalsCell(
+                    model.paymentReportTotalsList,
+                    color:
+                        (filterValue & 16) != 0 ? Colors.green : Colors.black26,
+                    paymentRecordType: paymentBankTransfer,
+                    currencySymbol: widget.currencySymbol,
+                    digitsAfterDecimal: widget.digitsAfterDecimal,
+                    onTap: () {
+                      filterTapped(16, paymentNotPaid);
+                    },
+                  ),
+                  TotalsCell(
+                    model.paymentReportTotalsList,
+                    color:
+                        (filterValue & 32) != 0 ? Colors.green : Colors.black26,
+                    paymentRecordType: paymentBankTransferOtherAmount,
+                    currencySymbol: widget.currencySymbol,
+                    digitsAfterDecimal: widget.digitsAfterDecimal,
+                    onTap: () {
+                      filterTapped(32, paymentNotPaid);
+                    },
+                  ),
+                  TotalsCell(
+                    model.paymentReportTotalsList,
+                    color:
+                        (filterValue & 64) != 0 ? Colors.green : Colors.black26,
+                    paymentRecordType: paymentHashCredit,
+                    currencySymbol: widget.currencySymbol,
+                    digitsAfterDecimal: widget.digitsAfterDecimal,
+                    onTap: () {
+                      filterTapped(64, paymentNotPaid);
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.only(top: 10.0),
-            child: model.getPaymentReportsListCount() == 0
+            child: filteredList.isEmpty
                 ? const Center(child: Text('No transactions available.'))
                 : RefreshIndicator(
                     onRefresh: () => _handleRefresh(),
                     displacement: 40.0,
                     child: ListView.separated(
-                      separatorBuilder: (context, index) => Divider(height:1.0,
-        color: Colors.black45,
-      ),
+                      separatorBuilder: (context, index) => Divider(
+                            height: 1.0,
+                            color: Colors.black45,
+                          ),
                       physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: model.getPaymentReportsListCount(),
+                      itemCount: filteredList.length,
                       itemBuilder: (BuildContext context, int index) {
                         return Container(
                           height: 40.0,
                           padding: const EdgeInsets.all(0.0),
-                          child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              children: <Widget>[
-                                PaymentReportListItem(
-                                    paymentReportItem:
-                                        model.paymentReportsList[index],
-                                        currencySymbol: currencySymbol,
-                                        digitsAfterDecimal: digitsAfterDecimal,
-                                        ),
-                              ]),
+                          child: PaymentReportListItem(
+                            paymentReportItem: filteredList[index],
+                            currencySymbol: widget.currencySymbol,
+                            digitsAfterDecimal: widget.digitsAfterDecimal,
+                          ),
                         );
                       },
                     ),
                   ),
           ),
         ),
-      //   Container(
-      //     width: 150.0,
-      //     child: RaisedButton(
-      //       child: const Text(
-      //         'Add Member',
-      //         style: TextStyle(color: Colors.white),
-      //       ),
-      //       onPressed: () {
-      //         Navigator.push<dynamic>(
-      //           context,
-      //           MaterialPageRoute<dynamic>(
-      //             builder: (context) => AddMemberPage(
-      //                   kennelId: kennelId,
-      //                 ),
-      //           ),
-      //         );
-      //       },
-      //     ),
-      //   ),
       ],
     );
   }
