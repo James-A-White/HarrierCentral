@@ -7,6 +7,8 @@ import 'package:harrier_central/remote_api_data/payment_report_scoped_model.dart
 import 'package:harrier_central/pages/kennel_admin/add_member_page.dart';
 import 'package:harrier_central/widgets/payment_report_list_item.dart';
 import 'package:harrier_central/data_models/payment_report_model.dart';
+import 'package:harrier_central/util/utilities.dart';
+import 'package:intl/intl.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 
@@ -257,6 +259,10 @@ class _PaymentReportsListPageBodyState
                             paymentReportItem: filteredList[index],
                             currencySymbol: widget.currencySymbol,
                             digitsAfterDecimal: widget.digitsAfterDecimal,
+                            onTap: () {
+                              _displayPaymentDetails(
+                                  filteredList[index], context);
+                            },
                           ),
                         );
                       },
@@ -265,6 +271,159 @@ class _PaymentReportsListPageBodyState
           ),
         ),
       ],
+    );
+  }
+
+  Future<bool> _displayPaymentDetails(
+      PaymentReportModel item, BuildContext context) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        const headingStyle = const TextStyle(
+            fontFamily: 'AvenirNextMedium',
+            fontStyle: FontStyle.normal,
+            fontSize: 16.0);
+
+        const bodyStyle = const TextStyle(
+            fontFamily: 'AvenirNextDemiBold',
+            fontStyle: FontStyle.normal,
+            fontSize: 16.0);
+
+        String paymentTypeStr = '';
+
+        switch (item.paymentType.value) {
+          case 1:
+            paymentTypeStr = 'Not paid';
+            break;
+          case 2:
+            paymentTypeStr = 'Free run';
+            break;
+          case 3:
+            paymentTypeStr = 'Cash';
+            break;
+          case 4:
+            paymentTypeStr = 'Bank transfer';
+            break;
+          case 5:
+            paymentTypeStr = 'Cash (other amount)';
+            break;
+          case 6:
+            paymentTypeStr = 'Hash credit';
+            break;
+          case 7:
+            paymentTypeStr = 'Transfer (other amt)';
+            break;
+          default:
+            paymentTypeStr = 'Other';
+        }
+
+        String amountStr = Utilities.getFormattedMoney(item?.creditAmount ?? 0,
+            widget.digitsAfterDecimal, widget.currencySymbol);
+
+        return AlertDialog(
+          title: Text('Payment Detail'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Expanded(
+                      flex: 3,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: <Widget>[
+                          Text(
+                            'Pay Ref:',
+                            style: headingStyle,
+                          ),
+                          Text(
+                            'Paid by:',
+                            style: headingStyle,
+                          ),
+                          Text(
+                            'Paid to:',
+                            style: headingStyle,
+                          ),
+                          Text(
+                            'Amount:',
+                            style: headingStyle,
+                          ),
+                          Text(
+                            'Date:',
+                            style: headingStyle,
+                          ),
+                          Text(
+                            'Time:',
+                            style: headingStyle,
+                          ),
+                          Text(
+                            'Type:',
+                            style: headingStyle,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 7,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 4.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              item.paymentReference,
+                              style: bodyStyle,
+                            ),
+                            Text(
+                              item.paidBy,
+                              style: bodyStyle,
+                            ),
+                            Text(
+                              item.paidTo,
+                              style: bodyStyle,
+                            ),
+                            Text(
+                              amountStr,
+                              style: bodyStyle,
+                            ),
+                            Text(
+                              (item?.paymentDate == null)
+                                  ? ''
+                                  : DateFormat('MMM dd, yyyy')
+                                      .format(item.paymentDate),
+                              style: bodyStyle,
+                            ),
+                            Text(
+                              (item?.paymentDate == null)
+                                  ? ''
+                                  : DateFormat('kk:mm')
+                                      .format(item.paymentDate),
+                              style: bodyStyle,
+                            ),
+                            Text(paymentTypeStr,
+                              style: bodyStyle,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("Close"),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

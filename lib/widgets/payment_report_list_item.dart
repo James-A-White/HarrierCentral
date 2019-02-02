@@ -12,11 +12,13 @@ class PaymentReportListItem extends StatelessWidget {
   final PaymentReportModel paymentReportItem;
   final String currencySymbol;
   final int digitsAfterDecimal;
+  final Function onTap;
 
   const PaymentReportListItem(
       {@required this.paymentReportItem,
       @required this.currencySymbol,
-      @required this.digitsAfterDecimal});
+      @required this.digitsAfterDecimal,
+      @required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -24,19 +26,8 @@ class PaymentReportListItem extends StatelessWidget {
         paymentReportItem.creditAmount, digitsAfterDecimal, currencySymbol);
 
     return InkWell(
-      onTap: () {
-        // Navigator.push<dynamic>(
-        //           context,
-        //           MaterialPageRoute<dynamic>(
-        //             builder: (context) => UserSecretQrPage(
-        //                   paymentReportItemModel: paymentReportItem
-        //                 ),),);
-      },
-      child:
-
-          //SizedBox.expand(child:
-
-          Row(
+      onTap: onTap,
+      child: Row(
         //mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
@@ -102,9 +93,7 @@ class TotalsCell extends StatelessWidget {
   final Function onTap;
 
   const TotalsCell(
-    List<PaymentReportModel> this.data,
-    
-    {
+    List<PaymentReportModel> this.data, {
     @required this.color,
     @required this.paymentRecordType,
     @required this.currencySymbol,
@@ -119,36 +108,49 @@ class TotalsCell extends StatelessWidget {
             report.paymentType.value == paymentRecordType.value + 100,
         orElse: () => null);
 
-    String total = (item?.creditAmount ?? 0) <= 0 ? '' :
-    
-    Utilities.getFormattedMoney(
-        item?.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
+    String total = (item?.creditAmount ?? 0) <= 0
+        ? ''
+        : Utilities.getFormattedMoney(
+            item?.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
-    
     const textStyle = const TextStyle(
-        color: Colors.black, fontSize: 24.0, fontFamily: 'AvenirNextCondensedDemiBold');
-    return 
-    Container(
+        color: Colors.black,
+        fontSize: 24.0,
+        fontFamily: 'AvenirNextCondensedDemiBold');
+    return Container(
       width: 40,
-    child:Column(
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(bottom:0.0),
-          child: Text(
-            item?.paymentReference ?? '0',
-            style: textStyle,
+      child: Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(bottom: 0.0),
+            child: Text(
+              item?.paymentReference ?? '0',
+              style: textStyle,
+            ),
           ),
-        ),
-        IconButton(
-          padding: EdgeInsets.all(0),
-          onPressed: onTap,
-        icon: Image.asset('images/icons/payment_type_${paymentRecordType.value}.png',
-            height: 35.0, width: 35.0, color: color),),
-        Padding(
-          padding: const EdgeInsets.only(top: 1.0),
-          child: Container(child: AutoSizeText(total,style: textStyle, maxLines: 1, minFontSize: 2.0,), height: 20,),
-        ),
-      ],
-    ),);
+          IconButton(
+            padding: EdgeInsets.all(0),
+            onPressed: onTap,
+            icon: Image.asset(
+                'images/icons/payment_type_${paymentRecordType.value}.png',
+                height: 35.0,
+                width: 35.0,
+                color: color),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 1.0),
+            child: Container(
+              child: AutoSizeText(
+                total,
+                style: textStyle,
+                maxLines: 1,
+                minFontSize: 2.0,
+              ),
+              height: 20,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
