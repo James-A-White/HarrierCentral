@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/remote_api_data/payment_report_scoped_model.dart';
@@ -8,7 +9,9 @@ import 'package:harrier_central/pages/kennel_admin/add_member_page.dart';
 import 'package:harrier_central/widgets/payment_report_list_item.dart';
 import 'package:harrier_central/data_models/payment_report_model.dart';
 import 'package:harrier_central/util/utilities.dart';
-import 'package:intl/intl.dart';
+import 'package:harrier_central/pages/run_admin/payment_popup.dart';
+import 'package:harrier_central/remote_api_data/pay_for_event_service.dart';
+import 'package:harrier_central/data_models/pay_for_event_model.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 
@@ -260,8 +263,103 @@ class _PaymentReportsListPageBodyState
                             currencySymbol: widget.currencySymbol,
                             digitsAfterDecimal: widget.digitsAfterDecimal,
                             onTap: () {
-                              _displayPaymentDetails(
-                                  filteredList[index], context);
+                              if (filteredList[index].paymentType.value ==
+                                  paymentNotPaid.value) {
+                                PaymentPopup pp = new PaymentPopup(
+                                  amount: filteredList[index].debitAmount,
+                                  creditAllowed:
+                                      1, // TODO: fix this in the DB so that Kennnels can disable credit
+                                  creditRemaining:
+                                      filteredList[index].creditRemaining,
+                                  currencySymbol: widget.currencySymbol,
+                                  hemId: filteredList[index].hasherEventMapId,
+                                  decimalDigits: widget.digitsAfterDecimal,
+                                );
+
+                                Future<bool> dlg = showDialog<bool>(
+                                    context: context,
+                                    barrierDismissible:
+                                        false, // user must tap button!
+                                    builder: (BuildContext context) {
+                                      return pp;
+                                    });
+
+                                dlg.then((bool x) {
+                                  PayForEventService paySrv =
+                                      PayForEventService();
+                                  Future<List<PayForEventModel>> retVal =
+                                      paySrv.payForEvent(
+                                          filteredList[index].userIdWhoPaid,
+                                          widget.eventId,
+                                          filteredList[index].hasherEventMapId,
+                                          pp.selectedValue,
+                                          pp.amount,
+                                          attendenceAtHash.value);
+                                  retVal.then(
+                                      (List<PayForEventModel> paymentResult) {
+                                    if (paymentResult.isNotEmpty) {
+                                      setState(() {
+                                        // update the UI
+                                        // start by updating the user's payment status to reflect the payment type
+                                        filteredList[index].paymentType =
+                                            EnumPaymentType<int>(
+                                                pp.selectedValue);
+                                        // now update the counters at the top
+
+                                        // decrease the count for non-paid hashers
+                                        PaymentReportModel
+                                            notPaidHashersTotalRecord = model
+                                                .paymentReportTotalsList
+                                                .firstWhere(
+                                                    (PaymentReportModel evt) =>
+                                                        evt.paymentType.value ==
+                                                        paymentNotPaidTotals
+                                                            .value);
+                                        notPaidHashersTotalRecord
+                                            .paymentReference = (int.parse(
+                                                    notPaidHashersTotalRecord
+                                                        .paymentReference) -
+                                                1)
+                                            .toString();
+
+                                        PaymentReportModel
+                                            paymentTypeTotalRecord = model
+                                                .paymentReportTotalsList
+                                                .firstWhere(
+                                                    (PaymentReportModel evt) =>
+                                                        evt.paymentType.value ==
+                                                        (pp.selectedValue +
+                                                            100));
+
+                                        if (paymentTypeTotalRecord != null) {
+                                          // increase the counter for the type of payment made
+                                          paymentTypeTotalRecord
+                                              .paymentReference = (int.parse(
+                                                      paymentTypeTotalRecord
+                                                          .paymentReference) +
+                                                  1)
+                                              .toString();
+                                          // update the cash amount total
+                                          if ((pp.selectedValue !=
+                                                  paymentFreeRun.value) &&
+                                              (pp.selectedValue !=
+                                                  paymentNotPaid.value) &&
+                                              (pp.selectedValue !=
+                                                  paymentHashCredit.value)) {
+                                            paymentTypeTotalRecord
+                                                .creditAmount += pp.amount;
+                                          }
+                                        }
+                                      });
+                                    } else {
+                                      //setState(() => barcode = 'Error processing payment');
+                                    }
+                                  });
+                                });
+                              } else {
+                                _displayPaymentDetails(
+                                    filteredList[index], context);
+                              }
                             },
                           ),
                         );
@@ -402,7 +500,8 @@ class _PaymentReportsListPageBodyState
                                       .format(item.paymentDate),
                               style: bodyStyle,
                             ),
-                            Text(paymentTypeStr,
+                            Text(
+                              paymentTypeStr,
                               style: bodyStyle,
                             ),
                           ],

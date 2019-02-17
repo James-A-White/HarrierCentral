@@ -6,11 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:harrier_central/util/utilities.dart';
 
 
+
 class PaymentPopup extends StatefulWidget {
   final String hemId;
   final String currencySymbol;
-  final double amount;
-  final double creditRemaining;
+  final num amount;
+  final num creditRemaining;
   final int creditAllowed;
   final int decimalDigits;
 
@@ -186,28 +187,12 @@ class _PaymentPopupState extends State<PaymentPopup> {
         ),
       ],
     );
-
-    //     Image.network(kennel.kennelLogo,
-    //         fit: BoxFit.fitHeight, height: logoHeight),
-    // alignment: Alignment.centerRight);
   }
 
   void _handleRadioValueChange1(int value) {
     setState(() {
       widget.selectedValue = value;
 
-      // switch (_radioValue1) {
-      //   case 0:
-      //     Fluttertoast.showToast(msg: 'Correct !',toastLength: Toast.LENGTH_SHORT);
-      //     correctScore++;
-      //     break;
-      //   case 1:
-      //     Fluttertoast.showToast(msg: 'Try again !',toastLength: Toast.LENGTH_SHORT);
-      //     break;
-      //   case 2:
-      //     Fluttertoast.showToast(msg: 'Try again !',toastLength: Toast.LENGTH_SHORT);
-      //     break;
-      //}
     });
   }
 }

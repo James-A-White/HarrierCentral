@@ -5,6 +5,7 @@ import 'package:harrier_central/util/enums.dart';
 class PaymentReportModel {
 
 final String hasherEventMapId;
+final String userIdWhoPaid;
 final String paymentId;
 String paidBy;
 String paidTo;
@@ -16,10 +17,12 @@ DateTime paymentDate;
 DateTime cancelledDate;
 String paymentReference;
 String notes;
+num creditRemaining;
 
 PaymentReportModel(
     {
       this.hasherEventMapId,
+      this.userIdWhoPaid,
       this.paymentId,
       this.paidBy,
       this.paidTo,
@@ -31,6 +34,7 @@ PaymentReportModel(
       this.cancelledDate,
       this.paymentReference,
       this.notes,
+      this.creditRemaining,
     });
 
   @override

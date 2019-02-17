@@ -186,11 +186,14 @@ class PaymentReportScopedModel extends Model {
 
     final dynamic paymentData = await _getPaymentReports(eventId: eventId);
 
+    paymentReportTotalsList.clear();
+
     PaymentReportModel paymentReport; 
     paymentData.forEach(
       (dynamic item) {
         paymentReport = PaymentReportModel(
           hasherEventMapId: item['hasherEventMapId'],
+          userIdWhoPaid: item['userIdWhoPaid'],
           paymentId: item['paymentId'],
           paidBy: item['paidBy'],
           paidTo: item['paidTo'],
@@ -202,6 +205,7 @@ class PaymentReportScopedModel extends Model {
           cancelledDate: item['cancelledDate'] == null ? null : DateTime.parse(item['cancelledDate']),
           paymentReference: item['paymentReference'] ?? '',
           notes: item['notes'] ?? '',
+          creditRemaining: item['creditRemaining'] ?? 0
         );
 
         if (paymentReport.paymentType.value < 100) {

@@ -151,11 +151,11 @@ class _LoginPageState extends State<LoginPage>
   void initState() {
     super.initState();
 
-    signupFirstNameController.text = 'delete';
-    signupLastNameController.text = 'delete';
-    signupHashNameController.text = 'delete';
-    signupEmailController.text =
-        'delete_' + Random.secure().nextInt(99999999).toString() + '@test.com';
+    // signupFirstNameController.text = 'delete';
+    // signupLastNameController.text = 'delete';
+    // signupHashNameController.text = 'delete';
+    // signupEmailController.text =
+    //     'delete_' + Random.secure().nextInt(99999999).toString() + '@test.com';
 
     SystemChrome.setPreferredOrientations(<DeviceOrientation>[
       DeviceOrientation.portraitUp,
