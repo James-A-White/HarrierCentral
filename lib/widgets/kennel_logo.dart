@@ -42,9 +42,8 @@ class KennelLogo extends StatelessWidget {
               ])
             :  CachedNetworkImage(
                 imageUrl: kennelLogoUrl,
-                //placeholder: const CircularProgressIndicator(),
-                errorWidget: const Icon(Icons.error),
-                //fadeOutDuration:  Duration(seconds: 1),
+                errorWidget: (BuildContext context,String url,Exception error) => const Icon(Icons.error),
+                //errorWidget:  const Icon(Icons.error),
                 fadeInDuration:  Duration(milliseconds: 0),
                 fit: BoxFit.fitHeight, height: logoHeight),
                   alignment: Alignment.centerRight);

@@ -11,7 +11,7 @@ import 'package:harrier_central/widgets/kennel_logo.dart';
 
 import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:flip_panel/flip_panel.dart';
+//import 'package:flip_panel/flip_panel.dart';
 
 class RunListItem extends StatefulWidget {
   RunListItem({Key key, @required FutureRun this.futureRun}) : super(key: key);

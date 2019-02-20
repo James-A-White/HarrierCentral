@@ -6,6 +6,8 @@ class JoinEventModel {
   final int rsvpNoCount;
   final int rsvpMaybeCount;
   final int haresCount;
+  final int totalRunsThisKennel;
+  final int totalRunsAllKennels;
 
   JoinEventModel(
     {
@@ -13,6 +15,8 @@ class JoinEventModel {
         this.rsvpNoCount,
         this.rsvpMaybeCount,
         this.haresCount,
+        this.totalRunsThisKennel,
+        this.totalRunsAllKennels
     });
 
 }

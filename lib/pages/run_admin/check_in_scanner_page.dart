@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:barcode_scan/barcode_scan.dart';
+//import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 
 import 'package:harrier_central/remote_api_data/process_qr_scan_service.dart';
@@ -137,51 +137,53 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
 
   Future<void> scanUserBarcode(bool isRunStart, String eventId) async {
     String context2 = isRunStart ? '0' : '1';
-    Future<String> scanAction = BarcodeScanner.scan();
-    scanAction.then((String s) {
-      ProcessQrScanService srv = ProcessQrScanService();
-      Future<ProcessQrScanModel> apiCall =
-          srv.processQrScan(eventId, s, 'CheckInOut', context2, 'user', '');
-      apiCall.then((ProcessQrScanModel result) {
-        setState(() => barcode = result.resultStr2);
-        if (result.resultInt2 == 0) {
-          PaymentPopup pp = new PaymentPopup(
-            amount: result.resultDecimal1,
-            creditAllowed: result.resultInt3,
-            creditRemaining: result.resultDecimal2,
-            currencySymbol: result.resultStr1,
-            hemId: result.resultGuid2,
-            decimalDigits: result.resultInt4,
-          );
+    // Future<String> scanAction = BarcodeScanner.scan();
+    // scanAction.then((String s) {
+    //   ProcessQrScanService srv = ProcessQrScanService();
+    //   Future<ProcessQrScanModel> apiCall =
+    //       srv.processQrScan(eventId, s, 'CheckInOut', context2, 'user', '');
+    //   apiCall.then((ProcessQrScanModel result) {
+    //     setState(() => barcode = result.resultStr2);
+    //     if (result.resultInt2 == 0) {
+    //       PaymentPopup pp = new PaymentPopup(
+    //         amount: result.resultDecimal1,
+    //         creditAllowed: result.resultInt3,
+    //         creditRemaining: result.resultDecimal2,
+    //         currencySymbol: result.resultStr1,
+    //         hemId: result.resultGuid2,
+    //         decimalDigits: result.resultInt4,
+    //       );
 
-          Future<bool> dlg = showDialog<bool>(
-              context: context,
-              barrierDismissible: false, // user must tap button!
-              builder: (BuildContext context) {
-                return pp;
-              });
+    //       Future<bool> dlg = showDialog<bool>(
+    //           context: context,
+    //           barrierDismissible: false, // user must tap button!
+    //           builder: (BuildContext context) {
+    //             return pp;
+    //           });
 
-          dlg.then((bool x) {
-            PayForEventService paySrv = PayForEventService();
-            Future<List<PayForEventModel>> retVal = paySrv.payForEvent(
-                result.resultGuid1,
-                eventId,
-                result.resultGuid2,
-                pp.selectedValue,
-                pp.amount,
-                isRunStart == 1 ? attendenceAtHash.value : attendenceOnIn.value);
-            retVal.then((List<PayForEventModel> paymentResult) {
-              if (paymentResult.isNotEmpty) {
-                setState(() => barcode = paymentResult[0].result);
-              } else {
-                setState(() => barcode = 'Error processing payment');
-              }
-            });
-          });
-        }
-      });
-      setState(() => barcode = "Processing QR Scan");
-    });
+    //       dlg.then((bool x) {
+    //         PayForEventService paySrv = PayForEventService();
+    //         Future<List<PayForEventModel>> retVal = paySrv.payForEvent(
+    //             result.resultGuid1,
+    //             eventId,
+    //             result.resultGuid2,
+    //             pp.selectedValue,
+    //             pp.amount,
+    //             isRunStart == 1 ? attendenceAtHash.value : attendenceOnIn.value);
+    //         retVal.then((List<PayForEventModel> paymentResult) {
+    //           if (paymentResult.isNotEmpty) {
+    //             setState(() => barcode = paymentResult[0].result);
+    //           } else {
+    //             setState(() => barcode = 'Error processing payment');
+    //           }
+    //         });
+    //       });
+    //     }
+    //   });
+    //   setState(() => barcode = "Processing QR Scan");
+    // });
+ 
+ 
   }
 
   Future<bool> _displayInstructions(BuildContext context) async {

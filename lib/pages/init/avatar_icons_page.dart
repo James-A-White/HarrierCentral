@@ -9,7 +9,8 @@ class AvatarIconsPage extends StatefulWidget {
 }
 
 class _AvatarIconsPageState extends State<AvatarIconsPage> {
-  int pageIndex = 1;
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +21,24 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
   num imagePadding = 8.0;
 
   Widget _buildListView() {
-    return Material(
+    return 
+    
+    Scaffold(
+      key: _scaffoldKey,
+      appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: Theme.of(context).primaryColor,
+          title: Text(
+            'Choose Avatar',
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+        ),
+      body:
+    
+    
+    Material(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: Padding(
         padding: const EdgeInsets.only(top: 20.0),
@@ -55,6 +73,11 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
           },
         ),
       ),
+    )
+  
     );
+  
+  
+  
   }
 }

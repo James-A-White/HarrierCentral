@@ -1,43 +1,44 @@
 PODS:
-  - barcode_scan (0.0.1):
-    - Flutter
-    - MTBBarcodeScanner
   - Bolts (1.9.0):
     - Bolts/AppLinks (= 1.9.0)
     - Bolts/Tasks (= 1.9.0)
   - Bolts/AppLinks (1.9.0):
     - Bolts/Tasks
   - Bolts/Tasks (1.9.0)
-  - FBSDKCoreKit (4.37.0):
-    - Bolts (~> 1.7)
-  - FBSDKLoginKit (4.37.0):
+  - FBSDKCoreKit (4.40.0):
+    - Bolts (~> 1.9)
+  - FBSDKLoginKit (4.39.1):
     - FBSDKCoreKit
   - Flutter (1.0.0)
   - flutter_facebook_login (0.0.1):
-    - FBSDKLoginKit (~> 4.29)
+    - FBSDKLoginKit (= 4.39.1)
     - Flutter
-  - geolocator (2.1.1):
+  - FMDB (2.7.5):
+    - FMDB/standard (= 2.7.5)
+  - FMDB/standard (2.7.5)
+  - geolocator (3.0.0):
     - Flutter
-  - google_api_availability (1.0.4):
+  - google_api_availability (1.0.6):
     - Flutter
   - image_cropper (0.0.1):
     - Flutter
     - TOCropViewController (~> 2.3.8)
   - image_picker (0.0.1):
     - Flutter
-  - MTBBarcodeScanner (5.0.6)
   - path_provider (0.0.1):
     - Flutter
-  - permission_handler (2.1.2):
+  - permission_handler (2.2.0):
     - Flutter
   - shared_preferences (0.0.1):
     - Flutter
+  - sqflite (0.0.1):
+    - Flutter
+    - FMDB (~> 2.7.2)
   - TOCropViewController (2.3.8)
   - url_launcher (0.0.1):
     - Flutter
 
 DEPENDENCIES:
-  - barcode_scan (from `.symlinks/plugins/barcode_scan/ios`)
   - Flutter (from `.symlinks/flutter/ios`)
   - flutter_facebook_login (from `.symlinks/plugins/flutter_facebook_login/ios`)
   - geolocator (from `.symlinks/plugins/geolocator/ios`)
@@ -47,6 +48,7 @@ DEPENDENCIES:
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
+  - sqflite (from `.symlinks/plugins/sqflite/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
 
 SPEC REPOS:
@@ -54,12 +56,10 @@ SPEC REPOS:
     - Bolts
     - FBSDKCoreKit
     - FBSDKLoginKit
-    - MTBBarcodeScanner
+    - FMDB
     - TOCropViewController
 
 EXTERNAL SOURCES:
-  barcode_scan:
-    :path: ".symlinks/plugins/barcode_scan/ios"
   Flutter:
     :path: ".symlinks/flutter/ios"
   flutter_facebook_login:
@@ -78,27 +78,29 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/permission_handler/ios"
   shared_preferences:
     :path: ".symlinks/plugins/shared_preferences/ios"
+  sqflite:
+    :path: ".symlinks/plugins/sqflite/ios"
   url_launcher:
     :path: ".symlinks/plugins/url_launcher/ios"
 
 SPEC CHECKSUMS:
-  barcode_scan: 8288e70cb430072003bce2c794a1431e7adbcb4d
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
-  FBSDKCoreKit: fe5f3474499a81963e11e3f3a5c753d0a95ca2b4
-  FBSDKLoginKit: 2f7249686d1e30ce8a5ef5400eedf50b3e3df332
-  Flutter: 9d0fac939486c9aba2809b7982dfdbb47a7b0296
-  flutter_facebook_login: e3d2f0a348889fe0f49c302bc044b8cc66c691be
-  geolocator: c2e347e8da0e60d3b08e714a684851e9c137abbe
-  google_api_availability: b19830d6be60d6b92dce5fc5b9137c31b04afbf1
-  image_cropper: 046482c5501fc775e17f792d5af4b46c19bb774e
-  image_picker: ee00aab0487cedc80a304085219503cc6d0f2e22
-  MTBBarcodeScanner: bb0bb62e18b57f8a571a482248adc20722b70a91
-  path_provider: 09407919825bfe3c2deae39453b7a5b44f467873
-  permission_handler: ccfc62fb39274a876cb21737e72a746f4c7efa94
-  shared_preferences: 5a1d487c427ee18fcd3ea1f2a131569481834b53
+  FBSDKCoreKit: ae214474b25033399c131dc81d258e412582a2ba
+  FBSDKLoginKit: c3079d9a4db27c492287b1eed7a4272b28cf8a59
+  Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
+  flutter_facebook_login: f1f88c32d5888d6b5f3301fd87cc7de26f02877e
+  FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
+  geolocator: f4549aa43bb46fea674385657a9211a1cd430716
+  google_api_availability: 5ef19f911725fcca40f813831c52548fe1ce7139
+  image_cropper: 189eec25d148f56694f670438e9458323ba2880a
+  image_picker: a211f28b95a560433c00f5cd3773f4710a20404d
+  path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
+  permission_handler: 976a8a94c3443d23fe33c11e98277d471f0e543d
+  shared_preferences: 1feebfa37bb57264736e16865e7ffae7fc99b523
+  sqflite: ff1d9da63c06588cc8d1faf7256d741f16989d5a
   TOCropViewController: 0a075f02c253e88095143bbac7b013fc6fba5090
-  url_launcher: 92b89c1029a0373879933c21642958c874539095
+  url_launcher: 0067ddb8f10d36786672aa0722a21717dba3a298
 
-PODFILE CHECKSUM: 6dc952f4e329e4efede07b370ff9d46e94f98f7c
+PODFILE CHECKSUM: 095fcd4df61e41517fef8fdec7694d3651f21f63
 
-COCOAPODS: 1.5.3
+COCOAPODS: 1.6.0

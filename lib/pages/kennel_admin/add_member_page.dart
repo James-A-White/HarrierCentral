@@ -63,6 +63,16 @@ class _AddMemberPageState extends State<AddMemberPage>
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
+            appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: Theme.of(context).primaryColor,
+          title: Text(
+            'Add Member Page',
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+        ),
       body: NotificationListener<OverscrollIndicatorNotification>(
         onNotification: (OverscrollIndicatorNotification overscroll) {
           overscroll.disallowGlow();
@@ -70,9 +80,9 @@ class _AddMemberPageState extends State<AddMemberPage>
         child: SingleChildScrollView(
           child: Container(
             width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height >= 500.0
-                ? MediaQuery.of(context).size.height
-                : 500.0,
+            height: MediaQuery.of(context).size.height >= 300.0
+                ? MediaQuery.of(context).size.height - 100
+                : 300.0,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                   colors: <Color>[
@@ -90,7 +100,7 @@ class _AddMemberPageState extends State<AddMemberPage>
                     mainAxisSize: MainAxisSize.max,
                     children: <Widget>[
                       const Padding(
-                        padding: EdgeInsets.only(top: 75.0),
+                        padding: EdgeInsets.only(top: 35.0),
                         child: Image(
                             width: 100.0,
                             height: 100.0,
@@ -669,7 +679,7 @@ class _AddMemberPageState extends State<AddMemberPage>
     }
 
     final bool emailValid = RegExp(
-            r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
+            r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", caseSensitive: false)
         .hasMatch(signupEmailController.text);
     if (!emailValid) {
       canProcess = false;

@@ -1,7 +1,7 @@
 
 import 'dart:math';
 
-import 'package:barcode_scan/barcode_scan.dart';
+//import 'package:barcode_scan/barcode_scan.dart';
 
 import 'package:flutter/material.dart';
 
@@ -324,16 +324,18 @@ class _QrScannerTabState extends State<QrScannerTab>
   bool get wantKeepAlive => true;
 
   void scanUserBarcode() {
-    final Future<String> scanAction = BarcodeScanner.scan();
-    scanAction.then((String s) {
-      ProcessQrScanService srv = ProcessQrScanService();
-      final Future<ProcessQrScanModel> apiCall =
-          srv.processQrScan('', s, 'UserScan', '', '', '');
-      apiCall.then((ProcessQrScanModel result) {
-        setState(() => barcode = result.resultStr1);
-      });
-      setState(() => barcode = 'Processing QR Scan');
-    });
+    // final Future<String> scanAction = BarcodeScanner.scan();
+    // scanAction.then((String s) {
+    //   ProcessQrScanService srv = ProcessQrScanService();
+    //   final Future<ProcessQrScanModel> apiCall =
+    //       srv.processQrScan('', s, 'UserScan', '', '', '');
+    //   apiCall.then((ProcessQrScanModel result) {
+    //     setState(() => barcode = result.resultStr1);
+    //   });
+    //   setState(() => barcode = 'Processing QR Scan');
+    // });
+  
+  
   }
 
   @override

@@ -17,14 +17,15 @@ class FutureRunsListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScopedModelDescendant<MainNavigationScopedModel>(builder:
-        (BuildContext context, Widget child, MainNavigationScopedModel model) {
-      model.appBarTitle = 'Upcoming Runs';
+    return 
+    
+    // ScopedModelDescendant<MainNavigationScopedModel>(builder:
+    //     (BuildContext context, Widget child, MainNavigationScopedModel model) {
+    //   model.appBarTitle = 'Upcoming Runs';
 
-      return ScopedModelDescendant<FutureRunScopedModel>(builder:
+       ScopedModelDescendant<FutureRunScopedModel>(builder:
           (BuildContext context, Widget child,
               FutureRunScopedModel futureRunsScopedModel) {
-
         if (!futureRunsScopedModel.isLoading) {
           futureRunsScopedModel.getFutureRunsFromBackend(false);
         }
@@ -33,7 +34,7 @@ class FutureRunsListPage extends StatelessWidget {
         // return ScopedModel<FutureRunScopedModel>(
         //     model: futureRunsModel, child: FutureRunListPageBody());
       });
-    });
+   // });
   }
 }
 
@@ -47,15 +48,27 @@ class FutureRunListPageBody extends StatelessWidget {
   Widget build(BuildContext context) {
     this.context = context;
 
-    return ScopedModelDescendant<FutureRunScopedModel>(
-      builder:
-          (BuildContext context, Widget child, FutureRunScopedModel model) {
-        this.model = model;
-        return model.isLoading
-            ? _buildCircularProgressIndicator()
-            : _buildListView();
-      },
-    );
+    return Scaffold(
+        //key: homePageModel.mainAppScaffoldKey,
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: Theme.of(context).primaryColor,
+          title: Text(
+            'Upcoming Runs List',
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+        ),
+        body: ScopedModelDescendant<FutureRunScopedModel>(
+          builder:
+              (BuildContext context, Widget child, FutureRunScopedModel model) {
+            this.model = model;
+            return model.isLoading
+                ? _buildCircularProgressIndicator()
+                : _buildListView();
+          },
+        ));
   }
 
   Widget _buildCircularProgressIndicator() {
@@ -83,7 +96,7 @@ class FutureRunListPageBody extends StatelessWidget {
     return Padding(
         padding: const EdgeInsets.only(top: 0.0),
         child: model.getFutureRunsCount() == 0
-            ? const Center(child: Text('No Kennels available.'))
+            ? const Center(child: Text('No Runs available.'))
             : RefreshIndicator(
                 onRefresh: () => _handleRefresh(),
                 displacement: 40.0,

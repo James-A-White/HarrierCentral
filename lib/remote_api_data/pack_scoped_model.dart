@@ -84,6 +84,8 @@ class PackScopedModel extends Model {
           run.requestedAttendenceState = -1;
         }
 
+        run.userRunCount = result.totalRunsThisKennel;
+
         // run.rsvpYesCount = result.rsvpYesCount;
         // run.rsvpNoCount = result.rsvpNoCount;
         // run.rsvpMaybeCount = result.rsvpMaybeCount;

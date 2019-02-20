@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="distributionType" value="DEFAULT_WRAPPED" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/../../../../.pub-cache/hosted/pub.dartlang.org/flutter_facebook_login-1.2.0/android" />
+            <option value="$PROJECT_DIR$/../../../../.pub-cache/hosted/pub.dartlang.org/geolocator-3.0.0/android" />
+            <option value="$PROJECT_DIR$/../../../../.pub-cache/hosted/pub.dartlang.org/google_api_availability-1.0.6/android" />
+            <option value="$PROJECT_DIR$/../../../../.pub-cache/hosted/pub.dartlang.org/image_cropper-1.0.0/android" />
+            <option value="$PROJECT_DIR$/../../../../.pub-cache/hosted/pub.dartlang.org/image_picker-0.4.12+1/android" />
+            <option value="$PROJECT_DIR$/../../../../.pub-cache/hosted/pub.dartlang.org/path_provider-0.5.0+1/android" />
+            <option value="$PROJECT_DIR$/../../../../.pub-cache/hosted/pub.dartlang.org/permission_handler-2.2.0/android" />
+            <option value="$PROJECT_DIR$/../../../../.pub-cache/hosted/pub.dartlang.org/shared_preferences-0.5.1+1/android" />
+            <option value="$PROJECT_DIR$/../../../../.pub-cache/hosted/pub.dartlang.org/sqflite-1.1.0/android" />
+            <option value="$PROJECT_DIR$/../../../../.pub-cache/hosted/pub.dartlang.org/url_launcher-4.2.0+3/android" />
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/app" />
+          </set>
+        </option>
+        <option name="resolveModulePerSourceSet" value="false" />
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

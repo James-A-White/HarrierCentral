@@ -18,7 +18,7 @@ class PackModel {
   int paymentType;
   final String displayName;
   final String photo;
-  final int userRunCount;
+  int userRunCount;
   final int waitingForCount;
   final int atHashCount;
   final int onInCount;

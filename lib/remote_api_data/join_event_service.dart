@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:convert';
 
@@ -9,12 +8,10 @@ import 'package:harrier_central/util/utilities.dart';
 
 import 'package:http/http.dart' as http;
 
-
 class JoinEventService {
-
-
   Future<JoinEventModel> joinEvent(
-      String eventId, int rsvpState, int isHare, int attendenceState, [String hasherId]) async {
+      String eventId, int rsvpState, int isHare, int attendenceState,
+      [String hasherId]) async {
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
     final String accessToken =
@@ -25,7 +22,7 @@ class JoinEventService {
       'accessToken': accessToken,
       'eventId': eventId,
       'hasherId': hasherId ?? userId,
-      'isHare' : isHare,
+      'isHare': isHare,
       'rsvpState': rsvpState,
       'attendenceState': attendenceState,
       'resultsRequested': 'Attendance totals'
@@ -53,6 +50,8 @@ class JoinEventService {
           rsvpNoCount: user['rsvpNoCount'],
           rsvpMaybeCount: user['rsvpMaybeCount'],
           haresCount: user['haresCount'],
+          totalRunsThisKennel: user['totalRunsThisKennel'],
+          totalRunsAllKennels: user['totalRunsAllKennels'],
         );
       },
     );

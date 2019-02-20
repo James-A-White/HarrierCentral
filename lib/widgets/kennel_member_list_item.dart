@@ -30,8 +30,10 @@ class KennelMemberListItem extends StatelessWidget {
             child: kennelMember.photo.startsWith('http')
                 ? CachedNetworkImage(
                     imageUrl: kennelMember.photo,
-                    placeholder: const CircularProgressIndicator(),
-                    errorWidget: const Icon(Icons.error),
+                    //placeholder: const CircularProgressIndicator(),
+                    //errorWidget: const Icon(Icons.error),
+                    placeholder: (BuildContext context,String url) => const CircularProgressIndicator(),
+                    errorWidget: (BuildContext context,String url,Exception error) => const Icon(Icons.error),
                     //fadeOutDuration:  Duration(seconds: 1),
                     fadeInDuration: Duration(milliseconds: 0),
                     width: 80.0,

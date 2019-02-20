@@ -49,6 +49,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
   num _uploadingImageSize = 180.0;
 
   int _selectedAvatarIcon = 1;
+  //int _currentAvatarIcon = 1;
 
   bool _processingSelection = false;
 
@@ -59,6 +60,16 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
+      appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: Theme.of(context).primaryColor,
+          title: Text(
+            'Choose Profile Image',
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+        ),
       body: NotificationListener<OverscrollIndicatorNotification>(
         onNotification: (OverscrollIndicatorNotification overscroll) {
           overscroll.disallowGlow();
@@ -66,9 +77,9 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         child: SingleChildScrollView(
           child: Container(
             width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height >= 500.0
-                ? MediaQuery.of(context).size.height
-                : 500.0,
+            height: MediaQuery.of(context).size.height >= 300.0
+                ? MediaQuery.of(context).size.height - 100
+                : 300.0,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                   colors: <Color>[
@@ -83,66 +94,68 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
             child: _processingSelection
                 ? _buildProgressIndicator()
                 : Padding(
-                    padding: EdgeInsets.only(top: 40.0),
+                    padding: EdgeInsets.only(top: 0.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       mainAxisSize: MainAxisSize.max,
                       children: <Widget>[
-                        Padding(
-                          padding: EdgeInsets.only(top: 0.0),
-                          child: Text(
-                            'Choose Profile Image',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 32.0,
-                                fontFamily: 'WorkSansSemiBold'),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Container(
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                      colors: <Color>[
-                                        Colors.white10,
-                                        Colors.white,
-                                      ],
-                                      begin: FractionalOffset(0.0, 0.0),
-                                      end: FractionalOffset(1.0, 1.0),
-                                      stops: <double>[0.0, 1.0],
-                                      tileMode: TileMode.clamp),
-                                ),
-                                width: 100.0,
-                                height: 1.0,
-                              ),
-                              const Padding(
-                                padding:
-                                    EdgeInsets.only(left: 15.0, right: 15.0),
-                                child: const Icon(FontAwesomeIcons.circle,
-                                    color: Color(0xFFFFFFFF), size: 10.0),
-                              ),
-                              Container(
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                      colors: <Color>[
-                                        Colors.white,
-                                        Colors.white10,
-                                      ],
-                                      begin: FractionalOffset(0.0, 0.0),
-                                      end: FractionalOffset(1.0, 1.0),
-                                      stops: <double>[0.0, 1.0],
-                                      tileMode: TileMode.clamp),
-                                ),
-                                width: 100.0,
-                                height: 1.0,
-                              ),
-                            ],
-                          ),
-                        ),
+                        // Padding(
+                        //   padding: EdgeInsets.only(top: 0.0),
+                        //   child: Text(
+                        //     'Choose Profile Image',
+                        //     textAlign: TextAlign.center,
+                        //     style: const TextStyle(
+                        //         color: Colors.white,
+                        //         fontSize: 32.0,
+                        //         fontFamily: 'WorkSansSemiBold'),
+                        //   ),
+                        // ),
+                        // Padding(
+                        //   padding: const EdgeInsets.only(top: 10.0),
+                        //   child: Row(
+                        //     mainAxisAlignment: MainAxisAlignment.center,
+                        //     children: <Widget>[
+                        //       Container(
+                        //         decoration: const BoxDecoration(
+                        //           gradient: LinearGradient(
+                        //               colors: <Color>[
+                        //                 Colors.white10,
+                        //                 Colors.white,
+                        //               ],
+                        //               begin: FractionalOffset(0.0, 0.0),
+                        //               end: FractionalOffset(1.0, 1.0),
+                        //               stops: <double>[0.0, 1.0],
+                        //               tileMode: TileMode.clamp),
+                        //         ),
+                        //         width: 100.0,
+                        //         height: 1.0,
+                        //       ),
+                        //       const Padding(
+                        //         padding:
+                        //             EdgeInsets.only(left: 15.0, right: 15.0),
+                        //         child: const Icon(FontAwesomeIcons.circle,
+                        //             color: Color(0xFFFFFFFF), size: 10.0),
+                        //       ),
+                        //       Container(
+                        //         decoration: const BoxDecoration(
+                        //           gradient: LinearGradient(
+                        //               colors: <Color>[
+                        //                 Colors.white,
+                        //                 Colors.white10,
+                        //               ],
+                        //               begin: FractionalOffset(0.0, 0.0),
+                        //               end: FractionalOffset(1.0, 1.0),
+                        //               stops: <double>[0.0, 1.0],
+                        //               tileMode: TileMode.clamp),
+                        //         ),
+                        //         width: 100.0,
+                        //         height: 1.0,
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
+                        
+                        
                         Expanded(
                           child: Row(
                             children: <Widget>[
@@ -323,8 +336,8 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                   child: Text(
                                     ((_selectedImageType ==
                                             _SelectedImageTypeEnum.avatar)
-                                        ? 'CHOOSE AVATAR'
-                                        : 'CHOOSE IMAGE'),
+                                        ? 'NEXT'
+                                        : 'NEXT'),
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 25.0,
@@ -518,6 +531,10 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
   Widget _getPreviewImage() {
     Widget returnWidget;
+    // if (_selectedAvatarIcon == null)
+    // {
+    //   _selectedAvatarIcon = 1;
+    // }
 
     switch (_selectedImageType) {
       case _SelectedImageTypeEnum.avatar:
@@ -557,7 +574,10 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                     AvatarIconsPage(selectedAvatarIcon: _selectedAvatarIcon),
               ),
             ).then((dynamic onValue) {
-              _selectedAvatarIcon = onValue;
+              if (onValue != null)
+              {
+                _selectedAvatarIcon = onValue;
+              }
             });
           }
           break;

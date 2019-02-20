@@ -16,18 +16,22 @@ class KennelsListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScopedModelDescendant<MainNavigationScopedModel>(builder:
-        (BuildContext context, Widget child, MainNavigationScopedModel model) {
-      model.appBarTitle = 'My Kennels';
-
-      if ((kennelModel?.kennelsList?.length ?? 0) == 0)
+          if (((kennelModel?.kennelsList?.length ?? 0) == 0) && (!kennelModel?.isLoading))
        {
-           kennelModel.getKennelsFromBackend(1, true);
+           kennelModel.getKennelsFromBackend(true);
        }
+
+     
+    
+    // ScopedModelDescendant<MainNavigationScopedModel>(builder:
+    //     (BuildContext context, Widget child, MainNavigationScopedModel model) {
+    //   model.appBarTitle = 'My Kennels';
+
+
 
       return ScopedModel<KennelScopedModel>(
           model: kennelModel, child: KennelsListPageBody());
-    });
+    //});
   }
 }
 
@@ -37,19 +41,50 @@ class KennelsListPageBody extends StatelessWidget {
 
   int pageIndex = 1;
 
-  @override
+  // @override
+  // Widget build(BuildContext context) {
+  //   this.context = context;
+
+  //   return ScopedModelDescendant<KennelScopedModel>(
+  //     builder: (BuildContext context, Widget child, KennelScopedModel model) {
+  //       this.model = model;
+  //       return model.isLoading
+  //           ? _buildCircularProgressIndicator()
+  //           : _buildListView();
+  //     },
+  //   );
+  // }
+
+
+@override
   Widget build(BuildContext context) {
     this.context = context;
 
-    return ScopedModelDescendant<KennelScopedModel>(
+    return Scaffold(
+        //key: homePageModel.mainAppScaffoldKey,
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: Theme.of(context).primaryColor,
+          title: Text(
+            'Kennel List',
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+        ),
+        body: ScopedModelDescendant<KennelScopedModel>(
       builder: (BuildContext context, Widget child, KennelScopedModel model) {
         this.model = model;
         return model.isLoading
             ? _buildCircularProgressIndicator()
             : _buildListView();
-      },
-    );
+          },
+        ));
   }
+
+
+
+
 
   Widget _buildCircularProgressIndicator() {
     return const Center(
@@ -58,7 +93,7 @@ class KennelsListPageBody extends StatelessWidget {
   }
 
   Future<Null> _handleRefresh() async {
-    model.getKennelsFromBackend(1, false);
+    model.getKennelsFromBackend(false);
     model.notifyListeners();
 
     return null;

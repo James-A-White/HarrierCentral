@@ -19,7 +19,7 @@ class KennelScopedModel extends Model {
   List<Kennel> get kennelsList => _kennelsList;
 
 
-  bool _isLoading = true;
+  bool _isLoading = false;
 
   bool get isLoading => _isLoading;
 
@@ -138,8 +138,8 @@ class KennelScopedModel extends Model {
   }
 
   Future<void> getKennelsFromBackend(
-      int pageIndex, bool showLoadingIndicator) async {
-    if ((pageIndex == 1) && showLoadingIndicator) {
+      bool showLoadingIndicator) async {
+    if (showLoadingIndicator) {
       _isLoading = true;
       notifyListeners();
     }
@@ -201,9 +201,9 @@ class KennelScopedModel extends Model {
       },
     );
 
-    if (pageIndex == 1) {
+    // if (pageIndex == 1) {
       _isLoading = false;
-    }
+    //}
 
     notifyListeners();
 
