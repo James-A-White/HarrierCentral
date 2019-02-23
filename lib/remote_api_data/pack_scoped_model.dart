@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:geolocator/geolocator.dart';
-
 import 'package:harrier_central/data_models/pack_model.dart';
 import 'package:harrier_central/data_models/join_event_model.dart';
 import 'package:harrier_central/remote_api_data/join_event_service.dart';
 import 'package:harrier_central/util/constants.dart';
 
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/utilities.dart';
 
 import 'package:http/http.dart' as http;
@@ -36,9 +35,16 @@ class PackScopedModel extends Model {
     return _packList.length;
   }
 
-  void forceRefresh()
-  {
+  void forceRefresh() {
     notifyListeners();
+  }
+
+  Future<JoinEventModel> joinEventAsVisitor(String displayName, String email,
+      String phoneNumber, EnumVirginVisitor virginVisitor, String eventId) {
+    notifyListeners();
+    JoinEventService srv = JoinEventService();
+    return srv.joinEventAsVisitor(eventId, virginVisitor, attendenceAtHash,
+        displayName, email, phoneNumber);
   }
 
   void setRsvpState(
@@ -66,9 +72,11 @@ class PackScopedModel extends Model {
     if (isDirty) {
       notifyListeners();
       JoinEventService srv = new JoinEventService();
+
       srv
-          .joinEvent(run.eventId, rsvpState, isHare, attendenceState, run.hasherId)
-          .then<dynamic>((JoinEventModel result) { 
+          .joinEvent(
+              run.eventId, rsvpState, isHare, attendenceState, run.hasherId)
+          .then<dynamic>((JoinEventModel result) {
         if ((rsvpState != -1) && (rsvpState != run.rsvpState)) {
           run.rsvpState = rsvpState;
           run.requestedRsvpState = -1;
@@ -79,7 +87,8 @@ class PackScopedModel extends Model {
           run.requestedHaringState = -1;
         }
 
-        if ((attendenceState != -1) && (run.attendenceState != attendenceState)) {
+        if ((attendenceState != -1) &&
+            (run.attendenceState != attendenceState)) {
           run.attendenceState = attendenceState;
           run.requestedAttendenceState = -1;
         }
@@ -99,10 +108,17 @@ class PackScopedModel extends Model {
   void addEditPackModelList(PackModel packModel) {
     if (_packList.isNotEmpty) {
       final PackModel packItem = _packList.firstWhere(
-          (PackModel pi) => pi.hasherEventMapId == packModel.hasherEventMapId,
+          (PackModel pi) => ((packModel.hasherEventMapId ==
+                      pi.hasherEventMapId) &&
+                  (packModel.hasherId ==
+                      null) // this covers people who are visitors and virgins
+              ||
+              (packModel.hasherEventMapId == null) &&
+                  (packModel.hasherId == pi.hasherId)), // this covers members
           orElse: () => null);
 
       if (packItem != null) {
+        int i = 0;
         // if (run.hareList != packModel.hareList) {
         //   run.hareList = packModel.hareList;
         // }
@@ -174,7 +190,7 @@ class PackScopedModel extends Model {
   //   return packList;
   // }
 
-  Future<List<PackModel>> getPack(String eventId, String targetUserId) async {
+  Future<List<PackModel>> _getPack(String eventId, String targetUserId) async {
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
     final String accessToken =
@@ -200,7 +216,7 @@ class PackScopedModel extends Model {
       },
     );
 
-    final List<PackModel> usersList = List<PackModel>();
+    final List<PackModel> userListFromServer = List<PackModel>();
 
     PackModel item;
     json.decode(response.body).forEach(
@@ -238,66 +254,40 @@ class PackScopedModel extends Model {
           digitsAfterDecimal: jsonItem['digitsAfterDecimal'],
         );
 
-        usersList.add(item);
+        userListFromServer.add(item);
       },
     );
 
-    return usersList;
+    return userListFromServer;
   }
 
-  Future<void> getpackFromBackend(String eventId, bool forceRefresh) async {
-    if (!forceRefresh && (_packList != null)) {
-      return null;
-    }
+  Future<List<PackModel>> getpackFromBackend(
+      String eventId, bool showLoadingIndicator, bool forceEntireReload) async {
+    print('Get pack from backend: ' +
+        DateTime.now().millisecondsSinceEpoch.toString());
+    // if (!showLoadingIndicator && (_packList != null)) {
+    //   return null;
+    // }
 
     _packList ??= <PackModel>[];
 
-    _isLoading = true;
-    if (forceRefresh) {
+    if (showLoadingIndicator) {
+      _isLoading = true;
       notifyListeners();
     }
-    final dynamic dataFromResponse =
-        await getPack(eventId, '00000000-0000-0000-0000-000000000000');
+
+    if (forceEntireReload) {
+      _packList.clear();
+    }
+
+    final List<PackModel> dataFromResponse =
+        await _getPack(eventId, '00000000-0000-0000-0000-000000000000');
 
     dataFromResponse.forEach(
-      (dynamic jsonItem) {
+      (PackModel item) {
         //parse new kennel's details
-        final PackModel thisRun = PackModel(
-          eventId: jsonItem['eventId'],
-          hasherId: jsonItem['userId'],
-          isFollowing: jsonItem['isFollowing'],
-          isMember: jsonItem['isMember'],
-          // isRsvped: jsonItem['isRsvped'],
-          hasherEventMapId: jsonItem['hasherEventMapId'],
-          isHare: jsonItem['isHare'],
-          virginVisitorType: jsonItem['virginVisitorType'],
-          userStartEvent: DateTime.parse(
-              jsonItem['userStartEvent'] ?? '2000-01-01 19:00:00'),
-          userEndEvent:
-              DateTime.parse(jsonItem['userEndEvent'] ?? '2000-01-01 19:00:00'),
-          rsvpState: jsonItem['rsvpState'],
-          attendenceState: jsonItem['attendenceState'],
-          isPaid: jsonItem['isPaid'],
-          paymentType: jsonItem['paymentType'],
-          displayName: jsonItem['displayName'],
-          photo: jsonItem['photo'],
-          userRunCount: jsonItem['userRunCount'],
-          waitingForCount: jsonItem['waitingForCount'],
-          atHashCount: jsonItem['atHashCount'],
-          onInCount: jsonItem['onInCount'],
-          onTrailCount: jsonItem['onTrailCount'],
-          paidCount: jsonItem['paidCount'],
-          eventPrice: jsonItem['eventPrice'] * 1.0,
-          eventLocale: jsonItem['eventLocale'],
-          allowNegativeCredit: jsonItem['allowNegativeCredit'],
-          credit: jsonItem['credit'] * 1.0,
-          currencySymbol: jsonItem['currencySymbol'],
-          digitsAfterDecimal: jsonItem['digitsAfterDecimal'],
-        );
 
-        jsonItem.isExpanded = false;
-
-        addEditPackModelList(thisRun);
+        addEditPackModelList(item);
       },
     );
 
@@ -305,6 +295,6 @@ class PackScopedModel extends Model {
 
     notifyListeners();
 
-    return null;
+    return _packList;
   }
 }

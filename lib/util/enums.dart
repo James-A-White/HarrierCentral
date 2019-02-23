@@ -1,5 +1,7 @@
 import 'dart:core';
 
+enum EnumVirginVisitor {virgin,visitor}
+
 abstract class Enum<T> {
   final T _value;
   const Enum(this._value);

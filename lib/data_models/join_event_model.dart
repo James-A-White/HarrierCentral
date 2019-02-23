@@ -8,6 +8,7 @@ class JoinEventModel {
   final int haresCount;
   final int totalRunsThisKennel;
   final int totalRunsAllKennels;
+  String hasherEventMapId;
 
   JoinEventModel(
     {
@@ -16,7 +17,8 @@ class JoinEventModel {
         this.rsvpMaybeCount,
         this.haresCount,
         this.totalRunsThisKennel,
-        this.totalRunsAllKennels
+        this.totalRunsAllKennels,
+        this.hasherEventMapId
     });
 
 }
