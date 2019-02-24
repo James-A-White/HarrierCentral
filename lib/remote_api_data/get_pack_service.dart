@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:harrier_central/data_models/pack_model.dart';
+import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
@@ -10,7 +10,7 @@ import 'package:http/http.dart' as http;
 
 class GetPackService {
 
-  Future<List<PackModel>> getPack(String eventId) async {
+  Future<List<UserModel>> getPack(String eventId) async {
 
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
@@ -35,12 +35,12 @@ class GetPackService {
       },
     );
 
-    final List<PackModel> packList =  List<PackModel>();
+    final List<UserModel> packList =  List<UserModel>();
 
-    PackModel packMember;
+    UserModel packMember;
     json.decode(response.body).forEach(
       (dynamic pack) {
-        packMember = PackModel(
+        packMember = UserModel(
           hasherId: pack['hasherId'],
           hasherEventMapId: pack['hasherEventMapId'],
           rsvpState: pack['rsvpState'],

@@ -20,7 +20,10 @@ class PayForEventService {
       int minimumAttendenceValue) async {
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
-    final String tokenParameterString = userIdWhoPaid.toUpperCase() + '#' + paymentAmount.toInt().toString() + '#' + eventId.toUpperCase();
+    if ((userIdWhoPaid ?? '').isEmpty) userIdWhoPaid = '00000000-0000-0000-0000-000000000000';
+    if ((hasherEventMapId ?? '').isEmpty) hasherEventMapId = '00000000-0000-0000-0000-000000000000';
+
+    final String tokenParameterString = hasherEventMapId.toUpperCase() + '#' + userIdWhoPaid.toUpperCase() + '#' + paymentAmount.toInt().toString() + '#' + eventId.toUpperCase();
 
     final String accessToken = Utilities.generateToken(userId, 'payForEvent', paramString: tokenParameterString);
 

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:harrier_central/data_models/join_event_model.dart';
+import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/enums.dart';
@@ -13,7 +14,7 @@ import 'package:http/http.dart' as http;
 
 class JoinEventService {
 
-    Future<JoinEventModel> joinEventAsVisitor(
+    Future<UserModel> joinEventAsVisitor(
       String eventId, EnumVirginVisitor virginVisitor, EnumAttendenceState attendenceState, String name, String email, String phoneNumber) async {
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
@@ -51,18 +52,41 @@ class JoinEventService {
       },
     );
 
-    JoinEventModel thisUser;
+    UserModel thisUser;
 
     json.decode(response.body).forEach(
-      (dynamic user) {
-        thisUser = JoinEventModel(
-          rsvpYesCount: user['rsvpYesCount'],
-          rsvpNoCount: user['rsvpNoCount'],
-          rsvpMaybeCount: user['rsvpMaybeCount'],
-          haresCount: user['haresCount'],
-          totalRunsThisKennel: user['totalRunsThisKennel'],
-          totalRunsAllKennels: user['totalRunsAllKennels'],
-          hasherEventMapId: user['hasherEventMapId'],
+      (dynamic jsonItem) {
+        thisUser = UserModel(
+          eventId: jsonItem['eventId'],
+          hasherId: jsonItem['userId'],
+          isFollowing: jsonItem['isFollowing'],
+          isMember: jsonItem['isMember'],
+          // isRsvped: jsonItem['isRsvped'],
+          hasherEventMapId: jsonItem['hasherEventMapId'],
+          isHare: jsonItem['isHare'],
+          virginVisitorType: jsonItem['virginVisitorType'],
+          userStartEvent: DateTime.parse(
+              jsonItem['userStartEvent'] ?? '2000-01-01 19:00:00'),
+          userEndEvent:
+              DateTime.parse(jsonItem['userEndEvent'] ?? '2000-01-01 19:00:00'),
+          rsvpState: jsonItem['rsvpState'],
+          attendenceState: jsonItem['attendenceState'],
+          isPaid: jsonItem['isPaid'],
+          paymentType: jsonItem['paymentType'],
+          displayName: jsonItem['displayName'],
+          photo: jsonItem['photo'],
+          userRunCount: jsonItem['userRunCount'],
+          waitingForCount: jsonItem['waitingForCount'],
+          atHashCount: jsonItem['atHashCount'],
+          onInCount: jsonItem['onInCount'],
+          onTrailCount: jsonItem['onTrailCount'],
+          paidCount: jsonItem['paidCount'],
+          eventPrice: jsonItem['eventPrice'] * 1.0,
+          eventLocale: jsonItem['eventLocale'],
+          allowNegativeCredit: jsonItem['allowNegativeCredit'],
+          credit: jsonItem['credit'] * 1.0,
+          currencySymbol: jsonItem['currencySymbol'],
+          digitsAfterDecimal: jsonItem['digitsAfterDecimal'],
         );
       },
     );
@@ -73,7 +97,7 @@ class JoinEventService {
 
   Future<JoinEventModel> joinEvent(
       String eventId, int rsvpState, int isHare, int attendenceState,
-      [String hasherId]) async {
+      [String hasherId ,String hasherEventMapId]) async {
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
     final String accessToken =
@@ -83,7 +107,8 @@ class JoinEventService {
       'userId': userId,
       'accessToken': accessToken,
       'eventId': eventId,
-      'hasherId': hasherId ?? userId,
+      'hasherId': hasherId,
+      'hasherEventMapId':hasherEventMapId,
       'isHare': isHare,
       'rsvpState': rsvpState,
       'attendenceState': attendenceState,

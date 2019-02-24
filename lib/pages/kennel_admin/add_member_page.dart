@@ -9,7 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/data_models/add_user_model.dart';
+import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/main.dart';
 import 'package:harrier_central/remote_api_data/add_user_service.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -693,7 +693,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 
 
       final AddUserService t = AddUserService();
-      final Future<AddUserModel> x = t.addUser(
+      final Future<UserModel> x = t.addUser(
           signupFirstNameController.text,
           signupLastNameController.text,
           signupEmailController.text,
@@ -705,7 +705,7 @@ class _AddMemberPageState extends State<AddMemberPage>
           widget.eventId,
           hasherTypeMember,
           attendenceState: widget.attendenceState);
-      x.then((AddUserModel user) {
+      x.then((UserModel user) {
         // Preferences.setStringPref(StringPrefsEnum.userId, user.userId);
         Future<dynamic>.delayed(const Duration(milliseconds: 1500))
             .then((void dummy) {

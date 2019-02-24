@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data_models/future_run_model.dart';
-import 'package:harrier_central/data_models/pack_model.dart';
+import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/remote_api_data/pack_scoped_model.dart';
 import 'package:harrier_central/remote_api_data/pay_scoped_model.dart';
 import 'package:harrier_central/util/utilities.dart';
@@ -28,7 +28,7 @@ class PaymentSnackBar extends SnackBar {
   final PackScopedModel packScopedModel;
   final PayScopedModel payScopedModel;
   final BuildContext context;
-  final List<PackModel> packList;
+  final List<UserModel> packList;
   final FutureRun futureRun;
 
    final String memberPrice = '€5.00';
@@ -687,7 +687,7 @@ Column(
       BuildContext context,
       int paymentType,
       num paymentAmount) {
-    PackModel hasher = packList[index];
+    UserModel hasher = packList[index];
 
     if (hasher.rsvpState < rsvpYes.value) {
       hasher.rsvpState = -1;
@@ -716,12 +716,18 @@ Column(
         hasher.hasherEventMapId = result[0].hasherEventMapId;
       }
 
+      if (hasher.userRunCount != result[0].totalRunsThisKennel) {
+        hasher.userRunCount = result[0].totalRunsThisKennel;
+      }
+
       hasher.rsvpState = rsvpYes.value;
       hasher.requestedRsvpState = -1;
 
       if (hasher.attendenceState < attendenceAtHash.value) {
         hasher.attendenceState = attendenceAtHash.value;
       }
+
+
 
       _packScopedModel.forceRefresh();
 

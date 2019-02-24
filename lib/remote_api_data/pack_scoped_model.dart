@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:harrier_central/data_models/pack_model.dart';
+import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/data_models/join_event_model.dart';
 import 'package:harrier_central/remote_api_data/join_event_service.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -15,8 +15,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class PackScopedModel extends Model {
-  List<PackModel> _packList;
-  List<PackModel> get packList => _packList;
+  List<UserModel> _packList;
+  List<UserModel> get packList => _packList;
 
   bool _isLoading = false;
 
@@ -39,7 +39,7 @@ class PackScopedModel extends Model {
     notifyListeners();
   }
 
-  Future<JoinEventModel> joinEventAsVisitor(String displayName, String email,
+  Future<UserModel> joinEventAsVisitor(String displayName, String email,
       String phoneNumber, EnumVirginVisitor virginVisitor, String eventId) {
     notifyListeners();
     JoinEventService srv = JoinEventService();
@@ -48,24 +48,24 @@ class PackScopedModel extends Model {
   }
 
   void setRsvpState(
-      int rsvpState, int isHare, int attendenceState, PackModel run) {
+      int rsvpState, int isHare, int attendenceState, UserModel user) {
     bool isDirty = false;
 
-    if ((rsvpState != -1) && (rsvpState != run.rsvpState)) {
-      run.requestedRsvpState = rsvpState;
-      run.rsvpState = -1;
+    if ((rsvpState != -1) && (rsvpState != user.rsvpState)) {
+      user.requestedRsvpState = rsvpState;
+      user.rsvpState = -1;
       isDirty = true;
     }
 
-    if ((isHare != -1) && (isHare != run.isHare)) {
-      run.requestedHaringState = isHare;
-      run.isHare = -1;
+    if ((isHare != -1) && (isHare != user.isHare)) {
+      user.requestedHaringState = isHare;
+      user.isHare = -1;
       isDirty = true;
     }
 
-    if ((attendenceState != -1) && (run.attendenceState != attendenceState)) {
-      run.requestedAttendenceState = attendenceState;
-      run.attendenceState = -1;
+    if ((attendenceState != -1) && (user.attendenceState != attendenceState)) {
+      user.requestedAttendenceState = attendenceState;
+      user.attendenceState = -1;
       isDirty = true;
     }
 
@@ -75,25 +75,25 @@ class PackScopedModel extends Model {
 
       srv
           .joinEvent(
-              run.eventId, rsvpState, isHare, attendenceState, run.hasherId)
+              user.eventId, rsvpState, isHare, attendenceState, user.hasherId, user.hasherEventMapId)
           .then<dynamic>((JoinEventModel result) {
-        if ((rsvpState != -1) && (rsvpState != run.rsvpState)) {
-          run.rsvpState = rsvpState;
-          run.requestedRsvpState = -1;
+        if ((rsvpState != -1) && (rsvpState != user.rsvpState)) {
+          user.rsvpState = rsvpState;
+          user.requestedRsvpState = -1;
         }
 
-        if ((isHare != -1) && (isHare != run.isHare)) {
-          run.isHare = isHare;
-          run.requestedHaringState = -1;
+        if ((isHare != -1) && (isHare != user.isHare)) {
+          user.isHare = isHare;
+          user.requestedHaringState = -1;
         }
 
         if ((attendenceState != -1) &&
-            (run.attendenceState != attendenceState)) {
-          run.attendenceState = attendenceState;
-          run.requestedAttendenceState = -1;
+            (user.attendenceState != attendenceState)) {
+          user.attendenceState = attendenceState;
+          user.requestedAttendenceState = -1;
         }
 
-        run.userRunCount = result.totalRunsThisKennel;
+        user.userRunCount = result.totalRunsThisKennel;
 
         // run.rsvpYesCount = result.rsvpYesCount;
         // run.rsvpNoCount = result.rsvpNoCount;
@@ -105,10 +105,15 @@ class PackScopedModel extends Model {
     }
   }
 
-  void addEditPackModelList(PackModel packModel) {
+  void sortPackList()
+  {
+     _packList.sort((a,b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()));
+  }
+
+  void addEditPackModelList(UserModel packModel) {
     if (_packList.isNotEmpty) {
-      final PackModel packItem = _packList.firstWhere(
-          (PackModel pi) => ((packModel.hasherEventMapId ==
+      final UserModel packItem = _packList.firstWhere(
+          (UserModel pi) => ((packModel.hasherEventMapId ==
                       pi.hasherEventMapId) &&
                   (packModel.hasherId ==
                       null) // this covers people who are visitors and virgins
@@ -190,7 +195,7 @@ class PackScopedModel extends Model {
   //   return packList;
   // }
 
-  Future<List<PackModel>> _getPack(String eventId, String targetUserId) async {
+  Future<List<UserModel>> _getPack(String eventId, String targetUserId) async {
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
     final String accessToken =
@@ -216,42 +221,46 @@ class PackScopedModel extends Model {
       },
     );
 
-    final List<PackModel> userListFromServer = List<PackModel>();
+    final List<UserModel> userListFromServer = List<UserModel>();
 
-    PackModel item;
+    UserModel item;
     json.decode(response.body).forEach(
       (dynamic jsonItem) {
-        item = PackModel(
-          eventId: jsonItem['eventId'],
-          hasherId: jsonItem['userId'],
-          isFollowing: jsonItem['isFollowing'],
-          isMember: jsonItem['isMember'],
+        item = UserModel(
           // isRsvped: jsonItem['isRsvped'],
-          hasherEventMapId: jsonItem['hasherEventMapId'],
-          isHare: jsonItem['isHare'],
-          virginVisitorType: jsonItem['virginVisitorType'],
-          userStartEvent: DateTime.parse(
-              jsonItem['userStartEvent'] ?? '2000-01-01 19:00:00'),
-          userEndEvent:
-              DateTime.parse(jsonItem['userEndEvent'] ?? '2000-01-01 19:00:00'),
-          rsvpState: jsonItem['rsvpState'],
-          attendenceState: jsonItem['attendenceState'],
-          isPaid: jsonItem['isPaid'],
-          paymentType: jsonItem['paymentType'],
-          displayName: jsonItem['displayName'],
-          photo: jsonItem['photo'],
-          userRunCount: jsonItem['userRunCount'],
-          waitingForCount: jsonItem['waitingForCount'],
-          atHashCount: jsonItem['atHashCount'],
-          onInCount: jsonItem['onInCount'],
-          onTrailCount: jsonItem['onTrailCount'],
-          paidCount: jsonItem['paidCount'],
-          eventPrice: jsonItem['eventPrice'] * 1.0,
-          eventLocale: jsonItem['eventLocale'],
           allowNegativeCredit: jsonItem['allowNegativeCredit'],
+          atHashCount: jsonItem['atHashCount'],
+          attendenceState: jsonItem['attendenceState'],
           credit: jsonItem['credit'] * 1.0,
           currencySymbol: jsonItem['currencySymbol'],
           digitsAfterDecimal: jsonItem['digitsAfterDecimal'],
+          displayName: jsonItem['displayName'],
+          email: jsonItem['email'],
+          eventId: jsonItem['eventId'],
+          eventLocale: jsonItem['eventLocale'],
+          eventPrice: jsonItem['eventPrice'] * 1.0,
+          facebookId: jsonItem['facebookId'],
+          firstName: jsonItem['firstName'],
+          hasherEventMapId: jsonItem['hasherEventMapId'],
+          hasherId: jsonItem['userId'],
+          isFollowing: jsonItem['isFollowing'],
+          isHare: jsonItem['isHare'],
+          isMember: jsonItem['isMember'],
+          isPaid: jsonItem['isPaid'],
+          lastName: jsonItem['lastName'],
+          onInCount: jsonItem['onInCount'],
+          onTrailCount: jsonItem['onTrailCount'],
+          paidCount: jsonItem['paidCount'],
+          paymentType: jsonItem['paymentType'],
+          photo: jsonItem['photo'],
+          qrCode: jsonItem['qrCode'],
+          qrSecretCode: jsonItem['qrSecretCode'],
+          rsvpState: jsonItem['rsvpState'],
+          userEndEvent:DateTime.parse(jsonItem['userEndEvent'] ?? '2000-01-01 19:00:00'),
+          userRunCount: jsonItem['userRunCount'],
+          userStartEvent: DateTime.parse(jsonItem['userStartEvent'] ?? '2000-01-01 19:00:00'),
+          virginVisitorType: jsonItem['virginVisitorType'],
+          waitingForCount: jsonItem['waitingForCount'],
         );
 
         userListFromServer.add(item);
@@ -261,7 +270,7 @@ class PackScopedModel extends Model {
     return userListFromServer;
   }
 
-  Future<List<PackModel>> getpackFromBackend(
+  Future<List<UserModel>> getpackFromBackend(
       String eventId, bool showLoadingIndicator, bool forceEntireReload) async {
     print('Get pack from backend: ' +
         DateTime.now().millisecondsSinceEpoch.toString());
@@ -269,7 +278,7 @@ class PackScopedModel extends Model {
     //   return null;
     // }
 
-    _packList ??= <PackModel>[];
+    _packList ??= <UserModel>[];
 
     if (showLoadingIndicator) {
       _isLoading = true;
@@ -280,16 +289,18 @@ class PackScopedModel extends Model {
       _packList.clear();
     }
 
-    final List<PackModel> dataFromResponse =
+    final List<UserModel> dataFromResponse =
         await _getPack(eventId, '00000000-0000-0000-0000-000000000000');
 
     dataFromResponse.forEach(
-      (PackModel item) {
+      (UserModel item) {
         //parse new kennel's details
 
         addEditPackModelList(item);
       },
     );
+
+    sortPackList();
 
     _isLoading = false;
 

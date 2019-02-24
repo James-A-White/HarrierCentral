@@ -6,7 +6,7 @@
 import 'package:harrier_central/data_models/pay_for_event_model.dart';
 //import 'package:harrier_central/data_models/join_event_model.dart';
 import 'package:harrier_central/remote_api_data/pay_for_event_service.dart';
-import 'package:harrier_central/data_models/pack_model.dart';
+import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/util/enums.dart';
 //import 'package:harrier_central/util/constants.dart';
 
@@ -27,7 +27,7 @@ class PayScopedModel extends Model {
   // }
 
   Future<List<PayForEventModel>> payForEvent(
-      List<PackModel> packList, int index, int paymentType, num paymentAmount, num minimumAttendenceValue) {
+      List<UserModel> packList, int index, int paymentType, num paymentAmount, num minimumAttendenceValue) {
     // if ((rsvpState != -1) && (rsvpState != run.rsvpState)) {
     //   run.requestedRsvpState = rsvpState;
     //   run.rsvpState = -1;

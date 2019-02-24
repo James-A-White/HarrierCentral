@@ -10,7 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:latlong/latlong.dart';
 
 import 'package:harrier_central/data_models/future_run_model.dart';
-import 'package:harrier_central/data_models/pack_model.dart';
+import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/pages/run_admin/run_start_end_qr_codes_page.dart';
 import 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
 import 'package:harrier_central/pages/run_admin/payment_report.dart';
@@ -71,7 +71,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 
   bool _loadingPack = false;
 
-  List<PackModel> packList;
+  List<UserModel> packList;
 
   GetPackService _getPackService = GetPackService();
 
@@ -80,7 +80,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   Future<Null> _getPackWithRefresh() async {
     _getPackService
         .getPack(widget.futureRun.eventId)
-        .then((List<PackModel> _thePack) {
+        .then((List<UserModel> _thePack) {
       packList = _thePack;
       setState(() {});
     });
@@ -94,7 +94,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     if ((packList == null) || forceRefresh) {
       _getPackService
           .getPack(widget.futureRun.eventId)
-          .then((List<PackModel> _thePack) {
+          .then((List<UserModel> _thePack) {
         packList = _thePack;
         setState(() {});
       });

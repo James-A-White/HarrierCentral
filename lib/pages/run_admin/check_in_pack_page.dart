@@ -14,7 +14,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data_models/future_run_model.dart';
-import 'package:harrier_central/data_models/pack_model.dart';
+import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/remote_api_data/pack_scoped_model.dart';
 import 'package:harrier_central/remote_api_data/pay_scoped_model.dart';
 import 'package:harrier_central/remote_api_data/pay_for_event_service.dart';
@@ -53,7 +53,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
   GlobalKey packListBox = GlobalKey();
 
-  List<PackModel> packList;
+  List<UserModel> packList;
 
   num snackBarButtonSize = 35.0;
 
@@ -61,7 +61,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     _packScopedModel
         .getpackFromBackend(
             widget.futureRun.eventId, showReloadingIndicator, true)
-        .then((List<PackModel> _thePack) {
+        .then((List<UserModel> _thePack) {
       packList = _thePack;
       setState(() {});
     });
@@ -73,7 +73,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     if ((packList == null) || forceRefresh) {
       _packScopedModel
           .getpackFromBackend(widget.futureRun.eventId, true, false)
-          .then((List<PackModel> _thePack) {
+          .then((List<UserModel> _thePack) {
         packList = _thePack;
         setState(() {});
       });
@@ -112,8 +112,13 @@ class CheckInPackPageState extends State<CheckInPackPage> {
         _packScopedModel
             .joinEventAsVisitor(
                 name, email, phoneNumber, evv, widget.futureRun.eventId)
-            .then((JoinEventModel result) {
-          _reloadPack(false);
+            .then((UserModel result) {
+              _packScopedModel.addEditPackModelList(result);
+              _packScopedModel.sortPackList();
+              packList = _packScopedModel.packList;
+
+              _packScopedModel.forceRefresh();
+          //_reloadPack(false);
         });
       }
     });
@@ -191,16 +196,16 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                     ).then<dynamic>((String profileImageUrl) {
                       if (profileImageUrl.isEmpty) {
                       } else {
-                        Navigator.push<AddUserModel>(
+                        Navigator.push<UserModel>(
                           context,
-                          MaterialPageRoute<AddUserModel>(
+                          MaterialPageRoute<UserModel>(
                             builder: (context) => AddMemberPage(
                                 kennelId: widget.futureRun.kennelId,
                                 eventId: widget.futureRun.eventId,
                                 attendenceState: attendenceAtHash,
                                 profileImageUrl: profileImageUrl),
                           ),
-                        ).then<dynamic>((AddUserModel test) {
+                        ).then<dynamic>((UserModel test) {
                           _reloadPack(false);
                         });
                       }
@@ -245,6 +250,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                               child: ScopedModelDescendant<PackScopedModel>(
                                 builder: (BuildContext context, Widget child,
                                     PackScopedModel model) {
+                                  print(DateTime.now().millisecondsSinceEpoch.toString() + ' pack list update, #items = ' + packList.length.toString());
                                   return PackListView(
                                       packList: packList,
                                       packScopedModel: _packScopedModel,
@@ -355,13 +361,13 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     Scaffold.of(scanContext).showSnackBar(snackBar);
 
     var packItem = packList.firstWhere(
-        (PackModel packMember) =>
+        (UserModel packMember) =>
             packMember.hasherId.toUpperCase() ==
             result.targetUserId.toUpperCase(),
         orElse: () => null);
 
     if (packItem == null) {
-      packItem = PackModel(
+      packItem = UserModel(
           hasherId: result.targetUserId,
           photo: result.photo,
           rsvpState: result.rsvpState,
@@ -458,7 +464,7 @@ class PackListView extends StatelessWidget {
     @required this.futureRun,
   }) : super(key: key);
 
-  final List<PackModel> packList;
+  final List<UserModel> packList;
   final PackScopedModel packScopedModel;
   final PayScopedModel payScopedModel;
   final FutureRun futureRun;
@@ -490,7 +496,12 @@ class PackListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     print(DateTime.now().millisecondsSinceEpoch.toString());
-    return ListView.separated(
+    return 
+    
+    
+    
+    
+    ListView.separated(
         separatorBuilder: (context, index) => Divider(
               height: 1.0,
               color: Colors.black45,

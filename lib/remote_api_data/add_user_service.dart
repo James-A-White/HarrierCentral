@@ -3,7 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/data_models/add_user_model.dart';
+import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/utilities.dart';
 
@@ -11,7 +11,7 @@ import 'package:http/http.dart' as http;
 
 class AddUserService {
 
-  Future<AddUserModel> addUser(String firstName, String lastName, String email,
+  Future<UserModel> addUser(String firstName, String lastName, String email,
       String hashName, String facebookId, String gender, String photo, String memberKennelId, String eventId, EnumHasherType<int> hasherType, {EnumAttendenceState<int> attendenceState = attndenceUnknown}) async {
 
     final String accessToken = Utilities.generateToken(
@@ -50,21 +50,21 @@ class AddUserService {
       },
     );
 
-    AddUserModel thisUser;
+    UserModel thisUser;
 
     json.decode(response.body).forEach(
       (dynamic user) {
-        thisUser = AddUserModel(
-          userId: user['userId'],
+        thisUser = UserModel(
+          hasherId: user['userId'],
           qrCode: user['qr_code'],
           qrSecretCode: user['qr_secret_code'],
           displayName: user['displayName'],
           firstName: user['firstName'],
           lastName: user['lastName'],
           email: user['email'],
-          hasherKennelMapId: user['hasherKennelMapId'],
+          //hasherKennelMapId: user['hasherKennelMapId'],
           hasherEventMapId: user['hasherEventMapId'],
-          memberCount: user['memberCount'],
+          //memberCount: user['memberCount'],
         );
       },
     );
