@@ -8,9 +8,12 @@ class ApproveLoginModel {
 
     String apiVersion;
     DateTime lastGazetteerUpdate;
-    num approvalCode;
-    DateTime systemEstimatedBackInService;
-
+    int approvalCode;
+    String loginMessage;
+    String loginMessageTitle;
+    int serverStatusCode;
+    DateTime messageEndDate;
+    int messageDisplayType;
 
   ApproveLoginModel(
     {
@@ -18,7 +21,11 @@ class ApproveLoginModel {
       this.apiVersion,
       this.lastGazetteerUpdate,
       this.approvalCode,
-      this.systemEstimatedBackInService,
+      this.loginMessage,
+      this.loginMessageTitle,
+      this.serverStatusCode,
+      this.messageEndDate,
+      this.messageDisplayType
     });
 
   static ApproveLoginModel itemFromJson(String jsonResult)
@@ -34,7 +41,11 @@ class ApproveLoginModel {
           apiVersion: jsonItem['apiVersion'],
           lastGazetteerUpdate:DateTime.parse(jsonItem['lastGazetteerUpdate'] ?? '2000-01-01 19:00:00'),
           approvalCode: jsonItem['approvalCode'],
-          systemEstimatedBackInService:DateTime.parse(jsonItem['systemEstimatedBackInService'] ?? '2000-01-01 19:00:00'),
+          serverStatusCode: jsonItem['serverStatusCode'],
+          loginMessage: jsonItem['loginMessage'],
+          loginMessageTitle: jsonItem['loginMessageTitle'],
+          messageEndDate:DateTime.parse(jsonItem['serverStatusEndDate'] ?? '2000-01-01 19:00:00'),
+          messageDisplayType: jsonItem['messageDisplayType'],
         );
 
         items.add(item);
