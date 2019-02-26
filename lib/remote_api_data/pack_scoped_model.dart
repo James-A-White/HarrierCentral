@@ -110,7 +110,7 @@ class PackScopedModel extends Model {
      _packList.sort((a,b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()));
   }
 
-  void addEditPackModelList(UserModel packModel) {
+  void addEditUser(UserModel packModel) {
     if (_packList.isNotEmpty) {
       final UserModel packItem = _packList.firstWhere(
           (UserModel pi) => ((packModel.hasherEventMapId ==
@@ -221,53 +221,7 @@ class PackScopedModel extends Model {
       },
     );
 
-    final List<UserModel> userListFromServer = List<UserModel>();
-
-    UserModel item;
-    json.decode(response.body).forEach(
-      (dynamic jsonItem) {
-        item = UserModel(
-          // isRsvped: jsonItem['isRsvped'],
-          allowNegativeCredit: jsonItem['allowNegativeCredit'],
-          atHashCount: jsonItem['atHashCount'],
-          attendenceState: jsonItem['attendenceState'],
-          credit: jsonItem['credit'] * 1.0,
-          currencySymbol: jsonItem['currencySymbol'],
-          digitsAfterDecimal: jsonItem['digitsAfterDecimal'],
-          displayName: jsonItem['displayName'],
-          email: jsonItem['email'],
-          eventId: jsonItem['eventId'],
-          eventLocale: jsonItem['eventLocale'],
-          eventPrice: jsonItem['eventPrice'] * 1.0,
-          facebookId: jsonItem['facebookId'],
-          firstName: jsonItem['firstName'],
-          hasherEventMapId: jsonItem['hasherEventMapId'],
-          hasherId: jsonItem['userId'],
-          isFollowing: jsonItem['isFollowing'],
-          isHare: jsonItem['isHare'],
-          isMember: jsonItem['isMember'],
-          isPaid: jsonItem['isPaid'],
-          lastName: jsonItem['lastName'],
-          onInCount: jsonItem['onInCount'],
-          onTrailCount: jsonItem['onTrailCount'],
-          paidCount: jsonItem['paidCount'],
-          paymentType: jsonItem['paymentType'],
-          photo: jsonItem['photo'],
-          qrCode: jsonItem['qrCode'],
-          qrSecretCode: jsonItem['qrSecretCode'],
-          rsvpState: jsonItem['rsvpState'],
-          userEndEvent:DateTime.parse(jsonItem['userEndEvent'] ?? '2000-01-01 19:00:00'),
-          userRunCount: jsonItem['userRunCount'],
-          userStartEvent: DateTime.parse(jsonItem['userStartEvent'] ?? '2000-01-01 19:00:00'),
-          virginVisitorType: jsonItem['virginVisitorType'],
-          waitingForCount: jsonItem['waitingForCount'],
-        );
-
-        userListFromServer.add(item);
-      },
-    );
-
-    return userListFromServer;
+    return UserModel.listFromJson(response.body);
   }
 
   Future<List<UserModel>> getpackFromBackend(
@@ -296,7 +250,7 @@ class PackScopedModel extends Model {
       (UserModel item) {
         //parse new kennel's details
 
-        addEditPackModelList(item);
+        addEditUser(item);
       },
     );
 

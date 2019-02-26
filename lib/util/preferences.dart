@@ -12,12 +12,12 @@ enum StringPrefsEnum {
   hashName,
   email,
   avatarUrl,
-  facebookId
+  facebookId,
 }
 
-enum IntPrefsEnum {
-  dummy,
-  //qrCodeViewCurrentTab
+enum NumPrefsEnum {
+  latitude,
+  longitude
 }
 
 class Preferences {
@@ -36,12 +36,12 @@ class Preferences {
     return _sharedPreferences.setString(key.toString(), value);
   }
 
-  static int getIntPref(IntPrefsEnum key) {
+  static num getNumPref(NumPrefsEnum key) {
     final String test = key.toString();
-    return _sharedPreferences.getInt(test);
+    return _sharedPreferences.getDouble(test);
   }
 
-  static Future<bool> setIntPref(IntPrefsEnum key, int value) async {
-    return _sharedPreferences.setInt(key.toString(), value);
+  static Future<bool> setNumPref(NumPrefsEnum key, num value) async {
+    return _sharedPreferences.setDouble(key.toString(), value);
   }
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import 'package:harrier_central/remote_api_data/approve_login_service.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -22,23 +23,28 @@ class _AppEntryPageState extends State<AppEntryPage>
   void handleTimeout() {
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
-    if (userId == null) {
-    //if (true) {
-      Navigator.of(context)
-          .pushNamed(RouteNames.NEW_ACCOUNT.toString());
-      //     .then<dynamic>((void test) {
-      //   _iconAnimationController.dispose();
-      // }
-      // );
-    } else {
-      Navigator.pushReplacement<dynamic, dynamic>(
-              context,
-              MaterialPageRoute<dynamic>(
-                  builder: (BuildContext context) => MainNavigationPage()));
-      //     .then<dynamic>((void test) {
-      //    _iconAnimationController.dispose();
-      // });
-    }
+    ApproveLoginService svc = ApproveLoginService();
+    svc.approveLogin().then((void dummy) {
+        if (userId == null) {
+        //if (true) {
+          Navigator.of(context)
+              .pushNamed(RouteNames.NEW_ACCOUNT.toString());
+          //     .then<dynamic>((void test) {
+          //   _iconAnimationController.dispose();
+          // }
+          // );
+        } else {
+          Navigator.pushReplacement<dynamic, dynamic>(
+                  context,
+                  MaterialPageRoute<dynamic>(
+                      builder: (BuildContext context) => MainNavigationPage()));
+          //     .then<dynamic>((void test) {
+          //    _iconAnimationController.dispose();
+          // });
+        }
+    });
+
+
   }
 
   @override

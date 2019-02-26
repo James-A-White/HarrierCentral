@@ -50,25 +50,11 @@ class AddUserService {
       },
     );
 
-    UserModel thisUser;
+    List<UserModel> results = UserModel.listFromJson(response.body); 
 
-    json.decode(response.body).forEach(
-      (dynamic user) {
-        thisUser = UserModel(
-          hasherId: user['userId'],
-          qrCode: user['qr_code'],
-          qrSecretCode: user['qr_secret_code'],
-          displayName: user['displayName'],
-          firstName: user['firstName'],
-          lastName: user['lastName'],
-          email: user['email'],
-          //hasherKennelMapId: user['hasherKennelMapId'],
-          hasherEventMapId: user['hasherEventMapId'],
-          //memberCount: user['memberCount'],
-        );
-      },
-    );
+    if (results.length < 1) return null;
 
-    return thisUser;
+    return results[0];
+
   }
 }

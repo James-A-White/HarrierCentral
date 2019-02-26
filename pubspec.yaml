@@ -59,6 +59,7 @@ dependencies:
   permission_handler: ^2.2.0 #permission_handler: ^3.0.0 incompatible with geolocator 20 Feb 2019
   flutter_spinkit: ^3.1.0 
   flutter_speed_dial: ^1.1.1
+  device_info: ^0.4.0+1
 
   # barcode_scan: ^0.0.8
   # fzxing: ^0.2.0+1

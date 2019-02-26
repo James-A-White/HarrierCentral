@@ -21,7 +21,6 @@ import 'package:harrier_central/remote_api_data/pay_for_event_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/data_models/process_qr_scan_for_checkin_model.dart';
 import 'package:harrier_central/pages/kennel_admin/add_member_page.dart';
-import 'package:harrier_central/data_models/add_user_model.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
 import 'package:harrier_central/data_models/join_event_model.dart';
@@ -113,7 +112,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             .joinEventAsVisitor(
                 name, email, phoneNumber, evv, widget.futureRun.eventId)
             .then((UserModel result) {
-              _packScopedModel.addEditPackModelList(result);
+              _packScopedModel.addEditUser(result);
               _packScopedModel.sortPackList();
               packList = _packScopedModel.packList;
 
@@ -205,8 +204,10 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                                 attendenceState: attendenceAtHash,
                                 profileImageUrl: profileImageUrl),
                           ),
-                        ).then<dynamic>((UserModel test) {
-                          _reloadPack(false);
+                        ).then<dynamic>((UserModel user) {
+                          _packScopedModel.addEditUser(user);
+                          _packScopedModel.sortPackList();
+                          _packScopedModel.forceRefresh();
                         });
                       }
                     }),
@@ -536,7 +537,7 @@ class PackListView extends StatelessWidget {
                               //placeholder: const CircularProgressIndicator(),
                               //errorWidget: const Icon(Icons.error),
                               placeholder: (context, url) => Container(
-                                  child: CircularProgressIndicator(),
+                                  child: Center(child:Container(height:20,width:20,child:CircularProgressIndicator(strokeWidth: 3.0,))),
                                   height: 70.0,
                                   width: 70.0),
                               errorWidget: (context, url, error) =>

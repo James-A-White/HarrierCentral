@@ -24,8 +24,6 @@ class FutureRunScopedModel
 
   bool get isLoading => _isLoading;
 
-  PermissionStatus _location_permission;
-
   void clearFutureRunsList() {
     if (_futureRunsList != null) {
       _futureRunsList.clear();
@@ -123,34 +121,19 @@ class FutureRunScopedModel
   Future<dynamic> _getFutureRunsByDistance(int distance) async {
     Position position;
 
-    if (_location_permission == null) {
-      _location_permission = await PermissionHandler()
-          .checkPermissionStatus(PermissionGroup.location);
-    }
-
-    if (_location_permission == PermissionStatus.granted) {
-      position = await Geolocator()
-          .getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
-    }
-
-    double latitude = DEFAULT_LATITUDE;
-    double longitude = DEFAULT_LONGITUDE;
-    if (position != null) {
-      latitude = position.latitude;
-      longitude = position.longitude;
-    }
-
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
     final String accessToken = Utilities.generateToken(
         userId.toUpperCase(), 'getFutureRunsByDistance');
 
+    final LatLon latLon = await Utilities.getLatLong();
+
     final String body = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
       'distanceInKm': distance,
-      'latitude': latitude,
-      'longitude': longitude,
+      'latitude': latLon.latitude,
+      'longitude': latLon.longitude,
     });
 
     final http.Response response = await http

@@ -99,16 +99,18 @@ class KennelScopedModel extends Model {
   Future<dynamic> _getKennelsByDistance(int distance) async {
     //TODO: Check to see if the app has permission to access location before trying to read it.
 
-    final Position position = await Geolocator()
-        .getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
+    // final Position position = await Geolocator()
+    //     .getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
 
-    double latitude = DEFAULT_LATITUDE;
-    double longitude = DEFAULT_LONGITUDE;
+    // double latitude = DEFAULT_LATITUDE;
+    // double longitude = DEFAULT_LONGITUDE;
 
-    if (position != null) {
-      latitude = position.latitude;
-      longitude = position.longitude;
-    }
+    // if (position != null) {
+    //   latitude = position.latitude;
+    //   longitude = position.longitude;
+    // }
+
+    final LatLon latLon = await Utilities.getLatLong();
 
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
@@ -118,8 +120,8 @@ class KennelScopedModel extends Model {
     final String body = jsonEncode(<String,Object>{
       'userId': userId,
       'accessToken': accessToken,
-      'userLatitude': latitude,
-      'userLongitude': longitude,
+      'userLatitude': latLon.latitude,
+      'userLongitude': latLon.longitude,
     });
 
     final http.Response response = await http

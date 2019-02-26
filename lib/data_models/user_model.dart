@@ -1,35 +1,38 @@
 import 'dart:core';
+import 'dart:convert';
 
 class UserModel {
 
-  // final int isRsvped;
-  final DateTime userEndEvent;
-  final DateTime userStartEvent;
-  final double credit;
-  final double eventPrice;
-  final int allowNegativeCredit;
-  final int atHashCount;
-  final int digitsAfterDecimal;
-  final int isFollowing;
-  final int isMember;
-  final int onInCount;
-  final int onTrailCount;
-  final int paidCount;
-  final int virginVisitorType;
-  final int waitingForCount;
-  final String currencySymbol;
-  final String displayName;
-  final String email;
-  final String eventId;
-  final String eventLocale;
-  final String facebookId;
-  final String firstName;
-  final String hasherId;
-  final String hashName;
-  final String lastName;
-  final String photo;
-  final String qrCode;
-  final String qrSecretCode;
+
+
+  // int isRsvped;
+  DateTime userEndEvent;
+  DateTime userStartEvent;
+  double credit;
+  double eventPrice;
+  int allowNegativeCredit;
+  int atHashCount;
+  int digitsAfterDecimal;
+  int isFollowing;
+  int isMember;
+  int onInCount;
+  int onTrailCount;
+  int paidCount;
+  int virginVisitorType;
+  int waitingForCount;
+  String currencySymbol;
+  String displayName;
+  String email;
+  String eventId;
+  String eventLocale;
+  String facebookId;
+  String firstName;
+  String hasherId;
+  String hashName;
+  String lastName;
+  String photo;
+  String qrCode;
+  String qrSecretCode;
   int attendenceState;
   int isHare;
   int isPaid;
@@ -37,6 +40,8 @@ class UserModel {
   int rsvpState;
   int userRunCount;
   String hasherEventMapId;
+
+
 
   UserModel(
     {
@@ -77,6 +82,57 @@ class UserModel {
       this.waitingForCount,
     });
 
+  static List<UserModel> listFromJson(String jsonResult)
+  {
+    List<UserModel> items = List<UserModel>();
+
+    UserModel item;
+    json.decode(jsonResult).forEach(
+      (dynamic jsonItem) {
+        item = UserModel(
+          // isRsvped: jsonItem['isRsvped'],
+          allowNegativeCredit: jsonItem['allowNegativeCredit'],
+          atHashCount: jsonItem['atHashCount'],
+          attendenceState: jsonItem['attendenceState'],
+          credit: jsonItem['credit'] * 1.0,
+          currencySymbol: jsonItem['currencySymbol'],
+          digitsAfterDecimal: jsonItem['digitsAfterDecimal'],
+          displayName: jsonItem['displayName'],
+          email: jsonItem['email'],
+          eventId: jsonItem['eventId'],
+          eventLocale: jsonItem['eventLocale'],
+          eventPrice: jsonItem['eventPrice'] * 1.0,
+          facebookId: jsonItem['facebookId'],
+          firstName: jsonItem['firstName'],
+          hasherEventMapId: jsonItem['hasherEventMapId'],
+          hasherId: jsonItem['userId'],
+          isFollowing: jsonItem['isFollowing'],
+          isHare: jsonItem['isHare'],
+          isMember: jsonItem['isMember'],
+          isPaid: jsonItem['isPaid'],
+          lastName: jsonItem['lastName'],
+          onInCount: jsonItem['onInCount'],
+          onTrailCount: jsonItem['onTrailCount'],
+          paidCount: jsonItem['paidCount'],
+          paymentType: jsonItem['paymentType'],
+          photo: jsonItem['photo'],
+          qrCode: jsonItem['qrCode'],
+          qrSecretCode: jsonItem['qrSecretCode'],
+          rsvpState: jsonItem['rsvpState'],
+          userEndEvent:DateTime.parse(jsonItem['userEndEvent'] ?? '2000-01-01 19:00:00'),
+          userRunCount: jsonItem['userRunCount'],
+          userStartEvent: DateTime.parse(jsonItem['userStartEvent'] ?? '2000-01-01 19:00:00'),
+          virginVisitorType: jsonItem['virginVisitorType'],
+          waitingForCount: jsonItem['waitingForCount'],
+        );
+
+        items.add(item);
+      },
+    );
+
+    return items;
+  }
+
   @override
   String toString() => '$displayName';
 
@@ -99,5 +155,7 @@ class UserModel {
   set requestedAttendenceState(int attendenceState) {
     this._requestedAttendenceState = attendenceState;
   }
+
+
 
 }

@@ -5,6 +5,8 @@ PODS:
   - Bolts/AppLinks (1.9.0):
     - Bolts/Tasks
   - Bolts/Tasks (1.9.0)
+  - device_info (0.0.1):
+    - Flutter
   - FBSDKCoreKit (4.40.0):
     - Bolts (~> 1.9)
   - FBSDKLoginKit (4.39.1):
@@ -39,6 +41,7 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - device_info (from `.symlinks/plugins/device_info/ios`)
   - Flutter (from `.symlinks/flutter/ios`)
   - flutter_facebook_login (from `.symlinks/plugins/flutter_facebook_login/ios`)
   - geolocator (from `.symlinks/plugins/geolocator/ios`)
@@ -60,6 +63,8 @@ SPEC REPOS:
     - TOCropViewController
 
 EXTERNAL SOURCES:
+  device_info:
+    :path: ".symlinks/plugins/device_info/ios"
   Flutter:
     :path: ".symlinks/flutter/ios"
   flutter_facebook_login:
@@ -85,6 +90,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
+  device_info: 3ebad48f726348f69abd802f3334a8d1ed795fbd
   FBSDKCoreKit: ae214474b25033399c131dc81d258e412582a2ba
   FBSDKLoginKit: c3079d9a4db27c492287b1eed7a4272b28cf8a59
   Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
