@@ -299,7 +299,8 @@ class _QrCodeTabState extends State<QrCodeTab>
               data: widget.kennelMemberModel.qr_secret_code,
               version: 4,
               size: 200.0,
-              errorCorrectionLevel: 3),
+              errorCorrectionLevel: 3
+              ),
           Padding(
             padding: EdgeInsets.only(left: 32.0, right: 32.0),
             child: FlatButton(

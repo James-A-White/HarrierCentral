@@ -1,4 +1,3 @@
-
 import 'dart:math';
 
 //import 'package:barcode_scan/barcode_scan.dart';
@@ -11,6 +10,7 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
 
 class UserQrCodePage extends StatefulWidget {
   UserQrCodePage({Key key}) : super(key: key);
@@ -320,22 +320,86 @@ class _QrScannerTabState extends State<QrScannerTab>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   String barcode = 'Waiting';
 
+  QRReaderController controller;
+
   @override
   bool get wantKeepAlive => true;
 
-  void scanUserBarcode() {
-    // final Future<String> scanAction = BarcodeScanner.scan();
-    // scanAction.then((String s) {
-    //   ProcessQrScanService srv = ProcessQrScanService();
-    //   final Future<ProcessQrScanModel> apiCall =
-    //       srv.processQrScan('', s, 'UserScan', '', '', '');
-    //   apiCall.then((ProcessQrScanModel result) {
-    //     setState(() => barcode = result.resultStr1);
-    //   });
-    //   setState(() => barcode = 'Processing QR Scan');
-    // });
-  
-  
+  void scanUserBarcode() async {
+    if (controller == null) {
+      cameras = await availableCameras();
+      onNewCameraSelected(cameras[0]);
+    } else {
+      await stopScanning();
+      setState(() => barcode = 'Waiting');
+    }
+  }
+
+  List<CameraDescription> cameras;
+
+  void onCodeRead(dynamic scanResult) async {
+    setState(() => barcode = 'Processing QR Scan');
+    await stopScanning();
+
+    ProcessQrScanService srv = ProcessQrScanService();
+    final Future<ProcessQrScanModel> apiCall =
+        srv.processQrScan('', scanResult, 'UserScan', '', '', '');
+    apiCall.then((ProcessQrScanModel result) {
+      setState(() => barcode = result.resultStr1);
+    });
+  }
+
+  Future stopScanning() async {
+    controller.stopScanning();
+    await controller.dispose();
+    controller = null;
+  }
+
+  Widget _cameraPreviewWidget() {
+    return Stack(children: <Widget>[
+      Image.asset(
+        'images/other/qr_scanner.png',
+      ),
+      Padding(
+        padding: EdgeInsets.all(7.0),
+        child: (controller == null)
+            ? Container()
+            : new QRReaderPreview(controller),
+      )
+    ]);
+  }
+
+  void onNewCameraSelected(CameraDescription cameraDescription) async {
+    if (controller != null) {
+      await controller.dispose();
+    }
+    controller = new QRReaderController(cameraDescription, ResolutionPreset.low,
+        [CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
+
+    // If the controller is updated then update the UI.
+    controller.addListener(() {
+      if (mounted) setState(() {});
+      if (controller.value.hasError) {
+        showInSnackBar('Camera error ${controller.value.errorDescription}');
+      }
+    });
+
+    try {
+      await controller.initialize();
+    } on QRReaderException catch (e) {
+      //logError(e.code, e.description);
+      showInSnackBar('Error: ${e.code}\n${e.description}');
+    }
+
+    if (mounted) {
+      setState(() {});
+      controller.startScanning();
+    }
+  }
+
+  void showInSnackBar(String message) {
+    // _scaffoldKey.currentState
+    //     .showSnackBar(new SnackBar(content: new Text(message)));
   }
 
   @override
@@ -363,14 +427,18 @@ class _QrScannerTabState extends State<QrScannerTab>
                 Container(
                   width: 150.0,
                   child: RaisedButton(
-                      child: const Text(
-                        'Start Scanning',
+                      child: Text(
+                        ((controller == null)
+                            ? 'Start Scanning'
+                            : 'Stop Scanning'),
                         style: TextStyle(color: Colors.white),
                       ),
                       onPressed: () {
                         scanUserBarcode();
                       }),
                 ),
+                Container(
+                    child: _cameraPreviewWidget(), width: 200.0, height: 200.0),
                 Padding(
                   padding: EdgeInsets.only(left: 24.0, right: 24.0, top: 35.0),
                   child: Text(
