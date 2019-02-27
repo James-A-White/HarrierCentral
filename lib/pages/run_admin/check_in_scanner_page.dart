@@ -220,4 +220,6 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
       },
     );
   }
+
+
 }

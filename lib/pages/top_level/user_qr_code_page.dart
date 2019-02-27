@@ -40,7 +40,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
           padding: EdgeInsets.all(30.0),
           child: Container(
             width: 320.0,
-            height: 90.0,
+            height: 65.0,
             decoration: BoxDecoration(
               color: Theme.of(context).primaryColorLight,
               borderRadius: BorderRadius.all(Radius.circular(45.0)),
@@ -268,6 +268,44 @@ class _QrCodeTabState extends State<QrCodeTab>
   @override
   bool get wantKeepAlive => true;
 
+
+  Future<bool> _displayInstructions(BuildContext context) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Your Hash QR Code'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  'This QR code allows other Hashers to quickly scan you using their Harrier Central apps.\r\n\r\nAny Hasher can scan this code to easily add you as their friend.\r\n\r\nHares and mis-management can use this code to scan you in at the beginning and end of runs in order to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.',
+                  textAlign: TextAlign.justify,
+                  style: const TextStyle(
+                      fontFamily: 'AvenirNextRegular',
+                      fontStyle: FontStyle.normal,
+                      fontSize: 16.0,
+                      height: 1.0),
+                )
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("OK, Got it!"),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -299,7 +337,7 @@ class _QrCodeTabState extends State<QrCodeTab>
               textColor: Theme.of(context).buttonColor,
               child: Text("Learn more about this feature"),
               onPressed: () {
-                //this._displayInstructions(context);
+                this._displayInstructions(context);
               },
             ),
           ),
@@ -402,22 +440,60 @@ class _QrScannerTabState extends State<QrScannerTab>
     //     .showSnackBar(new SnackBar(content: new Text(message)));
   }
 
+
+  Future<bool> _displayInstructions(BuildContext context) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Hash Scanner'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  'Use this scanner to add other Hashers to your friend list.\r\n\r\nIf the hares for a run have posted QR codes for the run, you can also use the scanner to check yourself in at the start and end of the run.',
+                  textAlign: TextAlign.justify,
+                  style: const TextStyle(
+                      fontFamily: 'AvenirNextRegular',
+                      fontStyle: FontStyle.normal,
+                      fontSize: 16.0,
+                      height: 1.0),
+                )
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("OK, Got it!"),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
           Padding(
             padding: EdgeInsets.only(left: 24.0, right: 24.0),
             child: Text(
-              'Scan to add friends and scan to check yourself in at the start and end of runs.',
+              'Scan to add friends and scan to check yourself in at runs.',
               textAlign: TextAlign.center,
               style: const TextStyle(
                   fontFamily: 'AvenirNextDemiBold',
                   fontStyle: FontStyle.normal,
-                  fontSize: 24.0,
+                  fontSize: 22.0,
                   height: 1.0),
             ),
           ),
@@ -425,13 +501,19 @@ class _QrScannerTabState extends State<QrScannerTab>
             child: new Column(
               children: <Widget>[
                 Container(
-                  width: 150.0,
+                  margin: EdgeInsets.all(20.0),
+                  width: 220.0,
                   child: RaisedButton(
                       child: Text(
                         ((controller == null)
                             ? 'Start Scanning'
                             : 'Stop Scanning'),
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                  fontFamily: 'AvenirNextDemiBold',
+                  color: Colors.white,
+                  fontStyle: FontStyle.normal,
+                  fontSize: 22.0,
+                  height: 1.0),
                       ),
                       onPressed: () {
                         scanUserBarcode();
@@ -451,6 +533,16 @@ class _QrScannerTabState extends State<QrScannerTab>
                         height: 1.0),
                   ),
                 ),
+                 Padding(
+            padding: EdgeInsets.only(left: 32.0, right: 32.0),
+            child: FlatButton(
+              textColor: Theme.of(context).buttonColor,
+              child: Text("Learn more about this feature"),
+              onPressed: () {
+                this._displayInstructions(context);
+              },
+            ),
+          ),
               ],
             ),
           ),
