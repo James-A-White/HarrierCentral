@@ -103,7 +103,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       String phoneNumber = x['phone'] ?? '';
 
       EnumVirginVisitor evv = EnumVirginVisitor.virgin;
-      if (type == EnumVirginVisitor.visitor) {
+      if (type == EnumVirginVisitor.visitor.toString()) {
         evv = EnumVirginVisitor.visitor;
       }
 

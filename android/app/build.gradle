@@ -29,7 +29,7 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.harriercentral.app"
-        minSdkVersion 16
+        minSdkVersion 19 // TODO: Used to be 16 - check what the real min version should be
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"

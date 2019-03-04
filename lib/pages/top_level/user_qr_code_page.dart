@@ -10,7 +10,7 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
+//import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
 
 class UserQrCodePage extends StatefulWidget {
   UserQrCodePage({Key key}) : super(key: key);
@@ -358,22 +358,22 @@ class _QrScannerTabState extends State<QrScannerTab>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   String barcode = 'Waiting';
 
-  QRReaderController controller;
+  //QRReaderController controller;
 
   @override
   bool get wantKeepAlive => true;
 
   void scanUserBarcode() async {
-    if (controller == null) {
-      cameras = await availableCameras();
-      onNewCameraSelected(cameras[0]);
-    } else {
-      await stopScanning();
-      setState(() => barcode = 'Waiting');
-    }
+    // if (controller == null) {
+    //   cameras = await availableCameras();
+    //   onNewCameraSelected(cameras[0]);
+    // } else {
+    //   await stopScanning();
+    //   setState(() => barcode = 'Waiting');
+    // }
   }
 
-  List<CameraDescription> cameras;
+  //List<CameraDescription> cameras;
 
   void onCodeRead(dynamic scanResult) async {
     setState(() => barcode = 'Processing QR Scan');
@@ -388,52 +388,52 @@ class _QrScannerTabState extends State<QrScannerTab>
   }
 
   Future stopScanning() async {
-    controller.stopScanning();
-    await controller.dispose();
-    controller = null;
+    // controller.stopScanning();
+    // await controller.dispose();
+    // controller = null;
   }
 
-  Widget _cameraPreviewWidget() {
-    return Stack(children: <Widget>[
-      Image.asset(
-        'images/other/qr_scanner.png',
-      ),
-      Padding(
-        padding: EdgeInsets.all(7.0),
-        child: (controller == null)
-            ? Container()
-            : new QRReaderPreview(controller),
-      )
-    ]);
-  }
+  // Widget _cameraPreviewWidget() {
+  //   return Stack(children: <Widget>[
+  //     Image.asset(
+  //       'images/other/qr_scanner.png',
+  //     ),
+  //     Padding(
+  //       padding: EdgeInsets.all(7.0),
+  //       child: (controller == null)
+  //           ? Container()
+  //           : new QRReaderPreview(controller),
+  //     )
+  //   ]);
+  // }
 
-  void onNewCameraSelected(CameraDescription cameraDescription) async {
-    if (controller != null) {
-      await controller.dispose();
-    }
-    controller = new QRReaderController(cameraDescription, ResolutionPreset.low,
-        [CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
+  // void onNewCameraSelected(CameraDescription cameraDescription) async {
+  //   if (controller != null) {
+  //     await controller.dispose();
+  //   }
+  //   controller = new QRReaderController(cameraDescription, ResolutionPreset.low,
+  //       [CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
 
-    // If the controller is updated then update the UI.
-    controller.addListener(() {
-      if (mounted) setState(() {});
-      if (controller.value.hasError) {
-        showInSnackBar('Camera error ${controller.value.errorDescription}');
-      }
-    });
+  //   // If the controller is updated then update the UI.
+  //   controller.addListener(() {
+  //     if (mounted) setState(() {});
+  //     if (controller.value.hasError) {
+  //       showInSnackBar('Camera error ${controller.value.errorDescription}');
+  //     }
+  //   });
 
-    try {
-      await controller.initialize();
-    } on QRReaderException catch (e) {
-      //logError(e.code, e.description);
-      showInSnackBar('Error: ${e.code}\n${e.description}');
-    }
+  //   try {
+  //     await controller.initialize();
+  //   } on QRReaderException catch (e) {
+  //     //logError(e.code, e.description);
+  //     showInSnackBar('Error: ${e.code}\n${e.description}');
+  //   }
 
-    if (mounted) {
-      setState(() {});
-      controller.startScanning();
-    }
-  }
+  //   if (mounted) {
+  //     setState(() {});
+  //     controller.startScanning();
+  //   }
+  // }
 
   void showInSnackBar(String message) {
     // _scaffoldKey.currentState
@@ -505,7 +505,8 @@ class _QrScannerTabState extends State<QrScannerTab>
                   width: 220.0,
                   child: RaisedButton(
                       child: Text(
-                        ((controller == null)
+                        //((controller == null)
+                        ((1==1)
                             ? 'Start Scanning'
                             : 'Stop Scanning'),
                         style: TextStyle(
@@ -519,8 +520,8 @@ class _QrScannerTabState extends State<QrScannerTab>
                         scanUserBarcode();
                       }),
                 ),
-                Container(
-                    child: _cameraPreviewWidget(), width: 200.0, height: 200.0),
+                // Container(
+                //     child: _cameraPreviewWidget(), width: 200.0, height: 200.0),
                 Padding(
                   padding: EdgeInsets.only(left: 24.0, right: 24.0, top: 35.0),
                   child: Text(

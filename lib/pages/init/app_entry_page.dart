@@ -10,6 +10,8 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/util/enums.dart';
 
+import 'package:permission_handler/permission_handler.dart';
+
 class AppEntryPage extends StatefulWidget {
   @override
   _AppEntryPageState createState() => _AppEntryPageState();
@@ -21,6 +23,10 @@ class _AppEntryPageState extends State<AppEntryPage>
   CurvedAnimation _iconAnimation;
 
   void handleTimeout() async {
+
+    await PermissionHandler()
+        .requestPermissions([PermissionGroup.camera, PermissionGroup.location]);
+
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
     ApproveLoginService svc = ApproveLoginService();
@@ -109,6 +115,9 @@ class _AppEntryPageState extends State<AppEntryPage>
   dynamic startTimeout() async {
     Preferences.initPrefs().then((void dummy) {});
 
+
+
+
     return Timer(Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME), handleTimeout);
   }
 
@@ -125,6 +134,7 @@ class _AppEntryPageState extends State<AppEntryPage>
     _iconAnimation.addListener(() => setState(() {}));
 
     _iconAnimationController.forward();
+
 
     startTimeout();
   }

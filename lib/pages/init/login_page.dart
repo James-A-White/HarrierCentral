@@ -16,7 +16,6 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
 import 'package:harrier_central/util/routes.dart';
 
-import 'package:permission_handler/permission_handler.dart';
 
 
 //import 'package:the_gorgeous_login/style/theme.dart' as Theme;
@@ -161,9 +160,6 @@ class _LoginPageState extends State<LoginPage>
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-
-    PermissionHandler()
-        .requestPermissions([PermissionGroup.camera, PermissionGroup.location]);
 
     _pageController = PageController();
   }

@@ -7,8 +7,6 @@ PODS:
   - Bolts/Tasks (1.9.0)
   - device_info (0.0.1):
     - Flutter
-  - fast_qr_reader_view (0.0.1):
-    - Flutter
   - FBSDKCoreKit (4.40.0):
     - Bolts (~> 1.9)
   - FBSDKLoginKit (4.39.1):
@@ -22,7 +20,7 @@ PODS:
   - FMDB/standard (2.7.5)
   - geolocator (3.0.0):
     - Flutter
-  - "google_api_availability (1.0.6+1)":
+  - google_api_availability (1.0.6):
     - Flutter
   - image_cropper (0.0.1):
     - Flutter
@@ -44,7 +42,6 @@ PODS:
 
 DEPENDENCIES:
   - device_info (from `.symlinks/plugins/device_info/ios`)
-  - fast_qr_reader_view (from `.symlinks/plugins/fast_qr_reader_view/ios`)
   - Flutter (from `.symlinks/flutter/ios`)
   - flutter_facebook_login (from `.symlinks/plugins/flutter_facebook_login/ios`)
   - geolocator (from `.symlinks/plugins/geolocator/ios`)
@@ -68,8 +65,6 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   device_info:
     :path: ".symlinks/plugins/device_info/ios"
-  fast_qr_reader_view:
-    :path: ".symlinks/plugins/fast_qr_reader_view/ios"
   Flutter:
     :path: ".symlinks/flutter/ios"
   flutter_facebook_login:
@@ -96,14 +91,13 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
   device_info: 3ebad48f726348f69abd802f3334a8d1ed795fbd
-  fast_qr_reader_view: 53b38a544886e650381ca579e0cdd5ae142fffa6
   FBSDKCoreKit: ae214474b25033399c131dc81d258e412582a2ba
   FBSDKLoginKit: c3079d9a4db27c492287b1eed7a4272b28cf8a59
   Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
   flutter_facebook_login: f1f88c32d5888d6b5f3301fd87cc7de26f02877e
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   geolocator: f4549aa43bb46fea674385657a9211a1cd430716
-  google_api_availability: c8fb86c31d3416435f87bb1110ef6ef05b0cc86a
+  google_api_availability: 5ef19f911725fcca40f813831c52548fe1ce7139
   image_cropper: 189eec25d148f56694f670438e9458323ba2880a
   image_picker: a211f28b95a560433c00f5cd3773f4710a20404d
   path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259

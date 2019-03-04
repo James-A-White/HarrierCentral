@@ -17,7 +17,6 @@ class ApproveLoginService {
       userId = '00000000-0000-0000-0000-000000000000';
     }
 
-    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     String deviceId = 'unknown';
     String deviceType = 'unknown';
     String deviceName = 'unknown';
@@ -25,14 +24,16 @@ class ApproveLoginService {
     String systemVersion = 'unknown';
     String manufacturer = 'unknown';
 
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+
     if (Platform.isAndroid) {
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
       deviceId =androidInfo.androidId.toUpperCase();
-      deviceType = androidInfo.model;
-      deviceName =androidInfo.hardware;
+      deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
+      deviceName = '<unknown>';
       systemName = androidInfo.host;
-      systemVersion =androidInfo.version.toString();
-      manufacturer =androidInfo.manufacturer;
+      systemVersion ='${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch}' ;
+      manufacturer =androidInfo.brand;
     } else if (Platform.isIOS) {
       IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
       deviceId =iosInfo.identifierForVendor.toUpperCase();
@@ -43,7 +44,7 @@ class ApproveLoginService {
       manufacturer = 'Apple';
     }
 
-      final String accessToken = Utilities.generateToken(userId, 'approveLogin', paramString: deviceId);
+    final String accessToken = Utilities.generateToken(userId, 'approveLogin', paramString: deviceId);
 
     final LatLon latLon = await Utilities.getLatLong();
 
@@ -56,8 +57,8 @@ class ApproveLoginService {
       'systemName': systemName,
       'systemVersion': systemVersion,
       'manufacturer': manufacturer,
-      'latitude':latLon.latitude.toString(),
-      'longitude':latLon.longitude.toString()
+      'latitude':(latLon?.latitude ?? DEFAULT_LATITUDE).toString(),
+      'longitude':(latLon?.longitude ?? DEFAULT_LONGITUDE).toString()
     });
 
     final http.Response response = await http
