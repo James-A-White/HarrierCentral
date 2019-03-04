@@ -200,6 +200,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_vector_icons:
+    dependency: "direct main"
+    description:
+      name: flutter_vector_icons
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.2"
   font_awesome_flutter:
     dependency: "direct main"
     description:
@@ -399,12 +406,10 @@ packages:
   qr_flutter:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "2.0.0-dev.1"
-      resolved-ref: b0552ec25be0dcb38ff64719d46ddd49a1ac4e65
-      url: "git://github.com/lukef/qr.flutter.git"
-    source: git
-    version: "2.0.0-dev.1+50"
+      name: qr_flutter
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.0+51"
   quiver:
     dependency: transitive
     description:
@@ -566,4 +571,4 @@ packages:
     version: "2.1.15"
 sdks:
   dart: ">=2.1.0 <3.0.0"
-  flutter: ">=1.0.0 <2.0.0"
+  flutter: ">=1.2.0 <2.0.0"

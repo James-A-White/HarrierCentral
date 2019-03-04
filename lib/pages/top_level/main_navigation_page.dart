@@ -14,6 +14,7 @@ import 'package:harrier_central/remote_api_data/kennel_scoped_model.dart';
 import 'package:harrier_central/widgets/placeholder_widget.dart';
 
 import 'package:scoped_model/scoped_model.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 class MainNavigationPage extends StatefulWidget {
   MainNavigationPage({Key key}) : super(key: key);
@@ -84,7 +85,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                         ImageIcon(AssetImage('images/icons/dog_face_icon.png')),
                     title: Text('Kennels')),
                 const BottomNavigationBarItem(
-                    icon: Icon(Icons.show_chart), title: Text('Stats')),
+                    icon: Icon(MaterialCommunityIcons.star), title: Text('Stats')),
                 const BottomNavigationBarItem(
                     icon:
                         ImageIcon(AssetImage('images/icons/qr_code_icon.png')),
