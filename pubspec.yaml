@@ -65,7 +65,11 @@ dependencies:
   flutter_vector_icons: ^0.0.2
   qr_flutter: ^2.0.0
 
-
+  barcode_scan:
+    git:
+      url: git://github.com/apptreesoftware/flutter_barcode_reader.git
+  #     ref: 2.0.0-dev.1
+  # barcode_scan: git: https://github.com/apptreesoftware/flutter_barcode_reader.git 
 
 
   device_info: ^0.4.0+1

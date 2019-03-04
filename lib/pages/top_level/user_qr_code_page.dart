@@ -10,6 +10,9 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 
 import 'package:qr_flutter/qr_flutter.dart';
+
+import 'package:barcode_scan/barcode_scan.dart';
+
 //import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
 
 class UserQrCodePage extends StatefulWidget {
@@ -268,7 +271,6 @@ class _QrCodeTabState extends State<QrCodeTab>
   @override
   bool get wantKeepAlive => true;
 
-
   Future<bool> _displayInstructions(BuildContext context) async {
     return showDialog<bool>(
       context: context,
@@ -303,8 +305,6 @@ class _QrCodeTabState extends State<QrCodeTab>
       },
     );
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -364,82 +364,97 @@ class _QrScannerTabState extends State<QrScannerTab>
   bool get wantKeepAlive => true;
 
   void scanUserBarcode() async {
-    // if (controller == null) {
-    //   cameras = await availableCameras();
-    //   onNewCameraSelected(cameras[0]);
-    // } else {
-    //   await stopScanning();
-    //   setState(() => barcode = 'Waiting');
-    // }
-  }
-
-  //List<CameraDescription> cameras;
-
-  void onCodeRead(dynamic scanResult) async {
-    setState(() => barcode = 'Processing QR Scan');
-    await stopScanning();
-
-    ProcessQrScanService srv = ProcessQrScanService();
-    final Future<ProcessQrScanModel> apiCall =
-        srv.processQrScan('', scanResult, 'UserScan', '', '', '');
-    apiCall.then((ProcessQrScanModel result) {
-      setState(() => barcode = result.resultStr1);
+    setState(() => barcode = 'Waiting');
+    BarcodeScanner.scan().then((scanResult) {
+      setState(() => barcode = 'Processing scan data');
+      ProcessQrScanService srv = ProcessQrScanService();
+      final Future<ProcessQrScanModel> apiCall =
+          srv.processQrScan('', scanResult, 'UserScan', '', '', '');
+      apiCall.then((ProcessQrScanModel result) {
+        setState(() => barcode = result.resultStr1);
+      });
+      
     });
   }
 
-  Future stopScanning() async {
-    // controller.stopScanning();
-    // await controller.dispose();
-    // controller = null;
-  }
+// ########### DON'T DELETE - This is for use wtih FastBarcode Scan, which is preferred over Barcode Scanner
 
-  // Widget _cameraPreviewWidget() {
-  //   return Stack(children: <Widget>[
-  //     Image.asset(
-  //       'images/other/qr_scanner.png',
-  //     ),
-  //     Padding(
-  //       padding: EdgeInsets.all(7.0),
-  //       child: (controller == null)
-  //           ? Container()
-  //           : new QRReaderPreview(controller),
-  //     )
-  //   ]);
+  // void scanUserBarcode() async {
+  //   // if (controller == null) {
+  //   //   cameras = await availableCameras();
+  //   //   onNewCameraSelected(cameras[0]);
+  //   // } else {
+  //   //   await stopScanning();
+  //   //   setState(() => barcode = 'Waiting');
+  //   // }
   // }
 
-  // void onNewCameraSelected(CameraDescription cameraDescription) async {
-  //   if (controller != null) {
-  //     await controller.dispose();
-  //   }
-  //   controller = new QRReaderController(cameraDescription, ResolutionPreset.low,
-  //       [CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
+  //List<CameraDescription> cameras;
 
-  //   // If the controller is updated then update the UI.
-  //   controller.addListener(() {
-  //     if (mounted) setState(() {});
-  //     if (controller.value.hasError) {
-  //       showInSnackBar('Camera error ${controller.value.errorDescription}');
-  //     }
+  // void onCodeRead(dynamic scanResult) async {
+  //   setState(() => barcode = 'Processing QR Scan');
+  //   await stopScanning();
+
+  //   ProcessQrScanService srv = ProcessQrScanService();
+  //   final Future<ProcessQrScanModel> apiCall =
+  //       srv.processQrScan('', scanResult, 'UserScan', '', '', '');
+  //   apiCall.then((ProcessQrScanModel result) {
+  //     setState(() => barcode = result.resultStr1);
   //   });
-
-  //   try {
-  //     await controller.initialize();
-  //   } on QRReaderException catch (e) {
-  //     //logError(e.code, e.description);
-  //     showInSnackBar('Error: ${e.code}\n${e.description}');
-  //   }
-
-  //   if (mounted) {
-  //     setState(() {});
-  //     controller.startScanning();
-  //   }
   // }
+
+  // Future stopScanning() async {
+  //   // controller.stopScanning();
+  //   // await controller.dispose();
+  //   // controller = null;
+  // }
+
+  // // Widget _cameraPreviewWidget() {
+  // //   return Stack(children: <Widget>[
+  // //     Image.asset(
+  // //       'images/other/qr_scanner.png',
+  // //     ),
+  // //     Padding(
+  // //       padding: EdgeInsets.all(7.0),
+  // //       child: (controller == null)
+  // //           ? Container()
+  // //           : new QRReaderPreview(controller),
+  // //     )
+  // //   ]);
+  // // }
+
+  // // void onNewCameraSelected(CameraDescription cameraDescription) async {
+  // //   if (controller != null) {
+  // //     await controller.dispose();
+  // //   }
+  // //   controller = new QRReaderController(cameraDescription, ResolutionPreset.low,
+  // //       [CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
+
+  // //   // If the controller is updated then update the UI.
+  // //   controller.addListener(() {
+  // //     if (mounted) setState(() {});
+  // //     if (controller.value.hasError) {
+  // //       showInSnackBar('Camera error ${controller.value.errorDescription}');
+  // //     }
+  // //   });
+
+  // //   try {
+  // //     await controller.initialize();
+  // //   } on QRReaderException catch (e) {
+  // //     //logError(e.code, e.description);
+  // //     showInSnackBar('Error: ${e.code}\n${e.description}');
+  // //   }
+
+  // //   if (mounted) {
+  // //     setState(() {});
+  // //     controller.startScanning();
+  // //   }
+  // // }
 
   void showInSnackBar(String message) {
     // _scaffoldKey.currentState
     //     .showSnackBar(new SnackBar(content: new Text(message)));
   }
-
 
   Future<bool> _displayInstructions(BuildContext context) async {
     return showDialog<bool>(
@@ -476,8 +491,6 @@ class _QrScannerTabState extends State<QrScannerTab>
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -506,15 +519,13 @@ class _QrScannerTabState extends State<QrScannerTab>
                   child: RaisedButton(
                       child: Text(
                         //((controller == null)
-                        ((1==1)
-                            ? 'Start Scanning'
-                            : 'Stop Scanning'),
+                        ((1 == 1) ? 'Start Scanning' : 'Stop Scanning'),
                         style: TextStyle(
-                  fontFamily: 'AvenirNextDemiBold',
-                  color: Colors.white,
-                  fontStyle: FontStyle.normal,
-                  fontSize: 22.0,
-                  height: 1.0),
+                            fontFamily: 'AvenirNextDemiBold',
+                            color: Colors.white,
+                            fontStyle: FontStyle.normal,
+                            fontSize: 22.0,
+                            height: 1.0),
                       ),
                       onPressed: () {
                         scanUserBarcode();
@@ -534,16 +545,16 @@ class _QrScannerTabState extends State<QrScannerTab>
                         height: 1.0),
                   ),
                 ),
-                 Padding(
-            padding: EdgeInsets.only(left: 32.0, right: 32.0),
-            child: FlatButton(
-              textColor: Theme.of(context).buttonColor,
-              child: Text("Learn more about this feature"),
-              onPressed: () {
-                this._displayInstructions(context);
-              },
-            ),
-          ),
+                Padding(
+                  padding: EdgeInsets.only(left: 32.0, right: 32.0),
+                  child: FlatButton(
+                    textColor: Theme.of(context).buttonColor,
+                    child: Text("Learn more about this feature"),
+                    onPressed: () {
+                      this._displayInstructions(context);
+                    },
+                  ),
+                ),
               ],
             ),
           ),

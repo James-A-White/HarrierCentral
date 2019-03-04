@@ -1,4 +1,7 @@
 PODS:
+  - barcode_scan (0.0.1):
+    - Flutter
+    - MTBBarcodeScanner
   - Bolts (1.9.0):
     - Bolts/AppLinks (= 1.9.0)
     - Bolts/Tasks (= 1.9.0)
@@ -27,6 +30,7 @@ PODS:
     - TOCropViewController (~> 2.3.8)
   - image_picker (0.0.1):
     - Flutter
+  - MTBBarcodeScanner (5.0.8)
   - path_provider (0.0.1):
     - Flutter
   - permission_handler (2.2.0):
@@ -41,6 +45,7 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - barcode_scan (from `.symlinks/plugins/barcode_scan/ios`)
   - device_info (from `.symlinks/plugins/device_info/ios`)
   - Flutter (from `.symlinks/flutter/ios`)
   - flutter_facebook_login (from `.symlinks/plugins/flutter_facebook_login/ios`)
@@ -60,9 +65,12 @@ SPEC REPOS:
     - FBSDKCoreKit
     - FBSDKLoginKit
     - FMDB
+    - MTBBarcodeScanner
     - TOCropViewController
 
 EXTERNAL SOURCES:
+  barcode_scan:
+    :path: ".symlinks/plugins/barcode_scan/ios"
   device_info:
     :path: ".symlinks/plugins/device_info/ios"
   Flutter:
@@ -89,6 +97,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/url_launcher/ios"
 
 SPEC CHECKSUMS:
+  barcode_scan: 33f586d02270046fc6559135038b34b5754eaa4f
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
   device_info: 3ebad48f726348f69abd802f3334a8d1ed795fbd
   FBSDKCoreKit: ae214474b25033399c131dc81d258e412582a2ba
@@ -100,6 +109,7 @@ SPEC CHECKSUMS:
   google_api_availability: 5ef19f911725fcca40f813831c52548fe1ce7139
   image_cropper: 189eec25d148f56694f670438e9458323ba2880a
   image_picker: a211f28b95a560433c00f5cd3773f4710a20404d
+  MTBBarcodeScanner: 5b97f10a037e2560ff104da413343c5ce9413911
   path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
   permission_handler: 976a8a94c3443d23fe33c11e98277d471f0e543d
   shared_preferences: 1feebfa37bb57264736e16865e7ffae7fc99b523
