@@ -17,7 +17,6 @@ class ApproveLoginModel {
 
   ApproveLoginModel(
     {
-      // this.isRsvped,
       this.apiVersion,
       this.lastGazetteerUpdate,
       this.approvalCode,

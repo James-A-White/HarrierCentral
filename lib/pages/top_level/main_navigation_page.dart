@@ -16,6 +16,11 @@ import 'package:harrier_central/widgets/placeholder_widget.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
+import 'package:flutter_inner_drawer/inner_drawer.dart';
+
+import 'package:flutter_inner_drawer/generated/i18n.dart';
+import 'package:flutter_inner_drawer/inner_drawer.dart';
+
 class MainNavigationPage extends StatefulWidget {
   MainNavigationPage({Key key}) : super(key: key);
 
@@ -26,54 +31,74 @@ class MainNavigationPage extends StatefulWidget {
 class _MainNavigationPageState extends State<MainNavigationPage> {
   //MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
 
+
+  List<Widget> tabs = List<Widget>();
+
+
   void initState() {
-    // homePageModel.init();
-    // homePageModel.mainAppScaffoldKey = GlobalKey<ScaffoldState>();
+    tabs.add(Container());
+    tabs.add(FutureRunsListPage());
+    tabs.add(KennelsListPage(kennelModel: kennelModel));
+    tabs.add(UserQrCodePage());
+    tabs.add(UserQrCodePage());
+    tabs.add(UserQrCodePage());
   }
 
+
+
   void onTabTapped(EnumAppPages index) {
+    
     //homePageModel.currentMainView = index;
     //Preferences.setIntPref(IntPrefsEnum.mainViewCurrentTab, index);
   }
 
   final KennelScopedModel kennelModel = KennelScopedModel();
 
+  final GlobalKey<InnerDrawerState> _innerDrawerKey =
+      GlobalKey<InnerDrawerState>();
+
   @override
   Widget build(BuildContext context) {
-    return
+    // ScopedModel<MainNavigationScopedModel>(
+    //   model: homePageModel,
+    //   child:
 
-        // ScopedModel<MainNavigationScopedModel>(
-        //   model: homePageModel,
-        //   child:
+    //   ScopedModelDescendant<MainNavigationScopedModel>(
+    //     builder: (BuildContext context, Widget child, MainNavigationScopedModel model) =>
 
-        //   ScopedModelDescendant<MainNavigationScopedModel>(
-        //     builder: (BuildContext context, Widget child, MainNavigationScopedModel model) =>
 
-        CupertinoTabScaffold(
-            //key: homePageModel.mainAppScaffoldKey,
-            // appBar: AppBar(
-            //   centerTitle: true,
-            //   backgroundColor: Theme.of(context).primaryColor,
-            //   title: Text(
-            //     homePageModel.appBarTitle ?? '',
-            //     style: TextStyle(
-            //       color: Colors.white,
-            //     ),
-            //   ),
-            // ),
-            // body: homePageModel.homePage
-            //     .children[homePageModel.homePage.currentMainAppView.index],
-            // floatingActionButtonLocation:
-            //     FloatingActionButtonLocation.endDocked,
-            // floatingActionButton: FloatingActionButton(
-            //   child:
-            //       const ImageIcon(AssetImage('images/icons/hash_foot.png')),
-            //   onPressed: () {
-            //     onTabTapped(EnumAppPages.fab);
-            //   },
-            // ),
 
-            tabBar: CupertinoTabBar(
+    Widget currentPage;
+
+    return InnerDrawer(
+        key: _innerDrawerKey,
+        position: InnerDrawerPosition.start, // required
+        onTapClose: false, // default false
+        swipe: true, // default true
+        offset: 0.7, // default 0.4
+        boxShadow: [
+          new BoxShadow(
+            color: Colors.black,
+            blurRadius: 40.0,
+          ),
+        ],
+        //colorTransition: Colors.red, // default Color.black54
+        animationType: InnerDrawerAnimation.linear, // default static
+        innerDrawerCallback: (a) => print(a), // return bool
+        child: DrawerMenu(innerDrawerGlobalKey: _innerDrawerKey),
+        //  A Scaffold is generally used but you are free to use other widgets
+        // Note: use "automaticallyImplyLeading: false" if you do not personalize "leading" of Bar
+        scaffold: CupertinoTabScaffold(
+          tabBar: CupertinoTabBar(
+              onTap: (int index) {
+                if (index == 0)
+                {
+                  _innerDrawerKey.currentState.open();
+                } else {
+                  tabs[0] = tabs[index];
+                  _innerDrawerKey.currentState.close();
+                }
+              },
               activeColor: Theme.of(context).accentColor,
               items: <BottomNavigationBarItem>[
                 const BottomNavigationBarItem(
@@ -85,7 +110,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                         ImageIcon(AssetImage('images/icons/dog_face_icon.png')),
                     title: Text('Kennels')),
                 const BottomNavigationBarItem(
-                    icon: Icon(MaterialCommunityIcons.star), title: Text('Stats')),
+                    icon: Icon(MaterialCommunityIcons.star),
+                    title: Text('Stats')),
                 const BottomNavigationBarItem(
                     icon:
                         ImageIcon(AssetImage('images/icons/qr_code_icon.png')),
@@ -93,65 +119,17 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 const BottomNavigationBarItem(
                     icon: ImageIcon(AssetImage('images/icons/friends.png')),
                     title: Text('Friends')),
+                
               ],
             ),
+  
             tabBuilder: (BuildContext context, int index) {
-              assert(index >= 0 && index <= 5);
-              switch (index) {
-                case 0:
                   return CupertinoTabView(
                     builder: (BuildContext context) {
-                      return DrawerMenu();
+                      return(tabs[index]); 
                     },
-                    defaultTitle: 'Menu',
+                    //defaultTitle: 'Friends',
                   );
-                  break;
-                case 1:
-                  return CupertinoTabView(
-                    builder: (BuildContext context) {
-                      return FutureRunsListPage();
-                    },
-                    defaultTitle: 'Runs',
-                  );
-                  break;
-                case 2:
-                  return CupertinoTabView(
-                    builder: (BuildContext context) {
-                      //kennelModel.getKennelsFromBackend(1, true);
-                      return KennelsListPage(kennelModel: kennelModel);
-                    },
-                    defaultTitle: 'Kennels',
-                  );
-                  break;
-                                  case 3:
-                  return CupertinoTabView(
-                    builder: (BuildContext context) {
-                      //kennelModel.getKennelsFromBackend(1, true);
-                      return KennelsListPage(kennelModel: kennelModel);
-                    },
-                    defaultTitle: 'Stats',
-                  );
-                  break;
-                                  case 4:
-                  return CupertinoTabView(
-                    builder: (BuildContext context) {
-                      //kennelModel.getKennelsFromBackend(1, true);
-                      return UserQrCodePage();
-                    },
-                    defaultTitle: 'Scanner',
-                  );
-                  break;
-                                  case 5:
-                  return CupertinoTabView(
-                    builder: (BuildContext context) {
-                      //kennelModel.getKennelsFromBackend(1, true);
-                      return KennelsListPage(kennelModel: kennelModel);
-                    },
-                    defaultTitle: 'Friends',
-                  );
-                  break;
-              }
-              return null;
             }
 
             // bottomNavigationBar: BottomAppBar(
@@ -306,6 +284,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
             // ),
             // ),
-            );
+            ));
   }
 }

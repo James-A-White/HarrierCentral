@@ -8,85 +8,98 @@ import 'package:harrier_central/data_models/main_navigation_model.dart';
 import 'package:harrier_central/widgets/run_list_item.dart';
 
 import 'package:scoped_model/scoped_model.dart';
+
+import 'package:flutter_inner_drawer/inner_drawer.dart';
 //
 
-class DrawerMenu extends StatelessWidget {
+class DrawerMenu extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
+  GlobalKey<InnerDrawerState> innerDrawerGlobalKey;
 
-  const DrawerMenu({Key key}) : super(key: key);
+  DrawerMenu({Key key, this.innerDrawerGlobalKey}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return DrawerMenuBody();
-  }
+  DrawerMenuState createState() => DrawerMenuState();
 }
 
-class DrawerMenuBody extends StatelessWidget {
-  void onTabTapped(EnumAppPages page) {}
+class DrawerMenuState extends State<DrawerMenu> {
+  void onTabTapped(EnumAppPages page) {
+    widget.innerDrawerGlobalKey.currentState.close();
+  }
+
+  TextStyle style =TextStyle(color:Colors.white);
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: Column(
-        children: <Widget>[
-          ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
-            onTap: () {
-              // Navigator.pop(context);
-              onTabTapped(EnumAppPages.settings);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('My Profile'),
-            onTap: () {
-              //Navigator.pop(context);
-              onTabTapped(EnumAppPages.settings);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.shopping_cart),
-            title: const Text('In App Purchases'),
-            onTap: () {
-              // Navigator.pop(context);
-              onTabTapped(EnumAppPages.settings);
-            },
-          ),
-          // ListTile(
-          //   leading: Icon(Icons.speaker_notes),
-          //   title: Text('Acknowledgements'),
-          //   onTap: () {
-          //     Navigator.pop(context);
-          //     onTabTapped(3);
-          //   },
-          // ),
-          ListTile(
-            leading: const Icon(Icons.info),
-            title: const Text('FAQ'),
-            onTap: () {
-              // Navigator.pop(context);
-              onTabTapped(EnumAppPages.settings);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.feedback),
-            title: const Text('Your feedback'),
-            onTap: () {
-              //Navigator.pop(context);
-              onTabTapped(EnumAppPages.settings);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.speaker_notes),
-            title: const Text('Imprint'),
-            onTap: () {
-              //Navigator.pop(context);
-              onTabTapped(EnumAppPages.settings);
-            },
-          ),
-        ],
-      ),
+      //elevation: 120,
+      child: Stack(children: <Widget>[
+        Image.asset('images/other/drawer_image.jpg'),
+        Positioned(
+          //top:50,
+          //top:10,
+          top:40,
+          width:MediaQuery.of(context).size.width,
+        child:Column(
+          children: <Widget>[
+            ListTile(
+              leading: const Icon(Icons.settings, color:Colors.white),
+              title: Text('Settings',style: style),
+              onTap: () {
+                // Navigator.pop(context);
+                onTabTapped(EnumAppPages.settings);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person, color:Colors.white),
+              title: Text('My Profile',style: style),
+              onTap: () {
+                //Navigator.pop(context);
+                onTabTapped(EnumAppPages.settings);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.shopping_cart, color:Colors.white),
+              title: Text('In App Purchases',style: style),
+              onTap: () {
+                // Navigator.pop(context);
+                onTabTapped(EnumAppPages.settings);
+              },
+            ),
+            // ListTile(
+            //   leading: Icon(Icons.speaker_notes),
+            //   title: Text('Acknowledgements'),
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //     onTabTapped(3);
+            //   },
+            // ),
+            ListTile(
+              leading: const Icon(Icons.info, color:Colors.white),
+              title: Text('FAQ',style: style),
+              onTap: () {
+                // Navigator.pop(context);
+                onTabTapped(EnumAppPages.settings);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.feedback, color:Colors.white),
+              title: Text('Your feedback',style: style),
+              onTap: () {
+                //Navigator.pop(context);
+                onTabTapped(EnumAppPages.settings);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.speaker_notes, color:Colors.white),
+              title: Text('Imprint',style: style),
+              onTap: () {
+                //Navigator.pop(context);
+                onTabTapped(EnumAppPages.settings);
+              },
+            ),
+          ],
+        ),),
+      ]),
     );
   }
 }

@@ -36,6 +36,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.8"
+  audioplayers:
+    dependency: "direct main"
+    description:
+      name: audioplayers
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.10.0"
   auto_size_text:
     dependency: "direct main"
     description:
@@ -43,15 +50,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
-  barcode_scan:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "5d498e39a76466b03579486475ec777fba33ed2c"
-      url: "git://github.com/apptreesoftware/flutter_barcode_reader.git"
-    source: git
-    version: "0.0.8"
   boolean_selector:
     dependency: transitive
     description:
@@ -138,6 +136,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.4.0+1"
+  fast_qr_reader_view:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "8138c700ed1a31ec78d5937aeec604a93c60bb61"
+      url: "git://github.com/facundomedica/fast_qr_reader_view.git"
+    source: git
+    version: "0.1.5"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -164,6 +171,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
+  flutter_inner_drawer:
+    dependency: "direct main"
+    description:
+      name: flutter_inner_drawer
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.2"
   flutter_launcher_icons:
     dependency: "direct dev"
     description:

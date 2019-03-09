@@ -34,12 +34,18 @@ dependencies:
   flutter_speed_dial: ^1.1.1
   flutter_vector_icons: ^0.0.2
   qr_flutter: ^2.0.0
+  audioplayers: ^0.10.0
+  flutter_inner_drawer: ^0.2.2
 
-  barcode_scan:
+  fast_qr_reader_view: 
     git:
-      url: git://github.com/apptreesoftware/flutter_barcode_reader.git
-  #     ref: 2.0.0-dev.1
-  # barcode_scan: git: https://github.com/apptreesoftware/flutter_barcode_reader.git 
+      url: git://github.com/facundomedica/fast_qr_reader_view.git
+
+  # barcode_scan:
+  #   git:
+  #     url: git://github.com/apptreesoftware/flutter_barcode_reader.git
+  # #     ref: 2.0.0-dev.1
+  # # barcode_scan: git: https://github.com/apptreesoftware/flutter_barcode_reader.git 
 
 
   device_info: ^0.4.0+1
@@ -85,6 +91,7 @@ flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
+  
   uses-material-design: true
 
   assets:
@@ -93,6 +100,7 @@ flutter:
     - images/init/
     - images/other/
     - images/avatars/
+    - assets/sounds/camera.mp3
 
   fonts:
     - family: AvenirNext

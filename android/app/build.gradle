@@ -29,8 +29,8 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.harriercentral.app"
-        minSdkVersion 19 // TODO: Used to be 16 - check what the real min version should be
-        targetSdkVersion 27
+        minSdkVersion 21 // Min required for fast qr scanner and text to speech
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -55,3 +55,5 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
 }
+
+apply plugin: 'com.google.gms.google-services'
