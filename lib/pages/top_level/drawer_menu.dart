@@ -5,101 +5,183 @@ import 'package:flutter/material.dart';
 
 import 'package:harrier_central/remote_api_data/future_run_scoped_model.dart';
 import 'package:harrier_central/data_models/main_navigation_model.dart';
+import 'package:harrier_central/pages/menu_pages/my_profile_page.dart';
 import 'package:harrier_central/widgets/run_list_item.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 
-import 'package:flutter_inner_drawer/inner_drawer.dart';
-//
-
 class DrawerMenu extends StatefulWidget {
-  //final FutureRunScopedModel futureRunsModel;
-  GlobalKey<InnerDrawerState> innerDrawerGlobalKey;
+  GlobalKey<ScaffoldState> scaffoldKey;
 
-  DrawerMenu({Key key, this.innerDrawerGlobalKey}) : super(key: key);
+  DrawerMenu({Key key, this.scaffoldKey}) : super(key: key);
 
   DrawerMenuState createState() => DrawerMenuState();
 }
 
 class DrawerMenuState extends State<DrawerMenu> {
   void onTabTapped(EnumAppPages page) {
-    widget.innerDrawerGlobalKey.currentState.close();
+    Navigator.pop(context);
   }
 
-  TextStyle style =TextStyle(color:Colors.white);
+  static const int opacity = 160;
+  static const Color textColor = Color.fromARGB(opacity, 255, 255, 255);
+
+  TextStyle style = const TextStyle(
+                fontFamily: 'AvenirNext',
+                fontStyle: FontStyle.normal,
+                color: textColor,
+                fontSize: 24.0,
+                height: 1.0);
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
       //elevation: 120,
-      child: Stack(children: <Widget>[
-        Image.asset('images/other/drawer_image.jpg'),
+      child: Stack(overflow: Overflow.clip, children: <Widget>[
+        Positioned(
+          top:0,
+          left:0,
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Container(
+                  // decoration: const BoxDecoration(
+                  //   image: const DecorationImage(
+                  //     fit: BoxFit.fill,
+                  //     image: const AssetImage("images/other/drawer_image.jpg"),
+                  //   ),
+                  // ),
+                  child: Image.asset('images/other/drawer_image.jpg',
+                      fit:BoxFit.fill,
+                      height: MediaQuery.of(context).size.height,
+                      width: MediaQuery.of(context).size.width),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // IntrinsicHeight(child:Image.asset('images/other/drawer_image.jpg',height: 1000, width:800,),),
         Positioned(
           //top:50,
           //top:10,
-          top:40,
-          width:MediaQuery.of(context).size.width,
-        child:Column(
-          children: <Widget>[
-            ListTile(
-              leading: const Icon(Icons.settings, color:Colors.white),
-              title: Text('Settings',style: style),
-              onTap: () {
-                // Navigator.pop(context);
-                onTabTapped(EnumAppPages.settings);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.person, color:Colors.white),
-              title: Text('My Profile',style: style),
-              onTap: () {
-                //Navigator.pop(context);
-                onTabTapped(EnumAppPages.settings);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.shopping_cart, color:Colors.white),
-              title: Text('In App Purchases',style: style),
-              onTap: () {
-                // Navigator.pop(context);
-                onTabTapped(EnumAppPages.settings);
-              },
-            ),
-            // ListTile(
-            //   leading: Icon(Icons.speaker_notes),
-            //   title: Text('Acknowledgements'),
-            //   onTap: () {
-            //     Navigator.pop(context);
-            //     onTabTapped(3);
-            //   },
-            // ),
-            ListTile(
-              leading: const Icon(Icons.info, color:Colors.white),
-              title: Text('FAQ',style: style),
-              onTap: () {
-                // Navigator.pop(context);
-                onTabTapped(EnumAppPages.settings);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.feedback, color:Colors.white),
-              title: Text('Your feedback',style: style),
-              onTap: () {
-                //Navigator.pop(context);
-                onTabTapped(EnumAppPages.settings);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.speaker_notes, color:Colors.white),
-              title: Text('Imprint',style: style),
-              onTap: () {
-                //Navigator.pop(context);
-                onTabTapped(EnumAppPages.settings);
-              },
-            ),
-          ],
-        ),),
+          top: 40,
+          width: MediaQuery.of(context).size.width,
+          child: Column(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.settings, color: textColor),
+                title: Text('Settings', style: style),
+                onTap: () async {
+                  //onTabTapped(EnumAppPages.settings);
+                  Navigator.pop(context);
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      settings: RouteSettings(),
+                      builder: (context) {
+                        return MyProfilePage();
+                      },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.person, color: textColor),
+                title: Text('My Profile', style: style),
+                onTap: () {
+                  //Navigator.pop(context);
+                  onTabTapped(EnumAppPages.settings);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.shopping_cart, color: textColor),
+                title: Text('In App Purchases', style: style),
+                onTap: () {
+                  // Navigator.pop(context);
+                  onTabTapped(EnumAppPages.settings);
+                },
+              ),
+              // ListTile(
+              //   leading: Icon(Icons.speaker_notes),
+              //   title: Text('Acknowledgements'),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     onTabTapped(3);
+              //   },
+              // ),
+              ListTile(
+                leading: const Icon(Icons.info, color: textColor),
+                title: Text('FAQ', style: style),
+                onTap: () {
+                  // Navigator.pop(context);
+                  onTabTapped(EnumAppPages.settings);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.feedback, color: textColor),
+                title: Text('Your feedback', style: style),
+                onTap: () {
+                  //Navigator.pop(context);
+                  onTabTapped(EnumAppPages.settings);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.speaker_notes, color: textColor),
+                title: Text('Imprint', style: style),
+                onTap: () {
+                  //Navigator.pop(context);
+                  onTabTapped(EnumAppPages.settings);
+                },
+              ),
+            ],
+          ),
+        ),
       ]),
     );
   }
 }
+
+// class ScaleRoute extends PageRouteBuilder<dynamic> {
+//   final Widget widget;
+//   ScaleRoute({this.widget})
+//     : super(
+//         pageBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
+//           return widget;
+//         },
+//         transitionsBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+
+//           return new ScaleTransition(
+//             scale: new Tween<double>(
+//               begin: 0.0,
+//               end: 1.0,
+//             ).animate(
+//                 CurvedAnimation(
+//                   parent: animation,
+//                   curve: Interval(
+//                     0.00,
+//                     0.50,
+//                     curve: Curves.linear,
+//                   ),
+//                 ),
+//               ),
+//             child: ScaleTransition(
+//                      scale: Tween<double>(
+//                        begin: 1.5,
+//                        end: 1.0,
+//                      ).animate(
+//                        CurvedAnimation(
+//                          parent: animation,
+//                          curve: Interval(
+//                            0.50,
+//                            1.00,
+//                            curve: Curves.linear,
+//                          ),
+//                        ),
+//                      ),
+//                      child: child,
+//                    ),
+//            );
+//          }
+//       );
+// }

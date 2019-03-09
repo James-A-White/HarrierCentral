@@ -16,11 +16,6 @@ import 'package:harrier_central/widgets/placeholder_widget.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
-import 'package:flutter_inner_drawer/inner_drawer.dart';
-
-import 'package:flutter_inner_drawer/generated/i18n.dart';
-import 'package:flutter_inner_drawer/inner_drawer.dart';
-
 class MainNavigationPage extends StatefulWidget {
   MainNavigationPage({Key key}) : super(key: key);
 
@@ -31,78 +26,51 @@ class MainNavigationPage extends StatefulWidget {
 class _MainNavigationPageState extends State<MainNavigationPage> {
   //MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
 
-
   List<Widget> tabs = List<Widget>();
+  List<String> tabTitles = List<String>();
 
+  String appBarText = 'test';
 
   void initState() {
-    tabs.add(Container());
     tabs.add(FutureRunsListPage());
     tabs.add(KennelsListPage(kennelModel: kennelModel));
     tabs.add(UserQrCodePage());
     tabs.add(UserQrCodePage());
     tabs.add(UserQrCodePage());
+
+    tabTitles.add('Upcoming Runs');
+    tabTitles.add('Kennels');
+    tabTitles.add('My stats');
+    tabTitles.add('Scanner');
+    tabTitles.add('Friends');
   }
 
-
-
   void onTabTapped(EnumAppPages index) {
-    
     //homePageModel.currentMainView = index;
     //Preferences.setIntPref(IntPrefsEnum.mainViewCurrentTab, index);
   }
 
   final KennelScopedModel kennelModel = KennelScopedModel();
-
-  final GlobalKey<InnerDrawerState> _innerDrawerKey =
-      GlobalKey<InnerDrawerState>();
+  GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
 
   @override
   Widget build(BuildContext context) {
-    // ScopedModel<MainNavigationScopedModel>(
-    //   model: homePageModel,
-    //   child:
-
-    //   ScopedModelDescendant<MainNavigationScopedModel>(
-    //     builder: (BuildContext context, Widget child, MainNavigationScopedModel model) =>
-
-
-
-    Widget currentPage;
-
-    return InnerDrawer(
-        key: _innerDrawerKey,
-        position: InnerDrawerPosition.start, // required
-        onTapClose: false, // default false
-        swipe: true, // default true
-        offset: 0.7, // default 0.4
-        boxShadow: [
-          new BoxShadow(
-            color: Colors.black,
-            blurRadius: 40.0,
-          ),
-        ],
-        //colorTransition: Colors.red, // default Color.black54
-        animationType: InnerDrawerAnimation.linear, // default static
-        innerDrawerCallback: (a) => print(a), // return bool
-        child: DrawerMenu(innerDrawerGlobalKey: _innerDrawerKey),
-        //  A Scaffold is generally used but you are free to use other widgets
-        // Note: use "automaticallyImplyLeading: false" if you do not personalize "leading" of Bar
-        scaffold: CupertinoTabScaffold(
-          tabBar: CupertinoTabBar(
+    return Scaffold(
+        appBar: new AppBar(
+          title: new Text(appBarText),
+        ),
+        key: _scaffoldKey,
+        drawer: DrawerMenu(scaffoldKey: _scaffoldKey),
+        body: CupertinoTabScaffold(
+            tabBar: CupertinoTabBar(
+              currentIndex: 0,
               onTap: (int index) {
-                if (index == 0)
-                {
-                  _innerDrawerKey.currentState.open();
-                } else {
-                  tabs[0] = tabs[index];
-                  _innerDrawerKey.currentState.close();
-                }
+                setState(() {
+                  appBarText = tabTitles[index];
+                });
               },
               activeColor: Theme.of(context).accentColor,
               items: <BottomNavigationBarItem>[
-                const BottomNavigationBarItem(
-                    icon: Icon(Icons.menu), title: Text('Menu')),
                 const BottomNavigationBarItem(
                     icon: Icon(Icons.directions_run), title: Text('Runs')),
                 const BottomNavigationBarItem(
@@ -119,17 +87,15 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 const BottomNavigationBarItem(
                     icon: ImageIcon(AssetImage('images/icons/friends.png')),
                     title: Text('Friends')),
-                
               ],
             ),
-  
             tabBuilder: (BuildContext context, int index) {
-                  return CupertinoTabView(
-                    builder: (BuildContext context) {
-                      return(tabs[index]); 
-                    },
-                    //defaultTitle: 'Friends',
-                  );
+              return CupertinoTabView(
+                builder: (BuildContext context) {
+                  return (tabs[index]);
+                },
+                //defaultTitle: 'Friends',
+              );
             }
 
             // bottomNavigationBar: BottomAppBar(

@@ -9,6 +9,7 @@ import 'package:harrier_central/remote_api_data/future_run_scoped_model.dart';
 import 'package:harrier_central/util/routes.dart';
 
 import 'package:scoped_model/scoped_model.dart';
+//import 'package:flutter/scheduler.dart' show timeDilation;
 
 
 void main() {
@@ -16,6 +17,7 @@ void main() {
 
   FutureRunScopedModel _futureRunScopedModel = FutureRunScopedModel();
 
+  //timeDilation = 4.0;
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

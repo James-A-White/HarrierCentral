@@ -61,17 +61,6 @@ class KennelsListPageBody extends StatelessWidget {
     this.context = context;
 
     return Scaffold(
-        //key: homePageModel.mainAppScaffoldKey,
-        appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: Theme.of(context).primaryColor,
-          title: Text(
-            'Kennel List',
-            style: TextStyle(
-              color: Colors.white,
-            ),
-          ),
-        ),
         body: ScopedModelDescendant<KennelScopedModel>(
       builder: (BuildContext context, Widget child, KennelScopedModel model) {
         this.model = model;

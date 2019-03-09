@@ -35,7 +35,6 @@ dependencies:
   flutter_vector_icons: ^0.0.2
   qr_flutter: ^2.0.0
   audioplayers: ^0.10.0
-  flutter_inner_drawer: ^0.2.2
 
   fast_qr_reader_view: 
     git:

@@ -45,16 +45,6 @@ class _UserQrCodePageState extends State<UserQrCodePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: Theme.of(context).primaryColor,
-          title: Text(
-            'QR Code and Scanner',
-            style: TextStyle(
-              color: Colors.white,
-            ),
-          ),
-        ),
       body: Container(
         decoration: BoxDecoration(
           // Box decoration takes a gradient

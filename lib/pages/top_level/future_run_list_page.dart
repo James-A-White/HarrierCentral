@@ -50,16 +50,16 @@ class FutureRunListPageBody extends StatelessWidget {
 
     return Scaffold(
         //key: homePageModel.mainAppScaffoldKey,
-        appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: Theme.of(context).primaryColor,
-          title: Text(
-            'Upcoming Runs List',
-            style: TextStyle(
-              color: Colors.white,
-            ),
-          ),
-        ),
+        // appBar: AppBar(
+        //   centerTitle: true,
+        //   backgroundColor: Theme.of(context).primaryColor,
+        //   title: Text(
+        //     'Upcoming Runs List',
+        //     style: TextStyle(
+        //       color: Colors.white,
+        //     ),
+        //   ),
+        // ),
         body: ScopedModelDescendant<FutureRunScopedModel>(
           builder:
               (BuildContext context, Widget child, FutureRunScopedModel model) {
