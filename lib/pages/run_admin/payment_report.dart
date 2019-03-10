@@ -1,19 +1,18 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
 import 'package:intl/intl.dart';
-
-import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/remote_api_data/payment_report_scoped_model.dart';
-import 'package:harrier_central/pages/kennel_admin/add_member_page.dart';
-import 'package:harrier_central/widgets/payment_report_list_item.dart';
-import 'package:harrier_central/data_models/payment_report_model.dart';
-import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/pages/run_admin/payment_popup.dart';
-import 'package:harrier_central/remote_api_data/pay_for_event_service.dart';
-import 'package:harrier_central/data_models/pay_for_event_model.dart';
-
 import 'package:scoped_model/scoped_model.dart';
+
+import 'package:harrier_central/data_models/pay_for_event_model.dart';
+import 'package:harrier_central/data_models/payment_report_model.dart';
+import 'package:harrier_central/pages/run_admin/payment_popup.dart';
+import 'package:harrier_central/services/pay_for_event_service.dart';
+import 'package:harrier_central/services/payment_report_scoped_model.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/widgets/payment_report_list_item.dart';
 
 class PaymentReportPage extends StatelessWidget {
   final String eventId;

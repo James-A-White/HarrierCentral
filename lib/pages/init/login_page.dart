@@ -6,17 +6,19 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:audioplayers/audio_cache.dart';
+import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/main.dart';
-import 'package:harrier_central/remote_api_data/add_user_service.dart';
-import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
-import 'package:harrier_central/util/routes.dart';
-
-
+import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
+import 'package:harrier_central/services/add_user_service.dart';
+import 'package:harrier_central/services/authorize_device_service.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/styles.dart';
 
 //import 'package:the_gorgeous_login/style/theme.dart' as Theme;
 
@@ -52,7 +54,7 @@ class _LoginPageState extends State<LoginPage>
   TextEditingController signupHashNameController = TextEditingController();
 
   PageController _pageController;
-  bool _isCreatingAccount = false;
+  int _scanState = 0;
 
   Color left = Colors.black;
   Color right = Colors.white;
@@ -71,65 +73,53 @@ class _LoginPageState extends State<LoginPage>
             height: MediaQuery.of(context).size.height >= 500.0
                 ? MediaQuery.of(context).size.height
                 : 500.0,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  colors: <Color>[
-                    LoginColors.loginGradientStart,
-                    LoginColors.loginGradientEnd
-                  ],
-                  begin: const FractionalOffset(0.0, 0.0),
-                  end: const FractionalOffset(1.0, 1.0),
-                  stops: const <double>[0.0, 1.0],
-                  tileMode: TileMode.clamp),
-            ),
-            child: _isCreatingAccount
-                ? _buildProgressIndicator()
-                : Column(
-                    mainAxisSize: MainAxisSize.max,
+            decoration: Backgrounds.simpleBlueGradient(),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                const Padding(
+                  padding: EdgeInsets.only(top: 45.0),
+                  child: Image(
+                      width: 100.0,
+                      height: 100.0,
+                      fit: BoxFit.fill,
+                      image: AssetImage('images/other/hc_app_icon.png')),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 20.0),
+                  child: _buildMenuBar(context),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: PageView(
+                    controller: _pageController,
+                    onPageChanged: (int i) {
+                      if (i == 0) {
+                        setState(() {
+                          right = Colors.white;
+                          left = Colors.black;
+                        });
+                      } else if (i == 1) {
+                        setState(() {
+                          right = Colors.black;
+                          left = Colors.white;
+                        });
+                      }
+                    },
                     children: <Widget>[
-                      const Padding(
-                        padding: EdgeInsets.only(top: 75.0),
-                        child: Image(
-                            width: 100.0,
-                            height: 100.0,
-                            fit: BoxFit.fill,
-                            image: AssetImage('images/other/hc_app_icon.png')),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints.expand(),
+                        child: _buildSignUp(context),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20.0),
-                        child: _buildMenuBar(context),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: PageView(
-                          controller: _pageController,
-                          onPageChanged: (int i) {
-                            if (i == 0) {
-                              setState(() {
-                                right = Colors.white;
-                                left = Colors.black;
-                              });
-                            } else if (i == 1) {
-                              setState(() {
-                                right = Colors.black;
-                                left = Colors.white;
-                              });
-                            }
-                          },
-                          children: <Widget>[
-                            ConstrainedBox(
-                              constraints: const BoxConstraints.expand(),
-                              child: _buildSignUp(context),
-                            ),
-                            ConstrainedBox(
-                              constraints: const BoxConstraints.expand(),
-                              child: _buildSignIn(context),
-                            ),
-                          ],
-                        ),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints.expand(),
+                        child: _buildSignIn(context),
                       ),
                     ],
                   ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -164,7 +154,7 @@ class _LoginPageState extends State<LoginPage>
     _pageController = PageController();
   }
 
-  void showInSnackBar(String value) {
+  void showInSnackBar(String value, {int durationInSeconds = 3}) {
     FocusScope.of(context).requestFocus(FocusNode());
     _scaffoldKey.currentState?.removeCurrentSnackBar();
     _scaffoldKey.currentState.showSnackBar(SnackBar(
@@ -177,7 +167,7 @@ class _LoginPageState extends State<LoginPage>
             fontFamily: 'WorkSansSemiBold'),
       ),
       backgroundColor: Colors.blue,
-      duration: Duration(seconds: 3),
+      duration: Duration(seconds: durationInSeconds),
     ));
   }
 
@@ -231,160 +221,164 @@ class _LoginPageState extends State<LoginPage>
 
   Widget _buildSignIn(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.only(top: 23.0),
-      child: Column(
+      //color: Colors.red,
+      // padding: const EdgeInsets.only(top: 23.0),
+      // child: Column(
+      //   children: <Widget>[
+      child: Stack(
+        alignment: Alignment.topCenter,
+        overflow: Overflow.visible,
         children: <Widget>[
-          Stack(
-            alignment: Alignment.topCenter,
-            overflow: Overflow.visible,
-            children: <Widget>[
-              const Padding(
-                padding: EdgeInsets.only(top: 50.0),
-                child: RotationTransition(
-                  turns: AlwaysStoppedAnimation<double>(45.0 / 360.0),
-                  child: Text(
-                    'IN DEVELOPMENT',
-                    style: TextStyle(
-                        color: Colors.yellow,
-                        fontSize: 25.0,
-                        fontFamily: 'WorkSansBold'),
-                  ),
-                ),
+          Positioned(
+              top: 60,
+              bottom: 140,
+              //width:150,
+              //height:150,
+              child: _cameraPreviewWidget()
+              // child:Container(
+              //   child: _cameraPreviewWidget(), width: 200.0, height: 200.0),
               ),
-              Container(
-                margin: const EdgeInsets.only(top: 170.0),
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(5.0)),
-                  boxShadow: <BoxShadow>[
-                    BoxShadow(
-                      color: LoginColors.loginGradientStart,
-                      offset: const Offset(1.0, 6.0),
-                      blurRadius: 20.0,
-                    ),
-                    BoxShadow(
-                      color: LoginColors.loginGradientEnd,
-                      offset: const Offset(1.0, 6.0),
-                      blurRadius: 20.0,
-                    ),
-                  ],
-                  gradient: LinearGradient(
-                      colors: <Color>[
-                        LoginColors.loginGradientEnd,
-                        LoginColors.loginGradientStart
-                      ],
-                      begin: const FractionalOffset(0.2, 0.2),
-                      end: const FractionalOffset(1.0, 1.0),
-                      stops: const <double>[0.0, 1.0],
-                      tileMode: TileMode.clamp),
-                ),
-                child: MaterialButton(
-                    highlightColor: Colors.transparent,
-                    splashColor: LoginColors.loginGradientEnd,
-                    //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(
-                          vertical: 10.0, horizontal: 42.0),
-                      child: Text(
-                        'SCAN QR',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 25.0,
-                            fontFamily: 'WorkSansBold'),
-                      ),
-                    ),
-                    onPressed: () => showInSnackBar('Login button pressed')),
+          Positioned(
+            bottom: 30,
+            child: Container(
+              margin: const EdgeInsets.only(top: 170.0),
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.all(Radius.circular(5.0)),
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: LoginColors.loginGradientStart,
+                    offset: const Offset(1.0, 6.0),
+                    blurRadius: 20.0,
+                  ),
+                  BoxShadow(
+                    color: LoginColors.loginGradientEnd,
+                    offset: const Offset(1.0, 6.0),
+                    blurRadius: 20.0,
+                  ),
+                ],
+                gradient: LinearGradient(
+                    colors: <Color>[
+                      LoginColors.loginGradientEnd,
+                      LoginColors.loginGradientStart
+                    ],
+                    begin: const FractionalOffset(0.2, 0.2),
+                    end: const FractionalOffset(1.0, 1.0),
+                    stops: const <double>[0.0, 1.0],
+                    tileMode: TileMode.clamp),
               ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 10.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: <Color>[
-                          Colors.white10,
-                          Colors.white,
-                        ],
-                        begin: FractionalOffset(0.0, 0.0),
-                        end: FractionalOffset(1.0, 1.0),
-                        stops: <double>[0.0, 1.0],
-                        tileMode: TileMode.clamp),
+              child: MaterialButton(
+                  highlightColor: Colors.transparent,
+                  splashColor: LoginColors.loginGradientEnd,
+                  //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                  child: Padding(
+                    padding:
+                        EdgeInsets.symmetric(vertical: 10.0, horizontal: 42.0),
+                    child: Text(
+                      controller == null ? 'Start Scanning' : 'Stop Scanning',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 25.0,
+                          fontFamily: 'WorkSansBold'),
+                    ),
                   ),
-                  width: 100.0,
-                  height: 1.0,
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(left: 15.0, right: 15.0),
-                  child: Text(
-                    'Or',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.0,
-                        fontFamily: 'WorkSansMedium'),
-                  ),
-                ),
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: <Color>[
-                          Colors.white,
-                          Colors.white10,
-                        ],
-                        begin: FractionalOffset(0.0, 0.0),
-                        end: FractionalOffset(1.0, 1.0),
-                        stops: <double>[0.0, 1.0],
-                        tileMode: TileMode.clamp),
-                  ),
-                  width: 100.0,
-                  height: 1.0,
-                ),
-              ],
+                  onPressed: () => scanUserBarcode()),
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0, right: 40.0),
-                child: GestureDetector(
-                  onTap: () => showInSnackBar('Facebook button pressed'),
-                  child: Container(
-                    padding: const EdgeInsets.all(15.0),
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
-                    child: const Icon(
-                      FontAwesomeIcons.facebookF,
-                      color: Color(0xFF0084ff),
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child: GestureDetector(
-                  onTap: () => showInSnackBar('Google button pressed'),
-                  child: Container(
-                    padding: const EdgeInsets.all(15.0),
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
-                    child: const Icon(
-                      FontAwesomeIcons.google,
-                      color: Color(0xFF0084ff),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          // Positioned(
+          //   bottom: 90,
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.center,
+          //     children: <Widget>[
+          //       Container(
+          //         decoration: const BoxDecoration(
+          //           gradient: LinearGradient(
+          //               colors: <Color>[
+          //                 Colors.white10,
+          //                 Colors.white,
+          //               ],
+          //               begin: FractionalOffset(0.0, 0.0),
+          //               end: FractionalOffset(1.0, 1.0),
+          //               stops: <double>[0.0, 1.0],
+          //               tileMode: TileMode.clamp),
+          //         ),
+          //         width: 100.0,
+          //         height: 1.0,
+          //       ),
+          //       const Padding(
+          //         padding: EdgeInsets.only(left: 15.0, right: 15.0),
+          //         child: Text(
+          //           'Or',
+          //           style: TextStyle(
+          //               color: Colors.white,
+          //               fontSize: 16.0,
+          //               fontFamily: 'WorkSansMedium'),
+          //         ),
+          //       ),
+          //       Container(
+          //         decoration: const BoxDecoration(
+          //           gradient: LinearGradient(
+          //               colors: <Color>[
+          //                 Colors.white,
+          //                 Colors.white10,
+          //               ],
+          //               begin: FractionalOffset(0.0, 0.0),
+          //               end: FractionalOffset(1.0, 1.0),
+          //               stops: <double>[0.0, 1.0],
+          //               tileMode: TileMode.clamp),
+          //         ),
+          //         width: 100.0,
+          //         height: 1.0,
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          // Positioned(
+          //   bottom: 20,
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.center,
+          //     children: <Widget>[
+          //       Padding(
+          //         padding: const EdgeInsets.only(top: 10.0, right: 40.0),
+          //         child: GestureDetector(
+          //           onTap: () => showInSnackBar('Facebook button pressed'),
+          //           child: Container(
+          //             padding: const EdgeInsets.all(15.0),
+          //             decoration: const BoxDecoration(
+          //               shape: BoxShape.circle,
+          //               color: Colors.white,
+          //             ),
+          //             child: const Icon(
+          //               FontAwesomeIcons.facebookF,
+          //               color: Color(0xFF0084ff),
+          //             ),
+          //           ),
+          //         ),
+          //       ),
+          //       Padding(
+          //         padding: const EdgeInsets.only(top: 10.0),
+          //         child: GestureDetector(
+          //           onTap: () => showInSnackBar('Google button pressed'),
+          //           child: Container(
+          //             padding: const EdgeInsets.all(15.0),
+          //             decoration: const BoxDecoration(
+          //               shape: BoxShape.circle,
+          //               color: Colors.white,
+          //             ),
+          //             child: const Icon(
+          //               FontAwesomeIcons.google,
+          //               color: Color(0xFF0084ff),
+          //             ),
+          //           ),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
         ],
       ),
+
+      //   ],
+      // ),
     );
   }
 
@@ -664,7 +658,8 @@ class _LoginPageState extends State<LoginPage>
     }
 
     final bool emailValid = RegExp(
-            r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", caseSensitive: false)
+            r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
+            caseSensitive: false)
         .hasMatch(signupEmailController.text);
     if (!emailValid) {
       canProcess = false;
@@ -673,7 +668,7 @@ class _LoginPageState extends State<LoginPage>
 
     if (canProcess) {
       setState(() {
-        _isCreatingAccount = true;
+        _scanState = 1;
       });
 
       final AddUserService t = AddUserService();
@@ -687,8 +682,7 @@ class _LoginPageState extends State<LoginPage>
           '',
           '00000000-0000-0000-0000-000000000000',
           '',
-          hasherTypeMember
-          );
+          hasherTypeMember);
       x.then((UserModel user) {
         Preferences.setStringPref(StringPrefsEnum.userId, user.hasherId);
         Preferences.setStringPref(StringPrefsEnum.firstName, user.firstName);
@@ -718,103 +712,160 @@ class _LoginPageState extends State<LoginPage>
           // );
 
           Navigator.push<String>(
-                    context,
-                    MaterialPageRoute<String>(
-                      builder: (context) => ChooseProfileImage(true,
-                            // kennelId: widget.futureRun.kennelId,
-                            // eventId: widget.futureRun.eventId,
-                            // attendenceState: attendenceAtHash,
-                          ),
-                    ),
-                  );
+            context,
+            MaterialPageRoute<String>(
+              builder: (context) => ChooseProfileImage(
+                    true,
+                    // kennelId: widget.futureRun.kennelId,
+                    // eventId: widget.futureRun.eventId,
+                    // attendenceState: attendenceAtHash,
+                  ),
+            ),
+          );
         });
       });
     }
   }
 
-  Widget _buildProgressIndicator() {
-    return Column(
-      children: <Widget>[
-        Column(
-          children: <Widget>[
-            Container(
-              width: 10.0,
-              height: 40.0,
-            ),
-            Padding(
-              padding: EdgeInsets.only(top: 0.0),
-              child: Text(
-                'Creating\r\nHarrier Central\r\nAccount',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 32.0,
-                    fontFamily: 'WorkSansSemiBold'),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 10.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                          colors: <Color>[
-                            Colors.white10,
-                            Colors.white,
-                          ],
-                          begin: FractionalOffset(0.0, 0.0),
-                          end: FractionalOffset(1.0, 1.0),
-                          stops: <double>[0.0, 1.0],
-                          tileMode: TileMode.clamp),
-                    ),
-                    width: 100.0,
-                    height: 1.0,
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.only(left: 15.0, right: 15.0),
-                    child: const Icon(FontAwesomeIcons.circle,
-                        color: Color(0xFFFFFFFF), size: 10.0),
-                  ),
-                  Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                          colors: <Color>[
-                            Colors.white,
-                            Colors.white10,
-                          ],
-                          begin: FractionalOffset(0.0, 0.0),
-                          end: FractionalOffset(1.0, 1.0),
-                          stops: <double>[0.0, 1.0],
-                          tileMode: TileMode.clamp),
-                    ),
-                    width: 100.0,
-                    height: 1.0,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        Expanded(
-          child: Center(
-            child: SpinKitCircle(
-              size: 75.0,
-              itemBuilder: (_, int index) {
-                return DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: index.isEven
-                        ? Colors.white
-                        : Theme.of(context).accentColor,
-                  ),
-                );
-              },
-            ),
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  // QR Code Scanner support
+  //
+  //
+  //
+  //
+  //
+  //
+
+  String barcode = 'Waiting for Scan';
+
+  QRReaderController controller;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  Future scanUserBarcode() async {
+    if (controller == null) {
+      setState(() => barcode = 'Scanning');
+      cameras = await availableCameras();
+
+      onNewCameraSelected(cameras[0]);
+    } else {
+      await stopScanning();
+      setState(() => barcode = 'Waiting for scan');
+    }
+  }
+
+  List<CameraDescription> cameras;
+
+  void onCodeRead(String scanResult) async {
+    final AudioCache audioPlayer = AudioCache(prefix: 'sounds/');
+    audioPlayer.play('camera.mp3');
+
+    await stopScanning();
+    setState(() => barcode = 'Processing QR Scan');
+
+    if (!scanResult.toUpperCase().startsWith('USC:')) {
+      setState(() {
+        _scanState = 3;
+      });
+    } else {
+      setState(() {
+        _scanState = 1;
+      });
+
+      AuthorizeDeviceService srv = AuthorizeDeviceService();
+      final Future<Map<String, String>> apiCall =
+          srv.authorizeDevice(scanResult);
+      apiCall.then((Map<String, String> result) {
+        if (result['result'] == 'success') {
+          setState(() => _scanState = 0);
+          Navigator.pushReplacement<dynamic,dynamic>(context, MaterialPageRoute<dynamic>(
+                      builder: (BuildContext context) => MainNavigationPage()));
+        } else {
+          setState(() => _scanState = 2);
+          showInSnackBar(result['message'], durationInSeconds: 7);
+        }
+      });
+    }
+  }
+
+  Future stopScanning() async {
+    controller.stopScanning();
+    await controller.dispose();
+    controller = null;
+  }
+
+  Widget _cameraPreviewWidget() {
+    return LayoutBuilder(builder: (context, constraint) {
+      return new Stack(
+        alignment: AlignmentDirectional.center,
+        children: <Widget>[
+          Image.asset(
+            _scanState == 1
+                ? 'images/other/downloading_from_cloud.png'
+                : _scanState == 2
+                    ? 'images/other/download_failed.png'
+                    : _scanState == 3
+                        ? 'images/other/qr_not_recognized.png'
+                        : 'images/other/qr_scanner.png',
           ),
-        ),
-      ],
-    );
+          _scanState == 1
+              ? Positioned(
+                  top: 40,
+                  child: SpinKitFadingCircle(itemBuilder: (_, int index) {
+                    return DecoratedBox(
+                      decoration: BoxDecoration(
+                        color:
+                            index.isEven ? Colors.lightBlue[900] : Colors.white,
+                      ),
+                    );
+                  }))
+              : Container(),
+          Container(
+            padding: EdgeInsets.all(9.0),
+            height: constraint.biggest.height,
+            width: constraint.biggest.height,
+            child: (controller == null)
+                ? Container()
+                : new QRReaderPreview(controller),
+          )
+        ],
+      );
+    });
+  }
+
+  void onNewCameraSelected(CameraDescription cameraDescription) async {
+    if (controller != null) {
+      await controller.dispose();
+    }
+    controller = new QRReaderController(cameraDescription,
+        ResolutionPreset.high, [CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
+
+    // If the controller is updated then update the UI.
+    controller.addListener(() {
+      if (mounted) setState(() {});
+      if (controller.value.hasError) {
+        showInSnackBar('Camera error ${controller.value.errorDescription}');
+      }
+    });
+
+    try {
+      await controller.initialize();
+    } on QRReaderException catch (e) {
+      //logError(e.code, e.description);
+      showInSnackBar('Error: ${e.code}\n${e.description}');
+    }
+
+    if (mounted) {
+      setState(() {});
+      controller.startScanning();
+    }
   }
 }
 

@@ -1,17 +1,14 @@
 
 import 'dart:math';
 
-//import 'package:barcode_scan/barcode_scan.dart';
-
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/data_models/process_qr_scan_model.dart';
-import 'package:harrier_central/remote_api_data/process_qr_scan_service.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 import 'package:harrier_central/data_models/kennel_member_model.dart';
 
-import 'package:qr_flutter/qr_flutter.dart';
 
 class UserSecretQrPage extends StatefulWidget {
   UserSecretQrPage({Key key, this.kennelMemberModel}) : super(key: key);

@@ -6,23 +6,21 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:uuid/uuid.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:harrier_central/data_models/single_result_model.dart';
 import 'package:harrier_central/main.dart';
 import 'package:harrier_central/pages/init/avatar_icons_page.dart';
-import 'package:harrier_central/remote_api_data/update_avatar_service.dart';
+import 'package:harrier_central/services/update_avatar_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
 
-import 'package:http/http.dart' as http;
-
-import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class ChooseProfileImage extends StatefulWidget {
   bool isInitFlow;

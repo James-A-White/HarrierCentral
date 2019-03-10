@@ -2,8 +2,8 @@ import 'dart:core';
 
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/util/utilities.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import 'package:harrier_central/util/enums.dart';
 
 class OtherPaymentPopup extends StatefulWidget {

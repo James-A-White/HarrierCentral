@@ -5,14 +5,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'package:harrier_central/data_models/process_qr_scan_model.dart';
-import 'package:harrier_central/remote_api_data/process_qr_scan_service.dart';
+import 'package:harrier_central/services/process_qr_scan_service.dart';
 
 // import 'package:managed_response/pages/sub_pages/scan_others_page.dart';
 // import 'package:managed_response/data_models/check_in_result_model.dart';
 // import 'package:managed_response/services/check_in_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
-//import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
@@ -46,21 +46,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          // Box decoration takes a gradient
-          gradient: LinearGradient(
-            // Where the linear gradient begins and ends
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-            // Add one stop for each color. Stops should increase from 0 to 1
-            stops: [0.1, 0.9],
-            colors: [
-              // Colors are easy thanks to Flutter's Colors class.
-              Colors.grey[500],
-              Colors.grey[850],
-            ],
-          ),
-        ),
+       decoration: Backgrounds.simpleBlueGradient(),
         child: Stack(
           alignment: AlignmentDirectional.center,
           children: <Widget>[
@@ -153,53 +139,57 @@ class _UserQrCodePageState extends State<UserQrCodePage>
   Color left = Colors.white;
   Color right = Colors.white;
 
-  Widget _buildMenuBar(BuildContext context) {
-    return Container(
-      width: 300.0,
-      height: 50.0,
-      decoration: const BoxDecoration(
-        color: Color(0x552B2B2B),
-        borderRadius: BorderRadius.all(Radius.circular(25.0)),
-      ),
-      child: CustomPaint(
-        painter: TabIndicationPainter(
-            context: context, pageController: _pageController),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Expanded(
-              child: FlatButton(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onPressed: _onSwitchToQrScanner,
-                child: Text(
-                  'Scan',
-                  style: TextStyle(
-                      color: left,
-                      fontSize: 14.0,
-                      fontFamily: 'WorkSansSemiBold'),
-                ),
-              ),
-            ),
-            Expanded(
-              child: FlatButton(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onPressed: _onSwitchToQrCode,
-                child: Text(
-                  'My Scanner',
-                  style: TextStyle(
-                      color: right,
-                      fontSize: 14.0,
-                      fontFamily: 'WorkSansSemiBold'),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
+
+  // Widget _buildMenuBar(BuildContext context) {
+  //   return Container(
+  //     width: 300.0,
+  //     height: 50.0,
+  //     decoration: const BoxDecoration(
+  //       color: Color(0x552B2B2B),
+  //       borderRadius: BorderRadius.all(Radius.circular(25.0)),
+  //     ),
+  //     child: CustomPaint(
+  //       painter: TabIndicationPainter(
+  //           context: context, pageController: _pageController),
+  //       child: Row(
+  //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //         children: <Widget>[
+  //           Expanded(
+  //             child: FlatButton(
+  //               splashColor: Colors.transparent,
+  //               highlightColor: Colors.transparent,
+  //               onPressed: _onSwitchToQrScanner,
+  //               child: Text(
+  //                 'Scan',
+  //                 style: TextStyle(
+  //                     color: left,
+  //                     fontSize: 14.0,
+  //                     fontFamily: 'WorkSansSemiBold'),
+  //               ),
+  //             ),
+  //           ),
+  //           Expanded(
+  //             child: FlatButton(
+  //               splashColor: Colors.transparent,
+  //               highlightColor: Colors.transparent,
+  //               onPressed: _onSwitchToQrCode,
+  //               child: Text(
+  //                 'My Scanner',
+  //                 style: TextStyle(
+  //                     color: right,
+  //                     fontSize: 14.0,
+  //                     fontFamily: 'WorkSansSemiBold'),
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
+
 
   Future<bool> _displayInstructions(BuildContext context) async {
     return showDialog<bool>(
@@ -450,6 +440,7 @@ class _QrCodeTabState extends State<QrCodeTab>
   }
 }
 
+
 class QrScannerTab extends StatefulWidget {
   const QrScannerTab({Key key}) : super(key: key);
 
@@ -459,6 +450,7 @@ class QrScannerTab extends StatefulWidget {
 
 class _QrScannerTabState extends State<QrScannerTab>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+
   String barcode = 'Waiting for Scan';
 
   QRReaderController controller;
@@ -466,49 +458,24 @@ class _QrScannerTabState extends State<QrScannerTab>
   @override
   bool get wantKeepAlive => true;
 
-  // void scanUserBarcode() async {
-  //   setState(() => barcode = 'Waiting for Scan');
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  // QR Code Scanner support
+  //
+  //
+  //
+  //
+  //
+  //
 
-  //   // BarcodeScanner.scan().then((scanResult) {
-  //   //   if (scanResult.toUpperCase().startsWith(SELF_MUSTER_HEADER) ||
-  //   //       scanResult.toUpperCase().startsWith(MOBILE_MUSTER_HEADER)) {
-  //   //     setState(() => barcode = 'Processing scan data');
-  //   //     CheckInResultService srv = CheckInResultService();
-  //   //     final Future<CheckInResultModel> apiCall = srv.checkIn(scanResult);
-  //   //     apiCall.then((CheckInResultModel result) {
-  //   //       if (result?.confirmationCode == null) {
-  //   //         setState(() => barcode = 'Error processing QR code');
-  //   //         Utilities.say(
-  //   //             'Error processing QR code. Please ensure you are scanning a valid QR code at a muster point.');
-  //   //       } else {
-  //   //         Utilities.say(result.result == 1
-  //   //                 ? 'You are mustered with muster code ${result.confirmationCode}'
-  //   //                 : result.result == 2
-  //   //                     ? 'You are already mustered with muster code ${result.confirmationCode})'
-  //   //                     : 'Unknown muster code result')
-  //   //             .then<dynamic>((void dummy) {
-  //   //           Utilities.say('Please use this app to help others muster');
-  //   //           Navigator.of(context).pushReplacement<dynamic, dynamic>(
-  //   //                   MaterialPageRoute<dynamic>(
-  //   //                     builder: (context) => ScanOthersPage(),
-  //   //                   ),
-  //   //                 );
-  //   //         });
-  //   //         setState(() => barcode = result.confirmationCode);
-  //   //       }
-  //   //     });
-  //   //   } else {
-  //   //     setState(() => barcode = 'QR code not recognized');
-  //   //     Utilities.say(
-  //   //         'The QR code was not recognized. Please ensure you are scanning a valid QR code at a muster point.');
-  //   //   }
-  //   // });
+  List<CameraDescription> cameras;
 
-  // }
-
-// ########### DON'T DELETE - This is for use wtih FastBarcode Scan, which is preferred over Barcode Scanner
-
-  void scanUserBarcode() async {
+    void scanUserBarcode() async {
     if (controller == null) {
       setState(() => barcode = 'Scanning');
       cameras = await availableCameras();
@@ -519,8 +486,6 @@ class _QrScannerTabState extends State<QrScannerTab>
       setState(() => barcode = 'Waiting for scan');
     }
   }
-
-  List<CameraDescription> cameras;
 
   void onCodeRead(dynamic scanResult) async {
 
@@ -537,72 +502,6 @@ class _QrScannerTabState extends State<QrScannerTab>
       setState(() => barcode = result.resultStr1);
     });
   }
-
-  // void onCodeRead(dynamic scanResult) async {
-  //   setState(() => barcode = scanResult);
-
-  //   // String passNumber = Preferences.getStringPref(StringPrefsEnum.passNumber);
-  //   // String lastNameFragment =
-  //   //     Preferences.getStringPref(StringPrefsEnum.lastNameFragment)
-  //   //         .toLowerCase();
-
-  //   // String passNumberFragment = passNumber.substring(passNumber.length - 4);
-  //   // String md5HashPassNumberFragment =
-  //   //     Utilities.md5HashText(passNumberFragment);
-
-  //   // String encryptedPassNumber = Utilities.encryptText(
-  //   //     EnumEncryptionKeyName.passNumber, md5HashPassNumberFragment);
-  //   // String encryptedLastNameFragment = Utilities.encryptText(
-  //   //     EnumEncryptionKeyName.lastNameFragment, lastNameFragment);
-
-  //   // setState(() => barcode = 'Processing QR Scan');
-  //   // await stopScanning();
-
-  //   // int musterType = -1;
-  //   // if (scanResult.toUpperCase().startsWith(SELF_MUSTER_HEADER)) {
-  //   //   musterType = 0;
-  //   // }
-
-  //   // if (scanResult.toUpperCase().startsWith(MOBILE_MUSTER_HEADER)) {
-  //   //   musterType = 1;
-  //   // }
-
-  //   // if ((musterType == 0) || (musterType == 1)) {
-  //   //   setState(() => barcode = 'Processing scan data');
-  //   //   CheckInResultService srv = CheckInResultService();
-  //   //   final Future<CheckInResultModel> apiCall = srv.checkIn(
-  //   //       scanResult, encryptedPassNumber, encryptedLastNameFragment, musterType);
-  //   //   apiCall.then((CheckInResultModel result) {
-  //   //     if (result?.confirmationCode == null) {
-  //   //       setState(() => barcode = 'Error processing QR code');
-  //   //       Utilities.say(
-  //   //           'Error processing QR code. Please ensure you are scanning a valid QR code at a muster point.');
-  //   //     } else {
-  //   //       Utilities.say(result.result == 1
-  //   //               ? 'You are mustered with muster code ${result.confirmationCode} at muster point ${result.musterPointName}. Please use your Managed Response app to help others muster.'
-  //   //               : result.result == 2
-  //   //                   ? 'You are already mustered with muster code ${result.confirmationCode} at muster point ${result.musterPointName}. Please use your Managed Response app to help others muster.'
-  //   //                   : 'Unknown muster code result')
-  //   //           .then<dynamic>((void dummy) {
-  //   //         Navigator.of(context).pushReplacement<dynamic, dynamic>(
-  //   //           MaterialPageRoute<dynamic>(
-  //   //             builder: (context) => ScanOthersPage(
-  //   //                 mobileMusterPointId: result.mobileMusterPointId,
-  //   //                 confirmationCode: result.confirmationCode,
-  //   //                 musterPointName: result.musterPointName),
-  //   //           ),
-  //   //         );
-  //   //       });
-  //   //       setState(() => barcode =
-  //   //           '${result.confirmationCode.trim().replaceAll(' ', '')} at ${result.musterPointName.trim()}');
-  //   //     }
-  //   //   });
-  //   // } else {
-  //   //   setState(() => barcode = 'QR code not recognized');
-  //   //   Utilities.say(
-  //   //       'The QR code was not recognized. Please ensure you are scanning a valid QR code at a muster point.');
-  //   // }
-  // }
 
   Future stopScanning() async {
     controller.stopScanning();
@@ -766,7 +665,7 @@ class _QrScannerTabState extends State<QrScannerTab>
                   child: RaisedButton(
                       child: Text(
                         controller == null
-                            ? 'Start scanning'
+                            ? 'Start Scanning'
                             : 'Stop Scanning',
                         style: TextStyle(
                             fontFamily: 'AvenirNextDemiBold',

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:harrier_central/data_models/main_navigation_model.dart';
-import 'package:harrier_central/remote_api_data/main_navigation_scoped_model.dart';
+import 'package:harrier_central/services/main_navigation_scoped_model.dart';
 
 import 'package:harrier_central/data_models/main_navigation_model.dart';
 import 'package:harrier_central/pages/facebook_login.dart';
@@ -10,7 +10,7 @@ import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
-import 'package:harrier_central/remote_api_data/kennel_scoped_model.dart';
+import 'package:harrier_central/services/kennel_scoped_model.dart';
 import 'package:harrier_central/widgets/placeholder_widget.dart';
 
 import 'package:scoped_model/scoped_model.dart';
@@ -29,7 +29,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   List<Widget> tabs = List<Widget>();
   List<String> tabTitles = List<String>();
 
-  String appBarText = 'test';
+  String appBarText;
 
   void initState() {
     tabs.add(FutureRunsListPage());
@@ -43,6 +43,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     tabTitles.add('My stats');
     tabTitles.add('Scanner');
     tabTitles.add('Friends');
+
+    appBarText = tabTitles[0];
   }
 
   void onTabTapped(EnumAppPages index) {

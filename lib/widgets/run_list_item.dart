@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:harrier_central/data_models/future_run_model.dart';
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
-import 'package:harrier_central/remote_api_data/future_run_scoped_model.dart';
+import 'package:harrier_central/services/future_run_scoped_model.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 

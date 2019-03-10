@@ -3,9 +3,10 @@ import 'dart:async';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/remote_api_data/future_run_scoped_model.dart';
-import 'package:harrier_central/remote_api_data/main_navigation_scoped_model.dart';
+import 'package:harrier_central/services/future_run_scoped_model.dart';
+import 'package:harrier_central/services/main_navigation_scoped_model.dart';
 import 'package:harrier_central/widgets/run_list_item.dart';
+import 'package:harrier_central/util/styles.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 //
@@ -17,24 +18,24 @@ class FutureRunsListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return 
-    
-    // ScopedModelDescendant<MainNavigationScopedModel>(builder:
-    //     (BuildContext context, Widget child, MainNavigationScopedModel model) {
-    //   model.appBarTitle = 'Upcoming Runs';
+    return
 
-       ScopedModelDescendant<FutureRunScopedModel>(builder:
-          (BuildContext context, Widget child,
-              FutureRunScopedModel futureRunsScopedModel) {
-        if (!futureRunsScopedModel.isLoading) {
-          futureRunsScopedModel.getFutureRunsFromBackend(false);
-        }
+        // ScopedModelDescendant<MainNavigationScopedModel>(builder:
+        //     (BuildContext context, Widget child, MainNavigationScopedModel model) {
+        //   model.appBarTitle = 'Upcoming Runs';
 
-        return FutureRunListPageBody();
-        // return ScopedModel<FutureRunScopedModel>(
-        //     model: futureRunsModel, child: FutureRunListPageBody());
-      });
-   // });
+        ScopedModelDescendant<FutureRunScopedModel>(builder:
+            (BuildContext context, Widget child,
+                FutureRunScopedModel futureRunsScopedModel) {
+      if (!futureRunsScopedModel.isLoading) {
+        futureRunsScopedModel.getFutureRunsFromBackend(false);
+      }
+
+      return FutureRunListPageBody();
+      // return ScopedModel<FutureRunScopedModel>(
+      //     model: futureRunsModel, child: FutureRunListPageBody());
+    });
+    // });
   }
 }
 
@@ -61,14 +62,14 @@ class FutureRunListPageBody extends StatelessWidget {
         //   ),
         // ),
         body: ScopedModelDescendant<FutureRunScopedModel>(
-          builder:
-              (BuildContext context, Widget child, FutureRunScopedModel model) {
-            this.model = model;
-            return model.isLoading
-                ? _buildCircularProgressIndicator()
-                : _buildListView();
-          },
-        ));
+      builder:
+          (BuildContext context, Widget child, FutureRunScopedModel model) {
+        this.model = model;
+        return model.isLoading
+            ? _buildCircularProgressIndicator()
+            : _buildListView();
+      },
+    ));
   }
 
   Widget _buildCircularProgressIndicator() {
@@ -93,22 +94,24 @@ class FutureRunListPageBody extends StatelessWidget {
   }
 
   Widget _buildListView() {
-    return Padding(
-        padding: const EdgeInsets.only(top: 0.0),
-        child: model.getFutureRunsCount() == 0
-            ? const Center(child: Text('No Runs available.'))
-            : RefreshIndicator(
-                onRefresh: () => _handleRefresh(),
-                displacement: 40.0,
-                child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.only(top: 40.0, bottom: 40.0),
-                    itemCount: model.getFutureRunsCount(),
-                    itemBuilder: (BuildContext context, int index) {
-                      if (model.futureRunsList[index].daysUntilNextRun < 9999) {
-                        return RunListItem(
-                            futureRun: model.futureRunsList[index]);
-                      }
-                    })));
+    return Container(
+      decoration: Backgrounds.simpleBlueGradient(),
+      child: model.getFutureRunsCount() == 0
+          ? const Center(child: Text('No Runs available.'))
+          : RefreshIndicator(
+              onRefresh: () => _handleRefresh(),
+              displacement: 40.0,
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.only(top: 40.0, bottom: 40.0),
+                itemCount: model.getFutureRunsCount(),
+                itemBuilder: (BuildContext context, int index) {
+                  if (model.futureRunsList[index].daysUntilNextRun < 9999) {
+                    return RunListItem(futureRun: model.futureRunsList[index]);
+                  }
+                },
+              ),
+            ),
+    );
   }
 }

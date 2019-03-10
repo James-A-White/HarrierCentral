@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/remote_api_data/kennel_scoped_model.dart';
-import 'package:harrier_central/remote_api_data/main_navigation_scoped_model.dart';
+import 'package:harrier_central/services/kennel_scoped_model.dart';
+import 'package:harrier_central/services/main_navigation_scoped_model.dart';
 import 'package:harrier_central/widgets/kennel_list_item.dart';
 
 import 'package:scoped_model/scoped_model.dart';

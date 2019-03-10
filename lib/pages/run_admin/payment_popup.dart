@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 
 import 'package:harrier_central/util/utilities.dart';
 
-
-
 class PaymentPopup extends StatefulWidget {
   final String hemId;
   final String currencySymbol;

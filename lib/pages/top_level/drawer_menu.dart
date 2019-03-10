@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/remote_api_data/future_run_scoped_model.dart';
+import 'package:harrier_central/services/future_run_scoped_model.dart';
 import 'package:harrier_central/data_models/main_navigation_model.dart';
 import 'package:harrier_central/pages/menu_pages/my_profile_page.dart';
 import 'package:harrier_central/widgets/run_list_item.dart';
@@ -27,11 +27,11 @@ class DrawerMenuState extends State<DrawerMenu> {
   static const Color textColor = Color.fromARGB(opacity, 255, 255, 255);
 
   TextStyle style = const TextStyle(
-                fontFamily: 'AvenirNext',
-                fontStyle: FontStyle.normal,
-                color: textColor,
-                fontSize: 24.0,
-                height: 1.0);
+      fontFamily: 'AvenirNext',
+      fontStyle: FontStyle.normal,
+      color: textColor,
+      fontSize: 24.0,
+      height: 1.0);
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +39,8 @@ class DrawerMenuState extends State<DrawerMenu> {
       //elevation: 120,
       child: Stack(overflow: Overflow.clip, children: <Widget>[
         Positioned(
-          top:0,
-          left:0,
+          top: 0,
+          left: 0,
           child: IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -53,7 +53,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                   //   ),
                   // ),
                   child: Image.asset('images/other/drawer_image.jpg',
-                      fit:BoxFit.fill,
+                      fit: BoxFit.fill,
                       height: MediaQuery.of(context).size.height,
                       width: MediaQuery.of(context).size.width),
                 ),
@@ -72,6 +72,10 @@ class DrawerMenuState extends State<DrawerMenu> {
               ListTile(
                 leading: const Icon(Icons.settings, color: textColor),
                 title: Text('Settings', style: style),
+              ),
+              ListTile(
+                leading: const Icon(Icons.person, color: textColor),
+                title: Text('My Profile', style: style),
                 onTap: () async {
                   //onTabTapped(EnumAppPages.settings);
                   Navigator.pop(context);
@@ -84,14 +88,6 @@ class DrawerMenuState extends State<DrawerMenu> {
                       },
                     ),
                   );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.person, color: textColor),
-                title: Text('My Profile', style: style),
-                onTap: () {
-                  //Navigator.pop(context);
-                  onTabTapped(EnumAppPages.settings);
                 },
               ),
               ListTile(

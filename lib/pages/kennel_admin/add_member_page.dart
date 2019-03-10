@@ -8,12 +8,10 @@ import 'package:flutter/services.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/main.dart';
-import 'package:harrier_central/remote_api_data/add_user_service.dart';
-import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/routes.dart';
+import 'package:harrier_central/services/add_user_service.dart';
+import 'package:harrier_central/util/enums.dart';
 
 //import 'package:the_gorgeous_login/style/theme.dart' as Theme;
 

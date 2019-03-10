@@ -2,15 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/remote_api_data/approve_login_service.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 import 'package:harrier_central/data_models/approve_login_model.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
+import 'package:harrier_central/services/approve_login_service.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
-import 'package:harrier_central/util/enums.dart';
 
-import 'package:permission_handler/permission_handler.dart';
 
 class AppEntryPage extends StatefulWidget {
   @override

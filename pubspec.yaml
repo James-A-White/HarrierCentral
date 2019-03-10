@@ -94,12 +94,13 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/sounds/camera.mp3
+    - images/avatars/
+    - images/backgrounds/
     - images/generic_logos/
     - images/icons/
     - images/init/
     - images/other/
-    - images/avatars/
-    - assets/sounds/camera.mp3
 
   fonts:
     - family: AvenirNext

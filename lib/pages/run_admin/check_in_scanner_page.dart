@@ -1,14 +1,6 @@
 import 'dart:async';
 
-//import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
-
-import 'package:harrier_central/remote_api_data/process_qr_scan_service.dart';
-import 'package:harrier_central/data_models/process_qr_scan_model.dart';
-import 'package:harrier_central/pages/run_admin/payment_popup.dart';
-import 'package:harrier_central/remote_api_data/pay_for_event_service.dart';
-import 'package:harrier_central/data_models/pay_for_event_model.dart';
-import 'package:harrier_central/util/enums.dart';
 
 class CheckInScannerPage extends StatefulWidget {
   CheckInScannerPage(

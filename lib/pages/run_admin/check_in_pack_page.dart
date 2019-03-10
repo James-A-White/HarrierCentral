@@ -1,31 +1,24 @@
 import 'dart:core';
-import 'dart:math';
 
-//import 'package:barcode_scan/barcode_scan.dart';
-
-import 'package:cached_network_image/cached_network_image.dart';
-
-//import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-
-import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/data_models/future_run_model.dart';
-import 'package:harrier_central/data_models/user_model.dart';
-import 'package:harrier_central/remote_api_data/pack_scoped_model.dart';
-import 'package:harrier_central/remote_api_data/pay_scoped_model.dart';
-import 'package:harrier_central/remote_api_data/pay_for_event_service.dart';
-import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/data_models/process_qr_scan_for_checkin_model.dart';
-import 'package:harrier_central/pages/kennel_admin/add_member_page.dart';
-import 'package:harrier_central/pages/init/choose_profile_image.dart';
-import 'package:harrier_central/widgets/payment_snackbar.dart';
-import 'package:harrier_central/data_models/join_event_model.dart';
-
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:scoped_model/scoped_model.dart';
+
+import 'package:harrier_central/data_models/future_run_model.dart';
+import 'package:harrier_central/data_models/process_qr_scan_for_checkin_model.dart';
+import 'package:harrier_central/data_models/user_model.dart';
+import 'package:harrier_central/pages/init/choose_profile_image.dart';
+import 'package:harrier_central/pages/kennel_admin/add_member_page.dart';
+import 'package:harrier_central/services/pack_scoped_model.dart';
+import 'package:harrier_central/services/pay_for_event_service.dart';
+import 'package:harrier_central/services/pay_scoped_model.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/widgets/payment_snackbar.dart';
 
 class CheckInPackPage extends StatefulWidget {
   CheckInPackPage({
