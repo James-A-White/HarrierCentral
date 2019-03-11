@@ -26,7 +26,7 @@ class LegalPageState extends State<LegalPage> {
         ),
       ),
       body: Container(
-        decoration: Backgrounds.simpleBlueGradient(),
+        decoration: Backgrounds.defaultHcBackground(),
         height: MediaQuery.of(context).size.height,
         child: LegalPageContent(),
       ),

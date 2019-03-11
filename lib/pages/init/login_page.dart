@@ -73,7 +73,7 @@ class _LoginPageState extends State<LoginPage>
             height: MediaQuery.of(context).size.height >= 500.0
                 ? MediaQuery.of(context).size.height
                 : 500.0,
-            decoration: Backgrounds.simpleBlueGradient(),
+            decoration: Backgrounds.defaultHcBackground(),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: <Widget>[

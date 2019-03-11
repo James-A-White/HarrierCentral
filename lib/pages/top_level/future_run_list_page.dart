@@ -95,7 +95,7 @@ class FutureRunListPageBody extends StatelessWidget {
 
   Widget _buildListView() {
     return Container(
-      decoration: Backgrounds.simpleBlueGradient(),
+      decoration: Backgrounds.defaultHcBackground(),
       child: model.getFutureRunsCount() == 0
           ? const Center(child: Text('No Runs available.'))
           : RefreshIndicator(

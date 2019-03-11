@@ -7,6 +7,10 @@ import 'package:harrier_central/pages/menu_pages/my_profile_page.dart';
 import 'package:harrier_central/pages/menu_pages/imprint_page.dart';
 import 'package:harrier_central/pages/menu_pages/legal_page.dart';
 import 'package:harrier_central/pages/menu_pages/faq_page.dart';
+import 'package:harrier_central/pages/menu_pages/settings_page.dart';
+import 'package:harrier_central/pages/menu_pages/in_app_purchase.dart';
+import 'package:harrier_central/pages/menu_pages/user_feedback_page.dart';
+
 
 class DrawerMenu extends StatefulWidget {
   GlobalKey<ScaffoldState> scaffoldKey;
@@ -70,6 +74,18 @@ class DrawerMenuState extends State<DrawerMenu> {
               ListTile(
                 leading: const Icon(Icons.settings, color: textColor),
                 title: Text('Settings', style: style),
+                onTap: () async {
+                  Navigator.pop(context);
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      settings: RouteSettings(),
+                      builder: (context) {
+                        return SettingsPage();
+                      },
+                    ),
+                  );
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.person, color: textColor),
@@ -91,9 +107,17 @@ class DrawerMenuState extends State<DrawerMenu> {
               ListTile(
                 leading: const Icon(Icons.shopping_cart, color: textColor),
                 title: Text('In App Purchases', style: style),
-                onTap: () {
-                  // Navigator.pop(context);
-                  onTabTapped(EnumAppPages.settings);
+                onTap: () async {
+                  Navigator.pop(context);
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      settings: RouteSettings(),
+                      builder: (context) {
+                        return InAppPurchasePage();
+                      },
+                    ),
+                  );
                 },
               ),
               // ListTile(
@@ -124,8 +148,16 @@ class DrawerMenuState extends State<DrawerMenu> {
                 leading: const Icon(Icons.feedback, color: textColor),
                 title: Text('Your feedback', style: style),
                 onTap: () {
-                  //Navigator.pop(context);
-                  onTabTapped(EnumAppPages.settings);
+                  Navigator.pop(context);
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      settings: RouteSettings(),
+                      builder: (context) {
+                        return UserFeedbackPage();
+                      },
+                    ),
+                  );
                 },
               ),
               ListTile(

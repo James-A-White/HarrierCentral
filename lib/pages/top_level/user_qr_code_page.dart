@@ -46,7 +46,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-       decoration: Backgrounds.simpleBlueGradient(),
+       decoration: Backgrounds.defaultHcBackground(),
         child: Stack(
           alignment: AlignmentDirectional.center,
           children: <Widget>[

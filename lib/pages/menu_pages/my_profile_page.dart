@@ -32,7 +32,7 @@ class MyProfilePageState extends State<MyProfilePage> {
         ),
       ),
       body: Container(
-        decoration: Backgrounds.simpleBlueGradient(),
+        decoration: Backgrounds.defaultHcBackground(),
         child: Stack(
           alignment: AlignmentDirectional.center,
           children: <Widget>[

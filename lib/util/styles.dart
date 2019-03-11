@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 
 class Backgrounds {
-   static BoxDecoration simpleBlueGradient()
+   static BoxDecoration defaultHcBackground()
    {
      return BoxDecoration(
 

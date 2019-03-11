@@ -26,7 +26,7 @@ class FaqPageState extends State<FaqPage> {
         ),
       ),
       body: Container(
-        decoration: Backgrounds.simpleBlueGradient(),
+        decoration: Backgrounds.defaultHcBackground(),
         height: MediaQuery.of(context).size.height,
         child: FaqPageContent(),
       ),

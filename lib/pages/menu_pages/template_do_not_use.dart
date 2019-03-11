@@ -26,7 +26,7 @@ class DoNotUseState extends State<DoNotUse> {
         ),
       ),
       body: Container(
-        decoration: Backgrounds.simpleBlueGradient(),
+        decoration: Backgrounds.defaultHcBackground(),
         child: Stack(
           alignment: AlignmentDirectional.center,
           children: <Widget>[
