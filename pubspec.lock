@@ -222,7 +222,7 @@ packages:
       name: flutter_vector_icons
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.2"
+    version: "0.1.0"
   font_awesome_flutter:
     dependency: "direct main"
     description:
@@ -356,6 +356,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.5"
+  package_info:
+    dependency: "direct main"
+    description:
+      name: package_info
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.0+1"
   path:
     dependency: transitive
     description:

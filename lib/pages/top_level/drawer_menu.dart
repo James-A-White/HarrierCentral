@@ -1,14 +1,12 @@
-import 'dart:async';
-
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/services/future_run_scoped_model.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+
 import 'package:harrier_central/data_models/main_navigation_model.dart';
 import 'package:harrier_central/pages/menu_pages/my_profile_page.dart';
-import 'package:harrier_central/widgets/run_list_item.dart';
-
-import 'package:scoped_model/scoped_model.dart';
+import 'package:harrier_central/pages/menu_pages/imprint_page.dart';
+import 'package:harrier_central/pages/menu_pages/legal_page.dart';
+import 'package:harrier_central/pages/menu_pages/faq_page.dart';
 
 class DrawerMenu extends StatefulWidget {
   GlobalKey<ScaffoldState> scaffoldKey;
@@ -107,11 +105,19 @@ class DrawerMenuState extends State<DrawerMenu> {
               //   },
               // ),
               ListTile(
-                leading: const Icon(Icons.info, color: textColor),
-                title: Text('FAQ', style: style),
+                leading: const Icon(FontAwesome.question_circle, color: textColor),
+                title: Text('FAQs', style: style),
                 onTap: () {
-                  // Navigator.pop(context);
-                  onTabTapped(EnumAppPages.settings);
+                  Navigator.pop(context);
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      settings: RouteSettings(),
+                      builder: (context) {
+                        return FaqPage();
+                      },
+                    ),
+                  );
                 },
               ),
               ListTile(
@@ -126,8 +132,32 @@ class DrawerMenuState extends State<DrawerMenu> {
                 leading: const Icon(Icons.speaker_notes, color: textColor),
                 title: Text('Imprint', style: style),
                 onTap: () {
-                  //Navigator.pop(context);
-                  onTabTapped(EnumAppPages.settings);
+                  Navigator.pop(context);
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      settings: RouteSettings(),
+                      builder: (context) {
+                        return ImprintPage();
+                      },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(FontAwesome.legal, color: textColor),
+                title: Text('Legal', style: style),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      settings: RouteSettings(),
+                      builder: (context) {
+                        return LegalPage();
+                      },
+                    ),
+                  );
                 },
               ),
             ],
