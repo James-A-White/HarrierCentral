@@ -10,6 +10,7 @@ import 'package:harrier_central/pages/menu_pages/faq_page.dart';
 import 'package:harrier_central/pages/menu_pages/settings_page.dart';
 import 'package:harrier_central/pages/menu_pages/in_app_purchase.dart';
 import 'package:harrier_central/pages/menu_pages/user_feedback_page.dart';
+import 'package:harrier_central/pages/menu_pages/privacy_policy_page.dart';
 
 
 class DrawerMenu extends StatefulWidget {
@@ -187,6 +188,22 @@ class DrawerMenuState extends State<DrawerMenu> {
                       settings: RouteSettings(),
                       builder: (context) {
                         return LegalPage();
+                      },
+                    ),
+                  );
+                },
+              ),
+                            ListTile(
+                leading: const Icon(MaterialCommunityIcons.shield_lock, color: textColor),
+                title: Text('Privacy Policy', style: style),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      settings: RouteSettings(),
+                      builder: (context) {
+                        return PrivacyPolicyPage();
                       },
                     ),
                   );
