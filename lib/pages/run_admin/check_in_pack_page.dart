@@ -128,7 +128,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       child: ScopedModel<PayScopedModel>(
         model: _payScopedModel,
         child: Scaffold(
-          floatingActionButton: SpeedDial(
+          floatingActionButton: 
+          
+          SpeedDial(
             // both default to 16
             marginRight: 18,
             marginBottom: 70,
@@ -214,6 +216,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
               )
             ],
           ),
+         
           appBar: AppBar(
             centerTitle: true,
             backgroundColor: Theme.of(topContext).primaryColor,

@@ -131,4 +131,39 @@ class Utilities {
 
     return result;
   }
+
+    static Future<bool> showAlert(BuildContext context, String title, String body, String buttonText) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  body,
+                  textAlign: TextAlign.justify,
+                  style: const TextStyle(
+                      fontFamily: 'AvenirNextRegular',
+                      fontStyle: FontStyle.normal,
+                      fontSize: 16.0,
+                      height: 1.0),
+                )
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text(buttonText),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

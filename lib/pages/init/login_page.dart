@@ -698,7 +698,7 @@ class _LoginPageState extends State<LoginPage>
         Preferences.setStringPref(
             StringPrefsEnum.avatarUrl, 'bundle://Avatar-1');
 
-        Future<dynamic>.delayed(const Duration(milliseconds: 3500))
+        Future<dynamic>.delayed(const Duration(milliseconds: 35))
             .then((void dummy) {
           // Navigator.of(context,
           //     //.pushReplacementNamed(RouteNames.CHOOSE_PROFILE_IMAGE.toString());

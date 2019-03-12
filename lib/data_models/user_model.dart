@@ -98,7 +98,7 @@ class UserModel {
           currencySymbol: jsonItem['currencySymbol'],
           digitsAfterDecimal: jsonItem['digitsAfterDecimal'],
           displayName: jsonItem['displayName'],
-          email: jsonItem['email'],
+          email: jsonItem['eMail'],
           eventId: jsonItem['eventId'],
           eventLocale: jsonItem['eventLocale'],
           eventPrice: jsonItem['eventPrice'] * 1.0,

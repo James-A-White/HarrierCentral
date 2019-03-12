@@ -9,5 +9,7 @@ const String BASE_API_URL = 'https://harrier.azurewebsites.net/api/';
 
 const String BASE_PROFILE_PHOTOS_URL = 'https://harriercentral.blob.core.windows.net/profile-photos/';
 
+const String EMAIL_PAYMENT_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendPaymentReport';
+const String EMAIL_PAYMENT_API_KEY = 'x1RkI1c7tVCEGO2vQvL6yk6ebtCiitOrTb6aVr5LyqiNRTe91H0Nbw==';
 
 

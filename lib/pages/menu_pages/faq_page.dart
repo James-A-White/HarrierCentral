@@ -140,7 +140,7 @@ class _FaqPageContentState extends State<FaqPageContent> {
                       '\r\n2.4. Can I have my information deleted from the Harrier Central service?',
                       style: headingStyle),
                   Text(
-                    'Yes. Simply send a request to info@harriercentral.com and we will remove your information from our system. Some information about your activities will be retained to enable Hash organizations to keep accurate accounts of runs (such as the fact that a payment was made at a run). In these cases, your information will be completely anonymized.',
+                    'Yes. Simply send a request to connect@harriercentral.com and we will remove your information from our system. Some information about your activities will be retained to enable Hash organizations to keep accurate accounts of runs (such as the fact that a payment was made at a run). In these cases, your information will be completely anonymized.',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
@@ -200,7 +200,7 @@ class _FaqPageContentState extends State<FaqPageContent> {
                   Text('\r\n4.1. How can our Hash Kennel join?',
                       style: headingStyle),
                   Text(
-                    'To create a new Kennel account, please contact us at info@harriercentral.com. We do not yet have an interface that allows you to do this directly.',
+                    'To create a new Kennel account, please contact us at connect@harriercentral.com. We do not yet have an interface that allows you to do this directly.',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
@@ -225,7 +225,7 @@ class _FaqPageContentState extends State<FaqPageContent> {
                   Text('\r\n5.1. I have other questions, how can I get them answered?',
                       style: headingStyle),
                   Text(
-                    'The best way to get your questions answered is to contact us at info@harriercentral.com. We\'d be delighted to hear from you, get your thoughts on our App and Service and answer any questions you might have. We hope you enjoy Harrier Central!',
+                    'The best way to get your questions answered is to contact us at connect@harriercentral.com. We\'d be delighted to hear from you, get your thoughts on our App and Service and answer any questions you might have. We hope you enjoy Harrier Central!',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),

@@ -44,7 +44,7 @@ class PaymentReportScopedModel extends Model {
           orElse: () => null);
 
       if (paymentReport != null) {
-         if (paymentReport.paymentType != report.paymentType) {
+        if (paymentReport.paymentType != report.paymentType) {
           paymentReport.paymentType = report.paymentType;
         }
 
@@ -52,19 +52,19 @@ class PaymentReportScopedModel extends Model {
           paymentReport.paidBy = report.paidBy;
         }
 
-                if (paymentReport.creditAmount != report.creditAmount) {
+        if (paymentReport.creditAmount != report.creditAmount) {
           paymentReport.creditAmount = report.creditAmount;
         }
 
-                if (paymentReport.debitAmount != report.debitAmount) {
+        if (paymentReport.debitAmount != report.debitAmount) {
           paymentReport.debitAmount = report.debitAmount;
         }
 
-                if (paymentReport.paymentReference != report.paymentReference) {
+        if (paymentReport.paymentReference != report.paymentReference) {
           paymentReport.paymentReference = report.paymentReference;
         }
 
-                if (paymentReport.notes != report.notes) {
+        if (paymentReport.notes != report.notes) {
           paymentReport.notes = report.notes;
         }
       } else {
@@ -92,19 +92,19 @@ class PaymentReportScopedModel extends Model {
           paymentReport.paidBy = report.paidBy;
         }
 
-                if (paymentReport.creditAmount != report.creditAmount) {
+        if (paymentReport.creditAmount != report.creditAmount) {
           paymentReport.creditAmount = report.creditAmount;
         }
 
-                if (paymentReport.debitAmount != report.debitAmount) {
+        if (paymentReport.debitAmount != report.debitAmount) {
           paymentReport.debitAmount = report.debitAmount;
         }
 
-                if (paymentReport.paymentReference != report.paymentReference) {
+        if (paymentReport.paymentReference != report.paymentReference) {
           paymentReport.paymentReference = report.paymentReference;
         }
 
-                if (paymentReport.notes != report.notes) {
+        if (paymentReport.notes != report.notes) {
           paymentReport.notes = report.notes;
         }
 
@@ -188,25 +188,28 @@ class PaymentReportScopedModel extends Model {
 
     paymentReportTotalsList.clear();
 
-    PaymentReportModel paymentReport; 
+    PaymentReportModel paymentReport;
     paymentData.forEach(
       (dynamic item) {
         paymentReport = PaymentReportModel(
-          hasherEventMapId: item['hasherEventMapId'],
-          userIdWhoPaid: item['userIdWhoPaid'],
-          paymentId: item['paymentId'],
-          paidBy: item['paidBy'],
-          paidTo: item['paidTo'],
-          cancelledBy: item['cancelledBy'] ?? '',
-          creditAmount: item['creditAmount'],
-          debitAmount: item['debitAmount'],
-          paymentType: EnumPaymentType<int>(item['paymentType'] ?? 0),
-          paymentDate: item['paymentDate'] == null ? null : DateTime.parse(item['paymentDate']),
-          cancelledDate: item['cancelledDate'] == null ? null : DateTime.parse(item['cancelledDate']),
-          paymentReference: item['paymentReference'] ?? '',
-          notes: item['notes'] ?? '',
-          creditRemaining: item['creditRemaining'] ?? 0
-        );
+            hasherEventMapId: item['hasherEventMapId'],
+            userIdWhoPaid: item['userIdWhoPaid'],
+            paymentId: item['paymentId'],
+            paidBy: item['paidBy'],
+            paidTo: item['paidTo'],
+            cancelledBy: item['cancelledBy'] ?? '',
+            creditAmount: item['creditAmount'],
+            debitAmount: item['debitAmount'],
+            paymentType: EnumPaymentType<int>(item['paymentType'] ?? 0),
+            paymentDate: item['paymentDate'] == null
+                ? null
+                : DateTime.parse(item['paymentDate']),
+            cancelledDate: item['cancelledDate'] == null
+                ? null
+                : DateTime.parse(item['cancelledDate']),
+            paymentReference: item['paymentReference'] ?? '',
+            notes: item['notes'] ?? '',
+            creditRemaining: item['creditRemaining'] ?? 0);
 
         if (paymentReport.paymentType.value < 100) {
           addEditPaymentReportList(paymentReport);
@@ -223,5 +226,47 @@ class PaymentReportScopedModel extends Model {
     notifyListeners();
 
     return null;
+  }
+
+  Future<Map<String, String>> sendPaymentReportByEmail({
+    String eventId,
+    String eventName,
+  }) async {
+    final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    final String userName =
+        Preferences.getStringPref(StringPrefsEnum.displayName);
+    final String emailAddress =
+        Preferences.getStringPref(StringPrefsEnum.email);
+
+    final String accessToken =
+        Utilities.generateToken(userId, 'getPaymentReport');
+
+    if ((emailAddress ?? '').isNotEmpty) {
+      final String body = jsonEncode(<String, String>{
+        //'code': EMAIL_PAYMENT_API_KEY,
+        'userId': userId,
+        'accessToken': accessToken,
+        'eventId': eventId,
+        'eventName': eventName,
+        'userName': userName,
+        'emailAddress': emailAddress
+      });
+
+      final http.Response response = await http
+          .post(EMAIL_PAYMENT_API_URL,
+              headers: <String, String>{'content-type': 'application/json'},
+              body: body
+              // Send authorization headers to your backend
+              //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+              )
+          .catchError(
+        (dynamic error) {
+          return <String,String>{'result': 'error', 'email': ''};
+        },
+      );
+
+      return <String,String>{'result': response.body, 'email': emailAddress};
+    }
+    return <String,String>{'result': 'No valid email address found', 'email': ''};
   }
 }

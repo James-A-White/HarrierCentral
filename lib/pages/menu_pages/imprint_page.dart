@@ -129,7 +129,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('info@harriercentral.com', style: bodyStyle),
+                      Text('connect@harriercentral.com', style: bodyStyle),
                     ],
                   ),
                   Row(

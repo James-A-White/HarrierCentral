@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import 'package:harrier_central/data_models/pay_for_event_model.dart';
 import 'package:harrier_central/data_models/payment_report_model.dart';
@@ -48,6 +49,51 @@ class PaymentReportPage extends StatelessWidget {
           ),
         ),
       ),
+
+                floatingActionButton: 
+          
+          SpeedDial(
+            // both default to 16
+            marginRight: 18,
+            marginBottom: 70,
+            animatedIcon: AnimatedIcons.menu_close,
+            animatedIconTheme: IconThemeData(size: 22.0),
+            // this is ignored if animatedIcon is non null
+            // child: Icon(Icons.add),
+            visible: true,
+            curve: Curves.bounceIn,
+            overlayColor: Colors.black,
+            overlayOpacity: 0.5,
+            onOpen: () => print('OPENING DIAL'),
+            onClose: () => print('DIAL CLOSED'),
+            tooltip: 'Speed Dial',
+            heroTag: 'speed-dial-hero-tag',
+            backgroundColor: Theme.of(context).accentColor,
+            foregroundColor: Colors.white,
+            elevation: 8.0,
+            shape: CircleBorder(),
+            children: [
+              SpeedDialChild(
+                child: Icon(Icons.mail_outline),
+                backgroundColor: Colors.green,
+                label: 'Email me report',
+                labelStyle: TextStyle(fontSize: 18.0),
+                onTap: () {
+                  paymentReportModel.sendPaymentReportByEmail(
+                    eventId: eventId, eventName:eventName
+                  ).then((Map<String,String> result) {
+                    if (result['result'].toLowerCase().startsWith('success'))
+                    {
+                       Utilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+                    }
+                  });
+                },
+              ),
+
+              
+            ],
+          ),
+        
       body: ScopedModel<PaymentReportScopedModel>(
           model: paymentReportModel,
           child: PaymentReportsListPageBody(

@@ -291,7 +291,7 @@ class _LegalPageContentState extends State<LegalPageContent> {
                   ),margin:EdgeInsets.only(top:10,left:20,right:20, bottom:15)),
 
                                     Text(
-                    'If you feel that any materials appearing on the App are in objection to your copyright please contact us by e-mailing at info@harriercentral.com providing full details of the nature of your complaint and the materials to which the complaint relates.',
+                    'If you feel that any materials appearing on the App are in objection to your copyright please contact us by e-mailing at connect@harriercentral.com providing full details of the nature of your complaint and the materials to which the complaint relates.',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
