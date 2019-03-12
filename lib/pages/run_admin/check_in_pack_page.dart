@@ -17,6 +17,7 @@ import 'package:harrier_central/services/pack_scoped_model.dart';
 import 'package:harrier_central/services/pay_for_event_service.dart';
 import 'package:harrier_central/services/pay_scoped_model.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
 
@@ -105,17 +106,15 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             .joinEventAsVisitor(
                 name, email, phoneNumber, evv, widget.futureRun.eventId)
             .then((UserModel result) {
-              _packScopedModel.addEditUser(result);
-              _packScopedModel.sortPackList();
-              packList = _packScopedModel.packList;
+          _packScopedModel.addEditUser(result);
+          _packScopedModel.sortPackList();
+          packList = _packScopedModel.packList;
 
-              _packScopedModel.forceRefresh();
+          _packScopedModel.forceRefresh();
           //_reloadPack(false);
         });
       }
     });
-
-
 
     // dlg.whenComplete(action)
   }
@@ -128,9 +127,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       child: ScopedModel<PayScopedModel>(
         model: _payScopedModel,
         child: Scaffold(
-          floatingActionButton: 
-          
-          SpeedDial(
+          floatingActionButton: SpeedDial(
             // both default to 16
             marginRight: 18,
             marginBottom: 70,
@@ -216,10 +213,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
               )
             ],
           ),
-         
           appBar: AppBar(
             centerTitle: true,
-            backgroundColor: Theme.of(topContext).primaryColor,
+            backgroundColor: ThemeColors.appBarBackground,
             title: Text(
               '${widget.futureRun.eventName} Check In',
               style: TextStyle(
@@ -247,7 +243,11 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                               child: ScopedModelDescendant<PackScopedModel>(
                                 builder: (BuildContext context, Widget child,
                                     PackScopedModel model) {
-                                  print(DateTime.now().millisecondsSinceEpoch.toString() + ' pack list update, #items = ' + packList.length.toString());
+                                  print(DateTime.now()
+                                          .millisecondsSinceEpoch
+                                          .toString() +
+                                      ' pack list update, #items = ' +
+                                      packList.length.toString());
                                   return PackListView(
                                       packList: packList,
                                       packScopedModel: _packScopedModel,
@@ -493,12 +493,7 @@ class PackListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     print(DateTime.now().millisecondsSinceEpoch.toString());
-    return 
-    
-    
-    
-    
-    ListView.separated(
+    return ListView.separated(
         separatorBuilder: (context, index) => Divider(
               height: 1.0,
               color: Colors.black45,
@@ -533,7 +528,13 @@ class PackListView extends StatelessWidget {
                               //placeholder: const CircularProgressIndicator(),
                               //errorWidget: const Icon(Icons.error),
                               placeholder: (context, url) => Container(
-                                  child: Center(child:Container(height:20,width:20,child:CircularProgressIndicator(strokeWidth: 3.0,))),
+                                  child: Center(
+                                      child: Container(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 3.0,
+                                          ))),
                                   height: 70.0,
                                   width: 70.0),
                               errorWidget: (context, url, error) =>
@@ -775,9 +776,6 @@ class PackListView extends StatelessWidget {
   }
 }
 
-
-
-
 //
 //
 //
@@ -798,8 +796,6 @@ class PackListView extends StatelessWidget {
 //
 //
 //
-
-
 
 class AddVisitorVirginPopup extends StatefulWidget {
   AddVisitorVirginPopup();
@@ -818,69 +814,68 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('Add Visitor or Virgin'),
-      content: Column(
-      mainAxisSize: MainAxisSize.min ,
-      children: <Widget>[
-      TextField(
-        autofocus: true,
-        focusNode: myFocusNodeFirstName,
-        controller: nameTextController,
-        keyboardType: TextInputType.text,
-        style: const TextStyle(
-            fontFamily: 'WorkSansSemiBold',
-            fontSize: 16.0,
-            color: Colors.black),
-        decoration: const InputDecoration(
-          //border: InputBorder.none,
-          icon: Icon(
-            FontAwesomeIcons.moneyBillWave,
-            color: Colors.white,
+      content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+        TextField(
+          autofocus: true,
+          focusNode: myFocusNodeFirstName,
+          controller: nameTextController,
+          keyboardType: TextInputType.text,
+          style: const TextStyle(
+              fontFamily: 'WorkSansSemiBold',
+              fontSize: 16.0,
+              color: Colors.black),
+          decoration: const InputDecoration(
+            //border: InputBorder.none,
+            icon: Icon(
+              FontAwesomeIcons.moneyBillWave,
+              color: Colors.white,
+            ),
+            hintText: 'Just Julie',
+            hintStyle:
+                TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
           ),
-          hintText: 'Just Julie',
-          hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
         ),
-      ),
-            TextField(
-        autofocus: true,
-        //focusNode: myFocusNodeFirstName,
-        controller: emailTextController,
-        keyboardType: TextInputType.emailAddress,
-        style: const TextStyle(
-            fontFamily: 'WorkSansSemiBold',
-            fontSize: 16.0,
-            color: Colors.black),
-        decoration: const InputDecoration(
-          //border: InputBorder.none,
-          icon: Icon(
-            FontAwesomeIcons.moneyBillWave,
-            color: Colors.white,
+        TextField(
+          autofocus: true,
+          //focusNode: myFocusNodeFirstName,
+          controller: emailTextController,
+          keyboardType: TextInputType.emailAddress,
+          style: const TextStyle(
+              fontFamily: 'WorkSansSemiBold',
+              fontSize: 16.0,
+              color: Colors.black),
+          decoration: const InputDecoration(
+            //border: InputBorder.none,
+            icon: Icon(
+              FontAwesomeIcons.moneyBillWave,
+              color: Colors.white,
+            ),
+            hintText: '(email - optional)',
+            hintStyle:
+                TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
           ),
-          hintText: '(email - optional)',
-          hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
         ),
-      ),
-            TextField(
-        autofocus: true,
-        //focusNode: myFocusNodeFirstName,
-        controller: phoneTextController,
-        keyboardType: TextInputType.phone,
-        style: const TextStyle(
-            fontFamily: 'WorkSansSemiBold',
-            fontSize: 16.0,
-            color: Colors.black),
-        decoration: const InputDecoration(
-          //border: InputBorder.none,
-          icon: Icon(
-            FontAwesomeIcons.moneyBillWave,
-            color: Colors.white,
+        TextField(
+          autofocus: true,
+          //focusNode: myFocusNodeFirstName,
+          controller: phoneTextController,
+          keyboardType: TextInputType.phone,
+          style: const TextStyle(
+              fontFamily: 'WorkSansSemiBold',
+              fontSize: 16.0,
+              color: Colors.black),
+          decoration: const InputDecoration(
+            //border: InputBorder.none,
+            icon: Icon(
+              FontAwesomeIcons.moneyBillWave,
+              color: Colors.white,
+            ),
+            hintText: '(phone # - optional)',
+            hintStyle:
+                TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
           ),
-          hintText: '(phone # - optional)',
-          hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
         ),
-      ),
-      
       ]),
-      
       actions: <Widget>[
         FlatButton(
           color: Colors.red,
@@ -900,8 +895,8 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               Navigator.of(context).pop(<String, String>{
                 'type': EnumVirginVisitor.visitor.toString(),
                 'name': nameTextController.text,
-                'email' :emailTextController.text,
-                'phone' :phoneTextController.text,
+                'email': emailTextController.text,
+                'phone': phoneTextController.text,
               });
             }),
 
@@ -913,8 +908,8 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               Navigator.of(context).pop(<String, String>{
                 'type': EnumVirginVisitor.virgin.toString(),
                 'name': nameTextController.text,
-                'email' :emailTextController.text,
-                'phone' :phoneTextController.text,
+                'email': emailTextController.text,
+                'phone': phoneTextController.text,
               });
             }),
         // ),

@@ -12,6 +12,7 @@ import 'package:harrier_central/pages/run_admin/payment_popup.dart';
 import 'package:harrier_central/services/pay_for_event_service.dart';
 import 'package:harrier_central/services/payment_report_scoped_model.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/payment_report_list_item.dart';
 
@@ -41,7 +42,7 @@ class PaymentReportPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: ThemeColors.appBarBackground,
         title: Text(
           eventName,
           style: TextStyle(
@@ -55,7 +56,7 @@ class PaymentReportPage extends StatelessWidget {
           SpeedDial(
             // both default to 16
             marginRight: 18,
-            marginBottom: 70,
+            marginBottom: 20,
             animatedIcon: AnimatedIcons.menu_close,
             animatedIconTheme: IconThemeData(size: 22.0),
             // this is ignored if animatedIcon is non null

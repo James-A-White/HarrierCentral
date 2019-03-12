@@ -2,6 +2,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 
+
+class ThemeColors {
+  static Color buttonColors = const Color.fromARGB(255, 13, 115, 124);
+  static Color appBarBackground = const Color.fromARGB(255, 13, 115, 124);
+  static Color navBarBackground = const Color.fromARGB(255, 190, 190, 190);
+  static Color backgroundColor = const Color.fromARGB(255, 61, 27, 142);
+
+  static Color brown = const Color.fromARGB(255, 107, 87, 66);
+  static Color purple = const Color.fromARGB(255, 61, 27, 142);
+  static Color yellow = const Color.fromARGB(255, 236, 212, 68);
+  static Color brickRed = const Color.fromARGB(255, 51, 0, 14);
+  static Color teal = const Color.fromARGB(255, 13, 115, 124);
+
+}
+
 class Backgrounds {
    static BoxDecoration defaultHcBackground()
    {

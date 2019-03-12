@@ -103,7 +103,7 @@ class FutureRunListPageBody extends StatelessWidget {
               displacement: 40.0,
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.only(top: 40.0, bottom: 40.0),
+                //padding: EdgeInsets.only( bottom: 40.0),
                 itemCount: model.getFutureRunsCount(),
                 itemBuilder: (BuildContext context, int index) {
                   if (model.futureRunsList[index].daysUntilNextRun < 9999) {

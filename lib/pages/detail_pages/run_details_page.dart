@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:harrier_central/data_models/future_run_model.dart';
 import 'package:harrier_central/widgets/run_tabs.dart';
+import 'package:harrier_central/util/styles.dart';
 
 class RunDetailsPage extends StatelessWidget {
   final FutureRun futureRun;
@@ -14,7 +15,7 @@ class RunDetailsPage extends StatelessWidget {
         //key: homePageModel.mainAppScaffoldKey,
         appBar: AppBar(
           centerTitle: true,
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: ThemeColors.appBarBackground,
           title: Text(
             'Run Details',
             style: TextStyle(
