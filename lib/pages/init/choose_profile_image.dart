@@ -470,7 +470,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         break;
     }
 
-    Preferences.setStringPref(StringPrefsEnum.avatarUrl, avatarUrl);
+    Preferences.setStringPref(StringPrefsEnum.profilePhotoUrl, avatarUrl);
 
     if (widget.isInitFlow == true) {
       String userId = Preferences.getStringPref(StringPrefsEnum.userId);

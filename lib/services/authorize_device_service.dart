@@ -57,7 +57,7 @@ class AuthorizeDeviceService {
           'message': 'Could not download profile. Check your QR code'
         };
       } else {
-        Preferences.setStringPref(StringPrefsEnum.avatarUrl, results[0].photo);
+        Preferences.setStringPref(StringPrefsEnum.profilePhotoUrl, results[0].photo);
         Preferences.setStringPref(
             StringPrefsEnum.displayName, results[0].displayName);
         Preferences.setStringPref(StringPrefsEnum.email, results[0].email);

@@ -1,5 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
+import 'dart:convert';
+import 'dart:core';
 
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/cupertino.dart';
@@ -9,6 +11,8 @@ import 'package:flutter/services.dart';
 import 'package:audioplayers/audio_cache.dart';
 import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:http/http.dart' as http;
+
 
 import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/main.dart';
@@ -19,6 +23,8 @@ import 'package:harrier_central/services/authorize_device_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+
 
 //import 'package:the_gorgeous_login/style/theme.dart' as Theme;
 
@@ -582,7 +588,7 @@ class _LoginPageState extends State<LoginPage>
                 const Padding(
                   padding: EdgeInsets.only(left: 15.0, right: 15.0),
                   child: Text(
-                    'Or',
+                    'Connect with',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 16.0,
@@ -613,7 +619,31 @@ class _LoginPageState extends State<LoginPage>
               Padding(
                 padding: const EdgeInsets.only(top: 10.0, right: 0.0),
                 child: GestureDetector(
-                  onTap: () => showInSnackBar('Facebook button pressed'),
+                  onTap: () {
+                    final facebookLogin = FacebookLogin();
+                    facebookLogin.logInWithReadPermissions(['email']).then((FacebookLoginResult result) async {
+                      String token = result.accessToken.token;
+                      final graphResponse = await http.get('https://graph.facebook.com/v3.2/me?fields=name,first_name,last_name,picture,email&access_token=${token}');
+
+                      dynamic profile = json.decode(graphResponse.body);
+
+                      String name = profile['name'];
+                      String first_name = profile['first_name'];
+                      String last_name = profile['last_name'];
+                      String emailAddress = profile['email'];
+                      String facebookId = profile['id'];
+                      dynamic picture = profile['picture']['data']['url'];
+
+                      Preferences.setStringPref(StringPrefsEnum.profilePhotoUrl, picture);
+                      Preferences.setStringPref(StringPrefsEnum.facebookId, facebookId);
+
+                      signupFirstNameController.text = first_name;
+                      signupLastNameController.text = last_name;
+                      signupEmailController.text =emailAddress;
+
+
+                    });
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(15.0),
                     decoration: const BoxDecoration(
@@ -696,7 +726,7 @@ class _LoginPageState extends State<LoginPage>
             StringPrefsEnum.qrSecretCode, user.qrSecretCode);
         Preferences.setStringPref(StringPrefsEnum.facebookId, user.facebookId);
         Preferences.setStringPref(
-            StringPrefsEnum.avatarUrl, 'bundle://Avatar-1');
+            StringPrefsEnum.profilePhotoUrl, 'bundle://Avatar-1');
 
         Future<dynamic>.delayed(const Duration(milliseconds: 35))
             .then((void dummy) {

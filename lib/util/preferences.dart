@@ -11,7 +11,7 @@ enum StringPrefsEnum {
   lastName,
   hashName,
   email,
-  avatarUrl,
+  profilePhotoUrl,
   facebookId,
 }
 
