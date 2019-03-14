@@ -65,6 +65,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     Widget _getPage(int pageIndex) {
       Widget w;
 
+      appBarText = tabTitles[pageIndex];
       switch (pageIndex) {
         case 0:
           w = FutureRunsListPage();
@@ -83,7 +84,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: ThemeColors.appBarBackground,
-        title: Text("Fancy Bottom Navigation"),
+        title: Text(appBarText),
       ),
       body: Container(
         decoration: BoxDecoration(color: Colors.white),

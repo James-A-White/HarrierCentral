@@ -12,6 +12,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:harrier_central/data_models/single_result_model.dart';
 import 'package:harrier_central/main.dart';
@@ -20,12 +21,15 @@ import 'package:harrier_central/services/update_avatar_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
-
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/data_models/user_model.dart';
+import 'package:harrier_central/services/add_user_service.dart';
 
 class ChooseProfileImage extends StatefulWidget {
-  bool isInitFlow;
+  bool doAddUser;
 
-  ChooseProfileImage(this.isInitFlow, {Key key}) : super(key: key);
+  ChooseProfileImage(this.doAddUser, {Key key}) : super(key: key);
 
   @override
   _ChooseProfileImageState createState() => _ChooseProfileImageState();
@@ -41,10 +45,15 @@ enum _SelectedImageTypeEnum {
 class _ChooseProfileImageState extends State<ChooseProfileImage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  _SelectedImageTypeEnum _selectedImageType = _SelectedImageTypeEnum.avatar;
+  _SelectedImageTypeEnum _radioImageTypeSelection =
+      _SelectedImageTypeEnum.avatar;
+
   num _thumbnailSize = 85.0;
   num _previewImageSize = 120.0;
   num _uploadingImageSize = 180.0;
+
+  String facebookProfileUrl =
+      Preferences.getStringPref(StringPrefsEnum.facebookProfilePhoto);
 
   int _selectedAvatarIcon = 1;
   //int _currentAvatarIcon = 1;
@@ -54,300 +63,394 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
   Future<File> _imageFromCamera;
   Future<File> _imageFromGallery;
 
+  CachedNetworkImage facebookProfileImage;
+
   @override
   Widget build(BuildContext context) {
+    if ((facebookProfileImage == null) &&
+        ((facebookProfileUrl ?? '').isNotEmpty)) {
+      facebookProfileImage = CachedNetworkImage(
+          imageUrl: facebookProfileUrl,
+          //placeholder: const CircularProgressIndicator(),
+          //errorWidget: const Icon(Icons.error),
+          placeholder: (BuildContext context, String url) =>
+              const CircularProgressIndicator(),
+          errorWidget: (BuildContext context, String url, Exception error) =>
+              const Icon(Icons.error),
+          //fadeOutDuration:  Duration(seconds: 1),
+          fadeInDuration: Duration(milliseconds: 0),
+          width: _thumbnailSize,
+          height: _thumbnailSize,
+          fit: BoxFit.fill);
+
+      _radioImageTypeSelection = _SelectedImageTypeEnum.facebookProfilePic;
+    }
+
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: Theme.of(context).primaryColor,
-          title: Text(
-            'Choose Profile Image',
-            style: TextStyle(
-              color: Colors.white,
-            ),
+        centerTitle: true,
+        backgroundColor: Theme.of(context).primaryColor,
+        title: Text(
+          'Choose Profile Image',
+          style: TextStyle(
+            color: Colors.white,
           ),
         ),
+      ),
       body: NotificationListener<OverscrollIndicatorNotification>(
         onNotification: (OverscrollIndicatorNotification overscroll) {
           overscroll.disallowGlow();
         },
-        child: SingleChildScrollView(
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height >= 300.0
-                ? MediaQuery.of(context).size.height - 100
-                : 300.0,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  colors: <Color>[
-                    LoginColors.loginGradientStart,
-                    LoginColors.loginGradientEnd
-                  ],
-                  begin: const FractionalOffset(0.0, 0.0),
-                  end: const FractionalOffset(1.0, 1.0),
-                  stops: const <double>[0.0, 1.0],
-                  tileMode: TileMode.clamp),
-            ),
-            child: _processingSelection
-                ? _buildProgressIndicator()
-                : Padding(
-                    padding: EdgeInsets.only(top: 0.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.max,
-                      children: <Widget>[
-                        // Padding(
-                        //   padding: EdgeInsets.only(top: 0.0),
-                        //   child: Text(
-                        //     'Choose Profile Image',
-                        //     textAlign: TextAlign.center,
-                        //     style: const TextStyle(
-                        //         color: Colors.white,
-                        //         fontSize: 32.0,
-                        //         fontFamily: 'WorkSansSemiBold'),
-                        //   ),
-                        // ),
-                        // Padding(
-                        //   padding: const EdgeInsets.only(top: 10.0),
-                        //   child: Row(
-                        //     mainAxisAlignment: MainAxisAlignment.center,
-                        //     children: <Widget>[
-                        //       Container(
-                        //         decoration: const BoxDecoration(
-                        //           gradient: LinearGradient(
-                        //               colors: <Color>[
-                        //                 Colors.white10,
-                        //                 Colors.white,
-                        //               ],
-                        //               begin: FractionalOffset(0.0, 0.0),
-                        //               end: FractionalOffset(1.0, 1.0),
-                        //               stops: <double>[0.0, 1.0],
-                        //               tileMode: TileMode.clamp),
-                        //         ),
-                        //         width: 100.0,
-                        //         height: 1.0,
-                        //       ),
-                        //       const Padding(
-                        //         padding:
-                        //             EdgeInsets.only(left: 15.0, right: 15.0),
-                        //         child: const Icon(FontAwesomeIcons.circle,
-                        //             color: Color(0xFFFFFFFF), size: 10.0),
-                        //       ),
-                        //       Container(
-                        //         decoration: const BoxDecoration(
-                        //           gradient: LinearGradient(
-                        //               colors: <Color>[
-                        //                 Colors.white,
-                        //                 Colors.white10,
-                        //               ],
-                        //               begin: FractionalOffset(0.0, 0.0),
-                        //               end: FractionalOffset(1.0, 1.0),
-                        //               stops: <double>[0.0, 1.0],
-                        //               tileMode: TileMode.clamp),
-                        //         ),
-                        //         width: 100.0,
-                        //         height: 1.0,
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                        
-                        
-                        Expanded(
-                          child: Row(
-                            children: <Widget>[
-                              Column(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: <Widget>[
-                                  Row(
-                                    children: <Widget>[
-                                      Radio<_SelectedImageTypeEnum>(
-                                        value: _SelectedImageTypeEnum.avatar,
-                                        materialTapTargetSize:
-                                            MaterialTapTargetSize.padded,
-                                        groupValue: _selectedImageType,
-                                        onChanged: _handleRadioValueChange,
-                                      ),
-                                      FlatButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _handleRadioValueChange(
-                                                _SelectedImageTypeEnum.avatar,
-                                                forceOpen: true);
-                                          });
-                                        },
-                                        child: Image.asset(
-                                          'images/icons/avatar_icon.png',
-                                          width: _thumbnailSize,
-                                          height: _thumbnailSize,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: <Widget>[
-                                      Radio<_SelectedImageTypeEnum>(
-                                        value:
-                                            _SelectedImageTypeEnum.fromCamera,
-                                        materialTapTargetSize:
-                                            MaterialTapTargetSize.padded,
-                                        groupValue: _selectedImageType,
-                                        onChanged: _handleRadioValueChange,
-                                      ),
-                                      FlatButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _handleRadioValueChange(
-                                                _SelectedImageTypeEnum
-                                                    .fromCamera,
-                                                forceOpen: true);
-                                          });
-                                        },
-                                        child: Image.asset(
-                                          'images/icons/avatar_ios_camera.png',
-                                          width: _thumbnailSize,
-                                          height: _thumbnailSize,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: <Widget>[
-                                      Radio<_SelectedImageTypeEnum>(
-                                        value:
-                                            _SelectedImageTypeEnum.fromGallery,
-                                        materialTapTargetSize:
-                                            MaterialTapTargetSize.padded,
-                                        groupValue: _selectedImageType,
-                                        onChanged: _handleRadioValueChange,
-                                      ),
-                                      FlatButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _handleRadioValueChange(
-                                                _SelectedImageTypeEnum
-                                                    .fromGallery,
-                                                forceOpen: true);
-                                          });
-                                        },
-                                        child: Image.asset(
-                                          'images/icons/avatar_ios_camera_roll.png',
-                                          width: _thumbnailSize,
-                                          height: _thumbnailSize,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  // Row(
-                                  //   children: <Widget>[
-                                  //     Radio<_SelectedAvatarTypeEnum>(
-                                  //       value: _SelectedAvatarTypeEnum
-                                  //           .facebookProfilePic,
-                                  //       materialTapTargetSize:
-                                  //           MaterialTapTargetSize.padded,
-                                  //       groupValue: _selectedAvatarType,
-                                  //       onChanged: _handleRadioValueChange,
-                                  //     ),
-                                  //     Image.asset(
-                                  //       'images/icons/avatar_facebook_profile_pic.png',
-                                  //       width: _thumbnailSize,
-                                  //       height: _thumbnailSize,
-                                  //     ),
-                                  //   ],
-                                  // ),
-                                ],
-                              ),
-                              Expanded(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          decoration: Backgrounds.defaultHcBackground(),
+          child: SingleChildScrollView(
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height >= 500.0
+                  ? MediaQuery.of(context).size.height - 50
+                  : 500.0,
+              child: _processingSelection
+                  ? _buildProgressIndicator()
+                  : Padding(
+                      padding: EdgeInsets.only(top: 0.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          // Padding(
+                          //   padding: EdgeInsets.only(top: 0.0),
+                          //   child: Text(
+                          //     'Choose Profile Image',
+                          //     textAlign: TextAlign.center,
+                          //     style: const TextStyle(
+                          //         color: Colors.white,
+                          //         fontSize: 32.0,
+                          //         fontFamily: 'WorkSansSemiBold'),
+                          //   ),
+                          // ),
+                          // Padding(
+                          //   padding: const EdgeInsets.only(top: 10.0),
+                          //   child: Row(
+                          //     mainAxisAlignment: MainAxisAlignment.center,
+                          //     children: <Widget>[
+                          //       Container(
+                          //         decoration: const BoxDecoration(
+                          //           gradient: LinearGradient(
+                          //               colors: <Color>[
+                          //                 Colors.white10,
+                          //                 Colors.white,
+                          //               ],
+                          //               begin: FractionalOffset(0.0, 0.0),
+                          //               end: FractionalOffset(1.0, 1.0),
+                          //               stops: <double>[0.0, 1.0],
+                          //               tileMode: TileMode.clamp),
+                          //         ),
+                          //         width: 100.0,
+                          //         height: 1.0,
+                          //       ),
+                          //       const Padding(
+                          //         padding:
+                          //             EdgeInsets.only(left: 15.0, right: 15.0),
+                          //         child: const Icon(FontAwesomeIcons.circle,
+                          //             color: Color(0xFFFFFFFF), size: 10.0),
+                          //       ),
+                          //       Container(
+                          //         decoration: const BoxDecoration(
+                          //           gradient: LinearGradient(
+                          //               colors: <Color>[
+                          //                 Colors.white,
+                          //                 Colors.white10,
+                          //               ],
+                          //               begin: FractionalOffset(0.0, 0.0),
+                          //               end: FractionalOffset(1.0, 1.0),
+                          //               stops: <double>[0.0, 1.0],
+                          //               tileMode: TileMode.clamp),
+                          //         ),
+                          //         width: 100.0,
+                          //         height: 1.0,
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
+
+                          Expanded(
+                            child: Row(
+                              children: <Widget>[
+                                Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
                                   children: <Widget>[
-                                    Text(
-                                      ((_selectedImageType ==
-                                              _SelectedImageTypeEnum.avatar)
-                                          ? 'Selected\r\nAvatar'
-                                          : 'Selected\r\nImage'),
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 20.0,
-                                          fontFamily: 'WorkSansSemiBold'),
+                                    (facebookProfileImage == null)
+                                        ? Container()
+                                        : Row(
+                                            children: <Widget>[
+                                              Container(
+                                                margin: EdgeInsets.only(
+                                                    left: 20, right: 10),
+                                                height: 30,
+                                                width: 30,
+                                                decoration: new BoxDecoration(
+                                                  color: _radioImageTypeSelection ==
+                                                          _SelectedImageTypeEnum
+                                                              .facebookProfilePic
+                                                      ? Colors.green
+                                                      : Colors.grey[350],
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Radio<
+                                                    _SelectedImageTypeEnum>(
+                                                  activeColor: Colors.white,
+                                                  value: _SelectedImageTypeEnum
+                                                      .facebookProfilePic,
+                                                  materialTapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .padded,
+                                                  groupValue:
+                                                      _radioImageTypeSelection,
+                                                  onChanged:
+                                                      _handleRadioValueChange,
+                                                ),
+                                              ),
+                                              FlatButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _handleRadioValueChange(
+                                                        _SelectedImageTypeEnum
+                                                            .facebookProfilePic,
+                                                        forceOpen: true);
+                                                  });
+                                                },
+                                                child: ClipRRect(
+                                                  child: facebookProfileImage,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          12.0),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                    Row(
+                                      children: <Widget>[
+                                        Container(
+                                          margin: EdgeInsets.only(
+                                              left: 20, right: 10),
+                                          height: 30,
+                                          width: 30,
+                                          decoration: new BoxDecoration(
+                                            color: _radioImageTypeSelection ==
+                                                    _SelectedImageTypeEnum
+                                                        .avatar
+                                                ? Colors.green
+                                                : Colors.grey[350],
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Radio<_SelectedImageTypeEnum>(
+                                            activeColor: Colors.white,
+                                            value:
+                                                _SelectedImageTypeEnum.avatar,
+                                            materialTapTargetSize:
+                                                MaterialTapTargetSize.padded,
+                                            groupValue:
+                                                _radioImageTypeSelection,
+                                            onChanged: _handleRadioValueChange,
+                                          ),
+                                        ),
+                                        FlatButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              _handleRadioValueChange(
+                                                  _SelectedImageTypeEnum.avatar,
+                                                  forceOpen: true);
+                                            });
+                                          },
+                                          child: Image.asset(
+                                            'images/icons/avatar_icon.png',
+                                            width: _thumbnailSize,
+                                            height: _thumbnailSize,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    const Padding(
-                                      padding: EdgeInsets.only(top: 10.0),
+                                    Row(
+                                      children: <Widget>[
+                                        Container(
+                                          margin: EdgeInsets.only(
+                                              left: 20, right: 10),
+                                          height: 30,
+                                          width: 30,
+                                          decoration: new BoxDecoration(
+                                            color: _radioImageTypeSelection ==
+                                                    _SelectedImageTypeEnum
+                                                        .fromCamera
+                                                ? Colors.green
+                                                : Colors.grey[350],
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Radio<_SelectedImageTypeEnum>(
+                                            activeColor: Colors.white,
+                                            value: _SelectedImageTypeEnum
+                                                .fromCamera,
+                                            materialTapTargetSize:
+                                                MaterialTapTargetSize.padded,
+                                            groupValue:
+                                                _radioImageTypeSelection,
+                                            onChanged: _handleRadioValueChange,
+                                          ),
+                                        ),
+                                        FlatButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              _handleRadioValueChange(
+                                                  _SelectedImageTypeEnum
+                                                      .fromCamera,
+                                                  forceOpen: true);
+                                            });
+                                          },
+                                          child: Image.asset(
+                                            'images/icons/avatar_ios_camera.png',
+                                            width: _thumbnailSize,
+                                            height: _thumbnailSize,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    Container(
-                                      child: _getPreviewImage(),
-                                      color: Colors.white,
-                                      height: _previewImageSize + 6,
-                                      width: _previewImageSize + 6,
-                                      padding: EdgeInsets.all(6.0),
-                                    ),
-                                    const Padding(
-                                      padding: EdgeInsets.only(top: 60.0),
+                                    Row(
+                                      children: <Widget>[
+                                        Container(
+                                          margin: EdgeInsets.only(
+                                              left: 20, right: 10),
+                                          height: 30,
+                                          width: 30,
+                                          decoration: new BoxDecoration(
+                                            color: _radioImageTypeSelection ==
+                                                    _SelectedImageTypeEnum
+                                                        .fromGallery
+                                                ? Colors.green
+                                                : Colors.grey[350],
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Radio<_SelectedImageTypeEnum>(
+                                            activeColor: Colors.white,
+                                            value: _SelectedImageTypeEnum
+                                                .fromGallery,
+                                            materialTapTargetSize:
+                                                MaterialTapTargetSize.padded,
+                                            groupValue:
+                                                _radioImageTypeSelection,
+                                            onChanged: _handleRadioValueChange,
+                                          ),
+                                        ),
+                                        FlatButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              _handleRadioValueChange(
+                                                  _SelectedImageTypeEnum
+                                                      .fromGallery,
+                                                  forceOpen: true);
+                                            });
+                                          },
+                                          child: Image.asset(
+                                            'images/icons/avatar_ios_camera_roll.png',
+                                            width: _thumbnailSize,
+                                            height: _thumbnailSize,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 20.0),
-                          child: Container(
-                            margin:
-                                const EdgeInsets.only(top: 10.0, bottom: 30.0),
-                            decoration: BoxDecoration(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(5.0)),
-                              boxShadow: <BoxShadow>[
-                                BoxShadow(
-                                  color: LoginColors.loginGradientStart,
-                                  offset: const Offset(1.0, 6.0),
-                                  blurRadius: 20.0,
-                                ),
-                                BoxShadow(
-                                  color: LoginColors.loginGradientEnd,
-                                  offset: const Offset(1.0, 6.0),
-                                  blurRadius: 20.0,
+                                Expanded(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: <Widget>[
+                                      Text(
+                                        ((_radioImageTypeSelection ==
+                                                _SelectedImageTypeEnum.avatar)
+                                            ? 'Selected\r\nAvatar'
+                                            : 'Selected\r\nImage'),
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 20.0,
+                                            fontFamily: 'WorkSansSemiBold'),
+                                      ),
+                                      const Padding(
+                                        padding: EdgeInsets.only(top: 10.0),
+                                      ),
+                                      Container(
+                                        child: _getPreviewImage(),
+                                        color: Colors.white,
+                                        height: _previewImageSize + 6,
+                                        width: _previewImageSize + 6,
+                                        padding: EdgeInsets.all(6.0),
+                                      ),
+
+                                      // const Padding(
+                                      //   padding: EdgeInsets.only(top: 60.0),
+                                      // ),
+                                    ],
+                                  ),
                                 ),
                               ],
-                              gradient: LinearGradient(
-                                  colors: <Color>[
-                                    LoginColors.loginGradientEnd,
-                                    LoginColors.loginGradientStart
-                                  ],
-                                  begin: const FractionalOffset(0.2, 0.2),
-                                  end: const FractionalOffset(1.0, 1.0),
-                                  stops: const <double>[0.0, 1.0],
-                                  tileMode: TileMode.clamp),
                             ),
-                            child: MaterialButton(
-                                highlightColor: Colors.transparent,
-                                splashColor: LoginColors.loginGradientEnd,
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 10.0, horizontal: 20.0),
-                                  child: Text(
-                                    ((_selectedImageType ==
-                                            _SelectedImageTypeEnum.avatar)
-                                        ? 'NEXT'
-                                        : 'NEXT'),
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 25.0,
-                                        fontFamily: 'WorkSansBold'),
-                                  ),
-                                ),
-                                onPressed: () => _updateAvatar()),
                           ),
-                        ),
-                      ],
+
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 20.0),
+                            child: Container(
+                              margin: const EdgeInsets.only(
+                                  top: 10.0, bottom: 30.0),
+                              decoration: BoxDecoration(
+                                borderRadius: const BorderRadius.all(
+                                    Radius.circular(5.0)),
+                                boxShadow: <BoxShadow>[
+                                  BoxShadow(
+                                    color: LoginColors.loginGradientStart,
+                                    offset: const Offset(1.0, 6.0),
+                                    blurRadius: 20.0,
+                                  ),
+                                  BoxShadow(
+                                    color: LoginColors.loginGradientEnd,
+                                    offset: const Offset(1.0, 6.0),
+                                    blurRadius: 20.0,
+                                  ),
+                                ],
+                                gradient: LinearGradient(
+                                    colors: <Color>[
+                                      LoginColors.loginGradientEnd,
+                                      LoginColors.loginGradientStart
+                                    ],
+                                    begin: const FractionalOffset(0.2, 0.2),
+                                    end: const FractionalOffset(1.0, 1.0),
+                                    stops: const <double>[0.0, 1.0],
+                                    tileMode: TileMode.clamp),
+                              ),
+                              child: MaterialButton(
+                                  highlightColor: Colors.transparent,
+                                  splashColor: LoginColors.loginGradientEnd,
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 10.0, horizontal: 20.0),
+                                    child: Text(
+                                      'Next >',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 25.0,
+                                          fontFamily: 'WorkSansBold'),
+                                    ),
+                                  ),
+                                  onPressed: () => _processAndContinue()),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+            ),
           ),
         ),
       ),
@@ -363,7 +466,9 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
             Padding(
               padding: EdgeInsets.only(top: 0.0),
               child: Text(
-                'Uploading\r\nProfile Image',
+                widget.doAddUser
+                    ? 'Creating account\r\nand uploading\r\nprofile image'
+                    : 'Uploading\r\nProfile Image',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                     color: Colors.white,
@@ -441,46 +546,83 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     );
   }
 
-  void _updateAvatar() {
+  void _processAndContinue() {
+    // in order to keep our UI fluid, pay close attention to
+    // how the async stuff is handled here...
     setState(() {
       _processingSelection = true;
     });
 
-    String avatarUrl = '';
+    if (widget.doAddUser) {
+      AddUserService()
+          .addUser(
+              Preferences.getStringPref(StringPrefsEnum.firstName),
+              Preferences.getStringPref(StringPrefsEnum.lastName),
+              Preferences.getStringPref(StringPrefsEnum.email),
+              Preferences.getStringPref(StringPrefsEnum.hashName),
+              Preferences.getStringPref(StringPrefsEnum.facebookId),
+              Preferences.getStringPref(StringPrefsEnum.gender),
+              '',
+              '00000000-0000-0000-0000-000000000000',
+              '',
+              hasherTypeMember)
+          .then((UserModel user) {
+        Preferences.setStringPref(StringPrefsEnum.userId, user.hasherId);
+        Preferences.setStringPref(
+            StringPrefsEnum.displayName, user.displayName);
+        Preferences.setStringPref(StringPrefsEnum.qrCode, user.qrCode);
+        Preferences.setStringPref(
+            StringPrefsEnum.qrSecretCode, user.qrSecretCode);
+
+        // after this executes, we will push and replace this to the main screen
+        // the logic for this is in the underlying method
+        _prepareAndUploadImageThenContinue();
+      });
+    } else {
+      // after this executes, we will pop back to the originating screen that invoked this screen
+      _prepareAndUploadImageThenContinue();
+    }
+  }
+
+  void _prepareAndUploadImageThenContinue() {
+    String profileImageUrl = '';
 
     String fileName = Preferences.getStringPref(StringPrefsEnum.qrCode)
             .replaceAll('UQR:', '') +
         '_thumb.jpg';
 
-     if (widget.isInitFlow == false)
-     {
-        var uuid = Uuid();
-        fileName = uuid.v1().toString() + '_thumb.jpg';
-     }
+    if (widget.doAddUser == false) {
+      var uuid = Uuid();
+      fileName = uuid.v1().toString() + '_thumb.jpg';
+    }
 
-    switch (_selectedImageType) {
+    switch (_radioImageTypeSelection) {
       case _SelectedImageTypeEnum.avatar:
-        avatarUrl = 'bundle://Avatar-$_selectedAvatarIcon';
+        profileImageUrl = 'bundle://Avatar-$_selectedAvatarIcon';
         break;
       case _SelectedImageTypeEnum.fromCamera:
       case _SelectedImageTypeEnum.fromGallery:
-        avatarUrl = BASE_PROFILE_PHOTOS_URL + fileName;
+        profileImageUrl = BASE_PROFILE_PHOTOS_URL + fileName;
         break;
       case _SelectedImageTypeEnum.facebookProfilePic:
+        profileImageUrl = facebookProfileUrl;
         break;
     }
 
-    Preferences.setStringPref(StringPrefsEnum.profilePhotoUrl, avatarUrl);
+    Preferences.setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
 
-    if (widget.isInitFlow == true) {
+    if (widget.doAddUser == true) {
       String userId = Preferences.getStringPref(StringPrefsEnum.userId);
       UpdateAvatarService svc = UpdateAvatarService();
-      svc.updateAvatar(avatarUrl, userId).then((SingleResultModel result) {
-        if (_selectedImageType == _SelectedImageTypeEnum.fromCamera) {
+      svc
+          .updateAvatar(profileImageUrl, userId)
+          .then((SingleResultModel result) {
+        if (_radioImageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
           _imageFromCamera.then((File file) {
             _upload(file, fileName);
           });
-        } else if (_selectedImageType == _SelectedImageTypeEnum.fromGallery) {
+        } else if (_radioImageTypeSelection ==
+            _SelectedImageTypeEnum.fromGallery) {
           _imageFromGallery.then((File file) {
             _upload(file, fileName);
           });
@@ -493,22 +635,21 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         });
       });
     } else {
-      if (_selectedImageType == _SelectedImageTypeEnum.fromCamera) {
-          _imageFromCamera.then((File file) {
-            _upload(file, fileName);
-          });
-        } else if (_selectedImageType == _SelectedImageTypeEnum.fromGallery) {
-          _imageFromGallery.then((File file) {
-            _upload(file, fileName);
-          });
-        }
-        Navigator.of(context)
-              .pop(avatarUrl);
-
+      if (_radioImageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
+        _imageFromCamera.then((File file) {
+          _upload(file, fileName);
+        });
+      } else if (_radioImageTypeSelection ==
+          _SelectedImageTypeEnum.fromGallery) {
+        _imageFromGallery.then((File file) {
+          _upload(file, fileName);
+        });
+      }
+      Navigator.of(context).pop(profileImageUrl);
     }
   }
 
-  void _upload(File imageFile, String fileName) async {
+  void _upload(File imageFile, String fileName) {
     final uri = Uri.parse(
         'http://harriercentral.blob.core.windows.net/profile-photos/$fileName?st=2018-11-22T07%3A36%3A49Z&se=2028-11-23T07%3A36%3A00Z&sp=rwl&sv=2018-03-28&sr=c&sig=GdHEgSU7Qbp6nEMbOeuxnTjKVVIXw1AImXUff8GPq2U%3D');
 
@@ -534,7 +675,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     //   _selectedAvatarIcon = 1;
     // }
 
-    switch (_selectedImageType) {
+    switch (_radioImageTypeSelection) {
       case _SelectedImageTypeEnum.avatar:
         returnWidget = Image.asset(
           'images/avatars/avatar-$_selectedAvatarIcon.png',
@@ -549,6 +690,13 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         returnWidget = _previewImage();
         break;
       case _SelectedImageTypeEnum.facebookProfilePic:
+        returnWidget = Container(
+          constraints: BoxConstraints(),
+          child: FittedBox(child: facebookProfileImage, fit: BoxFit.contain),
+          width: _previewImageSize,
+          height: _previewImageSize,
+        );
+        break;
       default:
         returnWidget = Container(
             color: Colors.green,
@@ -561,8 +709,8 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
   void _handleRadioValueChange(_SelectedImageTypeEnum value,
       {bool forceOpen = false}) {
     setState(() {
-      _selectedImageType = value;
-      switch (_selectedImageType) {
+      _radioImageTypeSelection = value;
+      switch (_radioImageTypeSelection) {
         case _SelectedImageTypeEnum.avatar:
           if (forceOpen) {
             Navigator.push<dynamic>(
@@ -572,8 +720,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                     AvatarIconsPage(selectedAvatarIcon: _selectedAvatarIcon),
               ),
             ).then((dynamic onValue) {
-              if (onValue != null)
-              {
+              if (onValue != null) {
                 _selectedAvatarIcon = onValue;
               }
             });
@@ -590,6 +737,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           }
           break;
         case _SelectedImageTypeEnum.facebookProfilePic:
+          break;
         default:
           _onImageButtonPressed(ImageSource.gallery);
           break;
@@ -609,7 +757,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
             maxHeight: 512,
           );
 
-          if (_selectedImageType == _SelectedImageTypeEnum.fromCamera) {
+          if (_radioImageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
             _imageFromCamera = img;
           } else {
             _imageFromGallery = img;
@@ -621,7 +769,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
   Widget _previewImage() {
     return FutureBuilder<File>(
-        future: (_selectedImageType == _SelectedImageTypeEnum.fromCamera)
+        future: (_radioImageTypeSelection == _SelectedImageTypeEnum.fromCamera)
             ? _imageFromCamera
             : _imageFromGallery,
         builder: (BuildContext context, AsyncSnapshot<File> snapshot) {

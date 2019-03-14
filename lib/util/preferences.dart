@@ -11,8 +11,11 @@ enum StringPrefsEnum {
   lastName,
   hashName,
   email,
+  gender,
   profilePhotoUrl,
   facebookId,
+  facebookAccessToken,
+  facebookProfilePhoto,
 }
 
 enum NumPrefsEnum {

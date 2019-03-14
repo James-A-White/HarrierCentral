@@ -1,7 +1,7 @@
-import 'dart:math';
-import 'dart:ui';
 import 'dart:convert';
 import 'dart:core';
+import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,18 +13,14 @@ import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 
-
-import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/main.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
-import 'package:harrier_central/services/add_user_service.dart';
 import 'package:harrier_central/services/authorize_device_service.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
-
 
 //import 'package:the_gorgeous_login/style/theme.dart' as Theme;
 
@@ -86,8 +82,8 @@ class _LoginPageState extends State<LoginPage>
                 const Padding(
                   padding: EdgeInsets.only(top: 45.0),
                   child: Image(
-                      width: 100.0,
-                      height: 100.0,
+                      width: 50.0,
+                      height: 50.0,
                       fit: BoxFit.fill,
                       image: AssetImage('images/other/hc_app_icon.png')),
                 ),
@@ -393,6 +389,66 @@ class _LoginPageState extends State<LoginPage>
       padding: const EdgeInsets.only(top: 23.0),
       child: Column(
         children: <Widget>[
+          Utilities.elegantDivider(
+              'First Connect\r\nto FB (optional)', 0.0, 5.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(top: 10.0, right: 0.0),
+                child: GestureDetector(
+                  onTap: () {
+                    final facebookLogin = FacebookLogin();
+                    facebookLogin.logInWithReadPermissions(['email']).then(
+                        (FacebookLoginResult result) async {
+                      String token = result.accessToken.token;
+                      final graphResponse = await http.get(
+                          'https://graph.facebook.com/v3.2/me?fields=name,first_name,last_name,picture.width(640),email,gender&access_token=${token}');
+
+                      dynamic profile = json.decode(graphResponse.body);
+
+                      String first_name = profile['first_name'];
+                      String last_name = profile['last_name'];
+                      String emailAddress = profile['email'];
+                      String facebookId = profile['id'];
+                      String gender = profile['gender'];
+                      dynamic picture = profile['picture']['data']['url'];
+
+                      Preferences.setStringPref(
+                          StringPrefsEnum.facebookProfilePhoto, picture);
+                      Preferences.setStringPref(
+                          StringPrefsEnum.facebookId, facebookId);
+                      Preferences.setStringPref(
+                          StringPrefsEnum.facebookAccessToken, token);
+                      Preferences.setStringPref(StringPrefsEnum.gender, gender);
+
+                      signupFirstNameController.text = first_name;
+                      signupLastNameController.text = last_name;
+                      signupEmailController.text = emailAddress;
+
+                      Utilities.showAlert(
+                          context,
+                          'Facebook profile loaded',
+                          'We have copied your Facebook profile information (name, email and profile photo) to the app. Please continue to register by adding your Hash name.',
+                          'OK');
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(15.0),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    child: const Icon(
+                      FontAwesomeIcons.facebookF,
+                      color: Color(0xFF0084ff),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Utilities.elegantDivider('Then add\r\ndetails', 15.0, 20.0),
           Stack(
             alignment: Alignment.topCenter,
             overflow: Overflow.visible,
@@ -554,7 +610,7 @@ class _LoginPageState extends State<LoginPage>
                       padding: EdgeInsets.symmetric(
                           vertical: 10.0, horizontal: 42.0),
                       child: Text(
-                        'SIGN UP',
+                        'NEXT >>',
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 25.0,
@@ -562,100 +618,6 @@ class _LoginPageState extends State<LoginPage>
                       ),
                     ),
                     onPressed: () => _onSignUpButtonPress()),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 10.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: <Color>[
-                          Colors.white10,
-                          Colors.white,
-                        ],
-                        begin: FractionalOffset(0.0, 0.0),
-                        end: FractionalOffset(1.0, 1.0),
-                        stops: <double>[0.0, 1.0],
-                        tileMode: TileMode.clamp),
-                  ),
-                  width: 100.0,
-                  height: 1.0,
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(left: 15.0, right: 15.0),
-                  child: Text(
-                    'Connect with',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.0,
-                        fontFamily: 'WorkSansMedium'),
-                  ),
-                ),
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: <Color>[
-                          Colors.white,
-                          Colors.white10,
-                        ],
-                        begin: FractionalOffset(0.0, 0.0),
-                        end: FractionalOffset(1.0, 1.0),
-                        stops: <double>[0.0, 1.0],
-                        tileMode: TileMode.clamp),
-                  ),
-                  width: 100.0,
-                  height: 1.0,
-                ),
-              ],
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0, right: 0.0),
-                child: GestureDetector(
-                  onTap: () {
-                    final facebookLogin = FacebookLogin();
-                    facebookLogin.logInWithReadPermissions(['email']).then((FacebookLoginResult result) async {
-                      String token = result.accessToken.token;
-                      final graphResponse = await http.get('https://graph.facebook.com/v3.2/me?fields=name,first_name,last_name,picture,email&access_token=${token}');
-
-                      dynamic profile = json.decode(graphResponse.body);
-
-                      String name = profile['name'];
-                      String first_name = profile['first_name'];
-                      String last_name = profile['last_name'];
-                      String emailAddress = profile['email'];
-                      String facebookId = profile['id'];
-                      dynamic picture = profile['picture']['data']['url'];
-
-                      Preferences.setStringPref(StringPrefsEnum.profilePhotoUrl, picture);
-                      Preferences.setStringPref(StringPrefsEnum.facebookId, facebookId);
-
-                      signupFirstNameController.text = first_name;
-                      signupLastNameController.text = last_name;
-                      signupEmailController.text =emailAddress;
-
-
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(15.0),
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
-                    child: const Icon(
-                      FontAwesomeIcons.facebookF,
-                      color: Color(0xFF0084ff),
-                    ),
-                  ),
-                ),
               ),
             ],
           ),
@@ -701,59 +663,21 @@ class _LoginPageState extends State<LoginPage>
         _scanState = 1;
       });
 
-      final AddUserService t = AddUserService();
-      final Future<UserModel> x = t.addUser(
-          signupFirstNameController.text,
-          signupLastNameController.text,
-          signupEmailController.text,
-          signupHashNameController.text,
-          '',
-          '',
-          '',
-          '00000000-0000-0000-0000-000000000000',
-          '',
-          hasherTypeMember);
-      x.then((UserModel user) {
-        Preferences.setStringPref(StringPrefsEnum.userId, user.hasherId);
-        Preferences.setStringPref(StringPrefsEnum.firstName, user.firstName);
-        Preferences.setStringPref(StringPrefsEnum.lastName, user.lastName);
-        Preferences.setStringPref(StringPrefsEnum.hashName, user.hashName);
-        Preferences.setStringPref(
-            StringPrefsEnum.displayName, user.displayName);
-        Preferences.setStringPref(StringPrefsEnum.email, user.email);
-        Preferences.setStringPref(StringPrefsEnum.qrCode, user.qrCode);
-        Preferences.setStringPref(
-            StringPrefsEnum.qrSecretCode, user.qrSecretCode);
-        Preferences.setStringPref(StringPrefsEnum.facebookId, user.facebookId);
-        Preferences.setStringPref(
-            StringPrefsEnum.profilePhotoUrl, 'bundle://Avatar-1');
+      Preferences.setStringPref(
+          StringPrefsEnum.firstName, signupFirstNameController.text);
+      Preferences.setStringPref(
+          StringPrefsEnum.lastName, signupLastNameController.text);
+      Preferences.setStringPref(
+          StringPrefsEnum.email, signupEmailController.text);
+      Preferences.setStringPref(
+          StringPrefsEnum.hashName, signupHashNameController.text);
 
-        Future<dynamic>.delayed(const Duration(milliseconds: 35))
-            .then((void dummy) {
-          // Navigator.of(context,
-          //     //.pushReplacementNamed(RouteNames.CHOOSE_PROFILE_IMAGE.toString());
-          //     MaterialPageRoute<String>(
-          //             builder: (context) => ChooseProfileImage(isInitFlow: false,
-          //                   // kennelId: widget.futureRun.kennelId,
-          //                   // eventId: widget.futureRun.eventId,
-          //                   // attendenceState: attendenceAtHash,
-          //                 ),
-          //           )
-          // );
-
-          Navigator.push<String>(
-            context,
-            MaterialPageRoute<String>(
-              builder: (context) => ChooseProfileImage(
-                    true,
-                    // kennelId: widget.futureRun.kennelId,
-                    // eventId: widget.futureRun.eventId,
-                    // attendenceState: attendenceAtHash,
-                  ),
-            ),
-          );
-        });
-      });
+      Navigator.push<String>(
+        context,
+        MaterialPageRoute<String>(
+          builder: (context) => ChooseProfileImage(true),
+        ),
+      );
     }
   }
 
@@ -815,8 +739,10 @@ class _LoginPageState extends State<LoginPage>
       apiCall.then((Map<String, String> result) {
         if (result['result'] == 'success') {
           setState(() => _scanState = 0);
-          Navigator.pushReplacement<dynamic,dynamic>(context, MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => MainNavigationPage()));
+          Navigator.pushReplacement<dynamic, dynamic>(
+              context,
+              MaterialPageRoute<dynamic>(
+                  builder: (BuildContext context) => MainNavigationPage()));
         } else {
           setState(() => _scanState = 2);
           showInSnackBar(result['message'], durationInSeconds: 7);

@@ -35,7 +35,7 @@ class Utilities {
           .getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
     }
 
-    LatLon latLon =LatLon();
+    LatLon latLon = LatLon();
 
     latLon.latitude = DEFAULT_LATITUDE;
     latLon.longitude = DEFAULT_LONGITUDE;
@@ -132,7 +132,61 @@ class Utilities {
     return result;
   }
 
-    static Future<bool> showAlert(BuildContext context, String title, String body, String buttonText) async {
+  static Widget elegantDivider(
+      String text, num topPadding, num bottomPadding) {
+    return Padding(
+      padding: EdgeInsets.only(top: topPadding, bottom:bottomPadding),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                  colors: <Color>[
+                    Colors.white10,
+                    Colors.white,
+                  ],
+                  begin: FractionalOffset(0.0, 0.0),
+                  end: FractionalOffset(1.0, 1.0),
+                  stops: <double>[0.0, 1.0],
+                  tileMode: TileMode.clamp),
+            ),
+            width: 100.0,
+            height: 1.0,
+          ),
+          Padding(
+            padding: EdgeInsets.only(left: 15.0, right: 15.0),
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.0,
+                  fontFamily: 'WorkSansMedium'),
+            ),
+          ),
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                  colors: <Color>[
+                    Colors.white,
+                    Colors.white10,
+                  ],
+                  begin: FractionalOffset(0.0, 0.0),
+                  end: FractionalOffset(1.0, 1.0),
+                  stops: <double>[0.0, 1.0],
+                  tileMode: TileMode.clamp),
+            ),
+            width: 100.0,
+            height: 1.0,
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Future<bool> showAlert(BuildContext context, String title, String body,
+      String buttonText) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false, // user must tap button!

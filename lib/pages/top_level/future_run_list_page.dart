@@ -74,15 +74,22 @@ class FutureRunListPageBody extends StatelessWidget {
 
   Widget _buildCircularProgressIndicator() {
     return Center(
-      child: SpinKitFadingCircle(
-        itemBuilder: (_, int index) {
-          return DecoratedBox(
-            decoration: BoxDecoration(
-              color: index.isEven ? Colors.red : Colors.green,
-            ),
-          );
-        },
-      ),
+      child: 
+      
+SpinKitCircle(
+            size: 75.0,
+            itemBuilder: (_, int index) {
+              return DecoratedBox(
+                decoration: BoxDecoration(
+                  color: index.isEven
+                      ? Colors.white
+                      : Theme.of(context).accentColor,
+                ),
+              );
+            },
+          ),
+
+
     );
   }
 
