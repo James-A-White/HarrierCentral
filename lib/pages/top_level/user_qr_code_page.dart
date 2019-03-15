@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' as math;
 
 //import 'package:barcode_scan/barcode_scan.dart';
 
@@ -42,11 +42,13 @@ class _UserQrCodePageState extends State<UserQrCodePage>
 
   final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
+  GlobalKey tabKey;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-       decoration: Backgrounds.defaultHcBackground(),
+        decoration: Backgrounds.defaultHcBackground(),
         child: Stack(
           alignment: AlignmentDirectional.center,
           children: <Widget>[
@@ -105,8 +107,9 @@ class _UserQrCodePageState extends State<UserQrCodePage>
             ),
             Positioned(
                 top: 80,
-                bottom: 52,
+                bottom: 0,
                 child: Container(
+                  key: tabKey,
                   //color: Colors.teal,
                   width: MediaQuery.of(context).size.width,
                   child: TabBarView(
@@ -138,8 +141,6 @@ class _UserQrCodePageState extends State<UserQrCodePage>
 
   Color left = Colors.white;
   Color right = Colors.white;
-
-
 
   // Widget _buildMenuBar(BuildContext context) {
   //   return Container(
@@ -188,8 +189,6 @@ class _UserQrCodePageState extends State<UserQrCodePage>
   //     ),
   //   );
   // }
-
-
 
   Future<bool> _displayInstructions(BuildContext context) async {
     return showDialog<bool>(
@@ -281,10 +280,10 @@ class TabIndicationPainter extends CustomPainter {
 
     final Path path = Path();
     path.addArc(
-        Rect.fromCircle(center: entry, radius: radius), 0.5 * pi, 1 * pi);
+        Rect.fromCircle(center: entry, radius: radius), 0.5 * math.pi, 1 * math.pi);
     path.addRect(Rect.fromLTRB(entry.dx, dy - radius, target.dx, dy + radius));
     path.addArc(
-        Rect.fromCircle(center: target, radius: radius), 1.5 * pi, 1 * pi);
+        Rect.fromCircle(center: target, radius: radius), 1.5 * math.pi, 1 * math.pi);
 
     canvas.translate(size.width * pageOffset, 0.0);
     canvas.drawShadow(path, const Color(0xFFfbab66), 3.0, true);
@@ -342,104 +341,103 @@ class _QrCodeTabState extends State<QrCodeTab>
     );
   }
 
+  Key tabKey;
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     String userName = Preferences.getStringPref(StringPrefsEnum.displayName);
     String userQrCode = Preferences.getStringPref(StringPrefsEnum.qrCode);
 
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Expanded(
-            child: Stack(
-              alignment: AlignmentDirectional.center,
-              children: <Widget>[
-                Positioned(
-                  top: 0,
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  child: Text(
-                    'Use this code to check in at the beginning and end of runs. Your friends can also scan this code to add you to their friend list. ',
-                    textAlign: TextAlign.justify,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'AvenirNextDemiBold',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 16.0,
-                      height: 0.8,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 80,
-                  child: AutoSizeText(
-                    'QR for: $userName',
-                    //'QR Code for xxx',
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    style: const TextStyle(
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+              print('Height = ${constraints.maxHeight}');
+    print('Width = ${constraints.maxWidth}');
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Expanded(
+              child: Stack(
+                alignment: AlignmentDirectional.center,
+                children: <Widget>[
+                  Positioned(
+                    top: 0,
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    child: Text(
+                      'Use this code to check in at the beginning and end of runs. Your friends can also scan this code to add you to their friend list. ',
+                      textAlign: TextAlign.justify,
+                      style: const TextStyle(
+                        color: Colors.white,
                         fontFamily: 'AvenirNextDemiBold',
                         fontStyle: FontStyle.normal,
-                        color: Colors.white,
-                        fontSize: 24.0,
-                        height: 1.0),
-                  ),
-                ),
-                // Positioned(
-                //   top: 127,
-
-                //   child: Container(
-                //                       color: Colors.white,
-                //     height: MediaQuery.of(context).size.width * 0.8,
-                //     width: MediaQuery.of(context).size.width * 0.8,
-                //   ),
-                // ),
-                Positioned(
-                  top: 127,
-                  //bottom: 50,
-                  child: Container(
-                    height: (MediaQuery.of(context).size.width * 0.8 <
-                            MediaQuery.of(context).size.height * 0.4)
-                        ? MediaQuery.of(context).size.width * 0.8
-                        : MediaQuery.of(context).size.height * 0.4,
-                    width: (MediaQuery.of(context).size.width * 0.8 <
-                            MediaQuery.of(context).size.height * 0.4)
-                        ? MediaQuery.of(context).size.width * 0.8
-                        : MediaQuery.of(context).size.height * 0.4,
-                    child: QrImage(
-                        backgroundColor: Colors.white,
-                        padding: EdgeInsets.all(10.0),
-                        data: userQrCode,
-                        //data: 'testing123',
-                        version: 2,
-                        //size: 200.0,
-                        errorCorrectionLevel: 3),
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 32.0, right: 32.0),
-                    child: FlatButton(
-                      textColor: Colors.white,
-                      child: Text("Learn more about this feature"),
-                      onPressed: () {
-                        this._displayInstructions(context);
-                      },
+                        fontSize: 16.0,
+                        height: 0.8,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  Positioned(
+                    top: 80,
+                    child: AutoSizeText(
+                      'QR for: $userName',
+                      //'QR Code for xxx',
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      style: const TextStyle(
+                          fontFamily: 'AvenirNextDemiBold',
+                          fontStyle: FontStyle.normal,
+                          color: Colors.white,
+                          fontSize: 24.0,
+                          height: 1.0),
+                    ),
+                  ),
+                  // Positioned(
+                  //   top: 127,
+
+                  //   child: Container(
+                  //                       color: Colors.white,
+                  //     height: MediaQuery.of(context).size.width * 0.8,
+                  //     width: MediaQuery.of(context).size.width * 0.8,
+                  //   ),
+                  // ),
+                  Positioned(
+                    top: 127,
+                    //bottom: 50,
+                    child: Container(
+                      height: math.min(constraints.maxHeight,constraints.maxWidth) * 0.65,
+                      child: QrImage(
+                          backgroundColor: Colors.white,
+                          padding: EdgeInsets.all(10.0),
+                          data: userQrCode,
+                          //data: 'testing123',
+                          version: 2,
+                          //size: 200.0,
+                          errorCorrectionLevel: 3),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 20,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 0.0, right: 0.0),
+                      child: FlatButton(
+                        textColor: Colors.white,
+                        child: Text("Learn more about this feature"),
+                        onPressed: () {
+                          this._displayInstructions(context);
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 }
-
 
 class QrScannerTab extends StatefulWidget {
   const QrScannerTab({Key key}) : super(key: key);
@@ -450,7 +448,6 @@ class QrScannerTab extends StatefulWidget {
 
 class _QrScannerTabState extends State<QrScannerTab>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
-
   String barcode = 'Waiting for Scan';
 
   QRReaderController controller;
@@ -475,7 +472,7 @@ class _QrScannerTabState extends State<QrScannerTab>
 
   List<CameraDescription> cameras;
 
-    void scanUserBarcode() async {
+  void scanUserBarcode() async {
     if (controller == null) {
       setState(() => barcode = 'Scanning');
       cameras = await availableCameras();
@@ -488,7 +485,6 @@ class _QrScannerTabState extends State<QrScannerTab>
   }
 
   void onCodeRead(dynamic scanResult) async {
-
     final AudioCache audioPlayer = AudioCache(prefix: 'sounds/');
     audioPlayer.play('camera.mp3');
 
@@ -664,9 +660,7 @@ class _QrScannerTabState extends State<QrScannerTab>
                   width: 280.0,
                   child: RaisedButton(
                       child: Text(
-                        controller == null
-                            ? 'Start Scanning'
-                            : 'Stop Scanning',
+                        controller == null ? 'Start Scanning' : 'Stop Scanning',
                         style: TextStyle(
                             fontFamily: 'AvenirNextDemiBold',
                             color: Colors.white,

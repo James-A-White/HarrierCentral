@@ -8,6 +8,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 import 'package:harrier_central/data_models/kennel_member_model.dart';
+import 'package:harrier_central/util/styles.dart';
 
 
 class UserSecretQrPage extends StatefulWidget {
@@ -35,6 +36,7 @@ class _UserSecretQrCodePageState extends State<UserSecretQrPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+      backgroundColor: ThemeColors.appBarBackground,
       title: Text('Admin for: ${widget.kennelMemberModel.displayName}'),
       bottom: PreferredSize(
         preferredSize: Size.fromHeight(120.0),

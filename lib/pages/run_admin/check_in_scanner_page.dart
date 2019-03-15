@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:harrier_central/util/styles.dart';
 
 class CheckInScannerPage extends StatefulWidget {
   CheckInScannerPage(
@@ -32,7 +33,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: ThemeColors.appBarBackground,
         title: Text(
           'Check in Scanner',
           style: TextStyle(

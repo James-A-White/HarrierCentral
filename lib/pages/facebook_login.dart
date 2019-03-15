@@ -3,6 +3,7 @@ import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:flutter/material.dart';
 
 import 'package:harrier_central/util/routes.dart';
+import 'package:harrier_central/util/styles.dart';
 
 
 
@@ -32,6 +33,7 @@ class _LoginPageState extends State<FbLoginPage> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
+          backgroundColor: ThemeColors.appBarBackground,
           title: const Text('Facebook Login'),
           actions: <Widget>[
             IconButton(

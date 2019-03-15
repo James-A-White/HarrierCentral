@@ -19,7 +19,7 @@ class ImprintPageState extends State<ImprintPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: ThemeColors.appBarBackground,
         title: Text(
           'Imprint',
           style: TextStyle(

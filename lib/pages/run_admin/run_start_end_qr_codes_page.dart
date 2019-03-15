@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 
 import 'package:qr_flutter/qr_flutter.dart';
 
+import 'package:harrier_central/util/styles.dart';
+
 class RunStartEndQrCodes extends StatelessWidget {
   RunStartEndQrCodes(
       {
@@ -31,7 +33,7 @@ class RunStartEndQrCodes extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: ThemeColors.appBarBackground,
         title: Text(
           'Run $startEndString QR Code',
           style: TextStyle(

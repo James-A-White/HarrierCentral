@@ -28,8 +28,27 @@ import 'package:harrier_central/services/add_user_service.dart';
 
 class ChooseProfileImage extends StatefulWidget {
   bool doAddUser;
+  bool isForThisDevice;
+  String firstName;
+  String lastName;
+  String email;
+  String hashName;
+  String eventId;
+  String kennelId;
+  EnumAttendenceState attendenceState;
 
-  ChooseProfileImage(this.doAddUser, {Key key}) : super(key: key);
+  ChooseProfileImage(
+      {Key key,
+      this.doAddUser,
+      this.isForThisDevice,
+      this.firstName,
+      this.lastName,
+      this.email,
+      this.hashName,
+      this.eventId,
+      this.kennelId,
+      this.attendenceState})
+      : super(key: key);
 
   @override
   _ChooseProfileImageState createState() => _ChooseProfileImageState();
@@ -67,7 +86,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
   @override
   Widget build(BuildContext context) {
-    if ((facebookProfileImage == null) &&
+    if ((facebookProfileImage == null) && widget.isForThisDevice && 
         ((facebookProfileUrl ?? '').isNotEmpty)) {
       facebookProfileImage = CachedNetworkImage(
           imageUrl: facebookProfileUrl,
@@ -86,18 +105,20 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       _radioImageTypeSelection = _SelectedImageTypeEnum.facebookProfilePic;
     }
 
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
+    AppBar appBar = AppBar(
         centerTitle: true,
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: ThemeColors.appBarBackground,
         title: Text(
           'Choose Profile Image',
           style: TextStyle(
             color: Colors.white,
           ),
         ),
-      ),
+      );
+
+    return Scaffold(
+      key: _scaffoldKey,
+      appBar: appBar,
       body: NotificationListener<OverscrollIndicatorNotification>(
         onNotification: (OverscrollIndicatorNotification overscroll) {
           overscroll.disallowGlow();
@@ -109,7 +130,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
             child: Container(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height >= 500.0
-                  ? MediaQuery.of(context).size.height - 50
+                  ? MediaQuery.of(context).size.height - appBar.preferredSize.height
                   : 500.0,
               child: _processingSelection
                   ? _buildProgressIndicator()
@@ -554,46 +575,83 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     });
 
     if (widget.doAddUser) {
-      AddUserService()
-          .addUser(
-              Preferences.getStringPref(StringPrefsEnum.firstName),
-              Preferences.getStringPref(StringPrefsEnum.lastName),
-              Preferences.getStringPref(StringPrefsEnum.email),
-              Preferences.getStringPref(StringPrefsEnum.hashName),
-              Preferences.getStringPref(StringPrefsEnum.facebookId),
-              Preferences.getStringPref(StringPrefsEnum.gender),
-              '',
-              '00000000-0000-0000-0000-000000000000',
-              '',
-              hasherTypeMember)
-          .then((UserModel user) {
-        Preferences.setStringPref(StringPrefsEnum.userId, user.hasherId);
-        Preferences.setStringPref(
-            StringPrefsEnum.displayName, user.displayName);
-        Preferences.setStringPref(StringPrefsEnum.qrCode, user.qrCode);
-        Preferences.setStringPref(
-            StringPrefsEnum.qrSecretCode, user.qrSecretCode);
+      if (widget.isForThisDevice) {
+        AddUserService()
+            .addUser(
+                Preferences.getStringPref(StringPrefsEnum.firstName),
+                Preferences.getStringPref(StringPrefsEnum.lastName),
+                Preferences.getStringPref(StringPrefsEnum.email),
+                Preferences.getStringPref(StringPrefsEnum.hashName),
+                Preferences.getStringPref(StringPrefsEnum.facebookId),
+                Preferences.getStringPref(StringPrefsEnum.gender),
+                '',
+                '00000000-0000-0000-0000-000000000000',
+                '',
+                hasherTypeMember)
+            .then((UserModel user) {
+          Preferences.setStringPref(StringPrefsEnum.userId, user.hasherId);
+          Preferences.setStringPref(
+              StringPrefsEnum.displayName, user.displayName);
+          Preferences.setStringPref(StringPrefsEnum.qrCode, user.qrCode);
+          Preferences.setStringPref(
+              StringPrefsEnum.qrSecretCode, user.qrSecretCode);
 
-        // after this executes, we will push and replace this to the main screen
-        // the logic for this is in the underlying method
-        _prepareAndUploadImageThenContinue();
-      });
+          // after this executes, we will push and replace this to the main screen
+          // the logic for this is in the underlying method
+          _prepareAndUploadImageThenContinue(user);
+        });
+      } else {
+        // adding an "external" user who is not associated with this device
+        // typically these people are added while at a Hash so we have to 
+        // push in an event ID
+        AddUserService()
+            .addUser(
+                widget.firstName,
+                widget.lastName,
+                widget.email,
+                widget.hashName,
+                '', // facebook ID
+                '', // gender
+                '', // photo
+                widget.kennelId, // member kennel ID
+                widget.eventId, // event ID
+                hasherTypeMember, 
+                attendenceState: widget.attendenceState)
+            .then((UserModel user) {
+          // after this executes, we will push and replace this to the main screen
+          // the logic for this is in the underlying method
+          _prepareAndUploadImageThenContinue(user);
+        });
+      }
     } else {
       // after this executes, we will pop back to the originating screen that invoked this screen
-      _prepareAndUploadImageThenContinue();
+      _prepareAndUploadImageThenContinue(null);
     }
   }
 
-  void _prepareAndUploadImageThenContinue() {
+  void _prepareAndUploadImageThenContinue(UserModel user) {
     String profileImageUrl = '';
 
-    String fileName = Preferences.getStringPref(StringPrefsEnum.qrCode)
-            .replaceAll('UQR:', '') +
-        '_thumb.jpg';
+    String fileName;
 
-    if (widget.doAddUser == false) {
-      var uuid = Uuid();
-      fileName = uuid.v1().toString() + '_thumb.jpg';
+    String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+
+    if (widget.doAddUser) {
+      // this is for either of the two cases where
+      // a new user has been added, either for this device
+      // or the owner of this device adding other users. In both
+      // cases, we should have a valid UserModel variable set
+      fileName = user.qrCode.replaceAll('UQR:', '') + '_thumb.jpg';
+      // in case we are creating new users not for this device
+      // make sure we have the correct hash userId
+      userId = user.hasherId;
+    } else {
+      // in the case where we are simply updating the existing
+      // profile image of the account associated with this device,
+      // use the existing QR code stored in preferences as the base name for the photo
+      fileName = Preferences.getStringPref(StringPrefsEnum.qrCode)
+              .replaceAll('UQR:', '') +
+          '_thumb.jpg';
     }
 
     switch (_radioImageTypeSelection) {
@@ -609,13 +667,16 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         break;
     }
 
-    Preferences.setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
+    if ((widget.doAddUser) && (widget.isForThisDevice)) {
+      // this is the case where we are adding a new user for this device
+      // when this code is finished, we want to redirect the user to the
+      // main screen
+      Preferences.setStringPref(
+          StringPrefsEnum.profilePhotoUrl, profileImageUrl);
 
-    if (widget.doAddUser == true) {
-      String userId = Preferences.getStringPref(StringPrefsEnum.userId);
-      UpdateAvatarService svc = UpdateAvatarService();
+      UpdateProfilePhotoService svc = UpdateProfilePhotoService();
       svc
-          .updateAvatar(profileImageUrl, userId)
+          .updateProfilePhoto(profileImageUrl, userId)
           .then((SingleResultModel result) {
         if (_radioImageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
           _imageFromCamera.then((File file) {
@@ -634,18 +695,50 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
               .pushReplacementNamed(RouteNames.MAIN_LANDING_PAGE.toString());
         });
       });
+    } else if ((widget.doAddUser) && (!widget.isForThisDevice)) {
+      // this is for a new user being added from the device,
+      // but not a user that represents the owner of this device.
+      // when this code is done executing, we want to pop back
+      // to the caller.
+      UpdateProfilePhotoService svc = UpdateProfilePhotoService();
+      svc
+          .updateProfilePhoto(profileImageUrl, userId)
+          .then((SingleResultModel result) {
+        if (_radioImageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
+          _imageFromCamera.then((File file) {
+            _upload(file, fileName);
+          });
+        } else if (_radioImageTypeSelection ==
+            _SelectedImageTypeEnum.fromGallery) {
+          _imageFromGallery.then((File file) {
+            _upload(file, fileName);
+          });
+        }
+
+        Future<dynamic>.delayed(const Duration(milliseconds: 3500))
+            .then((void dummy) {
+          Navigator.of(context).pop(user);
+        });
+      });
     } else {
-      if (_radioImageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
-        _imageFromCamera.then((File file) {
-          _upload(file, fileName);
-        });
-      } else if (_radioImageTypeSelection ==
-          _SelectedImageTypeEnum.fromGallery) {
-        _imageFromGallery.then((File file) {
-          _upload(file, fileName);
-        });
-      }
-      Navigator.of(context).pop(profileImageUrl);
+      // this last case will be for updating the profile photo
+      // of the user of this device, but without creating a
+      // new user
+      UpdateProfilePhotoService svc = UpdateProfilePhotoService();
+      svc
+          .updateProfilePhoto(profileImageUrl, userId)
+          .then((SingleResultModel result) {
+        if (_radioImageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
+          _imageFromCamera.then((File file) {
+            _upload(file, fileName);
+          });
+        } else if (_radioImageTypeSelection ==
+            _SelectedImageTypeEnum.fromGallery) {
+          _imageFromGallery.then((File file) {
+            _upload(file, fileName);
+          });
+        }
+      });
     }
   }
 

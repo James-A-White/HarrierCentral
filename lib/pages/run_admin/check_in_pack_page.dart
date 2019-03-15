@@ -20,6 +20,7 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
+import 'package:harrier_central/widgets/new_user.dart';
 
 class CheckInPackPage extends StatefulWidget {
   CheckInPackPage({
@@ -119,6 +120,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     // dlg.whenComplete(action)
   }
 
+  GlobalKey<ScaffoldState> scaffoldKey;
+
   @override
   Widget build(BuildContext topContext) {
     getPack(false);
@@ -127,6 +130,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       child: ScopedModel<PayScopedModel>(
         model: _payScopedModel,
         child: Scaffold(
+          key: scaffoldKey,
           floatingActionButton: SpeedDial(
             // both default to 16
             marginRight: 18,
@@ -174,35 +178,50 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 backgroundColor: Colors.blue,
                 label: 'Add Member',
                 labelStyle: TextStyle(fontSize: 18.0),
-                onTap: () => Navigator.push<String>(
+                onTap: () => Navigator.push<UserModel>(
                       context,
-                      MaterialPageRoute<String>(
-                        builder: (context) => ChooseProfileImage(
-                              false,
-                              // kennelId: widget.futureRun.kennelId,
-                              // eventId: widget.futureRun.eventId,
-                              // attendenceState: attendenceAtHash,
-                            ),
-                      ),
-                    ).then<dynamic>((String profileImageUrl) {
-                      if (profileImageUrl.isEmpty) {
-                      } else {
-                        Navigator.push<UserModel>(
-                          context,
-                          MaterialPageRoute<UserModel>(
-                            builder: (context) => AddMemberPage(
-                                kennelId: widget.futureRun.kennelId,
+                      MaterialPageRoute<UserModel>(
+                          builder: (context) => NewUserWidget(
+                                scaffoldKey: scaffoldKey,
+                                isForThisDevice: false,
                                 eventId: widget.futureRun.eventId,
+                                kennelId: widget.futureRun.kennelId,
                                 attendenceState: attendenceAtHash,
-                                profileImageUrl: profileImageUrl),
-                          ),
-                        ).then<dynamic>((UserModel user) {
-                          _packScopedModel.addEditUser(user);
-                          _packScopedModel.sortPackList();
-                          _packScopedModel.forceRefresh();
-                        });
+                              )),
+                    ).then<dynamic>((UserModel user) {
+                      if (user != null) {
+                        _packScopedModel.addEditUser(user);
+                        _packScopedModel.sortPackList();
+                        _packScopedModel.forceRefresh();
                       }
                     }),
+
+                //     ChooseProfileImage(
+                //           false,
+                //           // kennelId: widget.futureRun.kennelId,
+                //           // eventId: widget.futureRun.eventId,
+                //           // attendenceState: attendenceAtHash,
+                //         ),
+                //   ),
+                // ).then<dynamic>((String profileImageUrl) {
+                //   if (profileImageUrl.isEmpty) {
+                //   } else {
+                //     Navigator.push<UserModel>(
+                //       context,
+                //       MaterialPageRoute<UserModel>(
+                //         builder: (context) => AddMemberPage(
+                //             kennelId: widget.futureRun.kennelId,
+                //             eventId: widget.futureRun.eventId,
+                //             attendenceState: attendenceAtHash,
+                //             profileImageUrl: profileImageUrl),
+                //       ),
+                //     ).then<dynamic>((UserModel user) {
+                //       _packScopedModel.addEditUser(user);
+                //       _packScopedModel.sortPackList();
+                //       _packScopedModel.forceRefresh();
+                //     });
+                //   }
+                // }),
               ),
               SpeedDialChild(
                 child: Icon(FontAwesomeIcons.solidHeart),

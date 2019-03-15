@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:harrier_central/data_models/kennel_model.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
+import 'package:harrier_central/util/styles.dart';
 
 class KennelAdminMainPage extends StatelessWidget {
   KennelAdminMainPage({@required this.kennel});
@@ -14,7 +15,7 @@ class KennelAdminMainPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: ThemeColors.appBarBackground,
         title: Text(
           '${kennel.kennelShortName} Admin',
           style: TextStyle(

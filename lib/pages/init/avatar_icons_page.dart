@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harrier_central/util/styles.dart';
 
 class AvatarIconsPage extends StatefulWidget {
   int selectedAvatarIcon;
@@ -27,7 +28,7 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
       key: _scaffoldKey,
       appBar: AppBar(
           centerTitle: true,
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: ThemeColors.appBarBackground,
           title: Text(
             'Choose Avatar',
             style: TextStyle(

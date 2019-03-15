@@ -17,7 +17,7 @@ class LegalPageState extends State<LegalPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: ThemeColors.appBarBackground,
         title: Text(
           'Terms of Service',
           style: TextStyle(

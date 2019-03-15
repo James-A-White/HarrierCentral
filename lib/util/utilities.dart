@@ -185,6 +185,25 @@ class Utilities {
     );
   }
 
+
+
+    static void showInSnackBar(BuildContext context, GlobalKey<ScaffoldState> scaffoldKey, String value, {int durationInSeconds = 3}) {
+    FocusScope.of(context).requestFocus(FocusNode());
+    scaffoldKey.currentState?.removeCurrentSnackBar();
+    scaffoldKey.currentState.showSnackBar(SnackBar(
+      content: Text(
+        value,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16.0,
+            fontFamily: 'WorkSansSemiBold'),
+      ),
+      backgroundColor: Colors.blue,
+      duration: Duration(seconds: durationInSeconds),
+    ));
+  }
+
   static Future<bool> showAlert(BuildContext context, String title, String body,
       String buttonText) async {
     return showDialog<bool>(

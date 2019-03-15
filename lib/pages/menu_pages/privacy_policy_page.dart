@@ -94,6 +94,7 @@ class PDFScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return PDFViewerScaffold(
         appBar: AppBar(
+          backgroundColor: ThemeColors.appBarBackground,
           title: Text("Privacy Policy"),
           // actions: <Widget>[
           //   IconButton(

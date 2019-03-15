@@ -855,7 +855,16 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                               //placeholder: const CircularProgressIndicator(),
                                                               //errorWidget: const Icon(Icons.error),
    
-                                                              placeholder: (BuildContext context,String url) => const CircularProgressIndicator(),
+                                                              placeholder: (context, url) => Container(
+                                  child: Center(
+                                      child: Container(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 3.0,
+                                          ))),
+                                  height: 70.0,
+                                  width: 70.0),
                                                               errorWidget: (BuildContext context,String url,Exception error) => const Icon(Icons.error),
                                                                   
                                                               //fadeOutDuration:  Duration(seconds: 1),

@@ -10,9 +10,9 @@ import 'package:harrier_central/util/utilities.dart';
 
 import 'package:http/http.dart' as http;
 
-class UpdateAvatarService {
+class UpdateProfilePhotoService {
 
-  Future<SingleResultModel> updateAvatar(String avatarUrl, String avatarUserId) async {
+  Future<SingleResultModel> updateProfilePhoto(String avatarUrl, String profilePhotoUserId) async {
 
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
@@ -23,7 +23,7 @@ class UpdateAvatarService {
       'userId': userId,
       'accessToken': accessToken,
       'avatarUrl': avatarUrl,
-      'avatarUserId': avatarUserId
+      'avatarUserId': profilePhotoUserId
     });
 
     final http.Response response = await http
