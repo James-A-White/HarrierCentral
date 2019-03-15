@@ -109,15 +109,10 @@
       "scale" : "2x"
     },
     {
-      "idiom" : "ios-marketing",
       "size" : "1024x1024",
+      "idiom" : "ios-marketing",
+      "filename" : "hc_app_icon_1024.png",
       "scale" : "1x"
-    },
-    {
-      "size" : "1024x1024",
-      "idiom" : "ios-marketing",
-      "filename" : "HarrierCentralIcon-83.5x83.5@2x.png",
-      "scale" : "2x"
     }
   ],
   "info" : {
