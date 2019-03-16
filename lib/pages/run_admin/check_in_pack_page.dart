@@ -11,8 +11,6 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:harrier_central/data_models/future_run_model.dart';
 import 'package:harrier_central/data_models/process_qr_scan_for_checkin_model.dart';
 import 'package:harrier_central/data_models/user_model.dart';
-import 'package:harrier_central/pages/init/choose_profile_image.dart';
-import 'package:harrier_central/pages/kennel_admin/add_member_page.dart';
 import 'package:harrier_central/services/pack_scoped_model.dart';
 import 'package:harrier_central/services/pay_for_event_service.dart';
 import 'package:harrier_central/services/pay_scoped_model.dart';
@@ -109,7 +107,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             .then((UserModel result) {
           _packScopedModel.addEditUser(result);
           _packScopedModel.sortPackList();
-          packList = _packScopedModel.packList;
+          packList = _packScopedModel.filteredPackList;
 
           _packScopedModel.forceRefresh();
           //_reloadPack(false);
@@ -121,6 +119,85 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   }
 
   GlobalKey<ScaffoldState> scaffoldKey;
+
+  final FocusNode searchFocusNode = FocusNode();
+  TextEditingController searchController = TextEditingController();
+
+  AppBar getAppBar(String title) {
+    return AppBar(
+      centerTitle: true,
+      backgroundColor: ThemeColors.appBarBackground,
+      title: Text(
+        '${title} Check In',
+        style: TextStyle(
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  void _onSearchTextChanged() {
+    setState(() {});
+  }
+
+  Container searchBar(PackScopedModel model, num width) {
+    return Container(
+      // color: Colors.red,
+      padding: EdgeInsets.only(left: 10, top: 10),
+      width: width,
+      height: 60,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Expanded(
+            child: TextField(
+              onChanged: (String text) {
+                //setState(() {
+                  model.filterPackList(text);
+                  model.forceRefresh();
+                  packList = model.filteredPackList;
+               // });
+              },
+              focusNode: searchFocusNode,
+              controller: searchController,
+              keyboardType: TextInputType.text,
+              style: const TextStyle(
+                  fontFamily: 'WorkSansSemiBold',
+                  fontSize: 16.0,
+                  color: Colors.black),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                icon: Icon(
+                  FontAwesomeIcons.search,
+                  color: Colors.black,
+                ),
+                hintText: 'Hash or mortal name',
+                hintStyle:
+                    TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+              ),
+            ),
+          ),
+          Container(
+            width:40,
+           child:FlatButton(
+             
+          //color: Colors.red,
+          child: Text('X'),
+          textColor: Colors.grey[700],
+          onPressed: () {
+                  searchController.text = '';
+                    model.filterPackList('');
+                  model.forceRefresh();
+                  packList = model.filteredPackList;
+          },
+           ),
+        ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext topContext) {
@@ -134,7 +211,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
           floatingActionButton: SpeedDial(
             // both default to 16
             marginRight: 18,
-            marginBottom: 70,
+            marginBottom: 30,
             animatedIcon: AnimatedIcons.menu_close,
             animatedIconTheme: IconThemeData(size: 22.0),
             // this is ignored if animatedIcon is non null
@@ -232,31 +309,33 @@ class CheckInPackPageState extends State<CheckInPackPage> {
               )
             ],
           ),
-          appBar: AppBar(
-            centerTitle: true,
-            backgroundColor: ThemeColors.appBarBackground,
-            title: Text(
-              '${widget.futureRun.eventName} Check In',
-              style: TextStyle(
-                color: Colors.white,
-              ),
-            ),
-          ),
-          body: Builder(
-            builder: (scaffoldContext) => Stack(children: <Widget>[
-                  (packList == null || packList.isEmpty)
-                      ? Center(
-                          child: Container(
-                              height: 50,
-                              width: 50,
-                              child: CircularProgressIndicator()))
-                      : Positioned(
-                          top: 0.0,
-                          right: 0.0,
-                          left: 0.0,
-                          child: Container(
+          appBar: getAppBar(widget.futureRun.eventName),
+          body: LayoutBuilder(
+            builder: (BuildContext scaffoldContext,
+                    BoxConstraints constraints) =>
+                Stack(children: <Widget>[
+                  Positioned(
+                      top: 0,
+                      child: searchBar(_packScopedModel, constraints.maxWidth)),
+                  Positioned(
+                    top: searchBar(_packScopedModel, constraints.maxWidth)
+                        .constraints
+                        .maxHeight,
+                    right: 0.0,
+                    left: 0.0,
+                    child: (packList == null || packList.isEmpty)
+                        ? Center(
+                            child: Container(
+                                height: 50,
+                                width: 50,
+                                child: CircularProgressIndicator()))
+                        : Container(
                             key: packListBox,
-                            height: MediaQuery.of(context).size.height,
+                            height: constraints.maxHeight -
+                                searchBar(
+                                        _packScopedModel, constraints.maxWidth)
+                                    .constraints
+                                    .maxHeight,
                             child: RefreshIndicator(
                               onRefresh: () => _reloadPack(true),
                               child: ScopedModelDescendant<PackScopedModel>(
@@ -276,7 +355,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                               ),
                             ),
                           ),
-                        ),
+                  ),
                 ]),
           ),
         ),

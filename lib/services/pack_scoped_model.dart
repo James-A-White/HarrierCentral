@@ -15,8 +15,12 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class PackScopedModel extends Model {
+
   List<UserModel> _packList;
-  List<UserModel> get packList => _packList;
+  //List<UserModel> get packList => _packList;
+
+  List<UserModel> _filteredPackList;
+  List<UserModel> get filteredPackList => _filteredPackList;
 
   bool _isLoading = false;
 
@@ -29,10 +33,19 @@ class PackScopedModel extends Model {
       _packList.clear();
       _packList = null;
     }
+
+    if (_filteredPackList != null) {
+      _filteredPackList.clear();
+      _filteredPackList = null;
+    }
   }
 
   int getPackCount() {
     return _packList.length;
+  }
+
+  int getFilteredPackCount() {
+    return _filteredPackList.length;
   }
 
   void forceRefresh() {
@@ -105,9 +118,25 @@ class PackScopedModel extends Model {
     }
   }
 
-  void sortPackList()
+  void sortPackList() 
   {
      _packList.sort((a,b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()));
+     //_filteredPackList.sort((a,b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()));
+  }
+
+  String packListFilter = '';
+
+  void filterPackList(String filter)
+  {
+     packListFilter = filter;
+     _filterPackList();
+  }
+
+  void _filterPackList()
+  {
+    _filteredPackList = _packList.where((UserModel user) =>
+            ((user.displayName + user.firstName + user.lastName).toLowerCase().contains(packListFilter.toLowerCase())))
+        .toList();
   }
 
   void addEditUser(UserModel packModel) {
@@ -232,9 +261,9 @@ class PackScopedModel extends Model {
     //   return null;
     // }
 
-    _packList ??= <UserModel>[];
+    _packList ??= <UserModel>[]; 
 
-    if (showLoadingIndicator) {
+    if (showLoadingIndicator) { 
       _isLoading = true;
       notifyListeners();
     }
@@ -255,11 +284,12 @@ class PackScopedModel extends Model {
     );
 
     sortPackList();
+    _filterPackList();
 
     _isLoading = false;
 
     notifyListeners();
 
-    return _packList;
+    return _filteredPackList;
   }
 }

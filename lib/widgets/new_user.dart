@@ -431,7 +431,9 @@ class NewUserState extends State<NewUserWidget>
                       Padding(
                         padding: const EdgeInsets.only(
                             top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
-                        child: TextField(
+                        child: 
+                        
+                        TextField(
                           focusNode: myFocusNodeEmail,
                           controller: signupEmailController,
                           keyboardType: TextInputType.emailAddress,
