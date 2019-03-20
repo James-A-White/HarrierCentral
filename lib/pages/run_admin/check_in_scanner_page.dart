@@ -34,9 +34,9 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: ThemeColors.appBarBackground,
-        title: Text(
+        title: const Text(
           'Check in Scanner',
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
           ),
         ),
@@ -63,15 +63,15 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                   fontSize: 28.0,
                   height: 1.0),
             ),
-            new Center(
-              child: new Column(
+            Center(
+              child: Column(
                 children: <Widget>[
                   Container(
                     width: 320.0,
                     child: RaisedButton(
                         child: const Text(
                           'Start Scanning: RUN START',
-                          style: TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.white),
                         ),
                         onPressed: () {
                           scanUserBarcode(true, widget.eventId);
@@ -79,21 +79,21 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                   ),
 
                   Container(
-                    padding: EdgeInsets.only(top: 30.0),
+                    padding: const EdgeInsets.only(top: 30.0),
                     width: 320.0,
                     child: RaisedButton(
                         child: const Text(
                           'Start Scanning: RUN END',
-                          style: TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.white),
                         ),
                         onPressed: () {
                           scanUserBarcode(false, widget.eventId);
                         }),
                   ),
 
-                  // new Container(
-                  //   child: new MaterialButton(
-                  //       onPressed: scan, child: new Text("Scan")),
+                  // Container(
+                  //   child: MaterialButton(
+                  //       onPressed: scan, child: const Text("Scan")),
                   //   padding: const EdgeInsets.all(8.0),
                   // ),
                   Padding(
@@ -113,10 +113,10 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(left: 32.0, right: 32.0, bottom: 16.0),
+              padding: const EdgeInsets.only(left: 32.0, right: 32.0, bottom: 16.0),
               child: FlatButton(
                 textColor: Theme.of(context).buttonColor,
-                child: Text("Learn more about this feature"),
+                child: const Text("Learn more about this feature"),
                 onPressed: () {
                   this._displayInstructions(context);
                 },
@@ -138,7 +138,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
     //   apiCall.then((ProcessQrScanModel result) {
     //     setState(() => barcode = result.resultStr2);
     //     if (result.resultInt2 == 0) {
-    //       PaymentPopup pp = new PaymentPopup(
+    //       PaymentPopup pp = PaymentPopup(
     //         amount: result.resultDecimal1,
     //         creditAllowed: result.resultInt3,
     //         creditRemaining: result.resultDecimal2,
@@ -185,7 +185,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Hasher Scanner'),
+          title: const Text('Hasher Scanner'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -203,7 +203,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text("OK, Got it!"),
+              child: const Text("OK, Got it!"),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },

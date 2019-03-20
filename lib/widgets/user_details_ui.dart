@@ -82,7 +82,7 @@ class _UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserv
                               color: Colors.black),
                           decoration: const InputDecoration(
                             border: InputBorder.none,
-                            icon: Icon(
+                            icon:const  Icon(
                               FontAwesomeIcons.user,
                               color: Colors.black,
                             ),
@@ -112,7 +112,7 @@ class _UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserv
                               color: Colors.black),
                           decoration: const InputDecoration(
                             border: InputBorder.none,
-                            icon: Icon(
+                            icon:const  Icon(
                               FontAwesomeIcons.user,
                               color: Colors.black,
                             ),
@@ -143,7 +143,7 @@ class _UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserv
                               color: Colors.black),
                           decoration: const InputDecoration(
                             border: InputBorder.none,
-                            icon: Icon(
+                            icon:const  Icon(
                               FontAwesomeIcons.envelope,
                               color: Colors.black,
                             ),
@@ -172,7 +172,7 @@ class _UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserv
                               color: Colors.black),
                           decoration: const InputDecoration(
                             border: InputBorder.none,
-                            icon: Icon(
+                            icon:const  Icon(
                               MaterialCommunityIcons.rabbit,
                               color: Colors.black,
                             ),

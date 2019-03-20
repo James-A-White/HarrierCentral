@@ -84,7 +84,7 @@ class PackScopedModel extends Model {
 
     if (isDirty) {
       notifyListeners();
-      JoinEventService srv = new JoinEventService();
+      JoinEventService srv = JoinEventService();
 
       srv
           .joinEvent(
@@ -279,7 +279,7 @@ class PackScopedModel extends Model {
 
     dataFromResponse.forEach(
       (UserModel item) {
-        //parse new kennel's details
+        //parse kennel's details
 
         addEditUser(item);
       },

@@ -37,7 +37,7 @@ class BubbleTabIndicator extends Decoration {
   @override
   Decoration lerpFrom(Decoration a, double t) {
     if (a is BubbleTabIndicator) {
-      return new BubbleTabIndicator(
+      return BubbleTabIndicator(
         padding: EdgeInsetsGeometry.lerp(a.padding, padding, t),
         insets: EdgeInsetsGeometry.lerp(a.insets, insets, t),
       );
@@ -48,7 +48,7 @@ class BubbleTabIndicator extends Decoration {
   @override
   Decoration lerpTo(Decoration b, double t) {
     if (b is BubbleTabIndicator) {
-      return new BubbleTabIndicator(
+      return BubbleTabIndicator(
         padding: EdgeInsetsGeometry.lerp(padding, b.padding, t),
         insets: EdgeInsetsGeometry.lerp(insets, b.insets, t),
       );
@@ -58,7 +58,7 @@ class BubbleTabIndicator extends Decoration {
 
   @override
   _BubblePainter createBoxPainter([VoidCallback onChanged]) {
-    return new _BubblePainter(this, onChanged);
+    return _BubblePainter(this, onChanged);
   }
 }
 
@@ -86,7 +86,7 @@ class _BubblePainter extends BoxPainter {
       indicator = insets.resolve(textDirection).deflateRect(rect);
     }
 
-    return new Rect.fromLTWH(
+    return Rect.fromLTWH(
       indicator.left,
       indicator.top,
       indicator.width,

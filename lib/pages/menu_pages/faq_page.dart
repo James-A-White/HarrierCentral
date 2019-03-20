@@ -18,9 +18,9 @@ class FaqPageState extends State<FaqPage> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: ThemeColors.appBarBackground,
-        title: Text(
+        title: const Text(
           'FAQs',
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
           ),
         ),
@@ -42,21 +42,21 @@ class FaqPageContent extends StatefulWidget {
 }
 
 class _FaqPageContentState extends State<FaqPageContent> {
-  TextStyle sectionStyle = TextStyle(
+  TextStyle sectionStyle = const TextStyle(
       fontFamily: 'AvenirNextDemiBold',
       fontStyle: FontStyle.normal,
       color: Colors.orange,
       fontSize: 24.0,
       height: 1.0);
 
-  TextStyle headingStyle = TextStyle(
+  TextStyle headingStyle = const TextStyle(
       fontFamily: 'AvenirNextRegular',
       fontStyle: FontStyle.normal,
       color: Colors.yellow,
       fontSize: 22.0,
       height: 1.0);
 
-  TextStyle bodyStyle = TextStyle(
+  TextStyle bodyStyle = const TextStyle(
       fontFamily: 'AvenirNextRegular',
       fontStyle: FontStyle.normal,
       color: Colors.white,
@@ -74,7 +74,7 @@ class _FaqPageContentState extends State<FaqPageContent> {
               ),
           child: IntrinsicHeight(
             child: Padding(
-              padding: EdgeInsets.only(top: 30, left: 20, right: 20),
+              padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -88,7 +88,7 @@ class _FaqPageContentState extends State<FaqPageContent> {
                   Container(
                     height: 1.0,
                     color: Colors.white,
-                    margin: EdgeInsets.only(top: 10, bottom: 10),
+                    margin: const EdgeInsets.only(top: 10, bottom: 10),
                   ),
                   Text('\r\n1. General', style: sectionStyle),
                   Text('\r\n1.1. What is the Hash House Harriers?',
@@ -114,7 +114,7 @@ class _FaqPageContentState extends State<FaqPageContent> {
                     textAlign: TextAlign.justify,
                   ),
                   Container(
-                    margin: EdgeInsets.only(left: 30, top: 5),
+                    margin: const EdgeInsets.only(left: 30, top: 5),
                     child: Text(
                       '• First Name\r\n• Last Name\r\n• Email address\r\n• Hash name (optionl)\r\n• Profile photo (optional) or avatar\r\n• Run attendence information\r\n• Facebook ID (optional)\r\n• Phone number (optional)\r\n• Friend list (optional)',
                       style: bodyStyle,
@@ -200,7 +200,7 @@ class _FaqPageContentState extends State<FaqPageContent> {
                   Text('\r\n4.1. How can our Hash Kennel join?',
                       style: headingStyle),
                   Text(
-                    'To create a new Kennel account, please contact us at connect@harriercentral.com. We do not yet have an interface that allows you to do this directly.',
+                    'To create a Kennel account, please contact us at connect@harriercentral.com. We do not yet have an interface that allows you to do this directly.',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),

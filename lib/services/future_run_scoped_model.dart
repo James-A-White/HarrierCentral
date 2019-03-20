@@ -53,7 +53,7 @@ class FutureRunScopedModel
     }
 
     notifyListeners();
-    JoinEventService srv = new JoinEventService();
+    JoinEventService srv = JoinEventService();
     srv
         .joinEvent(run.eventId, rsvpState, isHare, attendenceState)
         .then<dynamic>((JoinEventModel result) {
@@ -167,7 +167,7 @@ class FutureRunScopedModel
 
     dataFromResponse.forEach(
       (dynamic run) {
-        //parse new kennel's details
+        //parse kennel's details
         final FutureRun thisRun = FutureRun(
           eventId: run['eventId'],
           kennelId: run['kennelId'],

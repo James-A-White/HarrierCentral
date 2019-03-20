@@ -4,18 +4,7 @@ import 'dart:core';
 
 class ApproveLoginModel {
 
-  // int isRsvped;
-
-    String apiVersion;
-    DateTime lastGazetteerUpdate;
-    int approvalCode;
-    String loginMessage;
-    String loginMessageTitle;
-    int serverStatusCode;
-    DateTime messageEndDate;
-    int messageDisplayType;
-
-  ApproveLoginModel(
+   ApproveLoginModel(
     {
       this.apiVersion,
       this.lastGazetteerUpdate,
@@ -27,9 +16,20 @@ class ApproveLoginModel {
       this.messageDisplayType
     });
 
+    String apiVersion;
+    DateTime lastGazetteerUpdate;
+    int approvalCode;
+    String loginMessage;
+    String loginMessageTitle;
+    int serverStatusCode;
+    DateTime messageEndDate;
+    int messageDisplayType;
+
+
+
   static ApproveLoginModel itemFromJson(String jsonResult)
   {
-    List<ApproveLoginModel> items = List<ApproveLoginModel>();
+    final List<ApproveLoginModel> items = List<ApproveLoginModel>();
 
     ApproveLoginModel item;
 

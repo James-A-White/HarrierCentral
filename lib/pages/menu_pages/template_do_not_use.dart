@@ -18,9 +18,9 @@ class DoNotUseState extends State<DoNotUse> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: Theme.of(context).primaryColor,
-        title: Text(
+        title: const Text(
           'My Profile',
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
           ),
         ),

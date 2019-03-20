@@ -46,7 +46,7 @@ class PaymentReportPage extends StatelessWidget {
         backgroundColor: ThemeColors.appBarBackground,
         title: Text(
           eventName,
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
           ),
         ),
@@ -58,7 +58,7 @@ class PaymentReportPage extends StatelessWidget {
         animatedIcon: AnimatedIcons.menu_close,
         animatedIconTheme: IconThemeData(size: 22.0),
         // this is ignored if animatedIcon is non null
-        // child: Icon(Icons.add),
+        // child:const  Icon(Icons.add),
         visible: true,
         curve: Curves.bounceIn,
         overlayColor: Colors.black,
@@ -73,7 +73,7 @@ class PaymentReportPage extends StatelessWidget {
         shape: CircleBorder(),
         children: [
           SpeedDialChild(
-            child: Icon(Icons.mail_outline),
+            child:const  Icon(Icons.mail_outline),
             backgroundColor: Colors.green,
             label: 'Email me report',
             labelStyle: TextStyle(fontSize: 18.0),
@@ -195,7 +195,7 @@ class _PaymentReportsListPageBodyState
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>[
         Container(
-          padding: EdgeInsets.only(top: 10),
+          padding: const EdgeInsets.only(top: 10),
           color: Colors.white,
           height: 120.0,
           child: Column(
@@ -310,7 +310,7 @@ class _PaymentReportsListPageBodyState
                             onTap: () {
                               if (filteredList[index].paymentType.value ==
                                   paymentNotPaid.value) {
-                                PaymentPopup pp = new PaymentPopup(
+                                PaymentPopup pp = PaymentPopup(
                                   amount: filteredList[index].debitAmount,
                                   creditAllowed:
                                       1, // TODO: fix this in the DB so that Kennnels can disable credit
@@ -489,7 +489,7 @@ class _PaymentReportsListPageBodyState
             widget.digitsAfterDecimal, widget.currencySymbol);
 
         return AlertDialog(
-          title: Text('Payment Detail'),
+          title: const Text('Payment Detail'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -535,7 +535,7 @@ class _PaymentReportsListPageBodyState
                     Expanded(
                       flex: 7,
                       child: Padding(
-                        padding: EdgeInsets.only(left: 4.0),
+                        padding: const EdgeInsets.only(left: 4.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
@@ -599,13 +599,13 @@ class _PaymentReportsListPageBodyState
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text("Cancel transaction"),
+              child: const Text("Cancel transaction"),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
             ),
             FlatButton(
-              child: Text("Close"),
+              child: const Text("Close"),
               onPressed: () {
                 Navigator.of(context).pop(false);
               },

@@ -88,9 +88,9 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
           //   ),),
           // ]),
           Container(
-            //padding: EdgeInsets.only(top: 15.0, bottom: 10.0),
-            margin: EdgeInsets.only(top: 7.0, bottom: 0.0),
-            padding: EdgeInsets.only(top: 7.0, bottom: 0.0),
+            //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
+            margin: const EdgeInsets.only(top: 7.0, bottom: 0.0),
+            padding: const EdgeInsets.only(top: 7.0, bottom: 0.0),
             height: widget.futureRun.isExpanded ? 0.0 : 1.0,
             color: Colors.grey[300],
           ),
@@ -111,7 +111,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                   //   },
                   // );
                 },
-                padding: EdgeInsets.only(
+                padding: const EdgeInsets.only(
                     top: 10.0, left: 10.0, right: 10.0, bottom: 10.0),
                 child: Stack(
                   children: <Widget>[

@@ -14,8 +14,9 @@ import 'package:harrier_central/widgets/fancy_divider.dart';
 class MyProfilePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  MyProfilePage({Key key}) : super(key: key);
+  const MyProfilePage({Key key}) : super(key: key);
 
+  @override
   MyProfilePageState createState() => MyProfilePageState();
 }
 
@@ -29,12 +30,12 @@ class MyProfilePageState extends State<MyProfilePage> {
   @override
   Widget build(BuildContext context) {
 
-    AppBar appBar = AppBar(
+    final AppBar appBar = AppBar(
           centerTitle: true,
           backgroundColor: ThemeColors.appBarBackground,
-          title: Text(
+          title: const Text(
             'My Profile',
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
             ),
           ),
@@ -47,18 +48,18 @@ class MyProfilePageState extends State<MyProfilePage> {
           height: MediaQuery.of(context).size.height - appBar.preferredSize.height,
         child:SingleChildScrollView(
           child: ConstrainedBox(
-            constraints: BoxConstraints(
+            constraints: const BoxConstraints(
                 //minHeight: viewportConstraints.maxHeight,
                 ),
             child: IntrinsicHeight(
               child: Padding(
-                padding: EdgeInsets.only(top: 30, left: 20, right: 20),
+                padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
                     UserDetailsUi(firstName: firstName, lastName: lastName, email: email, hashName: hashName,),
-                    FancyDivider(innerColor: Colors.white),
+                    const FancyDivider(innerColor: Colors.white),
                     Container(
                       height:500,
                       width:MediaQuery.of(context).size.width,
@@ -70,7 +71,7 @@ class MyProfilePageState extends State<MyProfilePage> {
                               top: 10,
                               bottom: 20,
                               width: MediaQuery.of(context).size.width,
-                              child: QrCodeTab()),
+                              child: const QrCodeTab()),
                         ],
                       ),
                     ),
@@ -119,10 +120,10 @@ class _QrCodeTabState extends State<QrCodeTab>
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Your Secret QR Code'),
+          title: const Text('Your Secret QR Code'),
           content: SingleChildScrollView(
             child: ListBody(
-              children: <Widget>[
+              children: const <Widget>[
                 Text(
                   'This QR code allows other Hashers to quickly scan you using their Harrier Central apps.\r\n\r\nAny Hasher can scan this code to easily add you as their friend.\r\n\r\nHares and mis-management can use this code to scan you in at the beginning and end of runs in order to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.',
                   textAlign: TextAlign.justify,
@@ -137,7 +138,7 @@ class _QrCodeTabState extends State<QrCodeTab>
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text("OK, Got it!"),
+              child: const Text('OK, Got it!'),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -151,8 +152,8 @@ class _QrCodeTabState extends State<QrCodeTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    String userName = Preferences.getStringPref(StringPrefsEnum.displayName);
-    String userQrCode = Preferences.getStringPref(StringPrefsEnum.qrSecretCode);
+    final String userName = Preferences.getStringPref(StringPrefsEnum.displayName);
+    final String userQrCode = Preferences.getStringPref(StringPrefsEnum.qrSecretCode);
 
     return Center(
       child: Column(
@@ -192,7 +193,7 @@ class _QrCodeTabState extends State<QrCodeTab>
                         : MediaQuery.of(context).size.height * 0.4,
                     child: QrImage(
                         backgroundColor: Colors.white,
-                        padding: EdgeInsets.all(10.0),
+                        padding: const EdgeInsets.all(10.0),
                         data: 'USC:${userQrCode.toUpperCase()}',
                         //data: 'testing123',
                         version: 4,
@@ -203,12 +204,12 @@ class _QrCodeTabState extends State<QrCodeTab>
                 Positioned(
                   bottom: 0,
                   child: Padding(
-                    padding: EdgeInsets.only(left: 32.0, right: 32.0),
+                    padding: const EdgeInsets.only(left: 32.0, right: 32.0),
                     child: FlatButton(
                       textColor: Colors.white,
-                      child: Text("Learn more about this feature"),
+                      child: const Text('Learn more about this feature'),
                       onPressed: () {
-                        this._displayInstructions(context);
+                        _displayInstructions(context);
                       },
                     ),
                   ),

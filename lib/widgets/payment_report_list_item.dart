@@ -129,7 +129,7 @@ class TotalsCell extends StatelessWidget {
             ),
           ),
           IconButton(
-            padding: EdgeInsets.all(0),
+            padding: const EdgeInsets.all(0),
             onPressed: onTap,
             icon: Image.asset(
                 'images/icons/payment_type_${paymentRecordType.value}.png',

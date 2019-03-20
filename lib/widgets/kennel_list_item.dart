@@ -63,20 +63,20 @@ class KennelsListItem extends StatelessWidget {
                                 (BuildContext context, Widget child,
                                         KennelScopedModel model) =>
                                     IconButton(
-                                      icon: Icon(
+                                      icon:  Icon(
                                           (kennel.followingRequested ??
                                                       kennel.followingBool) ==
                                                   1
-                                              ? const Icon(FontAwesomeIcons.solidCheckCircle)
+                                              ? const  Icon(FontAwesomeIcons.solidCheckCircle)
                                                   .icon
                                               : (kennel.followingRequested ??
                                                           kennel
                                                               .followingBool) ==
                                                       2
-                                                  ? const Icon(FontAwesomeIcons
+                                                  ? const  Icon(FontAwesomeIcons
                                                           .solidTimesCircle)
                                                       .icon
-                                                  : const Icon(FontAwesomeIcons.circle)
+                                                  : const  Icon(FontAwesomeIcons.circle)
                                                       .icon,
                                           color: kennel.followingRequested !=
                                                   null
@@ -102,7 +102,7 @@ class KennelsListItem extends StatelessWidget {
                           ),
                     ),
                     // child: IconButton(
-                    //   icon: new Icon(
+                    //   icon:const  Icon(
                     //       kennel.followingBool == 0
                     //           ? Icons.radio_button_unchecked
                     //           : Icons.radio_button_checked,
@@ -157,7 +157,7 @@ class KennelsListItem extends StatelessWidget {
                         ),
                         // const Text(
                         //   'xxxx Active Members',
-                        //                             style: TextStyle(
+                        //                             style: const TextStyle(
                         //             fontFamily: 'AvenirNextRegular',
                         //             fontStyle: FontStyle.normal,
                         //             fontSize: 16.0,
@@ -166,7 +166,7 @@ class KennelsListItem extends StatelessWidget {
                         Text(
                           DateFormat("E, MMM d 'at' h:mm a")
                               .format(kennel.dateNextRun),
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontFamily: 'AvenirNextRegular',
                               fontStyle: FontStyle.normal,
                               fontSize: 16.0,
@@ -185,7 +185,7 @@ class KennelsListItem extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: IconButton(
-              icon: const Icon(Icons.settings),
+              icon: const  Icon(Icons.settings),
               iconSize: Theme.of(context).iconTheme.size,
               color: Colors.black54,
               splashColor: Theme.of(context).highlightColor,

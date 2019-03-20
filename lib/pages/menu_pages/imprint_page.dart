@@ -20,9 +20,9 @@ class ImprintPageState extends State<ImprintPage> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: ThemeColors.appBarBackground,
-        title: Text(
+        title: const Text(
           'Imprint',
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
           ),
         ),
@@ -44,14 +44,14 @@ class ImprintPageContent extends StatefulWidget {
 }
 
 class _ImprintPageContentState extends State<ImprintPageContent> {
-  TextStyle headingStyle = TextStyle(
+  TextStyle headingStyle = const TextStyle(
       fontFamily: 'AvenirNextRegular',
       fontStyle: FontStyle.normal,
       color: Colors.yellow,
       fontSize: 24.0,
       height: 1.0);
 
-  TextStyle bodyStyle = TextStyle(
+  TextStyle bodyStyle = const TextStyle(
       fontFamily: 'AvenirNextRegular',
       fontStyle: FontStyle.normal,
       color: Colors.white,
@@ -85,7 +85,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
               ),
           child: IntrinsicHeight(
             child: Padding(
-              padding: EdgeInsets.only(top: 30, left: 20, right: 20),
+              padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.start,

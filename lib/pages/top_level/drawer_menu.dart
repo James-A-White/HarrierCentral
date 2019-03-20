@@ -73,7 +73,7 @@ class DrawerMenuState extends State<DrawerMenu> {
           child: Column(
             children: <Widget>[
               ListTile(
-                leading: const Icon(Icons.settings, color: textColor),
+                leading: const  Icon(Icons.settings, color: textColor),
                 title: Text('Settings', style: style),
                 onTap: () async {
                   Navigator.pop(context);
@@ -89,7 +89,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.person, color: textColor),
+                leading: const  Icon(Icons.person, color: textColor),
                 title: Text('My Profile', style: style),
                 onTap: () async {
                   //onTabTapped(EnumAppPages.settings);
@@ -106,7 +106,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.shopping_cart, color: textColor),
+                leading: const  Icon(Icons.shopping_cart, color: textColor),
                 title: Text('In App Purchases', style: style),
                 onTap: () async {
                   Navigator.pop(context);
@@ -122,15 +122,15 @@ class DrawerMenuState extends State<DrawerMenu> {
                 },
               ),
               // ListTile(
-              //   leading: Icon(Icons.speaker_notes),
-              //   title: Text('Acknowledgements'),
+              //   leading:const  Icon(Icons.speaker_notes),
+              //   title: const Text('Acknowledgements'),
               //   onTap: () {
               //     Navigator.pop(context);
               //     onTabTapped(3);
               //   },
               // ),
               ListTile(
-                leading: const Icon(FontAwesome.question_circle, color: textColor),
+                leading: const  Icon(FontAwesome.question_circle, color: textColor),
                 title: Text('FAQs', style: style),
                 onTap: () {
                   Navigator.pop(context);
@@ -146,7 +146,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.feedback, color: textColor),
+                leading: const  Icon(Icons.feedback, color: textColor),
                 title: Text('Your feedback', style: style),
                 onTap: () {
                   Navigator.pop(context);
@@ -162,7 +162,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.speaker_notes, color: textColor),
+                leading: const  Icon(Icons.speaker_notes, color: textColor),
                 title: Text('Imprint', style: style),
                 onTap: () {
                   Navigator.pop(context);
@@ -178,7 +178,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                 },
               ),
               ListTile(
-                leading: const Icon(FontAwesome.legal, color: textColor),
+                leading: const  Icon(FontAwesome.legal, color: textColor),
                 title: Text('Legal', style: style),
                 onTap: () {
                   Navigator.pop(context);
@@ -194,7 +194,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                 },
               ),
                             ListTile(
-                leading: const Icon(MaterialCommunityIcons.shield_lock, color: textColor),
+                leading: const  Icon(MaterialCommunityIcons.shield_lock, color: textColor),
                 title: Text('Privacy Policy', style: style),
                 onTap: () {
                   Navigator.pop(context);
@@ -226,8 +226,8 @@ class DrawerMenuState extends State<DrawerMenu> {
 //         },
 //         transitionsBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
 
-//           return new ScaleTransition(
-//             scale: new Tween<double>(
+//           return ScaleTransition(
+//             scale: Tween<double>(
 //               begin: 0.0,
 //               end: 1.0,
 //             ).animate(

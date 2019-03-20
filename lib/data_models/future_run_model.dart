@@ -1,6 +1,48 @@
 import 'dart:core';
 
 class FutureRun {
+
+   FutureRun({
+    this.eventId,
+    this.kennelId,
+    this.eventName,
+    this.eventNumber,
+    this.locationOneLineDesc,
+    this.eventDescription,
+    this.eventPriceForMembers,
+    this.eventPriceForNonMembers,
+    this.eventCurrencyType,
+    this.currencySymbol,
+    this.digitsAfterDecimal,
+    this.eventImage,
+    this.eventShortDesc,
+    this.locationCity,
+    this.locationStreet,
+    this.locationPostCode,
+
+    this.rsvpYesCount,
+    this.rsvpNoCount,
+    this.rsvpMaybeCount,
+    this.haresCount,
+
+    this.hareList,
+
+    this.latitude,
+    this.longitude,
+    this.kennelLogo,
+    this.daysUntilNextRun,
+    this.eventStartDatetime,
+    this.friendsAttending,
+    this.rsvpState,
+    this.attendenceState,
+    this.isHare,
+    this.totalRunsThisKennel,
+    this.kennelShortName,
+    this.runSequence,
+    this.distanceToEvent,
+
+  });
+
   final String eventId;
   final String kennelId;
   final String eventName;
@@ -44,76 +86,29 @@ class FutureRun {
   final int runSequence;
   int distanceToEvent;
 
-  // state
-  bool _isExpanded = false;
+  bool  isExpanded = false;
 
-  bool get isExpanded => _isExpanded;
+ 
 
-  set isExpanded(bool isExpanded) {
-    this._isExpanded = isExpanded;
-  }
+  int requestedRsvpState = -1;
+  int requestedHaringState = -1;
+  int requestedAttendenceState = -1;
 
+  // int get requestedRsvpState => _requestedRsvpState;
+  // int get requestedHaringState => _requestedHaringState;
+  // int get requestedAttendenceState => _requestedAttendenceState;
 
-  FutureRun({
-    this.eventId,
-    this.kennelId,
-    this.eventName,
-    this.eventNumber,
-    this.locationOneLineDesc,
-    this.eventDescription,
-    this.eventPriceForMembers,
-    this.eventPriceForNonMembers,
-    this.eventCurrencyType,
-    this.currencySymbol,
-    this.digitsAfterDecimal,
-    this.eventImage,
-    this.eventShortDesc,
-    this.locationCity,
-    this.locationStreet,
-    this.locationPostCode,
+  // set requestedRsvpState(int rsvpState) {
+  //   _requestedRsvpState = rsvpState;
+  // }
 
-    this.rsvpYesCount,
-    this.rsvpNoCount,
-    this.rsvpMaybeCount,
-    this.haresCount,
+  // set requestedHaringState(int haringState) {
+  //   _requestedHaringState = haringState;
+  // }
 
-    this.hareList,
-
-    this.latitude,
-    this.longitude,
-    this.kennelLogo,
-    this.daysUntilNextRun,
-    this.eventStartDatetime,
-    this.friendsAttending,
-    this.rsvpState,
-    this.attendenceState,
-    this.isHare,
-    this.totalRunsThisKennel,
-    this.kennelShortName,
-    this.runSequence,
-    this.distanceToEvent,
-
-  });
-
-  int _requestedRsvpState = -1;
-  int _requestedHaringState = -1;
-  int _requestedAttendenceState = -1;
-
-  int get requestedRsvpState => _requestedRsvpState;
-  int get requestedHaringState => _requestedHaringState;
-  int get requestedAttendenceState => _requestedAttendenceState;
-
-  set requestedRsvpState(int rsvpState) {
-    this._requestedRsvpState = rsvpState;
-  }
-
-  set requestedHaringState(int haringState) {
-    this._requestedHaringState = haringState;
-  }
-
-  set requestedAttendenceState(int attendenceState) {
-    this._requestedAttendenceState = attendenceState;
-  }
+  // set requestedAttendenceState(int attendenceState) {
+  //   _requestedAttendenceState = attendenceState;
+  // }
 
   @override
   String toString() => '$eventName';

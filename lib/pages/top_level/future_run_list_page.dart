@@ -54,9 +54,9 @@ class FutureRunListPageBody extends StatelessWidget {
         // appBar: AppBar(
         //   centerTitle: true,
         //   backgroundColor: Theme.of(context).primaryColor,
-        //   title: Text(
+        //   title: const Text(
         //     'Upcoming Runs List',
-        //     style: TextStyle(
+        //     style: const TextStyle(
         //       color: Colors.white,
         //     ),
         //   ),
@@ -80,7 +80,7 @@ SpinKitCircle(
             size: 75.0,
             itemBuilder: (_, int index) {
               return DecoratedBox(
-                decoration: BoxDecoration(
+                decoration:  BoxDecoration(
                   color: index.isEven
                       ? Colors.white
                       : Theme.of(context).accentColor,
@@ -110,7 +110,7 @@ SpinKitCircle(
               displacement: 40.0,
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
-                //padding: EdgeInsets.only( bottom: 40.0),
+                //padding: const EdgeInsets.only( bottom: 40.0),
                 itemCount: model.getFutureRunsCount(),
                 itemBuilder: (BuildContext context, int index) {
                   if (model.futureRunsList[index].daysUntilNextRun < 9999) {

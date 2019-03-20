@@ -96,7 +96,7 @@ class _AppEntryPageState extends State<AppEntryPage>
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text("OK, Got it!"),
+              child: const Text("OK, Got it!"),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -119,7 +119,7 @@ class _AppEntryPageState extends State<AppEntryPage>
 
 
 
-    return Timer(Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME), handleTimeout);
+    return Timer(const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME), handleTimeout);
   }
 
   //bool _visible = true;
@@ -128,7 +128,7 @@ class _AppEntryPageState extends State<AppEntryPage>
     super.initState();
 
     _iconAnimationController = AnimationController(
-        vsync: this, duration: Duration(milliseconds: 3000));
+        vsync: this, duration: const Duration(milliseconds: 3000));
 
     _iconAnimation =
         CurvedAnimation(parent: _iconAnimationController, curve: Curves.easeIn);

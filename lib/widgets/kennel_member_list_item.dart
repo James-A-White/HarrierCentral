@@ -31,11 +31,11 @@ class KennelMemberListItem extends StatelessWidget {
                 ? CachedNetworkImage(
                     imageUrl: kennelMember.photo,
                     //placeholder: const CircularProgressIndicator(),
-                    //errorWidget: const Icon(Icons.error),
+                    //errorWidget: const  Icon(Icons.error),
                    // placeholder: (BuildContext context,String url) => const CircularProgressIndicator(),
-                    //errorWidget: (BuildContext context,String url,Exception error) => const Icon(Icons.error),
+                    //errorWidget: (BuildContext context,String url,Exception error) => const  Icon(Icons.error),
                     //fadeOutDuration:  Duration(seconds: 1),
-                    fadeInDuration: Duration(milliseconds: 0),
+                    fadeInDuration: const Duration(milliseconds: 0),
                     width: 80.0,
                     height: 80.0,
                     fit: BoxFit.fill)

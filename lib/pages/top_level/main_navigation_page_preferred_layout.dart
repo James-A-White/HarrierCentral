@@ -54,7 +54,7 @@
 //   }
 
 //   final KennelScopedModel kennelModel = KennelScopedModel();
-//   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
+//   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
 //   int currentPage = 0;
 
@@ -143,11 +143,11 @@
 //     GlobalKey<NavigatorState> _bottomWidget = GlobalKey<NavigatorState>();
 
 //   Navigator _getContent(BuildContext context) {
-//     return new Navigator(
+//     return Navigator(
 //       key: _contentNavigator,
 //       onGenerateRoute: (RouteSettings settings) {
 //         String s = settings.name;
-//         return new MaterialPageRoute<dynamic>(builder: (context) {
+//         return MaterialPageRoute<dynamic>(builder: (context) {
 //           return Container(
             
 //             width: MediaQuery.of(context).size.width,
@@ -156,10 +156,10 @@
 //             child: Scaffold(
 //               appBar: AppBar(
 //                 backgroundColor: ThemeColors.appBarBackground,
-//                 title: Text("Fancy Bottom Navigation"),
+//                 title: const Text("Fancy Bottom Navigation"),
 //               ),
 //               body: Container(
-//                 //decoration: BoxDecoration(color: Colors.white),
+//                 //decoration: const BoxDecoration(color: Colors.white),
 //                 child: Center(
 //                   child:
 //                       //Container(color:Colors.red)
@@ -205,8 +205,8 @@
 //     return x;
 
 //     // return Scaffold(
-//     //     appBar: new AppBar(
-//     //       title: new Text(appBarText),
+//     //     appBar: AppBar(
+//     //       title: const Text(appBarText),
 //     //     ),
 //     //     key: _scaffoldKey,
 //     //     drawer: DrawerMenu(scaffoldKey: _scaffoldKey),
@@ -221,21 +221,21 @@
 //     //           activeColor: Theme.of(context).accentColor,
 //     //           items: <BottomNavigationBarItem>[
 //     //             const BottomNavigationBarItem(
-//     //                 icon: Icon(Icons.directions_run), title: Text('Runs')),
+//     //                 icon:const  Icon(Icons.directions_run), title: const Text('Runs')),
 //     //             const BottomNavigationBarItem(
 //     //                 icon:
 //     //                     ImageIcon(AssetImage('images/icons/dog_face_icon.png')),
-//     //                 title: Text('Kennels')),
+//     //                 title: const Text('Kennels')),
 //     //             const BottomNavigationBarItem(
-//     //                 icon: Icon(MaterialCommunityIcons.star),
-//     //                 title: Text('Stats')),
+//     //                 icon:const  Icon(MaterialCommunityIcons.star),
+//     //                 title: const Text('Stats')),
 //     //             const BottomNavigationBarItem(
 //     //                 icon:
 //     //                     ImageIcon(AssetImage('images/icons/qr_code_icon.png')),
-//     //                 title: Text('Scanner')),
+//     //                 title: const Text('Scanner')),
 //     //             const BottomNavigationBarItem(
 //     //                 icon: ImageIcon(AssetImage('images/icons/friends.png')),
-//     //                 title: Text('Friends')),
+//     //                 title: const Text('Friends')),
 //     //           ],
 //     //         ),
 //     //         tabBuilder: (BuildContext context, int index) {
@@ -253,14 +253,14 @@
 // //   shape: const CircularNotchedRectangle(),
 // //   notchMargin: 5.0,
 // //   //color: Theme.of(context).primaryColor,
-// //   child: Padding(
+// //   child: const Padding(
 // //     padding: const EdgeInsets.only(right: 80.0),
 // //     child: Row(
 // //       mainAxisSize: MainAxisSize.max,
 // //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 // //       children: <Widget>[
 // //         IconButton(
-// //             icon: const Icon(Icons.menu),
+// //             icon: const  Icon(Icons.menu),
 // //             iconSize: Theme.of(context).iconTheme.size,
 // //             color: model.currentMainView == EnumAppPages.settings
 // //                 ? Theme.of(context).highlightColor
@@ -273,7 +273,7 @@
 // //                         child: Column(
 // //                           children: <Widget>[
 // //                             ListTile(
-// //                               leading: const Icon(Icons.settings),
+// //                               leading: const  Icon(Icons.settings),
 // //                               title: const Text('Settings'),
 // //                               onTap: () {
 // //                                 Navigator.pop(context);
@@ -282,7 +282,7 @@
 // //                               },
 // //                             ),
 // //                             ListTile(
-// //                               leading: const Icon(Icons.person),
+// //                               leading: const  Icon(Icons.person),
 // //                               title: const Text('My Profile'),
 // //                               onTap: () {
 // //                                 Navigator.pop(context);
@@ -292,7 +292,7 @@
 // //                             ),
 // //                             ListTile(
 // //                               leading:
-// //                                   const Icon(Icons.shopping_cart),
+// //                                   const  Icon(Icons.shopping_cart),
 // //                               title:
 // //                                   const Text('In App Purchases'),
 // //                               onTap: () {
@@ -302,15 +302,15 @@
 // //                               },
 // //                             ),
 // //                             // ListTile(
-// //                             //   leading: Icon(Icons.speaker_notes),
-// //                             //   title: Text('Acknowledgements'),
+// //                             //   leading:const  Icon(Icons.speaker_notes),
+// //                             //   title: const Text('Acknowledgements'),
 // //                             //   onTap: () {
 // //                             //     Navigator.pop(context);
 // //                             //     onTabTapped(3);
 // //                             //   },
 // //                             // ),
 // //                             ListTile(
-// //                               leading: const Icon(Icons.info),
+// //                               leading: const  Icon(Icons.info),
 // //                               title: const Text('FAQ'),
 // //                               onTap: () {
 // //                                 Navigator.pop(context);
@@ -319,7 +319,7 @@
 // //                               },
 // //                             ),
 // //                             ListTile(
-// //                               leading: const Icon(Icons.feedback),
+// //                               leading: const  Icon(Icons.feedback),
 // //                               title: const Text('Your feedback'),
 // //                               onTap: () {
 // //                                 Navigator.pop(context);
@@ -329,7 +329,7 @@
 // //                             ),
 // //                             ListTile(
 // //                               leading:
-// //                                   const Icon(Icons.speaker_notes),
+// //                                   const  Icon(Icons.speaker_notes),
 // //                               title: const Text('Imprint'),
 // //                               onTap: () {
 // //                                 Navigator.pop(context);
@@ -342,7 +342,7 @@
 // //                       ));
 // //             }),
 // //         IconButton(
-// //           icon: const Icon(Icons.directions_run),
+// //           icon: const  Icon(Icons.directions_run),
 // //           iconSize: Theme.of(context).iconTheme.size,
 // //           color: model.currentMainView == EnumAppPages.futureRuns
 // //               ? Theme.of(context).highlightColor
@@ -363,7 +363,7 @@
 // //           },
 // //         ),
 // //         IconButton(
-// //           icon: const Icon(Icons.show_chart),
+// //           icon: const  Icon(Icons.show_chart),
 // //           iconSize: Theme.of(context).iconTheme.size,
 // //           color: model.currentMainView == EnumAppPages.runCounts
 // //               ? Theme.of(context).highlightColor

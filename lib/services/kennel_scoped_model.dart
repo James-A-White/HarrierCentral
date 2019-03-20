@@ -150,7 +150,7 @@ class KennelScopedModel extends Model {
 
     dataFromResponse.forEach(
       (dynamic newKennel) {
-        //parse new kennel's details
+        //parse kennel's details
         final Kennel kennel = Kennel(
           kennelId: newKennel['kennelId'],
           distance: newKennel['distance'],

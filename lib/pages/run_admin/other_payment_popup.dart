@@ -21,7 +21,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Select payment amount'),
+      title: const Text('Select payment amount'),
       content: TextField(
         autofocus: true,
         focusNode: myFocusNodeFirstName,
@@ -33,7 +33,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
             color: Colors.white),
         decoration: const InputDecoration(
           border: InputBorder.none,
-          icon: Icon(
+          icon:const  Icon(
             FontAwesomeIcons.moneyBillWave,
             color: Colors.white,
           ),
@@ -43,14 +43,14 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
       ),
       actions: <Widget>[
         // Padding(
-        //   padding: EdgeInsets.only(right: 0.0),
+        //   padding: const EdgeInsets.only(right: 0.0),
         //   child: Container(
         //     width: 60.0,
         //     child:
 
         FlatButton(
           color: Colors.red,
-          child: Text("Cancel"),
+          child: const Text("Cancel"),
           textColor: Colors.white,
           onPressed: () {
             Navigator.of(context)
@@ -65,7 +65,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
 
         FlatButton(
             color: Colors.blue,
-            child: Text("Cash"),
+            child: const Text("Cash"),
             textColor: Colors.white,
             onPressed: () {
               Navigator.of(context).pop(<String, String>{
@@ -80,7 +80,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
 
         FlatButton(
           color: Colors.blue,
-          child: Text("Bank transfer"),
+          child: const Text("Bank transfer"),
           textColor: Colors.white,
             onPressed: () {
               Navigator.of(context).pop(<String, String>{

@@ -12,9 +12,10 @@ import 'package:harrier_central/util/styles.dart';
 
 
 class UserSecretQrPage extends StatefulWidget {
-  UserSecretQrPage({Key key, this.kennelMemberModel}) : super(key: key);
 
-  KennelMemberModel kennelMemberModel;
+  const UserSecretQrPage({Key key, this.kennelMemberModel}) : super(key: key);
+
+  final KennelMemberModel kennelMemberModel;
 
   @override
   _UserSecretQrCodePageState createState() => _UserSecretQrCodePageState();
@@ -39,18 +40,18 @@ class _UserSecretQrCodePageState extends State<UserSecretQrPage>
       backgroundColor: ThemeColors.appBarBackground,
       title: Text('Admin for: ${widget.kennelMemberModel.displayName}'),
       bottom: PreferredSize(
-        preferredSize: Size.fromHeight(120.0),
+        preferredSize: const Size.fromHeight(120.0),
         child: Padding(
-          padding: EdgeInsets.all(30.0),
+          padding: const EdgeInsets.all(30.0),
           child: Container(
             width: 320.0,
             height: 90.0,
             decoration: BoxDecoration(
               color: Theme.of(context).primaryColorLight,
-              borderRadius: BorderRadius.all(Radius.circular(45.0)),
+              borderRadius: const BorderRadius.all(Radius.circular(45.0)),
             ),
             child: Padding(
-              padding: EdgeInsets.only(left: 5.0, right: 5.0),
+              padding: const EdgeInsets.only(left: 5.0, right: 5.0),
               child: TabBar(
                 labelStyle: const TextStyle(
                     fontFamily: 'AvenirNextCondensedMedium',
@@ -82,7 +83,7 @@ class _UserSecretQrCodePageState extends State<UserSecretQrPage>
         children: <Widget>[
           TabBarView(
             controller: _tabController,
-            children: <Widget>[QrCodeTab(kennelMemberModel: widget.kennelMemberModel), QrScannerTab()],
+            children: <Widget>[QrCodeTab(kennelMemberModel: widget.kennelMemberModel), const QrScannerTab()],
           ),
         ],
       ),
@@ -162,11 +163,11 @@ class _UserSecretQrCodePageState extends State<UserSecretQrPage>
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('About your QR Scanner'),
+          title: const Text('About your QR Scanner'),
           content: SingleChildScrollView(
             child: ListBody(
-              children: <Widget>[
-                Text(
+              children: const <Widget>[
+                 Text(
                   'You can use your QR scanner to add friends to your Harrier Central friend list simply by scanning their personal QR code. You can also use your scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out.',
                   textAlign: TextAlign.justify,
                   style: const TextStyle(
@@ -180,7 +181,7 @@ class _UserSecretQrCodePageState extends State<UserSecretQrPage>
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text("OK, Got it!"),
+              child: const Text("OK, Got it!"),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -193,19 +194,19 @@ class _UserSecretQrCodePageState extends State<UserSecretQrPage>
 
   void _initTabs() {
     if (tabs.isEmpty) {
-      tabs.add(Tab(text: 'My QR Code'));
-      tabs.add(Tab(text: 'QR Scanner'));
+      tabs.add(const Tab(text: 'My QR Code'));
+      tabs.add(const Tab(text: 'QR Scanner'));
     }
   }
 
   void _onSwitchToQrCode() {
     _pageController.animateToPage(0,
-        duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+        duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
   }
 
   void _onSwitchToQrScanner() {
     _pageController?.animateToPage(1,
-        duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+        duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
   }
 }
 
@@ -261,9 +262,9 @@ class TabIndicationPainter extends CustomPainter {
 }
 
 class QrCodeTab extends StatefulWidget {
-  QrCodeTab({Key key, this.kennelMemberModel}) : super(key: key);
+  const QrCodeTab({Key key, this.kennelMemberModel}) : super(key: key);
 
-  KennelMemberModel kennelMemberModel;
+  final KennelMemberModel kennelMemberModel;
 
   @override
   _QrCodeTabState createState() => _QrCodeTabState();
@@ -294,17 +295,17 @@ class _QrCodeTabState extends State<QrCodeTab>
                 height: 1.0),
           ),
           QrImage(
-              padding: EdgeInsets.all(10.0),
+              padding: const EdgeInsets.all(10.0),
               data: widget.kennelMemberModel.qr_secret_code,
               version: 4,
               size: 200.0,
               errorCorrectionLevel: 3
               ),
           Padding(
-            padding: EdgeInsets.only(left: 32.0, right: 32.0),
+            padding: const EdgeInsets.only(left: 32.0, right: 32.0),
             child: FlatButton(
               textColor: Theme.of(context).buttonColor,
-              child: Text("Learn more about this feature"),
+              child: const Text("Learn more about this feature"),
               onPressed: () {
                 //this._displayInstructions(context);
               },
@@ -351,7 +352,7 @@ class _QrScannerTabState extends State<QrScannerTab>
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
           Padding(
-            padding: EdgeInsets.only(left: 24.0, right: 24.0),
+            padding: const EdgeInsets.only(left: 24.0, right: 24.0),
             child: Text(
               'Scan to add friends and scan to check yourself in at the start and end of runs.',
               textAlign: TextAlign.center,
@@ -362,22 +363,22 @@ class _QrScannerTabState extends State<QrScannerTab>
                   height: 1.0),
             ),
           ),
-          new Center(
-            child: new Column(
+          Center(
+            child: Column(
               children: <Widget>[
                 Container(
                   width: 150.0,
                   child: RaisedButton(
                       child: const Text(
                         'Start Scanning',
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                       ),
                       onPressed: () {
                         scanUserBarcode();
                       }),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(left: 24.0, right: 24.0, top: 35.0),
+                  padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 35.0),
                   child: Text(
                     barcode,
                     textAlign: TextAlign.center,

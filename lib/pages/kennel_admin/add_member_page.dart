@@ -18,18 +18,19 @@ import 'package:harrier_central/util/styles.dart';
 //import 'package:the_gorgeous_login/style/theme.dart' as Theme;
 
 class AddMemberPage extends StatefulWidget {
-  String kennelId;
-  String eventId;
-  EnumAttendenceState<int> attendenceState;
-  String profileImageUrl;
 
-  AddMemberPage(
+  const AddMemberPage(
       {Key key,
       this.kennelId,
       this.eventId,
       this.attendenceState = attndenceUnknown,
       this.profileImageUrl = ''})
       : super(key: key);
+
+  final String kennelId;
+  final String eventId;
+  final EnumAttendenceState<int> attendenceState;
+  final String profileImageUrl;
 
   @override
   _AddMemberPageState createState() => _AddMemberPageState();
@@ -72,9 +73,9 @@ class _AddMemberPageState extends State<AddMemberPage>
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: ThemeColors.appBarBackground,
-        title: Text(
+        title: const Text(
           'Add Member Page',
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
           ),
         ),
@@ -100,7 +101,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //     height: MediaQuery.of(context).size.height >= 300.0
 //         ? MediaQuery.of(context).size.height - 100
 //         : 300.0,
-//     decoration: BoxDecoration(
+//     decoration: const BoxDecoration(
 //       gradient: LinearGradient(
 //           colors: <Color>[
 //             LoginColors.loginGradientStart,
@@ -117,7 +118,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //             mainAxisSize: MainAxisSize.max,
 //             children: <Widget>[
 //               const Padding(
-//                 padding: EdgeInsets.only(top: 35.0),
+//                 padding: const EdgeInsets.only(top: 35.0),
 //                 child: Image(
 //                     width: 100.0,
 //                     height: 100.0,
@@ -201,7 +202,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //             fontFamily: 'WorkSansSemiBold'),
 //       ),
 //       backgroundColor: Colors.blue,
-//       duration: Duration(seconds: 3),
+//       duration: const Duration(seconds: 3),
 //     ));
 //   }
 
@@ -225,7 +226,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //                 onPressed: _onSignInTabPress,
 //                 child: Text(
 //                   'New',
-//                   style: TextStyle(
+//                   style: const TextStyle(
 //                       color: left,
 //                       fontSize: 16.0,
 //                       fontFamily: 'WorkSansSemiBold'),
@@ -240,7 +241,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //                 onPressed: _onSignUpTabPress,
 //                 child: Text(
 //                   'Existing',
-//                   style: TextStyle(
+//                   style: const TextStyle(
 //                       color: right,
 //                       fontSize: 16.0,
 //                       fontFamily: 'WorkSansSemiBold'),
@@ -263,12 +264,12 @@ class _AddMemberPageState extends State<AddMemberPage>
 //             overflow: Overflow.visible,
 //             children: <Widget>[
 //               const Padding(
-//                 padding: EdgeInsets.only(top: 50.0),
+//                 padding: const EdgeInsets.only(top: 50.0),
 //                 child: RotationTransition(
 //                   turns: AlwaysStoppedAnimation<double>(45.0 / 360.0),
 //                   child: Text(
 //                     'IN DEVELOPMENT',
-//                     style: TextStyle(
+//                     style: const TextStyle(
 //                         color: Colors.yellow,
 //                         fontSize: 25.0,
 //                         fontFamily: 'WorkSansBold'),
@@ -277,7 +278,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //               ),
 //               Container(
 //                 margin: const EdgeInsets.only(top: 170.0),
-//                 decoration: BoxDecoration(
+//                 decoration: const BoxDecoration(
 //                   borderRadius: const BorderRadius.all(Radius.circular(5.0)),
 //                   boxShadow: <BoxShadow>[
 //                     BoxShadow(
@@ -308,11 +309,11 @@ class _AddMemberPageState extends State<AddMemberPage>
 //                     splashColor: LoginColors.loginGradientEnd,
 //                     //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
 //                     child: const Padding(
-//                       padding: EdgeInsets.symmetric(
+//                       padding: const EdgeInsets.symmetric(
 //                           vertical: 10.0, horizontal: 42.0),
 //                       child: Text(
 //                         'SCAN QR',
-//                         style: TextStyle(
+//                         style: const TextStyle(
 //                             color: Colors.white,
 //                             fontSize: 25.0,
 //                             fontFamily: 'WorkSansBold'),
@@ -343,10 +344,10 @@ class _AddMemberPageState extends State<AddMemberPage>
 //                   height: 1.0,
 //                 ),
 //                 const Padding(
-//                   padding: EdgeInsets.only(left: 15.0, right: 15.0),
+//                   padding: const EdgeInsets.only(left: 15.0, right: 15.0),
 //                   child: Text(
 //                     'Or',
-//                     style: TextStyle(
+//                     style: const TextStyle(
 //                         color: Colors.white,
 //                         fontSize: 16.0,
 //                         fontFamily: 'WorkSansMedium'),
@@ -383,7 +384,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //                       shape: BoxShape.circle,
 //                       color: Colors.white,
 //                     ),
-//                     child: const Icon(
+//                     child: const  Icon(
 //                       FontAwesomeIcons.facebookF,
 //                       color: Color(0xFF0084ff),
 //                     ),
@@ -400,7 +401,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //                       shape: BoxShape.circle,
 //                       color: Colors.white,
 //                     ),
-//                     child: const Icon(
+//                     child: const  Icon(
 //                       FontAwesomeIcons.google,
 //                       color: Color(0xFF0084ff),
 //                     ),
@@ -448,7 +449,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //                               color: Colors.black),
 //                           decoration: const InputDecoration(
 //                             border: InputBorder.none,
-//                             icon: Icon(
+//                             icon:const  Icon(
 //                               FontAwesomeIcons.user,
 //                               color: Colors.black,
 //                             ),
@@ -477,7 +478,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //                               color: Colors.black),
 //                           decoration: const InputDecoration(
 //                             border: InputBorder.none,
-//                             icon: Icon(
+//                             icon:const  Icon(
 //                               FontAwesomeIcons.user,
 //                               color: Colors.black,
 //                             ),
@@ -505,7 +506,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //                               color: Colors.black),
 //                           decoration: const InputDecoration(
 //                             border: InputBorder.none,
-//                             icon: Icon(
+//                             icon:const  Icon(
 //                               FontAwesomeIcons.envelope,
 //                               color: Colors.black,
 //                             ),
@@ -533,7 +534,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //                               color: Colors.black),
 //                           decoration: const InputDecoration(
 //                             border: InputBorder.none,
-//                             icon: Icon(
+//                             icon:const  Icon(
 //                               FontAwesomeIcons.dove,
 //                               color: Colors.black,
 //                             ),
@@ -549,7 +550,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //               ),
 //               Container(
 //                 margin: const EdgeInsets.only(top: 210.0),
-//                 decoration: BoxDecoration(
+//                 decoration: const BoxDecoration(
 //                   borderRadius: const BorderRadius.all(Radius.circular(5.0)),
 //                   boxShadow: <BoxShadow>[
 //                     BoxShadow(
@@ -577,11 +578,11 @@ class _AddMemberPageState extends State<AddMemberPage>
 //                     highlightColor: Colors.transparent,
 //                     splashColor: LoginColors.loginGradientEnd,
 //                     child: const Padding(
-//                       padding: EdgeInsets.symmetric(
+//                       padding: const EdgeInsets.symmetric(
 //                           vertical: 10.0, horizontal: 42.0),
 //                       child: Text(
 //                         'ADD MEMBER',
-//                         style: TextStyle(
+//                         style: const TextStyle(
 //                             color: Colors.white,
 //                             fontSize: 25.0,
 //                             fontFamily: 'WorkSansBold'),
@@ -612,10 +613,10 @@ class _AddMemberPageState extends State<AddMemberPage>
 //           //         height: 1.0,
 //           //       ),
 //           //       const Padding(
-//           //         padding: EdgeInsets.only(left: 15.0, right: 15.0),
+//           //         padding: const EdgeInsets.only(left: 15.0, right: 15.0),
 //           //         child: Text(
 //           //           'Or',
-//           //           style: TextStyle(
+//           //           style: const TextStyle(
 //           //               color: Colors.white,
 //           //               fontSize: 16.0,
 //           //               fontFamily: 'WorkSansMedium'),
@@ -653,7 +654,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //           //             shape: BoxShape.circle,
 //           //             color: Colors.white,
 //           //           ),
-//           //           child: const Icon(
+//           //           child: const  Icon(
 //           //             FontAwesomeIcons.facebookF,
 //           //             color: Color(0xFF0084ff),
 //           //           ),
@@ -669,12 +670,12 @@ class _AddMemberPageState extends State<AddMemberPage>
 
 //   void _onSignInTabPress() {
 //     _pageController.animateToPage(0,
-//         duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+//         duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
 //   }
 
 //   void _onSignUpTabPress() {
 //     _pageController?.animateToPage(1,
-//         duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+//         duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
 //   }
 
 //   void _onSignUpButtonPress() {
@@ -736,7 +737,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //               height: 40.0,
 //             ),
 //             Padding(
-//               padding: EdgeInsets.only(top: 0.0),
+//               padding: const EdgeInsets.only(top: 0.0),
 //               child: Text(
 //                 'Creating\r\nHarrier Central\r\nAccount',
 //                 textAlign: TextAlign.center,
@@ -767,8 +768,8 @@ class _AddMemberPageState extends State<AddMemberPage>
 //                     height: 1.0,
 //                   ),
 //                   const Padding(
-//                     padding: EdgeInsets.only(left: 15.0, right: 15.0),
-//                     child: const Icon(FontAwesomeIcons.circle,
+//                     padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+//                     child: const  Icon(FontAwesomeIcons.circle,
 //                         color: Color(0xFFFFFFFF), size: 10.0),
 //                   ),
 //                   Container(
@@ -797,7 +798,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //               size: 75.0,
 //               itemBuilder: (_, int index) {
 //                 return DecoratedBox(
-//                   decoration: BoxDecoration(
+//                   decoration: const BoxDecoration(
 //                     color: index.isEven
 //                         ? Colors.white
 //                         : Theme.of(context).accentColor,

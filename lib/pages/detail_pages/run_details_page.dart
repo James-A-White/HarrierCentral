@@ -16,9 +16,9 @@ class RunDetailsPage extends StatelessWidget {
         appBar: AppBar(
           centerTitle: true,
           backgroundColor: ThemeColors.appBarBackground,
-          title: Text(
+          title: const Text(
             'Run Details',
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
             ),
           ),

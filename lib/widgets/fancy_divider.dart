@@ -18,7 +18,7 @@ class FancyDivider extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             // Container(
-            //   decoration: BoxDecoration(
+            //   decoration: const BoxDecoration(
             //     gradient: LinearGradient(
             //         colors: <Color>[
             //           outerColor,
@@ -33,12 +33,12 @@ class FancyDivider extends StatelessWidget {
             //   height: 1.0,
             // ),
             // Padding(
-            //   padding: EdgeInsets.only(left: 15.0, right: 15.0),
-            //   child: Icon(FontAwesomeIcons.circle,
+            //   padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+            //   child:const  Icon(FontAwesomeIcons.circle,
             //       color: this.innerColor, size: 10.0),
             // ),
             // Container(
-            //   decoration: BoxDecoration(
+            //   decoration: const BoxDecoration(
             //     gradient: LinearGradient(
             //         colors: <Color>[
             //           innerColor,

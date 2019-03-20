@@ -37,7 +37,7 @@ class _LoginPageState extends State<FbLoginPage> {
           title: const Text('Facebook Login'),
           actions: <Widget>[
             IconButton(
-              icon: const Icon(
+              icon: const  Icon(
                 Icons.exit_to_app,
                 color: Colors.white,
               ),

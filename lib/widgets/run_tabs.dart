@@ -57,15 +57,15 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 
     if (!(widget.futureRun.eventImage ?? '').isEmpty &&
         widget.futureRun.eventImage.startsWith('http')) {
-      tabs.add(Tab(text: 'Photo'));
+      tabs.add(const Tab(text: 'Photo'));
     }
-    tabs.add(Tab(text: 'Details'));
-    tabs.add(Tab(text: 'RSVP'));
+    tabs.add(const Tab(text: 'Details'));
+    tabs.add(const Tab(text: 'RSVP'));
     //tabs.add(Tab(text: 'Desc'));
 
-    tabs.add(Tab(text: 'Map'));
+    tabs.add(const Tab(text: 'Map'));
     if (isAdmin) {
-      tabs.add(Tab(text: 'Admin'));
+      tabs.add(const Tab(text: 'Admin'));
     }
   }
 
@@ -75,7 +75,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 
   List<UserModel> packList;
 
-  GetPackService _getPackService = GetPackService();
+  final GetPackService _getPackService = GetPackService();
 
   final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
@@ -122,7 +122,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         imageUrl: widget.futureRun.eventImage,
         // errorWidget:
         //     (BuildContext context, String url, Exception error) =>
-        //         const Icon(Icons.error),
+        //         const  Icon(Icons.error),
       ),
       // decoration:
       //     BoxDecoration(color: Theme.of(context).selectedRowColor),
@@ -171,14 +171,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               child: AutoSizeText(widget.futureRun.eventName,
                   style: titleStyle, textAlign: TextAlign.center, maxLines: 2),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
-              child: const FancyDivider(innerColor: Colors.white),
+            const Padding(
+              padding:  EdgeInsets.only(top: 20.0, bottom: 10.0),
+              child:  FancyDivider(innerColor: Colors.white),
             ),
             Stack(
               children: <Widget>[
                 Padding(
-                  padding: EdgeInsets.only(
+                  padding: const EdgeInsets.only(
                       top: 20.0, right: 30.0, left: 20.0, bottom: 20.0),
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -241,7 +241,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                       ]),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(
+                  padding: const EdgeInsets.only(
                       top: 21.0, right: 20.0, left: 102.0, bottom: 20.0),
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -333,7 +333,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               child: const FancyDivider(innerColor: Colors.white),
             ),
             Padding(
-              padding: EdgeInsets.only(
+              padding: const EdgeInsets.only(
                   top: 30.0, right: 20.0, left: 20.0, bottom: 20.0),
               child: Text(widget.futureRun.eventDescription, style: bodyStyle),
             ),
@@ -353,7 +353,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   Container buildRsvpView() {
     return Container(
       // RSVP
-      //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
+      //decoration: const BoxDecoration(color: Theme.of(context).selectedRowColor),
       child: Center(
         child: ScopedModelDescendant<FutureRunScopedModel>(
           builder: (BuildContext context, Widget child,
@@ -365,7 +365,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               //mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 Padding(
-                  padding: EdgeInsets.only(top: 17.0, bottom: 8.0),
+                  padding: const EdgeInsets.only(top: 17.0, bottom: 8.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
@@ -390,14 +390,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                                   child: Container(
                                     height: 45,
                                     width: 45,
-                                    decoration: new BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       color: Colors.white,
                                       shape: BoxShape.circle,
                                     ),
                                   ),
                                 ),
                                 IconButton(
-                                  icon: Icon(FontAwesomeIcons.solidCheckCircle),
+                                  icon:const  Icon(FontAwesomeIcons.solidCheckCircle),
                                   color: widget.futureRun.requestedRsvpState ==
                                           rsvpYes.value
                                       ? Colors.blue
@@ -457,14 +457,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                                   child: Container(
                                     height: 45,
                                     width: 45,
-                                    decoration: new BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       color: Colors.white,
                                       shape: BoxShape.circle,
                                     ),
                                   ),
                                 ),
                                                           IconButton(
-                                icon: Icon(FontAwesomeIcons.solidQuestionCircle),
+                                icon:const  Icon(FontAwesomeIcons.solidQuestionCircle),
                                 color: widget.futureRun.requestedRsvpState ==
                                         rsvpMaybe.value
                                     ? Colors.blue
@@ -527,14 +527,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                                   child: Container(
                                     height: 45,
                                     width: 45,
-                                    decoration: new BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       color: Colors.white,
                                       shape: BoxShape.circle,
                                     ),
                                   ),
                                 ),
                                                           IconButton(
-                                icon: Icon(FontAwesomeIcons.solidTimesCircle),
+                                icon:const  Icon(FontAwesomeIcons.solidTimesCircle),
                                 color: widget.futureRun.requestedRsvpState ==
                                         rsvpNo.value
                                     ? Colors.blue
@@ -589,7 +589,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                                   child: Container(
                                     height: 45,
                                     width: 45,
-                                    decoration: new BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       color: Colors.white,
                                       shape: BoxShape.circle,
                                     ),
@@ -652,8 +652,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     margin: const EdgeInsets.only(
                         left: 16.0, right: 16.0, bottom: 15.0),
                     padding: const EdgeInsets.all(8.0),
-                    // decoration: new BoxDecoration(
-                    //     border: new Border.all(
+                    // decoration: const BoxDecoration(
+                    //     border: Border.all(
                     //         color: Theme.of(context).accentColor)),
                     child: Scrollbar(
                       child: RefreshIndicator(
@@ -690,15 +690,15 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                               }
 
                               return packList.isEmpty
-                                  ? new Container(
+                                  ? Container(
                                       color: Colors.grey[300],
                                       width: 70.0,
                                       height: 70.0,
-                                      child: new Padding(
+                                      child: const Padding(
                                           padding: const EdgeInsets.all(5.0),
-                                          child: new Center(
+                                          child: Center(
                                               child:
-                                                  new CircularProgressIndicator())),
+                                                  CircularProgressIndicator())),
                                     )
                                   : GestureDetector(
                                       onTap: () {
@@ -731,7 +731,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                         ;
 
                                         final snackBar = SnackBar(
-                                          duration: Duration(seconds: 2),
+                                          duration: const Duration(seconds: 2),
                                           content: Text(
                                             packList[index].displayName +
                                                 actionText,
@@ -758,7 +758,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                   imageUrl:
                                                       packList[index].photo,
                                                   //placeholder: const CircularProgressIndicator(),
-                                                  //errorWidget: const Icon(Icons.error),
+                                                  //errorWidget: const  Icon(Icons.error),
 
                                                   // placeholder:
                                                   //     (context,
@@ -785,7 +785,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                   //             url,
                                                   //         Exception
                                                   //             error) =>
-                                                  //     const Icon(Icons
+                                                  //     const  Icon(Icons
                                                   //         .error),
 
                                                   //fadeOutDuration:  Duration(seconds: 1),
@@ -842,20 +842,20 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                     radius: 10.0,
                                                   )
                                                 : packList[index].rsvpState == 1
-                                                    ? Icon(
+                                                    ?const  Icon(
                                                         FontAwesomeIcons
                                                             .solidTimesCircle,
                                                         color: Colors.red,
                                                         size: 20.0)
                                                     : packList[index].rsvpState == 2
-                                                        ? Icon(
+                                                        ?const  Icon(
                                                             FontAwesomeIcons
                                                                 .solidQuestionCircle,
                                                             color:
                                                                 Colors.orange,
                                                             size: 20.0)
                                                         : packList[index].isHare == 0
-                                                            ? Icon(
+                                                            ?const  Icon(
                                                                 FontAwesomeIcons
                                                                     .solidCheckCircle,
                                                                 color: Colors
@@ -877,8 +877,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             },
                             staggeredTileBuilder: (int index) {
                               return packList[index].isHare != 1
-                                  ? new StaggeredTile.count(1, 1)
-                                  : new StaggeredTile.count(2, 2);
+                                  ? const StaggeredTile.count(1, 1)
+                                  : const StaggeredTile.count(2, 2);
                             },
                             mainAxisSpacing: 8.0,
                             crossAxisSpacing: 8.0,
@@ -951,8 +951,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                   //   child: Center(
                   //     child: Scrollbar(
                   //       child: SingleChildScrollView(
-                  //         child: Padding(
-                  //           padding: EdgeInsets.only(
+                  //         child: const Padding(
+                  //           padding: const EdgeInsets.only(
                   //               top: 20.0, right: 20.0, left: 20.0, bottom: 20.0),
                   //           child: Text(
                   //             widget.futureRun.eventDescription,
@@ -1026,7 +1026,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 child: RaisedButton(
                                   child: const Text(
                                     'Check in Pack',
-                                    style: TextStyle(color: Colors.white),
+                                    style: const TextStyle(color: Colors.white),
                                   ),
                                   onPressed: () {
                                     Navigator.push<dynamic>(
@@ -1044,7 +1044,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 child: RaisedButton(
                                     child: const Text(
                                       'Edit Run',
-                                      style: TextStyle(color: Colors.white),
+                                      style: const TextStyle(color: Colors.white),
                                     ),
                                     onPressed: () {
                                       int i = 0;
@@ -1060,7 +1060,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 child: RaisedButton(
                                   child: const Text(
                                     'Check in Scanner',
-                                    style: TextStyle(color: Colors.white),
+                                    style: const TextStyle(color: Colors.white),
                                   ),
                                   onPressed: () {
                                     Navigator.push<dynamic>(
@@ -1086,7 +1086,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 child: RaisedButton(
                                   child: const Text(
                                     'Run fee report',
-                                    style: TextStyle(color: Colors.white),
+                                    style: const TextStyle(color: Colors.white),
                                   ),
                                   onPressed: () {
                                     Navigator.push<dynamic>(
@@ -1116,7 +1116,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 child: RaisedButton(
                                     child: const Text(
                                       'Run Start QR',
-                                      style: TextStyle(color: Colors.white),
+                                      style: const TextStyle(color: Colors.white),
                                     ),
                                     onPressed: () {
                                       Navigator.push<dynamic>(
@@ -1145,7 +1145,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 child: RaisedButton(
                                     child: const Text(
                                       'Run End QR',
-                                      style: TextStyle(color: Colors.white),
+                                      style: const TextStyle(color: Colors.white),
                                     ),
                                     onPressed: () {
                                       Navigator.push<dynamic>(
@@ -1180,7 +1180,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           //   return Center(
           //       child: Text(
           //     tab.text,
-          //     style: TextStyle(fontSize: 20.0),
+          //     style: const TextStyle(fontSize: 20.0),
           //   ));
           // }).toList(),
         ),
@@ -1221,7 +1221,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
             fontFamily: 'WorkSansSemiBold'),
       ),
       backgroundColor: Colors.blue,
-      duration: Duration(seconds: 3),
+      duration: const Duration(seconds: 3),
     ));
   }
 
@@ -1231,7 +1231,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Will you Hare this run?'),
+          title: const Text('Will you Hare this run?'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -1243,13 +1243,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text("No Thanks!"),
+              child: const Text("No Thanks!"),
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
             ),
             FlatButton(
-              child: Text("Yes, I'll Hare!"),
+              child: const Text("Yes, I'll Hare!"),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -1269,19 +1269,19 @@ class _Tile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new Card(
-      child: new Column(
+    return Card(
+      child: Column(
         children: <Widget>[
-          new Image.network(source),
-          new Padding(
+          Image.network(source),
+          Padding(
             padding: const EdgeInsets.all(4.0),
-            child: new Column(
+            child: Column(
               children: <Widget>[
-                new Text(
+                Text(
                   'Image number $index',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                new Text(
+                Text(
                   'Vincent Van Gogh',
                   style: const TextStyle(color: Colors.grey),
                 ),

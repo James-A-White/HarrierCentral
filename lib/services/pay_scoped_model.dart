@@ -47,7 +47,7 @@ class PayScopedModel extends Model {
     // }
 
     notifyListeners();
-    PayForEventService srv = new PayForEventService();
+    PayForEventService srv = PayForEventService();
 
     return srv
         .payForEvent(packList[index].hasherId, packList[index].eventId,

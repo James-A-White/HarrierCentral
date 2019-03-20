@@ -29,7 +29,7 @@ class KennelMembersList extends StatelessWidget {
         backgroundColor: ThemeColors.appBarBackground,
         title: Text(
           '${kennel.kennelShortName} Members',
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
           ),
         ),
@@ -114,7 +114,7 @@ class KennelMembersListPageBody extends StatelessWidget {
               child: RaisedButton(
                 child: const Text(
                   'Add Member',
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                 ),
                 onPressed: () {
                   Navigator.push<dynamic>(

@@ -6,9 +6,9 @@ import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class KennelAdminMainPage extends StatelessWidget {
-  KennelAdminMainPage({@required this.kennel});
 
-  Kennel kennel;
+  const KennelAdminMainPage({@required this.kennel});
+  final Kennel kennel;
 
   @override
   Widget build(BuildContext context) {
@@ -18,13 +18,13 @@ class KennelAdminMainPage extends StatelessWidget {
         backgroundColor: ThemeColors.appBarBackground,
         title: Text(
           '${kennel.kennelShortName} Admin',
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
           ),
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.only(top: 30.0),
+        padding: const EdgeInsets.only(top: 30.0),
         child: Column(
           children: <Widget>[
             Align(
@@ -41,7 +41,7 @@ class KennelAdminMainPage extends StatelessWidget {
               child: RaisedButton(
                 child: const Text(
                   'Members',
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                 ),
                 onPressed: () {
                   Navigator.push<dynamic>(

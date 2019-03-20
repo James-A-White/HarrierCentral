@@ -134,7 +134,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       backgroundColor: ThemeColors.appBarBackground,
       title: Text(
         '${title} Check In',
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.white,
         ),
       ),
@@ -150,7 +150,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   Container searchBar(PackScopedModel model, num width) {
     return Container(
       // color: Colors.red,
-      padding: EdgeInsets.only(left: 10, top: 10),
+      padding: const EdgeInsets.only(left: 10, top: 10),
       width: width,
       height: 60,
       child: Row(
@@ -176,7 +176,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                   color: Colors.black),
               decoration: const InputDecoration(
                 border: InputBorder.none,
-                icon: Icon(
+                icon:const  Icon(
                   FontAwesomeIcons.search,
                   color: Colors.black,
                 ),
@@ -221,7 +221,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             animatedIcon: AnimatedIcons.menu_close,
             animatedIconTheme: IconThemeData(size: 22.0),
             // this is ignored if animatedIcon is non null
-            // child: Icon(Icons.add),
+            // child:const  Icon(Icons.add),
             visible: true,
             curve: Curves.bounceIn,
             overlayColor: Colors.black,
@@ -236,28 +236,28 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             shape: CircleBorder(),
             children: [
               SpeedDialChild(
-                child: Icon(Icons.filter_list),
+                child:const  Icon(Icons.filter_list),
                 backgroundColor: Colors.green,
                 label: 'Filter List',
                 labelStyle: TextStyle(fontSize: 18.0),
                 onTap: () => print('THIRD CHILD'),
               ),
               SpeedDialChild(
-                child: Icon(FontAwesomeIcons.beer),
+                child:const  Icon(FontAwesomeIcons.beer),
                 backgroundColor: Colors.green,
                 label: 'Scan: On In',
                 labelStyle: TextStyle(fontSize: 18.0),
                 onTap: () => print('FIRST CHILD'),
               ),
               SpeedDialChild(
-                child: Icon(Icons.directions_run),
+                child:const  Icon(Icons.directions_run),
                 backgroundColor: Colors.red,
                 label: 'Scan: At Hash',
                 labelStyle: TextStyle(fontSize: 18.0),
                 onTap: () => print('SECOND CHILD'),
               ),
               SpeedDialChild(
-                child: Icon(Icons.person_add),
+                child:const  Icon(Icons.person_add),
                 backgroundColor: Colors.blue,
                 label: 'Add Member',
                 labelStyle: TextStyle(fontSize: 18.0),
@@ -311,7 +311,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 // }),
               ),
               SpeedDialChild(
-                child: Icon(FontAwesomeIcons.solidHeart),
+                child:const  Icon(FontAwesomeIcons.solidHeart),
                 backgroundColor: Colors.blue,
                 label: 'Add Virgin / Visitor',
                 labelStyle: TextStyle(fontSize: 18.0),
@@ -391,7 +391,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     //       srv.processQrScan(widget.futureRun.eventId, scanText, checkinType, 0);
     //   apiCall.then((ProcessQrScanForCheckinModel result) {
     //     if (result.isPaid == 0) {
-    //       PaymentPopup pp = new PaymentPopup(
+    //       PaymentPopup pp = PaymentPopup(
     //         amount: result.runPriceThisUser,
     //         creditAllowed: result.isCreditAllowed,
     //         creditRemaining: result.remainingCredit,
@@ -521,7 +521,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   Widget buildScanResultSnackbar(BuildContext context,
       PackScopedModel _packScopedModel, String resultStr) {
     final snackbar = SnackBar(
-      duration: Duration(seconds: 4),
+      duration: const Duration(seconds: 4),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -614,10 +614,10 @@ class PackListView extends StatelessWidget {
                   color: Colors.grey[300],
                   width: 70.0,
                   height: 70.0,
-                  child: new Padding(
+                  child: const Padding(
                       padding: const EdgeInsets.all(5.0),
                       child:
-                          new Center(child: new CircularProgressIndicator())),
+                          Center(child: CircularProgressIndicator())),
                 )
               : GestureDetector(
                   onTap: () {
@@ -646,9 +646,9 @@ class PackListView extends StatelessWidget {
                               //     height: 70.0,
                               //    width: 70.0),
                               errorWidget: (context, url, error) =>
-                                  const Icon(Icons.error),
+                                  const  Icon(Icons.error),
                               //fadeOutDuration:  Duration(seconds: 1),
-                              fadeInDuration: Duration(milliseconds: 0),
+                              fadeInDuration: const Duration(milliseconds: 0),
                               width: 70.0,
                               height: 70.0,
                               fit: BoxFit.fill)
@@ -732,13 +732,13 @@ class PackListView extends StatelessWidget {
                                 radius: 12.0,
                               )
                             : packList[index].rsvpState == rsvpNo.value
-                                ? Icon(FontAwesomeIcons.solidTimesCircle,
+                                ?const  Icon(FontAwesomeIcons.solidTimesCircle,
                                     color: Colors.red, size: 24.0)
                                 : packList[index].rsvpState == rsvpMaybe.value
-                                    ? Icon(FontAwesomeIcons.solidQuestionCircle,
+                                    ?const  Icon(FontAwesomeIcons.solidQuestionCircle,
                                         color: Colors.orange, size: 24.0)
                                     : packList[index].isHare == 0
-                                        ? Icon(
+                                        ?const  Icon(
                                             FontAwesomeIcons.solidCheckCircle,
                                             color: Colors.green,
                                             size: 24.0)
@@ -921,7 +921,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Add Visitor or Virgin'),
+      title: const Text('Add Visitor or Virgin'),
       content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
         TextField(
           autofocus: true,
@@ -934,7 +934,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               color: Colors.black),
           decoration: const InputDecoration(
             //border: InputBorder.none,
-            icon: Icon(
+            icon:const  Icon(
               FontAwesomeIcons.moneyBillWave,
               color: Colors.white,
             ),
@@ -954,7 +954,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               color: Colors.black),
           decoration: const InputDecoration(
             //border: InputBorder.none,
-            icon: Icon(
+            icon:const  Icon(
               FontAwesomeIcons.moneyBillWave,
               color: Colors.white,
             ),
@@ -974,7 +974,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               color: Colors.black),
           decoration: const InputDecoration(
             //border: InputBorder.none,
-            icon: Icon(
+            icon:const  Icon(
               FontAwesomeIcons.moneyBillWave,
               color: Colors.white,
             ),
@@ -987,7 +987,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
       actions: <Widget>[
         FlatButton(
           color: Colors.red,
-          child: Text("Cancel"),
+          child: const Text("Cancel"),
           textColor: Colors.white,
           onPressed: () {
             Navigator.of(context)
@@ -997,7 +997,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
 
         FlatButton(
             color: Colors.blue,
-            child: Text("Add Visitor"),
+            child: const Text("Add Visitor"),
             textColor: Colors.white,
             onPressed: () {
               Navigator.of(context).pop(<String, String>{
@@ -1010,7 +1010,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
 
         FlatButton(
             color: Colors.blue,
-            child: Text("Add Virgin"),
+            child: const Text("Add Virgin"),
             textColor: Colors.white,
             onPressed: () {
               Navigator.of(context).pop(<String, String>{
@@ -1067,13 +1067,13 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
 //       addRepaintBoundaries: false,
 //       itemBuilder: (BuildContext context, int index) {
 //         return packList.isEmpty
-//             ? new Container(
+//             ? Container(
 //                 color: Colors.grey[300],
 //                 width: 70.0,
 //                 height: 70.0,
-//                 child: new Padding(
+//                 child: const Padding(
 //                     padding: const EdgeInsets.all(5.0),
-//                     child: new Center(child: new CircularProgressIndicator())),
+//                     child: Center(child: CircularProgressIndicator())),
 //               )
 //             : GestureDetector(
 //                 onTap: () {
@@ -1090,11 +1090,11 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
 //                         ? CachedNetworkImage(
 //                             imageUrl: packList[index].photo,
 //                             //placeholder: CircularProgressIndicator(),
-//                             //errorWidget: Icon(Icons.error),
+//                             //errorWidget:const  Icon(Icons.error),
 //                             placeholder: (context, url) => const CircularProgressIndicator(),
-//                             errorWidget: (context, url, error) => const Icon(Icons.error),
+//                             errorWidget: (context, url, error) => const  Icon(Icons.error),
 //                             //fadeOutDuration:  Duration(seconds: 1),
-//                             fadeInDuration: Duration(milliseconds: 0),
+//                             fadeInDuration: const Duration(milliseconds: 0),
 //                             width: 300.0,
 //                             height: 300.0,
 //                             fit: BoxFit.fill)
@@ -1140,13 +1140,13 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
 //                               radius: 12.0,
 //                             )
 //                           : packList[index].rsvpState == rsvpNo.value
-//                               ? Icon(FontAwesomeIcons.solidTimesCircle,
+//                               ?const  Icon(FontAwesomeIcons.solidTimesCircle,
 //                                   color: Colors.red, size: 24.0)
 //                               : packList[index].rsvpState == rsvpMaybe.value
-//                                   ? Icon(FontAwesomeIcons.solidQuestionCircle,
+//                                   ?const  Icon(FontAwesomeIcons.solidQuestionCircle,
 //                                       color: Colors.orange, size: 24.0)
 //                                   : packList[index].isHare == 0
-//                                       ? Icon(FontAwesomeIcons.solidCheckCircle,
+//                                       ?const  Icon(FontAwesomeIcons.solidCheckCircle,
 //                                           color: Colors.green, size: 24.0)
 //                                       : Image.asset(
 //                                           'images/icons/hare_icon.png',
@@ -1274,8 +1274,8 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
 //       },
 //       staggeredTileBuilder: (int index) {
 //         return packList[index].isHare == 0
-//             ? new StaggeredTile.count(1, 1)
-//             : new StaggeredTile.count(2, 2);
+//             ? StaggeredTile.count(1, 1)
+//             : StaggeredTile.count(2, 2);
 //       },
 //       mainAxisSpacing: 8.0,
 //       crossAxisSpacing: 8.0,

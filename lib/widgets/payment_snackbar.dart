@@ -226,7 +226,7 @@ Column(
             ],
           ),
           Padding(
-            padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
+            padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
             child: Container(color: Colors.white, height: 3.0),
           ),
           Row(
@@ -368,7 +368,7 @@ Column(
             ],
           ),
           Padding(
-            padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
+            padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
             child: Container(color: Colors.white, height: 3.0),
           ),
           ScopedModelDescendant<PayScopedModel>(
@@ -655,7 +655,7 @@ Column(
   void payOther(
       int index, PackScopedModel _packScopedModel, BuildContext context) {
     OtherPaymentPopup otherPaymentPopup =
-        new OtherPaymentPopup(currencySymbol: futureRun.currencySymbol);
+        OtherPaymentPopup(currencySymbol: futureRun.currencySymbol);
 
     Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
         context: context,
@@ -762,15 +762,15 @@ Column(
               builder: (BuildContext context) {
                 // return object of type Dialog
                 return AlertDialog(
-                  title: new Text("Credit applied to account"),
-                  content: new Text(
+                  title: const Text("Credit applied to account"),
+                  content: Text(
                       '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${futureRun.kennelShortName}'),
                   actions: <Widget>[
                     // usually buttons at the bottom of the dialog
-                    new FlatButton(
+                    FlatButton(
                       color: Colors.blue,
                       textColor: Colors.white,
-                      child: new Text("Close"),
+                      child: const Text("Close"),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
@@ -802,7 +802,7 @@ Column(
   //   //populatePriceStrings();
 
   //   return SnackBar(
-  //     duration: Duration(seconds: 5),
+  //     duration: const Duration(seconds: 5),
   //     content: 
       
       
@@ -996,7 +996,7 @@ Column(
   //           ],
   //         ),
   //         Padding(
-  //           padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
+  //           padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
   //           child: Container(color: Colors.white, height: 3.0),
   //         ),
   //         Row(
@@ -1138,7 +1138,7 @@ Column(
   //           ],
   //         ),
   //         Padding(
-  //           padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
+  //           padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
   //           child: Container(color: Colors.white, height: 3.0),
   //         ),
   //         ScopedModelDescendant<PayScopedModel>(

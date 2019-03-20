@@ -155,11 +155,11 @@ class Utilities {
             height: 1.0,
           ),
           Padding(
-            padding: EdgeInsets.only(left: 15.0, right: 15.0),
+            padding: const EdgeInsets.only(left: 15.0, right: 15.0),
             child: Text(
               text,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16.0,
                   fontFamily: 'WorkSansMedium'),

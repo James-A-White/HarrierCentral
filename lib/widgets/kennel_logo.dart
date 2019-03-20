@@ -20,14 +20,14 @@ class KennelLogo extends StatelessWidget {
     return Container(
         width: logoHeight,
         height: logoHeight,
-        margin: EdgeInsets.only(left: leftPadding),
+        margin:  EdgeInsets.only(left: leftPadding),
         child: kennelLogoUrl.contains('bundle://')
             ? Stack(alignment: Alignment.center, children: <Widget>[
                 Image.asset('images/generic_logos/' +
                     kennelLogoUrl.replaceAll('bundle://', '') +
                     '.png'),
                 Padding(
-                  padding: EdgeInsets.only(left: logoHeight/10, right: logoHeight/10),
+                  padding:  EdgeInsets.only(left: logoHeight/10, right: logoHeight/10),
                   child: AutoSizeText(
                     '$kennelShortName',
                     style: const TextStyle(
@@ -42,8 +42,8 @@ class KennelLogo extends StatelessWidget {
               ])
             :  CachedNetworkImage(
                 imageUrl: kennelLogoUrl,
-                //errorWidget: (BuildContext context,String url,Exception error) => const Icon(Icons.error),
-                //errorWidget:  const Icon(Icons.error),
+                //errorWidget: (BuildContext context,String url,Exception error) => const  Icon(Icons.error),
+                //errorWidget:  const  Icon(Icons.error),
                 fadeInDuration:  Duration(milliseconds: 0),
                 fit: BoxFit.fitHeight, height: logoHeight),
                   alignment: Alignment.centerRight);

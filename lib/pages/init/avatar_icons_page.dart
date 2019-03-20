@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class AvatarIconsPage extends StatefulWidget {
-  int selectedAvatarIcon;
-  AvatarIconsPage({Key key, this.selectedAvatarIcon}) : super(key: key);
+
+  const AvatarIconsPage({Key key, this.selectedAvatarIcon}) : super(key: key);
+
+  final int selectedAvatarIcon;
 
   @override
   State<AvatarIconsPage> createState() => _AvatarIconsPageState();
@@ -29,9 +31,9 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
       appBar: AppBar(
           centerTitle: true,
           backgroundColor: ThemeColors.appBarBackground,
-          title: Text(
+          title: const Text(
             'Choose Avatar',
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
             ),
           ),
@@ -45,12 +47,12 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
         padding: const EdgeInsets.only(top: 20.0),
         child: GridView.builder(
           scrollDirection: Axis.vertical,
-          gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount:
                   (MediaQuery.of(context).orientation == Orientation.portrait)
                       ? 2
                       : 3),
-          padding: EdgeInsets.only(top: 10.0),
+          padding: const EdgeInsets.only(top: 10.0),
           itemCount: 4,
           itemBuilder: (BuildContext bldCtx, int index) {
             return MaterialButton(

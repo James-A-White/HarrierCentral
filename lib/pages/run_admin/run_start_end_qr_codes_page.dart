@@ -36,7 +36,7 @@ class RunStartEndQrCodes extends StatelessWidget {
         backgroundColor: ThemeColors.appBarBackground,
         title: Text(
           'Run $startEndString QR Code',
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
           ),
         ),
@@ -73,16 +73,16 @@ class RunStartEndQrCodes extends StatelessWidget {
                   height: 1.0),
             ),
             QrImage(
-                padding: EdgeInsets.all(10.0),
+                padding: const EdgeInsets.all(10.0),
                 data: qrData,
                 version: 4,
                 size: 200.0,
                 errorCorrectionLevel: 3),
             Padding(
-              padding: EdgeInsets.only(left: 32.0, right: 32.0, bottom: 16.0),
+              padding: const EdgeInsets.only(left: 32.0, right: 32.0, bottom: 16.0),
               child: FlatButton(
                 textColor: Theme.of(context).buttonColor,
-                child: Text("Learn more about this feature"),
+                child: const Text("Learn more about this feature"),
                 onPressed: () {
                   this._displayInstructions(context);
                 },
@@ -100,7 +100,7 @@ class RunStartEndQrCodes extends StatelessWidget {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Instructions on using run QR codes'),
+          title: const Text('Instructions on using run QR codes'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -120,7 +120,7 @@ class RunStartEndQrCodes extends StatelessWidget {
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text("OK, Got it!"),
+              child: const Text("OK, Got it!"),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },

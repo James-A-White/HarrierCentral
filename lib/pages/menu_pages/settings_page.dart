@@ -18,9 +18,9 @@ class SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: Theme.of(context).primaryColor,
-        title: Text(
+        title: const Text(
           'My Profile',
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
           ),
         ),
@@ -49,14 +49,14 @@ class SettingsPageContent extends StatefulWidget {
 }
 
 class _SettingsPageContentState extends State<SettingsPageContent> {
-  TextStyle headingStyle = TextStyle(
+  TextStyle headingStyle = const TextStyle(
       fontFamily: 'AvenirNextRegular',
       fontStyle: FontStyle.normal,
       color: Colors.yellow,
       fontSize: 24.0,
       height: 1.0);
 
-  TextStyle bodyStyle = TextStyle(
+  TextStyle bodyStyle = const TextStyle(
       fontFamily: 'AvenirNextRegular',
       fontStyle: FontStyle.normal,
       color: Colors.white,

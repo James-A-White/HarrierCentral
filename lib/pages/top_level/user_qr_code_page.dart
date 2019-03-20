@@ -70,7 +70,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
                   borderRadius: BorderRadius.all(Radius.circular(35.0)),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.only(left: 1.0, right: 1.0),
+                  padding: const EdgeInsets.only(left: 1.0, right: 1.0),
                   child: TabBar(
                     labelStyle: const TextStyle(
                         fontFamily: 'AvenirNextCondensedMedium',
@@ -155,7 +155,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
   //               onPressed: _onSwitchToQrScanner,
   //               child: Text(
   //                 'Scan',
-  //                 style: TextStyle(
+  //                 style: const TextStyle(
   //                     color: left,
   //                     fontSize: 14.0,
   //                     fontFamily: 'WorkSansSemiBold'),
@@ -169,7 +169,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
   //               onPressed: _onSwitchToQrCode,
   //               child: Text(
   //                 'My Scanner',
-  //                 style: TextStyle(
+  //                 style: const TextStyle(
   //                     color: right,
   //                     fontSize: 14.0,
   //                     fontFamily: 'WorkSansSemiBold'),
@@ -188,7 +188,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('About your QR Scanner'),
+          title: const Text('About your QR Scanner'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -206,7 +206,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text("OK, Got it!"),
+              child: const Text("OK, Got it!"),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -226,12 +226,12 @@ class _UserQrCodePageState extends State<UserQrCodePage>
 
   void _onSwitchToQrCode() {
     _pageController.animateToPage(0,
-        duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+        duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
   }
 
   void _onSwitchToQrScanner() {
     _pageController?.animateToPage(1,
-        duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+        duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
   }
 }
 
@@ -304,7 +304,7 @@ class _QrCodeTabState extends State<QrCodeTab>
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Your QR Code'),
+          title: const Text('Your QR Code'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -322,7 +322,7 @@ class _QrCodeTabState extends State<QrCodeTab>
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text("OK, Got it!"),
+              child: const Text("OK, Got it!"),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -400,7 +400,7 @@ class _QrCodeTabState extends State<QrCodeTab>
                       height: math.min(constraints.maxHeight,constraints.maxWidth) * 0.65,
                       child: QrImage(
                           backgroundColor: Colors.white,
-                          padding: EdgeInsets.all(10.0),
+                          padding: const EdgeInsets.all(10.0),
                           data: userQrCode,
                           //data: 'testing123',
                           version: 2,
@@ -411,10 +411,10 @@ class _QrCodeTabState extends State<QrCodeTab>
                   Positioned(
                     bottom: 20,
                     child: Padding(
-                      padding: EdgeInsets.only(left: 0.0, right: 0.0),
+                      padding: const EdgeInsets.only(left: 0.0, right: 0.0),
                       child: FlatButton(
                         textColor: Colors.white,
-                        child: Text("Learn more about this feature"),
+                        child: const Text("Learn more about this feature"),
                         onPressed: () {
                           this._displayInstructions(context);
                         },
@@ -499,17 +499,17 @@ class _QrScannerTabState extends State<QrScannerTab>
 
   Widget _cameraPreviewWidget() {
     return LayoutBuilder(builder: (context, constraint) {
-      return new Stack(children: <Widget>[
+      return Stack(children: <Widget>[
         Image.asset(
           'images/other/qr_scanner.png',
         ),
         Container(
-          padding: EdgeInsets.all(9.0),
+          padding: const EdgeInsets.all(9.0),
           height: constraint.biggest.height,
           width: constraint.biggest.height,
           child: (controller == null)
               ? Container()
-              : new QRReaderPreview(controller),
+              : QRReaderPreview(controller),
         )
       ]);
     });
@@ -521,7 +521,7 @@ class _QrScannerTabState extends State<QrScannerTab>
     if (controller != null) {
       await controller.dispose();
     }
-    controller = new QRReaderController(cameraDescription,
+    controller = QRReaderController(cameraDescription,
         ResolutionPreset.high, [CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
 
     // If the controller is updated then update the UI.
@@ -547,7 +547,7 @@ class _QrScannerTabState extends State<QrScannerTab>
 
   void showInSnackBar(String message) {
     // _scaffoldKey.currentState
-    //     .showSnackBar(new SnackBar(content: new Text(message)));
+    //     .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<bool> _displayInstructions(BuildContext context) async {
@@ -556,7 +556,7 @@ class _QrScannerTabState extends State<QrScannerTab>
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('QR Code Scanner'),
+          title: const Text('QR Code Scanner'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -574,7 +574,7 @@ class _QrScannerTabState extends State<QrScannerTab>
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text("OK, Got it!"),
+              child: const Text("OK, Got it!"),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -594,7 +594,7 @@ class _QrScannerTabState extends State<QrScannerTab>
       // crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         // Padding(
-        //   padding: EdgeInsets.only(top: 70.0, left: 24.0, right: 24.0),
+        //   padding: const EdgeInsets.only(top: 70.0, left: 24.0, right: 24.0),
         //   child: Text(
         //     'Use to scan the QR code from a fixed muster point location or the QR code from the phone of someone who has already mustered.',
         //     textAlign: TextAlign.center,
@@ -607,8 +607,8 @@ class _QrScannerTabState extends State<QrScannerTab>
         //   ),
         // ),
         // Expanded(
-        //   child: Padding(
-        //     padding: EdgeInsets.all(100),
+        //   child: const Padding(
+        //     padding: const EdgeInsets.all(100),
         //     child: Container(
         //       color: Colors.yellow,
         //       // height: 200,
@@ -617,7 +617,7 @@ class _QrScannerTabState extends State<QrScannerTab>
         //   ),
         // ),
 
-        new Expanded(
+        Expanded(
           child: Stack(
             alignment: AlignmentDirectional.center,
             children: <Widget>[
@@ -648,12 +648,12 @@ class _QrScannerTabState extends State<QrScannerTab>
               Positioned(
                 bottom: 120.0,
                 child: Container(
-                  //margin: EdgeInsets.all(20.0),
+                  //margin: const EdgeInsets.all(20.0),
                   width: 280.0,
                   child: RaisedButton(
                       child: Text(
                         controller == null ? 'Start Scanning' : 'Stop Scanning',
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontFamily: 'AvenirNextDemiBold',
                             color: Colors.white,
                             fontStyle: FontStyle.normal,
@@ -695,7 +695,7 @@ class _QrScannerTabState extends State<QrScannerTab>
                 // right: 30,
                 child: FlatButton(
                   textColor: Colors.white,
-                  child: Text("Learn more about this feature"),
+                  child: const Text("Learn more about this feature"),
                   onPressed: () {
                     this._displayInstructions(context);
                   },

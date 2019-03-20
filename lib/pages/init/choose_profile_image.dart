@@ -11,7 +11,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:uuid/uuid.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:harrier_central/data_models/single_result_model.dart';
@@ -91,13 +90,13 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       facebookProfileImage = CachedNetworkImage(
           imageUrl: facebookProfileUrl,
           //placeholder: const CircularProgressIndicator(),
-          //errorWidget: const Icon(Icons.error),
+          //errorWidget: const  Icon(Icons.error),
           // placeholder: (BuildContext context, String url) =>
           //     const CircularProgressIndicator(),
           // errorWidget: (BuildContext context, String url, Exception error) =>
-          //     const Icon(Icons.error),
+          //     const  Icon(Icons.error),
           //fadeOutDuration:  Duration(seconds: 1),
-          fadeInDuration: Duration(milliseconds: 0),
+          fadeInDuration: const Duration(milliseconds: 0),
           width: _thumbnailSize,
           height: _thumbnailSize,
           fit: BoxFit.fill);
@@ -108,9 +107,9 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     AppBar appBar = AppBar(
         centerTitle: true,
         backgroundColor: ThemeColors.appBarBackground,
-        title: Text(
+        title: const Text(
           'Choose Profile Image',
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
           ),
         ),
@@ -135,13 +134,13 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
               child: _processingSelection
                   ? _buildProgressIndicator()
                   : Padding(
-                      padding: EdgeInsets.only(top: 0.0),
+                      padding: const EdgeInsets.only(top: 0.0),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         mainAxisSize: MainAxisSize.max,
                         children: <Widget>[
                           // Padding(
-                          //   padding: EdgeInsets.only(top: 0.0),
+                          //   padding: const EdgeInsets.only(top: 0.0),
                           //   child: Text(
                           //     'Choose Profile Image',
                           //     textAlign: TextAlign.center,
@@ -174,7 +173,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                           //       const Padding(
                           //         padding:
                           //             EdgeInsets.only(left: 15.0, right: 15.0),
-                          //         child: const Icon(FontAwesomeIcons.circle,
+                          //         child: const  Icon(FontAwesomeIcons.circle,
                           //             color: Color(0xFFFFFFFF), size: 10.0),
                           //       ),
                           //       Container(
@@ -209,11 +208,11 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                         : Row(
                                             children: <Widget>[
                                               Container(
-                                                margin: EdgeInsets.only(
+                                                margin: const EdgeInsets.only(
                                                     left: 20, right: 10),
                                                 height: 30,
                                                 width: 30,
-                                                decoration: new BoxDecoration(
+                                                decoration: BoxDecoration(
                                                   color: _radioImageTypeSelection ==
                                                           _SelectedImageTypeEnum
                                                               .facebookProfilePic
@@ -256,11 +255,11 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                     Row(
                                       children: <Widget>[
                                         Container(
-                                          margin: EdgeInsets.only(
+                                          margin: const EdgeInsets.only(
                                               left: 20, right: 10),
                                           height: 30,
                                           width: 30,
-                                          decoration: new BoxDecoration(
+                                          decoration: BoxDecoration(
                                             color: _radioImageTypeSelection ==
                                                     _SelectedImageTypeEnum
                                                         .avatar
@@ -298,11 +297,11 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                     Row(
                                       children: <Widget>[
                                         Container(
-                                          margin: EdgeInsets.only(
+                                          margin: const EdgeInsets.only(
                                               left: 20, right: 10),
                                           height: 30,
                                           width: 30,
-                                          decoration: new BoxDecoration(
+                                          decoration: BoxDecoration(
                                             color: _radioImageTypeSelection ==
                                                     _SelectedImageTypeEnum
                                                         .fromCamera
@@ -341,11 +340,11 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                     Row(
                                       children: <Widget>[
                                         Container(
-                                          margin: EdgeInsets.only(
+                                          margin: const EdgeInsets.only(
                                               left: 20, right: 10),
                                           height: 30,
                                           width: 30,
-                                          decoration: new BoxDecoration(
+                                          decoration: BoxDecoration(
                                             color: _radioImageTypeSelection ==
                                                     _SelectedImageTypeEnum
                                                         .fromGallery
@@ -401,18 +400,18 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                             fontFamily: 'WorkSansSemiBold'),
                                       ),
                                       const Padding(
-                                        padding: EdgeInsets.only(top: 10.0),
+                                        padding: const EdgeInsets.only(top: 10.0),
                                       ),
                                       Container(
                                         child: _getPreviewImage(),
                                         color: Colors.white,
                                         height: _previewImageSize + 6,
                                         width: _previewImageSize + 6,
-                                        padding: EdgeInsets.all(6.0),
+                                        padding: const EdgeInsets.all(6.0),
                                       ),
 
                                       // const Padding(
-                                      //   padding: EdgeInsets.only(top: 60.0),
+                                      //   padding: const EdgeInsets.only(top: 60.0),
                                       // ),
                                     ],
                                   ),
@@ -422,7 +421,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                           ),
 
                           Padding(
-                            padding: EdgeInsets.only(bottom: 20.0),
+                            padding: const EdgeInsets.only(bottom: 20.0),
                             child: Container(
                               margin: const EdgeInsets.only(
                                   top: 10.0, bottom: 30.0),
@@ -454,12 +453,12 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                               child: MaterialButton(
                                   highlightColor: Colors.transparent,
                                   splashColor: LoginColors.loginGradientEnd,
-                                  child: Padding(
+                                  child: const Padding(
                                     padding: EdgeInsets.symmetric(
                                         vertical: 10.0, horizontal: 20.0),
                                     child: Text(
                                       'Next >',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 25.0,
                                           fontFamily: 'WorkSansBold'),
@@ -485,7 +484,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         Column(
           children: <Widget>[
             Padding(
-              padding: EdgeInsets.only(top: 0.0),
+              padding: const EdgeInsets.only(top: 0.0),
               child: Text(
                 widget.doAddUser
                     ? 'Creating account\r\nand uploading\r\nprofile image'
@@ -518,8 +517,8 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                     height: 1.0,
                   ),
                   const Padding(
-                    padding: EdgeInsets.only(left: 15.0, right: 15.0),
-                    child: const Icon(FontAwesomeIcons.circle,
+                    padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+                    child: const  Icon(FontAwesomeIcons.circle,
                         color: Color(0xFFFFFFFF), size: 10.0),
                   ),
                   Container(
@@ -547,7 +546,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           color: Colors.white,
           height: _uploadingImageSize + 6,
           width: _uploadingImageSize + 6,
-          padding: EdgeInsets.all(6.0),
+          padding: const EdgeInsets.all(6.0),
         ),
         Center(
           child: SpinKitCircle(
@@ -638,11 +637,11 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
     if (widget.doAddUser) {
       // this is for either of the two cases where
-      // a new user has been added, either for this device
+      // a user has been added, either for this device
       // or the owner of this device adding other users. In both
       // cases, we should have a valid UserModel variable set
       fileName = user.qrCode.replaceAll('UQR:', '') + '_thumb.jpg';
-      // in case we are creating new users not for this device
+      // in case we are creating users not for this device
       // make sure we have the correct hash userId
       userId = user.hasherId;
     } else {
@@ -668,7 +667,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     }
 
     if ((widget.doAddUser) && (widget.isForThisDevice)) {
-      // this is the case where we are adding a new user for this device
+      // this is the case where we are adding a user for this device
       // when this code is finished, we want to redirect the user to the
       // main screen
       Preferences.setStringPref(
@@ -696,7 +695,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         });
       });
     } else if ((widget.doAddUser) && (!widget.isForThisDevice)) {
-      // this is for a new user being added from the device,
+      // this is for a user being added from the device,
       // but not a user that represents the owner of this device.
       // when this code is done executing, we want to pop back
       // to the caller.
@@ -723,7 +722,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     } else {
       // this last case will be for updating the profile photo
       // of the user of this device, but without creating a
-      // new user
+      // user
       UpdateProfilePhotoService svc = UpdateProfilePhotoService();
       svc
           .updateProfilePhoto(profileImageUrl, userId)
@@ -784,7 +783,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         break;
       case _SelectedImageTypeEnum.facebookProfilePic:
         returnWidget = Container(
-          constraints: BoxConstraints(),
+          constraints: const BoxConstraints(),
           child: FittedBox(child: facebookProfileImage, fit: BoxFit.contain),
           width: _previewImageSize,
           height: _previewImageSize,
@@ -878,7 +877,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
             return const Text(
               'You have not yet chosen an image.',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                   color: Colors.black,
                   fontSize: 22.0,
                   fontFamily: 'WorkSansBold'),

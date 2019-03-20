@@ -78,9 +78,9 @@ class NewUserState extends State<NewUserWidget>
       AppBar appBar = AppBar(
         centerTitle: true,
         backgroundColor: ThemeColors.appBarBackground,
-        title: Text(
+        title: const Text(
           'Add Member',
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
           ),
         ),
@@ -101,7 +101,7 @@ class NewUserState extends State<NewUserWidget>
                 mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
                   Padding(
-                    padding: EdgeInsets.only(top: 45.0),
+                    padding: const EdgeInsets.only(top: 45.0),
                     child: Image(
                         width: widget.isForThisDevice == true ? 50.0 : 100.0,
                         height: widget.isForThisDevice == true ? 50.0 : 100.0,
@@ -219,7 +219,7 @@ class NewUserState extends State<NewUserWidget>
             bottom: 30,
             child: Container(
               margin: const EdgeInsets.only(top: 170.0),
-              decoration: BoxDecoration(
+              decoration:  BoxDecoration(
                 borderRadius: const BorderRadius.all(Radius.circular(5.0)),
                 boxShadow: <BoxShadow>[
                   BoxShadow(
@@ -252,7 +252,7 @@ class NewUserState extends State<NewUserWidget>
                         EdgeInsets.symmetric(vertical: 10.0, horizontal: 42.0),
                     child: Text(
                       controller == null ? 'Start Scanning' : 'Stop Scanning',
-                      style: TextStyle(
+                      style: const TextStyle(
                           color: Colors.white,
                           fontSize: 25.0,
                           fontFamily: 'WorkSansBold'),
@@ -338,7 +338,7 @@ class NewUserState extends State<NewUserWidget>
                             shape: BoxShape.circle,
                             color: Colors.white,
                           ),
-                          child: const Icon(
+                          child: const  Icon(
                             FontAwesomeIcons.facebookF,
                             color: Color(0xFF0084ff),
                           ),
@@ -357,7 +357,7 @@ class NewUserState extends State<NewUserWidget>
               userDetailsUi,
               Container(
                 margin: const EdgeInsets.only(top: 210.0),
-                decoration: BoxDecoration(
+                decoration:  BoxDecoration(
                   borderRadius: const BorderRadius.all(Radius.circular(5.0)),
                   boxShadow: <BoxShadow>[
                     BoxShadow(
@@ -385,11 +385,11 @@ class NewUserState extends State<NewUserWidget>
                     highlightColor: Colors.transparent,
                     splashColor: LoginColors.loginGradientEnd,
                     child: const Padding(
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                           vertical: 10.0, horizontal: 42.0),
                       child: Text(
                         'NEXT >>',
-                        style: TextStyle(
+                        style: const TextStyle(
                             color: Colors.white,
                             fontSize: 25.0,
                             fontFamily: 'WorkSansBold'),
@@ -406,12 +406,12 @@ class NewUserState extends State<NewUserWidget>
 
   void _onSignInTabPress() {
     _pageController.animateToPage(0,
-        duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+        duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
   }
 
   void _onSignUpTabPress() {
     _pageController?.animateToPage(1,
-        duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+        duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
   }
 
   void _onSignUpButtonPress() {
@@ -583,7 +583,7 @@ class NewUserState extends State<NewUserWidget>
 
   Widget _cameraPreviewWidget() {
     return LayoutBuilder(builder: (context, constraint) {
-      return new Stack(
+      return Stack(
         alignment: AlignmentDirectional.center,
         children: <Widget>[
           Image.asset(
@@ -608,7 +608,7 @@ class NewUserState extends State<NewUserWidget>
                   }))
               : Container(),
           Container(
-            padding: EdgeInsets.all(9.0),
+            padding: const EdgeInsets.all(9.0),
             height: constraint.biggest.height,
             width: constraint.biggest.height,
             child: (controller == null)
@@ -617,7 +617,7 @@ class NewUserState extends State<NewUserWidget>
                 // otherwise if the controller is active,
                 // overlay the camera preview on top of the image
                 ? Container()
-                : new QRReaderPreview(controller),
+                : QRReaderPreview(controller),
           )
         ],
       );
@@ -628,7 +628,7 @@ class NewUserState extends State<NewUserWidget>
     if (controller != null) {
       await controller.dispose();
     }
-    controller = new QRReaderController(cameraDescription,
+    controller = QRReaderController(cameraDescription,
         ResolutionPreset.high, [CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
 
     // If the controller is updated then update the UI.

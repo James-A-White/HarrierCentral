@@ -48,7 +48,7 @@ FileSystemException: FileSystemException: Deletion failed, path = '/Users/jamesw
 #24     FlutterCommandRunner.runCommand (package:flutter_tools/src/runner/flutter_command_runner.dart:303:19)
 <asynchronous suspension>
 #25     CommandRunner.run.<anonymous closure> (package:args/command_runner.dart:109:29)
-#26     new Future.sync (dart:async/future.dart:224:31)
+#26     Future.sync (dart:async/future.dart:224:31)
 #27     CommandRunner.run (package:args/command_runner.dart:109:11)
 #28     FlutterCommandRunner.run (package:flutter_tools/src/runner/flutter_command_runner.dart:211:18)
 #29     run.<anonymous closure> (package:flutter_tools/runner.dart:59:20)

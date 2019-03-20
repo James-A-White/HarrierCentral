@@ -102,7 +102,7 @@ class KennelMemberScopedModel extends Model {
 
     dataFromResponse.forEach(
       (dynamic item) {
-        //parse new kennel's details
+        //parse kennel's details
         final KennelMemberModel kennelMember = KennelMemberModel(
             hasherId: item['hasherId'],
             hashName: item['hashName'],

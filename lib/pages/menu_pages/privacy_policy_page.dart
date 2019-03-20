@@ -14,13 +14,14 @@ class PrivacyPolicyPage extends StatefulWidget {
 
   PrivacyPolicyPage({Key key}) : super(key: key);
 
+  @override
   PrivacyPolicyPageState createState() => PrivacyPolicyPageState();
 }
 
 Future<File> createFileOfPdfUrl() async {
   var bytes = await rootBundle.load('assets/documents/privacy_policy.pdf');
   String dir = (await getApplicationDocumentsDirectory()).path;
-  File file = new File('$dir/privacy_policy_internal.pdf');
+  File file = File('$dir/privacy_policy_internal.pdf');
   await file.writeAsBytes(bytes.buffer.asInt8List());
   return file;
 }
@@ -39,14 +40,14 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
     });
   }
 
-  TextStyle headingStyle = TextStyle(
+  TextStyle headingStyle = const TextStyle(
       fontFamily: 'AvenirNextRegular',
       fontStyle: FontStyle.normal,
       color: Colors.yellow,
       fontSize: 24.0,
       height: 1.0);
 
-  TextStyle bodyStyle = TextStyle(
+  TextStyle bodyStyle = const TextStyle(
       fontFamily: 'AvenirNextRegular',
       fontStyle: FontStyle.normal,
       color: Colors.white,
@@ -72,7 +73,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                     ),
               ),
               Container(
-                margin: EdgeInsets.all(30),
+                margin: const EdgeInsets.all(30),
                 child: Text(
                     'The Harrier Central Privacy Policy can also be found on our website for easier reading: \r\n\r\nhttp://www.harriercentral.com',
                     textAlign: TextAlign.center,
@@ -95,10 +96,10 @@ class PDFScreen extends StatelessWidget {
     return PDFViewerScaffold(
         appBar: AppBar(
           backgroundColor: ThemeColors.appBarBackground,
-          title: Text("Privacy Policy"),
+          title: const Text("Privacy Policy"),
           // actions: <Widget>[
           //   IconButton(
-          //     icon: Icon(Icons.share),
+          //     icon:const  Icon(Icons.share),
           //     onPressed: () {},
           //   ),
           // ],
