@@ -55,7 +55,10 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             widget.futureRun.eventId, showReloadingIndicator, true)
         .then((List<UserModel> _thePack) {
       packList = _thePack;
-      setState(() {});
+
+      setState(() {
+        print('_reloadPack() -  = ${DateTime.now().millisecondsSinceEpoch}');
+      });
     });
 
     if (showReloadingIndicator) setState(() {});
@@ -67,7 +70,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
           .getpackFromBackend(widget.futureRun.eventId, true, false)
           .then((List<UserModel> _thePack) {
         packList = _thePack;
-        setState(() {});
+        setState(() {
+          print('getPack() = ${DateTime.now().millisecondsSinceEpoch}');
+        });
       });
     }
   }
@@ -137,7 +142,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   }
 
   void _onSearchTextChanged() {
-    setState(() {});
+    setState(() {
+      print('onSearchTextChanged = ${DateTime.now().millisecondsSinceEpoch}');
+    });
   }
 
   Container searchBar(PackScopedModel model, num width) {
@@ -155,10 +162,10 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             child: TextField(
               onChanged: (String text) {
                 //setState(() {
-                  model.filterPackList(text);
-                  model.forceRefresh();
-                  packList = model.filteredPackList;
-               // });
+                model.filterPackList(text);
+                model.forceRefresh();
+                packList = model.filteredPackList;
+                // });
               },
               focusNode: searchFocusNode,
               controller: searchController,
@@ -180,20 +187,19 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             ),
           ),
           Container(
-            width:40,
-           child:FlatButton(
-             
-          //color: Colors.red,
-          child: Text('X'),
-          textColor: Colors.grey[700],
-          onPressed: () {
-                  searchController.text = '';
-                    model.filterPackList('');
-                  model.forceRefresh();
-                  packList = model.filteredPackList;
-          },
-           ),
-        ),
+            width: 40,
+            child: FlatButton(
+              //color: Colors.red,
+              child: Text('X'),
+              textColor: Colors.grey[700],
+              onPressed: () {
+                searchController.text = '';
+                model.filterPackList('');
+                model.forceRefresh();
+                packList = model.filteredPackList;
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -268,7 +274,11 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                     ).then<dynamic>((UserModel user) {
                       if (user != null) {
                         _packScopedModel.addEditUser(user);
-                        _packScopedModel.sortPackList();
+                        searchController.text =
+                            user.firstName + ' ' + user.lastName;
+                        _packScopedModel.filterPackList(
+                            user.firstName + ' ' + user.lastName);
+                        packList = _packScopedModel.filteredPackList;
                         _packScopedModel.forceRefresh();
                       }
                     }),
@@ -623,18 +633,18 @@ class PackListView extends StatelessWidget {
                       packList[index].photo.startsWith('http')
                           ? CachedNetworkImage(
                               imageUrl: packList[index].photo,
-                              //placeholder: const CircularProgressIndicator(),
-                              //errorWidget: const Icon(Icons.error),
-                              placeholder: (context, url) => Container(
-                                  child: Center(
-                                      child: Container(
-                                          height: 20,
-                                          width: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 3.0,
-                                          ))),
-                                  height: 70.0,
-                                  width: 70.0),
+                              // placeholder: (context, url) => Container(
+                              //     child: Center(
+                              //       child: Container(
+                              //         height: 20,
+                              //         width: 20,
+                              //         child: CircularProgressIndicator(
+                              //           strokeWidth: 3.0,
+                              //         ),
+                              //       ),
+                              //     ),
+                              //     height: 70.0,
+                              //    width: 70.0),
                               errorWidget: (context, url, error) =>
                                   const Icon(Icons.error),
                               //fadeOutDuration:  Duration(seconds: 1),

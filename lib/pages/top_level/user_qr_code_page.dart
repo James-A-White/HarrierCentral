@@ -1,27 +1,19 @@
 import 'dart:math' as math;
 
-//import 'package:barcode_scan/barcode_scan.dart';
-
 import 'package:flutter/material.dart';
+
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
+import 'package:audioplayers/audio_cache.dart';
 
 import 'package:harrier_central/data_models/process_qr_scan_model.dart';
 import 'package:harrier_central/services/process_qr_scan_service.dart';
-
-// import 'package:managed_response/pages/sub_pages/scan_others_page.dart';
-// import 'package:managed_response/data_models/check_in_result_model.dart';
-// import 'package:managed_response/services/check_in_service.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 
-import 'package:auto_size_text/auto_size_text.dart';
 
-import 'package:qr_flutter/qr_flutter.dart';
-
-import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'package:audioplayers/audio_cache.dart';
 
 class UserQrCodePage extends StatefulWidget {
   UserQrCodePage({Key key}) : super(key: key);

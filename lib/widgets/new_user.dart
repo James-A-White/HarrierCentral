@@ -29,6 +29,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/widgets/user_details_ui.dart';
 import 'package:harrier_central/data_models/user_model.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 
@@ -57,16 +58,6 @@ class NewUserWidget extends StatefulWidget {
 
 class NewUserState extends State<NewUserWidget>
     with SingleTickerProviderStateMixin {
-  final FocusNode myFocusNodeHashName = FocusNode();
-  final FocusNode myFocusNodeEmail = FocusNode();
-  final FocusNode myFocusNodeFirstName = FocusNode();
-  final FocusNode myFocusNodeLastName = FocusNode();
-
-  TextEditingController signupEmailController = TextEditingController();
-  TextEditingController signupFirstNameController = TextEditingController();
-  TextEditingController signupLastNameController = TextEditingController();
-  TextEditingController signupHashNameController = TextEditingController();
-
   PageController _pageController = PageController();
   int _scanState = 0;
 
@@ -75,10 +66,6 @@ class NewUserState extends State<NewUserWidget>
 
   @override
   void dispose() {
-    myFocusNodeHashName.dispose();
-    myFocusNodeEmail.dispose();
-    myFocusNodeFirstName.dispose();
-    myFocusNodeLastName.dispose();
     _pageController?.dispose();
     super.dispose();
   }
@@ -282,7 +269,15 @@ class NewUserState extends State<NewUserWidget>
     );
   }
 
+  UserDetailsUi userDetailsUi;
+
   Widget _buildSignUp(BuildContext context) {
+    userDetailsUi ??= UserDetailsUi(
+      firstName: '',
+      lastName: '',
+      email: '',
+      hashName: '',
+    );
     return Container(
       padding: const EdgeInsets.only(top: 23.0),
       child: Column(
@@ -312,7 +307,7 @@ class NewUserState extends State<NewUserWidget>
 
                             String first_name = profile['first_name'];
                             String last_name = profile['last_name'];
-                            String emailAddress = profile['email'];
+                            String email = profile['email'];
                             String facebookId = profile['id'];
                             String gender = profile['gender'];
                             dynamic picture = profile['picture']['data']['url'];
@@ -326,9 +321,9 @@ class NewUserState extends State<NewUserWidget>
                             Preferences.setStringPref(
                                 StringPrefsEnum.gender, gender);
 
-                            signupFirstNameController.text = first_name;
-                            signupLastNameController.text = last_name;
-                            signupEmailController.text = emailAddress;
+                            userDetailsUi.firstName = first_name;
+                            userDetailsUi.lastName = last_name;
+                            userDetailsUi.email = email;
 
                             Utilities.showAlert(
                                 context,
@@ -359,131 +354,7 @@ class NewUserState extends State<NewUserWidget>
             alignment: Alignment.topCenter,
             overflow: Overflow.visible,
             children: <Widget>[
-              Card(
-                elevation: 2.0,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: Container(
-                  width: 300.0,
-                  height: 230.0,
-                  child: Column(
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
-                        child: TextField(
-                          focusNode: myFocusNodeFirstName,
-                          controller: signupFirstNameController,
-                          keyboardType: TextInputType.text,
-                          textCapitalization: TextCapitalization.words,
-                          style: const TextStyle(
-                              fontFamily: 'WorkSansSemiBold',
-                              fontSize: 16.0,
-                              color: Colors.black),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            icon: Icon(
-                              FontAwesomeIcons.user,
-                              color: Colors.black,
-                            ),
-                            hintText: 'First Name',
-                            hintStyle: TextStyle(
-                                fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        width: 250.0,
-                        height: 1.0,
-                        color: Colors.grey[400],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
-                        child: TextField(
-                          focusNode: myFocusNodeLastName,
-                          controller: signupLastNameController,
-                          keyboardType: TextInputType.text,
-                          textCapitalization: TextCapitalization.words,
-                          style: const TextStyle(
-                              fontFamily: 'WorkSansSemiBold',
-                              fontSize: 16.0,
-                              color: Colors.black),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            icon: Icon(
-                              FontAwesomeIcons.user,
-                              color: Colors.black,
-                            ),
-                            hintText: 'Last Name',
-                            hintStyle: TextStyle(
-                                fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        width: 250.0,
-                        height: 1.0,
-                        color: Colors.grey[400],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
-                        child: 
-                        
-                        TextField(
-                          focusNode: myFocusNodeEmail,
-                          controller: signupEmailController,
-                          keyboardType: TextInputType.emailAddress,
-                          style: const TextStyle(
-                              fontFamily: 'WorkSansSemiBold',
-                              fontSize: 16.0,
-                              color: Colors.black),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            icon: Icon(
-                              FontAwesomeIcons.envelope,
-                              color: Colors.black,
-                            ),
-                            hintText: 'Email Address',
-                            hintStyle: TextStyle(
-                                fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        width: 250.0,
-                        height: 1.0,
-                        color: Colors.grey[400],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
-                        child: TextField(
-                          focusNode: myFocusNodeHashName,
-                          controller: signupHashNameController,
-                          style: const TextStyle(
-                              fontFamily: 'WorkSansSemiBold',
-                              fontSize: 16.0,
-                              color: Colors.black),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            icon: Icon(
-                              FontAwesomeIcons.dove,
-                              color: Colors.black,
-                            ),
-                            hintText: 'Hash Name (optional)',
-                            hintStyle: TextStyle(
-                                fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              userDetailsUi,
               Container(
                 margin: const EdgeInsets.only(top: 210.0),
                 decoration: BoxDecoration(
@@ -546,24 +417,28 @@ class NewUserState extends State<NewUserWidget>
   void _onSignUpButtonPress() {
     bool canProcess = true;
 
-    if (signupFirstNameController.text.isEmpty) {
+    if (userDetailsUi != null && userDetailsUi.firstName.isEmpty) {
       canProcess = false;
       Utilities.showInSnackBar(
           context, widget.scaffoldKey, 'Please enter your first name',
           durationInSeconds: 7);
     }
 
-    if (canProcess && signupLastNameController.text.isEmpty) {
+    if (userDetailsUi != null && userDetailsUi.lastName.isEmpty) {
       canProcess = false;
       Utilities.showInSnackBar(
           context, widget.scaffoldKey, 'Please enter your last name',
           durationInSeconds: 7);
     }
 
-    final bool emailValid = RegExp(
-            r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
-            caseSensitive: false)
-        .hasMatch(signupEmailController.text);
+    bool emailValid = false;
+
+    if (userDetailsUi != null) {
+      emailValid = RegExp(
+              r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
+              caseSensitive: false)
+          .hasMatch(userDetailsUi.email);
+    }
 
     if (canProcess && !emailValid) {
       canProcess = false;
@@ -572,20 +447,20 @@ class NewUserState extends State<NewUserWidget>
           durationInSeconds: 7);
     }
 
-    if (canProcess) {
+    if (canProcess && (userDetailsUi != null)) {
       setState(() {
         _scanState = 1;
       });
 
       if (widget.isForThisDevice) {
         Preferences.setStringPref(
-            StringPrefsEnum.firstName, signupFirstNameController.text);
+            StringPrefsEnum.firstName, userDetailsUi.firstName);
         Preferences.setStringPref(
-            StringPrefsEnum.lastName, signupLastNameController.text);
+            StringPrefsEnum.lastName, userDetailsUi.lastName);
         Preferences.setStringPref(
-            StringPrefsEnum.email, signupEmailController.text);
+            StringPrefsEnum.email, userDetailsUi.email);
         Preferences.setStringPref(
-            StringPrefsEnum.hashName, signupHashNameController.text);
+            StringPrefsEnum.hashName, userDetailsUi.hashName);
 
         Navigator.push(
           context,
@@ -606,10 +481,10 @@ class NewUserState extends State<NewUserWidget>
             builder: (context) => ChooseProfileImage(
                   isForThisDevice: widget.isForThisDevice,
                   doAddUser: true,
-                  firstName: signupFirstNameController.text,
-                  lastName: signupLastNameController.text,
-                  hashName: signupHashNameController.text,
-                  email: signupEmailController.text,
+                  firstName: userDetailsUi.firstName,
+                  lastName: userDetailsUi.lastName,
+                  hashName: userDetailsUi.hashName,
+                  email: userDetailsUi.email,
                   kennelId: widget.kennelId,
                   eventId: widget.eventId,
                   attendenceState: widget.attendenceState,
@@ -680,28 +555,22 @@ class NewUserState extends State<NewUserWidget>
       final Future<Map<String, String>> apiCall =
           srv.authorizeDevice(scanResult);
       apiCall.then((Map<String, String> result) {
-
-
-  Future<dynamic>.delayed(const Duration(milliseconds: 3500))
+        Future<dynamic>.delayed(const Duration(milliseconds: 3500))
             .then((void dummy) {
-
-        if (result['result'] == 'success') {
-          setState(() => _scanState = 0);
-          Navigator.pushReplacement<dynamic, dynamic>(
-              context,
-              MaterialPageRoute<dynamic>(
-                  builder: (BuildContext context) => MainNavigationPage()));
-        } else {
-          // downloading from the cloud failed
-          setState(() => _scanState = 2);
-          Utilities.showInSnackBar(
-              context, widget.scaffoldKey, result['message'],
-              durationInSeconds: 7);
-        }
-
-            });
-
-
+          if (result['result'] == 'success') {
+            setState(() => _scanState = 0);
+            Navigator.pushReplacement<dynamic, dynamic>(
+                context,
+                MaterialPageRoute<dynamic>(
+                    builder: (BuildContext context) => MainNavigationPage()));
+          } else {
+            // downloading from the cloud failed
+            setState(() => _scanState = 2);
+            Utilities.showInSnackBar(
+                context, widget.scaffoldKey, result['message'],
+                durationInSeconds: 7);
+          }
+        });
       });
     }
   }

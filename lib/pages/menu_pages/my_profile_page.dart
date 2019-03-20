@@ -8,6 +8,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/widgets/user_details_ui.dart';
+import 'package:harrier_central/widgets/fancy_divider.dart';
 
 class MyProfilePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -18,33 +20,84 @@ class MyProfilePage extends StatefulWidget {
 }
 
 class MyProfilePageState extends State<MyProfilePage> {
+  
+  String firstName = Preferences.getStringPref(StringPrefsEnum.firstName);
+  String lastName = Preferences.getStringPref(StringPrefsEnum.lastName);
+  String email = Preferences.getStringPref(StringPrefsEnum.email);
+  String hashName = Preferences.getStringPref(StringPrefsEnum.hashName);
+  
   @override
   Widget build(BuildContext context) {
+
+    AppBar appBar = AppBar(
+          centerTitle: true,
+          backgroundColor: ThemeColors.appBarBackground,
+          title: Text(
+            'My Profile',
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+        );
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: ThemeColors.appBarBackground,
-        title: Text(
-          'My Profile',
-          style: TextStyle(
-            color: Colors.white,
+        appBar: appBar,
+        body: 
+        Container(
+          decoration: Backgrounds.defaultHcBackground(),
+          height: MediaQuery.of(context).size.height - appBar.preferredSize.height,
+        child:SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+                //minHeight: viewportConstraints.maxHeight,
+                ),
+            child: IntrinsicHeight(
+              child: Padding(
+                padding: EdgeInsets.only(top: 30, left: 20, right: 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    UserDetailsUi(firstName: firstName, lastName: lastName, email: email, hashName: hashName,),
+                    FancyDivider(innerColor: Colors.white),
+                    Container(
+                      height:500,
+                      width:MediaQuery.of(context).size.width,
+                      
+                      child: Stack(
+                        alignment: AlignmentDirectional.center,
+                        children: <Widget>[
+                          Positioned(
+                              top: 10,
+                              bottom: 20,
+                              width: MediaQuery.of(context).size.width,
+                              child: QrCodeTab()),
+                        ],
+                      ),
+                    ),
+                    Container(width: 40, height: 40),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
-      ),
-      body: Container(
-        decoration: Backgrounds.defaultHcBackground(),
-        child: Stack(
-          alignment: AlignmentDirectional.center,
-          children: <Widget>[
-            Positioned(
-                top: 10,
-                bottom: 20,
-                width: MediaQuery.of(context).size.width,
-                child: QrCodeTab()),
-          ],
         ),
-      ),
-    );
+
+        // Container(
+        //   decoration: Backgrounds.defaultHcBackground(),
+        //   child: Stack(
+        //     alignment: AlignmentDirectional.center,
+        //     children: <Widget>[
+        //       Positioned(
+        //           top: 10,
+        //           bottom: 20,
+        //           width: MediaQuery.of(context).size.width,
+        //           child: QrCodeTab()),
+        //     ],
+        //   ),
+        // ),
+
+        );
   }
 }
 
@@ -110,21 +163,6 @@ class _QrCodeTabState extends State<QrCodeTab>
             child: Stack(
               alignment: AlignmentDirectional.center,
               children: <Widget>[
-                // Positioned(
-                //   top: 0,
-                //   width: MediaQuery.of(context).size.width * 0.8,
-                //   child: Text(
-                //     'Use this code to check in at the beginning and end of runs. Your friends can also scan this code to add you to their friend list. ',
-                //     textAlign: TextAlign.justify,
-                //     style: const TextStyle(
-                //       color: Colors.white,
-                //       fontFamily: 'AvenirNextDemiBold',
-                //       fontStyle: FontStyle.normal,
-                //       fontSize: 16.0,
-                //       height: 0.8,
-                //     ),
-                //   ),
-                // ),
                 Positioned(
                   top: 30,
                   child: AutoSizeText(

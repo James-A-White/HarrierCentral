@@ -92,10 +92,10 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           imageUrl: facebookProfileUrl,
           //placeholder: const CircularProgressIndicator(),
           //errorWidget: const Icon(Icons.error),
-          placeholder: (BuildContext context, String url) =>
-              const CircularProgressIndicator(),
-          errorWidget: (BuildContext context, String url, Exception error) =>
-              const Icon(Icons.error),
+          // placeholder: (BuildContext context, String url) =>
+          //     const CircularProgressIndicator(),
+          // errorWidget: (BuildContext context, String url, Exception error) =>
+          //     const Icon(Icons.error),
           //fadeOutDuration:  Duration(seconds: 1),
           fadeInDuration: Duration(milliseconds: 0),
           width: _thumbnailSize,

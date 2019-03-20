@@ -135,7 +135,7 @@ class PackScopedModel extends Model {
   void _filterPackList()
   {
     _filteredPackList = _packList.where((UserModel user) =>
-            ((user.displayName + user.firstName + user.lastName).toLowerCase().contains(packListFilter.toLowerCase())))
+            ((user.firstName + ' ' + user.lastName + ' ' + user.displayName).toLowerCase().contains(packListFilter.toLowerCase())))
         .toList();
   }
 
@@ -171,9 +171,11 @@ class PackScopedModel extends Model {
 
       } else {
         _packList.add(packModel);
+        _filterPackList();
       }
     } else {
       _packList.add(packModel);
+      _filterPackList();
     }
   }
 

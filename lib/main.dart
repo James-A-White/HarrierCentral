@@ -33,6 +33,7 @@ void main() {
       child: 
 
     MaterialApp(
+      debugShowCheckedModeBanner: false,
         localizationsDelegates: const <LocalizationsDelegate<dynamic>> [
           AppLocalizationsDelegate(),
           GlobalMaterialLocalizations.delegate,

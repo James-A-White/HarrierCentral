@@ -73,10 +73,12 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
         buildNumber = packageInfo.buildNumber;
       });
     });
-
+ 
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints viewportConstraints) {
-      return SingleChildScrollView(
+      return 
+      
+      SingleChildScrollView(
         child: ConstrainedBox(
           constraints: BoxConstraints(
               //minHeight: viewportConstraints.maxHeight,
@@ -161,6 +163,8 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
           ),
         ),
       );
+   
+   
     });
   }
 }
