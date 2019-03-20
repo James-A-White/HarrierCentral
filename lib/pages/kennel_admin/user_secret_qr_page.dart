@@ -181,7 +181,7 @@ class _UserSecretQrCodePageState extends State<UserSecretQrPage>
           ),
           actions: <Widget>[
             FlatButton(
-              child: const Text("OK, Got it!"),
+              child: const Text('OK, Got it!'),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -296,7 +296,7 @@ class _QrCodeTabState extends State<QrCodeTab>
           ),
           QrImage(
               padding: const EdgeInsets.all(10.0),
-              data: widget.kennelMemberModel.qr_secret_code,
+              data: widget.kennelMemberModel.qrSecretCode,
               version: 4,
               size: 200.0,
               errorCorrectionLevel: 3
@@ -305,7 +305,7 @@ class _QrCodeTabState extends State<QrCodeTab>
             padding: const EdgeInsets.only(left: 32.0, right: 32.0),
             child: FlatButton(
               textColor: Theme.of(context).buttonColor,
-              child: const Text("Learn more about this feature"),
+              child: const Text('Learn more about this feature'),
               onPressed: () {
                 //this._displayInstructions(context);
               },

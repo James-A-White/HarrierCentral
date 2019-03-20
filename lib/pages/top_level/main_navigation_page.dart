@@ -32,6 +32,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   String appBarText;
 
+  @override
   void initState() {
     tabs.add(FutureRunsListPage());
     tabs.add(KennelsListPage(kennelModel: kennelModel));

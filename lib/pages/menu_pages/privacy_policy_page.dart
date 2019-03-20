@@ -27,7 +27,7 @@ Future<File> createFileOfPdfUrl() async {
 }
 
 class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
-  String pathPDF = "";
+  String pathPDF = '';
 
   @override
   void initState() {
@@ -65,7 +65,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               RaisedButton(
-                child: Text("Open Privacy Policy", style: headingStyle),
+                child: Text('Open Privacy Policy', style: headingStyle),
                 onPressed: () => Navigator.push<dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
@@ -88,7 +88,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
 }
 
 class PDFScreen extends StatelessWidget {
-  String pathPDF = "";
+  String pathPDF = '';
   PDFScreen(this.pathPDF);
 
   @override
@@ -96,7 +96,7 @@ class PDFScreen extends StatelessWidget {
     return PDFViewerScaffold(
         appBar: AppBar(
           backgroundColor: ThemeColors.appBarBackground,
-          title: const Text("Privacy Policy"),
+          title: const Text('Privacy Policy'),
           // actions: <Widget>[
           //   IconButton(
           //     icon:const  Icon(Icons.share),

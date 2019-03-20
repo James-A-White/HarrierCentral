@@ -83,7 +83,7 @@ Column(
                       },
                     ),
                     Text(
-                      "Not coming",
+                      'Not coming',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontFamily: 'AvenirNextCondensedDemiBold',
@@ -127,7 +127,7 @@ Column(
                       },
                     ),
                     Text(
-                      "Maybe",
+                      'Maybe',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontFamily: 'AvenirNextCondensedDemiBold',
@@ -169,7 +169,7 @@ Column(
                       },
                     ),
                     Text(
-                      "Coming",
+                      'Coming',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontFamily: 'AvenirNextCondensedDemiBold',
@@ -211,7 +211,7 @@ Column(
                       },
                     ),
                     Text(
-                      "Will hare",
+                      'Will hare',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontFamily: 'AvenirNextCondensedDemiBold',
@@ -265,7 +265,7 @@ Column(
                       },
                     ),
                     Text(
-                      "Not at Hash",
+                      'Not at Hash',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontFamily: 'AvenirNextCondensedDemiBold',
@@ -309,7 +309,7 @@ Column(
                       },
                     ),
                     Text(
-                      "At Hash",
+                      'At Hash',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontFamily: 'AvenirNextCondensedDemiBold',
@@ -353,7 +353,7 @@ Column(
                       },
                     ),
                     Text(
-                      "On In",
+                      'On In',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontFamily: 'AvenirNextCondensedDemiBold',
@@ -409,7 +409,7 @@ Column(
                             },
                           ),
                           Text(
-                            "Not paid",
+                            'Not paid',
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontFamily: 'AvenirNextCondensedDemiBold',
@@ -449,7 +449,7 @@ Column(
                             },
                           ),
                           Text(
-                            "Free run",
+                            'Free run',
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontFamily: 'AvenirNextCondensedDemiBold',
@@ -486,7 +486,7 @@ Column(
                             },
                           ),
                           Text(
-                            "Paid other",
+                            'Paid other',
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontFamily: 'AvenirNextCondensedDemiBold',
@@ -762,7 +762,7 @@ Column(
               builder: (BuildContext context) {
                 // return object of type Dialog
                 return AlertDialog(
-                  title: const Text("Credit applied to account"),
+                  title: const Text('Credit applied to account'),
                   content: Text(
                       '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${futureRun.kennelShortName}'),
                   actions: <Widget>[
@@ -770,7 +770,7 @@ Column(
                     FlatButton(
                       color: Colors.blue,
                       textColor: Colors.white,
-                      child: const Text("Close"),
+                      child: const Text('Close'),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
@@ -853,7 +853,7 @@ Column(
   //                     },
   //                   ),
   //                   Text(
-  //                     "Not coming",
+  //                     'Not coming',
   //                     textAlign: TextAlign.center,
   //                     style: const TextStyle(
   //                       fontFamily: 'AvenirNextCondensedDemiBold',
@@ -897,7 +897,7 @@ Column(
   //                     },
   //                   ),
   //                   Text(
-  //                     "Maybe",
+  //                     'Maybe',
   //                     textAlign: TextAlign.center,
   //                     style: const TextStyle(
   //                       fontFamily: 'AvenirNextCondensedDemiBold',
@@ -939,7 +939,7 @@ Column(
   //                     },
   //                   ),
   //                   Text(
-  //                     "Coming",
+  //                     'Coming',
   //                     textAlign: TextAlign.center,
   //                     style: const TextStyle(
   //                       fontFamily: 'AvenirNextCondensedDemiBold',
@@ -981,7 +981,7 @@ Column(
   //                     },
   //                   ),
   //                   Text(
-  //                     "Will hare",
+  //                     'Will hare',
   //                     textAlign: TextAlign.center,
   //                     style: const TextStyle(
   //                       fontFamily: 'AvenirNextCondensedDemiBold',
@@ -1035,7 +1035,7 @@ Column(
   //                     },
   //                   ),
   //                   Text(
-  //                     "Not at Hash",
+  //                     'Not at Hash',
   //                     textAlign: TextAlign.center,
   //                     style: const TextStyle(
   //                       fontFamily: 'AvenirNextCondensedDemiBold',
@@ -1079,7 +1079,7 @@ Column(
   //                     },
   //                   ),
   //                   Text(
-  //                     "At Hash",
+  //                     'At Hash',
   //                     textAlign: TextAlign.center,
   //                     style: const TextStyle(
   //                       fontFamily: 'AvenirNextCondensedDemiBold',
@@ -1123,7 +1123,7 @@ Column(
   //                     },
   //                   ),
   //                   Text(
-  //                     "On In",
+  //                     'On In',
   //                     textAlign: TextAlign.center,
   //                     style: const TextStyle(
   //                       fontFamily: 'AvenirNextCondensedDemiBold',
@@ -1179,7 +1179,7 @@ Column(
   //                           },
   //                         ),
   //                         Text(
-  //                           "Not paid",
+  //                           'Not paid',
   //                           textAlign: TextAlign.center,
   //                           style: const TextStyle(
   //                             fontFamily: 'AvenirNextCondensedDemiBold',
@@ -1219,7 +1219,7 @@ Column(
   //                           },
   //                         ),
   //                         Text(
-  //                           "Free run",
+  //                           'Free run',
   //                           textAlign: TextAlign.center,
   //                           style: const TextStyle(
   //                             fontFamily: 'AvenirNextCondensedDemiBold',
@@ -1256,7 +1256,7 @@ Column(
   //                           },
   //                         ),
   //                         Text(
-  //                           "Paid other",
+  //                           'Paid other',
   //                           textAlign: TextAlign.center,
   //                           style: const TextStyle(
   //                             fontFamily: 'AvenirNextCondensedDemiBold',

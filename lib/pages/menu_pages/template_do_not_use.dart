@@ -8,6 +8,7 @@ class DoNotUse extends StatefulWidget {
 
   DoNotUse({Key key}) : super(key: key);
 
+  @override
   DoNotUseState createState() => DoNotUseState();
 }
 
@@ -40,7 +41,6 @@ class DoNotUseState extends State<DoNotUse> {
       ),
     );
   }
-
 }
 
 class XPageContent extends StatefulWidget {
@@ -50,13 +50,9 @@ class XPageContent extends StatefulWidget {
   _XPageContentState createState() => _XPageContentState();
 }
 
-class _XPageContentState extends State<XPageContent>
- {
-
+class _XPageContentState extends State<XPageContent> {
   @override
   Widget build(BuildContext context) {
-    
-    return Container(color: Colors.red, width:100, height:100);
+    return Container(color: Colors.red, width: 100, height: 100);
   }
-
- }
+}

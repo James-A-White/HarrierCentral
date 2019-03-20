@@ -8,6 +8,7 @@ class FaqPage extends StatefulWidget {
 
   FaqPage({Key key}) : super(key: key);
 
+  @override
   FaqPageState createState() => FaqPageState();
 }
 
@@ -144,16 +145,13 @@ class _FaqPageContentState extends State<FaqPageContent> {
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
-                  Text(
-                      '\r\n2.5. Where is my data stored?',
+                  Text('\r\n2.5. Where is my data stored?',
                       style: headingStyle),
                   Text(
                     'Your data is safely stored in Microsoft Azure data centers located in The Netherlands and Ireland. When we end our beta test period and go into full production, we plan to replicate our data in the United States and Shanghai to provide superior global performance for our users.',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
-
-
                   Text('\r\n3. App usage and Membership', style: sectionStyle),
                   Text('\r\n3.1. What can I get for free?',
                       style: headingStyle),
@@ -162,41 +160,35 @@ class _FaqPageContentState extends State<FaqPageContent> {
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
-                  Text('\r\n3.2. What is Membership?',
-                      style: headingStyle),
+                  Text('\r\n3.2. What is Membership?', style: headingStyle),
                   Text(
                     'We offer enhanced services to our users, including keeping track of your run counts and, over time, many other exciting features. Once we are out of our beta test period, these will be made available for a small annual membership fee that is (not coincidentally) about the same as the cost of buying us a beer. We are exploring ways to keep the cost as low as possible, but we also feel like the cost of our service will be well justified by the value you receive from it.',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
-
-
-                                    Text('\r\n3.3. When will you start charging Membership fees?',
+                  Text('\r\n3.3. When will you start charging Membership fees?',
                       style: headingStyle),
                   Text(
                     'We will start charging membership fees once we are out of our beta period. If you sign up during the beta, you will receive one year of free membership as our way of thanking you for your support.',
-                     style: bodyStyle,
+                    style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
-
-                                    Text('\r\n3.4. How do I sign up?',
-                      style: headingStyle),
+                  Text('\r\n3.4. How do I sign up?', style: headingStyle),
                   Text(
                     'Currently, the app is free while we are in beta. Once we release the app for general availability, you will be able to enjoy enhanced features through an in-app purchase option.',
-                     style: bodyStyle,
+                    style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
-
-                                                      Text('\r\n3.5. Why can\'t Harrier Central be free?',
+                  Text('\r\n3.5. Why can\'t Harrier Central be free?',
                       style: headingStyle),
                   Text(
                     'Nothing in life is truly free. In order to provide the Harrier Central service, we have our own costs to cover, including software development and maintenance, cloud service provision and administrative costs. There are generally three ways companies cover these costs: 1) by selling your private data to third parties (the Facebook & Google models), 2) by putting advertisements in the app, or 3) by charging a fee directly to users. Above all, we value your privacy and we aim to provide the best user experience, uninterrupted by ads. Accordingly, we have chosen to charge a fee for our services. We welcome your comments on our business model and fee structure.',
-                     style: bodyStyle,
+                    style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
-
-
-                  Text('\r\n4. Information for Hash House Harriers organizations', style: sectionStyle),
+                  Text(
+                      '\r\n4. Information for Hash House Harriers organizations',
+                      style: sectionStyle),
                   Text('\r\n4.1. How can our Hash Kennel join?',
                       style: headingStyle),
                   Text(
@@ -204,32 +196,31 @@ class _FaqPageContentState extends State<FaqPageContent> {
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
-
-                  Text('\r\n4.2. Is there a fee for our Kennel to be on the app?',
+                  Text(
+                      '\r\n4.2. Is there a fee for our Kennel to be on the app?',
                       style: headingStyle),
                   Text(
                     'Currently, no there is not. However, in the future, we may have to charge an annual fee to Hash Kennels to help us offset our operations costs. We are evaluating different business models and will have more information on fees when our beta period is finished. We do guarantee, however, that Hash Kennels that join during our beta period will not be charged any fees for the first three years that the Harrier Central service is in full production.',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
-
-                                    Text('\r\n4.3. What is Facebook integration and how does it help us?',
+                  Text(
+                      '\r\n4.3. What is Facebook integration and how does it help us?',
                       style: headingStyle),
                   Text(
                     'Harrier Central has the ability to automatically download run information from Facebook events into the Harrier Central Service. This is a huge benefit for you because it means you do not have to enter the information more than once. We currently use a 5-minute polling mechanism, so any changes you make to your run event in Facebook will be automatically incorporated into the Harrier Central Service within 5 minutes.',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
-
                   Text('\r\n5. Other', style: sectionStyle),
-                  Text('\r\n5.1. I have other questions, how can I get them answered?',
+                  Text(
+                      '\r\n5.1. I have other questions, how can I get them answered?',
                       style: headingStyle),
                   Text(
                     'The best way to get your questions answered is to contact us at connect@harriercentral.com. We\'d be delighted to hear from you, get your thoughts on our App and Service and answer any questions you might have. We hope you enjoy Harrier Central!',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
-
                   Container(
                     height: 50,
                     width: 30,

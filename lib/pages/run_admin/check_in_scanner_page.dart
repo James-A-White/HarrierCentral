@@ -15,12 +15,11 @@ class CheckInScannerPage extends StatefulWidget {
   String eventName;
   int eventNumber;
 
+  @override
   _CheckInScannerPageState createState() => _CheckInScannerPageState();
 }
 
 class _CheckInScannerPageState extends State<CheckInScannerPage> {
-  
-  
   String barcode = '';
 
   @override
@@ -93,7 +92,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
 
                   // Container(
                   //   child: MaterialButton(
-                  //       onPressed: scan, child: const Text("Scan")),
+                  //       onPressed: scan, child: const Text('Scan')),
                   //   padding: const EdgeInsets.all(8.0),
                   // ),
                   Padding(
@@ -113,10 +112,11 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 32.0, right: 32.0, bottom: 16.0),
+              padding:
+                  const EdgeInsets.only(left: 32.0, right: 32.0, bottom: 16.0),
               child: FlatButton(
                 textColor: Theme.of(context).buttonColor,
-                child: const Text("Learn more about this feature"),
+                child: const Text('Learn more about this feature'),
                 onPressed: () {
                   this._displayInstructions(context);
                 },
@@ -173,10 +173,8 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
     //       });
     //     }
     //   });
-    //   setState(() => barcode = "Processing QR Scan");
+    //   setState(() => barcode = 'Processing QR Scan');
     // });
- 
- 
   }
 
   Future<bool> _displayInstructions(BuildContext context) async {
@@ -203,7 +201,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
           ),
           actions: <Widget>[
             FlatButton(
-              child: const Text("OK, Got it!"),
+              child: const Text('OK, Got it!'),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -213,6 +211,4 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
       },
     );
   }
-
-
 }

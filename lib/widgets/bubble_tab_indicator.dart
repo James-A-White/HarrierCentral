@@ -11,13 +11,13 @@ import 'package:flutter/widgets.dart';
 /// The [indicatorRadius] defines the bubble corner radius.
 /// The [tabBarIndicatorSize] specifies the type of TabBarIndicatorSize i.e label or tab.
 /// /// The selected tab bubble is inset from the tab's boundary by [insets] when [tabBarIndicatorSize] is tab.
-/// The selected tab bubble is applied padding by [padding] when [tabBarIndicatorSize] is label.
+/// The selected tab bubble is applied padding by [bubblePadding] when [tabBarIndicatorSize] is label.
 
 class BubbleTabIndicator extends Decoration {
   final double indicatorHeight;
   final Color indicatorColor;
   final double indicatorRadius;
-  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry bubblePadding;
   final EdgeInsetsGeometry insets;
   final TabBarIndicatorSize tabBarIndicatorSize;
 
@@ -26,19 +26,19 @@ class BubbleTabIndicator extends Decoration {
     this.indicatorColor: Colors.greenAccent,
     this.indicatorRadius: 100.0,
     this.tabBarIndicatorSize = TabBarIndicatorSize.label,
-    this.padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 8.0),
+    this.bubblePadding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 8.0),
     this.insets: const EdgeInsets.symmetric(horizontal: 5.0),
   })  : assert(indicatorHeight != null),
         assert(indicatorColor != null),
         assert(indicatorRadius != null),
-        assert(padding != null),
+        assert(bubblePadding != null),
         assert(insets != null);
 
   @override
   Decoration lerpFrom(Decoration a, double t) {
     if (a is BubbleTabIndicator) {
       return BubbleTabIndicator(
-        padding: EdgeInsetsGeometry.lerp(a.padding, padding, t),
+        bubblePadding: EdgeInsetsGeometry.lerp(a.bubblePadding, bubblePadding, t),
         insets: EdgeInsetsGeometry.lerp(a.insets, insets, t),
       );
     }
@@ -49,7 +49,7 @@ class BubbleTabIndicator extends Decoration {
   Decoration lerpTo(Decoration b, double t) {
     if (b is BubbleTabIndicator) {
       return BubbleTabIndicator(
-        padding: EdgeInsetsGeometry.lerp(padding, b.padding, t),
+        bubblePadding: EdgeInsetsGeometry.lerp(bubblePadding, b.bubblePadding, t),
         insets: EdgeInsetsGeometry.lerp(insets, b.insets, t),
       );
     }
@@ -72,7 +72,7 @@ class _BubblePainter extends BoxPainter {
   double get indicatorHeight => decoration.indicatorHeight;
   Color get indicatorColor => decoration.indicatorColor;
   double get indicatorRadius => decoration.indicatorRadius;
-  EdgeInsetsGeometry get padding => decoration.padding;
+  EdgeInsetsGeometry get padding => decoration.bubblePadding;
   EdgeInsetsGeometry get insets => decoration.insets;
   TabBarIndicatorSize get tabBarIndicatorSize => decoration.tabBarIndicatorSize;
 

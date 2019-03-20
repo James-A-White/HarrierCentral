@@ -8,6 +8,7 @@ class InAppPurchasePage extends StatefulWidget {
 
   InAppPurchasePage({Key key}) : super(key: key);
 
+  @override
   InAppPurchasePageState createState() => InAppPurchasePageState();
 }
 
@@ -40,20 +41,18 @@ class InAppPurchasePageState extends State<InAppPurchasePage> {
       ),
     );
   }
-
 }
 
 class InAppPurchasePageContent extends StatefulWidget {
   const InAppPurchasePageContent({Key key}) : super(key: key);
 
   @override
-  _InAppPurchasePageContentState createState() => _InAppPurchasePageContentState();
+  _InAppPurchasePageContentState createState() =>
+      _InAppPurchasePageContentState();
 }
 
-class _InAppPurchasePageContentState extends State<InAppPurchasePageContent>
- {
-
-     TextStyle headingStyle = const TextStyle(
+class _InAppPurchasePageContentState extends State<InAppPurchasePageContent> {
+  TextStyle headingStyle = const TextStyle(
       fontFamily: 'AvenirNextRegular',
       fontStyle: FontStyle.normal,
       color: Colors.yellow,
@@ -72,8 +71,9 @@ class _InAppPurchasePageContentState extends State<InAppPurchasePageContent>
     return Container(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
-      child: Center(child:Text(' In App Purchase\r\nPage Placeholder', textAlign: TextAlign.center, style: headingStyle)),
+      child: Center(
+          child: Text(' In App Purchase\r\nPage Placeholder',
+              textAlign: TextAlign.center, style: headingStyle)),
     );
   }
-
- }
+}

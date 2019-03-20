@@ -16,12 +16,14 @@ final _keepAnalysisHappy = Intl.defaultLocale;
 typedef MessageIfAbsent(String message_str, List args);
 
 class MessageLookup extends MessageLookupByLibrary {
+  @override
   get localeName => 'messages';
 
+  @override
   final messages = _notInlinedMessages(_notInlinedMessages);
-  static dynamic _notInlinedMessages(dynamic _) => <String, Function> {
-    "hello" : MessageLookupByLibrary.simpleMessage("Hello"),
-    "kilometers" : MessageLookupByLibrary.simpleMessage("Kilometers"),
-    "title" : MessageLookupByLibrary.simpleMessage("Hello world App")
-  };
+  static dynamic _notInlinedMessages(dynamic _) => <String, Function>{
+        'hello': MessageLookupByLibrary.simpleMessage('Hello'),
+        'kilometers': MessageLookupByLibrary.simpleMessage('Kilometers'),
+        'title': MessageLookupByLibrary.simpleMessage('Hello world App')
+      };
 }

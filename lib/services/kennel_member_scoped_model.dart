@@ -111,8 +111,8 @@ class KennelMemberScopedModel extends Model {
             displayName: item['displayName'],
             dispPref: item['dispPref'],
             photo: item['photo'],
-            qr_code: item['qr_code'],
-            qr_secret_code: item['qr_secret_code']
+            qrCode: item['qr_code'],
+            qrSecretCode: item['qr_secret_code']
         );
 
         addEditKennelMemberList(kennelMember);

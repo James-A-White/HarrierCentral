@@ -8,6 +8,7 @@ class SettingsPage extends StatefulWidget {
 
   SettingsPage({Key key}) : super(key: key);
 
+  @override
   SettingsPageState createState() => SettingsPageState();
 }
 
@@ -68,7 +69,9 @@ class _SettingsPageContentState extends State<SettingsPageContent> {
     return Container(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
-      child: Center(child:Text('Settings\r\nPage Placeholder', textAlign: TextAlign.center, style: headingStyle)),
+      child: Center(
+          child: Text('Settings\r\nPage Placeholder',
+              textAlign: TextAlign.center, style: headingStyle)),
     );
   }
 }

@@ -206,7 +206,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
           ),
           actions: <Widget>[
             FlatButton(
-              child: const Text("OK, Got it!"),
+              child: const Text('OK, Got it!'),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -322,7 +322,7 @@ class _QrCodeTabState extends State<QrCodeTab>
           ),
           actions: <Widget>[
             FlatButton(
-              child: const Text("OK, Got it!"),
+              child: const Text('OK, Got it!'),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -414,7 +414,7 @@ class _QrCodeTabState extends State<QrCodeTab>
                       padding: const EdgeInsets.only(left: 0.0, right: 0.0),
                       child: FlatButton(
                         textColor: Colors.white,
-                        child: const Text("Learn more about this feature"),
+                        child: const Text('Learn more about this feature'),
                         onPressed: () {
                           this._displayInstructions(context);
                         },
@@ -574,7 +574,7 @@ class _QrScannerTabState extends State<QrScannerTab>
           ),
           actions: <Widget>[
             FlatButton(
-              child: const Text("OK, Got it!"),
+              child: const Text('OK, Got it!'),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -695,7 +695,7 @@ class _QrScannerTabState extends State<QrScannerTab>
                 // right: 30,
                 child: FlatButton(
                   textColor: Colors.white,
-                  child: const Text("Learn more about this feature"),
+                  child: const Text('Learn more about this feature'),
                   onPressed: () {
                     this._displayInstructions(context);
                   },

@@ -8,6 +8,7 @@ class UserFeedbackPage extends StatefulWidget {
 
   UserFeedbackPage({Key key}) : super(key: key);
 
+  @override
   UserFeedbackPageState createState() => UserFeedbackPageState();
 }
 
@@ -40,20 +41,18 @@ class UserFeedbackPageState extends State<UserFeedbackPage> {
       ),
     );
   }
-
 }
 
 class UserFeedbackPageContent extends StatefulWidget {
   const UserFeedbackPageContent({Key key}) : super(key: key);
 
   @override
-  _UserFeedbackPageContentState createState() => _UserFeedbackPageContentState();
+  _UserFeedbackPageContentState createState() =>
+      _UserFeedbackPageContentState();
 }
 
-class _UserFeedbackPageContentState extends State<UserFeedbackPageContent>
- {
-
-     TextStyle headingStyle = const TextStyle(
+class _UserFeedbackPageContentState extends State<UserFeedbackPageContent> {
+  TextStyle headingStyle = const TextStyle(
       fontFamily: 'AvenirNextRegular',
       fontStyle: FontStyle.normal,
       color: Colors.yellow,
@@ -72,7 +71,9 @@ class _UserFeedbackPageContentState extends State<UserFeedbackPageContent>
     return Container(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
-      child: Center(child:Text('Your Feedback\r\nPage Placeholder', textAlign: TextAlign.center, style: headingStyle)),
+      child: Center(
+          child: Text('Your Feedback\r\nPage Placeholder',
+              textAlign: TextAlign.center, style: headingStyle)),
     );
   }
- }
+}

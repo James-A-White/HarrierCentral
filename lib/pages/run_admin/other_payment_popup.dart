@@ -11,12 +11,14 @@ class OtherPaymentPopup extends StatefulWidget {
 
   OtherPaymentPopup({@required this.currencySymbol});
 
+  @override
   _OtherPaymentPopupState createState() => _OtherPaymentPopupState();
 }
 
 class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
   final FocusNode myFocusNodeFirstName = FocusNode();
-  TextEditingController otherPaymentAmountTextController = TextEditingController();
+  TextEditingController otherPaymentAmountTextController =
+      TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +35,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
             color: Colors.white),
         decoration: const InputDecoration(
           border: InputBorder.none,
-          icon:const  Icon(
+          icon: const Icon(
             FontAwesomeIcons.moneyBillWave,
             color: Colors.white,
           ),
@@ -50,7 +52,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
 
         FlatButton(
           color: Colors.red,
-          child: const Text("Cancel"),
+          child: const Text('Cancel'),
           textColor: Colors.white,
           onPressed: () {
             Navigator.of(context)
@@ -65,7 +67,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
 
         FlatButton(
             color: Colors.blue,
-            child: const Text("Cash"),
+            child: const Text('Cash'),
             textColor: Colors.white,
             onPressed: () {
               Navigator.of(context).pop(<String, String>{
@@ -79,9 +81,9 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
         //child:
 
         FlatButton(
-          color: Colors.blue,
-          child: const Text("Bank transfer"),
-          textColor: Colors.white,
+            color: Colors.blue,
+            child: const Text('Bank transfer'),
+            textColor: Colors.white,
             onPressed: () {
               Navigator.of(context).pop(<String, String>{
                 'type': paymentBankTransferOtherAmount.value.toString(),

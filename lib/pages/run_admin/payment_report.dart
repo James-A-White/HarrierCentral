@@ -73,7 +73,7 @@ class PaymentReportPage extends StatelessWidget {
         shape: CircleBorder(),
         children: [
           SpeedDialChild(
-            child:const  Icon(Icons.mail_outline),
+            child: const Icon(Icons.mail_outline),
             backgroundColor: Colors.green,
             label: 'Email me report',
             labelStyle: TextStyle(fontSize: 18.0),
@@ -117,12 +117,14 @@ class PaymentReportsListPageBody extends StatefulWidget {
       @required this.digitsAfterDecimal})
       : super(key: key);
 
+  @override
   _PaymentReportsListPageBodyState createState() =>
       _PaymentReportsListPageBodyState();
 }
 
 class _PaymentReportsListPageBodyState
     extends State<PaymentReportsListPageBody> {
+  @override
   BuildContext context;
   PaymentReportScopedModel model;
   int pageIndex = 1;
@@ -331,7 +333,8 @@ class _PaymentReportsListPageBodyState
 
                                 dlg.then(
                                   (bool x) {
-                                    payForEvent(filteredList[index], pp.selectedValue, pp.amount);
+                                    payForEvent(filteredList[index],
+                                        pp.selectedValue, pp.amount);
                                   },
                                 );
                               } else {
@@ -339,7 +342,8 @@ class _PaymentReportsListPageBodyState
                                         filteredList[index], context)
                                     .then((bool doCancelTransaction) {
                                   if (doCancelTransaction) {
-                                    payForEvent(filteredList[index], paymentNotPaid.value, 0);
+                                    payForEvent(filteredList[index],
+                                        paymentNotPaid.value, 0);
                                   }
                                 });
                               }
@@ -355,79 +359,49 @@ class _PaymentReportsListPageBodyState
     );
   }
 
-
   void payForEvent(PaymentReportModel item, int selectedValue, num amount) {
-    PayForEventService paySrv =
-        PayForEventService();
-    Future<List<PayForEventModel>> retVal =
-        paySrv.payForEvent(
-            item.userIdWhoPaid,
-            widget.eventId,
-            item
-                .hasherEventMapId,
-            selectedValue,
-            amount,
-            attendenceAtHash.value);
+    PayForEventService paySrv = PayForEventService();
+    Future<List<PayForEventModel>> retVal = paySrv.payForEvent(
+        item.userIdWhoPaid,
+        widget.eventId,
+        item.hasherEventMapId,
+        selectedValue,
+        amount,
+        attendenceAtHash.value);
     retVal.then(
       (List<PayForEventModel> paymentResult) {
         if (paymentResult.isNotEmpty) {
           setState(() {
             // update the UI
             // start by updating the user's payment status to reflect the payment type
-            item.paymentType =
-                EnumPaymentType<int>(
-                    selectedValue);
+            item.paymentType = EnumPaymentType<int>(selectedValue);
             item.creditAmount = amount;
             // now update the counters at the top
-    
+
             // decrease the count for non-paid hashers
-            PaymentReportModel
-                notPaidHashersTotalRecord =
-                model.paymentReportTotalsList
-                    .firstWhere(
-                        (PaymentReportModel
-                                evt) =>
-                            evt.paymentType
-                                .value ==
-                            paymentNotPaidTotals
-                                .value);
-            notPaidHashersTotalRecord
-                .paymentReference = (int.parse(
-                        notPaidHashersTotalRecord
-                            .paymentReference) -
-                    1)
-                .toString();
-    
-            PaymentReportModel
-                paymentTypeTotalRecord = model
-                    .paymentReportTotalsList
-                    .firstWhere(
-                        (PaymentReportModel
-                                evt) =>
-                            evt.paymentType
-                                .value ==
-                            (selectedValue +
-                                100));
-    
-            if (paymentTypeTotalRecord !=
-                null) {
+            PaymentReportModel notPaidHashersTotalRecord = model
+                .paymentReportTotalsList
+                .firstWhere((PaymentReportModel evt) =>
+                    evt.paymentType.value == paymentNotPaidTotals.value);
+            notPaidHashersTotalRecord.paymentReference =
+                (int.parse(notPaidHashersTotalRecord.paymentReference) - 1)
+                    .toString();
+
+            PaymentReportModel paymentTypeTotalRecord = model
+                .paymentReportTotalsList
+                .firstWhere((PaymentReportModel evt) =>
+                    evt.paymentType.value == (selectedValue + 100));
+
+            if (paymentTypeTotalRecord != null) {
               // increase the counter for the type of payment made
-              paymentTypeTotalRecord
-                  .paymentReference = (int.parse(
-                          paymentTypeTotalRecord
-                              .paymentReference) +
-                      1)
-                  .toString();
+              paymentTypeTotalRecord.paymentReference =
+                  (int.parse(paymentTypeTotalRecord.paymentReference) + 1)
+                      .toString();
               // update the cash amount total
-              if ((selectedValue !=
-                      paymentFreeRun.value) &&
-                  (selectedValue !=
-                      paymentNotPaid.value) &&
-                  (selectedValue !=
-                      paymentHashCredit
-                          .value)) {
-                paymentTypeTotalRecord
-                    .creditAmount += amount;
+              if ((selectedValue != paymentFreeRun.value) &&
+                  (selectedValue != paymentNotPaid.value) &&
+                  (selectedValue != paymentHashCredit.value)) {
+                paymentTypeTotalRecord.creditAmount += amount;
               }
             }
           });
@@ -437,9 +411,6 @@ class _PaymentReportsListPageBodyState
       },
     );
   }
-
-
-
 
   Future<bool> _displayPaymentDetails(
       PaymentReportModel item, BuildContext context) async {
@@ -599,13 +570,13 @@ class _PaymentReportsListPageBodyState
           ),
           actions: <Widget>[
             FlatButton(
-              child: const Text("Cancel transaction"),
+              child: const Text('Cancel transaction'),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
             ),
             FlatButton(
-              child: const Text("Close"),
+              child: const Text('Close'),
               onPressed: () {
                 Navigator.of(context).pop(false);
               },

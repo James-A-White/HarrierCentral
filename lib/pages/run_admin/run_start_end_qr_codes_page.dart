@@ -64,7 +64,7 @@ class RunStartEndQrCodes extends StatelessWidget {
                   height: 1.0),
             ),
             Text(
-              DateFormat("E, MMM d 'at' h:mm a").format(eventStartDatetime),
+              DateFormat('E, MMM d \'at\' h:mm a').format(eventStartDatetime),
               textAlign: TextAlign.center,
               style: const TextStyle(
                   fontFamily: 'AvenirNextRegular',
@@ -82,7 +82,7 @@ class RunStartEndQrCodes extends StatelessWidget {
               padding: const EdgeInsets.only(left: 32.0, right: 32.0, bottom: 16.0),
               child: FlatButton(
                 textColor: Theme.of(context).buttonColor,
-                child: const Text("Learn more about this feature"),
+                child: const Text('Learn more about this feature'),
                 onPressed: () {
                   this._displayInstructions(context);
                 },
@@ -120,7 +120,7 @@ class RunStartEndQrCodes extends StatelessWidget {
           ),
           actions: <Widget>[
             FlatButton(
-              child: const Text("OK, Got it!"),
+              child: const Text('OK, Got it!'),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },

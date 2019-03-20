@@ -176,7 +176,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                   color: Colors.black),
               decoration: const InputDecoration(
                 border: InputBorder.none,
-                icon:const  Icon(
+                icon: const Icon(
                   FontAwesomeIcons.search,
                   color: Colors.black,
                 ),
@@ -236,28 +236,28 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             shape: CircleBorder(),
             children: [
               SpeedDialChild(
-                child:const  Icon(Icons.filter_list),
+                child: const Icon(Icons.filter_list),
                 backgroundColor: Colors.green,
                 label: 'Filter List',
                 labelStyle: TextStyle(fontSize: 18.0),
                 onTap: () => print('THIRD CHILD'),
               ),
               SpeedDialChild(
-                child:const  Icon(FontAwesomeIcons.beer),
+                child: const Icon(FontAwesomeIcons.beer),
                 backgroundColor: Colors.green,
                 label: 'Scan: On In',
                 labelStyle: TextStyle(fontSize: 18.0),
                 onTap: () => print('FIRST CHILD'),
               ),
               SpeedDialChild(
-                child:const  Icon(Icons.directions_run),
+                child: const Icon(Icons.directions_run),
                 backgroundColor: Colors.red,
                 label: 'Scan: At Hash',
                 labelStyle: TextStyle(fontSize: 18.0),
                 onTap: () => print('SECOND CHILD'),
               ),
               SpeedDialChild(
-                child:const  Icon(Icons.person_add),
+                child: const Icon(Icons.person_add),
                 backgroundColor: Colors.blue,
                 label: 'Add Member',
                 labelStyle: TextStyle(fontSize: 18.0),
@@ -311,7 +311,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 // }),
               ),
               SpeedDialChild(
-                child:const  Icon(FontAwesomeIcons.solidHeart),
+                child: const Icon(FontAwesomeIcons.solidHeart),
                 backgroundColor: Colors.blue,
                 label: 'Add Virgin / Visitor',
                 labelStyle: TextStyle(fontSize: 18.0),
@@ -382,7 +382,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
   void scanUserBarcode(num checkinType, BuildContext scanContext) {
     Widget snackBar = buildScanResultSnackbar(
-        scanContext, _packScopedModel, "Processing QR Scan");
+        scanContext, _packScopedModel, 'Processing QR Scan');
 
     // final Future<String> scanAction = BarcodeScanner.scan();
     // scanAction.then((String scanText) {
@@ -616,8 +616,7 @@ class PackListView extends StatelessWidget {
                   height: 70.0,
                   child: const Padding(
                       padding: const EdgeInsets.all(5.0),
-                      child:
-                          Center(child: CircularProgressIndicator())),
+                      child: Center(child: CircularProgressIndicator())),
                 )
               : GestureDetector(
                   onTap: () {
@@ -646,7 +645,7 @@ class PackListView extends StatelessWidget {
                               //     height: 70.0,
                               //    width: 70.0),
                               errorWidget: (context, url, error) =>
-                                  const  Icon(Icons.error),
+                                  const Icon(Icons.error),
                               //fadeOutDuration:  Duration(seconds: 1),
                               fadeInDuration: const Duration(milliseconds: 0),
                               width: 70.0,
@@ -732,13 +731,15 @@ class PackListView extends StatelessWidget {
                                 radius: 12.0,
                               )
                             : packList[index].rsvpState == rsvpNo.value
-                                ?const  Icon(FontAwesomeIcons.solidTimesCircle,
+                                ? const Icon(FontAwesomeIcons.solidTimesCircle,
                                     color: Colors.red, size: 24.0)
                                 : packList[index].rsvpState == rsvpMaybe.value
-                                    ?const  Icon(FontAwesomeIcons.solidQuestionCircle,
-                                        color: Colors.orange, size: 24.0)
+                                    ? const Icon(
+                                        FontAwesomeIcons.solidQuestionCircle,
+                                        color: Colors.orange,
+                                        size: 24.0)
                                     : packList[index].isHare == 0
-                                        ?const  Icon(
+                                        ? const Icon(
                                             FontAwesomeIcons.solidCheckCircle,
                                             color: Colors.green,
                                             size: 24.0)
@@ -908,6 +909,7 @@ class PackListView extends StatelessWidget {
 class AddVisitorVirginPopup extends StatefulWidget {
   AddVisitorVirginPopup();
 
+  @override
   _AddVisitorVirginPopupState createState() => _AddVisitorVirginPopupState();
 }
 
@@ -934,7 +936,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               color: Colors.black),
           decoration: const InputDecoration(
             //border: InputBorder.none,
-            icon:const  Icon(
+            icon: const Icon(
               FontAwesomeIcons.moneyBillWave,
               color: Colors.white,
             ),
@@ -954,7 +956,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               color: Colors.black),
           decoration: const InputDecoration(
             //border: InputBorder.none,
-            icon:const  Icon(
+            icon: const Icon(
               FontAwesomeIcons.moneyBillWave,
               color: Colors.white,
             ),
@@ -974,7 +976,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               color: Colors.black),
           decoration: const InputDecoration(
             //border: InputBorder.none,
-            icon:const  Icon(
+            icon: const Icon(
               FontAwesomeIcons.moneyBillWave,
               color: Colors.white,
             ),
@@ -987,7 +989,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
       actions: <Widget>[
         FlatButton(
           color: Colors.red,
-          child: const Text("Cancel"),
+          child: const Text('Cancel'),
           textColor: Colors.white,
           onPressed: () {
             Navigator.of(context)
@@ -997,7 +999,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
 
         FlatButton(
             color: Colors.blue,
-            child: const Text("Add Visitor"),
+            child: const Text('Add Visitor'),
             textColor: Colors.white,
             onPressed: () {
               Navigator.of(context).pop(<String, String>{
@@ -1010,7 +1012,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
 
         FlatButton(
             color: Colors.blue,
-            child: const Text("Add Virgin"),
+            child: const Text('Add Virgin'),
             textColor: Colors.white,
             onPressed: () {
               Navigator.of(context).pop(<String, String>{

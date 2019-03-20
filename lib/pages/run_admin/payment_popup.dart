@@ -1,4 +1,3 @@
-
 import 'dart:core';
 
 import 'package:flutter/material.dart';
@@ -23,11 +22,11 @@ class PaymentPopup extends StatefulWidget {
 
   int selectedValue = -1;
 
+  @override
   _PaymentPopupState createState() => _PaymentPopupState();
 }
 
 class _PaymentPopupState extends State<PaymentPopup> {
-
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -165,7 +164,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
             width: 100.0,
             child: RaisedButton(
               color: Colors.red,
-              child: const Text("Cancel"),
+              child: const Text('Cancel'),
               textColor: Colors.white,
               onPressed: () {
                 Navigator.of(context).pop(true);
@@ -176,7 +175,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
         Container(
           width: 100.0,
           child: RaisedButton(
-            child: const Text("Process"),
+            child: const Text('Process'),
             textColor: Colors.white,
             onPressed: () {
               Navigator.of(context).pop(true);
@@ -190,7 +189,6 @@ class _PaymentPopupState extends State<PaymentPopup> {
   void _handleRadioValueChange1(int value) {
     setState(() {
       widget.selectedValue = value;
-
     });
   }
 }

@@ -8,8 +8,8 @@ class KennelMemberModel {
   String displayName;
   final int dispPref;
   String photo;
-  String qr_code;
-  String qr_secret_code;
+  String qrCode;
+  String qrSecretCode;
 
   KennelMemberModel({
     this.hasherId,
@@ -19,8 +19,8 @@ class KennelMemberModel {
     this.displayName,
     this.dispPref,
     this.photo,
-    this.qr_code,
-    this.qr_secret_code
+    this.qrCode,
+    this.qrSecretCode
   });
 
   @override

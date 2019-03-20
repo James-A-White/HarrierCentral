@@ -512,7 +512,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         child: Column(
                           children: <Widget>[
                             Text(
-                                "Not go: " +
+                                'Not go: ' +
                                     (widget.futureRun.rsvpNoCount >= 0
                                         ? widget.futureRun.rsvpNoCount
                                             .toString()
@@ -1194,7 +1194,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     //String googleAppUrl = 'comgooglemaps://maps.google.com/maps/place/<name>/@<lat>,<long>,15z/data=<mode-value>';
     String googleAppUrl = 'comgooglemaps://?q=${lat},${lon}';
     String appleUrl = 'https://maps.apple.com/?sll=${lat},${lon}';
-    if (await canLaunch("comgooglemaps://")) {
+    if (await canLaunch('comgooglemaps://')) {
       print('launching com googleUrl');
       await launch(googleAppUrl);
     } else if (await canLaunch(googleWebUrl)) {
@@ -1243,13 +1243,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           ),
           actions: <Widget>[
             FlatButton(
-              child: const Text("No Thanks!"),
+              child: const Text('No Thanks!'),
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
             ),
             FlatButton(
-              child: const Text("Yes, I'll Hare!"),
+              child: const Text('Yes, I\'ll Hare!'),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },

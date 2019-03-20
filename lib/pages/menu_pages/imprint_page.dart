@@ -10,6 +10,7 @@ class ImprintPage extends StatefulWidget {
 
   ImprintPage({Key key}) : super(key: key);
 
+  @override
   ImprintPageState createState() => ImprintPageState();
 }
 
@@ -73,12 +74,10 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
         buildNumber = packageInfo.buildNumber;
       });
     });
- 
+
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints viewportConstraints) {
-      return 
-      
-      SingleChildScrollView(
+      return SingleChildScrollView(
         child: ConstrainedBox(
           constraints: BoxConstraints(
               //minHeight: viewportConstraints.maxHeight,
@@ -96,8 +95,6 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                       Text('Software version:', style: headingStyle),
                     ],
                   ),
-
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
@@ -163,8 +160,6 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
           ),
         ),
       );
-   
-   
     });
   }
 }

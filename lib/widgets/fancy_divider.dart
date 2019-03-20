@@ -66,6 +66,7 @@ class ShapePainter extends CustomPainter {
     @required this.color,
   });
 
+  @override
   void paint(Canvas canvas, Size size) {
     num dividerHeight = 1.0;
     num dividerInset = 20.0;
