@@ -576,11 +576,13 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       _processingSelection = true;
     });
 
+    num startTime = DateTime.now().millisecondsSinceEpoch;
+
     if (widget.doAddUser) {
       if (widget.isForThisDevice) {
         AddUserService()
             .addUser(
-                _scaffoldKey,
+                _scaffoldKey.currentContext,
                 Preferences.getStringPref(StringPrefsEnum.firstName),
                 Preferences.getStringPref(StringPrefsEnum.lastName),
                 Preferences.getStringPref(StringPrefsEnum.email),
@@ -592,16 +594,23 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                 '',
                 hasherTypeMember)
             .then((UserModel user) {
-          Preferences.setStringPref(StringPrefsEnum.userId, user.hasherId);
-          Preferences.setStringPref(
-              StringPrefsEnum.displayName, user.displayName);
-          Preferences.setStringPref(StringPrefsEnum.qrCode, user.qrCode);
-          Preferences.setStringPref(
-              StringPrefsEnum.qrSecretCode, user.qrSecretCode);
-
-          // after this executes, we will push and replace this to the main screen
-          // the logic for this is in the underlying method
-          _prepareAndUploadImageThenContinue(user);
+          // if the call fails, user will be null
+          if (user != null) {
+            Preferences.setStringPref(StringPrefsEnum.userId, user.hasherId);
+            Preferences.setStringPref(
+                StringPrefsEnum.displayName, user.displayName);
+            Preferences.setStringPref(StringPrefsEnum.qrCode, user.qrCode);
+            Preferences.setStringPref(
+                StringPrefsEnum.qrSecretCode, user.qrSecretCode);
+            // after this executes, we will push and replace this to the main screen
+            // the logic for this is in the underlying method
+            _prepareAndUploadImageThenContinue(startTime, user);
+          } else {
+            setState(() {
+              _processingSelection = false;
+              Navigator.of(context).pop(null);
+            });
+          }
         });
       } else {
         // adding an "external" user who is not associated with this device
@@ -609,7 +618,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         // push in an event ID
         AddUserService()
             .addUser(
-                _scaffoldKey,
+                _scaffoldKey.currentContext,
                 widget.firstName,
                 widget.lastName,
                 widget.email,
@@ -622,18 +631,27 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                 hasherTypeMember,
                 attendenceState: widget.attendenceState)
             .then((UserModel user) {
-          // after this executes, we will push and replace this to the main screen
-          // the logic for this is in the underlying method
-          _prepareAndUploadImageThenContinue(user);
+          // if the call fails, user will be null
+          if (user != null) {
+            // after this executes, we will push and replace this to the main screen
+            // the logic for this is in the underlying method
+            _prepareAndUploadImageThenContinue(startTime, user);
+          } else {
+            setState(() {
+              _processingSelection = false;
+              // pop the user back to the page where they enter the details
+              Navigator.of(context).pop(null);
+            });
+          }
         });
       }
     } else {
       // after this executes, we will pop back to the originating screen that invoked this screen
-      _prepareAndUploadImageThenContinue(null);
+      _prepareAndUploadImageThenContinue(startTime, null);
     }
   }
 
-  void _prepareAndUploadImageThenContinue(UserModel user) {
+  void _prepareAndUploadImageThenContinue(int startTime, UserModel user) {
     String profileImageUrl = '';
 
     String fileName;
@@ -693,11 +711,20 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           });
         }
 
-        Future<dynamic>.delayed(const Duration(milliseconds: 3500))
-            .then((void dummy) {
+        // how long has the
+        num deltaTime = DateTime.now().millisecondsSinceEpoch - startTime;
+
+        if (deltaTime > 1000) {
+          print('Delay to show uploading screen = $deltaTime milliseconds'); 
+          Future<dynamic>.delayed(Duration(milliseconds: deltaTime))
+              .then((void dummy) {
+            Navigator.of(context)
+                .pushReplacementNamed(RouteNames.MAIN_LANDING_PAGE.toString());
+          });
+        } else {
           Navigator.of(context)
               .pushReplacementNamed(RouteNames.MAIN_LANDING_PAGE.toString());
-        });
+        }
       });
     } else if ((widget.doAddUser) && (!widget.isForThisDevice)) {
       // this is for a user being added from the device,
@@ -752,7 +779,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
     final http.Request request = http.Request('PUT', uri);
 
-    final Map<String, String> headers = <String,String>{
+    final Map<String, String> headers = <String, String>{
       'content-type': 'image/jpeg',
       'x-ms-blob-type': 'BlockBlob'
     };

@@ -7,10 +7,11 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/services/service_common.dart';
+import 'package:harrier_central/util/constants.dart';
 
 class AddUserService {
   Future<UserModel> addUser(
-      GlobalKey<ScaffoldState> scaffoldKey,
+      BuildContext context,
       String firstName,
       String lastName,
       String email,
@@ -45,14 +46,19 @@ class AddUserService {
       'attendenceState': attendenceState.value.toString()
     });
 
-    final String responseBody = await ServiceCommon.sendRequest(scaffoldKey, body);
+    final String responseBody =
+        await ServiceCommon.sendRequest(context, body);
 
-    final List<UserModel> results = UserModel.listFromJson(responseBody);
-
-    if (results.isEmpty) {
+    if (responseBody == ERROR_KEY) {
       return null;
-    }
+    } else {
+      final List<UserModel> results = UserModel.listFromJson(responseBody);
 
-    return results[0];
+      if (results.isEmpty) {
+        return null;
+      }
+
+      return results[0];
+    }
   }
 }

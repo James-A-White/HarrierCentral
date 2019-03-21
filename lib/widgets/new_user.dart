@@ -465,10 +465,7 @@ class NewUserState extends State<NewUserWidget>
           context,
           MaterialPageRoute<UserModel>(
             builder: (BuildContext context) => ChooseProfileImage(
-                  isForThisDevice: widget.isForThisDevice,
-                  // kennelId: widget.kennelId,
-                  // eventId: widget.eventId,
-                  // attendenceState: widget.attendenceState,
+                  isForThisDevice: true,
                   doAddUser: true,
                 ),
           ),
@@ -490,7 +487,9 @@ class NewUserState extends State<NewUserWidget>
                 ),
           ),
         ).then<dynamic>((UserModel user) {
-          Navigator.of(context).pop(user);
+          if (user != null) {
+            Navigator.of(context).pop(user);
+          }
         });
       }
     }
@@ -581,7 +580,8 @@ class NewUserState extends State<NewUserWidget>
   }
 
   Widget _cameraPreviewWidget() {
-    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraint) {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraint) {
       return Stack(
         alignment: AlignmentDirectional.center,
         children: <Widget>[

@@ -9,8 +9,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:http/http.dart' as http;
 
 class ServiceCommon {
-  static Future<String> sendRequest(
-      GlobalKey<ScaffoldState> scaffoldKey, String requestBody) async {
+  static Future<String> sendRequest(BuildContext context, String requestBody) async {
     final http.Response response = await http
         .post(BASE_API_URL + 'add_user',
             headers: <String, String>{'content-type': 'application/json'},
@@ -27,7 +26,7 @@ class ServiceCommon {
     if (response.body.contains('"errorId"')) {
       final DbErrorModel result = DbErrorModel.itemFromJson(response.body);
       if (result != null) {
-        Utilities.showAlert(scaffoldKey.currentContext, result.errorTitle,
+        await Utilities.showAlert(context, result.errorTitle,
             result.errorUserMessage, 'OK');
       }
 
