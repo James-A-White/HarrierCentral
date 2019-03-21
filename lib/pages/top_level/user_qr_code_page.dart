@@ -13,8 +13,6 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 
-
-
 class UserQrCodePage extends StatefulWidget {
   UserQrCodePage({Key key}) : super(key: key);
 
@@ -236,15 +234,6 @@ class _UserQrCodePageState extends State<UserQrCodePage>
 }
 
 class TabIndicationPainter extends CustomPainter {
-  Paint painter;
-  final double dxTarget;
-  final double dxEntry;
-  final double radius;
-  final double dy;
-  BuildContext context;
-
-  final PageController pageController;
-
   TabIndicationPainter(
       {this.context,
       this.dxTarget = 125.0,
@@ -257,6 +246,15 @@ class TabIndicationPainter extends CustomPainter {
       ..color = Theme.of(context).accentColor
       ..style = PaintingStyle.fill;
   }
+
+  Paint painter;
+  final double dxTarget;
+  final double dxEntry;
+  final double radius;
+  final double dy;
+  BuildContext context;
+
+  final PageController pageController;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -271,11 +269,11 @@ class TabIndicationPainter extends CustomPainter {
     final Offset target = Offset(left2right ? dxTarget : dxEntry, dy);
 
     final Path path = Path();
-    path.addArc(
-        Rect.fromCircle(center: entry, radius: radius), 0.5 * math.pi, 1 * math.pi);
+    path.addArc(Rect.fromCircle(center: entry, radius: radius), 0.5 * math.pi,
+        1 * math.pi);
     path.addRect(Rect.fromLTRB(entry.dx, dy - radius, target.dx, dy + radius));
-    path.addArc(
-        Rect.fromCircle(center: target, radius: radius), 1.5 * math.pi, 1 * math.pi);
+    path.addArc(Rect.fromCircle(center: target, radius: radius), 1.5 * math.pi,
+        1 * math.pi);
 
     canvas.translate(size.width * pageOffset, 0.0);
     canvas.drawShadow(path, const Color(0xFFfbab66), 3.0, true);
@@ -343,8 +341,8 @@ class _QrCodeTabState extends State<QrCodeTab>
 
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-              print('Height = ${constraints.maxHeight}');
-    print('Width = ${constraints.maxWidth}');
+      print('Height = ${constraints.maxHeight}');
+      print('Width = ${constraints.maxWidth}');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -397,7 +395,9 @@ class _QrCodeTabState extends State<QrCodeTab>
                     top: 127,
                     //bottom: 50,
                     child: Container(
-                      height: math.min(constraints.maxHeight,constraints.maxWidth) * 0.65,
+                      height: math.min(
+                              constraints.maxHeight, constraints.maxWidth) *
+                          0.65,
                       child: QrImage(
                           backgroundColor: Colors.white,
                           padding: const EdgeInsets.all(10.0),
@@ -416,7 +416,7 @@ class _QrCodeTabState extends State<QrCodeTab>
                         textColor: Colors.white,
                         child: const Text('Learn more about this feature'),
                         onPressed: () {
-                          this._displayInstructions(context);
+                          _displayInstructions(context);
                         },
                       ),
                     ),
@@ -491,14 +491,14 @@ class _QrScannerTabState extends State<QrScannerTab>
     });
   }
 
-  Future stopScanning() async {
+  Future<dynamic> stopScanning() async {
     controller.stopScanning();
     await controller.dispose();
     controller = null;
   }
 
   Widget _cameraPreviewWidget() {
-    return LayoutBuilder(builder: (context, constraint) {
+    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraint) {
       return Stack(children: <Widget>[
         Image.asset(
           'images/other/qr_scanner.png',
@@ -507,9 +507,8 @@ class _QrScannerTabState extends State<QrScannerTab>
           padding: const EdgeInsets.all(9.0),
           height: constraint.biggest.height,
           width: constraint.biggest.height,
-          child: (controller == null)
-              ? Container()
-              : QRReaderPreview(controller),
+          child:
+              (controller == null) ? Container() : QRReaderPreview(controller),
         )
       ]);
     });
@@ -521,8 +520,8 @@ class _QrScannerTabState extends State<QrScannerTab>
     if (controller != null) {
       await controller.dispose();
     }
-    controller = QRReaderController(cameraDescription,
-        ResolutionPreset.high, [CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
+    controller = QRReaderController(cameraDescription, ResolutionPreset.high,
+        <CodeFormat>[CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
 
     // If the controller is updated then update the UI.
     controller.addListener(() {
@@ -697,7 +696,7 @@ class _QrScannerTabState extends State<QrScannerTab>
                   textColor: Colors.white,
                   child: const Text('Learn more about this feature'),
                   onPressed: () {
-                    this._displayInstructions(context);
+                    _displayInstructions(context);
                   },
                 ),
               ),

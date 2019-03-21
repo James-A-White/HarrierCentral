@@ -1,11 +1,44 @@
-import 'dart:core';
 import 'dart:convert';
+import 'dart:core';
 
 class UserModel {
+  UserModel({
+    this.allowNegativeCredit,
+    this.atHashCount,
+    this.attendenceState,
+    this.credit,
+    this.currencySymbol,
+    this.digitsAfterDecimal,
+    this.displayName,
+    this.email,
+    this.eventId,
+    this.eventLocale,
+    this.eventPrice,
+    this.facebookId,
+    this.firstName,
+    this.hasherEventMapId,
+    this.hasherId,
+    this.hashName,
+    this.isFollowing,
+    this.isHare,
+    this.isMember,
+    this.isPaid,
+    this.lastName,
+    this.onInCount,
+    this.onTrailCount,
+    this.paidCount,
+    this.paymentType,
+    this.photo,
+    this.qrCode,
+    this.qrSecretCode,
+    this.rsvpState,
+    this.userEndEvent,
+    this.userRunCount,
+    this.userStartEvent,
+    this.virginVisitorType,
+    this.waitingForCount,
+  });
 
-
-
-  // int isRsvped;
   DateTime userEndEvent;
   DateTime userStartEvent;
   double credit;
@@ -41,50 +74,8 @@ class UserModel {
   int userRunCount;
   String hasherEventMapId;
 
-
-
-  UserModel(
-    {
-      // this.isRsvped,
-      this.allowNegativeCredit,
-      this.atHashCount,
-      this.attendenceState,
-      this.credit,
-      this.currencySymbol,
-      this.digitsAfterDecimal,
-      this.displayName,
-      this.email,
-      this.eventId,
-      this.eventLocale,
-      this.eventPrice,
-      this.facebookId,
-      this.firstName,
-      this.hasherEventMapId,
-      this.hasherId,
-      this.hashName,
-      this.isFollowing,
-      this.isHare,
-      this.isMember,
-      this.isPaid,
-      this.lastName,
-      this.onInCount,
-      this.onTrailCount,
-      this.paidCount,
-      this.paymentType,
-      this.photo,
-      this.qrCode,
-      this.qrSecretCode,
-      this.rsvpState,
-      this.userEndEvent,
-      this.userRunCount,
-      this.userStartEvent,
-      this.virginVisitorType,
-      this.waitingForCount,
-    });
-
-  static List<UserModel> listFromJson(String jsonResult)
-  {
-    List<UserModel> items = List<UserModel>();
+  static List<UserModel> listFromJson(String jsonResult) {
+    final List<UserModel> items = <UserModel>[];
 
     UserModel item;
     json.decode(jsonResult).forEach(
@@ -119,9 +110,11 @@ class UserModel {
           qrCode: jsonItem['qrCode'],
           qrSecretCode: jsonItem['qrSecretCode'],
           rsvpState: jsonItem['rsvpState'],
-          userEndEvent:DateTime.parse(jsonItem['userEndEvent'] ?? '2000-01-01 19:00:00'),
+          userEndEvent:
+              DateTime.parse(jsonItem['userEndEvent'] ?? '2000-01-01 19:00:00'),
           userRunCount: jsonItem['userRunCount'],
-          userStartEvent: DateTime.parse(jsonItem['userStartEvent'] ?? '2000-01-01 19:00:00'),
+          userStartEvent: DateTime.parse(
+              jsonItem['userStartEvent'] ?? '2000-01-01 19:00:00'),
           virginVisitorType: jsonItem['virginVisitorType'],
           waitingForCount: jsonItem['waitingForCount'],
         );
@@ -136,26 +129,7 @@ class UserModel {
   @override
   String toString() => '$displayName';
 
-  int _requestedRsvpState = -1;
-  int _requestedHaringState = -1;
-  int _requestedAttendenceState = -1;
-
-  int get requestedRsvpState => _requestedRsvpState;
-  int get requestedHaringState => _requestedHaringState;
-  int get requestedAttendenceState => _requestedAttendenceState;
-
-  set requestedRsvpState(int rsvpState) {
-    this._requestedRsvpState = rsvpState;
-  }
-
-  set requestedHaringState(int haringState) {
-    this._requestedHaringState = haringState;
-  }
-
-  set requestedAttendenceState(int attendenceState) {
-    this._requestedAttendenceState = attendenceState;
-  }
-
-
-
+  int requestedRsvpState = -1;
+  int requestedHaringState = -1;
+  int requestedAttendenceState = -1;
 }

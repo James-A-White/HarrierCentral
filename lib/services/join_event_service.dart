@@ -15,7 +15,7 @@ import 'package:http/http.dart' as http;
 class JoinEventService {
 
     Future<UserModel> joinEventAsVisitor(
-      String eventId, EnumVirginVisitor virginVisitor, EnumAttendenceState attendenceState, String name, String email, String phoneNumber) async {
+      String eventId, EnumVirginVisitor virginVisitor, EnumAttendenceState<int> attendenceState, String name, String email, String phoneNumber) async {
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 
     final String accessToken =

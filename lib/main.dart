@@ -15,11 +15,11 @@ import 'package:scoped_model/scoped_model.dart';
 void main() {
   //debugPaintSizeEnabled=true;
 
-  FutureRunScopedModel _futureRunScopedModel = FutureRunScopedModel();
+  final FutureRunScopedModel _futureRunScopedModel = FutureRunScopedModel();
 
   //timeDilation = 4.0;
 
-  SystemChrome.setPreferredOrientations([
+  SystemChrome.setPreferredOrientations(<DeviceOrientation>[
     DeviceOrientation.portraitUp,
     //DeviceOrientation.landscapeLeft,
     //DeviceOrientation.landscapeRight

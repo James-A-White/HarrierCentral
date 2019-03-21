@@ -34,11 +34,6 @@ import 'package:harrier_central/data_models/user_model.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 
 class NewUserWidget extends StatefulWidget {
-  bool isForThisDevice;
-  String eventId;
-  String kennelId;
-  EnumAttendenceState<int> attendenceState;
-
   NewUserWidget(
       {Key key,
       this.isForThisDevice,
@@ -47,6 +42,11 @@ class NewUserWidget extends StatefulWidget {
       this.attendenceState,
       this.scaffoldKey})
       : super(key: key);
+
+  bool isForThisDevice;
+  String eventId;
+  String kennelId;
+  EnumAttendenceState<int> attendenceState;
 
   GlobalKey<ScaffoldState> scaffoldKey;
 
@@ -219,7 +219,7 @@ class NewUserState extends State<NewUserWidget>
             bottom: 30,
             child: Container(
               margin: const EdgeInsets.only(top: 170.0),
-              decoration:  BoxDecoration(
+              decoration: BoxDecoration(
                 borderRadius: const BorderRadius.all(Radius.circular(5.0)),
                 boxShadow: <BoxShadow>[
                   BoxShadow(
@@ -295,18 +295,18 @@ class NewUserState extends State<NewUserWidget>
                       padding: const EdgeInsets.only(top: 10.0, right: 0.0),
                       child: GestureDetector(
                         onTap: () {
-                          final facebookLogin = FacebookLogin();
+                          final FacebookLogin facebookLogin = FacebookLogin();
                           facebookLogin
-                              .logInWithReadPermissions(['email']).then(
+                              .logInWithReadPermissions(<String>['email']).then(
                                   (FacebookLoginResult result) async {
                             String token = result.accessToken.token;
-                            final graphResponse = await http.get(
+                            final http.Response graphResponse = await http.get(
                                 'https://graph.facebook.com/v3.2/me?fields=name,first_name,last_name,picture.width(640),email,gender&access_token=${token}');
 
                             dynamic profile = json.decode(graphResponse.body);
 
-                            String first_name = profile['first_name'];
-                            String last_name = profile['last_name'];
+                            String firstName = profile['first_name'];
+                            String lastName = profile['last_name'];
                             String email = profile['email'];
                             String facebookId = profile['id'];
                             String gender = profile['gender'];
@@ -321,8 +321,8 @@ class NewUserState extends State<NewUserWidget>
                             Preferences.setStringPref(
                                 StringPrefsEnum.gender, gender);
 
-                            userDetailsUi.firstName = first_name;
-                            userDetailsUi.lastName = last_name;
+                            userDetailsUi.firstName = firstName;
+                            userDetailsUi.lastName = lastName;
                             userDetailsUi.email = email;
 
                             Utilities.showAlert(
@@ -338,7 +338,7 @@ class NewUserState extends State<NewUserWidget>
                             shape: BoxShape.circle,
                             color: Colors.white,
                           ),
-                          child: const  Icon(
+                          child: const Icon(
                             FontAwesomeIcons.facebookF,
                             color: Color(0xFF0084ff),
                           ),
@@ -357,7 +357,7 @@ class NewUserState extends State<NewUserWidget>
               userDetailsUi,
               Container(
                 margin: const EdgeInsets.only(top: 210.0),
-                decoration:  BoxDecoration(
+                decoration: BoxDecoration(
                   borderRadius: const BorderRadius.all(Radius.circular(5.0)),
                   boxShadow: <BoxShadow>[
                     BoxShadow(
@@ -457,15 +457,14 @@ class NewUserState extends State<NewUserWidget>
             StringPrefsEnum.firstName, userDetailsUi.firstName);
         Preferences.setStringPref(
             StringPrefsEnum.lastName, userDetailsUi.lastName);
-        Preferences.setStringPref(
-            StringPrefsEnum.email, userDetailsUi.email);
+        Preferences.setStringPref(StringPrefsEnum.email, userDetailsUi.email);
         Preferences.setStringPref(
             StringPrefsEnum.hashName, userDetailsUi.hashName);
 
         Navigator.push(
           context,
           MaterialPageRoute<UserModel>(
-            builder: (context) => ChooseProfileImage(
+            builder: (BuildContext context) => ChooseProfileImage(
                   isForThisDevice: widget.isForThisDevice,
                   // kennelId: widget.kennelId,
                   // eventId: widget.eventId,
@@ -478,7 +477,7 @@ class NewUserState extends State<NewUserWidget>
         Navigator.push(
           context,
           MaterialPageRoute<UserModel>(
-            builder: (context) => ChooseProfileImage(
+            builder: (BuildContext context) => ChooseProfileImage(
                   isForThisDevice: widget.isForThisDevice,
                   doAddUser: true,
                   firstName: userDetailsUi.firstName,
@@ -519,7 +518,7 @@ class NewUserState extends State<NewUserWidget>
   @override
   bool get wantKeepAlive => true;
 
-  Future scanUserBarcode() async {
+  Future<dynamic> scanUserBarcode() async {
     if (controller == null) {
       setState(() => barcode = 'Scanning');
       cameras = await availableCameras();
@@ -575,14 +574,14 @@ class NewUserState extends State<NewUserWidget>
     }
   }
 
-  Future stopScanning() async {
+  Future<dynamic> stopScanning() async {
     controller.stopScanning();
     await controller.dispose();
     controller = null;
   }
 
   Widget _cameraPreviewWidget() {
-    return LayoutBuilder(builder: (context, constraint) {
+    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraint) {
       return Stack(
         alignment: AlignmentDirectional.center,
         children: <Widget>[
@@ -628,8 +627,8 @@ class NewUserState extends State<NewUserWidget>
     if (controller != null) {
       await controller.dispose();
     }
-    controller = QRReaderController(cameraDescription,
-        ResolutionPreset.high, [CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
+    controller = QRReaderController(cameraDescription, ResolutionPreset.high,
+        <CodeFormat>[CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
 
     // If the controller is updated then update the UI.
     controller.addListener(() {
@@ -658,14 +657,6 @@ class NewUserState extends State<NewUserWidget>
 }
 
 class TabIndicationPainter extends CustomPainter {
-  Paint painter;
-  final double dxTarget;
-  final double dxEntry;
-  final double radius;
-  final double dy;
-
-  final PageController pageController;
-
   TabIndicationPainter(
       {this.dxTarget = 125.0,
       this.dxEntry = 25.0,
@@ -677,6 +668,14 @@ class TabIndicationPainter extends CustomPainter {
       ..color = const Color(0xFFFFFFFF)
       ..style = PaintingStyle.fill;
   }
+
+  Paint painter;
+  final double dxTarget;
+  final double dxEntry;
+  final double radius;
+  final double dy;
+
+  final PageController pageController;
 
   @override
   void paint(Canvas canvas, Size size) {

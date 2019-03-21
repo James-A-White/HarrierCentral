@@ -84,7 +84,7 @@ class RunStartEndQrCodes extends StatelessWidget {
                 textColor: Theme.of(context).buttonColor,
                 child: const Text('Learn more about this feature'),
                 onPressed: () {
-                  this._displayInstructions(context);
+                  _displayInstructions(context);
                 },
               ),
             ),

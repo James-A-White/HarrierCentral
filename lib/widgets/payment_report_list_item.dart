@@ -5,20 +5,17 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data_models/payment_report_model.dart';
 import 'package:harrier_central/util/utilities.dart';
 
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:harrier_central/pages/kennel_admin/user_secret_qr_page.dart';
-
 class PaymentReportListItem extends StatelessWidget {
-  final PaymentReportModel paymentReportItem;
-  final String currencySymbol;
-  final int digitsAfterDecimal;
-  final Function onTap;
-
   const PaymentReportListItem(
       {@required this.paymentReportItem,
       @required this.currencySymbol,
       @required this.digitsAfterDecimal,
       @required this.onTap});
+
+  final PaymentReportModel paymentReportItem;
+  final String currencySymbol;
+  final int digitsAfterDecimal;
+  final Function onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -85,13 +82,6 @@ class PaymentReportListItem extends StatelessWidget {
 }
 
 class TotalsCell extends StatelessWidget {
-  final List<PaymentReportModel> data;
-  final EnumPaymentType paymentRecordType;
-  final Color color;
-  final String currencySymbol;
-  final int digitsAfterDecimal;
-  final Function onTap;
-
   const TotalsCell(
     List<PaymentReportModel> this.data, {
     @required this.color,
@@ -100,6 +90,13 @@ class TotalsCell extends StatelessWidget {
     @required this.digitsAfterDecimal,
     @required this.onTap,
   });
+
+  final List<PaymentReportModel> data;
+  final EnumPaymentType<int>paymentRecordType;
+  final Color color;
+  final String currencySymbol;
+  final int digitsAfterDecimal;
+  final Function onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +110,7 @@ class TotalsCell extends StatelessWidget {
         : Utilities.getFormattedMoney(
             item?.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
-    const textStyle = const TextStyle(
+    const TextStyle textStyle = const TextStyle(
         color: Colors.black,
         fontSize: 24.0,
         fontFamily: 'AvenirNextCondensedDemiBold');

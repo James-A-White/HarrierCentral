@@ -23,14 +23,14 @@ class Utilities {
   static Future<LatLon> getLatLong() async {
     Position position;
 
-    PermissionStatus _location_permission;
+    PermissionStatus _locationPermission;
 
-    if (_location_permission == null) {
-      _location_permission = await PermissionHandler()
+    if (_locationPermission == null) {
+      _locationPermission = await PermissionHandler()
           .checkPermissionStatus(PermissionGroup.location);
     }
 
-    if (_location_permission == PermissionStatus.granted) {
+    if (_locationPermission == PermissionStatus.granted) {
       position = await Geolocator()
           .getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
     }

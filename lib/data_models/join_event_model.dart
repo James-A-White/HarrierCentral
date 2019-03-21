@@ -1,6 +1,14 @@
 import 'dart:core';
 
 class JoinEventModel {
+  JoinEventModel(
+      {this.rsvpYesCount,
+      this.rsvpNoCount,
+      this.rsvpMaybeCount,
+      this.haresCount,
+      this.totalRunsThisKennel,
+      this.totalRunsAllKennels,
+      this.hasherEventMapId});
 
   final int rsvpYesCount;
   final int rsvpNoCount;
@@ -9,16 +17,4 @@ class JoinEventModel {
   final int totalRunsThisKennel;
   final int totalRunsAllKennels;
   String hasherEventMapId;
-
-  JoinEventModel(
-    {
-        this.rsvpYesCount,
-        this.rsvpNoCount,
-        this.rsvpMaybeCount,
-        this.haresCount,
-        this.totalRunsThisKennel,
-        this.totalRunsAllKennels,
-        this.hasherEventMapId
-    });
-
 }

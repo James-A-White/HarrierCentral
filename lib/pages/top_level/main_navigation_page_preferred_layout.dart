@@ -63,7 +63,7 @@
 //   Navigator _getNavBar(BuildContext context) {
 //     return Navigator(
 //       onGenerateRoute: (RouteSettings settings) {
-//         return MaterialPageRoute<dynamic>(builder: (context) {
+//         return MaterialPageRoute<dynamic>(builder: (BuildContext context) {
 //           return FancyBottomNavigation(
 //             circleColor: ThemeColors.buttonColors,
 //             inactiveIconColor: ThemeColors.backgroundColor,
@@ -102,7 +102,7 @@
 
 //                 // Navigator.of(_contentNavigator.currentContext).push<dynamic>(MaterialPageRoute<dynamic>(
 //                 //       settings: RouteSettings(),
-//                 //       builder: (context) {
+//                 //       builder: (BuildContext context) {
 //                 //         return UserQrCodePage();
 //                 //       },
 //                 //     ),);
@@ -147,7 +147,7 @@
 //       key: _contentNavigator,
 //       onGenerateRoute: (RouteSettings settings) {
 //         String s = settings.name;
-//         return MaterialPageRoute<dynamic>(builder: (context) {
+//         return MaterialPageRoute<dynamic>(builder: (BuildContext context) {
 //           return Container(
             
 //             width: MediaQuery.of(context).size.width,

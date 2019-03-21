@@ -27,8 +27,8 @@ class MainNavigationPage extends StatefulWidget {
 class _MainNavigationPageState extends State<MainNavigationPage> {
   //MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
 
-  List<Widget> tabs = List<Widget>();
-  List<String> tabTitles = List<String>();
+  List<Widget> tabs = <Widget>[];
+  List<String> tabTitles = <String>[];
 
   String appBarText;
 
@@ -97,7 +97,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         circleColor: ThemeColors.buttonColors,
         inactiveIconColor: ThemeColors.backgroundColor,
         barBackgroundColor: ThemeColors.navBarBackground,
-        tabs: [
+        tabs: <TabData>[
           TabData(
             iconData: MaterialCommunityIcons.run_fast,
             title: 'Runs',

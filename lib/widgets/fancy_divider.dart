@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class FancyDivider extends StatelessWidget {
-  final Color innerColor;
-
   const FancyDivider({
     @required this.innerColor,
   });
+
+  final Color innerColor;
 
   @override
   Widget build(BuildContext context) {
@@ -60,11 +60,11 @@ class FancyDivider extends StatelessWidget {
 }
 
 class ShapePainter extends CustomPainter {
-  final Color color;
-
   const ShapePainter({
     @required this.color,
   });
+
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -73,11 +73,11 @@ class ShapePainter extends CustomPainter {
     num dividerGap = 15.0;
     num ballSize = 4.0;
 
-    final paint = Paint();
+    final Paint paint = Paint();
     // set the color property of the paint
     paint.color = color;
 // create a path
-    var path = Path();
+    Path path = Path();
     path.moveTo((size.width / 2.0) + dividerGap, size.height - dividerHeight);
     path.lineTo(size.width - dividerInset, size.height);
     path.lineTo((size.width / 2.0) + dividerGap, size.height + dividerHeight);
@@ -101,7 +101,7 @@ class ShapePainter extends CustomPainter {
     canvas.drawPath(path, paint);
 
     // center of the canvas is (x,y) => (width/2, height/2)
-    var center = Offset(size.width / 2, size.height / 2);
+    final Offset center = Offset(size.width / 2, size.height / 2);
     // draw the circle with center having radius 75.0
     canvas.drawCircle(center, ballSize, paint);
   }

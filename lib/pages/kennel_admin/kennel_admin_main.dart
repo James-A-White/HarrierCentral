@@ -47,7 +47,7 @@ class KennelAdminMainPage extends StatelessWidget {
                   Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      builder: (context) => KennelMembersList(
+                      builder: (BuildContext context) => KennelMembersList(
                             kennel: kennel
                           ),
                     ),

@@ -104,7 +104,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                   Navigator.push<dynamic>(
                     this.context,
                     MaterialPageRoute<dynamic>(
-                      builder: (context) =>
+                      builder: (BuildContext context) =>
                           RunDetailsPage(futureRun: widget.futureRun),
                     ),
                   );

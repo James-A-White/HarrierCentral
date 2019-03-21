@@ -234,7 +234,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             foregroundColor: Colors.white,
             elevation: 8.0,
             shape: CircleBorder(),
-            children: [
+            children: <SpeedDialChild>[
               SpeedDialChild(
                 child: const Icon(Icons.filter_list),
                 backgroundColor: Colors.green,
@@ -264,7 +264,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 onTap: () => Navigator.push<UserModel>(
                       context,
                       MaterialPageRoute<UserModel>(
-                          builder: (context) => NewUserWidget(
+                          builder: (BuildContext context) => NewUserWidget(
                                 scaffoldKey: scaffoldKey,
                                 isForThisDevice: false,
                                 eventId: widget.futureRun.eventId,
@@ -296,7 +296,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 //     Navigator.push<UserModel>(
                 //       context,
                 //       MaterialPageRoute<UserModel>(
-                //         builder: (context) => AddMemberPage(
+                //         builder: (BuildContext context) => AddMemberPage(
                 //             kennelId: widget.futureRun.kennelId,
                 //             eventId: widget.futureRun.eventId,
                 //             attendenceState: attendenceAtHash,
@@ -465,7 +465,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
         .removeCurrentSnackBar(reason: SnackBarClosedReason.remove);
     Scaffold.of(scanContext).showSnackBar(snackBar);
 
-    var packItem = packList.firstWhere(
+    UserModel packItem = packList.firstWhere(
         (UserModel packMember) =>
             packMember.hasherId.toUpperCase() ==
             result.targetUserId.toUpperCase(),
@@ -520,7 +520,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
   Widget buildScanResultSnackbar(BuildContext context,
       PackScopedModel _packScopedModel, String resultStr) {
-    final snackbar = SnackBar(
+    final SnackBar snackbar = SnackBar(
       duration: const Duration(seconds: 4),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -547,7 +547,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
   Widget buildRsvpAndPaymentSnackbar(
       BuildContext context, int index, PackScopedModel _packScopedModel) {
-    final snackbar = PaymentSnackBar(
+    final SnackBar snackbar = PaymentSnackBar(
       context: context,
       index: index,
       futureRun: widget.futureRun,
@@ -576,7 +576,7 @@ class PackListView extends StatelessWidget {
 
   Widget buildRsvpAndPaymentSnackbar(
       BuildContext context, int index, PackScopedModel _packScopedModel) {
-    final snackbar = PaymentSnackBar(
+    final SnackBar snackbar = PaymentSnackBar(
       context: context,
       index: index,
       futureRun: futureRun,
@@ -602,7 +602,7 @@ class PackListView extends StatelessWidget {
   Widget build(BuildContext context) {
     print(DateTime.now().millisecondsSinceEpoch.toString());
     return ListView.separated(
-        separatorBuilder: (context, index) => Divider(
+        separatorBuilder: (BuildContext context, int index) => Divider(
               height: 1.0,
               color: Colors.black45,
             ),
@@ -620,7 +620,7 @@ class PackListView extends StatelessWidget {
                 )
               : GestureDetector(
                   onTap: () {
-                    final snackBar = buildRsvpAndPaymentSnackbar(
+                    final SnackBar snackBar = buildRsvpAndPaymentSnackbar(
                         context, index, packScopedModel);
 
                     Scaffold.of(context).removeCurrentSnackBar(
@@ -644,7 +644,7 @@ class PackListView extends StatelessWidget {
                               //     ),
                               //     height: 70.0,
                               //    width: 70.0),
-                              errorWidget: (context, url, error) =>
+                              errorWidget: (BuildContext context, String url, Object error) =>
                                   const Icon(Icons.error),
                               //fadeOutDuration:  Duration(seconds: 1),
                               fadeInDuration: const Duration(milliseconds: 0),

@@ -12,11 +12,11 @@ import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class KennelsListItem extends StatelessWidget {
-  final Kennel kennel;
-
   const KennelsListItem({
     @required this.kennel,
   });
+
+  final Kennel kennel;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,7 @@ class KennelsListItem extends StatelessWidget {
                   // onTap: () {
                   //   Navigator.of(context).push<dynamic>(
                   //     MaterialPageRoute<dynamic>(
-                  //       builder: (context) {
+                  //       builder: (BuildContext context) {
                   //         return KennelDetailPage(kennel: kennel);
                   //       },
                   //     ),
@@ -63,20 +63,20 @@ class KennelsListItem extends StatelessWidget {
                                 (BuildContext context, Widget child,
                                         KennelScopedModel model) =>
                                     IconButton(
-                                      icon:  Icon(
+                                      icon: Icon(
                                           (kennel.followingRequested ??
                                                       kennel.followingBool) ==
                                                   1
-                                              ? const  Icon(FontAwesomeIcons.solidCheckCircle)
+                                              ? const Icon(FontAwesomeIcons.solidCheckCircle)
                                                   .icon
                                               : (kennel.followingRequested ??
                                                           kennel
                                                               .followingBool) ==
                                                       2
-                                                  ? const  Icon(FontAwesomeIcons
+                                                  ? const Icon(FontAwesomeIcons
                                                           .solidTimesCircle)
                                                       .icon
-                                                  : const  Icon(FontAwesomeIcons.circle)
+                                                  : const Icon(FontAwesomeIcons.circle)
                                                       .icon,
                                           color: kennel.followingRequested !=
                                                   null
@@ -185,7 +185,7 @@ class KennelsListItem extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: IconButton(
-              icon: const  Icon(Icons.settings),
+              icon: const Icon(Icons.settings),
               iconSize: Theme.of(context).iconTheme.size,
               color: Colors.black54,
               splashColor: Theme.of(context).highlightColor,
@@ -193,7 +193,7 @@ class KennelsListItem extends StatelessWidget {
                 Navigator.push<dynamic>(
                   context,
                   MaterialPageRoute<dynamic>(
-                    builder: (context) => KennelAdminMainPage(kennel: kennel),
+                    builder: (BuildContext context) => KennelAdminMainPage(kennel: kennel),
                   ),
                 );
               },

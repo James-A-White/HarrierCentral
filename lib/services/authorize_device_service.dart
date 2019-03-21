@@ -47,7 +47,7 @@ class AuthorizeDeviceService {
       },
     );
 
-    Map<String, String> resultMap = Map<String, String>();
+    Map<String, String> resultMap = <String, String>{};
     try {
       List<UserModel> results = UserModel.listFromJson(response.body);
 

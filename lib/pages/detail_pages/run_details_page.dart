@@ -5,9 +5,9 @@ import 'package:harrier_central/widgets/run_tabs.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class RunDetailsPage extends StatelessWidget {
-  final FutureRun futureRun;
-
   const RunDetailsPage({Key key, @required this.futureRun}) : super(key: key);
+
+  final FutureRun futureRun;
 
   @override
   Widget build(BuildContext context) {

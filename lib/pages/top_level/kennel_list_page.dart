@@ -9,28 +9,24 @@ import 'package:harrier_central/widgets/kennel_list_item.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class KennelsListPage extends StatelessWidget {
-  final KennelScopedModel kennelModel;
-
   const KennelsListPage({Key key, @required this.kennelModel})
       : super(key: key);
 
+  final KennelScopedModel kennelModel;
+
   @override
   Widget build(BuildContext context) {
-          if (((kennelModel?.kennelsList?.length ?? 0) == 0) && (!kennelModel?.isLoading))
-       {
-           kennelModel.getKennelsFromBackend(true);
-       }
+    if (((kennelModel?.kennelsList?.length ?? 0) == 0) &&
+        (!kennelModel?.isLoading)) {
+      kennelModel.getKennelsFromBackend(true);
+    }
 
-     
-    
     // ScopedModelDescendant<MainNavigationScopedModel>(builder:
     //     (BuildContext context, Widget child, MainNavigationScopedModel model) {
     //   model.appBarTitle = 'My Kennels';
 
-
-
-      return ScopedModel<KennelScopedModel>(
-          model: kennelModel, child: KennelsListPageBody());
+    return ScopedModel<KennelScopedModel>(
+        model: kennelModel, child: KennelsListPageBody());
     //});
   }
 }
@@ -55,25 +51,19 @@ class KennelsListPageBody extends StatelessWidget {
   //   );
   // }
 
-
-@override
+  @override
   Widget build(BuildContext context) {
     this.context = context;
 
-    return Scaffold(
-        body: ScopedModelDescendant<KennelScopedModel>(
+    return Scaffold(body: ScopedModelDescendant<KennelScopedModel>(
       builder: (BuildContext context, Widget child, KennelScopedModel model) {
         this.model = model;
         return model.isLoading
             ? _buildCircularProgressIndicator()
             : _buildListView();
-          },
-        ));
+      },
+    ));
   }
-
-
-
-
 
   Widget _buildCircularProgressIndicator() {
     return const Center(

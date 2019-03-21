@@ -1,6 +1,17 @@
 import 'dart:core';
 
 class KennelMemberModel {
+  KennelMemberModel(
+      {this.hasherId,
+      this.hashName,
+      this.firstName,
+      this.lastName,
+      this.displayName,
+      this.dispPref,
+      this.photo,
+      this.qrCode,
+      this.qrSecretCode});
+
   final String hasherId;
   String hashName;
   String firstName;
@@ -10,18 +21,6 @@ class KennelMemberModel {
   String photo;
   String qrCode;
   String qrSecretCode;
-
-  KennelMemberModel({
-    this.hasherId,
-    this.hashName,
-    this.firstName,
-    this.lastName,
-    this.displayName,
-    this.dispPref,
-    this.photo,
-    this.qrCode,
-    this.qrSecretCode
-  });
 
   @override
   String toString() => '$displayName';

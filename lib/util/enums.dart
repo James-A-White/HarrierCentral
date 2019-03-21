@@ -3,8 +3,8 @@ import 'dart:core';
 enum EnumVirginVisitor { virgin, visitor }
 
 abstract class Enum<T> {
-  final T _value;
   const Enum(this._value);
+  final T _value;
   T get value => _value;
 }
 

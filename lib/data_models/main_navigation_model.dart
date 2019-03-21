@@ -12,17 +12,11 @@ enum EnumAppPages {
 }
 
 class MainNavigation {
+  MainNavigation({this.children, this.currentMainAppView, this.appBarTitle});
 
   List<Widget> children = <Widget>[];
   EnumAppPages currentMainAppView = EnumAppPages.futureRuns;
   String appBarTitle = 'Home page';
-
-  MainNavigation(
-    {
-        this.children,
-        this.currentMainAppView,
-        this.appBarTitle
-    });
 
   // @override
   // toString() => "$kennelName";

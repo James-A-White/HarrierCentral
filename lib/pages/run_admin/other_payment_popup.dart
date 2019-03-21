@@ -7,9 +7,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:harrier_central/util/enums.dart';
 
 class OtherPaymentPopup extends StatefulWidget {
-  final String currencySymbol;
-
   OtherPaymentPopup({@required this.currencySymbol});
+
+  final String currencySymbol;
 
   @override
   _OtherPaymentPopupState createState() => _OtherPaymentPopupState();

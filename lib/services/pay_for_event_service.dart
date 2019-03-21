@@ -51,7 +51,7 @@ class PayForEventService {
       },
     );
 
-    final List<PayForEventModel> itemList = List<PayForEventModel>();
+    final List<PayForEventModel> itemList = <PayForEventModel>[];
 
     PayForEventModel item;
     json.decode(response.body).forEach(

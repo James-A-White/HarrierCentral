@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:flutter/foundation.dart';
@@ -19,7 +20,7 @@ class PrivacyPolicyPage extends StatefulWidget {
 }
 
 Future<File> createFileOfPdfUrl() async {
-  var bytes = await rootBundle.load('assets/documents/privacy_policy.pdf');
+  final ByteData bytes = await rootBundle.load('assets/documents/privacy_policy.pdf');
   String dir = (await getApplicationDocumentsDirectory()).path;
   File file = File('$dir/privacy_policy_internal.pdf');
   await file.writeAsBytes(bytes.buffer.asInt8List());
@@ -32,7 +33,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
   @override
   void initState() {
     super.initState();
-    createFileOfPdfUrl().then((f) {
+    createFileOfPdfUrl().then((File f) {
       setState(() {
         pathPDF = f.path;
         print(pathPDF);
@@ -69,7 +70,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                 onPressed: () => Navigator.push<dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
-                          builder: (context) => PDFScreen(pathPDF)),
+                          builder: (BuildContext context) => PDFScreen(pathPDF)),
                     ),
               ),
               Container(
@@ -88,8 +89,9 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
 }
 
 class PDFScreen extends StatelessWidget {
-  String pathPDF = '';
-  PDFScreen(this.pathPDF);
+  const PDFScreen(this.pathPDF);
+
+  final String pathPDF;
 
   @override
   Widget build(BuildContext context) {

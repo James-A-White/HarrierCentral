@@ -1,6 +1,18 @@
 import 'dart:core';
 
 class ProcessQrScanModel {
+  ProcessQrScanModel(
+      {this.resultStr1,
+      this.resultStr2,
+      this.resultStr3,
+      this.resultGuid1,
+      this.resultGuid2,
+      this.resultInt1,
+      this.resultInt2,
+      this.resultInt3,
+      this.resultInt4,
+      this.resultDecimal1,
+      this.resultDecimal2});
 
   final String resultStr1;
   final String resultStr2;
@@ -13,19 +25,4 @@ class ProcessQrScanModel {
   final int resultInt4;
   final double resultDecimal1;
   final double resultDecimal2;
-
-  ProcessQrScanModel(
-    {
-        this.resultStr1,
-        this.resultStr2,
-        this.resultStr3,
-        this.resultGuid1,
-        this.resultGuid2,
-        this.resultInt1,
-        this.resultInt2,
-        this.resultInt3,
-        this.resultInt4,
-        this.resultDecimal1,
-        this.resultDecimal2
-    });
 }

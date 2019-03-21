@@ -730,7 +730,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                         }
                                         ;
 
-                                        final snackBar = SnackBar(
+                                        final SnackBar snackBar = SnackBar(
                                           duration: const Duration(seconds: 2),
                                           content: Text(
                                             packList[index].displayName +
@@ -975,13 +975,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             widget.futureRun.longitude),
                         zoom: 15.0,
                       ),
-                      layers: [
+                      layers: <LayerOptions>[
                         TileLayerOptions(
                             urlTemplate:
                                 //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                                 'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
                             //subdomains: ['a', 'b', 'c']),
-                            subdomains: ['mt0', 'mt1', 'mt2', 'mt3']),
+                            subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
                         MarkerLayerOptions(
                           markers: <Marker>[
                             Marker(
@@ -989,7 +989,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                               height: 120.0,
                               point: LatLng(widget.futureRun.latitude,
                                   widget.futureRun.longitude),
-                              builder: (ctx) => GestureDetector(
+                              builder: (BuildContext ctx) => GestureDetector(
                                     onTap: () => _launchMaps(
                                         widget.futureRun.latitude,
                                         widget.futureRun.longitude),
@@ -1032,7 +1032,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                     Navigator.push<dynamic>(
                                       context,
                                       MaterialPageRoute<dynamic>(
-                                        builder: (context) => CheckInPackPage(
+                                        builder: (BuildContext context) => CheckInPackPage(
                                             futureRun: widget.futureRun),
                                       ),
                                     );
@@ -1066,7 +1066,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                     Navigator.push<dynamic>(
                                       context,
                                       MaterialPageRoute<dynamic>(
-                                        builder: (context) =>
+                                        builder: (BuildContext context) =>
                                             CheckInScannerPage(
                                               kennelShortName: widget
                                                   .futureRun.kennelShortName,
@@ -1092,7 +1092,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                     Navigator.push<dynamic>(
                                       context,
                                       MaterialPageRoute<dynamic>(
-                                        builder: (context) => PaymentReportPage(
+                                        builder: (BuildContext context) => PaymentReportPage(
                                               eventId: widget.futureRun.eventId,
                                               currencySymbol: widget
                                                   .futureRun.currencySymbol,
@@ -1122,7 +1122,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       Navigator.push<dynamic>(
                                           context,
                                           MaterialPageRoute<dynamic>(
-                                              builder: (context) =>
+                                              builder: (BuildContext context) =>
                                                   RunStartEndQrCodes(
                                                     kennelShortName: widget
                                                         .futureRun
@@ -1151,7 +1151,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       Navigator.push<dynamic>(
                                           context,
                                           MaterialPageRoute<dynamic>(
-                                              builder: (context) =>
+                                              builder: (BuildContext context) =>
                                                   RunStartEndQrCodes(
                                                     kennelShortName: widget
                                                         .futureRun

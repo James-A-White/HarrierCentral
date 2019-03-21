@@ -29,7 +29,7 @@ class ApproveLoginModel {
 
   static ApproveLoginModel itemFromJson(String jsonResult)
   {
-    final List<ApproveLoginModel> items = List<ApproveLoginModel>();
+    final List<ApproveLoginModel> items = <ApproveLoginModel>[];
 
     ApproveLoginModel item;
 

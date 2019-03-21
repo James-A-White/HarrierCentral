@@ -5,22 +5,23 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:harrier_central/pages/kennel_admin/user_secret_qr_page.dart';
 
 class KennelMemberListItem extends StatelessWidget {
-  final KennelMemberModel kennelMember;
-
   const KennelMemberListItem({
     @required this.kennelMember,
   });
+
+  final KennelMemberModel kennelMember;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-          Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      builder: (context) => UserSecretQrPage(
-                            kennelMemberModel: kennelMember
-                          ),),);
+        Navigator.push<dynamic>(
+          context,
+          MaterialPageRoute<dynamic>(
+            builder: (BuildContext context) =>
+                UserSecretQrPage(kennelMemberModel: kennelMember),
+          ),
+        );
       },
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -32,7 +33,7 @@ class KennelMemberListItem extends StatelessWidget {
                     imageUrl: kennelMember.photo,
                     //placeholder: const CircularProgressIndicator(),
                     //errorWidget: const  Icon(Icons.error),
-                   // placeholder: (BuildContext context,String url) => const CircularProgressIndicator(),
+                    // placeholder: (BuildContext context,String url) => const CircularProgressIndicator(),
                     //errorWidget: (BuildContext context,String url,Exception error) => const  Icon(Icons.error),
                     //fadeOutDuration:  Duration(seconds: 1),
                     fadeInDuration: const Duration(milliseconds: 0),

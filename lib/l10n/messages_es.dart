@@ -7,20 +7,20 @@ import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';
 
 // ignore: unnecessary_new
-final messages = MessageLookup();
+final MessageLookup messages = MessageLookup();
 
 // ignore: unused_element
-final _keepAnalysisHappy = Intl.defaultLocale;
+final String _keepAnalysisHappy = Intl.defaultLocale;
 
 // ignore: non_constant_identifier_names
-typedef MessageIfAbsent(String message_str, List args);
+typedef MessageIfAbsent(String message_str, List<String>  args);
 
 class MessageLookup extends MessageLookupByLibrary {
   @override
   get localeName => 'es';
 
   @override
-  final messages = _notInlinedMessages(_notInlinedMessages);
+  Map<String,dynamic> get messages => _notInlinedMessages(_notInlinedMessages);
   static dynamic _notInlinedMessages(dynamic _) => <String, Function>{
         'hello': MessageLookupByLibrary.simpleMessage('Hello'),
         'kilometers': MessageLookupByLibrary.simpleMessage('Kilometers'),

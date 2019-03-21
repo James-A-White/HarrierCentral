@@ -35,7 +35,7 @@ class GetPackService {
       },
     );
 
-    final List<UserModel> packList =  List<UserModel>();
+    final List<UserModel> packList =  <UserModel>[];
 
     UserModel packMember;
     json.decode(response.body).forEach(

@@ -11,9 +11,9 @@ import 'package:harrier_central/data_models/kennel_model.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class KennelMembersList extends StatelessWidget {
-  final Kennel kennel;
-
   KennelMembersList({Key key, @required this.kennel}) : super(key: key);
+
+  final Kennel kennel;
 
   final KennelMemberScopedModel kennelMemberModel = KennelMemberScopedModel();
 
@@ -35,16 +35,19 @@ class KennelMembersList extends StatelessWidget {
         ),
       ),
       body: ScopedModel<KennelMemberScopedModel>(
-          model: kennelMemberModel, child: KennelMembersListPageBody(kennelId: kennel.kennelId,)),
+          model: kennelMemberModel,
+          child: KennelMembersListPageBody(
+            kennelId: kennel.kennelId,
+          )),
     );
   }
 }
 
 class KennelMembersListPageBody extends StatelessWidget {
-  final String kennelId;
-
   KennelMembersListPageBody({Key key, @required this.kennelId})
       : super(key: key);
+
+  final String kennelId;
 
   BuildContext context;
   KennelMemberScopedModel model;
@@ -84,51 +87,52 @@ class KennelMembersListPageBody extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>[
         Expanded(
-        child:Padding(
-          padding: const EdgeInsets.only(top: 10.0),
-          child: model.getKennelMembersListCount() == 0
-              ? const Center(child: Text('No Kennels available.'))
-              : RefreshIndicator(
-                  onRefresh: () => _handleRefresh(),
-                  displacement: 40.0,
-                  child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount: model.getKennelMembersListCount(),
-                    itemBuilder: (BuildContext context, int index) {
-                      return Container(
-                        height: 85.0,
-                        padding: const EdgeInsets.all(0.0),
-                        child: ListView(
-                            scrollDirection: Axis.horizontal,
-                            children: <Widget>[
-                              KennelMemberListItem(
-                                  kennelMember: model.kennelMembersList[index]),
-                            ]),
-                      );
-                    },
-                  ),
-                ),
-        ),),
-                 Container(
-              width: 150.0,
-              child: RaisedButton(
-                child: const Text(
-                  'Add Member',
-                  style: const TextStyle(color: Colors.white),
-                ),
-                onPressed: () {
-                  Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      builder: (context) => AddMemberPage(
-                            kennelId: kennelId,
-                          ),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 10.0),
+            child: model.getKennelMembersListCount() == 0
+                ? const Center(child: Text('No Kennels available.'))
+                : RefreshIndicator(
+                    onRefresh: () => _handleRefresh(),
+                    displacement: 40.0,
+                    child: ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: model.getKennelMembersListCount(),
+                      itemBuilder: (BuildContext context, int index) {
+                        return Container(
+                          height: 85.0,
+                          padding: const EdgeInsets.all(0.0),
+                          child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: <Widget>[
+                                KennelMemberListItem(
+                                    kennelMember:
+                                        model.kennelMembersList[index]),
+                              ]),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
+                  ),
+          ),
+        ),
+        Container(
+          width: 150.0,
+          child: RaisedButton(
+            child: const Text(
+              'Add Member',
+              style: const TextStyle(color: Colors.white),
             ),
-         
+            onPressed: () {
+              Navigator.push<dynamic>(
+                context,
+                MaterialPageRoute<dynamic>(
+                  builder: (BuildContext context) => AddMemberPage(
+                        kennelId: kennelId,
+                      ),
+                ),
+              );
+            },
+          ),
+        ),
       ],
     );
   }

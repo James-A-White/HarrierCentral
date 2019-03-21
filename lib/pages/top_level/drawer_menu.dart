@@ -13,9 +13,9 @@ import 'package:harrier_central/pages/menu_pages/user_feedback_page.dart';
 import 'package:harrier_central/pages/menu_pages/privacy_policy_page.dart';
 
 class DrawerMenu extends StatefulWidget {
-  GlobalKey<ScaffoldState> scaffoldKey;
+  const DrawerMenu({Key key, this.scaffoldKey}) : super(key: key);
 
-  DrawerMenu({Key key, this.scaffoldKey}) : super(key: key);
+  final GlobalKey<ScaffoldState> scaffoldKey;
 
   @override
   DrawerMenuState createState() => DrawerMenuState();
@@ -81,7 +81,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                     context,
                     MaterialPageRoute<dynamic>(
                       settings: RouteSettings(),
-                      builder: (context) {
+                      builder: (BuildContext context) {
                         return SettingsPage();
                       },
                     ),
@@ -98,7 +98,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                     context,
                     MaterialPageRoute<dynamic>(
                       settings: RouteSettings(),
-                      builder: (context) {
+                      builder: (BuildContext context) {
                         return MyProfilePage();
                       },
                     ),
@@ -114,7 +114,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                     context,
                     MaterialPageRoute<dynamic>(
                       settings: RouteSettings(),
-                      builder: (context) {
+                      builder: (BuildContext context) {
                         return InAppPurchasePage();
                       },
                     ),
@@ -139,7 +139,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                     context,
                     MaterialPageRoute<dynamic>(
                       settings: RouteSettings(),
-                      builder: (context) {
+                      builder: (BuildContext context) {
                         return FaqPage();
                       },
                     ),
@@ -155,7 +155,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                     context,
                     MaterialPageRoute<dynamic>(
                       settings: RouteSettings(),
-                      builder: (context) {
+                      builder: (BuildContext context) {
                         return UserFeedbackPage();
                       },
                     ),
@@ -171,7 +171,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                     context,
                     MaterialPageRoute<dynamic>(
                       settings: RouteSettings(),
-                      builder: (context) {
+                      builder: (BuildContext context) {
                         return ImprintPage();
                       },
                     ),
@@ -187,7 +187,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                     context,
                     MaterialPageRoute<dynamic>(
                       settings: RouteSettings(),
-                      builder: (context) {
+                      builder: (BuildContext context) {
                         return LegalPage();
                       },
                     ),
@@ -204,7 +204,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                     context,
                     MaterialPageRoute<dynamic>(
                       settings: RouteSettings(),
-                      builder: (context) {
+                      builder: (BuildContext context) {
                         return PrivacyPolicyPage();
                       },
                     ),

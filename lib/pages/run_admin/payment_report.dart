@@ -18,11 +18,6 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/payment_report_list_item.dart';
 
 class PaymentReportPage extends StatelessWidget {
-  final String eventId;
-  final String currencySymbol;
-  final int digitsAfterDecimal;
-  final String eventName;
-
   PaymentReportPage(
       {Key key,
       @required this.eventId,
@@ -30,6 +25,11 @@ class PaymentReportPage extends StatelessWidget {
       @required this.digitsAfterDecimal,
       @required this.eventName})
       : super(key: key);
+
+  final String eventId;
+  final String currencySymbol;
+  final int digitsAfterDecimal;
+  final String eventName;
 
   final PaymentReportScopedModel paymentReportModel =
       PaymentReportScopedModel();
@@ -71,7 +71,7 @@ class PaymentReportPage extends StatelessWidget {
         foregroundColor: Colors.white,
         elevation: 8.0,
         shape: CircleBorder(),
-        children: [
+        children: <SpeedDialChild>[
           SpeedDialChild(
             child: const Icon(Icons.mail_outline),
             backgroundColor: Colors.green,
@@ -106,16 +106,16 @@ class PaymentReportPage extends StatelessWidget {
 }
 
 class PaymentReportsListPageBody extends StatefulWidget {
-  final String eventId;
-  final String currencySymbol;
-  final int digitsAfterDecimal;
-
-  PaymentReportsListPageBody(
+  const PaymentReportsListPageBody(
       {Key key,
       @required this.eventId,
       @required this.currencySymbol,
       @required this.digitsAfterDecimal})
       : super(key: key);
+
+  final String eventId;
+  final String currencySymbol;
+  final int digitsAfterDecimal;
 
   @override
   _PaymentReportsListPageBodyState createState() =>
@@ -159,7 +159,7 @@ class _PaymentReportsListPageBodyState
     return null;
   }
 
-  void filterTapped(int positionFlag, EnumPaymentType paymentType) {
+  void filterTapped(int positionFlag, EnumPaymentType<int>paymentType) {
     if (filterValue == 127) {
       filterValue = positionFlag;
     } else {
@@ -295,7 +295,7 @@ class _PaymentReportsListPageBodyState
                     onRefresh: () => _handleRefresh(),
                     displacement: 40.0,
                     child: ListView.separated(
-                      separatorBuilder: (context, index) => Divider(
+                      separatorBuilder: (BuildContext context, int index) => const Divider(
                             height: 1.0,
                             color: Colors.black45,
                           ),
@@ -418,12 +418,12 @@ class _PaymentReportsListPageBodyState
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
-        const headingStyle = const TextStyle(
+        const TextStyle headingStyle = const TextStyle(
             fontFamily: 'AvenirNextMedium',
             fontStyle: FontStyle.normal,
             fontSize: 16.0);
 
-        const bodyStyle = const TextStyle(
+        const TextStyle bodyStyle = const TextStyle(
             fontFamily: 'AvenirNextDemiBold',
             fontStyle: FontStyle.normal,
             fontSize: 16.0);

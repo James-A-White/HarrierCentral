@@ -5,13 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:harrier_central/util/utilities.dart';
 
 class PaymentPopup extends StatefulWidget {
-  final String hemId;
-  final String currencySymbol;
-  final num amount;
-  final num creditRemaining;
-  final int creditAllowed;
-  final int decimalDigits;
-
   PaymentPopup(
       {@required this.hemId,
       @required this.currencySymbol,
@@ -19,6 +12,13 @@ class PaymentPopup extends StatefulWidget {
       @required this.creditRemaining,
       @required this.creditAllowed,
       @required this.decimalDigits});
+
+  final String hemId;
+  final String currencySymbol;
+  final num amount;
+  final num creditRemaining;
+  final int creditAllowed;
+  final int decimalDigits;
 
   int selectedValue = -1;
 

@@ -14,19 +14,13 @@ import 'package:flutter/widgets.dart';
 /// The selected tab bubble is applied padding by [bubblePadding] when [tabBarIndicatorSize] is label.
 
 class BubbleTabIndicator extends Decoration {
-  final double indicatorHeight;
-  final Color indicatorColor;
-  final double indicatorRadius;
-  final EdgeInsetsGeometry bubblePadding;
-  final EdgeInsetsGeometry insets;
-  final TabBarIndicatorSize tabBarIndicatorSize;
-
   const BubbleTabIndicator({
     this.indicatorHeight: 20.0,
     this.indicatorColor: Colors.greenAccent,
     this.indicatorRadius: 100.0,
     this.tabBarIndicatorSize = TabBarIndicatorSize.label,
-    this.bubblePadding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 8.0),
+    this.bubblePadding:
+        const EdgeInsets.symmetric(vertical: 2.0, horizontal: 8.0),
     this.insets: const EdgeInsets.symmetric(horizontal: 5.0),
   })  : assert(indicatorHeight != null),
         assert(indicatorColor != null),
@@ -34,11 +28,19 @@ class BubbleTabIndicator extends Decoration {
         assert(bubblePadding != null),
         assert(insets != null);
 
+  final double indicatorHeight;
+  final Color indicatorColor;
+  final double indicatorRadius;
+  final EdgeInsetsGeometry bubblePadding;
+  final EdgeInsetsGeometry insets;
+  final TabBarIndicatorSize tabBarIndicatorSize;
+
   @override
   Decoration lerpFrom(Decoration a, double t) {
     if (a is BubbleTabIndicator) {
       return BubbleTabIndicator(
-        bubblePadding: EdgeInsetsGeometry.lerp(a.bubblePadding, bubblePadding, t),
+        bubblePadding:
+            EdgeInsetsGeometry.lerp(a.bubblePadding, bubblePadding, t),
         insets: EdgeInsetsGeometry.lerp(a.insets, insets, t),
       );
     }
@@ -49,7 +51,8 @@ class BubbleTabIndicator extends Decoration {
   Decoration lerpTo(Decoration b, double t) {
     if (b is BubbleTabIndicator) {
       return BubbleTabIndicator(
-        bubblePadding: EdgeInsetsGeometry.lerp(bubblePadding, b.bubblePadding, t),
+        bubblePadding:
+            EdgeInsetsGeometry.lerp(bubblePadding, b.bubblePadding, t),
         insets: EdgeInsetsGeometry.lerp(insets, b.insets, t),
       );
     }

@@ -26,16 +26,6 @@ import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/services/add_user_service.dart';
 
 class ChooseProfileImage extends StatefulWidget {
-  bool doAddUser;
-  bool isForThisDevice;
-  String firstName;
-  String lastName;
-  String email;
-  String hashName;
-  String eventId;
-  String kennelId;
-  EnumAttendenceState attendenceState;
-
   ChooseProfileImage(
       {Key key,
       this.doAddUser,
@@ -48,6 +38,16 @@ class ChooseProfileImage extends StatefulWidget {
       this.kennelId,
       this.attendenceState})
       : super(key: key);
+
+  bool doAddUser;
+  bool isForThisDevice;
+  String firstName;
+  String lastName;
+  String email;
+  String hashName;
+  String eventId;
+  String kennelId;
+  EnumAttendenceState<int> attendenceState;
 
   @override
   _ChooseProfileImageState createState() => _ChooseProfileImageState();
@@ -85,7 +85,8 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
   @override
   Widget build(BuildContext context) {
-    if ((facebookProfileImage == null) && widget.isForThisDevice && 
+    if ((facebookProfileImage == null) &&
+        widget.isForThisDevice &&
         ((facebookProfileUrl ?? '').isNotEmpty)) {
       facebookProfileImage = CachedNetworkImage(
           imageUrl: facebookProfileUrl,
@@ -105,15 +106,15 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     }
 
     AppBar appBar = AppBar(
-        centerTitle: true,
-        backgroundColor: ThemeColors.appBarBackground,
-        title: const Text(
-          'Choose Profile Image',
-          style: const TextStyle(
-            color: Colors.white,
-          ),
+      centerTitle: true,
+      backgroundColor: ThemeColors.appBarBackground,
+      title: const Text(
+        'Choose Profile Image',
+        style: const TextStyle(
+          color: Colors.white,
         ),
-      );
+      ),
+    );
 
     return Scaffold(
       key: _scaffoldKey,
@@ -129,7 +130,8 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
             child: Container(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height >= 500.0
-                  ? MediaQuery.of(context).size.height - appBar.preferredSize.height
+                  ? MediaQuery.of(context).size.height -
+                      appBar.preferredSize.height
                   : 500.0,
               child: _processingSelection
                   ? _buildProgressIndicator()
@@ -400,7 +402,8 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                             fontFamily: 'WorkSansSemiBold'),
                                       ),
                                       const Padding(
-                                        padding: const EdgeInsets.only(top: 10.0),
+                                        padding:
+                                            const EdgeInsets.only(top: 10.0),
                                       ),
                                       Container(
                                         child: _getPreviewImage(),
@@ -518,7 +521,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                   ),
                   const Padding(
                     padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                    child: const  Icon(FontAwesomeIcons.circle,
+                    child: const Icon(FontAwesomeIcons.circle,
                         color: Color(0xFFFFFFFF), size: 10.0),
                   ),
                   Container(
@@ -577,6 +580,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       if (widget.isForThisDevice) {
         AddUserService()
             .addUser(
+                _scaffoldKey,
                 Preferences.getStringPref(StringPrefsEnum.firstName),
                 Preferences.getStringPref(StringPrefsEnum.lastName),
                 Preferences.getStringPref(StringPrefsEnum.email),
@@ -601,10 +605,11 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         });
       } else {
         // adding an "external" user who is not associated with this device
-        // typically these people are added while at a Hash so we have to 
+        // typically these people are added while at a Hash so we have to
         // push in an event ID
         AddUserService()
             .addUser(
+                _scaffoldKey,
                 widget.firstName,
                 widget.lastName,
                 widget.email,
@@ -614,7 +619,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                 '', // photo
                 widget.kennelId, // member kennel ID
                 widget.eventId, // event ID
-                hasherTypeMember, 
+                hasherTypeMember,
                 attendenceState: widget.attendenceState)
             .then((UserModel user) {
           // after this executes, we will push and replace this to the main screen
@@ -742,12 +747,12 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
   }
 
   void _upload(File imageFile, String fileName) {
-    final uri = Uri.parse(
+    final Uri uri = Uri.parse(
         'http://harriercentral.blob.core.windows.net/profile-photos/$fileName?st=2018-11-22T07%3A36%3A49Z&se=2028-11-23T07%3A36%3A00Z&sp=rwl&sv=2018-03-28&sr=c&sig=GdHEgSU7Qbp6nEMbOeuxnTjKVVIXw1AImXUff8GPq2U%3D');
 
-    var request = http.Request('PUT', uri);
+    final http.Request request = http.Request('PUT', uri);
 
-    Map<String, String> headers = {
+    final Map<String, String> headers = <String,String>{
       'content-type': 'image/jpeg',
       'x-ms-blob-type': 'BlockBlob'
     };
@@ -806,9 +811,9 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         case _SelectedImageTypeEnum.avatar:
           if (forceOpen) {
             Navigator.push<dynamic>(
-              this.context,
+              context,
               MaterialPageRoute<dynamic>(
-                builder: (context) =>
+                builder: (BuildContext context) =>
                     AvatarIconsPage(selectedAvatarIcon: _selectedAvatarIcon),
               ),
             ).then((dynamic onValue) {
@@ -841,7 +846,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     setState(() async {
       ImagePicker.pickImage(source: source).then((File image) {
         setState(() {
-          var img = ImageCropper.cropImage(
+          final Future<File> img = ImageCropper.cropImage(
             sourcePath: image.path,
             ratioX: 1.0,
             ratioY: 1.0,

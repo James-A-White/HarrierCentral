@@ -26,7 +26,7 @@ class _AppEntryPageState extends State<AppEntryPage>
   void handleTimeout() async {
 
     await PermissionHandler()
-        .requestPermissions([PermissionGroup.camera, PermissionGroup.location]);
+        .requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);
 
     final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
 

@@ -26,7 +26,7 @@ class PackScopedModel extends Model {
 
   bool get isLoading => _isLoading;
 
-  PermissionStatus _location_permission;
+  PermissionStatus _locationPermission;
 
   void clearPackList() {
     if (_packList != null) {
@@ -120,7 +120,7 @@ class PackScopedModel extends Model {
 
   void sortPackList() 
   {
-     _packList.sort((a,b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()));
+     _packList.sort((UserModel a,UserModel b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()));
      //_filteredPackList.sort((a,b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()));
   }
 

@@ -1,4 +1,3 @@
-
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -10,9 +9,7 @@ import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 import 'package:harrier_central/data_models/kennel_member_model.dart';
 import 'package:harrier_central/util/styles.dart';
 
-
 class UserSecretQrPage extends StatefulWidget {
-
   const UserSecretQrPage({Key key, this.kennelMemberModel}) : super(key: key);
 
   final KennelMemberModel kennelMemberModel;
@@ -37,53 +34,57 @@ class _UserSecretQrCodePageState extends State<UserSecretQrPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-      backgroundColor: ThemeColors.appBarBackground,
-      title: Text('Admin for: ${widget.kennelMemberModel.displayName}'),
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(120.0),
-        child: Padding(
-          padding: const EdgeInsets.all(30.0),
-          child: Container(
-            width: 320.0,
-            height: 90.0,
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColorLight,
-              borderRadius: const BorderRadius.all(Radius.circular(45.0)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-              child: TabBar(
-                labelStyle: const TextStyle(
-                    fontFamily: 'AvenirNextCondensedMedium',
-                    fontStyle: FontStyle.normal,
-                    fontSize: 18.0,
-                    height: 1.0),
-                unselectedLabelStyle: const TextStyle(
-                    fontFamily: 'AvenirNextCondensedMedium',
-                    fontStyle: FontStyle.normal,
-                    fontSize: 18.0,
-                    height: 1.0),
-                isScrollable: false,
-                unselectedLabelColor: Colors.black,
-                labelColor: Colors.white,
-                indicatorSize: TabBarIndicatorSize.tab,
-                indicator: BubbleTabIndicator(
-                  indicatorHeight: 45.0,
-                  indicatorColor: Theme.of(context).buttonColor,
-                  tabBarIndicatorSize: TabBarIndicatorSize.tab,
+        backgroundColor: ThemeColors.appBarBackground,
+        title: Text('Admin for: ${widget.kennelMemberModel.displayName}'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(120.0),
+          child: Padding(
+            padding: const EdgeInsets.all(30.0),
+            child: Container(
+              width: 320.0,
+              height: 90.0,
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColorLight,
+                borderRadius: const BorderRadius.all(Radius.circular(45.0)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 5.0, right: 5.0),
+                child: TabBar(
+                  labelStyle: const TextStyle(
+                      fontFamily: 'AvenirNextCondensedMedium',
+                      fontStyle: FontStyle.normal,
+                      fontSize: 18.0,
+                      height: 1.0),
+                  unselectedLabelStyle: const TextStyle(
+                      fontFamily: 'AvenirNextCondensedMedium',
+                      fontStyle: FontStyle.normal,
+                      fontSize: 18.0,
+                      height: 1.0),
+                  isScrollable: false,
+                  unselectedLabelColor: Colors.black,
+                  labelColor: Colors.white,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicator: BubbleTabIndicator(
+                    indicatorHeight: 45.0,
+                    indicatorColor: Theme.of(context).buttonColor,
+                    tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                  ),
+                  tabs: tabs,
+                  controller: _tabController,
                 ),
-                tabs: tabs,
-                controller: _tabController,
               ),
             ),
           ),
         ),
-      ),),
+      ),
       body: Stack(
         children: <Widget>[
           TabBarView(
             controller: _tabController,
-            children: <Widget>[QrCodeTab(kennelMemberModel: widget.kennelMemberModel), const QrScannerTab()],
+            children: <Widget>[
+              QrCodeTab(kennelMemberModel: widget.kennelMemberModel),
+              const QrScannerTab()
+            ],
           ),
         ],
       ),
@@ -167,7 +168,7 @@ class _UserSecretQrCodePageState extends State<UserSecretQrPage>
           content: SingleChildScrollView(
             child: ListBody(
               children: const <Widget>[
-                 Text(
+                Text(
                   'You can use your QR scanner to add friends to your Harrier Central friend list simply by scanning their personal QR code. You can also use your scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out.',
                   textAlign: TextAlign.justify,
                   style: const TextStyle(
@@ -211,15 +212,6 @@ class _UserSecretQrCodePageState extends State<UserSecretQrPage>
 }
 
 class TabIndicationPainter extends CustomPainter {
-  Paint painter;
-  final double dxTarget;
-  final double dxEntry;
-  final double radius;
-  final double dy;
-  BuildContext context;
-
-  final PageController pageController;
-
   TabIndicationPainter(
       {this.context,
       this.dxTarget = 125.0,
@@ -232,6 +224,15 @@ class TabIndicationPainter extends CustomPainter {
       ..color = Theme.of(context).accentColor
       ..style = PaintingStyle.fill;
   }
+
+  Paint painter;
+  final double dxTarget;
+  final double dxEntry;
+  final double radius;
+  final double dy;
+  BuildContext context;
+
+  final PageController pageController;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -299,8 +300,7 @@ class _QrCodeTabState extends State<QrCodeTab>
               data: widget.kennelMemberModel.qrSecretCode,
               version: 4,
               size: 200.0,
-              errorCorrectionLevel: 3
-              ),
+              errorCorrectionLevel: 3),
           Padding(
             padding: const EdgeInsets.only(left: 32.0, right: 32.0),
             child: FlatButton(
@@ -378,7 +378,8 @@ class _QrScannerTabState extends State<QrScannerTab>
                       }),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 35.0),
+                  padding:
+                      const EdgeInsets.only(left: 24.0, right: 24.0, top: 35.0),
                   child: Text(
                     barcode,
                     textAlign: TextAlign.center,
