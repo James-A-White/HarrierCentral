@@ -2,23 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:harrier_central/data_models/main_navigation_model.dart';
-import 'package:harrier_central/services/main_navigation_scoped_model.dart';
-
-import 'package:harrier_central/data_models/main_navigation_model.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 import 'package:harrier_central/services/kennel_scoped_model.dart';
-import 'package:harrier_central/widgets/placeholder_widget.dart';
 
-import 'package:scoped_model/scoped_model.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 
 class MainNavigationPage extends StatefulWidget {
-  MainNavigationPage({Key key}) : super(key: key);
+  const MainNavigationPage({Key key}) : super(key: key);
 
   @override
   _MainNavigationPageState createState() => _MainNavigationPageState();
@@ -34,11 +29,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   @override
   void initState() {
-    tabs.add(FutureRunsListPage());
+    tabs.add(const FutureRunsListPage());
     tabs.add(KennelsListPage(kennelModel: kennelModel));
-    tabs.add(UserQrCodePage());
-    tabs.add(UserQrCodePage());
-    tabs.add(UserQrCodePage());
+    tabs.add(const UserQrCodePage());
+    tabs.add(const UserQrCodePage());
+    tabs.add(const UserQrCodePage());
 
     tabTitles.add('Upcoming Runs');
     tabTitles.add('Kennels');
@@ -47,15 +42,16 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     tabTitles.add('Friends');
 
     appBarText = tabTitles[0];
+    super.initState();
   }
 
   void onTabTapped(EnumAppPages index) {
     //homePageModel.currentMainView = index;
-    //Preferences.setIntPref(IntPrefsEnum.mainViewCurrentTab, index);
+    //setIntPref(IntPrefsEnum.mainViewCurrentTab, index);
   }
 
   final KennelScopedModel kennelModel = KennelScopedModel();
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   int currentPage = 0;
 
@@ -69,13 +65,13 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       appBarText = tabTitles[pageIndex];
       switch (pageIndex) {
         case 0:
-          w = FutureRunsListPage();
+          w = const FutureRunsListPage();
           break;
         case 1:
           w = KennelsListPage(kennelModel: kennelModel);
           break;
         case 2:
-          w = UserQrCodePage();
+          w = const UserQrCodePage();
           break;
       }
 
@@ -84,7 +80,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: ThemeColors.appBarBackground,
+        backgroundColor: themeAppBarBackground,
         title: Text(appBarText),
       ),
       body: Container(
@@ -94,9 +90,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         ),
       ),
       bottomNavigationBar: FancyBottomNavigation(
-        circleColor: ThemeColors.buttonColors,
-        inactiveIconColor: ThemeColors.backgroundColor,
-        barBackgroundColor: ThemeColors.navBarBackground,
+        circleColor: themeButtonColors,
+        inactiveIconColor: themeBackgroundColor,
+        barBackgroundColor: themeNavBarBackground,
         tabs: <TabData>[
           TabData(
             iconData: MaterialCommunityIcons.run_fast,

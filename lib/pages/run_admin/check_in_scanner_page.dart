@@ -4,16 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class CheckInScannerPage extends StatefulWidget {
-  CheckInScannerPage(
+  const CheckInScannerPage(
       {@required this.kennelShortName,
       @required this.eventId,
       @required this.eventName,
       @required this.eventNumber});
 
-  String kennelShortName;
-  String eventId;
-  String eventName;
-  int eventNumber;
+  final String kennelShortName;
+  final String eventId;
+  final String eventName;
+  final int eventNumber;
 
   @override
   _CheckInScannerPageState createState() => _CheckInScannerPageState();
@@ -22,20 +22,20 @@ class CheckInScannerPage extends StatefulWidget {
 class _CheckInScannerPageState extends State<CheckInScannerPage> {
   String barcode = '';
 
-  @override
-  initState() {
-    super.initState();
-  }
+  // @override
+  // initState() {
+  //   super.initState();
+  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: ThemeColors.appBarBackground,
+        backgroundColor: themeAppBarBackground,
         title: const Text(
           'Check in Scanner',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
           ),
         ),
@@ -70,7 +70,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                     child: RaisedButton(
                         child: const Text(
                           'Start Scanning: RUN START',
-                          style: const TextStyle(color: Colors.white),
+                          style: TextStyle(color: Colors.white),
                         ),
                         onPressed: () {
                           scanUserBarcode(true, widget.eventId);
@@ -83,7 +83,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                     child: RaisedButton(
                         child: const Text(
                           'Start Scanning: RUN END',
-                          style: const TextStyle(color: Colors.white),
+                          style: TextStyle(color: Colors.white),
                         ),
                         onPressed: () {
                           scanUserBarcode(false, widget.eventId);
@@ -97,7 +97,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                   // ),
                   Padding(
                     padding:
-                        EdgeInsets.only(left: 24.0, right: 24.0, top: 35.0),
+                        const EdgeInsets.only(left: 24.0, right: 24.0, top: 35.0),
                     child: Text(
                       barcode,
                       textAlign: TextAlign.center,
@@ -129,7 +129,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
   }
 
   Future<void> scanUserBarcode(bool isRunStart, String eventId) async {
-    String context2 = isRunStart ? '0' : '1';
+    // final String context2 = isRunStart ? '0' : '1';
     // Future<String> scanAction = BarcodeScanner.scan();
     // scanAction.then((String s) {
     //   ProcessQrScanService srv = ProcessQrScanService();
@@ -186,11 +186,11 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
           title: const Text('Hasher Scanner'),
           content: SingleChildScrollView(
             child: ListBody(
-              children: <Widget>[
+              children: const <Widget>[
                 Text(
                   'Harrier Central admins can use this page to scan in Hashers both at the beginning of runs (to record who is at the run) and the end of runs (to make sure everone is back safely).\r\n\r\nThis screen also makes it possible to record who has paid and who has not.',
                   textAlign: TextAlign.justify,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'AvenirNextRegular',
                       fontStyle: FontStyle.normal,
                       fontSize: 16.0,

@@ -26,7 +26,7 @@ class KennelMembersList extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: ThemeColors.appBarBackground,
+        backgroundColor: themeAppBarBackground,
         title: Text(
           '${kennel.kennelShortName} Members',
           style: const TextStyle(
@@ -75,11 +75,9 @@ class KennelMembersListPageBody extends StatelessWidget {
     );
   }
 
-  Future<Null> _handleRefresh() async {
+  Future<void> _handleRefresh() async {
     model.getKennelMembersFromBackend(1, false, kennelId);
-    model.notifyListeners();
-
-    return null;
+    //model.notifyListeners();
   }
 
   Widget _buildListView() {
@@ -119,7 +117,7 @@ class KennelMembersListPageBody extends StatelessWidget {
           child: RaisedButton(
             child: const Text(
               'Add Member',
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.white),
             ),
             onPressed: () {
               Navigator.push<dynamic>(

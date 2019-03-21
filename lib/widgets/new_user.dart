@@ -1,20 +1,12 @@
-import 'dart:core';
-
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-
 import 'dart:convert';
 import 'dart:core';
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:audioplayers/audio_cache.dart';
 import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
@@ -34,7 +26,7 @@ import 'package:harrier_central/data_models/user_model.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 
 class NewUserWidget extends StatefulWidget {
-  NewUserWidget(
+  const NewUserWidget(
       {Key key,
       this.isForThisDevice,
       this.eventId,
@@ -43,12 +35,12 @@ class NewUserWidget extends StatefulWidget {
       this.scaffoldKey})
       : super(key: key);
 
-  bool isForThisDevice;
-  String eventId;
-  String kennelId;
-  EnumAttendenceState<int> attendenceState;
+  final bool isForThisDevice;
+  final String eventId;
+  final String kennelId;
+  final EnumAttendenceState<int> attendenceState;
 
-  GlobalKey<ScaffoldState> scaffoldKey;
+  final GlobalKey<ScaffoldState> scaffoldKey;
 
   @override
   State<NewUserWidget> createState() {
@@ -58,7 +50,7 @@ class NewUserWidget extends StatefulWidget {
 
 class NewUserState extends State<NewUserWidget>
     with SingleTickerProviderStateMixin {
-  PageController _pageController = PageController();
+  final PageController _pageController = PageController();
   int _scanState = 0;
 
   Color left = Colors.black;
@@ -75,12 +67,12 @@ class NewUserState extends State<NewUserWidget>
   @override
   Widget build(BuildContext context) {
     {
-      AppBar appBar = AppBar(
+      final AppBar appBar = AppBar(
         centerTitle: true,
-        backgroundColor: ThemeColors.appBarBackground,
+        backgroundColor: themeAppBarBackground,
         title: const Text(
           'Add Member',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
           ),
         ),
@@ -106,7 +98,8 @@ class NewUserState extends State<NewUserWidget>
                         width: widget.isForThisDevice == true ? 50.0 : 100.0,
                         height: widget.isForThisDevice == true ? 50.0 : 100.0,
                         fit: BoxFit.fill,
-                        image: AssetImage('images/other/hc_app_icon.png')),
+                        image:
+                            const AssetImage('images/other/hc_app_icon.png')),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 20.0),
@@ -248,8 +241,8 @@ class NewUserState extends State<NewUserWidget>
                   splashColor: LoginColors.loginGradientEnd,
                   //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
                   child: Padding(
-                    padding:
-                        EdgeInsets.symmetric(vertical: 10.0, horizontal: 42.0),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10.0, horizontal: 42.0),
                     child: Text(
                       controller == null ? 'Start Scanning' : 'Stop Scanning',
                       style: const TextStyle(
@@ -299,26 +292,28 @@ class NewUserState extends State<NewUserWidget>
                           facebookLogin
                               .logInWithReadPermissions(<String>['email']).then(
                                   (FacebookLoginResult result) async {
-                            String token = result.accessToken.token;
+                            final String token = result.accessToken.token;
                             final http.Response graphResponse = await http.get(
-                                'https://graph.facebook.com/v3.2/me?fields=name,first_name,last_name,picture.width(640),email,gender&access_token=${token}');
+                                'https://graph.facebook.com/v3.2/me?fields=name,first_name,last_name,picture.width(640),email,gender&access_token=$token');
 
-                            dynamic profile = json.decode(graphResponse.body);
+                            final dynamic profile =
+                                json.decode(graphResponse.body);
 
-                            String firstName = profile['first_name'];
-                            String lastName = profile['last_name'];
-                            String email = profile['email'];
-                            String facebookId = profile['id'];
-                            String gender = profile['gender'];
-                            dynamic picture = profile['picture']['data']['url'];
+                            final String firstName = profile['first_name'];
+                            final String lastName = profile['last_name'];
+                            final String email = profile['email'];
+                            final String facebookId = profile['id'];
+                            final String gender = profile['gender'];
+                            final dynamic picture =
+                                profile['picture']['data']['url'];
 
-                            Preferences.setStringPref(
+                            setStringPref(
                                 StringPrefsEnum.facebookProfilePhoto, picture);
-                            Preferences.setStringPref(
+                            setStringPref(
                                 StringPrefsEnum.facebookId, facebookId);
-                            Preferences.setStringPref(
+                            setStringPref(
                                 StringPrefsEnum.facebookAccessToken, token);
-                            Preferences.setStringPref(
+                            setStringPref(
                                 StringPrefsEnum.gender, gender);
 
                             userDetailsUi.firstName = firstName;
@@ -385,11 +380,11 @@ class NewUserState extends State<NewUserWidget>
                     highlightColor: Colors.transparent,
                     splashColor: LoginColors.loginGradientEnd,
                     child: const Padding(
-                      padding: const EdgeInsets.symmetric(
+                      padding: EdgeInsets.symmetric(
                           vertical: 10.0, horizontal: 42.0),
                       child: Text(
                         'NEXT >>',
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: Colors.white,
                             fontSize: 25.0,
                             fontFamily: 'WorkSansBold'),
@@ -453,18 +448,18 @@ class NewUserState extends State<NewUserWidget>
       });
 
       if (widget.isForThisDevice) {
-        Preferences.setStringPref(
+        setStringPref(
             StringPrefsEnum.firstName, userDetailsUi.firstName);
-        Preferences.setStringPref(
+        setStringPref(
             StringPrefsEnum.lastName, userDetailsUi.lastName);
-        Preferences.setStringPref(StringPrefsEnum.email, userDetailsUi.email);
-        Preferences.setStringPref(
+        setStringPref(StringPrefsEnum.email, userDetailsUi.email);
+        setStringPref(
             StringPrefsEnum.hashName, userDetailsUi.hashName);
 
         Navigator.push(
           context,
           MaterialPageRoute<UserModel>(
-            builder: (BuildContext context) => ChooseProfileImage(
+            builder: (BuildContext context) => const ChooseProfileImage(
                   isForThisDevice: true,
                   doAddUser: true,
                 ),
@@ -514,7 +509,6 @@ class NewUserState extends State<NewUserWidget>
 
   QRReaderController controller;
 
-  @override
   bool get wantKeepAlive => true;
 
   Future<dynamic> scanUserBarcode() async {
@@ -531,7 +525,7 @@ class NewUserState extends State<NewUserWidget>
 
   List<CameraDescription> cameras;
 
-  void onCodeRead(String scanResult) async {
+  Future<void> onCodeRead(String scanResult) async {
     final AudioCache audioPlayer = AudioCache(prefix: 'sounds/');
     audioPlayer.play('camera.mp3');
 
@@ -549,7 +543,7 @@ class NewUserState extends State<NewUserWidget>
         _scanState = 1;
       });
 
-      AuthorizeDeviceService srv = AuthorizeDeviceService();
+      final AuthorizeDeviceService srv = AuthorizeDeviceService();
       final Future<Map<String, String>> apiCall =
           srv.authorizeDevice(scanResult);
       apiCall.then((Map<String, String> result) {
@@ -560,7 +554,7 @@ class NewUserState extends State<NewUserWidget>
             Navigator.pushReplacement<dynamic, dynamic>(
                 context,
                 MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) => MainNavigationPage()));
+                    builder: (BuildContext context) => const MainNavigationPage()));
           } else {
             // downloading from the cloud failed
             setState(() => _scanState = 2);
@@ -571,6 +565,7 @@ class NewUserState extends State<NewUserWidget>
         });
       });
     }
+    // return Future<void>(() {});((){});
   }
 
   Future<dynamic> stopScanning() async {
@@ -623,7 +618,7 @@ class NewUserState extends State<NewUserWidget>
     });
   }
 
-  void onNewCameraSelected(CameraDescription cameraDescription) async {
+  Future<void> onNewCameraSelected(CameraDescription cameraDescription) async {
     if (controller != null) {
       await controller.dispose();
     }
@@ -632,7 +627,9 @@ class NewUserState extends State<NewUserWidget>
 
     // If the controller is updated then update the UI.
     controller.addListener(() {
-      if (mounted) setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
       if (controller.value.hasError) {
         Utilities.showInSnackBar(context, widget.scaffoldKey,
             'Camera error ${controller.value.errorDescription}',
@@ -653,7 +650,11 @@ class NewUserState extends State<NewUserWidget>
       setState(() {});
       controller.startScanning();
     }
+    // return Future<void>(() {});((){});
   }
+
+
+
 }
 
 class TabIndicationPainter extends CustomPainter {

@@ -146,7 +146,7 @@ class PaymentReportScopedModel extends Model {
     paidTo ??= '00000000-0000-0000-0000-000000000000';
     paidBy ??= '00000000-0000-0000-0000-000000000000';
 
-    final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken =
         Utilities.generateToken(userId, 'getPaymentReport');
@@ -224,19 +224,17 @@ class PaymentReportScopedModel extends Model {
     }
 
     notifyListeners();
-
-    return null;
   }
 
   Future<Map<String, String>> sendPaymentReportByEmail({
     String eventId,
     String eventName,
   }) async {
-    final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
     final String userName =
-        Preferences.getStringPref(StringPrefsEnum.displayName);
+        getStringPref(StringPrefsEnum.displayName);
     final String emailAddress =
-        Preferences.getStringPref(StringPrefsEnum.email);
+        getStringPref(StringPrefsEnum.email);
 
     final String accessToken =
         Utilities.generateToken(userId, 'getPaymentReport');

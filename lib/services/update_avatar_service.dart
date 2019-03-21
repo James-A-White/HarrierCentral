@@ -14,7 +14,7 @@ class UpdateProfilePhotoService {
 
   Future<SingleResultModel> updateProfilePhoto(String avatarUrl, String profilePhotoUserId) async {
 
-    final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken = Utilities.generateToken(
         userId, 'updateAvatar');

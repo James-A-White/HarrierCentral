@@ -14,9 +14,9 @@ import 'package:scoped_model/scoped_model.dart';
 //import 'package:flip_panel/flip_panel.dart';
 
 class RunListItem extends StatefulWidget {
-  RunListItem({Key key, @required FutureRun this.futureRun}) : super(key: key);
+  const RunListItem({Key key, @required this.futureRun}) : super(key: key);
 
-  FutureRun futureRun;
+  final FutureRun futureRun;
 
   @override
   _RunListItemState createState() => _RunListItemState();
@@ -122,7 +122,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                 width: 75.0,
                                 height: 75.0,
                                 fit: BoxFit.fill,
-                                image: AssetImage(
+                                image: const AssetImage(
                                     'images/other/hare_needed_stamp.png')))
                         : Container(),
                     Row(
@@ -199,7 +199,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                 textAlign: TextAlign.left,
                               ),
                               Text(
-                                widget.futureRun.hareList.length <= 0
+                                widget.futureRun.hareList.isEmpty
                                     ? 'RSVP to sign up to Hare!'
                                     : 'Hares: ' + widget.futureRun.hareList,
                                 style: const TextStyle(

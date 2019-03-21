@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:geolocator/geolocator.dart';
-
 import 'package:harrier_central/data_models/future_run_model.dart';
 import 'package:harrier_central/data_models/join_event_model.dart';
 import 'package:harrier_central/services/join_event_service.dart';
@@ -12,7 +10,6 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 
 import 'package:http/http.dart' as http;
-import 'package:permission_handler/permission_handler.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class FutureRunScopedModel
@@ -53,7 +50,7 @@ class FutureRunScopedModel
     }
 
     notifyListeners();
-    JoinEventService srv = JoinEventService();
+    final JoinEventService srv = JoinEventService();
     srv
         .joinEvent(run.eventId, rsvpState, isHare, attendenceState)
         .then<dynamic>((JoinEventModel result) {
@@ -119,9 +116,9 @@ class FutureRunScopedModel
   }
 
   Future<dynamic> _getFutureRunsByDistance(int distance) async {
-    Position position;
+    //Position position;
 
-    final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken = Utilities.generateToken(
         userId.toUpperCase(), 'getFutureRunsByDistance');
@@ -154,7 +151,7 @@ class FutureRunScopedModel
 
   Future<void> getFutureRunsFromBackend(bool forceRefresh) async {
     if (!forceRefresh && (_futureRunsList != null)) {
-      return null;
+      // return Future<void>(() {});((){});
     }
 
     _futureRunsList ??= <FutureRun>[];
@@ -214,7 +211,5 @@ class FutureRunScopedModel
     _isLoading = false;
 
     notifyListeners();
-
-    return null;
   }
 }

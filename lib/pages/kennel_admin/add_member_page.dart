@@ -1,16 +1,9 @@
-import 'dart:math';
+
 import 'dart:ui';
 
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
-import 'package:harrier_central/data_models/user_model.dart';
-import 'package:harrier_central/main.dart';
-import 'package:harrier_central/services/add_user_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/widgets/new_user.dart';
 import 'package:harrier_central/util/styles.dart';
@@ -51,17 +44,13 @@ class _AddMemberPageState extends State<AddMemberPage>
   TextEditingController loginEmailController = TextEditingController();
   TextEditingController loginPasswordController = TextEditingController();
 
-  //bool _obscureTextLogin = true;
-  final bool _obscureTextSignup = false;
-  //final bool _obscureTextSignupConfirm = true;
-
   TextEditingController signupEmailController = TextEditingController();
   TextEditingController signupFirstNameController = TextEditingController();
   TextEditingController signupLastNameController = TextEditingController();
   TextEditingController signupHashNameController = TextEditingController();
 
-  PageController _pageController;
-  bool _isCreatingAccount = false;
+  //PageController _pageController;
+  //final bool _isCreatingAccount = false;
 
   Color left = Colors.black;
   Color right = Colors.white;
@@ -72,10 +61,10 @@ class _AddMemberPageState extends State<AddMemberPage>
       key: _scaffoldKey,
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: ThemeColors.appBarBackground,
+        backgroundColor: themeAppBarBackground,
         title: const Text(
           'Add Member Page',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
           ),
         ),
@@ -718,7 +707,7 @@ class _AddMemberPageState extends State<AddMemberPage>
 //           hasherTypeMember,
 //           attendenceState: widget.attendenceState);
 //       x.then((UserModel user) {
-//         // Preferences.setStringPref(StringPrefsEnum.userId, user.userId);
+//         // setStringPref(StringPrefsEnum.userId, user.userId);
 //         Future<dynamic>.delayed(const Duration(milliseconds: 1500))
 //             .then((void dummy) {
 //           Navigator.of(context).pop(user);

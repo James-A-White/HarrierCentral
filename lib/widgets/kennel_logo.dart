@@ -44,7 +44,7 @@ class KennelLogo extends StatelessWidget {
                 imageUrl: kennelLogoUrl,
                 //errorWidget: (BuildContext context,String url,Exception error) => const  Icon(Icons.error),
                 //errorWidget:  const  Icon(Icons.error),
-                fadeInDuration: Duration(milliseconds: 0),
+                fadeInDuration: const Duration(milliseconds: 0),
                 fit: BoxFit.fitHeight,
                 height: logoHeight),
         alignment: Alignment.centerRight);

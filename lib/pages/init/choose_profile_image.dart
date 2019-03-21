@@ -26,7 +26,7 @@ import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/services/add_user_service.dart';
 
 class ChooseProfileImage extends StatefulWidget {
-  ChooseProfileImage(
+  const ChooseProfileImage(
       {Key key,
       this.doAddUser,
       this.isForThisDevice,
@@ -39,15 +39,15 @@ class ChooseProfileImage extends StatefulWidget {
       this.attendenceState})
       : super(key: key);
 
-  bool doAddUser;
-  bool isForThisDevice;
-  String firstName;
-  String lastName;
-  String email;
-  String hashName;
-  String eventId;
-  String kennelId;
-  EnumAttendenceState<int> attendenceState;
+  final bool doAddUser;
+  final bool isForThisDevice;
+  final String firstName;
+  final String lastName;
+  final String email;
+  final String hashName;
+  final String eventId;
+  final String kennelId;
+  final EnumAttendenceState<int> attendenceState;
 
   @override
   _ChooseProfileImageState createState() => _ChooseProfileImageState();
@@ -66,12 +66,12 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
   _SelectedImageTypeEnum _radioImageTypeSelection =
       _SelectedImageTypeEnum.avatar;
 
-  num _thumbnailSize = 85.0;
-  num _previewImageSize = 120.0;
-  num _uploadingImageSize = 180.0;
+  final num _thumbnailSize = 85.0;
+  final num _previewImageSize = 120.0;
+  final num _uploadingImageSize = 180.0;
 
   String facebookProfileUrl =
-      Preferences.getStringPref(StringPrefsEnum.facebookProfilePhoto);
+      getStringPref(StringPrefsEnum.facebookProfilePhoto);
 
   int _selectedAvatarIcon = 1;
   //int _currentAvatarIcon = 1;
@@ -105,12 +105,12 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       _radioImageTypeSelection = _SelectedImageTypeEnum.facebookProfilePic;
     }
 
-    AppBar appBar = AppBar(
+    final AppBar appBar = AppBar(
       centerTitle: true,
-      backgroundColor: ThemeColors.appBarBackground,
+      backgroundColor: themeAppBarBackground,
       title: const Text(
         'Choose Profile Image',
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
         ),
       ),
@@ -391,10 +391,10 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                         CrossAxisAlignment.center,
                                     children: <Widget>[
                                       Text(
-                                        ((_radioImageTypeSelection ==
-                                                _SelectedImageTypeEnum.avatar)
+                                        _radioImageTypeSelection ==
+                                                _SelectedImageTypeEnum.avatar
                                             ? 'Selected\r\nAvatar'
-                                            : 'Selected\r\nImage'),
+                                            : 'Selected\r\nImage',
                                         textAlign: TextAlign.center,
                                         style: const TextStyle(
                                             color: Colors.white,
@@ -403,7 +403,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                       ),
                                       const Padding(
                                         padding:
-                                            const EdgeInsets.only(top: 10.0),
+                                           EdgeInsets.only(top: 10.0),
                                       ),
                                       Container(
                                         child: _getPreviewImage(),
@@ -461,7 +461,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                         vertical: 10.0, horizontal: 20.0),
                                     child: Text(
                                       'Next >',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 25.0,
                                           fontFamily: 'WorkSansBold'),
@@ -520,8 +520,8 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                     height: 1.0,
                   ),
                   const Padding(
-                    padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                    child: const Icon(FontAwesomeIcons.circle,
+                    padding: EdgeInsets.only(left: 15.0, right: 15.0),
+                    child: Icon(FontAwesomeIcons.circle,
                         color: Color(0xFFFFFFFF), size: 10.0),
                   ),
                   Container(
@@ -576,19 +576,19 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       _processingSelection = true;
     });
 
-    num startTime = DateTime.now().millisecondsSinceEpoch;
+    final num startTime = DateTime.now().millisecondsSinceEpoch;
 
     if (widget.doAddUser) {
       if (widget.isForThisDevice) {
         AddUserService()
             .addUser(
                 _scaffoldKey.currentContext,
-                Preferences.getStringPref(StringPrefsEnum.firstName),
-                Preferences.getStringPref(StringPrefsEnum.lastName),
-                Preferences.getStringPref(StringPrefsEnum.email),
-                Preferences.getStringPref(StringPrefsEnum.hashName),
-                Preferences.getStringPref(StringPrefsEnum.facebookId),
-                Preferences.getStringPref(StringPrefsEnum.gender),
+                getStringPref(StringPrefsEnum.firstName),
+                getStringPref(StringPrefsEnum.lastName),
+                getStringPref(StringPrefsEnum.email),
+                getStringPref(StringPrefsEnum.hashName),
+                getStringPref(StringPrefsEnum.facebookId),
+                getStringPref(StringPrefsEnum.gender),
                 '',
                 '00000000-0000-0000-0000-000000000000',
                 '',
@@ -596,11 +596,11 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
             .then((UserModel user) {
           // if the call fails, user will be null
           if (user != null) {
-            Preferences.setStringPref(StringPrefsEnum.userId, user.hasherId);
-            Preferences.setStringPref(
+            setStringPref(StringPrefsEnum.userId, user.hasherId);
+            setStringPref(
                 StringPrefsEnum.displayName, user.displayName);
-            Preferences.setStringPref(StringPrefsEnum.qrCode, user.qrCode);
-            Preferences.setStringPref(
+            setStringPref(StringPrefsEnum.qrCode, user.qrCode);
+            setStringPref(
                 StringPrefsEnum.qrSecretCode, user.qrSecretCode);
             // after this executes, we will push and replace this to the main screen
             // the logic for this is in the underlying method
@@ -656,7 +656,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
     String fileName;
 
-    String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    String userId = getStringPref(StringPrefsEnum.userId);
 
     if (widget.doAddUser) {
       // this is for either of the two cases where
@@ -671,7 +671,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       // in the case where we are simply updating the existing
       // profile image of the account associated with this device,
       // use the existing QR code stored in preferences as the base name for the photo
-      fileName = Preferences.getStringPref(StringPrefsEnum.qrCode)
+      fileName = getStringPref(StringPrefsEnum.qrCode)
               .replaceAll('UQR:', '') +
           '_thumb.jpg';
     }
@@ -693,10 +693,10 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       // this is the case where we are adding a user for this device
       // when this code is finished, we want to redirect the user to the
       // main screen
-      Preferences.setStringPref(
+      setStringPref(
           StringPrefsEnum.profilePhotoUrl, profileImageUrl);
 
-      UpdateProfilePhotoService svc = UpdateProfilePhotoService();
+      final UpdateProfilePhotoService svc = UpdateProfilePhotoService();
       svc
           .updateProfilePhoto(profileImageUrl, userId)
           .then((SingleResultModel result) {
@@ -712,7 +712,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         }
 
         // how long has the
-        num deltaTime = DateTime.now().millisecondsSinceEpoch - startTime;
+        final num deltaTime = DateTime.now().millisecondsSinceEpoch - startTime;
 
         if (deltaTime > 1000) {
           print('Delay to show uploading screen = $deltaTime milliseconds'); 
@@ -731,7 +731,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       // but not a user that represents the owner of this device.
       // when this code is done executing, we want to pop back
       // to the caller.
-      UpdateProfilePhotoService svc = UpdateProfilePhotoService();
+      final UpdateProfilePhotoService svc = UpdateProfilePhotoService();
       svc
           .updateProfilePhoto(profileImageUrl, userId)
           .then((SingleResultModel result) {
@@ -755,7 +755,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       // this last case will be for updating the profile photo
       // of the user of this device, but without creating a
       // user
-      UpdateProfilePhotoService svc = UpdateProfilePhotoService();
+      final UpdateProfilePhotoService svc = UpdateProfilePhotoService();
       svc
           .updateProfilePhoto(profileImageUrl, userId)
           .then((SingleResultModel result) {
@@ -909,7 +909,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
             return const Text(
               'You have not yet chosen an image.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                   color: Colors.black,
                   fontSize: 22.0,
                   fontFamily: 'WorkSansBold'),
@@ -918,10 +918,10 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         });
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  // }
 
   @override
   void initState() {

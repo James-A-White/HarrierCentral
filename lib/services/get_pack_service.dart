@@ -12,7 +12,7 @@ class GetPackService {
 
   Future<List<UserModel>> getPack(String eventId) async {
 
-    final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken = Utilities.generateToken(
         userId, 'getUsersByEvent');

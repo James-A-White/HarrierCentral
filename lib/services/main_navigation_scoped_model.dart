@@ -40,7 +40,7 @@
 //     }
 
 //     _mainNavigation.currentMainAppView = EnumAppPages.futureRuns;
-//        // Preferences.getIntPref(IntPrefsEnum.mainViewCurrentTab);
+//        // getIntPref(IntPrefsEnum.mainViewCurrentTab);
 //   }
 
 //   set currentMainView(EnumAppPages ci) {

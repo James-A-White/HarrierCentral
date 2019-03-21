@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:harrier_central/util/utilities.dart';
 
 class PaymentPopup extends StatefulWidget {
-  PaymentPopup(
+   PaymentPopup(
       {@required this.hemId,
       @required this.currencySymbol,
       @required this.amount,
@@ -20,7 +20,7 @@ class PaymentPopup extends StatefulWidget {
   final int creditAllowed;
   final int decimalDigits;
 
-  int selectedValue = -1;
+  int selectedValue;
 
   @override
   _PaymentPopupState createState() => _PaymentPopupState();
@@ -43,9 +43,9 @@ class _PaymentPopupState extends State<PaymentPopup> {
                     groupValue: widget.selectedValue,
                     onChanged: _handleRadioValueChange1,
                   ),
-                  Text(
+                  const Text(
                     'Not paid',
-                    style: const TextStyle(fontSize: 16.0),
+                    style: TextStyle(fontSize: 16.0),
                   ),
                 ]),
                 Row(children: <Widget>[
@@ -54,9 +54,9 @@ class _PaymentPopupState extends State<PaymentPopup> {
                     groupValue: widget.selectedValue,
                     onChanged: _handleRadioValueChange1,
                   ),
-                  Text(
+                  const Text(
                     'Free run',
-                    style: const TextStyle(fontSize: 16.0),
+                    style: TextStyle(fontSize: 16.0),
                   ),
                 ]),
                 Row(children: <Widget>[

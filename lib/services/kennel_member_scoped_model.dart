@@ -66,7 +66,7 @@ class KennelMemberScopedModel extends Model {
 
   Future<dynamic> _getKennelMembers(String kennelId) async {
 
-    final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken = Utilities.generateToken(
         userId.toUpperCase(), 'getKennelMembers');
@@ -124,7 +124,5 @@ class KennelMemberScopedModel extends Model {
     }
 
     notifyListeners();
-
-    return null;
   }
 }

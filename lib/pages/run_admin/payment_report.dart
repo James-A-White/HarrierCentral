@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 
 import 'package:harrier_central/data_models/pay_for_event_model.dart';
 import 'package:harrier_central/data_models/payment_report_model.dart';
@@ -43,7 +42,7 @@ class PaymentReportPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: ThemeColors.appBarBackground,
+        backgroundColor: themeAppBarBackground,
         title: Text(
           eventName,
           style: const TextStyle(
@@ -56,7 +55,7 @@ class PaymentReportPage extends StatelessWidget {
         marginRight: 18,
         marginBottom: 20,
         animatedIcon: AnimatedIcons.menu_close,
-        animatedIconTheme: IconThemeData(size: 22.0),
+        animatedIconTheme: const IconThemeData(size: 22.0),
         // this is ignored if animatedIcon is non null
         // child:const  Icon(Icons.add),
         visible: true,
@@ -76,7 +75,7 @@ class PaymentReportPage extends StatelessWidget {
             child: const Icon(Icons.mail_outline),
             backgroundColor: Colors.green,
             label: 'Email me report',
-            labelStyle: TextStyle(fontSize: 18.0),
+            labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
               paymentReportModel
                   .sendPaymentReportByEmail(
@@ -152,14 +151,12 @@ class _PaymentReportsListPageBodyState
     );
   }
 
-  Future<Null> _handleRefresh() async {
+  Future<void> _handleRefresh() async {
     model.getPaymentReportsFromBackend(1, false, widget.eventId);
-    model.notifyListeners();
-
-    return null;
+    //model.notifyListeners();
   }
 
-  void filterTapped(int positionFlag, EnumPaymentType<int>paymentType) {
+  void filterTapped(int positionFlag, EnumPaymentType<int> paymentType) {
     if (filterValue == 127) {
       filterValue = positionFlag;
     } else {
@@ -174,7 +171,7 @@ class _PaymentReportsListPageBodyState
   }
 
   Widget _buildListView() {
-    List<PaymentReportModel> filteredList = model.paymentReportsList
+    final List<PaymentReportModel> filteredList = model.paymentReportsList
         .where((PaymentReportModel evt) =>
             ((filterValue & 1) != 0 &&
                 (evt.paymentType.value == paymentNotPaid.value)) ||
@@ -295,7 +292,8 @@ class _PaymentReportsListPageBodyState
                     onRefresh: () => _handleRefresh(),
                     displacement: 40.0,
                     child: ListView.separated(
-                      separatorBuilder: (BuildContext context, int index) => const Divider(
+                      separatorBuilder: (BuildContext context, int index) =>
+                          const Divider(
                             height: 1.0,
                             color: Colors.black45,
                           ),
@@ -312,10 +310,10 @@ class _PaymentReportsListPageBodyState
                             onTap: () {
                               if (filteredList[index].paymentType.value ==
                                   paymentNotPaid.value) {
-                                PaymentPopup pp = PaymentPopup(
+                                final PaymentPopup pp = PaymentPopup(
                                   amount: filteredList[index].debitAmount,
                                   creditAllowed:
-                                      1, // TODO: fix this in the DB so that Kennnels can disable credit
+                                      1, // TODO(James): fix this in the DB so that Kennnels can disable credit
                                   creditRemaining:
                                       filteredList[index].creditRemaining,
                                   currencySymbol: widget.currencySymbol,
@@ -323,7 +321,7 @@ class _PaymentReportsListPageBodyState
                                   decimalDigits: widget.digitsAfterDecimal,
                                 );
 
-                                Future<bool> dlg = showDialog<bool>(
+                                final Future<bool> dlg = showDialog<bool>(
                                     context: context,
                                     barrierDismissible:
                                         false, // user must tap button!
@@ -360,8 +358,8 @@ class _PaymentReportsListPageBodyState
   }
 
   void payForEvent(PaymentReportModel item, int selectedValue, num amount) {
-    PayForEventService paySrv = PayForEventService();
-    Future<List<PayForEventModel>> retVal = paySrv.payForEvent(
+    final PayForEventService paySrv = PayForEventService();
+    final Future<List<PayForEventModel>> retVal = paySrv.payForEvent(
         item.userIdWhoPaid,
         widget.eventId,
         item.hasherEventMapId,
@@ -379,7 +377,7 @@ class _PaymentReportsListPageBodyState
             // now update the counters at the top
 
             // decrease the count for non-paid hashers
-            PaymentReportModel notPaidHashersTotalRecord = model
+            final PaymentReportModel notPaidHashersTotalRecord = model
                 .paymentReportTotalsList
                 .firstWhere((PaymentReportModel evt) =>
                     evt.paymentType.value == paymentNotPaidTotals.value);
@@ -387,7 +385,7 @@ class _PaymentReportsListPageBodyState
                 (int.parse(notPaidHashersTotalRecord.paymentReference) - 1)
                     .toString();
 
-            PaymentReportModel paymentTypeTotalRecord = model
+            final PaymentReportModel paymentTypeTotalRecord = model
                 .paymentReportTotalsList
                 .firstWhere((PaymentReportModel evt) =>
                     evt.paymentType.value == (selectedValue + 100));
@@ -418,12 +416,12 @@ class _PaymentReportsListPageBodyState
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
-        const TextStyle headingStyle = const TextStyle(
+        const TextStyle headingStyle = TextStyle(
             fontFamily: 'AvenirNextMedium',
             fontStyle: FontStyle.normal,
             fontSize: 16.0);
 
-        const TextStyle bodyStyle = const TextStyle(
+        const TextStyle bodyStyle = TextStyle(
             fontFamily: 'AvenirNextDemiBold',
             fontStyle: FontStyle.normal,
             fontSize: 16.0);
@@ -456,8 +454,10 @@ class _PaymentReportsListPageBodyState
             paymentTypeStr = 'Other';
         }
 
-        String amountStr = Utilities.getFormattedMoney(item?.creditAmount ?? 0,
-            widget.digitsAfterDecimal, widget.currencySymbol);
+        final String amountStr = Utilities.getFormattedMoney(
+            item?.creditAmount ?? 0,
+            widget.digitsAfterDecimal,
+            widget.currencySymbol);
 
         return AlertDialog(
           title: const Text('Payment Detail'),
@@ -471,7 +471,7 @@ class _PaymentReportsListPageBodyState
                       flex: 3,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
-                        children: <Widget>[
+                        children: const <Widget>[
                           Text(
                             'Pay Ref:',
                             style: headingStyle,

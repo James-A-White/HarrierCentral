@@ -33,7 +33,7 @@ class _LoginPageState extends State<FbLoginPage> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          backgroundColor: ThemeColors.appBarBackground,
+          backgroundColor: themeAppBarBackground,
           title: const Text('Facebook Login'),
           actions: <Widget>[
             IconButton(

@@ -12,20 +12,18 @@ import 'package:harrier_central/data_models/future_run_model.dart';
 import 'package:harrier_central/data_models/process_qr_scan_for_checkin_model.dart';
 import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/services/pack_scoped_model.dart';
-import 'package:harrier_central/services/pay_for_event_service.dart';
 import 'package:harrier_central/services/pay_scoped_model.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
 import 'package:harrier_central/widgets/new_user.dart';
 
 class CheckInPackPage extends StatefulWidget {
-  CheckInPackPage({
+  const CheckInPackPage({
     @required this.futureRun,
   });
 
-  FutureRun futureRun;
+  final FutureRun futureRun;
 
   @override
   State<CheckInPackPage> createState() {
@@ -34,14 +32,8 @@ class CheckInPackPage extends StatefulWidget {
 }
 
 class CheckInPackPageState extends State<CheckInPackPage> {
-  PackScopedModel _packScopedModel = PackScopedModel();
-  PayScopedModel _payScopedModel = PayScopedModel();
-
-  PayForEventService _payForEventService = PayForEventService();
-
-  String _currentUserId = Preferences.getStringPref(StringPrefsEnum.userId);
-
-  bool _loadingPack = false;
+  final PackScopedModel _packScopedModel = PackScopedModel();
+  final PayScopedModel _payScopedModel = PayScopedModel();
 
   GlobalKey packListBox = GlobalKey();
 
@@ -61,7 +53,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       });
     });
 
-    if (showReloadingIndicator) setState(() {});
+    if (showReloadingIndicator) {
+      setState(() {});
+    }
   }
 
   void getPack(bool forceRefresh) {
@@ -85,9 +79,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     //   _reloadPack(false);
     // });
 
-    AddVisitorVirginPopup addVirginVisitorPopup = AddVisitorVirginPopup();
+    const AddVisitorVirginPopup addVirginVisitorPopup = AddVisitorVirginPopup();
 
-    Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
+    final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
@@ -95,10 +89,10 @@ class CheckInPackPageState extends State<CheckInPackPage> {
         });
 
     dlg.then((Map<String, String> x) {
-      String name = x['name'];
-      String type = x['type'];
-      String email = x['email'] ?? '';
-      String phoneNumber = x['phone'] ?? '';
+      final String name = x['name'];
+      final String type = x['type'];
+      final String email = x['email'] ?? '';
+      final String phoneNumber = x['phone'] ?? '';
 
       EnumVirginVisitor evv = EnumVirginVisitor.virgin;
       if (type == EnumVirginVisitor.visitor.toString()) {
@@ -131,9 +125,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   AppBar getAppBar(String title) {
     return AppBar(
       centerTitle: true,
-      backgroundColor: ThemeColors.appBarBackground,
+      backgroundColor: themeAppBarBackground,
       title: Text(
-        '${title} Check In',
+        '$title Check In',
         style: const TextStyle(
           color: Colors.white,
         ),
@@ -141,11 +135,11 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     );
   }
 
-  void _onSearchTextChanged() {
-    setState(() {
-      print('onSearchTextChanged = ${DateTime.now().millisecondsSinceEpoch}');
-    });
-  }
+  // void _onSearchTextChanged() {
+  //   setState(() {
+  //     print('onSearchTextChanged = ${DateTime.now().millisecondsSinceEpoch}');
+  //   });
+  // }
 
   Container searchBar(PackScopedModel model, num width) {
     return Container(
@@ -176,7 +170,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                   color: Colors.black),
               decoration: const InputDecoration(
                 border: InputBorder.none,
-                icon: const Icon(
+                icon: Icon(
                   FontAwesomeIcons.search,
                   color: Colors.black,
                 ),
@@ -190,7 +184,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             width: 40,
             child: FlatButton(
               //color: Colors.red,
-              child: Text('X'),
+              child: const Text('X'),
               textColor: Colors.grey[700],
               onPressed: () {
                 searchController.text = '';
@@ -219,7 +213,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             marginRight: 18,
             marginBottom: 30,
             animatedIcon: AnimatedIcons.menu_close,
-            animatedIconTheme: IconThemeData(size: 22.0),
+            animatedIconTheme: const IconThemeData(size: 22.0),
             // this is ignored if animatedIcon is non null
             // child:const  Icon(Icons.add),
             visible: true,
@@ -239,28 +233,28 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 child: const Icon(Icons.filter_list),
                 backgroundColor: Colors.green,
                 label: 'Filter List',
-                labelStyle: TextStyle(fontSize: 18.0),
+                labelStyle: const TextStyle(fontSize: 18.0),
                 onTap: () => print('THIRD CHILD'),
               ),
               SpeedDialChild(
                 child: const Icon(FontAwesomeIcons.beer),
                 backgroundColor: Colors.green,
                 label: 'Scan: On In',
-                labelStyle: TextStyle(fontSize: 18.0),
+                labelStyle: const TextStyle(fontSize: 18.0),
                 onTap: () => print('FIRST CHILD'),
               ),
               SpeedDialChild(
                 child: const Icon(Icons.directions_run),
                 backgroundColor: Colors.red,
                 label: 'Scan: At Hash',
-                labelStyle: TextStyle(fontSize: 18.0),
+                labelStyle: const TextStyle(fontSize: 18.0),
                 onTap: () => print('SECOND CHILD'),
               ),
               SpeedDialChild(
                 child: const Icon(Icons.person_add),
                 backgroundColor: Colors.blue,
                 label: 'Add Member',
-                labelStyle: TextStyle(fontSize: 18.0),
+                labelStyle: const TextStyle(fontSize: 18.0),
                 onTap: () => Navigator.push<UserModel>(
                       context,
                       MaterialPageRoute<UserModel>(
@@ -314,7 +308,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 child: const Icon(FontAwesomeIcons.solidHeart),
                 backgroundColor: Colors.blue,
                 label: 'Add Virgin / Visitor',
-                labelStyle: TextStyle(fontSize: 18.0),
+                labelStyle: const TextStyle(fontSize: 18.0),
                 onTap: () => showVirginVisitorPopup(),
               )
             ],
@@ -338,7 +332,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                             child: Container(
                                 height: 50,
                                 width: 50,
-                                child: CircularProgressIndicator()))
+                                child: const CircularProgressIndicator()))
                         : Container(
                             key: packListBox,
                             height: constraints.maxHeight -
@@ -381,8 +375,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 //
 
   void scanUserBarcode(num checkinType, BuildContext scanContext) {
-    Widget snackBar = buildScanResultSnackbar(
-        scanContext, _packScopedModel, 'Processing QR Scan');
+    // final Widget snackBar = buildScanResultSnackbar(
+    //     scanContext, _packScopedModel, 'Processing QR Scan');
 
     // final Future<String> scanAction = BarcodeScanner.scan();
     // scanAction.then((String scanText) {
@@ -501,7 +495,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     packItem.paymentType = paymentType;
     packItem.rsvpState = rsvpYes.value;
 
-    if (isPaid >= 0) packItem.isPaid = isPaid;
+    if (isPaid >= 0) {
+      packItem.isPaid = isPaid;
+    }
 
     if (checkinType == 0) {
       packItem.attendenceState = attendenceAtHash.value;
@@ -590,11 +586,21 @@ class PackListView extends StatelessWidget {
 
   bool checkSpecialRun(int runCount) {
     bool result = false;
-    if (runCount == 1) result = true;
-    if (runCount == 5) result = true;
-    if (runCount == 10) result = true;
-    if ((runCount % 25 == 0) && (runCount > 0)) result = true;
-    if (runCount % 100 == 69) result = true;
+    if (runCount == 1) {
+      result = true;
+    }
+    if (runCount == 5) {
+      result = true;
+    }
+    if (runCount == 10) {
+      result = true;
+    }
+    if ((runCount % 25 == 0) && (runCount > 0)) {
+      result = true;
+    }
+    if (runCount % 100 == 69) {
+      result = true;
+    }
     return result;
   }
 
@@ -602,7 +608,7 @@ class PackListView extends StatelessWidget {
   Widget build(BuildContext context) {
     print(DateTime.now().millisecondsSinceEpoch.toString());
     return ListView.separated(
-        separatorBuilder: (BuildContext context, int index) => Divider(
+        separatorBuilder: (BuildContext context, int index) => const Divider(
               height: 1.0,
               color: Colors.black45,
             ),
@@ -615,7 +621,7 @@ class PackListView extends StatelessWidget {
                   width: 70.0,
                   height: 70.0,
                   child: const Padding(
-                      padding: const EdgeInsets.all(5.0),
+                      padding: EdgeInsets.all(5.0),
                       child: Center(child: CircularProgressIndicator())),
                 )
               : GestureDetector(
@@ -644,7 +650,8 @@ class PackListView extends StatelessWidget {
                               //     ),
                               //     height: 70.0,
                               //    width: 70.0),
-                              errorWidget: (BuildContext context, String url, Object error) =>
+                              errorWidget: (BuildContext context, String url,
+                                      Object error) =>
                                   const Icon(Icons.error),
                               //fadeOutDuration:  Duration(seconds: 1),
                               fadeInDuration: const Duration(milliseconds: 0),
@@ -667,8 +674,8 @@ class PackListView extends StatelessWidget {
                                   width: 70.0,
                                   height: 70.0,
                                   fit: BoxFit.fill,
-                                  image:
-                                      AssetImage('images/avatars/avatar-2.png'),
+                                  image: const AssetImage(
+                                      'images/avatars/avatar-2.png'),
                                 ),
 
                       Positioned(
@@ -685,7 +692,7 @@ class PackListView extends StatelessWidget {
                         right: 3.0,
                         bottom: 0.0,
                         child: packList[index].userRunCount < 1
-                            ? Text('')
+                            ? const Text('')
                             : Text(
                                 packList[index].userRunCount.toString() +
                                     (packList[index].userRunCount == 1
@@ -726,7 +733,7 @@ class PackListView extends StatelessWidget {
                             ? 4.5
                             : packList[index].isHare == 1 ? 5.0 : 5.5,
                         child: packList[index].rsvpState <= 0
-                            ? CircleAvatar(
+                            ? const CircleAvatar(
                                 backgroundColor: Colors.transparent,
                                 radius: 12.0,
                               )
@@ -756,8 +763,8 @@ class PackListView extends StatelessWidget {
                       ScopedModelDescendant<PayScopedModel>(builder:
                           (BuildContext context, Widget child,
                               PayScopedModel model) {
-                        return packList.length == 0
-                            ? Positioned(
+                        return packList.isEmpty
+                            ? const Positioned(
                                 top: 0,
                                 bottom: 0,
                                 left: 0,
@@ -786,8 +793,8 @@ class PackListView extends StatelessWidget {
                       ScopedModelDescendant<PayScopedModel>(
                         builder: (BuildContext context, Widget child,
                             PayScopedModel model) {
-                          return packList.length == 0
-                              ? Positioned(
+                          return packList.isEmpty
+                              ? const Positioned(
                                   top: 0,
                                   bottom: 0,
                                   left: 0,
@@ -907,7 +914,7 @@ class PackListView extends StatelessWidget {
 //
 
 class AddVisitorVirginPopup extends StatefulWidget {
-  AddVisitorVirginPopup();
+  const AddVisitorVirginPopup();
 
   @override
   _AddVisitorVirginPopupState createState() => _AddVisitorVirginPopupState();
@@ -936,7 +943,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               color: Colors.black),
           decoration: const InputDecoration(
             //border: InputBorder.none,
-            icon: const Icon(
+            icon: Icon(
               FontAwesomeIcons.moneyBillWave,
               color: Colors.white,
             ),
@@ -956,7 +963,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               color: Colors.black),
           decoration: const InputDecoration(
             //border: InputBorder.none,
-            icon: const Icon(
+            icon: Icon(
               FontAwesomeIcons.moneyBillWave,
               color: Colors.white,
             ),
@@ -976,7 +983,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               color: Colors.black),
           decoration: const InputDecoration(
             //border: InputBorder.none,
-            icon: const Icon(
+            icon: Icon(
               FontAwesomeIcons.moneyBillWave,
               color: Colors.white,
             ),

@@ -13,11 +13,11 @@ final MessageLookup messages = MessageLookup();
 final String _keepAnalysisHappy = Intl.defaultLocale;
 
 // ignore: non_constant_identifier_names
-typedef MessageIfAbsent(String message_str, List<String>  args);
+typedef MessageIfAbsent = Function(String message_str, List<String>  args);
 
 class MessageLookup extends MessageLookupByLibrary {
   @override
-  get localeName => 'en';
+  String get localeName => 'en';
 
   @override
   Map<String,dynamic> get messages => _notInlinedMessages(_notInlinedMessages);

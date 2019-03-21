@@ -6,7 +6,7 @@ import 'package:harrier_central/util/styles.dart';
 class DoNotUse extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  DoNotUse({Key key}) : super(key: key);
+  const DoNotUse({Key key}) : super(key: key);
 
   @override
   DoNotUseState createState() => DoNotUseState();
@@ -21,7 +21,7 @@ class DoNotUseState extends State<DoNotUse> {
         backgroundColor: Theme.of(context).primaryColor,
         title: const Text(
           'My Profile',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
           ),
         ),
@@ -30,7 +30,7 @@ class DoNotUseState extends State<DoNotUse> {
         decoration: Backgrounds.defaultHcBackground(),
         child: Stack(
           alignment: AlignmentDirectional.center,
-          children: <Widget>[
+          children: const <Widget>[
             Positioned(
                 top: 10,
                 left: 20,

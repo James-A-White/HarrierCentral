@@ -15,14 +15,14 @@ import 'package:harrier_central/data_models/pay_for_event_model.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class PaymentSnackBar extends SnackBar {
-   const PaymentSnackBar({
+  const PaymentSnackBar({
     @required this.index,
     @required this.packScopedModel,
     @required this.payScopedModel,
     @required this.context,
     @required this.packList,
     @required this.futureRun,
-  }): super(content: const Text('test'));
+  }) : super(content: const Text('test'));
 
   final int index;
   final PackScopedModel packScopedModel;
@@ -31,12 +31,8 @@ class PaymentSnackBar extends SnackBar {
   final List<UserModel> packList;
   final FutureRun futureRun;
 
-   final String memberPrice = '€5.00';
-   final String nonMemberPrice = '€5.00';
-
-   @override // TODO: implement content
-  Widget get content => 
-Column(
+  @override // TODO(James): implement content
+  Widget get content => Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Text(
@@ -82,10 +78,10 @@ Column(
                             reason: SnackBarClosedReason.hide);
                       },
                     ),
-                    Text(
+                    const Text(
                       'Not coming',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'AvenirNextCondensedDemiBold',
                         fontStyle: FontStyle.normal,
                         fontSize: 15.0,
@@ -126,10 +122,10 @@ Column(
                             reason: SnackBarClosedReason.hide);
                       },
                     ),
-                    Text(
+                    const Text(
                       'Maybe',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'AvenirNextCondensedDemiBold',
                         fontStyle: FontStyle.normal,
                         fontSize: 15.0,
@@ -168,10 +164,10 @@ Column(
                             reason: SnackBarClosedReason.hide);
                       },
                     ),
-                    Text(
+                    const Text(
                       'Coming',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'AvenirNextCondensedDemiBold',
                         fontStyle: FontStyle.normal,
                         fontSize: 15.0,
@@ -210,10 +206,10 @@ Column(
                             reason: SnackBarClosedReason.hide);
                       },
                     ),
-                    Text(
+                    const Text(
                       'Will hare',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'AvenirNextCondensedDemiBold',
                         fontStyle: FontStyle.normal,
                         fontSize: 15.0,
@@ -264,10 +260,10 @@ Column(
                             reason: SnackBarClosedReason.hide);
                       },
                     ),
-                    Text(
+                    const Text(
                       'Not at Hash',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'AvenirNextCondensedDemiBold',
                         fontStyle: FontStyle.normal,
                         fontSize: 15.0,
@@ -308,10 +304,10 @@ Column(
                             reason: SnackBarClosedReason.hide);
                       },
                     ),
-                    Text(
+                    const Text(
                       'At Hash',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'AvenirNextCondensedDemiBold',
                         fontStyle: FontStyle.normal,
                         fontSize: 15.0,
@@ -352,10 +348,10 @@ Column(
                             reason: SnackBarClosedReason.hide);
                       },
                     ),
-                    Text(
+                    const Text(
                       'On In',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'AvenirNextCondensedDemiBold',
                         fontStyle: FontStyle.normal,
                         fontSize: 15.0,
@@ -408,10 +404,10 @@ Column(
                                   0.0);
                             },
                           ),
-                          Text(
+                          const Text(
                             'Not paid',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'AvenirNextCondensedDemiBold',
                               fontStyle: FontStyle.normal,
                               fontSize: 15.0,
@@ -448,10 +444,10 @@ Column(
                                   0.0);
                             },
                           ),
-                          Text(
+                          const Text(
                             'Free run',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'AvenirNextCondensedDemiBold',
                               fontStyle: FontStyle.normal,
                               fontSize: 15.0,
@@ -485,10 +481,10 @@ Column(
                               payOther(index, packScopedModel, context);
                             },
                           ),
-                          Text(
+                          const Text(
                             'Paid other',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'AvenirNextCondensedDemiBold',
                               fontStyle: FontStyle.normal,
                               fontSize: 15.0,
@@ -534,7 +530,7 @@ Column(
                             },
                           ),
                           Text(
-                            'Paid ${packList[index].isMember != 1 ? nonMemberPrice : memberPrice}\r\ncash',
+                            'Paid ${packList[index].isMember != 1 ? futureRun.eventPriceForNonMembers : futureRun.eventPriceForMembers}\r\ncash',
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontFamily: 'AvenirNextCondensedDemiBold',
@@ -576,7 +572,7 @@ Column(
                             },
                           ),
                           Text(
-                            'Paid ${packList[index].isMember != 1 ? nonMemberPrice : memberPrice}\r\nbank transfer',
+                            'Paid ${packList[index].isMember != 1 ? futureRun.eventPriceForNonMembers : futureRun.eventPriceForMembers}\r\nbank transfer',
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontFamily: 'AvenirNextCondensedDemiBold',
@@ -618,7 +614,7 @@ Column(
                             },
                           ),
                           Text(
-                            'Credit ${packList[index].isMember != 1 ? nonMemberPrice : memberPrice}\r\n(${packList[index].credit < 0 ? 'Owes' : 'Credit'} ${Utilities.getFormattedMoney(packList[index].credit.abs(), futureRun?.digitsAfterDecimal ?? 2, futureRun.currencySymbol)})',
+                            'Credit ${packList[index].isMember != 1 ? futureRun.eventPriceForNonMembers : futureRun.eventPriceForMembers}\r\n(${packList[index].credit < 0 ? 'Owes' : 'Credit'} ${Utilities.getFormattedMoney(packList[index].credit.abs(), futureRun?.digitsAfterDecimal ?? 2, futureRun.currencySymbol)})',
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontFamily: 'AvenirNextCondensedDemiBold',
@@ -636,12 +632,7 @@ Column(
             },
           ),
         ],
-      )
-      
-      ;
-
-   
-  
+      );
 
   // void populatePriceStrings() {
   //   memberPrice = Utilities.getFormattedMoney(futureRun.eventPriceForMembers,
@@ -654,10 +645,10 @@ Column(
 
   void payOther(
       int index, PackScopedModel _packScopedModel, BuildContext context) {
-    OtherPaymentPopup otherPaymentPopup =
+    final OtherPaymentPopup otherPaymentPopup =
         OtherPaymentPopup(currencySymbol: futureRun.currencySymbol);
 
-    Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
+    final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
@@ -665,12 +656,12 @@ Column(
         });
 
     dlg.then((Map<String, String> x) {
-      String amount = x['amount'];
-      String type = x['type'];
+      final String amount = x['amount'];
+      final String type = x['type'];
 
       if (type != 'cancel') {
-        num v = num.tryParse(amount);
-        int t = int.tryParse(type);
+        final num v = num.tryParse(amount);
+        final int t = int.tryParse(type);
 
         if ((v != null) && (t != null)) {
           processPayment(
@@ -687,7 +678,7 @@ Column(
       BuildContext context,
       int paymentType,
       num paymentAmount) {
-    UserModel hasher = packList[index];
+    final UserModel hasher = packList[index];
 
     if (hasher.rsvpState < rsvpYes.value) {
       hasher.rsvpState = -1;
@@ -727,8 +718,6 @@ Column(
         hasher.attendenceState = attendenceAtHash.value;
       }
 
-
-
       _packScopedModel.forceRefresh();
 
       packList[index].paymentType = paymentType;
@@ -739,20 +728,20 @@ Column(
                 ? futureRun.eventPriceForMembers
                 : futureRun.eventPriceForNonMembers);
 
-        String credit = Utilities.getFormattedMoney(fundsDifference,
+        final String credit = Utilities.getFormattedMoney(fundsDifference,
             futureRun?.digitsAfterDecimal ?? 2, futureRun.currencySymbol);
 
-        double hashCashAmount = (hasher.isMember == 1
+        final double hashCashAmount = hasher.isMember == 1
             ? futureRun.eventPriceForMembers
-            : futureRun.eventPriceForNonMembers);
+            : futureRun.eventPriceForNonMembers;
 
-        String hashCash = Utilities.getFormattedMoney(hashCashAmount,
+        final String hashCash = Utilities.getFormattedMoney(hashCashAmount,
             futureRun?.digitsAfterDecimal ?? 2, futureRun.currencySymbol);
 
-        String amountPaid = Utilities.getFormattedMoney(paymentAmount,
+        final String amountPaid = Utilities.getFormattedMoney(paymentAmount,
             futureRun?.digitsAfterDecimal ?? 2, futureRun.currencySymbol);
 
-        String paymentMethod = paymentType == paymentCashOtherAmount.value
+        final String paymentMethod = paymentType == paymentCashOtherAmount.value
             ? 'in cash'
             : 'by bank transfer';
 
@@ -794,18 +783,14 @@ Column(
     Scaffold.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
   }
 
-
-
-
   // @override
   // Widget build(BuildContext context) {
   //   //populatePriceStrings();
 
   //   return SnackBar(
   //     duration: const Duration(seconds: 5),
-  //     content: 
-      
-      
+  //     content:
+
   //     Column(
   //       mainAxisSize: MainAxisSize.min,
   //       children: <Widget>[
@@ -1407,17 +1392,9 @@ Column(
   //         ),
   //       ],
   //     ),
-      
-      
-      
+
   //     backgroundColor: Theme.of(context).accentColor,
   //   );
   // }
 
-
-
-
-
-
 }
-

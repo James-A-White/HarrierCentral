@@ -16,7 +16,7 @@ class ProcessQrScanForCheckinService {
   Future<ProcessQrScanForCheckinModel> processQrScan(String eventId, String scanText, int runStartOrEnd,
       int selfScan) async {
 
-    final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken =
         Utilities.generateToken(userId.toUpperCase(), 'processQrScanForCheckin');

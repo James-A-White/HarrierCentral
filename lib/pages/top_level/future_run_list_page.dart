@@ -4,7 +4,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/material.dart';
 
 import 'package:harrier_central/services/future_run_scoped_model.dart';
-import 'package:harrier_central/services/main_navigation_scoped_model.dart';
 import 'package:harrier_central/widgets/run_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 
@@ -93,11 +92,9 @@ SpinKitCircle(
     );
   }
 
-  Future<Null> _handleRefresh() async {
+  Future<void> _handleRefresh() async {
     model.getFutureRunsFromBackend(true);
-    model.notifyListeners();
-
-    return null;
+    //model.notifyListeners();
   }
 
   Widget _buildListView() {

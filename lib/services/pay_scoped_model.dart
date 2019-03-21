@@ -1,22 +1,9 @@
-// import 'dart:async';
-// import 'dart:convert';
-
-// import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/data_models/pay_for_event_model.dart';
-//import 'package:harrier_central/data_models/join_event_model.dart';
 import 'package:harrier_central/services/pay_for_event_service.dart';
 import 'package:harrier_central/data_models/user_model.dart';
-import 'package:harrier_central/util/enums.dart';
-//import 'package:harrier_central/util/constants.dart';
 
-// import 'package:harrier_central/util/preferences.dart';
-// import 'package:harrier_central/util/utilities.dart';
-
-// import 'package:http/http.dart' as http;
-// import 'package:permission_handler/permission_handler.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:flutter/material.dart';
 
 class PayScopedModel extends Model {
   PayForEventModel _payResult;
@@ -47,7 +34,7 @@ class PayScopedModel extends Model {
     // }
 
     notifyListeners();
-    PayForEventService srv = PayForEventService();
+    final PayForEventService srv = PayForEventService();
 
     return srv
         .payForEvent(packList[index].hasherId, packList[index].eventId,
@@ -85,6 +72,6 @@ class PayScopedModel extends Model {
     //   notifyListeners();
     // });
 
-    //return Future<void>((){});
+    //// return Future<void>(() {});((){});
   }
 }

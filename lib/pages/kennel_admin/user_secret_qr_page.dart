@@ -28,13 +28,13 @@ class _UserSecretQrCodePageState extends State<UserSecretQrPage>
   PageController _pageController;
   TabController _tabController;
 
-  final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+  final String userId = getStringPref(StringPrefsEnum.userId);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: ThemeColors.appBarBackground,
+        backgroundColor: themeAppBarBackground,
         title: Text('Admin for: ${widget.kennelMemberModel.displayName}'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(120.0),
@@ -110,88 +110,88 @@ class _UserSecretQrCodePageState extends State<UserSecretQrPage>
   Color left = Colors.white;
   Color right = Colors.white;
 
-  Widget _buildMenuBar(BuildContext context) {
-    return Container(
-      width: 300.0,
-      height: 50.0,
-      decoration: const BoxDecoration(
-        color: Color(0x552B2B2B),
-        borderRadius: BorderRadius.all(Radius.circular(25.0)),
-      ),
-      child: CustomPaint(
-        painter: TabIndicationPainter(
-            context: context, pageController: _pageController),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Expanded(
-              child: FlatButton(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onPressed: _onSwitchToQrCode,
-                child: Text(
-                  'My QR Code',
-                  style: TextStyle(
-                      color: left,
-                      fontSize: 14.0,
-                      fontFamily: 'WorkSansSemiBold'),
-                ),
-              ),
-            ),
-            Expanded(
-              child: FlatButton(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onPressed: _onSwitchToQrScanner,
-                child: Text(
-                  'My Scanner',
-                  style: TextStyle(
-                      color: right,
-                      fontSize: 14.0,
-                      fontFamily: 'WorkSansSemiBold'),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildMenuBar(BuildContext context) {
+  //   return Container(
+  //     width: 300.0,
+  //     height: 50.0,
+  //     decoration: const BoxDecoration(
+  //       color: Color(0x552B2B2B),
+  //       borderRadius: BorderRadius.all(Radius.circular(25.0)),
+  //     ),
+  //     child: CustomPaint(
+  //       painter: TabIndicationPainter(
+  //           context: context, pageController: _pageController),
+  //       child: Row(
+  //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //         children: <Widget>[
+  //           Expanded(
+  //             child: FlatButton(
+  //               splashColor: Colors.transparent,
+  //               highlightColor: Colors.transparent,
+  //               onPressed: _onSwitchToQrCode,
+  //               child: Text(
+  //                 'My QR Code',
+  //                 style: TextStyle(
+  //                     color: left,
+  //                     fontSize: 14.0,
+  //                     fontFamily: 'WorkSansSemiBold'),
+  //               ),
+  //             ),
+  //           ),
+  //           Expanded(
+  //             child: FlatButton(
+  //               splashColor: Colors.transparent,
+  //               highlightColor: Colors.transparent,
+  //               onPressed: _onSwitchToQrScanner,
+  //               child: Text(
+  //                 'My Scanner',
+  //                 style: TextStyle(
+  //                     color: right,
+  //                     fontSize: 14.0,
+  //                     fontFamily: 'WorkSansSemiBold'),
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  Future<bool> _displayInstructions(BuildContext context) async {
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('About your QR Scanner'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: const <Widget>[
-                Text(
-                  'You can use your QR scanner to add friends to your Harrier Central friend list simply by scanning their personal QR code. You can also use your scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out.',
-                  textAlign: TextAlign.justify,
-                  style: const TextStyle(
-                      fontFamily: 'AvenirNextRegular',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 16.0,
-                      height: 1.0),
-                )
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: const Text('OK, Got it!'),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // Future<bool> _displayInstructions(BuildContext context) async {
+  //   return showDialog<bool>(
+  //     context: context,
+  //     barrierDismissible: false, // user must tap button!
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('About your QR Scanner'),
+  //         content: SingleChildScrollView(
+  //           child: ListBody(
+  //             children: const <Widget>[
+  //               Text(
+  //                 'You can use your QR scanner to add friends to your Harrier Central friend list simply by scanning their personal QR code. You can also use your scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out.',
+  //                 textAlign: TextAlign.justify,
+  //                 style: TextStyle(
+  //                     fontFamily: 'AvenirNextRegular',
+  //                     fontStyle: FontStyle.normal,
+  //                     fontSize: 16.0,
+  //                     height: 1.0),
+  //               )
+  //             ],
+  //           ),
+  //         ),
+  //         actions: <Widget>[
+  //           FlatButton(
+  //             child: const Text('OK, Got it!'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(true);
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   void _initTabs() {
     if (tabs.isEmpty) {
@@ -200,15 +200,15 @@ class _UserSecretQrCodePageState extends State<UserSecretQrPage>
     }
   }
 
-  void _onSwitchToQrCode() {
-    _pageController.animateToPage(0,
-        duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
-  }
+  // void _onSwitchToQrCode() {
+  //   _pageController.animateToPage(0,
+  //       duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
+  // }
 
-  void _onSwitchToQrScanner() {
-    _pageController?.animateToPage(1,
-        duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
-  }
+  // void _onSwitchToQrScanner() {
+  //   _pageController?.animateToPage(1,
+  //       duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
+  // }
 }
 
 class TabIndicationPainter extends CustomPainter {
@@ -279,8 +279,8 @@ class _QrCodeTabState extends State<QrCodeTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    String userName = Preferences.getStringPref(StringPrefsEnum.displayName);
-    String userQrCode = Preferences.getStringPref(StringPrefsEnum.qrCode);
+    // final String userName = getStringPref(StringPrefsEnum.displayName);
+    // final String userQrCode = getStringPref(StringPrefsEnum.qrCode);
 
     return Center(
       child: Column(
@@ -351,12 +351,12 @@ class _QrScannerTabState extends State<QrScannerTab>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(left: 24.0, right: 24.0),
+          const Padding(
+            padding: EdgeInsets.only(left: 24.0, right: 24.0),
             child: Text(
               'Scan to add friends and scan to check yourself in at the start and end of runs.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                   fontFamily: 'AvenirNextDemiBold',
                   fontStyle: FontStyle.normal,
                   fontSize: 24.0,
@@ -371,7 +371,7 @@ class _QrScannerTabState extends State<QrScannerTab>
                   child: RaisedButton(
                       child: const Text(
                         'Start Scanning',
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Colors.white),
                       ),
                       onPressed: () {
                         scanUserBarcode();

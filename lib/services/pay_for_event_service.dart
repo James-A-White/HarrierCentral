@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:convert';
 
@@ -10,7 +9,6 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:http/http.dart' as http;
 
 class PayForEventService {
-
   Future<List<PayForEventModel>> payForEvent(
       String userIdWhoPaid,
       String eventId,
@@ -18,14 +16,26 @@ class PayForEventService {
       int paymentType,
       num paymentAmount,
       int minimumAttendenceValue) async {
-    final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
-    if ((userIdWhoPaid ?? '').isEmpty) userIdWhoPaid = '00000000-0000-0000-0000-000000000000';
-    if ((hasherEventMapId ?? '').isEmpty) hasherEventMapId = '00000000-0000-0000-0000-000000000000';
+    if ((userIdWhoPaid ?? '').isEmpty) {
+      userIdWhoPaid = '00000000-0000-0000-0000-000000000000';
+    }
 
-    final String tokenParameterString = hasherEventMapId.toUpperCase() + '#' + userIdWhoPaid.toUpperCase() + '#' + paymentAmount.toInt().toString() + '#' + eventId.toUpperCase();
+    if ((hasherEventMapId ?? '').isEmpty) {
+      hasherEventMapId = '00000000-0000-0000-0000-000000000000';
+    }
 
-    final String accessToken = Utilities.generateToken(userId, 'payForEvent', paramString: tokenParameterString);
+    final String tokenParameterString = hasherEventMapId.toUpperCase() +
+        '#' +
+        userIdWhoPaid.toUpperCase() +
+        '#' +
+        paymentAmount.toInt().toString() +
+        '#' +
+        eventId.toUpperCase();
+
+    final String accessToken = Utilities.generateToken(userId, 'payForEvent',
+        paramString: tokenParameterString);
 
     final String body = jsonEncode(<String, String>{
       'userId': userId,
@@ -57,18 +67,17 @@ class PayForEventService {
     json.decode(response.body).forEach(
       (dynamic items) {
         item = PayForEventModel(
-
-            result: items['result'],
-            waitingForCount: items['waitingForCount'],
-            atHashCount: items['atHashCount'],
-            onInCount: items['onInCount'],
-            onTrailCount: items['onTrailCount'],
-            paidCount: items['paidCount'],
-            buttonState: items['buttonState'],
-            totalRunsThisKennel: items['totalRunsThisKennel'],
-            isPaid: items['isPaid'],
-            hasherEventMapId: items['hasherEventMapId'],
-            );
+          result: items['result'],
+          waitingForCount: items['waitingForCount'],
+          atHashCount: items['atHashCount'],
+          onInCount: items['onInCount'],
+          onTrailCount: items['onTrailCount'],
+          paidCount: items['paidCount'],
+          buttonState: items['buttonState'],
+          totalRunsThisKennel: items['totalRunsThisKennel'],
+          isPaid: items['isPaid'],
+          hasherEventMapId: items['hasherEventMapId'],
+        );
 
         itemList.add(item);
       },

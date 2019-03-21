@@ -14,7 +14,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 
 class UserQrCodePage extends StatefulWidget {
-  UserQrCodePage({Key key}) : super(key: key);
+  const UserQrCodePage({Key key}) : super(key: key);
 
   @override
   _UserQrCodePageState createState() => _UserQrCodePageState();
@@ -30,7 +30,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
   PageController _pageController;
   TabController _tabController;
 
-  final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+  final String userId = getStringPref(StringPrefsEnum.userId);
 
   GlobalKey tabKey;
 
@@ -65,7 +65,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
                 height: 45.0,
                 decoration: BoxDecoration(
                   color: Theme.of(context).primaryColorLight,
-                  borderRadius: BorderRadius.all(Radius.circular(35.0)),
+                  borderRadius: const BorderRadius.all(Radius.circular(35.0)),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
@@ -104,7 +104,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
                   width: MediaQuery.of(context).size.width,
                   child: TabBarView(
                     controller: _tabController,
-                    children: <Widget>[QrCodeTab(), QrScannerTab()],
+                    children: const <Widget>[QrCodeTab(), QrScannerTab()],
                   ),
                 )),
           ],
@@ -189,11 +189,11 @@ class _UserQrCodePageState extends State<UserQrCodePage>
           title: const Text('About your QR Scanner'),
           content: SingleChildScrollView(
             child: ListBody(
-              children: <Widget>[
+              children: const <Widget>[
                 Text(
                   'You can use your QR scanner to add friends to your Harrier Central friend list simply by scanning their personal QR code. You can also use your scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out.',
                   textAlign: TextAlign.justify,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'AvenirNextRegular',
                       fontStyle: FontStyle.normal,
                       fontSize: 16.0,
@@ -217,20 +217,20 @@ class _UserQrCodePageState extends State<UserQrCodePage>
 
   void _initTabs() {
     if (tabs.isEmpty) {
-      tabs.add(Tab(text: 'Be Scanned'));
-      tabs.add(Tab(text: 'Scan'));
+      tabs.add(const Tab(text: 'Be Scanned'));
+      tabs.add(const Tab(text: 'Scan'));
     }
   }
 
-  void _onSwitchToQrCode() {
-    _pageController.animateToPage(0,
-        duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
-  }
+  // void _onSwitchToQrCode() {
+  //   _pageController.animateToPage(0,
+  //       duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
+  // }
 
-  void _onSwitchToQrScanner() {
-    _pageController?.animateToPage(1,
-        duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
-  }
+  // void _onSwitchToQrScanner() {
+  //   _pageController?.animateToPage(1,
+  //       duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
+  // }
 }
 
 class TabIndicationPainter extends CustomPainter {
@@ -305,11 +305,11 @@ class _QrCodeTabState extends State<QrCodeTab>
           title: const Text('Your QR Code'),
           content: SingleChildScrollView(
             child: ListBody(
-              children: <Widget>[
+              children: const <Widget>[
                 Text(
                   'This QR code allows other Hashers to quickly scan you using their Harrier Central apps.\r\n\r\nAny Hasher can scan this code to easily add you as their friend.\r\n\r\nHares and mis-management can use this code to scan you in at the beginning and end of runs in order to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.',
                   textAlign: TextAlign.justify,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'AvenirNextRegular',
                       fontStyle: FontStyle.normal,
                       fontSize: 16.0,
@@ -336,8 +336,9 @@ class _QrCodeTabState extends State<QrCodeTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    String userName = Preferences.getStringPref(StringPrefsEnum.displayName);
-    String userQrCode = Preferences.getStringPref(StringPrefsEnum.qrCode);
+    final String userName =
+        getStringPref(StringPrefsEnum.displayName);
+    final String userQrCode = getStringPref(StringPrefsEnum.qrCode);
 
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
@@ -355,10 +356,10 @@ class _QrCodeTabState extends State<QrCodeTab>
                   Positioned(
                     top: 0,
                     width: MediaQuery.of(context).size.width * 0.8,
-                    child: Text(
+                    child: const Text(
                       'Use this code to check in at the beginning and end of runs. Your friends can also scan this code to add you to their friend list. ',
                       textAlign: TextAlign.justify,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontFamily: 'AvenirNextDemiBold',
                         fontStyle: FontStyle.normal,
@@ -464,7 +465,7 @@ class _QrScannerTabState extends State<QrScannerTab>
 
   List<CameraDescription> cameras;
 
-  void scanUserBarcode() async {
+  Future<void> scanUserBarcode() async {
     if (controller == null) {
       setState(() => barcode = 'Scanning');
       cameras = await availableCameras();
@@ -474,21 +475,25 @@ class _QrScannerTabState extends State<QrScannerTab>
       await stopScanning();
       setState(() => barcode = 'Waiting for scan');
     }
+
+    // return Future<void>(() {});(() {});
   }
 
-  void onCodeRead(dynamic scanResult) async {
+  Future<void> onCodeRead(dynamic scanResult) async {
     final AudioCache audioPlayer = AudioCache(prefix: 'sounds/');
     audioPlayer.play('camera.mp3');
 
     setState(() => barcode = 'Processing QR Scan');
     await stopScanning();
 
-    ProcessQrScanService srv = ProcessQrScanService();
+    final ProcessQrScanService srv = ProcessQrScanService();
     final Future<ProcessQrScanModel> apiCall =
         srv.processQrScan('', scanResult, 'UserScan', '', '', '');
     apiCall.then((ProcessQrScanModel result) {
       setState(() => barcode = result.resultStr1);
     });
+
+    // return Future<void>(() {});(() {});
   }
 
   Future<dynamic> stopScanning() async {
@@ -498,7 +503,8 @@ class _QrScannerTabState extends State<QrScannerTab>
   }
 
   Widget _cameraPreviewWidget() {
-    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraint) {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraint) {
       return Stack(children: <Widget>[
         Image.asset(
           'images/other/qr_scanner.png',
@@ -516,7 +522,7 @@ class _QrScannerTabState extends State<QrScannerTab>
     // ;
   }
 
-  void onNewCameraSelected(CameraDescription cameraDescription) async {
+  Future<void> onNewCameraSelected(CameraDescription cameraDescription) async {
     if (controller != null) {
       await controller.dispose();
     }
@@ -525,7 +531,9 @@ class _QrScannerTabState extends State<QrScannerTab>
 
     // If the controller is updated then update the UI.
     controller.addListener(() {
-      if (mounted) setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
       if (controller.value.hasError) {
         showInSnackBar('Camera error ${controller.value.errorDescription}');
       }
@@ -542,6 +550,8 @@ class _QrScannerTabState extends State<QrScannerTab>
       setState(() {});
       controller.startScanning();
     }
+
+    // return Future<void>(() {});(() {});
   }
 
   void showInSnackBar(String message) {
@@ -558,11 +568,11 @@ class _QrScannerTabState extends State<QrScannerTab>
           title: const Text('QR Code Scanner'),
           content: SingleChildScrollView(
             child: ListBody(
-              children: <Widget>[
+              children: const <Widget>[
                 Text(
                   'You can use your QR scanner to add friends to your Harrier Central friend list simply by scanning their personal QR code.\r\n\r\nYou can also use your scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out.',
                   textAlign: TextAlign.justify,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'AvenirNextRegular',
                       fontStyle: FontStyle.normal,
                       fontSize: 16.0,

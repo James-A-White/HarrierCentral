@@ -15,10 +15,10 @@ class RunDetailsPage extends StatelessWidget {
         //key: homePageModel.mainAppScaffoldKey,
         appBar: AppBar(
           centerTitle: true,
-          backgroundColor: ThemeColors.appBarBackground,
+          backgroundColor: themeAppBarBackground,
           title: const Text(
             'Run Details',
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
             ),
           ),

@@ -22,20 +22,20 @@ class MyProfilePage extends StatefulWidget {
 
 class MyProfilePageState extends State<MyProfilePage> {
   
-  String firstName = Preferences.getStringPref(StringPrefsEnum.firstName);
-  String lastName = Preferences.getStringPref(StringPrefsEnum.lastName);
-  String email = Preferences.getStringPref(StringPrefsEnum.email);
-  String hashName = Preferences.getStringPref(StringPrefsEnum.hashName);
+  String firstName = getStringPref(StringPrefsEnum.firstName);
+  String lastName = getStringPref(StringPrefsEnum.lastName);
+  String email = getStringPref(StringPrefsEnum.email);
+  String hashName = getStringPref(StringPrefsEnum.hashName);
   
   @override
   Widget build(BuildContext context) {
 
     final AppBar appBar = AppBar(
           centerTitle: true,
-          backgroundColor: ThemeColors.appBarBackground,
+          backgroundColor: themeAppBarBackground,
           title: const Text(
             'My Profile',
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
             ),
           ),
@@ -127,7 +127,7 @@ class _QrCodeTabState extends State<QrCodeTab>
                 Text(
                   'This QR code allows other Hashers to quickly scan you using their Harrier Central apps.\r\n\r\nAny Hasher can scan this code to easily add you as their friend.\r\n\r\nHares and mis-management can use this code to scan you in at the beginning and end of runs in order to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.',
                   textAlign: TextAlign.justify,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'AvenirNextRegular',
                       fontStyle: FontStyle.normal,
                       fontSize: 16.0,
@@ -152,8 +152,8 @@ class _QrCodeTabState extends State<QrCodeTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final String userName = Preferences.getStringPref(StringPrefsEnum.displayName);
-    final String userQrCode = Preferences.getStringPref(StringPrefsEnum.qrSecretCode);
+    final String userName = getStringPref(StringPrefsEnum.displayName);
+    final String userQrCode = getStringPref(StringPrefsEnum.qrSecretCode);
 
     return Center(
       child: Column(

@@ -6,7 +6,7 @@ import 'package:harrier_central/util/styles.dart';
 class FaqPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  FaqPage({Key key}) : super(key: key);
+  const FaqPage({Key key}) : super(key: key);
 
   @override
   FaqPageState createState() => FaqPageState();
@@ -18,10 +18,10 @@ class FaqPageState extends State<FaqPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: ThemeColors.appBarBackground,
+        backgroundColor: themeAppBarBackground,
         title: const Text(
           'FAQs',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
           ),
         ),
@@ -29,7 +29,7 @@ class FaqPageState extends State<FaqPage> {
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         height: MediaQuery.of(context).size.height,
-        child: FaqPageContent(),
+        child: const FaqPageContent(),
       ),
     );
   }
@@ -70,7 +70,7 @@ class _FaqPageContentState extends State<FaqPageContent> {
         builder: (BuildContext context, BoxConstraints viewportConstraints) {
       return SingleChildScrollView(
         child: ConstrainedBox(
-          constraints: BoxConstraints(
+          constraints: const BoxConstraints(
               //minHeight: viewportConstraints.maxHeight,
               ),
           child: IntrinsicHeight(

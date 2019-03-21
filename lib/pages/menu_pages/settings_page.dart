@@ -6,7 +6,7 @@ import 'package:harrier_central/util/styles.dart';
 class SettingsPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  SettingsPage({Key key}) : super(key: key);
+  const SettingsPage({Key key}) : super(key: key);
 
   @override
   SettingsPageState createState() => SettingsPageState();
@@ -21,7 +21,7 @@ class SettingsPageState extends State<SettingsPage> {
         backgroundColor: Theme.of(context).primaryColor,
         title: const Text(
           'My Profile',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
           ),
         ),
@@ -30,7 +30,7 @@ class SettingsPageState extends State<SettingsPage> {
         decoration: Backgrounds.defaultHcBackground(),
         child: Stack(
           alignment: AlignmentDirectional.center,
-          children: <Widget>[
+          children: const <Widget>[
             Positioned(
                 // width: MediaQuery.of(context).size.width,
                 // height: MediaQuery.of(context).size.height,

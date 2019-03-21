@@ -55,7 +55,7 @@ class KennelMemberListItem extends StatelessWidget {
                         width: 80.0,
                         height: 80.0,
                         fit: BoxFit.fill,
-                        image: AssetImage('images/avatars/avatar-2.png'),
+                        image: const AssetImage('images/avatars/avatar-2.png'),
                       ),
           ),
           Padding(

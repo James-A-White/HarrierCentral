@@ -14,13 +14,13 @@ class AuthorizeDeviceService {
   Future<Map<String, String>> authorizeDevice(String scanText) async {
     String deviceId = 'unknown';
 
-    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
 
     if (Platform.isAndroid) {
-      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
       deviceId = androidInfo.androidId.toUpperCase();
     } else if (Platform.isIOS) {
-      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
       deviceId = iosInfo.identifierForVendor.toUpperCase();
     }
 
@@ -49,30 +49,30 @@ class AuthorizeDeviceService {
 
     Map<String, String> resultMap = <String, String>{};
     try {
-      List<UserModel> results = UserModel.listFromJson(response.body);
+      final List<UserModel> results = UserModel.listFromJson(response.body);
 
-      if (results.length < 1) {
+      if (results.isEmpty) {
         resultMap = <String, String>{
           'result': 'failed',
           'message': 'Could not download profile. Check your QR code'
         };
       } else {
-        Preferences.setStringPref(StringPrefsEnum.profilePhotoUrl, results[0].photo);
-        Preferences.setStringPref(
+        setStringPref(StringPrefsEnum.profilePhotoUrl, results[0].photo);
+        setStringPref(
             StringPrefsEnum.displayName, results[0].displayName);
-        Preferences.setStringPref(StringPrefsEnum.email, results[0].email);
-        Preferences.setStringPref(
+        setStringPref(StringPrefsEnum.email, results[0].email);
+        setStringPref(
             StringPrefsEnum.facebookId, results[0].facebookId);
-        Preferences.setStringPref(
+        setStringPref(
             StringPrefsEnum.firstName, results[0].firstName);
-        Preferences.setStringPref(
+        setStringPref(
             StringPrefsEnum.hashName, results[0].hashName);
-        Preferences.setStringPref(
+        setStringPref(
             StringPrefsEnum.lastName, results[0].lastName);
-        Preferences.setStringPref(StringPrefsEnum.qrCode, results[0].qrCode);
-        Preferences.setStringPref(
+        setStringPref(StringPrefsEnum.qrCode, results[0].qrCode);
+        setStringPref(
             StringPrefsEnum.qrSecretCode, results[0].qrSecretCode);
-        Preferences.setStringPref(StringPrefsEnum.userId, results[0].hasherId);
+        setStringPref(StringPrefsEnum.userId, results[0].hasherId);
 
         resultMap = <String, String>{
           'result': 'success',

@@ -25,17 +25,16 @@ class Utilities {
 
     PermissionStatus _locationPermission;
 
-    if (_locationPermission == null) {
-      _locationPermission = await PermissionHandler()
+      _locationPermission ??= await PermissionHandler()
           .checkPermissionStatus(PermissionGroup.location);
-    }
+    
 
     if (_locationPermission == PermissionStatus.granted) {
       position = await Geolocator()
           .getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
     }
 
-    LatLon latLon = LatLon();
+    final LatLon latLon = LatLon();
 
     latLon.latitude = DEFAULT_LATITUDE;
     latLon.longitude = DEFAULT_LONGITUDE;
@@ -43,11 +42,11 @@ class Utilities {
     if (position != null) {
       latLon.latitude = position.latitude;
       latLon.longitude = position.longitude;
-      Preferences.setNumPref(NumPrefsEnum.latitude, latLon.latitude);
-      Preferences.setNumPref(NumPrefsEnum.longitude, latLon.longitude);
+      setNumPref(NumPrefsEnum.latitude, latLon.latitude);
+      setNumPref(NumPrefsEnum.longitude, latLon.longitude);
     } else {
-      latLon.latitude = Preferences.getNumPref(NumPrefsEnum.latitude);
-      latLon.longitude = Preferences.getNumPref(NumPrefsEnum.longitude);
+      latLon.latitude = getNumPref(NumPrefsEnum.latitude);
+      latLon.longitude = getNumPref(NumPrefsEnum.longitude);
     }
 
     return latLon;
@@ -93,9 +92,9 @@ class Utilities {
         break;
     }
 
-    String amountStr = NumberFormat(formatDecimals).format(amount);
+    final String amountStr = NumberFormat(formatDecimals).format(amount);
 
-    String finalStr = currencySymbol.replaceAll('^', amountStr);
+    final String finalStr = currencySymbol.replaceAll('^', amountStr);
 
     return finalStr;
   }

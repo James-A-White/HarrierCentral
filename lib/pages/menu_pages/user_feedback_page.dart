@@ -6,7 +6,7 @@ import 'package:harrier_central/util/styles.dart';
 class UserFeedbackPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  UserFeedbackPage({Key key}) : super(key: key);
+  const UserFeedbackPage({Key key}) : super(key: key);
 
   @override
   UserFeedbackPageState createState() => UserFeedbackPageState();
@@ -21,7 +21,7 @@ class UserFeedbackPageState extends State<UserFeedbackPage> {
         backgroundColor: Theme.of(context).primaryColor,
         title: const Text(
           'My Profile',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
           ),
         ),
@@ -30,7 +30,7 @@ class UserFeedbackPageState extends State<UserFeedbackPage> {
         decoration: Backgrounds.defaultHcBackground(),
         child: Stack(
           alignment: AlignmentDirectional.center,
-          children: <Widget>[
+          children: const <Widget>[
             Positioned(
                 //top: 10,
                 //left: 20,

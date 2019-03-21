@@ -16,7 +16,7 @@ class JoinEventService {
 
     Future<UserModel> joinEventAsVisitor(
       String eventId, EnumVirginVisitor virginVisitor, EnumAttendenceState<int> attendenceState, String name, String email, String phoneNumber) async {
-    final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken =
         Utilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor');
@@ -98,7 +98,7 @@ class JoinEventService {
   Future<JoinEventModel> joinEvent(
       String eventId, int rsvpState, int isHare, int attendenceState,
       [String hasherId ,String hasherEventMapId]) async {
-    final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken =
         Utilities.generateToken(userId.toUpperCase(), 'joinEvent');

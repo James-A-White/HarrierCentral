@@ -50,7 +50,7 @@
 
 //   void onTabTapped(EnumAppPages index) {
 //     //homePageModel.currentMainView = index;
-//     //Preferences.setIntPref(IntPrefsEnum.mainViewCurrentTab, index);
+//     //setIntPref(IntPrefsEnum.mainViewCurrentTab, index);
 //   }
 
 //   final KennelScopedModel kennelModel = KennelScopedModel();
@@ -65,9 +65,9 @@
 //       onGenerateRoute: (RouteSettings settings) {
 //         return MaterialPageRoute<dynamic>(builder: (BuildContext context) {
 //           return FancyBottomNavigation(
-//             circleColor: ThemeColors.buttonColors,
-//             inactiveIconColor: ThemeColors.backgroundColor,
-//             barBackgroundColor: ThemeColors.navBarBackground,
+//             circleColor: buttonColors,
+//             inactiveIconColor: backgroundColor,
+//             barBackgroundColor: navBarBackground,
 //             tabs: [
 //               TabData(
 //                 iconData: MaterialCommunityIcons.run_fast,
@@ -155,7 +155,7 @@
 //             color: Colors.blue,
 //             child: Scaffold(
 //               appBar: AppBar(
-//                 backgroundColor: ThemeColors.appBarBackground,
+//                 backgroundColor: appBarBackground,
 //                 title: const Text("Fancy Bottom Navigation"),
 //               ),
 //               body: Container(

@@ -15,7 +15,7 @@ class KennelAdminMainPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: ThemeColors.appBarBackground,
+        backgroundColor: themeAppBarBackground,
         title: Text(
           '${kennel.kennelShortName} Admin',
           style: const TextStyle(
@@ -41,7 +41,7 @@ class KennelAdminMainPage extends StatelessWidget {
               child: RaisedButton(
                 child: const Text(
                   'Members',
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white),
                 ),
                 onPressed: () {
                   Navigator.push<dynamic>(

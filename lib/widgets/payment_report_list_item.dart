@@ -19,7 +19,7 @@ class PaymentReportListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String amountPaid = Utilities.getFormattedMoney(
+    final String amountPaid = Utilities.getFormattedMoney(
         paymentReportItem.creditAmount, digitsAfterDecimal, currencySymbol);
 
     return InkWell(
@@ -83,7 +83,7 @@ class PaymentReportListItem extends StatelessWidget {
 
 class TotalsCell extends StatelessWidget {
   const TotalsCell(
-    List<PaymentReportModel> this.data, {
+    this.data, {
     @required this.color,
     @required this.paymentRecordType,
     @required this.currencySymbol,
@@ -100,17 +100,17 @@ class TotalsCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    PaymentReportModel item = data.firstWhere(
+    final PaymentReportModel item = data.firstWhere(
         (PaymentReportModel report) =>
             report.paymentType.value == paymentRecordType.value + 100,
         orElse: () => null);
 
-    String total = (item?.creditAmount ?? 0) <= 0
+    final String total = (item?.creditAmount ?? 0) <= 0
         ? ''
         : Utilities.getFormattedMoney(
             item?.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
-    const TextStyle textStyle = const TextStyle(
+    const TextStyle textStyle = TextStyle(
         color: Colors.black,
         fontSize: 24.0,
         fontFamily: 'AvenirNextCondensedDemiBold');

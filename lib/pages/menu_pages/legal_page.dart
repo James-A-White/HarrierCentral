@@ -6,7 +6,7 @@ import 'package:harrier_central/util/styles.dart';
 class LegalPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  LegalPage({Key key}) : super(key: key);
+  const LegalPage({Key key}) : super(key: key);
 
   @override
   LegalPageState createState() => LegalPageState();
@@ -18,10 +18,10 @@ class LegalPageState extends State<LegalPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: ThemeColors.appBarBackground,
+        backgroundColor: themeAppBarBackground,
         title: const Text(
           'Terms of Service',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
           ),
         ),
@@ -29,7 +29,7 @@ class LegalPageState extends State<LegalPage> {
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         height: MediaQuery.of(context).size.height,
-        child: LegalPageContent(),
+        child: const LegalPageContent(),
       ),
     );
   }
@@ -63,7 +63,7 @@ class _LegalPageContentState extends State<LegalPageContent> {
         builder: (BuildContext context, BoxConstraints viewportConstraints) {
       return SingleChildScrollView(
         child: ConstrainedBox(
-          constraints: BoxConstraints(
+          constraints: const BoxConstraints(
               //minHeight: viewportConstraints.maxHeight,
               ),
           child: IntrinsicHeight(

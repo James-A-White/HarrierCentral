@@ -15,13 +15,13 @@ import 'package:flutter/widgets.dart';
 
 class BubbleTabIndicator extends Decoration {
   const BubbleTabIndicator({
-    this.indicatorHeight: 20.0,
-    this.indicatorColor: Colors.greenAccent,
-    this.indicatorRadius: 100.0,
+    this.indicatorHeight = 20.0,
+    this.indicatorColor = Colors.greenAccent,
+    this.indicatorRadius = 100.0,
     this.tabBarIndicatorSize = TabBarIndicatorSize.label,
-    this.bubblePadding:
+    this.bubblePadding = 
         const EdgeInsets.symmetric(vertical: 2.0, horizontal: 8.0),
-    this.insets: const EdgeInsets.symmetric(horizontal: 5.0),
+    this.insets = const EdgeInsets.symmetric(horizontal: 5.0),
   })  : assert(indicatorHeight != null),
         assert(indicatorColor != null),
         assert(indicatorRadius != null),

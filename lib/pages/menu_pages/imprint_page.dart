@@ -1,4 +1,4 @@
-import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:package_info/package_info.dart';
@@ -8,7 +8,7 @@ import 'package:harrier_central/util/styles.dart';
 class ImprintPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  ImprintPage({Key key}) : super(key: key);
+  const ImprintPage({Key key}) : super(key: key);
 
   @override
   ImprintPageState createState() => ImprintPageState();
@@ -20,10 +20,10 @@ class ImprintPageState extends State<ImprintPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: ThemeColors.appBarBackground,
+        backgroundColor: themeAppBarBackground,
         title: const Text(
           'Imprint',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
           ),
         ),
@@ -31,7 +31,7 @@ class ImprintPageState extends State<ImprintPage> {
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         height: MediaQuery.of(context).size.height,
-        child: ImprintPageContent(),
+        child: const ImprintPageContent(),
       ),
     );
   }
@@ -79,7 +79,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
         builder: (BuildContext context, BoxConstraints viewportConstraints) {
       return SingleChildScrollView(
         child: ConstrainedBox(
-          constraints: BoxConstraints(
+          constraints: const BoxConstraints(
               //minHeight: viewportConstraints.maxHeight,
               ),
           child: IntrinsicHeight(

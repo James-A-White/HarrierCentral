@@ -7,7 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:harrier_central/util/enums.dart';
 
 class OtherPaymentPopup extends StatefulWidget {
-  OtherPaymentPopup({@required this.currencySymbol});
+  const OtherPaymentPopup({@required this.currencySymbol});
 
   final String currencySymbol;
 
@@ -35,7 +35,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
             color: Colors.white),
         decoration: const InputDecoration(
           border: InputBorder.none,
-          icon: const Icon(
+          icon: Icon(
             FontAwesomeIcons.moneyBillWave,
             color: Colors.white,
           ),

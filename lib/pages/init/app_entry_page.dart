@@ -23,20 +23,20 @@ class _AppEntryPageState extends State<AppEntryPage>
   AnimationController _iconAnimationController;
   CurvedAnimation _iconAnimation;
 
-  void handleTimeout() async {
+  Future<void> handleTimeout() async {
 
     await PermissionHandler()
         .requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);
 
-    final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
-    ApproveLoginService svc = ApproveLoginService();
+    final ApproveLoginService svc = ApproveLoginService();
     await svc.approveLogin().then((ApproveLoginModel loginResult) async {
-      bool allowContinueFromMessage = true;
+      const bool allowContinueFromMessage = true;
 
       if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
         if (loginResult.messageDisplayType == loginMessageTypeAlert.value) {
-          bool buttonStatus = await _displayAlert(context,loginResult.loginMessage,loginResult.loginMessageTitle);
+          await _displayAlert(context,loginResult.loginMessage,loginResult.loginMessageTitle);
         }
       }
 
@@ -55,21 +55,23 @@ class _AppEntryPageState extends State<AppEntryPage>
               Navigator.pushReplacement<dynamic, dynamic>(
                   context,
                   MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => MainNavigationPage()));
+                      builder: (BuildContext context) => const MainNavigationPage()));
               //     .then<dynamic>((void test) {
               //    _iconAnimationController.dispose();
               // });
             }
           } else {
-            // TODO: Handle cases where login is disapproved
+            // TODO(James): Handle cases where login is disapproved
           }
         } else {
-          // TODO: Handle cases where server is down
+          // TODO(James): Handle cases where server is down
         }
       } else {
-        // TODO: Handle case where not allowed to continue after a message
+        // TODO(James): Handle case where not allowed to continue after a message
       }
     });
+
+    //// return Future<void>(() {});((){});
   }
 
   Future<bool> _displayAlert(BuildContext context, String alertText, String alertTitle) async {
@@ -114,7 +116,7 @@ class _AppEntryPageState extends State<AppEntryPage>
   }
 
   dynamic startTimeout() async {
-    Preferences.initPrefs().then((void dummy) {});
+    initPrefs().then((void dummy) {});
 
 
 

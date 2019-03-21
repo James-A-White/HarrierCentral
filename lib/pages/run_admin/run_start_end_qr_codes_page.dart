@@ -7,7 +7,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class RunStartEndQrCodes extends StatelessWidget {
-  RunStartEndQrCodes(
+  const RunStartEndQrCodes(
       {
       @required this.kennelShortName,
       @required this.eventId,
@@ -16,24 +16,24 @@ class RunStartEndQrCodes extends StatelessWidget {
       @required this.eventStartDatetime,
       @required this.isStart});
 
-  String kennelShortName;
-  String eventId;
-  String eventName;
-  int eventNumber;
-  DateTime eventStartDatetime;
-  bool isStart;
+  final String kennelShortName;
+  final String eventId;
+  final String eventName;
+  final int eventNumber;
+  final DateTime eventStartDatetime;
+  final bool isStart;
 
   @override
   Widget build(BuildContext context) {
     
-    String qrData = (isStart ? 'EVTSTART:' : 'EVTEND:') + eventId.toUpperCase();
+    final String qrData = (isStart ? 'EVTSTART:' : 'EVTEND:') + eventId.toUpperCase();
 
-    String startEndString = isStart ? 'Start' : 'End';
+    final String startEndString = isStart ? 'Start' : 'End';
 
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: ThemeColors.appBarBackground,
+        backgroundColor: themeAppBarBackground,
         title: Text(
           'Run $startEndString QR Code',
           style: const TextStyle(

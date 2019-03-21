@@ -6,7 +6,7 @@ import 'package:harrier_central/util/styles.dart';
 class InAppPurchasePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  InAppPurchasePage({Key key}) : super(key: key);
+  const InAppPurchasePage({Key key}) : super(key: key);
 
   @override
   InAppPurchasePageState createState() => InAppPurchasePageState();
@@ -18,10 +18,10 @@ class InAppPurchasePageState extends State<InAppPurchasePage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: ThemeColors.appBarBackground,
+        backgroundColor: themeAppBarBackground,
         title: const Text(
           'My Profile',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
           ),
         ),
@@ -30,7 +30,7 @@ class InAppPurchasePageState extends State<InAppPurchasePage> {
         decoration: Backgrounds.defaultHcBackground(),
         child: Stack(
           alignment: AlignmentDirectional.center,
-          children: <Widget>[
+          children: const <Widget>[
             Positioned(
                 //top: 10,
                 //left: 20,

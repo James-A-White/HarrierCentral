@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:harrier_central/services/kennel_scoped_model.dart';
-import 'package:harrier_central/services/main_navigation_scoped_model.dart';
 import 'package:harrier_central/widgets/kennel_list_item.dart';
 
 import 'package:scoped_model/scoped_model.dart';
@@ -17,7 +16,7 @@ class KennelsListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (((kennelModel?.kennelsList?.length ?? 0) == 0) &&
-        (!kennelModel?.isLoading)) {
+        (!(kennelModel?.isLoading ?? false))) {   // TODO(James): Check this statement and make sure the cast to FALSE is correct
       kennelModel.getKennelsFromBackend(true);
     }
 
@@ -71,11 +70,9 @@ class KennelsListPageBody extends StatelessWidget {
     );
   }
 
-  Future<Null> _handleRefresh() async {
+  Future<void> _handleRefresh() async {
     model.getKennelsFromBackend(false);
-    model.notifyListeners();
-
-    return null;
+    //model.notifyListeners();
   }
 
   Widget _buildListView() {

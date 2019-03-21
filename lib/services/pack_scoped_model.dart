@@ -11,7 +11,6 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/utilities.dart';
 
 import 'package:http/http.dart' as http;
-import 'package:permission_handler/permission_handler.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class PackScopedModel extends Model {
@@ -26,7 +25,7 @@ class PackScopedModel extends Model {
 
   bool get isLoading => _isLoading;
 
-  PermissionStatus _locationPermission;
+  //PermissionStatus _locationPermission;
 
   void clearPackList() {
     if (_packList != null) {
@@ -55,7 +54,7 @@ class PackScopedModel extends Model {
   Future<UserModel> joinEventAsVisitor(String displayName, String email,
       String phoneNumber, EnumVirginVisitor virginVisitor, String eventId) {
     notifyListeners();
-    JoinEventService srv = JoinEventService();
+    final JoinEventService srv = JoinEventService();
     return srv.joinEventAsVisitor(eventId, virginVisitor, attendenceAtHash,
         displayName, email, phoneNumber);
   }
@@ -84,7 +83,7 @@ class PackScopedModel extends Model {
 
     if (isDirty) {
       notifyListeners();
-      JoinEventService srv = JoinEventService();
+      final JoinEventService srv = JoinEventService();
 
       srv
           .joinEvent(
@@ -135,24 +134,24 @@ class PackScopedModel extends Model {
   void _filterPackList()
   {
     _filteredPackList = _packList.where((UserModel user) =>
-            ((user.firstName + ' ' + user.lastName + ' ' + user.displayName).toLowerCase().contains(packListFilter.toLowerCase())))
+            (user.firstName + ' ' + user.lastName + ' ' + user.displayName).toLowerCase().contains(packListFilter.toLowerCase()))
         .toList();
   }
 
   void addEditUser(UserModel packModel) {
     if (_packList.isNotEmpty) {
       final UserModel packItem = _packList.firstWhere(
-          (UserModel pi) => ((packModel.hasherEventMapId ==
-                      pi.hasherEventMapId) &&
+          (UserModel pi) => packModel.hasherEventMapId ==
+                      pi.hasherEventMapId &&
                   (packModel.hasherId ==
                       null) // this covers people who are visitors and virgins
               ||
               (packModel.hasherEventMapId == null) &&
-                  (packModel.hasherId == pi.hasherId)), // this covers members
+                  (packModel.hasherId == pi.hasherId), // this covers members
           orElse: () => null);
 
       if (packItem != null) {
-        int i = 0;
+        // int i = 0;
         // if (run.hareList != packModel.hareList) {
         //   run.hareList = packModel.hareList;
         // }
@@ -181,7 +180,7 @@ class PackScopedModel extends Model {
 
   //  Future<List<PackModel>> getPack(String eventId) async {
 
-  //   final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+  //   final String userId = getStringPref(StringPrefsEnum.userId);
 
   //   final String accessToken = Utilities.generateToken(
   //       userId, 'getUsersByEvent');
@@ -227,7 +226,7 @@ class PackScopedModel extends Model {
   // }
 
   Future<List<UserModel>> _getPack(String eventId, String targetUserId) async {
-    final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken =
         Utilities.generateToken(userId, 'getUsersByEventForAdmin');
@@ -277,13 +276,17 @@ class PackScopedModel extends Model {
     final List<UserModel> dataFromResponse =
         await _getPack(eventId, '00000000-0000-0000-0000-000000000000');
 
-    dataFromResponse.forEach(
-      (UserModel item) {
-        //parse kennel's details
+    // TODO(James): Investigate why foreach loop was causing a LINT error
+    for (int i = 0; i < dataFromResponse.length; i++)
+    {
+      final UserModel item = dataFromResponse[i];
+      addEditUser(item);
+    }
 
-        addEditUser(item);
-      },
-    );
+    // dataFromResponse.forEach(
+    //   (UserModel item) {
+    //     addEditUser(item);}
+    // );
 
     sortPackList();
     _filterPackList();

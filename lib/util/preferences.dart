@@ -18,33 +18,28 @@ enum StringPrefsEnum {
   facebookProfilePhoto,
 }
 
-enum NumPrefsEnum {
-  latitude,
-  longitude
+enum NumPrefsEnum { latitude, longitude }
+
+SharedPreferences _sharedPreferences;
+
+Future<void> initPrefs() async {
+  _sharedPreferences ??= await SharedPreferences.getInstance();
 }
 
-class Preferences {
-  static SharedPreferences _sharedPreferences;
+String getStringPref(StringPrefsEnum key) {
+  final String test = key.toString();
+  return _sharedPreferences.getString(test);
+}
 
-  static Future<void> initPrefs() async {
-    _sharedPreferences ??= await SharedPreferences.getInstance();
-  }
+Future<bool> setStringPref(StringPrefsEnum key, String value) async {
+  return _sharedPreferences.setString(key.toString(), value);
+}
 
-  static String getStringPref(StringPrefsEnum key) {
-    final String test = key.toString();
-    return _sharedPreferences.getString(test);
-  }
+num getNumPref(NumPrefsEnum key) {
+  final String test = key.toString();
+  return _sharedPreferences.getDouble(test);
+}
 
-  static Future<bool> setStringPref(StringPrefsEnum key, String value) async {
-    return _sharedPreferences.setString(key.toString(), value);
-  }
-
-  static num getNumPref(NumPrefsEnum key) {
-    final String test = key.toString();
-    return _sharedPreferences.getDouble(test);
-  }
-
-  static Future<bool> setNumPref(NumPrefsEnum key, num value) async {
-    return _sharedPreferences.setDouble(key.toString(), value);
-  }
+Future<bool> setNumPref(NumPrefsEnum key, num value) async {
+  return _sharedPreferences.setDouble(key.toString(), value);
 }

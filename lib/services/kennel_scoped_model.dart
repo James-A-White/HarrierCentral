@@ -3,8 +3,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:geolocator/geolocator.dart';
-
 import 'package:harrier_central/data_models/kennel_model.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -66,7 +64,7 @@ class KennelScopedModel extends Model {
 
     notifyListeners();
 
-    final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken =
         Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
@@ -97,7 +95,7 @@ class KennelScopedModel extends Model {
   }
 
   Future<dynamic> _getKennelsByDistance(int distance) async {
-    //TODO: Check to see if the app has permission to access location before trying to read it.
+    // TODO(James): Check to see if the app has permission to access location before trying to read it.
 
     // final Position position = await Geolocator()
     //     .getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
@@ -112,7 +110,7 @@ class KennelScopedModel extends Model {
 
     final LatLon latLon = await Utilities.getLatLong();
 
-    final String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken =
         Utilities.generateToken(userId.toUpperCase(), 'getAllKennels');
@@ -209,6 +207,5 @@ class KennelScopedModel extends Model {
 
     notifyListeners();
 
-    return null;
   }
 }

@@ -12,7 +12,7 @@ import 'package:http/http.dart' as http;
 
 class ApproveLoginService {
   Future<ApproveLoginModel> approveLogin() async {
-    String userId = Preferences.getStringPref(StringPrefsEnum.userId);
+    String userId = getStringPref(StringPrefsEnum.userId);
     if ((userId ?? '').isEmpty) {
       userId = '00000000-0000-0000-0000-000000000000';
     }
@@ -24,10 +24,10 @@ class ApproveLoginService {
     String systemVersion = 'unknown';
     String manufacturer = 'unknown';
 
-    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
 
     if (Platform.isAndroid) {
-      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
       deviceId =androidInfo.androidId.toUpperCase();
       deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
       deviceName = '<unknown>';
@@ -35,7 +35,7 @@ class ApproveLoginService {
       systemVersion ='${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch}' ;
       manufacturer =androidInfo.brand;
     } else if (Platform.isIOS) {
-      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
       deviceId =iosInfo.identifierForVendor.toUpperCase();
       deviceType = iosInfo.model;
       deviceName =iosInfo.name;
@@ -73,7 +73,7 @@ class ApproveLoginService {
       },
     );
 
-  ApproveLoginModel loginResult = ApproveLoginModel.itemFromJson(response.body);
+  final ApproveLoginModel loginResult = ApproveLoginModel.itemFromJson(response.body);
 
 
     return loginResult;

@@ -13,7 +13,7 @@ import 'package:harrier_central/util/styles.dart';
 class PrivacyPolicyPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  PrivacyPolicyPage({Key key}) : super(key: key);
+  const PrivacyPolicyPage({Key key}) : super(key: key);
 
   @override
   PrivacyPolicyPageState createState() => PrivacyPolicyPageState();
@@ -21,8 +21,8 @@ class PrivacyPolicyPage extends StatefulWidget {
 
 Future<File> createFileOfPdfUrl() async {
   final ByteData bytes = await rootBundle.load('assets/documents/privacy_policy.pdf');
-  String dir = (await getApplicationDocumentsDirectory()).path;
-  File file = File('$dir/privacy_policy_internal.pdf');
+  final String dir = (await getApplicationDocumentsDirectory()).path;
+  final File file = File('$dir/privacy_policy_internal.pdf');
   await file.writeAsBytes(bytes.buffer.asInt8List());
   return file;
 }
@@ -97,7 +97,7 @@ class PDFScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return PDFViewerScaffold(
         appBar: AppBar(
-          backgroundColor: ThemeColors.appBarBackground,
+          backgroundColor: themeAppBarBackground,
           title: const Text('Privacy Policy'),
           // actions: <Widget>[
           //   IconButton(

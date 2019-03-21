@@ -80,9 +80,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                   Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      settings: RouteSettings(),
+                      settings: const RouteSettings(),
                       builder: (BuildContext context) {
-                        return SettingsPage();
+                        return const SettingsPage();
                       },
                     ),
                   );
@@ -97,9 +97,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                   Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      settings: RouteSettings(),
+                      settings: const RouteSettings(),
                       builder: (BuildContext context) {
-                        return MyProfilePage();
+                        return const MyProfilePage();
                       },
                     ),
                   );
@@ -113,9 +113,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                   Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      settings: RouteSettings(),
+                      settings: const RouteSettings(),
                       builder: (BuildContext context) {
-                        return InAppPurchasePage();
+                        return const InAppPurchasePage();
                       },
                     ),
                   );
@@ -138,9 +138,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                   Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      settings: RouteSettings(),
+                      settings: const RouteSettings(),
                       builder: (BuildContext context) {
-                        return FaqPage();
+                        return const FaqPage();
                       },
                     ),
                   );
@@ -154,9 +154,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                   Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      settings: RouteSettings(),
+                      settings: const RouteSettings(),
                       builder: (BuildContext context) {
-                        return UserFeedbackPage();
+                        return const UserFeedbackPage();
                       },
                     ),
                   );
@@ -170,9 +170,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                   Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      settings: RouteSettings(),
+                      settings: const RouteSettings(),
                       builder: (BuildContext context) {
-                        return ImprintPage();
+                        return const ImprintPage();
                       },
                     ),
                   );
@@ -186,9 +186,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                   Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      settings: RouteSettings(),
+                      settings: const RouteSettings(),
                       builder: (BuildContext context) {
-                        return LegalPage();
+                        return const LegalPage();
                       },
                     ),
                   );
@@ -203,9 +203,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                   Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      settings: RouteSettings(),
+                      settings: const RouteSettings(),
                       builder: (BuildContext context) {
-                        return PrivacyPolicyPage();
+                        return const PrivacyPolicyPage();
                       },
                     ),
                   );
