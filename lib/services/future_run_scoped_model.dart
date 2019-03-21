@@ -151,7 +151,7 @@ class FutureRunScopedModel
 
   Future<void> getFutureRunsFromBackend(bool forceRefresh) async {
     if (!forceRefresh && (_futureRunsList != null)) {
-      // return Future<void>(() {});((){});
+      return Future<void>(() {});
     }
 
     _futureRunsList ??= <FutureRun>[];

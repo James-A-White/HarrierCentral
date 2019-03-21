@@ -73,28 +73,23 @@ class FutureRunListPageBody extends StatelessWidget {
 
   Widget _buildCircularProgressIndicator() {
     return Center(
-      child: 
-      
-SpinKitCircle(
-            size: 75.0,
-            itemBuilder: (_, int index) {
-              return DecoratedBox(
-                decoration:  BoxDecoration(
-                  color: index.isEven
-                      ? Colors.white
-                      : Theme.of(context).accentColor,
-                ),
-              );
-            },
-          ),
-
-
+      child: SpinKitCircle(
+        size: 75.0,
+        itemBuilder: (_, int index) {
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              color:
+                  index.isEven ? Colors.white : Theme.of(context).accentColor,
+            ),
+          );
+        },
+      ),
     );
   }
 
   Future<void> _handleRefresh() async {
     model.getFutureRunsFromBackend(true);
-    //model.notifyListeners();
+   // model.notifyListeners();
   }
 
   Widget _buildListView() {
