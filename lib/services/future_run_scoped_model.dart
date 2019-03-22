@@ -34,6 +34,7 @@ class FutureRunScopedModel
 
   void setRsvpState(
       int rsvpState, int isHare, int attendenceState, FutureRun run) {
+
     if (rsvpState != -1) {
       run.requestedRsvpState = rsvpState;
       run.rsvpState = -1;
@@ -51,8 +52,7 @@ class FutureRunScopedModel
 
     notifyListeners();
     final JoinEventService srv = JoinEventService();
-    srv
-        .joinEvent(run.eventId, rsvpState, isHare, attendenceState)
+    srv.joinEvent(run.eventId, rsvpState, isHare, attendenceState)
         .then<dynamic>((JoinEventModel result) {
       if (rsvpState != -1) {
         run.rsvpState = rsvpState;

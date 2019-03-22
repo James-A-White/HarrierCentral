@@ -346,12 +346,33 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       fontSize: 17.0,
       height: 0.85);
 
+  void addThisDeviceUserToPackList() {
+    if (packList != null) {
+      final String userId = getStringPref(StringPrefsEnum.userId);
+
+      if (packList
+          .where((UserModel user) =>
+              user.hasherId.toLowerCase() == (userId.toLowerCase()))
+          .isEmpty) {
+        // add the user of this device to the RSVP list if they were not already in it
+        final UserModel newUser = UserModel();
+        newUser.hasherId = userId;
+        newUser.displayName = getStringPref(StringPrefsEnum.displayName);
+        newUser.photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
+        newUser.firstName = getStringPref(StringPrefsEnum.firstName);
+        newUser.lastName = getStringPref(StringPrefsEnum.lastName);
+
+        packList.add(newUser);
+
+        //futureRunScopedModel.notifyListeners();
+      }
+    }
+  }
+
   Container buildRsvpView() {
     print('buildRsvpView() -  = ${DateTime.now().millisecondsSinceEpoch}');
 
     return Container(
-      // RSVP
-      //decoration: const BoxDecoration(color: Theme.of(context).selectedRowColor),
       child: Center(
         child: ScopedModelDescendant<FutureRunScopedModel>(
           builder: (BuildContext context, Widget child,
@@ -360,7 +381,6 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               futureRunScopedModel.getFutureRunsFromBackend(false);
             }
             return Column(
-              //mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.only(top: 17.0, bottom: 8.0),
@@ -416,6 +436,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                         isHareNo.value,
                                         -1,
                                         widget.futureRun);
+
+                                        addThisDeviceUserToPackList();
                                   },
                                   // ),
                                   // Text(
@@ -487,6 +509,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                           isHareNo.value,
                                           -1,
                                           widget.futureRun);
+
+                                          addThisDeviceUserToPackList();
                                     });
 
                                     //model.toggleFollowing(kennel);
@@ -560,6 +584,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                         isHareNo.value,
                                         -1,
                                         widget.futureRun);
+
+                                        addThisDeviceUserToPackList();
                                     //model.toggleFollowing(kennel);
 
                                     // setState(() {
@@ -632,6 +658,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                             isHareYes.value,
                                             -1,
                                             widget.futureRun);
+
+                                            addThisDeviceUserToPackList();
                                       }
                                     });
 
@@ -1080,8 +1108,6 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,
                                   children: <Widget>[
-
-
                                     Container(
                                       width: 150.0,
                                       child: RaisedButton(
@@ -1104,15 +1130,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                         .futureRun.eventName,
                                                     eventNumber: widget
                                                         .futureRun.eventNumber,
-                                                        isRunStart: 1,
+                                                    isRunStart: 1,
                                                   ),
                                             ),
                                           );
                                         },
                                       ),
                                     ),
-                                 
-                                                                     
                                     Container(
                                       width: 150.0,
                                       child: RaisedButton(
@@ -1135,14 +1159,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                         .futureRun.eventName,
                                                     eventNumber: widget
                                                         .futureRun.eventNumber,
-                                                        isRunStart: 0,
+                                                    isRunStart: 0,
                                                   ),
                                             ),
                                           );
                                         },
                                       ),
                                     ),
-                                 
                                   ],
                                 ),
                                 Row(
