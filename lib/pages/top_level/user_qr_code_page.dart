@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
+import 'package:fast_qr_reader_view/fast_qr_reader_view.dart'; 
 import 'package:audioplayers/audio_cache.dart';
 
 import 'package:harrier_central/data_models/process_qr_scan_model.dart';

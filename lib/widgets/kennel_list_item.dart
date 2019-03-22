@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:harrier_central/data_models/kennel_model.dart';
-import 'package:harrier_central/pages/kennel_admin/kennel_admin_main.dart';
+//import 'package:harrier_central/pages/kennel_admin/kennel_admin_main.dart';
 import 'package:harrier_central/services/kennel_scoped_model.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
@@ -178,27 +178,27 @@ class KennelsListItem extends StatelessWidget {
               )),
               const Divider(
                 color: Colors.black,
-                height: 18.0,
+                height: 18.0, 
               ),
             ],
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: IconButton(
-              icon: const Icon(Icons.settings),
-              iconSize: Theme.of(context).iconTheme.size,
-              color: Colors.black54,
-              splashColor: Theme.of(context).highlightColor,
-              onPressed: () {
-                Navigator.push<dynamic>(
-                  context,
-                  MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) => KennelAdminMainPage(kennel: kennel),
-                  ),
-                );
-              },
-            ),
-          ),
+          // Align(
+          //   alignment: Alignment.centerRight,
+          //   child: IconButton(
+          //     icon: const Icon(Icons.settings),
+          //     iconSize: Theme.of(context).iconTheme.size,
+          //     color: Colors.black54,
+          //     splashColor: Theme.of(context).highlightColor,
+          //     onPressed: () {
+          //       Navigator.push<dynamic>(
+          //         context,
+          //         MaterialPageRoute<dynamic>(
+          //           builder: (BuildContext context) => KennelAdminMainPage(kennel: kennel),
+          //         ),
+          //       );
+          //     },
+          //   ),
+          // ),
         ],
       ),
     );

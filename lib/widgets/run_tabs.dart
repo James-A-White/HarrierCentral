@@ -112,16 +112,16 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
-  Container buildPhotoView() {
-    return Container(
+  Padding buildPhotoView() {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
       child: CachedNetworkImage(
         imageUrl: widget.futureRun.eventImage,
         // errorWidget:
         //     (BuildContext context, String url, Exception error) =>
         //         const  Icon(Icons.error),
       ),
-      // decoration:
-      //     BoxDecoration(color: Theme.of(context).selectedRowColor),
+      //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
     );
   }
 
@@ -347,6 +347,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       height: 0.85);
 
   Container buildRsvpView() {
+    print('buildRsvpView() -  = ${DateTime.now().millisecondsSinceEpoch}');
+
     return Container(
       // RSVP
       //decoration: const BoxDecoration(color: Theme.of(context).selectedRowColor),
@@ -667,237 +669,204 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     margin: const EdgeInsets.only(
                         left: 16.0, right: 16.0, bottom: 15.0),
                     padding: const EdgeInsets.all(8.0),
-                    // decoration: const BoxDecoration(
-                    //     border: Border.all(
-                    //         color: Theme.of(context).accentColor)),
                     child: Scrollbar(
                       child: RefreshIndicator(
                         onRefresh: _getPackWithRefresh,
-                        child: ClipRect(
-                          clipBehavior: Clip.antiAlias,
-                          clipper: packListBox.currentContext == null
-                              ? null
-                              : RectClipper(
-                                  width: packListBox.currentContext
-                                      .findRenderObject()
-                                      .paintBounds
-                                      .width,
-                                  height: packListBox.currentContext
-                                      .findRenderObject()
-                                      .paintBounds
-                                      .height),
-                          child: StaggeredGridView.countBuilder(
-                            crossAxisCount: 4,
-                            itemCount: packList?.length ?? 0,
-                            itemBuilder: (BuildContext context, int index) {
-                              if (packList[index].hasherId == userId) {
-                                packList[index].rsvpState =
-                                    widget.futureRun.rsvpState;
-                                packList[index].isHare =
-                                    widget.futureRun.isHare;
+                        child: StaggeredGridView.countBuilder(
+                          crossAxisCount: 4,
+                          itemCount: packList?.length ?? 0,
+                          itemBuilder: (BuildContext context, int index) {
+                            if (packList[index].hasherId == userId) {
+                              packList[index].rsvpState =
+                                  widget.futureRun.rsvpState;
+                              packList[index].isHare = widget.futureRun.isHare;
+                            }
 
-                                // if (widget.futureRun.rsvpState ==
-                                //     4) {
-                                //   packList[index].isHare = 1;
-                                // } else {
-                                //   packList[index].isHare = 0;
-                                // }
-                              }
+                            return packList.isEmpty
+                                ? Container(
+                                    color: Colors.grey[300],
+                                    width: 70.0,
+                                    height: 70.0,
+                                    child: const Padding(
+                                        padding: EdgeInsets.all(5.0),
+                                        child: Center(
+                                            child:
+                                                CircularProgressIndicator())),
+                                  )
+                                : GestureDetector(
+                                    onTap: () {
+                                      String actionText = '';
 
-                              return packList.isEmpty
-                                  ? Container(
-                                      color: Colors.grey[300],
-                                      width: 70.0,
-                                      height: 70.0,
-                                      child: const Padding(
-                                          padding: EdgeInsets.all(5.0),
-                                          child: Center(
-                                              child:
-                                                  CircularProgressIndicator())),
-                                    )
-                                  : GestureDetector(
-                                      onTap: () {
-                                        String actionText = '';
-
-                                        if (packList[index].isHare == 1) {
-                                          actionText = ' will hare the Hash';
-                                        } else {
-                                          switch (packList[index].rsvpState) {
-                                            case 1:
-                                              actionText =
-                                                  ' will not join the Hash';
-                                              break;
-                                            case 2:
-                                              actionText =
-                                                  ' might join the Hash';
-                                              break;
-                                            case 3:
-                                            case 4:
-                                            case 5:
-                                            case 6:
-                                              actionText =
-                                                  ' will join the Hash';
-                                              break;
-                                            case 0:
-                                            default:
-                                              break;
-                                          }
+                                      if (packList[index].isHare == 1) {
+                                        actionText = ' will hare the Hash';
+                                      } else {
+                                        switch (packList[index].rsvpState) {
+                                          case 1:
+                                            actionText =
+                                                ' will not join the Hash';
+                                            break;
+                                          case 2:
+                                            actionText = ' might join the Hash';
+                                            break;
+                                          case 3:
+                                          case 4:
+                                          case 5:
+                                          case 6:
+                                            actionText = ' will join the Hash';
+                                            break;
+                                          case 0:
+                                          default:
+                                            break;
                                         }
+                                      }
 
-                                        final SnackBar snackBar = SnackBar(
-                                          duration: const Duration(seconds: 2),
-                                          content: Text(
-                                            packList[index].displayName +
-                                                actionText,
-                                            style: const TextStyle(
-                                                fontFamily:
-                                                    'AvenirNextCondensedDemiBold',
-                                                fontStyle: FontStyle.normal,
-                                                fontSize: 20.0,
-                                                height: 0.85),
-                                          ),
-                                          backgroundColor:
-                                              Theme.of(context).accentColor,
-                                        );
+                                      final SnackBar snackBar = SnackBar(
+                                        duration: const Duration(seconds: 2),
+                                        content: Text(
+                                          packList[index].displayName +
+                                              actionText,
+                                          style: const TextStyle(
+                                              fontFamily:
+                                                  'AvenirNextCondensedDemiBold',
+                                              fontStyle: FontStyle.normal,
+                                              fontSize: 20.0,
+                                              height: 0.85),
+                                        ),
+                                        backgroundColor:
+                                            Theme.of(context).accentColor,
+                                      );
 
-                                        Scaffold.of(context)
-                                            .showSnackBar(snackBar);
-                                      },
-                                      child: Stack(
-                                        children: <Widget>[
-                                          packList[index]
-                                                  .photo
-                                                  .startsWith('http')
-                                              ? CachedNetworkImage(
-                                                  imageUrl:
-                                                      packList[index].photo,
-                                                  //placeholder: const CircularProgressIndicator(),
-                                                  //errorWidget: const  Icon(Icons.error),
+                                      Scaffold.of(context)
+                                          .showSnackBar(snackBar);
+                                    },
+                                    child: Stack(
+                                      children: <Widget>[
+                                        packList[index].photo.startsWith('http')
+                                            ? CachedNetworkImage(
+                                                imageUrl: packList[index].photo,
+                                                //placeholder: const CircularProgressIndicator(),
+                                                //errorWidget: const  Icon(Icons.error),
 
-                                                  // placeholder:
-                                                  //     (context,
-                                                  //             url) =>
-                                                  //         Container(
-                                                  //             child:
-                                                  //                 Center(
-                                                  //               child:
-                                                  //                   Container(
-                                                  //                 height: 20,
-                                                  //                 width: 20,
-                                                  //                 child: CircularProgressIndicator(
-                                                  //                   strokeWidth: 3.0,
-                                                  //                 ),
-                                                  //               ),
-                                                  //             ),
-                                                  //             height:
-                                                  //                 70.0,
-                                                  //             width:
-                                                  //                 70.0),
-                                                  // errorWidget: (BuildContext
-                                                  //             context,
-                                                  //         String
-                                                  //             url,
-                                                  //         Exception
-                                                  //             error) =>
-                                                  //     const  Icon(Icons
-                                                  //         .error),
+                                                // placeholder:
+                                                //     (context,
+                                                //             url) =>
+                                                //         Container(
+                                                //             child:
+                                                //                 Center(
+                                                //               child:
+                                                //                   Container(
+                                                //                 height: 20,
+                                                //                 width: 20,
+                                                //                 child: CircularProgressIndicator(
+                                                //                   strokeWidth: 3.0,
+                                                //                 ),
+                                                //               ),
+                                                //             ),
+                                                //             height:
+                                                //                 70.0,
+                                                //             width:
+                                                //                 70.0),
+                                                // errorWidget: (BuildContext
+                                                //             context,
+                                                //         String
+                                                //             url,
+                                                //         Exception
+                                                //             error) =>
+                                                //     const  Icon(Icons
+                                                //         .error),
 
-                                                  //fadeOutDuration:  Duration(seconds: 1),
-                                                  fadeInDuration:
-                                                      const Duration(
-                                                          milliseconds: 0),
-                                                  width: 300.0,
-                                                  height: 300.0,
-                                                  fit: BoxFit.fill)
-                                              : packList[index]
-                                                      .photo
-                                                      .startsWith('bundle')
-                                                  ? Image(
-                                                      width: 300.0,
-                                                      height: 300.0,
-                                                      fit: BoxFit.fill,
-                                                      image: AssetImage(
-                                                          'images/avatars/' +
-                                                              packList[index]
-                                                                  .photo
-                                                                  .toLowerCase()
-                                                                  .replaceFirst(
-                                                                      'bundle://',
-                                                                      '') +
-                                                              '.png'),
-                                                    )
-                                                  : Image(
-                                                      width: 300.0,
-                                                      height: 300.0,
-                                                      fit: BoxFit.fill,
-                                                      image: const AssetImage(
-                                                          'images/avatars/avatar-2.png'),
-                                                    ),
-                                          const Positioned(
-                                            right: 1.0,
-                                            bottom: 1.0,
-                                            child: CircleAvatar(
-                                              backgroundColor: Colors.white,
-                                              radius: 12.0,
-                                            ),
-                                          ),
-                                          Positioned(
-                                            right: 3.0,
-                                            bottom: packList[index].rsvpState <=
-                                                    0
-                                                ? 2.5
-                                                : packList[index].isHare == 1
-                                                    ? 3.0
-                                                    : 3.5,
-                                            child: packList[index].rsvpState <=
-                                                    0
-                                                ? const CircleAvatar(
-                                                    backgroundColor:
-                                                        Colors.blue,
-                                                    radius: 10.0,
+                                                fadeInDuration: const Duration(
+                                                    milliseconds: 0),
+                                                width: 300.0,
+                                                height: 300.0,
+                                                fit: BoxFit.fill)
+                                            : packList[index]
+                                                    .photo
+                                                    .startsWith('bundle')
+                                                ? Image(
+                                                    width: 300.0,
+                                                    height: 300.0,
+                                                    fit: BoxFit.fill,
+                                                    image: AssetImage(
+                                                        'images/avatars/' +
+                                                            packList[index]
+                                                                .photo
+                                                                .toLowerCase()
+                                                                .replaceFirst(
+                                                                    'bundle://',
+                                                                    '') +
+                                                            '.png'),
                                                   )
-                                                : packList[index].rsvpState == 1
-                                                    ? const Icon(
-                                                        FontAwesomeIcons
-                                                            .solidTimesCircle,
-                                                        color: Colors.red,
-                                                        size: 20.0)
-                                                    : packList[index].rsvpState == 2
-                                                        ? const Icon(
-                                                            FontAwesomeIcons
-                                                                .solidQuestionCircle,
-                                                            color:
-                                                                Colors.orange,
-                                                            size: 20.0)
-                                                        : packList[index].isHare == 0
-                                                            ? const Icon(
-                                                                FontAwesomeIcons
-                                                                    .solidCheckCircle,
-                                                                color: Colors
-                                                                    .green,
-                                                                size: 20.0)
-                                                            : Image.asset(
-                                                                'images/icons/hare_icon.png',
-                                                                color:
-                                                                    Colors.deepPurple,
-                                                                height: 20.0,
-                                                                width: 20.0),
-
-                                            // AssetImage(
-                                            //     'images/icons/hare_icon.png'),
+                                                : Image(
+                                                    width: 300.0,
+                                                    height: 300.0,
+                                                    fit: BoxFit.fill,
+                                                    image: const AssetImage(
+                                                        'images/avatars/avatar-2.png'),
+                                                  ),
+                                        const Positioned(
+                                          right: 1.0,
+                                          bottom: 1.0,
+                                          child: CircleAvatar(
+                                            backgroundColor: Colors.white,
+                                            radius: 12.0,
                                           ),
-                                        ],
-                                      ),
-                                    ); // TODO(James): Replace this with another avatar for missing image
-                            },
-                            staggeredTileBuilder: (int index) {
-                              return packList[index].isHare != 1
-                                  ? const StaggeredTile.count(1, 1)
-                                  : const StaggeredTile.count(2, 2);
-                            },
-                            mainAxisSpacing: 8.0,
-                            crossAxisSpacing: 8.0,
-                          ),
+                                        ),
+                                        Positioned(
+                                          right: 3.0,
+                                          bottom: packList[index].rsvpState <= 0
+                                              ? 2.5
+                                              : packList[index].isHare == 1
+                                                  ? 3.0
+                                                  : 3.5,
+                                          child: packList[index].rsvpState <= 0
+                                              ? const CircleAvatar(
+                                                  backgroundColor: Colors.blue,
+                                                  radius: 10.0,
+                                                )
+                                              : packList[index].rsvpState == 1
+                                                  ? const Icon(
+                                                      FontAwesomeIcons
+                                                          .solidTimesCircle,
+                                                      color: Colors.red,
+                                                      size: 20.0)
+                                                  : packList[index].rsvpState ==
+                                                          2
+                                                      ? const Icon(
+                                                          FontAwesomeIcons
+                                                              .solidQuestionCircle,
+                                                          color: Colors.orange,
+                                                          size: 20.0)
+                                                      : packList[index]
+                                                                  .isHare ==
+                                                              0
+                                                          ? const Icon(
+                                                              FontAwesomeIcons
+                                                                  .solidCheckCircle,
+                                                              color:
+                                                                  Colors.green,
+                                                              size: 20.0)
+                                                          : Image.asset(
+                                                              'images/icons/hare_icon.png',
+                                                              color: Colors
+                                                                  .deepPurple,
+                                                              height: 20.0,
+                                                              width: 20.0),
+
+                                          // AssetImage(
+                                          //     'images/icons/hare_icon.png'),
+                                        ),
+                                      ],
+                                    ),
+                                  ); // TODO(James): Replace this with another avatar for missing image
+                          },
+                          staggeredTileBuilder: (int index) {
+                            return packList[index].isHare != 1
+                                ? const StaggeredTile.count(1, 1)
+                                : const StaggeredTile.count(2, 2);
+                          },
+                          mainAxisSpacing: 8.0,
+                          crossAxisSpacing: 8.0,
                         ),
                       ),
                     ),
@@ -911,236 +880,221 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     );
   }
 
+  // Widget buildMapView() {
+  //   try {
+  //     print('buildMapView() -  = ${DateTime.now().millisecondsSinceEpoch}');
+  //     return _buildMapView();
+  //   } catch (e) {
+  //     print(e);
+  //     return _buildMapView();
+  //   }
+  // }
+
+  Widget buildMapView() {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Center(
+        // Map
+        child: FlutterMap(
+          options: MapOptions(
+            center:
+                LatLng(widget.futureRun.latitude, widget.futureRun.longitude),
+            zoom: 15.0,
+          ),
+          layers: <LayerOptions>[
+            TileLayerOptions(
+                urlTemplate:
+                    //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                //subdomains: ['a', 'b', 'c']),
+                subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
+            MarkerLayerOptions(
+              markers: <Marker>[
+                Marker(
+                  width: 120.0,
+                  height: 120.0,
+                  point: LatLng(
+                      widget.futureRun.latitude, widget.futureRun.longitude),
+                  builder: (BuildContext ctx) => GestureDetector(
+                        onTap: () => _launchMaps(widget.futureRun.latitude,
+                            widget.futureRun.longitude),
+                        child: Container(
+                          padding: const EdgeInsets.only(bottom: 58.0),
+                          child: Image.asset('images/icons/map_pin_foot.png'),
+                          //child: FlutterLogo(colors: Colors.purple),
+                        ),
+                      ),
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     getPack(false);
     return Scaffold(
       key: _scaffoldKey,
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).selectedRowColor,
-        automaticallyImplyLeading: false,
-        flexibleSpace: Center(
-          child: TabBar(
-            labelStyle: const TextStyle(
-                fontFamily: 'AvenirNextCondensedMedium',
-                fontStyle: FontStyle.normal,
-                fontSize: 16.0,
-                height: 1.0),
-            unselectedLabelStyle: const TextStyle(
-                fontFamily: 'AvenirNextCondensedMedium',
-                fontStyle: FontStyle.normal,
-                fontSize: 16.0,
-                height: 1.0),
-            isScrollable: true,
-            unselectedLabelColor: Colors.grey,
-            labelColor: Colors.white,
-            indicatorSize: TabBarIndicatorSize.tab,
-            indicator: BubbleTabIndicator(
-              indicatorHeight: 25.0,
-              indicatorColor: Theme.of(context).buttonColor,
-              tabBarIndicatorSize: TabBarIndicatorSize.tab,
-            ),
-            tabs: tabs,
-            controller: _tabController,
-          ),
-        ),
-      ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
-        child: TabBarView(
-          controller: _tabController,
-          children: (((widget.futureRun.eventImage ?? '').isNotEmpty &&
-                  widget.futureRun.eventImage.startsWith('http'))
-              ? List<Widget>.from(<Widget>[buildPhotoView()])
-              : List<Widget>.from(<Widget>[]))
-            ..addAll(
-              List<Widget>.from(
-                <Widget>[
-                  buildRunDetailsView(),
-                  buildRsvpView(),
-
-                  // Container(
-                  //   // Description
-                  //   decoration:
-                  //       BoxDecoration(color: Theme.of(context).selectedRowColor),
-                  //   child: Center(
-                  //     child: Scrollbar(
-                  //       child: SingleChildScrollView(
-                  //         child: const Padding(
-                  //           padding: const EdgeInsets.only(
-                  //               top: 20.0, right: 20.0, left: 20.0, bottom: 20.0),
-                  //           child: Text(
-                  //             widget.futureRun.eventDescription,
-                  //             style: const TextStyle(
-                  //                 fontFamily: 'AvenirNext',
-                  //                 fontStyle: FontStyle.normal,
-                  //                 fontSize: 20.0,
-                  //                 height: 0.85),
-                  //           ),
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                  Center(
-                    // Map
-                    child: FlutterMap(
-                      options: MapOptions(
-                        center: LatLng(widget.futureRun.latitude,
-                            widget.futureRun.longitude),
-                        zoom: 15.0,
+        child: Column(
+          children: <Widget>[
+            PreferredSize(
+              preferredSize: const Size.fromHeight(120.0),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    top: 15, left: 5, right: 5, bottom: 15),
+                child: Container(
+                  //width: 320.0,
+                  height: 40.0,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColorLight,
+                    borderRadius: const BorderRadius.all(Radius.circular(45.0)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 5.0, right: 5.0),
+                    child: TabBar(
+                      labelStyle: const TextStyle(
+                          fontFamily: 'AvenirNextCondensedMedium',
+                          fontStyle: FontStyle.normal,
+                          fontSize: 14.0,
+                          height: 1.0),
+                      unselectedLabelStyle: const TextStyle(
+                          fontFamily: 'AvenirNextCondensedMedium',
+                          fontStyle: FontStyle.normal,
+                          fontSize: 14.0,
+                          height: 1.0),
+                      isScrollable: true,
+                      unselectedLabelColor: Colors.black,
+                      labelColor: Colors.white,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      indicator: BubbleTabIndicator(
+                        indicatorHeight: 25.0,
+                        indicatorColor: Theme.of(context).buttonColor,
+                        tabBarIndicatorSize: TabBarIndicatorSize.tab,
                       ),
-                      layers: <LayerOptions>[
-                        TileLayerOptions(
-                            urlTemplate:
-                                //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                            //subdomains: ['a', 'b', 'c']),
-                            subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
-                        MarkerLayerOptions(
-                          markers: <Marker>[
-                            Marker(
-                              width: 120.0,
-                              height: 120.0,
-                              point: LatLng(widget.futureRun.latitude,
-                                  widget.futureRun.longitude),
-                              builder: (BuildContext ctx) => GestureDetector(
-                                    onTap: () => _launchMaps(
-                                        widget.futureRun.latitude,
-                                        widget.futureRun.longitude),
-                                    child: Container(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 58.0),
-                                      child: Image.asset(
-                                          'images/icons/map_pin_foot.png'),
-                                      //child: FlutterLogo(colors: Colors.purple),
-                                    ),
-                                  ),
-                            ),
-                          ],
-                        )
-                      ],
+                      tabs: tabs,
+                      controller: _tabController,
                     ),
                   ),
-                ],
+                ),
               ),
-            )
-            ..addAll(isAdmin
-                ? List<Widget>.from(<Widget>[
-                    Container(
-                      decoration: BoxDecoration(
-                          color: Theme.of(context).selectedRowColor),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              Container(
-                                width: 150.0,
-                                child: RaisedButton(
-                                  child: const Text(
-                                    'Check in Pack',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  onPressed: () {
-                                    Navigator.push<dynamic>(
-                                      context,
-                                      MaterialPageRoute<dynamic>(
-                                        builder: (BuildContext context) =>
-                                            CheckInPackPage(
-                                                futureRun: widget.futureRun),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              Container(
-                                width: 150.0,
-                                child: RaisedButton(
-                                    child: const Text(
-                                      'Edit Run',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                    onPressed: () {
-                                      //int i = 0;
-                                    }),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              Container(
-                                width: 150.0,
-                                child: RaisedButton(
-                                  child: const Text(
-                                    'Check in Scanner',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  onPressed: () {
-                                    Navigator.push<dynamic>(
-                                      context,
-                                      MaterialPageRoute<dynamic>(
-                                        builder: (BuildContext context) =>
-                                            CheckInScannerPage(
-                                              kennelShortName: widget
-                                                  .futureRun.kennelShortName,
-                                              eventId: widget.futureRun.eventId,
-                                              eventName:
-                                                  widget.futureRun.eventName,
-                                              eventNumber:
-                                                  widget.futureRun.eventNumber,
-                                            ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              Container(
-                                width: 150.0,
-                                child: RaisedButton(
-                                  child: const Text(
-                                    'Run fee report',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  onPressed: () {
-                                    Navigator.push<dynamic>(
-                                      context,
-                                      MaterialPageRoute<dynamic>(
-                                        builder: (BuildContext context) =>
-                                            PaymentReportPage(
-                                              eventId: widget.futureRun.eventId,
-                                              currencySymbol: widget
-                                                  .futureRun.currencySymbol,
-                                              digitsAfterDecimal: widget
-                                                  .futureRun.digitsAfterDecimal,
-                                              eventName:
-                                                  widget.futureRun.eventName,
-                                            ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              Container(
-                                width: 150.0,
-                                child: RaisedButton(
-                                    child: const Text(
-                                      'Run Start QR',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                    onPressed: () {
-                                      Navigator.push<dynamic>(
-                                          context,
-                                          MaterialPageRoute<dynamic>(
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: (((widget.futureRun.eventImage ?? '').isNotEmpty &&
+                        widget.futureRun.eventImage.startsWith('http'))
+                    ? List<Widget>.from(<Widget>[buildPhotoView()])
+                    : List<Widget>.from(<Widget>[]))
+                  ..addAll(
+                    List<Widget>.from(
+                      <Widget>[
+                        buildRunDetailsView(),
+                        buildRsvpView(),
+                        buildMapView(),
+                      ],
+                    ),
+                  )
+                  ..addAll(isAdmin
+                      ? List<Widget>.from(<Widget>[
+                          Container(
+                            // decoration: BoxDecoration(
+                            //     color: Theme.of(context).selectedRowColor),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: <Widget>[
+                                    Container(
+                                      width: 150.0,
+                                      child: RaisedButton(
+                                        child: const Text(
+                                          'Check in Pack',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.push<dynamic>(
+                                            context,
+                                            MaterialPageRoute<dynamic>(
                                               builder: (BuildContext context) =>
-                                                  RunStartEndQrCodes(
+                                                  CheckInPackPage(
+                                                      futureRun:
+                                                          widget.futureRun),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+
+                                    Container(
+                                      width: 150.0,
+                                      child: RaisedButton(
+                                        child: const Text(
+                                          'Run fee report',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.push<dynamic>(
+                                            context,
+                                            MaterialPageRoute<dynamic>(
+                                              builder: (BuildContext context) =>
+                                                  PaymentReportPage(
+                                                    eventId: widget
+                                                        .futureRun.eventId,
+                                                    currencySymbol: widget
+                                                        .futureRun
+                                                        .currencySymbol,
+                                                    digitsAfterDecimal: widget
+                                                        .futureRun
+                                                        .digitsAfterDecimal,
+                                                    eventName: widget
+                                                        .futureRun.eventName,
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+
+                                    // Container(
+                                    //   width: 150.0,
+                                    //   child: RaisedButton(
+                                    //       child: const Text(
+                                    //         'Edit Run',
+                                    //         style:
+                                    //             TextStyle(color: Colors.white),
+                                    //       ),
+                                    //       onPressed: () {
+                                    //         //int i = 0;
+                                    //       }),
+                                    // ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: <Widget>[
+
+
+                                    Container(
+                                      width: 150.0,
+                                      child: RaisedButton(
+                                        child: const Text(
+                                          'Scan at Run Start',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.push<dynamic>(
+                                            context,
+                                            MaterialPageRoute<dynamic>(
+                                              builder: (BuildContext context) =>
+                                                  CheckInScannerPage(
                                                     kennelShortName: widget
                                                         .futureRun
                                                         .kennelShortName,
@@ -1150,26 +1104,28 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                         .futureRun.eventName,
                                                     eventNumber: widget
                                                         .futureRun.eventNumber,
-                                                    eventStartDatetime: widget
-                                                        .futureRun
-                                                        .eventStartDatetime,
-                                                    isStart: true,
-                                                  )));
-                                    }),
-                              ),
-                              Container(
-                                width: 150.0,
-                                child: RaisedButton(
-                                    child: const Text(
-                                      'Run End QR',
-                                      style: TextStyle(color: Colors.white),
+                                                        isRunStart: 1,
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                      ),
                                     ),
-                                    onPressed: () {
-                                      Navigator.push<dynamic>(
-                                          context,
-                                          MaterialPageRoute<dynamic>(
+                                 
+                                                                     
+                                    Container(
+                                      width: 150.0,
+                                      child: RaisedButton(
+                                        child: const Text(
+                                          'Scan at Run End',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.push<dynamic>(
+                                            context,
+                                            MaterialPageRoute<dynamic>(
                                               builder: (BuildContext context) =>
-                                                  RunStartEndQrCodes(
+                                                  CheckInScannerPage(
                                                     kennelShortName: widget
                                                         .futureRun
                                                         .kennelShortName,
@@ -1179,27 +1135,105 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                         .futureRun.eventName,
                                                     eventNumber: widget
                                                         .futureRun.eventNumber,
-                                                    eventStartDatetime: widget
-                                                        .futureRun
-                                                        .eventStartDatetime,
-                                                    isStart: false,
-                                                  )));
-                                    }),
-                              ),
-                            ],
+                                                        isRunStart: 0,
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                 
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: <Widget>[
+                                    Container(
+                                      width: 150.0,
+                                      child: RaisedButton(
+                                          child: const Text(
+                                            'Run Start QR',
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.push<dynamic>(
+                                                context,
+                                                MaterialPageRoute<dynamic>(
+                                                    builder: (BuildContext
+                                                            context) =>
+                                                        RunStartEndQrCodes(
+                                                          kennelShortName: widget
+                                                              .futureRun
+                                                              .kennelShortName,
+                                                          eventId: widget
+                                                              .futureRun
+                                                              .eventId,
+                                                          eventName: widget
+                                                              .futureRun
+                                                              .eventName,
+                                                          eventNumber: widget
+                                                              .futureRun
+                                                              .eventNumber,
+                                                          eventStartDatetime: widget
+                                                              .futureRun
+                                                              .eventStartDatetime,
+                                                          isStart: true,
+                                                        )));
+                                          }),
+                                    ),
+                                    Container(
+                                      width: 150.0,
+                                      child: RaisedButton(
+                                          child: const Text(
+                                            'Run End QR',
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.push<dynamic>(
+                                                context,
+                                                MaterialPageRoute<dynamic>(
+                                                    builder: (BuildContext
+                                                            context) =>
+                                                        RunStartEndQrCodes(
+                                                          kennelShortName: widget
+                                                              .futureRun
+                                                              .kennelShortName,
+                                                          eventId: widget
+                                                              .futureRun
+                                                              .eventId,
+                                                          eventName: widget
+                                                              .futureRun
+                                                              .eventName,
+                                                          eventNumber: widget
+                                                              .futureRun
+                                                              .eventNumber,
+                                                          eventStartDatetime: widget
+                                                              .futureRun
+                                                              .eventStartDatetime,
+                                                          isStart: false,
+                                                        )));
+                                          }),
+                                    ),
+                                  ],
+                                )
+                              ],
+                            ),
                           )
-                        ],
-                      ),
-                    )
-                  ])
-                : List<Widget>.from(<Widget>[])),
-          // children: tabs.map((Tab tab) {
-          //   return Center(
-          //       child: Text(
-          //     tab.text,
-          //     style: const TextStyle(fontSize: 20.0),
-          //   ));
-          // }).toList(),
+                        ])
+                      : List<Widget>.from(<Widget>[])),
+                // children: tabs.map((Tab tab) {
+                //   return Center(
+                //       child: Text(
+                //     tab.text,
+                //     style: const TextStyle(fontSize: 20.0),
+                //   ));
+                // }).toList(),
+              ),
+            ),
+          ],
         ),
       ),
     );

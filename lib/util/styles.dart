@@ -4,6 +4,7 @@ Color themeButtonColors = const Color.fromARGB(255, 13, 115, 124);
 Color themeAppBarBackground = const Color.fromARGB(255, 13, 115, 124);
 Color themeNavBarBackground = const Color.fromARGB(255, 190, 190, 190);
 Color themeBackgroundColor = const Color.fromARGB(255, 61, 27, 142);
+Color themeLearnMoreLink = Colors.yellow;
 
 // Color brown = const Color.fromARGB(255, 107, 87, 66);
 // Color purple = const Color.fromARGB(255, 61, 27, 142);

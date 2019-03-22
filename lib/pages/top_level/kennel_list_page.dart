@@ -71,10 +71,11 @@ class KennelsListPageBody extends StatelessWidget {
   }
 
   Future<void> _handleRefresh() async {
+    model.clearKennelList();
     model.getKennelsFromBackend(false);
     //model.notifyListeners();
   }
-
+ 
   Widget _buildListView() {
     return Padding(
       padding: const EdgeInsets.only(top: 0.0),

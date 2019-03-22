@@ -20,7 +20,8 @@ class PrivacyPolicyPage extends StatefulWidget {
 }
 
 Future<File> createFileOfPdfUrl() async {
-  final ByteData bytes = await rootBundle.load('assets/documents/privacy_policy.pdf');
+  final ByteData bytes =
+      await rootBundle.load('assets/documents/privacy_policy.pdf');
   final String dir = (await getApplicationDocumentsDirectory()).path;
   final File file = File('$dir/privacy_policy_internal.pdf');
   await file.writeAsBytes(bytes.buffer.asInt8List());
@@ -58,7 +59,10 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Plugin example app')),
+      appBar: AppBar(
+        title: const Text('Privacy Policy'),
+        backgroundColor: themeAppBarBackground,
+      ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         child: Center(
@@ -70,7 +74,8 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                 onPressed: () => Navigator.push<dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) => PDFScreen(pathPDF)),
+                          builder: (BuildContext context) =>
+                              PDFScreen(pathPDF)),
                     ),
               ),
               Container(

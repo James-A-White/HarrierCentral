@@ -8,8 +8,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/widgets/user_details_ui.dart';
-import 'package:harrier_central/widgets/fancy_divider.dart';
+// import 'package:harrier_central/widgets/user_details_ui.dart';
+// import 'package:harrier_central/widgets/fancy_divider.dart';
 
 class MyProfilePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -58,8 +58,9 @@ class MyProfilePageState extends State<MyProfilePage> {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    UserDetailsUi(firstName: firstName, lastName: lastName, email: email, hashName: hashName,),
-                    const FancyDivider(innerColor: Colors.white),
+                    // TODO(James): Bring this back eventually
+                    // UserDetailsUi(firstName: firstName, lastName: lastName, email: email, hashName: hashName,),
+                    // const FancyDivider(innerColor: Colors.white),
                     Container(
                       height:500,
                       width:MediaQuery.of(context).size.width,

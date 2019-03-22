@@ -11,52 +11,12 @@ class FancyDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       painter: ShapePainter(color: innerColor),
-      // child: Padding(
-      //   padding: const EdgeInsets.only(top: 0.0),
-      //   // child: Row(
-      //   //   mainAxisAlignment: MainAxisAlignment.center,
-
-      //   //   // children: const <Widget>[
-      //   //   //   // Container(
-      //   //   //   //   decoration: const BoxDecoration(
-      //   //   //   //     gradient: LinearGradient(
-      //   //   //   //         colors: <Color>[
-      //   //   //   //           outerColor,
-      //   //   //   //           innerColor,
-      //   //   //   //         ],
-      //   //   //   //         begin: FractionalOffset(0.0, 0.0),
-      //   //   //   //         end: FractionalOffset(1.0, 1.0),
-      //   //   //   //         stops: <double>[0.0, 1.0],
-      //   //   //   //         tileMode: TileMode.clamp),
-      //   //   //   //   ),
-      //   //   //   //   width: 100.0,
-      //   //   //   //   height: 1.0,
-      //   //   //   // ),
-      //   //   //   // Padding(
-      //   //   //   //   padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-      //   //   //   //   child:const  Icon(FontAwesomeIcons.circle,
-      //   //   //   //       color: this.innerColor, size: 10.0),
-      //   //   //   // ),
-      //   //   //   // Container(
-      //   //   //   //   decoration: const BoxDecoration(
-      //   //   //   //     gradient: LinearGradient(
-      //   //   //   //         colors: <Color>[
-      //   //   //   //           innerColor,
-      //   //   //   //           outerColor,
-      //   //   //   //         ],
-      //   //   //   //         begin: FractionalOffset(0.0, 0.0),
-      //   //   //   //         end: FractionalOffset(1.0, 1.0),
-      //   //   //   //         stops: <double>[0.0, 1.0],
-      //   //   //   //         tileMode: TileMode.clamp),
-      //   //   //   //   ),
-      //   //   //   //   width: 100.0,
-      //   //   //   //   height: 1.0,
-      //   //   //   // ),
-      //   //   // ],
-
-
-      //   // ),
-      // ),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 0.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+        ),
+      ),
     );
   }
 }

@@ -7,9 +7,9 @@ import 'package:harrier_central/pages/menu_pages/my_profile_page.dart';
 import 'package:harrier_central/pages/menu_pages/imprint_page.dart';
 import 'package:harrier_central/pages/menu_pages/legal_page.dart';
 import 'package:harrier_central/pages/menu_pages/faq_page.dart';
-import 'package:harrier_central/pages/menu_pages/settings_page.dart';
-import 'package:harrier_central/pages/menu_pages/in_app_purchase.dart';
-import 'package:harrier_central/pages/menu_pages/user_feedback_page.dart';
+//import 'package:harrier_central/pages/menu_pages/settings_page.dart';
+// import 'package:harrier_central/pages/menu_pages/in_app_purchase.dart';
+// import 'package:harrier_central/pages/menu_pages/user_feedback_page.dart';
 import 'package:harrier_central/pages/menu_pages/privacy_policy_page.dart';
 
 class DrawerMenu extends StatefulWidget {
@@ -72,22 +72,22 @@ class DrawerMenuState extends State<DrawerMenu> {
           width: MediaQuery.of(context).size.width,
           child: Column(
             children: <Widget>[
-              ListTile(
-                leading: const Icon(Icons.settings, color: textColor),
-                title: Text('Settings', style: style),
-                onTap: () async {
-                  Navigator.pop(context);
-                  Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      settings: const RouteSettings(),
-                      builder: (BuildContext context) {
-                        return const SettingsPage();
-                      },
-                    ),
-                  );
-                },
-              ),
+              // ListTile(
+              //   leading: const Icon(Icons.settings, color: textColor),
+              //   title: Text('Settings', style: style),
+              //   onTap: () async {
+              //     Navigator.pop(context);
+              //     Navigator.push<dynamic>(
+              //       context,
+              //       MaterialPageRoute<dynamic>(
+              //         settings: const RouteSettings(),
+              //         builder: (BuildContext context) {
+              //           return const SettingsPage();
+              //         },
+              //       ),
+              //     );
+              //   },
+              // ),
               ListTile(
                 leading: const Icon(Icons.person, color: textColor),
                 title: Text('My Profile', style: style),
@@ -105,22 +105,22 @@ class DrawerMenuState extends State<DrawerMenu> {
                   );
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.shopping_cart, color: textColor),
-                title: Text('In App Purchases', style: style),
-                onTap: () async {
-                  Navigator.pop(context);
-                  Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      settings: const RouteSettings(),
-                      builder: (BuildContext context) {
-                        return const InAppPurchasePage();
-                      },
-                    ),
-                  );
-                },
-              ),
+              // ListTile(
+              //   leading: const Icon(Icons.shopping_cart, color: textColor),
+              //   title: Text('In App Purchases', style: style),
+              //   onTap: () async {
+              //     Navigator.pop(context);
+              //     Navigator.push<dynamic>(
+              //       context,
+              //       MaterialPageRoute<dynamic>(
+              //         settings: const RouteSettings(),
+              //         builder: (BuildContext context) {
+              //           return const InAppPurchasePage();
+              //         },
+              //       ),
+              //     );
+              //   },
+              // ),
               // ListTile(
               //   leading:const  Icon(Icons.speaker_notes),
               //   title: const Text('Acknowledgements'),
@@ -146,22 +146,22 @@ class DrawerMenuState extends State<DrawerMenu> {
                   );
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.feedback, color: textColor),
-                title: Text('Your feedback', style: style),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      settings: const RouteSettings(),
-                      builder: (BuildContext context) {
-                        return const UserFeedbackPage();
-                      },
-                    ),
-                  );
-                },
-              ),
+              // ListTile(
+              //   leading: const Icon(Icons.feedback, color: textColor),
+              //   title: Text('Your feedback', style: style),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     Navigator.push<dynamic>(
+              //       context,
+              //       MaterialPageRoute<dynamic>(
+              //         settings: const RouteSettings(),
+              //         builder: (BuildContext context) {
+              //           return const UserFeedbackPage();
+              //         },
+              //       ),
+              //     );
+              //   },
+              // ),
               ListTile(
                 leading: const Icon(Icons.speaker_notes, color: textColor),
                 title: Text('Imprint', style: style),

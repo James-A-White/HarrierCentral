@@ -99,7 +99,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                          'Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber',
+                          'Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nStatus: Private Beta',
                           style: bodyStyle),
                     ],
                   ),

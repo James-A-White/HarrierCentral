@@ -27,7 +27,7 @@ class KennelLogo extends StatelessWidget {
                     '.png'),
                 Padding(
                   padding: EdgeInsets.only(
-                      left: logoHeight / 10, right: logoHeight / 10),
+                      left: logoHeight / 6, right: logoHeight / 6),
                   child: AutoSizeText(
                     '$kennelShortName',
                     style: const TextStyle(

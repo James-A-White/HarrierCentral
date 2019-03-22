@@ -41,54 +41,61 @@ class RunStartEndQrCodes extends StatelessWidget {
           ),
         ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Text(
-              '$kennelShortName #$eventNumber - $startEndString',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontFamily: 'AvenirNextDemiBold',
-                  fontStyle: FontStyle.normal,
-                  fontSize: 24.0,
-                  height: 1.0),
-            ),
-            Text(
-              eventName,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontFamily: 'AvenirNextRegular',
-                  fontStyle: FontStyle.normal,
-                  fontSize: 28.0,
-                  height: 1.0),
-            ),
-            Text(
-              DateFormat('E, MMM d \'at\' h:mm a').format(eventStartDatetime),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontFamily: 'AvenirNextRegular',
-                  fontStyle: FontStyle.normal,
-                  fontSize: 20.0,
-                  height: 1.0),
-            ),
-            QrImage(
-                padding: const EdgeInsets.all(10.0),
-                data: qrData,
-                version: 4,
-                size: 200.0,
-                errorCorrectionLevel: 3),
-            Padding(
-              padding: const EdgeInsets.only(left: 32.0, right: 32.0, bottom: 16.0),
-              child: FlatButton(
-                textColor: Theme.of(context).buttonColor,
-                child: const Text('Learn more about this feature'),
-                onPressed: () {
-                  _displayInstructions(context);
-                },
+      body: Container(
+        decoration: Backgrounds.defaultHcBackground(),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Text(
+                '$kennelShortName #$eventNumber - $startEndString',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'AvenirNextDemiBold',
+                    fontStyle: FontStyle.normal,
+                    fontSize: 24.0,
+                    height: 1.0),
               ),
-            ),
-          ],
+              Text(
+                eventName,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                    fontFamily: 'AvenirNextRegular',
+                    fontStyle: FontStyle.normal,
+                    fontSize: 28.0,
+                    height: 1.0),
+              ),
+              Text(
+                DateFormat('E, MMM d \'at\' h:mm a').format(eventStartDatetime),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                    fontFamily: 'AvenirNextRegular',
+                    fontStyle: FontStyle.normal,
+                    fontSize: 20.0,
+                    height: 1.0),
+              ),
+              QrImage(
+                  backgroundColor: Colors.white,
+                  padding: const EdgeInsets.all(10.0),
+                  data: qrData,
+                  version: 4,
+                  size: 200.0,
+                  errorCorrectionLevel: 3),
+              Padding(
+                padding: const EdgeInsets.only(left: 32.0, right: 32.0, bottom: 16.0),
+                child: FlatButton(
+                  textColor: themeLearnMoreLink,
+                  child: const Text('Learn more about this feature'),
+                  onPressed: () {
+                    _displayInstructions(context);
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
