@@ -300,54 +300,76 @@ class _PaymentReportsListPageBodyState
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: filteredList.length,
                       itemBuilder: (BuildContext context, int index) {
-                        return Container(
-                          height: 40.0,
-                          padding: const EdgeInsets.all(0.0),
-                          child: PaymentReportListItem(
-                            paymentReportItem: filteredList[index],
-                            currencySymbol: widget.currencySymbol,
-                            digitsAfterDecimal: widget.digitsAfterDecimal,
-                            onTap: () {
-                              if (filteredList[index].paymentType.value ==
-                                  paymentNotPaid.value) {
-                                final PaymentPopup pp = PaymentPopup(
-                                  amount: filteredList[index].debitAmount,
-                                  creditAllowed:
-                                      1, // TODO(James): fix this in the DB so that Kennnels can disable credit
-                                  creditRemaining:
-                                      filteredList[index].creditRemaining,
-                                  currencySymbol: widget.currencySymbol,
-                                  hemId: filteredList[index].hasherEventMapId,
-                                  decimalDigits: widget.digitsAfterDecimal,
-                                );
-
-                                final Future<bool> dlg = showDialog<bool>(
-                                    context: context,
-                                    barrierDismissible:
-                                        false, // user must tap button!
-                                    builder: (BuildContext context) {
-                                      return pp;
-                                    });
-
-                                dlg.then(
-                                  (bool x) {
-                                    payForEvent(filteredList[index],
-                                        pp.selectedValue, pp.amount);
-                                  },
-                                );
-                              } else {
-                                _displayPaymentDetails(
-                                        filteredList[index], context)
-                                    .then((bool doCancelTransaction) {
-                                  if (doCancelTransaction) {
-                                    payForEvent(filteredList[index],
-                                        paymentNotPaid.value, 0);
-                                  }
-                                });
-                              }
-                            },
-                          ),
-                        );
+                        return filteredList[index].paymentType.value !=
+                                paymentNotPaid.value
+                            ? listItem(index, filteredList)
+                            : Dismissible(
+                                key: Key(index.toString()),
+                                confirmDismiss: (DismissDirection direction) {
+                                  print(direction.toString() + ' ' + index.toString());
+                                  payForEvent(filteredList[index], direction == DismissDirection.endToStart ? 3 : 4, filteredList[index].debitAmount);
+                                  return Future<bool>.value(false);
+                                },
+                                background: Container(
+                                    color: Colors.blue,
+                                    child: Row(children: <Widget>[
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 15.0),
+                                        child: Image.asset(
+                                            'images/icons/payment_type_4.png',
+                                            height: 25.0,
+                                            width: 25.0,
+                                            color: Colors.white),
+                                      ),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 15.0),
+                                        child: Text('${Utilities.getFormattedMoney(filteredList[index].debitAmount,widget.digitsAfterDecimal,widget.currencySymbol)} Bank Transfer',
+                                            style: const TextStyle(
+                                                fontFamily:
+                                                    'AvenirNextDemiBold',
+                                                fontStyle: FontStyle.normal,
+                                                color: Colors.white,
+                                                fontSize: 17.0,
+                                                height: 1.0)),
+                                      )
+                                    ])),
+                                secondaryBackground: Container(
+                                    color: Colors.green,
+                                    child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: <Widget>[
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 15.0),
+                                            child: Image.asset(
+                                                'images/icons/payment_type_3.png',
+                                                height: 25.0,
+                                                width: 25.0,
+                                                color: Colors.white),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 15.0),
+                                            child: Text(
+                                              
+                                              '${Utilities.getFormattedMoney(filteredList[index].debitAmount,widget.digitsAfterDecimal,widget.currencySymbol)} Cash',
+                                                style: const TextStyle(
+                                                    fontFamily:
+                                                        'AvenirNextDemiBold',
+                                                    fontStyle: FontStyle.normal,
+                                                    color: Colors.white,
+                                                    fontSize: 17.0,
+                                                    height: 1.0)),
+                                          )
+                                        ])),
+                                onDismissed: (DismissDirection direction) {
+                                  print(direction.toString() +
+                                      ' NOTE: We should never reach this point');
+                                },
+                                child: listItem(index, filteredList));
                       },
                     ),
                   ),
@@ -356,6 +378,52 @@ class _PaymentReportsListPageBodyState
       ],
     );
   }
+
+  Container listItem(int index, List<PaymentReportModel> filteredList) {
+    return Container(
+      height: 40.0,
+      padding: const EdgeInsets.all(0.0),
+      child: PaymentReportListItem(
+        paymentReportItem: filteredList[index],
+        currencySymbol: widget.currencySymbol,
+        digitsAfterDecimal: widget.digitsAfterDecimal,
+        onTap: () {
+          if (filteredList[index].paymentType.value == paymentNotPaid.value) {
+            final PaymentPopup pp = PaymentPopup(
+              amount: filteredList[index].debitAmount,
+              creditAllowed:
+                  1, // TODO(James): fix this in the DB so that Kennnels can disable credit
+              creditRemaining: filteredList[index].creditRemaining,
+              currencySymbol: widget.currencySymbol,
+              hemId: filteredList[index].hasherEventMapId,
+              decimalDigits: widget.digitsAfterDecimal,
+            );
+
+            final Future<bool> dlg = showDialog<bool>(
+                context: context,
+                barrierDismissible: false, // user must tap button!
+                builder: (BuildContext context) {
+                  return pp;
+                });
+
+            dlg.then(
+              (bool x) {
+                payForEvent(filteredList[index], pp.selectedValue, pp.amount);
+              },
+            );
+          } else {
+            _displayPaymentDetails(filteredList[index], context)
+                .then((bool doCancelTransaction) {
+              if (doCancelTransaction) {
+                payForEvent(filteredList[index], paymentNotPaid.value, 0);
+              }
+            });
+          }
+        },
+      ),
+    );
+  }
+
 
   void payForEvent(PaymentReportModel item, int selectedValue, num amount) {
     final PayForEventService paySrv = PayForEventService();
