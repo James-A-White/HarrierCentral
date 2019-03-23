@@ -1064,7 +1064,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       width: 150.0,
                                       child: RaisedButton(
                                         child: const Text(
-                                          'Run fee report',
+                                          'Hash Cash',
                                           style: TextStyle(color: Colors.white),
                                         ),
                                         onPressed: () {

@@ -426,6 +426,9 @@ class _PaymentReportsListPageBodyState
 
 
   void payForEvent(PaymentReportModel item, int selectedValue, num amount) {
+    setState(() {
+      item.isTransactionInProgress = true;
+    });
     final PayForEventService paySrv = PayForEventService();
     final Future<List<PayForEventModel>> retVal = paySrv.payForEvent(
         item.userIdWhoPaid,
@@ -438,6 +441,7 @@ class _PaymentReportsListPageBodyState
       (List<PayForEventModel> paymentResult) {
         if (paymentResult.isNotEmpty) {
           setState(() {
+            item.isTransactionInProgress = false;
             // update the UI
             // start by updating the user's payment status to reflect the payment type
             item.paymentType = EnumPaymentType<int>(selectedValue);

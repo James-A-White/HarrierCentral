@@ -35,6 +35,8 @@ class PaymentReportModel {
   String notes;
   num creditRemaining;
 
+  bool isTransactionInProgress = false;
+
   @override
   String toString() => '$paymentReference';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data_models/payment_report_model.dart';
@@ -36,14 +37,16 @@ class PaymentReportListItem extends StatelessWidget {
                 Positioned(
                   right: 10.0,
                   top: 7.0,
-                  child: Image.asset(
-                      'images/icons/payment_type_${paymentReportItem.paymentType.value}.png',
-                      height: 30.0,
-                      width: 30.0,
-                      color: paymentReportItem.paymentType.value <=
-                              paymentNotPaid.value
-                          ? Colors.red
-                          : Colors.green[700]),
+                  child: paymentReportItem.isTransactionInProgress
+                      ? const Icon(FontAwesome.cloud_upload, color: Colors.blue)
+                      : Image.asset(
+                          'images/icons/payment_type_${paymentReportItem.paymentType.value}.png',
+                          height: 30.0,
+                          width: 30.0,
+                          color: paymentReportItem.paymentType.value <=
+                                  paymentNotPaid.value
+                              ? Colors.red
+                              : Colors.green[700]),
                 ),
                 Positioned(
                   left: 10.0,
@@ -92,7 +95,7 @@ class TotalsCell extends StatelessWidget {
   });
 
   final List<PaymentReportModel> data;
-  final EnumPaymentType<int>paymentRecordType;
+  final EnumPaymentType<int> paymentRecordType;
   final Color color;
   final String currencySymbol;
   final int digitsAfterDecimal;
