@@ -7,61 +7,46 @@ import 'package:harrier_central/widgets/kennel_list_item.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 
-class KennelsListPage extends StatelessWidget {
+class KennelsListPage extends StatefulWidget {
   const KennelsListPage({Key key, @required this.kennelModel})
       : super(key: key);
 
   final KennelScopedModel kennelModel;
 
   @override
-  Widget build(BuildContext context) {
-    if (((kennelModel?.kennelsList?.length ?? 0) == 0) &&
-        (!(kennelModel?.isLoading ?? false))) {   // TODO(James): Check this statement and make sure the cast to FALSE is correct
-      kennelModel.getKennelsFromBackend(true);
-    }
+  KennelsListPageState createState() => KennelsListPageState(model: kennelModel);
 
-    // ScopedModelDescendant<MainNavigationScopedModel>(builder:
-    //     (BuildContext context, Widget child, MainNavigationScopedModel model) {
-    //   model.appBarTitle = 'My Kennels';
-
-    return ScopedModel<KennelScopedModel>(
-        model: kennelModel, child: KennelsListPageBody());
-    //});
-  }
 }
 
-class KennelsListPageBody extends StatelessWidget {
-  BuildContext context;
+class KennelsListPageState extends State<KennelsListPage> {
+  
+  KennelsListPageState({@required this.model});
+
   KennelScopedModel model;
 
   int pageIndex = 1;
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   this.context = context;
-
-  //   return ScopedModelDescendant<KennelScopedModel>(
-  //     builder: (BuildContext context, Widget child, KennelScopedModel model) {
-  //       this.model = model;
-  //       return model.isLoading
-  //           ? _buildCircularProgressIndicator()
-  //           : _buildListView();
-  //     },
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
-    this.context = context;
 
-    return Scaffold(body: ScopedModelDescendant<KennelScopedModel>(
-      builder: (BuildContext context, Widget child, KennelScopedModel model) {
-        this.model = model;
-        return model.isLoading
-            ? _buildCircularProgressIndicator()
-            : _buildListView();
-      },
-    ));
+    return ScopedModel<KennelScopedModel>(
+      model: model,
+      child: Scaffold(
+        body: ScopedModelDescendant<KennelScopedModel>(
+          builder:
+              (BuildContext context, Widget child, KennelScopedModel model) {
+
+    if ((model.kennelsList.isEmpty) &&
+        (!model.isLoading)) {   // TODO(James): Check this statement and make sure the cast to FALSE is correct
+      model.getKennelsFromBackend(true);}
+
+            return model.isLoading
+                ? _buildCircularProgressIndicator()
+                : _buildListView();
+          },
+        ),
+      ),
+    );
   }
 
   Widget _buildCircularProgressIndicator() {
@@ -75,7 +60,7 @@ class KennelsListPageBody extends StatelessWidget {
     model.getKennelsFromBackend(false);
     //model.notifyListeners();
   }
- 
+
   Widget _buildListView() {
     return Padding(
       padding: const EdgeInsets.only(top: 0.0),

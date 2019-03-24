@@ -1,14 +1,16 @@
 import 'dart:core';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong/latlong.dart';
-import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/data_models/future_run_model.dart';
 import 'package:harrier_central/data_models/user_model.dart';
@@ -104,6 +106,15 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     super.initState();
     _initTabs();
     _tabController = TabController(vsync: this, length: tabs.length);
+    _tabController.addListener(() {
+      if (fabIsVisible !=
+          (tabs[_tabController.index].text.toLowerCase() == 'rsvp')) {
+        setState(() {
+          fabIsVisible =
+              tabs[_tabController.index].text.toLowerCase() == 'rsvp';
+        });
+      }
+    });
   }
 
   @override
@@ -369,6 +380,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     }
   }
 
+  FutureRunScopedModel futureRunScopedModel;
+
   Container buildRsvpView() {
     print('buildRsvpView() -  = ${DateTime.now().millisecondsSinceEpoch}');
 
@@ -376,9 +389,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       child: Center(
         child: ScopedModelDescendant<FutureRunScopedModel>(
           builder: (BuildContext context, Widget child,
-              FutureRunScopedModel futureRunScopedModel) {
-            if (!futureRunScopedModel.isLoading) {
-              futureRunScopedModel.getFutureRunsFromBackend(false);
+              FutureRunScopedModel _futureRunScopedModel) {
+            futureRunScopedModel = _futureRunScopedModel;
+
+            if (!_futureRunScopedModel.isLoading) {
+              _futureRunScopedModel.getFutureRunsFromBackend(false);
             }
             return Column(
               children: <Widget>[
@@ -431,13 +446,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                   alignment: Alignment.topCenter,
                                   splashColor: Colors.greenAccent,
                                   onPressed: () {
-                                    futureRunScopedModel.setRsvpState(
+                                    _futureRunScopedModel.setRsvpState(
                                         rsvpYes.value,
                                         isHareNo.value,
                                         -1,
                                         widget.futureRun);
 
-                                        addThisDeviceUserToPackList();
+                                    addThisDeviceUserToPackList();
                                   },
                                   // ),
                                   // Text(
@@ -504,13 +519,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                   splashColor: Colors.greenAccent,
                                   onPressed: () {
                                     setState(() {
-                                      futureRunScopedModel.setRsvpState(
+                                      _futureRunScopedModel.setRsvpState(
                                           rsvpMaybe.value,
                                           isHareNo.value,
                                           -1,
                                           widget.futureRun);
 
-                                          addThisDeviceUserToPackList();
+                                      addThisDeviceUserToPackList();
                                     });
 
                                     //model.toggleFollowing(kennel);
@@ -579,13 +594,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                   alignment: Alignment.topCenter,
                                   splashColor: Colors.greenAccent,
                                   onPressed: () {
-                                    futureRunScopedModel.setRsvpState(
+                                    _futureRunScopedModel.setRsvpState(
                                         rsvpNo.value,
                                         isHareNo.value,
                                         -1,
                                         widget.futureRun);
 
-                                        addThisDeviceUserToPackList();
+                                    addThisDeviceUserToPackList();
                                     //model.toggleFollowing(kennel);
 
                                     // setState(() {
@@ -653,13 +668,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                     _promptForHare(widget.futureRun.hareList)
                                         .then<dynamic>((bool willHare) {
                                       if (willHare) {
-                                        futureRunScopedModel.setRsvpState(
+                                        _futureRunScopedModel.setRsvpState(
                                             rsvpYes.value,
                                             isHareYes.value,
                                             -1,
                                             widget.futureRun);
 
-                                            addThisDeviceUserToPackList();
+                                        addThisDeviceUserToPackList();
                                       }
                                     });
 
@@ -961,11 +976,77 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     );
   }
 
+  bool fabIsVisible = false;
+
   @override
   Widget build(BuildContext context) {
     getPack(false);
+
     return Scaffold(
       key: _scaffoldKey,
+      floatingActionButton: AnimatedOpacity(
+        duration: const Duration(milliseconds: 500),
+        opacity: fabIsVisible ? 1.0 : 0.0,
+        child: SpeedDial(
+          // both default to 16
+          marginRight: 18,
+          marginBottom: 20,
+          animatedIcon: AnimatedIcons.menu_close,
+          animatedIconTheme: const IconThemeData(size: 22.0),
+          // this is ignored if animatedIcon is non null
+          // child:const  Icon(Icons.add),
+          visible: true,
+          curve: Curves.bounceIn,
+          overlayColor: Colors.black,
+          overlayOpacity: 0.5,
+          onOpen: () => print('OPENING DIAL'),
+          onClose: () => print('DIAL CLOSED'),
+          tooltip: 'Speed Dial',
+          heroTag: 'speed-dial-hero-tag',
+          backgroundColor: Theme.of(context).accentColor,
+          foregroundColor: Colors.white,
+          elevation: 8.0,
+          shape: CircleBorder(),
+          children: <SpeedDialChild>[
+            SpeedDialChild(
+              child: const Icon(Feather.x),
+              backgroundColor: Colors.red[800],
+              label: 'I\'m not coming',
+              labelStyle: const TextStyle(fontSize: 18.0),
+              onTap: () {
+                futureRunScopedModel.setRsvpState(
+                    rsvpNo.value, isHareNo.value, -1, widget.futureRun);
+
+                addThisDeviceUserToPackList();
+              },
+            ),
+            SpeedDialChild(
+              child: const Icon(AntDesign.question),
+              backgroundColor: Colors.orange,
+              label: 'I might come',
+              labelStyle: const TextStyle(fontSize: 18.0),
+              onTap: () {
+                futureRunScopedModel.setRsvpState(
+                    rsvpMaybe.value, isHareNo.value, -1, widget.futureRun);
+
+                addThisDeviceUserToPackList();
+              },
+            ),
+            SpeedDialChild(
+              child: const Icon(Feather.check),
+              backgroundColor: Colors.green,
+              label: 'I\'m coming',
+              labelStyle: const TextStyle(fontSize: 18.0),
+              onTap: () {
+                futureRunScopedModel.setRsvpState(
+                    rsvpYes.value, isHareNo.value, -1, widget.futureRun);
+
+                addThisDeviceUserToPackList();
+              },
+            ),
+          ],
+        ),
+      ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         child: Column(

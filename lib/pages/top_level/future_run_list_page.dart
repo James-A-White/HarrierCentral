@@ -10,60 +10,31 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:scoped_model/scoped_model.dart';
 //
 
-class FutureRunsListPage extends StatelessWidget {
-  //final FutureRunScopedModel futureRunsModel;
-
+class FutureRunsListPage extends StatefulWidget {
   const FutureRunsListPage({Key key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return
-
-        // ScopedModelDescendant<MainNavigationScopedModel>(builder:
-        //     (BuildContext context, Widget child, MainNavigationScopedModel model) {
-        //   model.appBarTitle = 'Upcoming Runs';
-
-        ScopedModelDescendant<FutureRunScopedModel>(builder:
-            (BuildContext context, Widget child,
-                FutureRunScopedModel futureRunsScopedModel) {
-      if (!futureRunsScopedModel.isLoading) {
-        futureRunsScopedModel.getFutureRunsFromBackend(false);
-      }
-
-      return FutureRunListPageBody();
-      // return ScopedModel<FutureRunScopedModel>(
-      //     model: futureRunsModel, child: FutureRunListPageBody());
-    });
-    // });
-  }
+  FutureRunListPageState createState() => FutureRunListPageState();
 }
 
-class FutureRunListPageBody extends StatelessWidget {
-  BuildContext context;
+class FutureRunListPageState extends State<FutureRunsListPage> {
+  // BuildContext context;
   FutureRunScopedModel model;
 
   int pageIndex = 1;
 
   @override
   Widget build(BuildContext context) {
-    this.context = context;
-
     return Scaffold(
-        //key: homePageModel.mainAppScaffoldKey,
-        // appBar: AppBar(
-        //   centerTitle: true,
-        //   backgroundColor: Theme.of(context).primaryColor,
-        //   title: const Text(
-        //     'Upcoming Runs List',
-        //     style: const TextStyle(
-        //       color: Colors.white,
-        //     ),
-        //   ),
-        // ),
         body: ScopedModelDescendant<FutureRunScopedModel>(
       builder:
           (BuildContext context, Widget child, FutureRunScopedModel model) {
         this.model = model;
+
+        if ((model.futureRunsList.isEmpty) && (!model.isLoading)) {
+          model.getFutureRunsFromBackend(true);
+        }
+
         return model.isLoading
             ? _buildCircularProgressIndicator()
             : _buildListView();
@@ -89,7 +60,7 @@ class FutureRunListPageBody extends StatelessWidget {
 
   Future<void> _handleRefresh() async {
     model.getFutureRunsFromBackend(true);
-   // model.notifyListeners();
+    // model.notifyListeners();
   }
 
   Widget _buildListView() {

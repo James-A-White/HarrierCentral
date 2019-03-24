@@ -39,7 +39,9 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
         title: Text(
-          widget.isRunStart == 1 ? 'Scan at start of Hash' : 'Scan at end of Hash',
+          widget.isRunStart == 1
+              ? 'Scan at start of Hash'
+              : 'Scan at end of Hash',
           style: const TextStyle(
             color: Colors.white,
           ),
@@ -330,6 +332,8 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
 
     final String context2 = widget.isRunStart == 1 ? '0' : '1';
 
+    int ppSelectedValue = -1;
+
     final ProcessQrScanService srv = ProcessQrScanService();
     final Future<ProcessQrScanModel> apiCall = srv.processQrScan(
         widget.eventId, scanResult, 'CheckInOut', context2, 'admin', '');
@@ -348,6 +352,9 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
           currencySymbol: result.resultStr1,
           hemId: result.resultGuid2,
           decimalDigits: result.resultInt4,
+          valueChanged: (num value) {
+            ppSelectedValue = value;
+          },
         );
 
         final Future<bool> dlg = showDialog<bool>(
@@ -358,27 +365,29 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
             });
 
         dlg.then((bool x) {
-          final PayForEventService paySrv = PayForEventService();
-          final Future<List<PayForEventModel>> retVal = paySrv.payForEvent(
-              result.resultGuid1,
-              widget.eventId,
-              result.resultGuid2,
-              pp.selectedValue,
-              pp.amount,
-              widget.isRunStart == 1
-                  ? attendenceAtHash.value
-                  : attendenceOnIn.value);
-          retVal.then((List<PayForEventModel> paymentResult) {
-            if (paymentResult.isNotEmpty) {
-              setState(() => barcode = paymentResult[0].result);
-            } else {
-              setState(() => barcode = 'Error processing payment');
-            }
-            Future<dynamic>.delayed(const Duration(seconds: 2))
-                .then<dynamic>((dynamic unused) {
-              scanUserBarcode();
+          if (ppSelectedValue != -1) {
+            final PayForEventService paySrv = PayForEventService();
+            final Future<List<PayForEventModel>> retVal = paySrv.payForEvent(
+                result.resultGuid1,
+                widget.eventId,
+                result.resultGuid2,
+                ppSelectedValue,
+                pp.amount,
+                widget.isRunStart == 1
+                    ? attendenceAtHash.value
+                    : attendenceOnIn.value);
+            retVal.then((List<PayForEventModel> paymentResult) {
+              if (paymentResult.isNotEmpty) {
+                setState(() => barcode = paymentResult[0].result);
+              } else {
+                setState(() => barcode = 'Error processing payment');
+              }
+              Future<dynamic>.delayed(const Duration(seconds: 2))
+                  .then<dynamic>((dynamic unused) {
+                scanUserBarcode();
+              });
             });
-          });
+          }
         });
       }
     });

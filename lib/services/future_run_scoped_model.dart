@@ -14,7 +14,7 @@ import 'package:scoped_model/scoped_model.dart';
 
 class FutureRunScopedModel
  extends Model {
-  List<FutureRun> _futureRunsList;
+  List<FutureRun> _futureRunsList = <FutureRun>[];
   List<FutureRun> get futureRunsList => _futureRunsList;
 
   bool _isLoading = false;

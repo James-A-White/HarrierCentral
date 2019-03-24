@@ -34,7 +34,9 @@ class KennelMemberListItem extends StatelessWidget {
                     //placeholder: const CircularProgressIndicator(),
                     //errorWidget: const  Icon(Icons.error),
                     // placeholder: (BuildContext context,String url) => const CircularProgressIndicator(),
-                    //errorWidget: (BuildContext context,String url,Exception error) => const  Icon(Icons.error),
+
+                    // TODO(James): Replace avatar icon with missing image icon
+                    errorWidget: (BuildContext context,String url,Object error) => Image.asset('images/avatars/avatar-2.png', height:80, width:80, fit: BoxFit.fill),
                     //fadeOutDuration:  Duration(seconds: 1),
                     fadeInDuration: const Duration(milliseconds: 0),
                     width: 80.0,

@@ -50,7 +50,9 @@ class PaymentReportPage extends StatelessWidget {
           ),
         ),
       ),
-      floatingActionButton: SpeedDial(
+      floatingActionButton: 
+      
+      SpeedDial(
         // both default to 16
         marginRight: 18,
         marginBottom: 20,
@@ -93,6 +95,8 @@ class PaymentReportPage extends StatelessWidget {
           ),
         ],
       ),
+    
+    
       body: ScopedModel<PaymentReportScopedModel>(
           model: paymentReportModel,
           child: PaymentReportsListPageBody(
@@ -306,8 +310,15 @@ class _PaymentReportsListPageBodyState
                             : Dismissible(
                                 key: Key(index.toString()),
                                 confirmDismiss: (DismissDirection direction) {
-                                  print(direction.toString() + ' ' + index.toString());
-                                  payForEvent(filteredList[index], direction == DismissDirection.endToStart ? 3 : 4, filteredList[index].debitAmount);
+                                  print(direction.toString() +
+                                      ' ' +
+                                      index.toString());
+                                  payForEvent(
+                                      filteredList[index],
+                                      direction == DismissDirection.endToStart
+                                          ? 3
+                                          : 4,
+                                      filteredList[index].debitAmount);
                                   return Future<bool>.value(false);
                                 },
                                 background: Container(
@@ -325,7 +336,8 @@ class _PaymentReportsListPageBodyState
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(left: 15.0),
-                                        child: Text('${Utilities.getFormattedMoney(filteredList[index].debitAmount,widget.digitsAfterDecimal,widget.currencySymbol)} Bank Transfer',
+                                        child: Text(
+                                            '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                             style: const TextStyle(
                                                 fontFamily:
                                                     'AvenirNextDemiBold',
@@ -354,8 +366,7 @@ class _PaymentReportsListPageBodyState
                                             padding: const EdgeInsets.only(
                                                 right: 15.0),
                                             child: Text(
-                                              
-                                              '${Utilities.getFormattedMoney(filteredList[index].debitAmount,widget.digitsAfterDecimal,widget.currencySymbol)} Cash',
+                                                '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                                 style: const TextStyle(
                                                     fontFamily:
                                                         'AvenirNextDemiBold',
@@ -369,7 +380,8 @@ class _PaymentReportsListPageBodyState
                                   print(direction.toString() +
                                       ' NOTE: We should never reach this point');
                                 },
-                                child: listItem(index, filteredList));
+                                child: listItem(index, filteredList),
+                              );
                       },
                     ),
                   ),
@@ -378,6 +390,14 @@ class _PaymentReportsListPageBodyState
       ],
     );
   }
+
+  num finalValue = -1;
+
+// void setValue(num val) {
+//     setState(() {
+//       finalValue = val;
+//     });
+//   }
 
   Container listItem(int index, List<PaymentReportModel> filteredList) {
     return Container(
@@ -397,6 +417,9 @@ class _PaymentReportsListPageBodyState
               currencySymbol: widget.currencySymbol,
               hemId: filteredList[index].hasherEventMapId,
               decimalDigits: widget.digitsAfterDecimal,
+              valueChanged: (num value) {
+                finalValue = value;
+              },
             );
 
             final Future<bool> dlg = showDialog<bool>(
@@ -408,7 +431,9 @@ class _PaymentReportsListPageBodyState
 
             dlg.then(
               (bool x) {
-                payForEvent(filteredList[index], pp.selectedValue, pp.amount);
+                if (finalValue != -1) {
+                  payForEvent(filteredList[index], finalValue, pp.amount);
+                }
               },
             );
           } else {
@@ -423,7 +448,6 @@ class _PaymentReportsListPageBodyState
       ),
     );
   }
-
 
   void payForEvent(PaymentReportModel item, int selectedValue, num amount) {
     setState(() {

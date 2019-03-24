@@ -10,16 +10,55 @@ import 'package:harrier_central/widgets/kennel_member_list_item.dart';
 import 'package:harrier_central/data_models/kennel_model.dart';
 import 'package:harrier_central/util/styles.dart';
 
-class KennelMembersList extends StatelessWidget {
-  KennelMembersList({Key key, @required this.kennel}) : super(key: key);
+class KennelMembersList extends StatefulWidget {
+  const KennelMembersList({Key key, @required this.kennel}) : super(key: key);
+
+  final Kennel kennel;
+
+  @override
+  KennelMemberListState createState() => KennelMemberListState(kennel: kennel);
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   if ((kennelMemberModel?.kennelMembersList?.length ?? 0) == 0) {
+  //     kennelMemberModel.getKennelMembersFromBackend(1, true, kennel.kennelId);
+  //   }
+
+  //   return Scaffold(
+  //     appBar: AppBar(
+  //       centerTitle: true,
+  //       backgroundColor: themeAppBarBackground,
+  //       title: Text(
+  //         '${kennel.kennelShortName} Members',
+  //         style: const TextStyle(
+  //           color: Colors.white,
+  //         ),
+  //       ),
+  //     ),
+  //     body: ScopedModel<KennelMemberScopedModel>(
+  //         model: kennelMemberModel,
+  //         child: KennelMemberListState(
+  //           kennelId: kennel.kennelId,
+  //         )),
+  //   );
+
+}
+
+class KennelMemberListState extends State<KennelMembersList> {
+  KennelMemberListState({@required this.kennel});
 
   final Kennel kennel;
 
   final KennelMemberScopedModel kennelMemberModel = KennelMemberScopedModel();
 
+  KennelMemberScopedModel model;
+
+  int pageIndex = 1;
+
   @override
   Widget build(BuildContext context) {
-    if ((kennelMemberModel?.kennelMembersList?.length ?? 0) == 0) {
+
+    if (kennelMemberModel.kennelMembersList.isEmpty) {
       kennelMemberModel.getKennelMembersFromBackend(1, true, kennel.kennelId);
     }
 
@@ -35,37 +74,17 @@ class KennelMembersList extends StatelessWidget {
         ),
       ),
       body: ScopedModel<KennelMemberScopedModel>(
-          model: kennelMemberModel,
-          child: KennelMembersListPageBody(
-            kennelId: kennel.kennelId,
-          )),
-    );
-  }
-}
-
-class KennelMembersListPageBody extends StatelessWidget {
-  KennelMembersListPageBody({Key key, @required this.kennelId})
-      : super(key: key);
-
-  final String kennelId;
-
-  BuildContext context;
-  KennelMemberScopedModel model;
-
-  int pageIndex = 1;
-
-  @override
-  Widget build(BuildContext context) {
-    this.context = context;
-
-    return ScopedModelDescendant<KennelMemberScopedModel>(
-      builder:
-          (BuildContext context, Widget child, KennelMemberScopedModel model) {
-        this.model = model;
-        return model.isLoading
-            ? _buildCircularProgressIndicator()
-            : _buildListView();
-      },
+        model: kennelMemberModel,
+        child: ScopedModelDescendant<KennelMemberScopedModel>(
+          builder: (BuildContext context, Widget child,
+              KennelMemberScopedModel model) {
+            this.model = model;
+            return model.isLoading
+                ? _buildCircularProgressIndicator()
+                : _buildListView();
+          },
+        ),
+      ),
     );
   }
 
@@ -76,7 +95,7 @@ class KennelMembersListPageBody extends StatelessWidget {
   }
 
   Future<void> _handleRefresh() async {
-    model.getKennelMembersFromBackend(1, false, kennelId);
+    model.getKennelMembersFromBackend(1, false, kennel.kennelId);
     //model.notifyListeners();
   }
 
@@ -124,7 +143,7 @@ class KennelMembersListPageBody extends StatelessWidget {
                 context,
                 MaterialPageRoute<dynamic>(
                   builder: (BuildContext context) => AddMemberPage(
-                        kennelId: kennelId,
+                        kennelId: kennel.kennelId,
                       ),
                 ),
               );

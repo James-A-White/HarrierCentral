@@ -9,14 +9,16 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 import 'package:harrier_central/data_models/future_run_model.dart';
+import 'package:harrier_central/data_models/pay_for_event_model.dart';
 import 'package:harrier_central/data_models/process_qr_scan_for_checkin_model.dart';
 import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/services/pack_scoped_model.dart';
 import 'package:harrier_central/services/pay_scoped_model.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/widgets/payment_snackbar.dart';
+import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/new_user.dart';
+import 'package:harrier_central/widgets/payment_snackbar.dart';
 
 class CheckInPackPage extends StatefulWidget {
   const CheckInPackPage({
@@ -200,7 +202,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   }
 
   @override
-  Widget build(BuildContext topContext) {
+  Widget build(BuildContext context) {
     getPack(false);
     return ScopedModel<PackScopedModel>(
       model: _packScopedModel,
@@ -541,19 +543,19 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 //
 //
 
-  Widget buildRsvpAndPaymentSnackbar(
-      BuildContext context, int index, PackScopedModel _packScopedModel) {
-    final SnackBar snackbar = PaymentSnackBar(
-      context: context,
-      index: index,
-      futureRun: widget.futureRun,
-      packScopedModel: _packScopedModel,
-      payScopedModel: _payScopedModel,
-      packList: packList,
-    );
+  // Widget buildRsvpAndPaymentSnackbar(
+  //     BuildContext context, int index, PackScopedModel _packScopedModel) {
+  //   final SnackBar snackbar = PaymentSnackBar(
+  //     context: context,
+  //     index: index,
+  //     futureRun: widget.futureRun,
+  //     packScopedModel: _packScopedModel,
+  //     payScopedModel: _payScopedModel,
+  //     packList: packList,
+  //   );
 
-    return snackbar;
-  }
+  //   return snackbar;
+  // }
 }
 
 class PackListView extends StatelessWidget {
@@ -582,6 +584,252 @@ class PackListView extends StatelessWidget {
     );
 
     return snackbar;
+  }
+
+  Widget listItem(BuildContext context, int index) {
+    return GestureDetector(
+      onTap: () {
+        final SnackBar snackBar =
+            buildRsvpAndPaymentSnackbar(context, index, packScopedModel);
+
+        Scaffold.of(context)
+            .removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+        Scaffold.of(context).showSnackBar(snackBar);
+      },
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        child: Stack(
+          children: <Widget>[
+            packList[index].photo.startsWith('http')
+                ? CachedNetworkImage(
+                    imageUrl: packList[index].photo,
+                    // placeholder: (context, url) => Container(
+                    //     child: Center(
+                    //       child: Container(
+                    //         height: 20,
+                    //         width: 20,
+                    //         child: CircularProgressIndicator(
+                    //           strokeWidth: 3.0,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //     height: 70.0,
+                    //    width: 70.0),
+                    errorWidget:
+                        (BuildContext context, String url, Object error) =>
+                            const Icon(Icons.error),
+                    //fadeOutDuration:  Duration(seconds: 1),
+                    fadeInDuration: const Duration(milliseconds: 0),
+                    width: 70.0,
+                    height: 70.0,
+                    fit: BoxFit.fill)
+                : packList[index].photo.startsWith('bundle')
+                    ? Image(
+                        width: 70.0,
+                        height: 70.0,
+                        fit: BoxFit.fill,
+                        image: AssetImage('images/avatars/' +
+                            packList[index]
+                                .photo
+                                .toLowerCase()
+                                .replaceFirst('bundle://', '') +
+                            '.png'),
+                      )
+                    : Image(
+                        width: 70.0,
+                        height: 70.0,
+                        fit: BoxFit.fill,
+                        image: const AssetImage('images/avatars/avatar-2.png'),
+                      ),
+
+            Positioned(
+              left: 77.0,
+              top: 3.0,
+              child: Text(packList[index].displayName,
+                  style: const TextStyle(
+                      fontFamily: 'AvenirNextCondensedMedium',
+                      fontStyle: FontStyle.normal,
+                      fontSize: 25.0,
+                      height: 1.0)),
+            ),
+            Positioned(
+              right: 3.0,
+              bottom: 0.0,
+              child: packList[index].userRunCount < 1
+                  ? const Text('')
+                  : Text(
+                      packList[index].userRunCount.toString() +
+                          (packList[index].userRunCount == 1 ? ' Run' : ' Runs'),
+                      style: TextStyle(
+                        fontFamily:
+                            checkSpecialRun(packList[index].userRunCount) == true
+                                ? 'AvenirNextDemiBold'
+                                : 'AvenirNext',
+                        fontStyle: FontStyle.normal,
+                        fontSize: 25.0,
+                        height: 1.0,
+                        color:
+                            checkSpecialRun(packList[index].userRunCount) == true
+                                ? Colors.red[700]
+                                : Colors.black,
+                      )),
+            ),
+
+            Positioned(
+              left: 75.0,
+              bottom: 3.0,
+              child: CircleAvatar(
+                backgroundColor: packList[index].rsvpState == 0
+                    ? Colors.transparent
+                    : packList[index].rsvpState == -1
+                        ? Colors.blue
+                        : Colors.white,
+                radius: 14.0,
+              ),
+            ),
+            Positioned(
+              left: 77.0,
+              bottom: packList[index].rsvpState <= 0
+                  ? 4.5
+                  : packList[index].isHare == 1 ? 5.0 : 5.5,
+              child: packList[index].rsvpState <= 0
+                  ? const CircleAvatar(
+                      backgroundColor: Colors.transparent,
+                      radius: 12.0,
+                    )
+                  : packList[index].rsvpState == rsvpNo.value
+                      ? const Icon(FontAwesomeIcons.solidTimesCircle,
+                          color: Colors.red, size: 24.0)
+                      : packList[index].rsvpState == rsvpMaybe.value
+                          ? const Icon(FontAwesomeIcons.solidQuestionCircle,
+                              color: Colors.orange, size: 24.0)
+                          : packList[index].isHare == 0
+                              ? const Icon(FontAwesomeIcons.solidCheckCircle,
+                                  color: Colors.green, size: 24.0)
+                              : Image.asset('images/icons/hare_icon.png',
+                                  color: Colors.deepPurple,
+                                  height: 24.0,
+                                  width: 24.0),
+
+              // AssetImage(
+              //     'images/icons/hare_icon.png'),
+            ),
+
+            ScopedModelDescendant<PayScopedModel>(builder:
+                (BuildContext context, Widget child, PayScopedModel model) {
+              return packList.isEmpty
+                  ? const Positioned(
+                      top: 0,
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Text('No pack members loaded'))
+                  : Positioned(
+                      left: 115.0,
+                      bottom: 3.0,
+                      child:
+                          packList[index].attendenceState < attendenceAtHash.value
+                              ? Container()
+                              : packList[index].rsvpState != rsvpYes.value
+                                  ? Container()
+                                  : CircleAvatar(
+                                      backgroundColor:
+                                          packList[index].attendenceState == 0
+                                              ? Colors.transparent
+                                              : packList[index].isPaid == -1
+                                                  ? Colors.blue
+                                                  : Colors.white,
+                                      radius: 14.0,
+                                    ),
+                    );
+            }),
+            ScopedModelDescendant<PayScopedModel>(
+              builder:
+                  (BuildContext context, Widget child, PayScopedModel model) {
+                return packList.isEmpty
+                    ? const Positioned(
+                        top: 0,
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Text('No pack members loaded'))
+                    : Positioned(
+                        left: 117.0,
+                        bottom: packList[index].attendenceState < -1 ? 4.5 : 5.5,
+                        child: packList[index].attendenceState <
+                                attendenceAtHash.value
+                            ? Container()
+                            : packList[index].rsvpState != rsvpYes.value
+                                ? Container()
+                                : ((packList[index].attendenceState <=
+                                            attendenceNo.value) &&
+                                        (packList[index].requestedAttendenceState <=
+                                            attendenceNo.value))
+                                    ? Image.asset(
+                                        'images/icons/dollar_sign_icon.png',
+                                        height: 24.0,
+                                        width: 24.0,
+                                        color: Colors.transparent)
+                                    : packList[index].isPaid == isPaidNo.value
+                                        ? Image.asset(
+                                            'images/icons/dollar_sign_icon.png',
+                                            height: 24.0,
+                                            width: 24.0,
+                                            color: Colors.red)
+                                        : packList[index].isPaid == isPaidYes.value
+                                            ? Image.asset(
+                                                'images/icons/payment_type_${packList[index].paymentType}.png',
+                                                height: 24.0,
+                                                width: 24.0,
+                                                color: Colors.green)
+                                            : Container()
+
+                        // AssetImage(
+                        //     'images/icons/hare_icon.png'),
+                        );
+              },
+            ),
+
+            Positioned(
+              left: 155.0,
+              bottom: 3.0,
+              child: packList[index].rsvpState != rsvpYes.value
+                  ? Container()
+                  : CircleAvatar(
+                      backgroundColor: packList[index].attendenceState == 0
+                          ? Colors.transparent
+                          : packList[index].attendenceState == -1
+                              ? Colors.blue
+                              : Colors.white,
+                      radius: 14.0,
+                    ),
+            ),
+            Positioned(
+              left: 157.0,
+              bottom: packList[index].attendenceState <= 0 ? 4.5 : 5.5,
+              child: packList[index].rsvpState != rsvpYes.value
+                  ? Container()
+                  : packList[index].attendenceState == attendenceNo.value
+                      ? Image.asset('images/icons/not_at_hash_icon.png',
+                          height: 24.0, width: 24.0, color: Colors.red[700])
+                      : packList[index].attendenceState == attendenceAtHash.value
+                          ? Image.asset('images/icons/runner_icon.png',
+                              height: 24.0, width: 24.0, color: Colors.red)
+                          : packList[index].attendenceState >=
+                                  attendenceOnIn.value
+                              ? Image.asset('images/icons/beer_icon.png',
+                                  height: 24.0, width: 24.0, color: Colors.green)
+                              : Image.asset('images/icons/beer_icon.png',
+                                  height: 24.0,
+                                  width: 24.0,
+                                  color: Colors.transparent),
+            ),
+
+            // Payment icons
+          ],
+        ),
+      ),
+    );
   }
 
   bool checkSpecialRun(int runCount) {
@@ -624,272 +872,174 @@ class PackListView extends StatelessWidget {
                       padding: EdgeInsets.all(5.0),
                       child: Center(child: CircularProgressIndicator())),
                 )
-              : GestureDetector(
-                  onTap: () {
-                    final SnackBar snackBar = buildRsvpAndPaymentSnackbar(
-                        context, index, packScopedModel);
+              : Dismissible(
+                  key: Key(index.toString()),
+                  confirmDismiss: (DismissDirection direction) {
+                    packScopedModel.forceRefresh();
+                    print(direction.toString() + ' ' + index.toString());
+                         processPayment(index, packScopedModel, payScopedModel, context, direction == DismissDirection.endToStart
+                            ? 3
+                            : 4, packList[index].eventPrice);              
 
-                    Scaffold.of(context).removeCurrentSnackBar(
-                        reason: SnackBarClosedReason.hide);
-                    Scaffold.of(context).showSnackBar(snackBar);
+                    return Future<bool>.value(false);
                   },
-                  child: Stack(
-                    children: <Widget>[
-                      packList[index].photo.startsWith('http')
-                          ? CachedNetworkImage(
-                              imageUrl: packList[index].photo,
-                              // placeholder: (context, url) => Container(
-                              //     child: Center(
-                              //       child: Container(
-                              //         height: 20,
-                              //         width: 20,
-                              //         child: CircularProgressIndicator(
-                              //           strokeWidth: 3.0,
-                              //         ),
-                              //       ),
-                              //     ),
-                              //     height: 70.0,
-                              //    width: 70.0),
-                              errorWidget: (BuildContext context, String url,
-                                      Object error) =>
-                                  const Icon(Icons.error),
-                              //fadeOutDuration:  Duration(seconds: 1),
-                              fadeInDuration: const Duration(milliseconds: 0),
-                              width: 70.0,
-                              height: 70.0,
-                              fit: BoxFit.fill)
-                          : packList[index].photo.startsWith('bundle')
-                              ? Image(
-                                  width: 70.0,
-                                  height: 70.0,
-                                  fit: BoxFit.fill,
-                                  image: AssetImage('images/avatars/' +
-                                      packList[index]
-                                          .photo
-                                          .toLowerCase()
-                                          .replaceFirst('bundle://', '') +
-                                      '.png'),
-                                )
-                              : Image(
-                                  width: 70.0,
-                                  height: 70.0,
-                                  fit: BoxFit.fill,
-                                  image: const AssetImage(
-                                      'images/avatars/avatar-2.png'),
-                                ),
-
-                      Positioned(
-                        left: 77.0,
-                        top: 3.0,
-                        child: Text(packList[index].displayName,
-                            style: const TextStyle(
-                                fontFamily: 'AvenirNextCondensedMedium',
-                                fontStyle: FontStyle.normal,
-                                fontSize: 25.0,
-                                height: 1.0)),
-                      ),
-                      Positioned(
-                        right: 3.0,
-                        bottom: 0.0,
-                        child: packList[index].userRunCount < 1
-                            ? const Text('')
-                            : Text(
-                                packList[index].userRunCount.toString() +
-                                    (packList[index].userRunCount == 1
-                                        ? ' Run'
-                                        : ' Runs'),
-                                style: TextStyle(
-                                  fontFamily: checkSpecialRun(
-                                              packList[index].userRunCount) ==
-                                          true
-                                      ? 'AvenirNextDemiBold'
-                                      : 'AvenirNext',
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 25.0,
-                                  height: 1.0,
-                                  color: checkSpecialRun(
-                                              packList[index].userRunCount) ==
-                                          true
-                                      ? Colors.red[700]
-                                      : Colors.black,
-                                )),
-                      ),
-
-                      Positioned(
-                        left: 75.0,
-                        bottom: 3.0,
-                        child: CircleAvatar(
-                          backgroundColor: packList[index].rsvpState == 0
-                              ? Colors.transparent
-                              : packList[index].rsvpState == -1
-                                  ? Colors.blue
-                                  : Colors.white,
-                          radius: 14.0,
+                  background: Container(
+                    color: Colors.blue,
+                    child: Row(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(left: 15.0),
+                          child: Image.asset('images/icons/payment_type_4.png',
+                              height: 25.0, width: 25.0, color: Colors.white),
                         ),
-                      ),
-                      Positioned(
-                        left: 77.0,
-                        bottom: packList[index].rsvpState <= 0
-                            ? 4.5
-                            : packList[index].isHare == 1 ? 5.0 : 5.5,
-                        child: packList[index].rsvpState <= 0
-                            ? const CircleAvatar(
-                                backgroundColor: Colors.transparent,
-                                radius: 12.0,
-                              )
-                            : packList[index].rsvpState == rsvpNo.value
-                                ? const Icon(FontAwesomeIcons.solidTimesCircle,
-                                    color: Colors.red, size: 24.0)
-                                : packList[index].rsvpState == rsvpMaybe.value
-                                    ? const Icon(
-                                        FontAwesomeIcons.solidQuestionCircle,
-                                        color: Colors.orange,
-                                        size: 24.0)
-                                    : packList[index].isHare == 0
-                                        ? const Icon(
-                                            FontAwesomeIcons.solidCheckCircle,
-                                            color: Colors.green,
-                                            size: 24.0)
-                                        : Image.asset(
-                                            'images/icons/hare_icon.png',
-                                            color: Colors.deepPurple,
-                                            height: 24.0,
-                                            width: 24.0),
-
-                        // AssetImage(
-                        //     'images/icons/hare_icon.png'),
-                      ),
-
-                      ScopedModelDescendant<PayScopedModel>(builder:
-                          (BuildContext context, Widget child,
-                              PayScopedModel model) {
-                        return packList.isEmpty
-                            ? const Positioned(
-                                top: 0,
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                child: Text('No pack members loaded'))
-                            : Positioned(
-                                left: 115.0,
-                                bottom: 3.0,
-                                child: packList[index].attendenceState <
-                                        attendenceAtHash.value
-                                    ? Container()
-                                    : packList[index].rsvpState != rsvpYes.value
-                                        ? Container()
-                                        : CircleAvatar(
-                                            backgroundColor: packList[index]
-                                                        .attendenceState ==
-                                                    0
-                                                ? Colors.transparent
-                                                : packList[index].isPaid == -1
-                                                    ? Colors.blue
-                                                    : Colors.white,
-                                            radius: 14.0,
-                                          ),
-                              );
-                      }),
-                      ScopedModelDescendant<PayScopedModel>(
-                        builder: (BuildContext context, Widget child,
-                            PayScopedModel model) {
-                          return packList.isEmpty
-                              ? const Positioned(
-                                  top: 0,
-                                  bottom: 0,
-                                  left: 0,
-                                  right: 0,
-                                  child: Text('No pack members loaded'))
-                              : Positioned(
-                                  left: 117.0,
-                                  bottom: packList[index].attendenceState < -1
-                                      ? 4.5
-                                      : 5.5,
-                                  child: packList[index].attendenceState < attendenceAtHash.value
-                                      ? Container()
-                                      : packList[index].rsvpState != rsvpYes.value
-                                          ? Container()
-                                          : ((packList[index].attendenceState <=
-                                                      attendenceNo.value) &&
-                                                  (packList[index].requestedAttendenceState <=
-                                                      attendenceNo.value))
-                                              ? Image.asset('images/icons/dollar_sign_icon.png',
-                                                  height: 24.0,
-                                                  width: 24.0,
-                                                  color: Colors.transparent)
-                                              : packList[index].isPaid == isPaidNo.value
-                                                  ? Image.asset('images/icons/dollar_sign_icon.png',
-                                                      height: 24.0,
-                                                      width: 24.0,
-                                                      color: Colors.red)
-                                                  : packList[index].isPaid == isPaidYes.value
-                                                      ? Image.asset('images/icons/payment_type_${packList[index].paymentType}.png',
-                                                          height: 24.0,
-                                                          width: 24.0,
-                                                          color: Colors.green)
-                                                      : Container()
-
-                                  // AssetImage(
-                                  //     'images/icons/hare_icon.png'),
-                                  );
-                        },
-                      ),
-
-                      Positioned(
-                        left: 155.0,
-                        bottom: 3.0,
-                        child: packList[index].rsvpState != rsvpYes.value
-                            ? Container()
-                            : CircleAvatar(
-                                backgroundColor:
-                                    packList[index].attendenceState == 0
-                                        ? Colors.transparent
-                                        : packList[index].attendenceState == -1
-                                            ? Colors.blue
-                                            : Colors.white,
-                                radius: 14.0,
-                              ),
-                      ),
-                      Positioned(
-                        left: 157.0,
-                        bottom:
-                            packList[index].attendenceState <= 0 ? 4.5 : 5.5,
-                        child: packList[index].rsvpState != rsvpYes.value
-                            ? Container()
-                            : packList[index].attendenceState ==
-                                    attendenceNo.value
-                                ? Image.asset(
-                                    'images/icons/not_at_hash_icon.png',
-                                    height: 24.0,
-                                    width: 24.0,
-                                    color: Colors.red[700])
-                                : packList[index].attendenceState ==
-                                        attendenceAtHash.value
-                                    ? Image.asset(
-                                        'images/icons/runner_icon.png',
-                                        height: 24.0,
-                                        width: 24.0,
-                                        color: Colors.red)
-                                    : packList[index].attendenceState >=
-                                            attendenceOnIn.value
-                                        ? Image.asset(
-                                            'images/icons/beer_icon.png',
-                                            height: 24.0,
-                                            width: 24.0,
-                                            color: Colors.green)
-                                        : Image.asset(
-                                            'images/icons/beer_icon.png',
-                                            height: 24.0,
-                                            width: 24.0,
-                                            color: Colors.transparent),
-                      ),
-
-                      // Payment icons
-                    ],
+                        Padding(
+                          padding: const EdgeInsets.only(left: 15.0),
+                          child: Text(
+                              '${Utilities.getFormattedMoney(packList[index].eventPrice, packList[index].digitsAfterDecimal, packList[index].currencySymbol)} Bank Transfer',
+                              style: const TextStyle(
+                                  fontFamily: 'AvenirNextDemiBold',
+                                  fontStyle: FontStyle.normal,
+                                  color: Colors.white,
+                                  fontSize: 17.0,
+                                  height: 1.0)),
+                        ),
+                      ],
+                    ),
                   ),
+                  secondaryBackground: Container(
+                    color: Colors.green,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(right: 15.0),
+                          child: Image.asset('images/icons/payment_type_3.png',
+                              height: 25.0, width: 25.0, color: Colors.white),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 15.0),
+                          child: Text(
+                              '${Utilities.getFormattedMoney(packList[index].eventPrice, packList[index].digitsAfterDecimal, packList[index].currencySymbol)} Cash',
+                              style: const TextStyle(
+                                  fontFamily: 'AvenirNextDemiBold',
+                                  fontStyle: FontStyle.normal,
+                                  color: Colors.white,
+                                  fontSize: 17.0,
+                                  height: 1.0)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  onDismissed: (DismissDirection direction) {
+                    print(direction.toString() +
+                        ' NOTE: We should never reach this point');
+                  },
+                  child: listItem(context, index),
                 );
         });
   }
+
+    void processPayment(
+      int index,
+      PackScopedModel _packScopedModel,
+      PayScopedModel _payScopedModel,
+      BuildContext context,
+      int paymentType,
+      num paymentAmount) {
+    final UserModel hasher = packList[index];
+
+    if (hasher.rsvpState < rsvpYes.value) {
+      hasher.rsvpState = -1;
+      hasher.requestedRsvpState = rsvpYes.value;
+    }
+
+    _packScopedModel.forceRefresh();
+
+    _payScopedModel
+        .payForEvent(
+            packList, index, paymentType, paymentAmount, attendenceAtHash.value)
+        .then((List<PayForEventModel> result) {
+      if (paymentType == paymentNotPaid.value) {
+        hasher.isPaid = 0;
+      } else {
+        hasher.isPaid = 1;
+      }
+
+      if (hasher.hasherEventMapId != result[0].hasherEventMapId) {
+        hasher.hasherEventMapId = result[0].hasherEventMapId;
+      }
+
+      if (hasher.userRunCount != result[0].totalRunsThisKennel) {
+        hasher.userRunCount = result[0].totalRunsThisKennel;
+      }
+
+      hasher.rsvpState = rsvpYes.value;
+      hasher.requestedRsvpState = -1;
+
+      if (hasher.attendenceState < attendenceAtHash.value) {
+        hasher.attendenceState = attendenceAtHash.value;
+      }
+
+      _packScopedModel.forceRefresh();
+
+      packList[index].paymentType = paymentType;
+      if ((paymentType == paymentCashOtherAmount.value) ||
+          (paymentType == paymentBankTransferOtherAmount.value)) {
+        final num fundsDifference = paymentAmount -
+            (hasher.isMember == 1
+                ? futureRun.eventPriceForMembers
+                : futureRun.eventPriceForNonMembers);
+
+        final String credit = Utilities.getFormattedMoney(fundsDifference,
+            futureRun?.digitsAfterDecimal ?? 2, futureRun.currencySymbol);
+
+        final double hashCashAmount = hasher.isMember == 1
+            ? futureRun.eventPriceForMembers
+            : futureRun.eventPriceForNonMembers;
+
+        final String hashCash = Utilities.getFormattedMoney(hashCashAmount,
+            futureRun?.digitsAfterDecimal ?? 2, futureRun.currencySymbol);
+
+        final String amountPaid = Utilities.getFormattedMoney(paymentAmount,
+            futureRun?.digitsAfterDecimal ?? 2, futureRun.currencySymbol);
+
+        final String paymentMethod = paymentType == paymentCashOtherAmount.value
+            ? 'in cash'
+            : 'by bank transfer';
+
+        if (fundsDifference > 0.0) {
+          showDialog<void>(
+              context: context,
+              builder: (BuildContext context) {
+                // return object of type Dialog
+                return AlertDialog(
+                  title: const Text('Credit applied to account'),
+                  content: Text(
+                      '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${futureRun.kennelShortName}'),
+                  actions: <Widget>[
+                    // usually buttons at the bottom of the dialog
+                    FlatButton(
+                      color: Colors.blue,
+                      textColor: Colors.white,
+                      child: const Text('Close'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              });
+        }
+      }
+    });
+
+    packList[index].isPaid = -1;
+
+
+    Scaffold.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
+  }
+
+ 
 }
 
 //

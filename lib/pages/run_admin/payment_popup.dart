@@ -5,13 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:harrier_central/util/utilities.dart';
 
 class PaymentPopup extends StatefulWidget {
-   PaymentPopup(
+   const PaymentPopup(
       {@required this.hemId,
       @required this.currencySymbol,
       @required this.amount,
       @required this.creditRemaining,
       @required this.creditAllowed,
-      @required this.decimalDigits});
+      @required this.decimalDigits,
+      @required this.valueChanged});
 
   final String hemId;
   final String currencySymbol;
@@ -20,13 +21,16 @@ class PaymentPopup extends StatefulWidget {
   final int creditAllowed;
   final int decimalDigits;
 
-  int selectedValue;
+  final Function valueChanged;
 
   @override
   _PaymentPopupState createState() => _PaymentPopupState();
 }
 
 class _PaymentPopupState extends State<PaymentPopup> {
+
+  int selectedValue = 0;
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -40,7 +44,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                 Row(children: <Widget>[
                   Radio<int>(
                     value: 1,
-                    groupValue: widget.selectedValue,
+                    groupValue: selectedValue,
                     onChanged: _handleRadioValueChange1,
                   ),
                   const Text(
@@ -51,7 +55,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                 Row(children: <Widget>[
                   Radio<int>(
                     value: 2,
-                    groupValue: widget.selectedValue,
+                    groupValue: selectedValue,
                     onChanged: _handleRadioValueChange1,
                   ),
                   const Text(
@@ -62,7 +66,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                 Row(children: <Widget>[
                   Radio<int>(
                     value: 3,
-                    groupValue: widget.selectedValue,
+                    groupValue: selectedValue,
                     onChanged: _handleRadioValueChange1,
                   ),
                   Text(
@@ -73,7 +77,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                 Row(children: <Widget>[
                   Radio<int>(
                     value: 4,
-                    groupValue: widget.selectedValue,
+                    groupValue: selectedValue,
                     onChanged: _handleRadioValueChange1,
                   ),
                   Text(
@@ -89,7 +93,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                           children: <Widget>[
                             Radio<int>(
                               value: 6,
-                              groupValue: widget.selectedValue,
+                              groupValue: selectedValue,
                               onChanged: _handleRadioValueChange1,
                             ),
                             Column(
@@ -119,7 +123,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                       //     children: <Widget>[
                       //       Radio<int>(
                       //         value: 5,
-                      //         groupValue: widget.selectedValue,
+                      //         groupValue: selectedValue,
                       //         onChanged: _handleRadioValueChange1,
                       //       ),
                       //       Column(
@@ -188,7 +192,8 @@ class _PaymentPopupState extends State<PaymentPopup> {
 
   void _handleRadioValueChange1(int value) {
     setState(() {
-      widget.selectedValue = value;
+      widget.valueChanged(selectedValue: value);
+      //selectedValue = value;
     });
   }
 }
