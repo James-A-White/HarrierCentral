@@ -2,7 +2,7 @@ import 'dart:core';
 
 import 'package:flutter/material.dart';
 
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/util/enums.dart';
 
@@ -36,7 +36,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
         decoration: const InputDecoration(
           border: InputBorder.none,
           icon: Icon(
-            FontAwesomeIcons.moneyBillWave,
+            FontAwesome.money,
             color: Colors.white,
           ),
           hintText: 'Other amount',

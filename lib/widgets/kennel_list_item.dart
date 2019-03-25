@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/data_models/kennel_model.dart';
 import 'package:harrier_central/pages/kennel_admin/kennel_admin_main.dart';
@@ -67,16 +68,16 @@ class KennelsListItem extends StatelessWidget {
                                           (kennel.followingRequested ??
                                                       kennel.followingBool) ==
                                                   1
-                                              ? const Icon(FontAwesomeIcons.solidCheckCircle)
+                                              ? const Icon(FontAwesome.check_circle)
                                                   .icon
                                               : (kennel.followingRequested ??
                                                           kennel
                                                               .followingBool) ==
                                                       2
-                                                  ? const Icon(FontAwesomeIcons
-                                                          .solidTimesCircle)
+                                                  ? const Icon(FontAwesome
+                                                          .times_circle)
                                                       .icon
-                                                  : const Icon(FontAwesomeIcons.circle)
+                                                  : const Icon(FontAwesome.circle)
                                                       .icon,
                                           color: kennel.followingRequested !=
                                                   null

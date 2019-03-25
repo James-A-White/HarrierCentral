@@ -10,7 +10,7 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:audioplayers/audio_cache.dart';
 import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:harrier_central/main.dart';
@@ -334,7 +334,7 @@ class NewUserState extends State<NewUserWidget>
                             color: Colors.white,
                           ),
                           child: const Icon(
-                            FontAwesomeIcons.facebookF,
+                            FontAwesome.facebook_f,
                             color: Color(0xFF0084ff),
                           ),
                         ),

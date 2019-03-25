@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:scoped_model/scoped_model.dart';
 
@@ -174,7 +173,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 icon: Icon(
-                  FontAwesomeIcons.search,
+                  FontAwesome.search,
                   color: Colors.black,
                 ),
                 hintText: 'Hash or mortal name',
@@ -240,7 +239,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 onTap: () => print('THIRD CHILD'),
               ),
               SpeedDialChild(
-                child: const Icon(FontAwesomeIcons.beer),
+                child: const Icon(Ionicons.ios_beer),
                 backgroundColor: Colors.green,
                 label: 'Scan: On In',
                 labelStyle: const TextStyle(fontSize: 18.0),
@@ -308,7 +307,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 // }),
               ),
               SpeedDialChild(
-                child: const Icon(FontAwesomeIcons.solidHeart),
+                child: const Icon(FontAwesome.heart),
                 backgroundColor: Colors.blue,
                 label: 'Add Virgin / Visitor',
                 labelStyle: const TextStyle(fontSize: 18.0),
@@ -712,14 +711,14 @@ class PackListView extends StatelessWidget {
                   : packList[index].rsvpState == 0
                       ? Container()
                       : packList[index].rsvpState == rsvpNo.value
-                          ? const Icon(FontAwesomeIcons.solidTimesCircle,
+                          ? const Icon(FontAwesome.times_circle,
                               color: Colors.red, size: 24.0)
                           : packList[index].rsvpState == rsvpMaybe.value
-                              ? const Icon(FontAwesomeIcons.solidQuestionCircle,
+                              ? const Icon(FontAwesome.question_circle,
                                   color: Colors.orange, size: 24.0)
                               : packList[index].isHare == 0
                                   ? const Icon(
-                                      FontAwesomeIcons.solidCheckCircle,
+                                      FontAwesome.check_circle,
                                       color: Colors.green,
                                       size: 24.0)
                                   : Image.asset('images/icons/hare_icon.png',
@@ -1175,7 +1174,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
           decoration: const InputDecoration(
             //border: InputBorder.none,
             icon: Icon(
-              FontAwesomeIcons.moneyBillWave,
+              FontAwesome.money,
               color: Colors.white,
             ),
             hintText: 'Just Julie',
@@ -1195,7 +1194,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
           decoration: const InputDecoration(
             //border: InputBorder.none,
             icon: Icon(
-              FontAwesomeIcons.moneyBillWave,
+              FontAwesome.money,
               color: Colors.white,
             ),
             hintText: '(email - optional)',
@@ -1215,7 +1214,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
           decoration: const InputDecoration(
             //border: InputBorder.none,
             icon: Icon(
-              FontAwesomeIcons.moneyBillWave,
+              FontAwesome.money,
               color: Colors.white,
             ),
             hintText: '(phone # - optional)',

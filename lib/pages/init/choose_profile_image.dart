@@ -7,7 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -521,7 +521,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                   ),
                   const Padding(
                     padding: EdgeInsets.only(left: 15.0, right: 15.0),
-                    child: Icon(FontAwesomeIcons.circle,
+                    child: Icon(FontAwesome.circle,
                         color: Color(0xFFFFFFFF), size: 10.0),
                   ),
                   Container(

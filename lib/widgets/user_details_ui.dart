@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class UserDetailsUi extends StatefulWidget {
   UserDetailsUi(
@@ -87,7 +86,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
                 decoration: const InputDecoration(
                   border: InputBorder.none,
                   icon: Icon(
-                    FontAwesomeIcons.user,
+                    FontAwesome.user,
                     color: Colors.black,
                   ),
                   hintText: 'First Name',
@@ -119,7 +118,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
                 decoration: const InputDecoration(
                   border: InputBorder.none,
                   icon: Icon(
-                    FontAwesomeIcons.user,
+                    FontAwesome.user,
                     color: Colors.black,
                   ),
                   hintText: 'Last Name',
@@ -150,7 +149,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
                 decoration: const InputDecoration(
                   border: InputBorder.none,
                   icon: Icon(
-                    FontAwesomeIcons.envelope,
+                    FontAwesome.envelope,
                     color: Colors.black,
                   ),
                   hintText: 'Email Address',

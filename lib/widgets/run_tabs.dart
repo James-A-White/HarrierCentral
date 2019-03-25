@@ -7,10 +7,9 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong/latlong.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/data_models/future_run_model.dart';
 import 'package:harrier_central/data_models/user_model.dart';
@@ -433,7 +432,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       ),
                                 IconButton(
                                   icon: const Icon(
-                                      FontAwesomeIcons.solidCheckCircle),
+                                      FontAwesome.check_circle),
                                   color: widget.futureRun.requestedRsvpState ==
                                           rsvpYes.value
                                       ? Colors.blue
@@ -505,7 +504,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       ),
                                 IconButton(
                                   icon: const Icon(
-                                      FontAwesomeIcons.solidQuestionCircle),
+                                      FontAwesome.question_circle),
                                   color: widget.futureRun.requestedRsvpState ==
                                           rsvpMaybe.value
                                       ? Colors.blue
@@ -581,7 +580,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       ),
                                 IconButton(
                                   icon: const Icon(
-                                      FontAwesomeIcons.solidTimesCircle),
+                                      FontAwesome.times_circle),
                                   color: widget.futureRun.requestedRsvpState ==
                                           rsvpNo.value
                                       ? Colors.blue
@@ -869,23 +868,23 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                 )
                                               : packList[index].rsvpState == 1
                                                   ? const Icon(
-                                                      FontAwesomeIcons
-                                                          .solidTimesCircle,
+                                                      FontAwesome
+                                                          .times_circle,
                                                       color: Colors.red,
                                                       size: 20.0)
                                                   : packList[index].rsvpState ==
                                                           2
                                                       ? const Icon(
-                                                          FontAwesomeIcons
-                                                              .solidQuestionCircle,
+                                                          FontAwesome
+                                                              .question_circle,
                                                           color: Colors.orange,
                                                           size: 20.0)
                                                       : packList[index]
                                                                   .isHare ==
                                                               0
                                                           ? const Icon(
-                                                              FontAwesomeIcons
-                                                                  .solidCheckCircle,
+                                                              FontAwesome
+                                                                  .check_circle,
                                                               color:
                                                                   Colors.green,
                                                               size: 20.0)
