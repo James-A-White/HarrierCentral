@@ -701,10 +701,10 @@ class PackListView extends StatelessWidget {
                     ),
             ),
             Positioned(
-              left: 77.0,
+              left: 76.0,
               bottom: packList[index].rsvpState <= 0
-                  ? 3.0
-                  : packList[index].isHare == 1 ? 5.0 : 5.5,
+                  ? 2.0
+                  : packList[index].isHare == 1 ? 5.0 : 3.5,
               child: packList[index].rsvpState < 0
                   ? const Icon(MaterialCommunityIcons.cloud_upload,
                       color: Colors.blue)
@@ -712,15 +712,15 @@ class PackListView extends StatelessWidget {
                       ? Container()
                       : packList[index].rsvpState == rsvpNo.value
                           ? const Icon(FontAwesome.times_circle,
-                              color: Colors.red, size: 24.0)
+                              color: Colors.red, size: 27.0)
                           : packList[index].rsvpState == rsvpMaybe.value
                               ? const Icon(FontAwesome.question_circle,
-                                  color: Colors.orange, size: 24.0)
+                                  color: Colors.orange, size: 27.0)
                               : packList[index].isHare == 0
                                   ? const Icon(
                                       FontAwesome.check_circle,
                                       color: Colors.green,
-                                      size: 24.0)
+                                      size: 27.0)
                                   : Image.asset('images/icons/hare_icon.png',
                                       color: Colors.deepPurple,
                                       height: 24.0,

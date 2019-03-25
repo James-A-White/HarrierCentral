@@ -65,9 +65,9 @@ class KennelsListItem extends StatelessWidget {
                                         KennelScopedModel model) =>
                                     IconButton(
                                       icon: Icon(
-                                          (kennel.followingRequested ??
-                                                      kennel.followingBool) ==
-                                                  1
+                                          (kennel.followingRequested != null) ?
+                                              FontAwesome.cloud_upload
+                                                      : (kennel.followingBool == 1)
                                               ? const Icon(FontAwesome.check_circle)
                                                   .icon
                                               : (kennel.followingRequested ??
@@ -77,7 +77,7 @@ class KennelsListItem extends StatelessWidget {
                                                   ? const Icon(FontAwesome
                                                           .times_circle)
                                                       .icon
-                                                  : const Icon(FontAwesome.circle)
+                                                  : const Icon(FontAwesome.circle_thin)
                                                       .icon,
                                           color: kennel.followingRequested !=
                                                   null

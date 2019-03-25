@@ -2,42 +2,43 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/services/kennel_scoped_model.dart';
-import 'package:harrier_central/widgets/kennel_list_item.dart';
+
+import 'package:harrier_central/services/kennel_run_history_totals_scoped_model.dart';
+import 'package:harrier_central/widgets/kennel_run_history_count_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 
-class KennelsListPage extends StatefulWidget {
-  const KennelsListPage({Key key, @required this.kennelModel})
+class HistoryListPage extends StatefulWidget {
+  const HistoryListPage({Key key, @required this.kennelRunCountHistoryModel})
       : super(key: key);
 
-  final KennelScopedModel kennelModel;
+  final KennelRunHistoryTotalsScopedModel kennelRunCountHistoryModel;
 
   @override
-  KennelsListPageState createState() => KennelsListPageState(model: kennelModel);
+  HistoryListPageState createState() => HistoryListPageState(model: kennelRunCountHistoryModel);
 
 }
 
-class KennelsListPageState extends State<KennelsListPage> {
+class HistoryListPageState extends State<HistoryListPage> {
   
-  KennelsListPageState({@required this.model});
+  HistoryListPageState({@required this.model});
 
-  KennelScopedModel model;
+  KennelRunHistoryTotalsScopedModel model;
 
   int pageIndex = 1;
 
   @override
   Widget build(BuildContext context) {
 
-    return ScopedModel<KennelScopedModel>(
+    return ScopedModel<KennelRunHistoryTotalsScopedModel>(
       model: model,
       child: Scaffold(
-        body: ScopedModelDescendant<KennelScopedModel>(
+        body: ScopedModelDescendant<KennelRunHistoryTotalsScopedModel>(
           builder:
-              (BuildContext context, Widget child, KennelScopedModel model) {
+              (BuildContext context, Widget child, KennelRunHistoryTotalsScopedModel model) {
 
-    if ((model.kennelsList.isEmpty) &&
+    if ((model.kennelRunCountList.isEmpty) &&
         (!model.isLoading)) {   // TODO(James): Check this statement and make sure the cast to FALSE is correct
       model.getKennelsFromBackend(true);}
 
@@ -76,12 +77,12 @@ class KennelsListPageState extends State<KennelsListPage> {
                 itemCount: model.getKennelsCount(),
                 itemBuilder: (BuildContext context, int index) {
                   return Container(
-                    height: 130.0,
+                    height: 140.0,
                     padding: const EdgeInsets.all(0.0),
                     child: ListView(
                         scrollDirection: Axis.horizontal,
                         children: <Widget>[
-                          KennelsListItem(kennel: model.kennelsList[index]),
+                          KennelRunHistoryCountListItem(kennelRunHistoryCount: model.kennelRunCountList[index]),
                         ]),
                   );
                 },

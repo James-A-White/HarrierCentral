@@ -3,11 +3,13 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:harrier_central/data_models/main_navigation_model.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/pages/top_level/history_list_page.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 import 'package:harrier_central/services/kennel_scoped_model.dart';
+import 'package:harrier_central/services/kennel_run_history_totals_scoped_model.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
@@ -37,7 +39,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     tabTitles.add('Upcoming Runs');
     tabTitles.add('Kennels');
-    tabTitles.add('My stats');
+    tabTitles.add('History');
     tabTitles.add('Scanner');
     tabTitles.add('Friends');
 
@@ -51,6 +53,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   }
 
   final KennelScopedModel kennelModel = KennelScopedModel();
+  final KennelRunHistoryTotalsScopedModel kennelRunHistoryTotalsScopedModel =
+      KennelRunHistoryTotalsScopedModel();
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   int currentPage = 0;
@@ -63,6 +68,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       Widget w;
 
       appBarText = tabTitles[pageIndex];
+
       switch (pageIndex) {
         case 0:
           w = const FutureRunsListPage();
@@ -71,6 +77,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           w = KennelsListPage(kennelModel: kennelModel);
           break;
         case 2:
+          w = HistoryListPage(
+              kennelRunCountHistoryModel: kennelRunHistoryTotalsScopedModel);
+          break;
+        case 3:
           w = const UserQrCodePage();
           break;
       }
@@ -113,6 +123,15 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             //     ),
           ),
           TabData(
+            iconData: Entypo.open_book,
+            title: 'History',
+            // onclick: () => Navigator.of(context).push<dynamic>(
+            //       MaterialPageRoute<dynamic>(
+            //         builder: (BuildContext context) => UserQrCodePage(),
+            //       ),
+            //     ),
+          ),
+          TabData(
             iconData: MaterialCommunityIcons.qrcode_scan,
             title: 'Scanner',
           )
@@ -121,6 +140,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         key: bottomNavigationKey,
         onTabChangedListener: (int position) {
           setState(() {
+            appBarText = tabTitles[position];
             currentPage = position;
           });
         },

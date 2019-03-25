@@ -24,7 +24,6 @@ class FutureRunScopedModel
   void clearFutureRunsList() {
     if (_futureRunsList != null) {
       _futureRunsList.clear();
-      _futureRunsList = null;
     }
   }
 
