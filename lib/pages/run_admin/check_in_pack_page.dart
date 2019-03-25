@@ -653,6 +653,16 @@ class PackListView extends StatelessWidget {
                       fontSize: 25.0,
                       height: 1.0)),
             ),
+            // this widget is here to grow the contents of the cell to a size that fills nearly the whole cell
+            // in order to give plenty of room for the tap gesture.
+            Positioned(
+              left: 75,
+              top: 0,
+              child: Container(
+                  width: MediaQuery.of(context).size.width - 80,
+                  height: 65,
+                  color: Colors.transparent),
+            ),
             Positioned(
               right: 3.0,
               bottom: 0.0,
@@ -733,9 +743,14 @@ class PackListView extends StatelessWidget {
                   : Positioned(
                       left: 115.0,
                       bottom: 3.0,
-                      child: (packList[index].attendenceState < attendenceAtHash.value) && (packList[index].requestedAttendenceState < attendenceAtHash.value)
+                      child: (packList[index].attendenceState <
+                                  attendenceAtHash.value) &&
+                              (packList[index].requestedAttendenceState <
+                                  attendenceAtHash.value)
                           ? Container()
-                          : (packList[index].rsvpState != rsvpYes.value) && (packList[index].requestedRsvpState != rsvpYes.value)
+                          : (packList[index].rsvpState != rsvpYes.value) &&
+                                  (packList[index].requestedRsvpState !=
+                                      rsvpYes.value)
                               ? Container()
                               : packList[index].isPaid == -1
                                   ? const Icon(
@@ -764,12 +779,13 @@ class PackListView extends StatelessWidget {
                         left: 117.0,
                         bottom:
                             packList[index].attendenceState < -1 ? 4.5 : 5.5,
-                        child: (packList[index].attendenceState < attendenceAtHash.value) && (packList[index].requestedAttendenceState < attendenceAtHash.value)
+                        child: (packList[index].attendenceState < attendenceAtHash.value) &&
+                                (packList[index].requestedAttendenceState <
+                                    attendenceAtHash.value)
                             ? Container()
                             : (packList[index].rsvpState != rsvpYes.value) && (packList[index].requestedRsvpState != rsvpYes.value)
                                 ? Container()
-                                : ((packList[index].attendenceState <=
-                                            attendenceNo.value) &&
+                                : ((packList[index].attendenceState <= attendenceNo.value) &&
                                         (packList[index].requestedAttendenceState <=
                                             attendenceNo.value))
                                     ? Image.asset(
@@ -784,11 +800,7 @@ class PackListView extends StatelessWidget {
                                             width: 24.0,
                                             color: Colors.red)
                                         : packList[index].isPaid == isPaidYes.value
-                                            ? Image.asset(
-                                                'images/icons/payment_type_${packList[index].paymentType}.png',
-                                                height: 24.0,
-                                                width: 24.0,
-                                                color: Colors.green)
+                                            ? Image.asset('images/icons/payment_type_${packList[index].paymentType}.png', height: 24.0, width: 24.0, color: Colors.green)
                                             : Container()
 
                         // AssetImage(
@@ -800,7 +812,8 @@ class PackListView extends StatelessWidget {
             Positioned(
               left: 155.0,
               bottom: 3.0,
-              child: (packList[index].rsvpState != rsvpYes.value) && (packList[index].requestedRsvpState != rsvpYes.value)
+              child: (packList[index].rsvpState != rsvpYes.value) &&
+                      (packList[index].requestedRsvpState != rsvpYes.value)
                   ? Container()
                   : packList[index].attendenceState < 0
                       ? const Icon(MaterialCommunityIcons.cloud_upload,
@@ -810,12 +823,13 @@ class PackListView extends StatelessWidget {
                               ? Colors.transparent
                               : Colors.white,
                           radius: 14.0,
-                        ), 
+                        ),
             ),
             Positioned(
               left: 157.0,
               bottom: packList[index].attendenceState <= 0 ? 4.5 : 5.5,
-              child: (packList[index].rsvpState != rsvpYes.value) && (packList[index].requestedRsvpState != rsvpYes.value)
+              child: (packList[index].rsvpState != rsvpYes.value) &&
+                      (packList[index].requestedRsvpState != rsvpYes.value)
                   ? Container()
                   : packList[index].attendenceState == attendenceNo.value
                       ? Image.asset('images/icons/not_at_hash_icon.png',
@@ -883,65 +897,123 @@ class PackListView extends StatelessWidget {
               : Dismissible(
                   key: Key(index.toString()),
                   confirmDismiss: (DismissDirection direction) {
-                    packScopedModel.forceRefresh();
-                    print(direction.toString() + ' ' + index.toString());
-                    processPayment(
-                        index,
-                        packScopedModel,
-                        payScopedModel,
-                        context,
-                        direction == DismissDirection.endToStart ? 3 : 4,
-                        packList[index].eventPrice);
-
+                    if (packList[index].isPaid != 1) {
+                      packScopedModel.forceRefresh();
+                      print(direction.toString() + ' ' + index.toString());
+                      processPayment(
+                          index,
+                          packScopedModel,
+                          payScopedModel,
+                          context,
+                          direction == DismissDirection.endToStart ? 3 : 4,
+                          packList[index].eventPrice);
+                    }
                     return Future<bool>.value(false);
                   },
-                  background: Container(
-                    color: Colors.blue,
-                    child: Row(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(left: 15.0),
-                          child: Image.asset('images/icons/payment_type_4.png',
-                              height: 25.0, width: 25.0, color: Colors.white),
+                  background: packList[index].isPaid == 1
+                      ? Container(
+                          color: Colors.grey,
+                          child: Row(
+                            children: const <Widget>[
+                              Padding(
+                                padding: EdgeInsets.only(left: 15.0),
+                                child: Icon(FontAwesome.check_circle,
+                                    size: 35.0, color: Colors.white),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(left: 15.0),
+                                child: Text(
+                                  'Already paid',
+                                  style: TextStyle(
+                                      fontFamily: 'AvenirNextDemiBold',
+                                      fontStyle: FontStyle.normal,
+                                      color: Colors.white,
+                                      fontSize: 20.0,
+                                      height: 1.0),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Container(
+                          color: Colors.blue,
+                          child: Row(
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.only(left: 15.0),
+                                child: Image.asset(
+                                    'images/icons/payment_type_4.png',
+                                    height: 30.0,
+                                    width: 30.0,
+                                    color: Colors.white),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 15.0),
+                                child: Text(
+                                    '${Utilities.getFormattedMoney(packList[index].eventPrice, packList[index].digitsAfterDecimal, packList[index].currencySymbol)} Bank Transfer',
+                                    style: const TextStyle(
+                                        fontFamily: 'AvenirNextDemiBold',
+                                        fontStyle: FontStyle.normal,
+                                        color: Colors.white,
+                                        fontSize: 20.0,
+                                        height: 1.0)),
+                              ),
+                            ],
+                          ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 15.0),
-                          child: Text(
-                              '${Utilities.getFormattedMoney(packList[index].eventPrice, packList[index].digitsAfterDecimal, packList[index].currencySymbol)} Bank Transfer',
-                              style: const TextStyle(
-                                  fontFamily: 'AvenirNextDemiBold',
-                                  fontStyle: FontStyle.normal,
-                                  color: Colors.white,
-                                  fontSize: 17.0,
-                                  height: 1.0)),
+                  secondaryBackground: packList[index].isPaid == 1
+                      ? Container(
+                          color: Colors.grey,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: const <Widget>[
+                              Padding(
+                                padding: EdgeInsets.only(right: 15.0),
+                                child: Icon(FontAwesome.check_circle,
+                                    size: 35.0, color: Colors.white),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(right: 15.0),
+                                child: Text(
+                                  'Already paid',
+                                  style: TextStyle(
+                                      fontFamily: 'AvenirNextDemiBold',
+                                      fontStyle: FontStyle.normal,
+                                      color: Colors.white,
+                                      fontSize: 20.0,
+                                      height: 1.0),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Container(
+                          color: Colors.green,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.only(right: 15.0),
+                                child: Image.asset(
+                                    'images/icons/payment_type_3.png',
+                                    height: 30.0,
+                                    width: 30.0,
+                                    color: Colors.white),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 15.0),
+                                child: Text(
+                                    '${Utilities.getFormattedMoney(packList[index].eventPrice, packList[index].digitsAfterDecimal, packList[index].currencySymbol)} Cash',
+                                    style: const TextStyle(
+                                        fontFamily: 'AvenirNextDemiBold',
+                                        fontStyle: FontStyle.normal,
+                                        color: Colors.white,
+                                        fontSize: 20.0,
+                                        height: 1.0)),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
-                  secondaryBackground: Container(
-                    color: Colors.green,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(right: 15.0),
-                          child: Image.asset('images/icons/payment_type_3.png',
-                              height: 25.0, width: 25.0, color: Colors.white),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 15.0),
-                          child: Text(
-                              '${Utilities.getFormattedMoney(packList[index].eventPrice, packList[index].digitsAfterDecimal, packList[index].currencySymbol)} Cash',
-                              style: const TextStyle(
-                                  fontFamily: 'AvenirNextDemiBold',
-                                  fontStyle: FontStyle.normal,
-                                  color: Colors.white,
-                                  fontSize: 17.0,
-                                  height: 1.0)),
-                        ),
-                      ],
-                    ),
-                  ),
                   onDismissed: (DismissDirection direction) {
                     print(direction.toString() +
                         ' NOTE: We should never reach this point');

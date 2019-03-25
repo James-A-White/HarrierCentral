@@ -712,6 +712,7 @@ class PaymentSnackBar extends SnackBar {
 
       if (hasher.attendenceState < attendenceAtHash.value) {
         hasher.attendenceState = attendenceAtHash.value;
+        hasher.requestedAttendenceState = -1;
       }
 
       _packScopedModel.forceRefresh();
