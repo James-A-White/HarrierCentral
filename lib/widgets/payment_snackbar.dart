@@ -683,6 +683,8 @@ class PaymentSnackBar extends SnackBar {
     if (hasher.rsvpState < rsvpYes.value) {
       hasher.rsvpState = -1;
       hasher.requestedRsvpState = rsvpYes.value;
+      hasher.attendenceState = -1;
+      hasher.requestedAttendenceState = attendenceAtHash.value;
     }
 
     _packScopedModel.forceRefresh();

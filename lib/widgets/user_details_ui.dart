@@ -195,3 +195,12 @@ class _UserDetailsUiState extends State<UserDetailsUi>
     );
   }
 }
+
+
+class UserDetailReturnValues
+{
+  String firstName;
+  String lastName;
+  String email;
+  String hashName;
+}

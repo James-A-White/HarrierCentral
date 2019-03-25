@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 import 'package:harrier_central/data_models/future_run_model.dart';
@@ -659,57 +660,62 @@ class PackListView extends StatelessWidget {
                   ? const Text('')
                   : Text(
                       packList[index].userRunCount.toString() +
-                          (packList[index].userRunCount == 1 ? ' Run' : ' Runs'),
+                          (packList[index].userRunCount == 1
+                              ? ' Run'
+                              : ' Runs'),
                       style: TextStyle(
                         fontFamily:
-                            checkSpecialRun(packList[index].userRunCount) == true
+                            checkSpecialRun(packList[index].userRunCount) ==
+                                    true
                                 ? 'AvenirNextDemiBold'
                                 : 'AvenirNext',
                         fontStyle: FontStyle.normal,
                         fontSize: 25.0,
                         height: 1.0,
-                        color:
-                            checkSpecialRun(packList[index].userRunCount) == true
-                                ? Colors.red[700]
-                                : Colors.black,
+                        color: checkSpecialRun(packList[index].userRunCount) ==
+                                true
+                            ? Colors.red[700]
+                            : Colors.black,
                       )),
             ),
 
             Positioned(
               left: 75.0,
               bottom: 3.0,
-              child: CircleAvatar(
-                backgroundColor: packList[index].rsvpState == 0
-                    ? Colors.transparent
-                    : packList[index].rsvpState == -1
-                        ? Colors.blue
-                        : Colors.white,
-                radius: 14.0,
-              ),
+              child: packList[index].rsvpState == -1
+                  ? Container()
+                  : CircleAvatar(
+                      backgroundColor: packList[index].rsvpState == 0
+                          ? Colors.transparent
+                          : Colors.white,
+                      radius: 14.0,
+                    ),
             ),
             Positioned(
               left: 77.0,
               bottom: packList[index].rsvpState <= 0
-                  ? 4.5
+                  ? 3.0
                   : packList[index].isHare == 1 ? 5.0 : 5.5,
-              child: packList[index].rsvpState <= 0
-                  ? const CircleAvatar(
-                      backgroundColor: Colors.transparent,
-                      radius: 12.0,
-                    )
-                  : packList[index].rsvpState == rsvpNo.value
-                      ? const Icon(FontAwesomeIcons.solidTimesCircle,
-                          color: Colors.red, size: 24.0)
-                      : packList[index].rsvpState == rsvpMaybe.value
-                          ? const Icon(FontAwesomeIcons.solidQuestionCircle,
-                              color: Colors.orange, size: 24.0)
-                          : packList[index].isHare == 0
-                              ? const Icon(FontAwesomeIcons.solidCheckCircle,
-                                  color: Colors.green, size: 24.0)
-                              : Image.asset('images/icons/hare_icon.png',
-                                  color: Colors.deepPurple,
-                                  height: 24.0,
-                                  width: 24.0),
+              child: packList[index].rsvpState < 0
+                  ? const Icon(MaterialCommunityIcons.cloud_upload,
+                      color: Colors.blue)
+                  : packList[index].rsvpState == 0
+                      ? Container()
+                      : packList[index].rsvpState == rsvpNo.value
+                          ? const Icon(FontAwesomeIcons.solidTimesCircle,
+                              color: Colors.red, size: 24.0)
+                          : packList[index].rsvpState == rsvpMaybe.value
+                              ? const Icon(FontAwesomeIcons.solidQuestionCircle,
+                                  color: Colors.orange, size: 24.0)
+                              : packList[index].isHare == 0
+                                  ? const Icon(
+                                      FontAwesomeIcons.solidCheckCircle,
+                                      color: Colors.green,
+                                      size: 24.0)
+                                  : Image.asset('images/icons/hare_icon.png',
+                                      color: Colors.deepPurple,
+                                      height: 24.0,
+                                      width: 24.0),
 
               // AssetImage(
               //     'images/icons/hare_icon.png'),
@@ -727,18 +733,19 @@ class PackListView extends StatelessWidget {
                   : Positioned(
                       left: 115.0,
                       bottom: 3.0,
-                      child:
-                          packList[index].attendenceState < attendenceAtHash.value
+                      child: (packList[index].attendenceState < attendenceAtHash.value) && (packList[index].requestedAttendenceState < attendenceAtHash.value)
+                          ? Container()
+                          : (packList[index].rsvpState != rsvpYes.value) && (packList[index].requestedRsvpState != rsvpYes.value)
                               ? Container()
-                              : packList[index].rsvpState != rsvpYes.value
-                                  ? Container()
+                              : packList[index].isPaid == -1
+                                  ? const Icon(
+                                      MaterialCommunityIcons.cloud_upload,
+                                      color: Colors.blue)
                                   : CircleAvatar(
                                       backgroundColor:
                                           packList[index].attendenceState == 0
                                               ? Colors.transparent
-                                              : packList[index].isPaid == -1
-                                                  ? Colors.blue
-                                                  : Colors.white,
+                                              : Colors.white,
                                       radius: 14.0,
                                     ),
                     );
@@ -755,11 +762,11 @@ class PackListView extends StatelessWidget {
                         child: Text('No pack members loaded'))
                     : Positioned(
                         left: 117.0,
-                        bottom: packList[index].attendenceState < -1 ? 4.5 : 5.5,
-                        child: packList[index].attendenceState <
-                                attendenceAtHash.value
+                        bottom:
+                            packList[index].attendenceState < -1 ? 4.5 : 5.5,
+                        child: (packList[index].attendenceState < attendenceAtHash.value) && (packList[index].requestedAttendenceState < attendenceAtHash.value)
                             ? Container()
-                            : packList[index].rsvpState != rsvpYes.value
+                            : (packList[index].rsvpState != rsvpYes.value) && (packList[index].requestedRsvpState != rsvpYes.value)
                                 ? Container()
                                 : ((packList[index].attendenceState <=
                                             attendenceNo.value) &&
@@ -793,36 +800,37 @@ class PackListView extends StatelessWidget {
             Positioned(
               left: 155.0,
               bottom: 3.0,
-              child: packList[index].rsvpState != rsvpYes.value
+              child: (packList[index].rsvpState != rsvpYes.value) && (packList[index].requestedRsvpState != rsvpYes.value)
                   ? Container()
-                  : CircleAvatar(
-                      backgroundColor: packList[index].attendenceState == 0
-                          ? Colors.transparent
-                          : packList[index].attendenceState == -1
-                              ? Colors.blue
+                  : packList[index].attendenceState < 0
+                      ? const Icon(MaterialCommunityIcons.cloud_upload,
+                          color: Colors.blue)
+                      : CircleAvatar(
+                          backgroundColor: packList[index].attendenceState == 0
+                              ? Colors.transparent
                               : Colors.white,
-                      radius: 14.0,
-                    ),
+                          radius: 14.0,
+                        ), 
             ),
             Positioned(
               left: 157.0,
               bottom: packList[index].attendenceState <= 0 ? 4.5 : 5.5,
-              child: packList[index].rsvpState != rsvpYes.value
+              child: (packList[index].rsvpState != rsvpYes.value) && (packList[index].requestedRsvpState != rsvpYes.value)
                   ? Container()
                   : packList[index].attendenceState == attendenceNo.value
                       ? Image.asset('images/icons/not_at_hash_icon.png',
                           height: 24.0, width: 24.0, color: Colors.red[700])
-                      : packList[index].attendenceState == attendenceAtHash.value
+                      : packList[index].attendenceState ==
+                              attendenceAtHash.value
                           ? Image.asset('images/icons/runner_icon.png',
                               height: 24.0, width: 24.0, color: Colors.red)
                           : packList[index].attendenceState >=
                                   attendenceOnIn.value
                               ? Image.asset('images/icons/beer_icon.png',
-                                  height: 24.0, width: 24.0, color: Colors.green)
-                              : Image.asset('images/icons/beer_icon.png',
                                   height: 24.0,
                                   width: 24.0,
-                                  color: Colors.transparent),
+                                  color: Colors.green)
+                              : Container(),
             ),
 
             // Payment icons
@@ -877,9 +885,13 @@ class PackListView extends StatelessWidget {
                   confirmDismiss: (DismissDirection direction) {
                     packScopedModel.forceRefresh();
                     print(direction.toString() + ' ' + index.toString());
-                         processPayment(index, packScopedModel, payScopedModel, context, direction == DismissDirection.endToStart
-                            ? 3
-                            : 4, packList[index].eventPrice);              
+                    processPayment(
+                        index,
+                        packScopedModel,
+                        payScopedModel,
+                        context,
+                        direction == DismissDirection.endToStart ? 3 : 4,
+                        packList[index].eventPrice);
 
                     return Future<bool>.value(false);
                   },
@@ -939,7 +951,7 @@ class PackListView extends StatelessWidget {
         });
   }
 
-    void processPayment(
+  void processPayment(
       int index,
       PackScopedModel _packScopedModel,
       PayScopedModel _payScopedModel,
@@ -1035,11 +1047,8 @@ class PackListView extends StatelessWidget {
 
     packList[index].isPaid = -1;
 
-
     Scaffold.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
   }
-
- 
 }
 
 //
