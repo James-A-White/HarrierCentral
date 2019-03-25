@@ -1044,6 +1044,24 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                 addThisDeviceUserToPackList();
               },
             ),
+            SpeedDialChild(
+              child: const ImageIcon(AssetImage('images/icons/hare_icon.png'),
+                  color: Colors.purple),
+              backgroundColor: Colors.white,
+              label: 'I will hare',
+              labelStyle: const TextStyle(fontSize: 18.0),
+              onTap: () {
+                _promptForHare(widget.futureRun.hareList)
+                    .then<dynamic>((bool willHare) {
+                  if (willHare) {
+                    futureRunScopedModel.setRsvpState(
+                        rsvpYes.value, isHareYes.value, -1, widget.futureRun);
+
+                    addThisDeviceUserToPackList();
+                  }
+                });
+              },
+            ),
           ],
         ),
       ),
