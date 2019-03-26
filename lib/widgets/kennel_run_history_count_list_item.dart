@@ -12,6 +12,14 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const num textWidth = 55.0;
+
+    TextStyle numberStyle = const TextStyle(
+      fontFamily: 'AvenirNextCondensedDemiBold',
+      fontStyle: FontStyle.normal,
+      fontSize: 32.0,
+    );
+
     return
 
         // IntrinsicWidth(
@@ -24,26 +32,26 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Container(
-              width: MediaQuery.of(context).size.width,
-              height: 36.0,
-              padding: const EdgeInsets.only(left: 10.0, bottom: 2.0),
-              child: AutoSizeText(
-                '${kennelRunHistoryCount.kennelName}',
-                //'Super fucking long text thats sure to overflow and more',
-                //'Super fucking',
-                minFontSize: 18,
-                maxFontSize: 22,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                style: const TextStyle(
-                    fontFamily: 'AvenirNextCondensedDemiBold',
-                    fontStyle: FontStyle.normal,
-                    fontSize: 22.0,
-                    height: 1.0),
-                textAlign: TextAlign.center,
-              ),
-            ),
+            // Container(
+            //   width: MediaQuery.of(context).size.width,
+            //   height: 36.0,
+            //   padding: const EdgeInsets.only(left: 10.0, bottom: 2.0),
+            //   child: AutoSizeText(
+            //     '${kennelRunHistoryCount.kennelName}',
+            //     //'Super fucking long text thats sure to overflow and more',
+            //     //'Super fucking',
+            //     minFontSize: 18,
+            //     maxFontSize: 22,
+            //     overflow: TextOverflow.ellipsis,
+            //     maxLines: 1,
+            //     style: const TextStyle(
+            //         fontFamily: 'AvenirNextCondensedDemiBold',
+            //         fontStyle: FontStyle.normal,
+            //         fontSize: 22.0,
+            //         height: 1.0),
+            //     textAlign: TextAlign.center,
+            //   ),
+            // ),
             InkWell(
                 // onTap: () {
                 //   Navigator.of(context).push<dynamic>(
@@ -55,162 +63,78 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                 //   );
                 // },
                 child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                // Container(
-                //   padding: const EdgeInsets.only(top: 12.0),
-                //   child: ScopedModelDescendant<FutureRunScopedModel>(
-                //     builder: (BuildContext runContext, Widget runChild,
-                //             FutureRunScopedModel runModel) =>
-                //         ScopedModelDescendant<KennelScopedModel>(
-                //           builder:
-                //               (BuildContext context, Widget child,
-                //                       KennelScopedModel model) =>
-                //                   IconButton(
-                //                     icon: Icon(
-                //                         (kennelRunHistoryCount.followingRequested != null) ?
-                //                             FontAwesome.cloud_upload
-                //                                     : (kennelRunHistoryCount.followingBool == 1)
-                //                             ? const Icon(FontAwesome.check_circle)
-                //                                 .icon
-                //                             : (kennelRunHistoryCount.followingRequested ??
-                //                                         kennelRunHistoryCount
-                //                                             .followingBool) ==
-                //                                     2
-                //                                 ? const Icon(FontAwesome
-                //                                         .times_circle)
-                //                                     .icon
-                //                                 : const Icon(FontAwesome.circle_thin)
-                //                                     .icon,
-                //                         color: kennelRunHistoryCount.followingRequested !=
-                //                                 null
-                //                             ? Colors.blue
-                //                             : kennelRunHistoryCount.followingBool == 1
-                //                                 ? Colors.green
-                //                                 : kennelRunHistoryCount.followingBool == 2
-                //                                     ? Colors.red
-                //                                     : Colors.grey.shade700),
-                //                     tooltip: 'Select to follow a Kennel',
-                //                     iconSize: 35.0,
-                //                     alignment: Alignment.topCenter,
-                //                     splashColor: Colors.greenAccent,
-                //                     onPressed: () {
-                //                       model.toggleFollowing(kennelRunHistoryCount);
-                //                       runModel.clearFutureRunsList();
-
-                //                       // setState(() {
-                //                       // kennel.followingBool = kennel.followingBool == 0 ? 1 : 0;
-                //                       // });
-                //                     },
-                //                   ),
-                //         ),
-                //   ),
-                //   // child: IconButton(
-                //   //   icon:const  Icon(
-                //   //       kennel.followingBool == 0
-                //   //           ? Icons.radio_button_unchecked
-                //   //           : Icons.radio_button_checked,
-                //   //       color: Colors.blueGrey),
-                //   //   tooltip: 'Select to follow a Kennel',
-                //   //   iconSize: 35.0,
-                //   //   alignment: Alignment.topCenter,
-                //   //   splashColor: Colors.greenAccent,
-                //   //   onPressed: () {
-                //   //     // setState(() {
-                //   //     // kennel.followingBool = kennel.followingBool == 0 ? 1 : 0;
-                //   //     // });
-                //   //   },
-                //   // ),
-                //   alignment: Alignment.topCenter,
-                //   //height: 40.0,
-                // ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 10.0, right: 8.0),
+                  padding: const EdgeInsets.only(left: 10.0),
                   child: KennelLogo(
                     kennelLogoUrl: kennelRunHistoryCount.kennelLogo,
                     kennelShortName: kennelRunHistoryCount.kennelShortName,
-                    logoHeight: 80.0,
+                    logoHeight: 50.0,
                     leftPadding: 0.0,
                   ),
                 ),
-                Column(
-                  children: <Widget>[
-                    const Text(
-                      'Pack\r\nRuns',
-                      //'Super fucking long text thats sure to overflow and more',
-                      //'Super fucking',
-                      style: TextStyle(
-                          fontFamily: 'AvenirNextCondensedDemiBold',
-                          fontStyle: FontStyle.normal,
-                          fontSize: 20.0,
-                          height: 0.7),
-                      textAlign: TextAlign.center,
-                    ),
-                    Text(
-                      '${kennelRunHistoryCount.totalPackRunsThisKennel.toString()}',
-                      //'Super fucking long text thats sure to overflow and more',
-                      //'Super fucking',
-                      style: const TextStyle(
-                          fontFamily: 'AvenirNextCondensedDemiBold',
-                          fontStyle: FontStyle.normal,
-                          fontSize: 20.0,
-                          height: 0.7),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+
+                Container(
+                  width: textWidth,
+                  child: AutoSizeText(
+                    '${kennelRunHistoryCount.totalPackRunsThisKennel.toString()}',
+                    //'Super fucking long text thats sure to overflow and more',
+                    //'999',
+                    overflow: TextOverflow.ellipsis,
+                    minFontSize: 18.0,
+                    maxLines: 1,
+                    style: numberStyle,
+                    textAlign: TextAlign.center,
+                  ),
+                  //color: Colors.red,
                 ),
-                                Column(
-                  children: <Widget>[
-                    const Text(
-                      'Hare\r\nRuns',
-                      //'Super fucking long text thats sure to overflow and more',
-                      //'Super fucking',
-                      style: TextStyle(
-                          fontFamily: 'AvenirNextCondensedDemiBold',
-                          fontStyle: FontStyle.normal,
-                          fontSize: 20.0,
-                          height: 0.7),
-                      textAlign: TextAlign.center,
-                    ),
-                    Text(
-                      '${kennelRunHistoryCount.totalHaringThisKennel.toString()}',
-                      //'Super fucking long text thats sure to overflow and more',
-                      //'Super fucking',
-                      style: const TextStyle(
-                          fontFamily: 'AvenirNextCondensedDemiBold',
-                          fontStyle: FontStyle.normal,
-                          fontSize: 20.0,
-                          height: 0.7),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+
+                Container(
+                  width: textWidth,
+                  child: AutoSizeText(
+                    '${kennelRunHistoryCount.totalHaringThisKennel.toString()}',
+                    //'Super fucking long text thats sure to overflow and more',
+                    //'999',
+                    overflow: TextOverflow.ellipsis,
+                    minFontSize: 18.0,
+                    maxLines: 1,
+                    style: numberStyle,
+                    textAlign: TextAlign.center,
+                  ),
+                  //color: Colors.blue,
                 ),
-                                                Column(
-                  children: <Widget>[
-                    const Text(
-                      'Total\r\nRuns',
-                      //'Super fucking long text thats sure to overflow and more',
-                      //'Super fucking',
-                      style: TextStyle(
-                          fontFamily: 'AvenirNextCondensedDemiBold',
-                          fontStyle: FontStyle.normal,
-                          fontSize: 20.0,
-                          height: 0.7),
-                      textAlign: TextAlign.center,
-                    ),
-                    Text(
-                      '${kennelRunHistoryCount.totalRunsThisKennel.toString()}',
-                      //'Super fucking long text thats sure to overflow and more',
-                      //'Super fucking',
-                      style: const TextStyle(
-                          fontFamily: 'AvenirNextCondensedDemiBold',
-                          fontStyle: FontStyle.normal,
-                          fontSize: 20.0,
-                          height: 0.7),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                )
+
+                Container(
+                  width: textWidth,
+                  child: AutoSizeText(
+                    '${kennelRunHistoryCount.totalRunsThisKennel.toString()}',
+                    //'Super fucking long text thats sure to overflow and more',
+                    //'999',
+                    overflow: TextOverflow.ellipsis,
+                    minFontSize: 18.0,
+                    maxLines: 1,
+                    style: numberStyle,
+                    textAlign: TextAlign.center,
+                  ),
+                  //color: Colors.green,
+                ),
+                Container(
+                  width: textWidth,
+                  child: AutoSizeText(
+                    //'${kennelRunHistoryCount.totalPackRunsThisKennel.toString()}',
+                    //'Super fucking long text thats sure to overflow and more',
+                    '${((kennelRunHistoryCount.totalPackRunsThisKennel * 3) + (kennelRunHistoryCount.totalHaringThisKennel * 10)).toString()}',
+                    overflow: TextOverflow.ellipsis,
+                    minFontSize: 18.0,
+                    maxLines: 1,
+                    style: numberStyle,
+                    textAlign: TextAlign.center,
+                  ),
+                  //color: Colors.purple,
+                ),
+                Container(width: 1, height: 20)
 
                 // Column(
                 //     mainAxisSize: MainAxisSize.max,
