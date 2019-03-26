@@ -14,10 +14,10 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     const num textWidth = 55.0;
 
-    TextStyle numberStyle = const TextStyle(
+    const TextStyle numberStyle = TextStyle(
       fontFamily: 'AvenirNextCondensedDemiBold',
       fontStyle: FontStyle.normal,
-      fontSize: 32.0,
+      fontSize: 22.0,
     );
 
     return
@@ -26,8 +26,8 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
         //   stepWidth: MediaQuery.of(context).size.width,
         //   child:
 
-        Stack(
-      children: <Widget>[
+      //   Stack(
+      // children: <Widget>[
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -57,159 +57,162 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                 //   Navigator.of(context).push<dynamic>(
                 //     MaterialPageRoute<dynamic>(
                 //       builder: (BuildContext context) {
-                //         return KennelDetailPage(kennel: kennel);
+                //         int i = 0;
+                //         //return KennelDetailPage(kennel: kennel);
                 //       },
                 //     ),
                 //   );
                 // },
                 child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(left: 10.0),
-                  child: KennelLogo(
-                    kennelLogoUrl: kennelRunHistoryCount.kennelLogo,
-                    kennelShortName: kennelRunHistoryCount.kennelShortName,
-                    logoHeight: 50.0,
-                    leftPadding: 0.0,
-                  ),
-                ),
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10.0),
+                      child: KennelLogo(
+                        kennelLogoUrl: kennelRunHistoryCount.kennelLogo,
+                        kennelShortName: kennelRunHistoryCount.kennelShortName,
+                        logoHeight: 50.0,
+                        leftPadding: 0.0,
+                      ),
+                    ),
 
-                Container(
-                  width: textWidth,
-                  child: AutoSizeText(
-                    '${kennelRunHistoryCount.totalPackRunsThisKennel.toString()}',
-                    //'Super fucking long text thats sure to overflow and more',
-                    //'999',
-                    overflow: TextOverflow.ellipsis,
-                    minFontSize: 18.0,
-                    maxLines: 1,
-                    style: numberStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                  //color: Colors.red,
-                ),
+                    Container(
+                      width: textWidth,
+                      child: AutoSizeText(
+                        '${kennelRunHistoryCount.totalPackRunsThisKennel.toString()}',
+                        //'Super fucking long text thats sure to overflow and more',
+                        //'999',
+                        overflow: TextOverflow.ellipsis,
+                        minFontSize: 18.0,
+                        maxLines: 1,
+                        style: numberStyle,
+                        textAlign: TextAlign.center,
+                      ),
+                      //color: Colors.red,
+                    ),
 
-                Container(
-                  width: textWidth,
-                  child: AutoSizeText(
-                    '${kennelRunHistoryCount.totalHaringThisKennel.toString()}',
-                    //'Super fucking long text thats sure to overflow and more',
-                    //'999',
-                    overflow: TextOverflow.ellipsis,
-                    minFontSize: 18.0,
-                    maxLines: 1,
-                    style: numberStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                  //color: Colors.blue,
-                ),
+                    Container(
+                      width: textWidth,
+                      child: AutoSizeText(
+                        '${kennelRunHistoryCount.totalHaringThisKennel.toString()}',
+                        //'Super fucking long text thats sure to overflow and more',
+                        //'999',
+                        overflow: TextOverflow.ellipsis,
+                        minFontSize: 18.0,
+                        maxLines: 1,
+                        style: numberStyle,
+                        textAlign: TextAlign.center,
+                      ),
+                      //color: Colors.blue,
+                    ),
 
-                Container(
-                  width: textWidth,
-                  child: AutoSizeText(
-                    '${kennelRunHistoryCount.totalRunsThisKennel.toString()}',
-                    //'Super fucking long text thats sure to overflow and more',
-                    //'999',
-                    overflow: TextOverflow.ellipsis,
-                    minFontSize: 18.0,
-                    maxLines: 1,
-                    style: numberStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                  //color: Colors.green,
-                ),
-                Container(
-                  width: textWidth,
-                  child: AutoSizeText(
-                    //'${kennelRunHistoryCount.totalPackRunsThisKennel.toString()}',
-                    //'Super fucking long text thats sure to overflow and more',
-                    '${((kennelRunHistoryCount.totalPackRunsThisKennel * 3) + (kennelRunHistoryCount.totalHaringThisKennel * 10)).toString()}',
-                    overflow: TextOverflow.ellipsis,
-                    minFontSize: 18.0,
-                    maxLines: 1,
-                    style: numberStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                  //color: Colors.purple,
-                ),
-                Container(width: 1, height: 20)
+                    Container(
+                      width: textWidth,
+                      child: AutoSizeText(
+                        '${kennelRunHistoryCount.totalRunsThisKennel.toString()}',
+                        //'Super fucking long text thats sure to overflow and more',
+                        //'999',
+                        overflow: TextOverflow.ellipsis,
+                        minFontSize: 18.0,
+                        maxLines: 1,
+                        style: numberStyle,
+                        textAlign: TextAlign.center,
+                      ),
+                      //color: Colors.green,
+                    ),
+                    Container(
+                      width: textWidth,
+                      child: AutoSizeText(
+                        //'${kennelRunHistoryCount.totalPackRunsThisKennel.toString()}',
+                        //'Super fucking long text thats sure to overflow and more',
+                        '${((kennelRunHistoryCount.totalPackRunsThisKennel * 3) + (kennelRunHistoryCount.totalHaringThisKennel * 10)).toString()}',
+                        overflow: TextOverflow.ellipsis,
+                        minFontSize: 18.0,
+                        maxLines: 1,
+                        style: numberStyle,
+                        textAlign: TextAlign.center,
+                      ),
+                      //color: Colors.purple,
+                    ),
+                    Container(width: 1, height: 1)
 
-                // Column(
-                //     mainAxisSize: MainAxisSize.max,
-                //     children: <Widget>[
-                //       // Text(
-                //       //   '${kennel.kennelName}',
-                //       //   style:
-                //       //       TextStyle(fontSize: 22.0, fontWeight: FontWeight.w400),
-                //       //   textAlign: TextAlign.left,
-                //       // ),
-                //       Container(width: 10.0, height: 10.0),
-                //       Text(
-                //         '${kennelRunHistoryCount.locationName}',
-                //         style: const TextStyle(
-                //             fontFamily: 'AvenirNextRegular',
-                //             fontStyle: FontStyle.normal,
-                //             fontSize: 16.0,
-                //             height: 1.0),
-                //       ),
-                //       Text(
-                //         '${Utilities.getDistance(kennelRunHistoryCount.distance, context)}',
-                //         style: const TextStyle(
-                //             fontFamily: 'AvenirNextRegular',
-                //             fontStyle: FontStyle.normal,
-                //             fontSize: 16.0,
-                //             height: 1.0),
-                //       ),
-                //       // const Text(
-                //       //   'xxxx Active Members',
-                //       //                             style: const TextStyle(
-                //       //             fontFamily: 'AvenirNextRegular',
-                //       //             fontStyle: FontStyle.normal,
-                //       //             fontSize: 16.0,
-                //       //             height: 1.0),
-                //       // ),
-                //       Text(
-                //         DateFormat("E, MMM d 'at' h:mm a")
-                //             .format(kennelRunHistoryCount.dateNextRun),
-                //         style: const TextStyle(
-                //             fontFamily: 'AvenirNextRegular',
-                //             fontStyle: FontStyle.normal,
-                //             fontSize: 16.0,
-                //             height: 1.0),
-                //       ),
-                //     ],
-                //     crossAxisAlignment: CrossAxisAlignment.start)
-              ],
-            )),
-            Container(
-              width: MediaQuery.of(context).size.width,
-              child: const Divider(
+                    // Column(
+                    //     mainAxisSize: MainAxisSize.max,
+                    //     children: <Widget>[
+                    //       // Text(
+                    //       //   '${kennel.kennelName}',
+                    //       //   style:
+                    //       //       TextStyle(fontSize: 22.0, fontWeight: FontWeight.w400),
+                    //       //   textAlign: TextAlign.left,
+                    //       // ),
+                    //       Container(width: 10.0, height: 10.0),
+                    //       Text(
+                    //         '${kennelRunHistoryCount.locationName}',
+                    //         style: const TextStyle(
+                    //             fontFamily: 'AvenirNextRegular',
+                    //             fontStyle: FontStyle.normal,
+                    //             fontSize: 16.0,
+                    //             height: 1.0),
+                    //       ),
+                    //       Text(
+                    //         '${Utilities.getDistance(kennelRunHistoryCount.distance, context)}',
+                    //         style: const TextStyle(
+                    //             fontFamily: 'AvenirNextRegular',
+                    //             fontStyle: FontStyle.normal,
+                    //             fontSize: 16.0,
+                    //             height: 1.0),
+                    //       ),
+                    //       // const Text(
+                    //       //   'xxxx Active Members',
+                    //       //                             style: const TextStyle(
+                    //       //             fontFamily: 'AvenirNextRegular',
+                    //       //             fontStyle: FontStyle.normal,
+                    //       //             fontSize: 16.0,
+                    //       //             height: 1.0),
+                    //       // ),
+                    //       Text(
+                    //         DateFormat("E, MMM d 'at' h:mm a")
+                    //             .format(kennelRunHistoryCount.dateNextRun),
+                    //         style: const TextStyle(
+                    //             fontFamily: 'AvenirNextRegular',
+                    //             fontStyle: FontStyle.normal,
+                    //             fontSize: 16.0,
+                    //             height: 1.0),
+                    //       ),
+                    //     ],
+                    //     crossAxisAlignment: CrossAxisAlignment.start)
+                  ],
+                )),
+            // Container(
+            //   width: MediaQuery.of(context).size.width,
+            //   child: 
+              
+              const Divider(
                 color: Colors.black,
-                height: 20.0,
+                height: 10.0,
               ),
-            ),
+           // ),
           ],
-        ),
-        // Align(
-        //   alignment: Alignment.centerRight,
-        //   child: IconButton(
-        //     icon: const Icon(Icons.settings),
-        //     iconSize: Theme.of(context).iconTheme.size,
-        //     color: Colors.black54,
-        //     splashColor: Theme.of(context).highlightColor,
-        //     // onPressed: () {
-        //     //   Navigator.push<dynamic>(
-        //     //     context,
-        //     //     MaterialPageRoute<dynamic>(
-        //     //       builder: (BuildContext context) => KennelAdminMainPage(kennel: kennelRunHistoryCount),
-        //     //     ),
-        //     //   );
-        //     // },
-        //   ),
-        // ),
-      ],
+      //   ),
+      //   // Align(
+      //   //   alignment: Alignment.centerRight,
+      //   //   child: IconButton(
+      //   //     icon: const Icon(Icons.settings),
+      //   //     iconSize: Theme.of(context).iconTheme.size,
+      //   //     color: Colors.black54,
+      //   //     splashColor: Theme.of(context).highlightColor,
+      //   //     // onPressed: () {
+      //   //     //   Navigator.push<dynamic>(
+      //   //     //     context,
+      //   //     //     MaterialPageRoute<dynamic>(
+      //   //     //       builder: (BuildContext context) => KennelAdminMainPage(kennel: kennelRunHistoryCount),
+      //   //     //     ),
+      //   //     //   );
+      //   //     // },
+      //   //   ),
+      //   // ),
+      // ],
     );
   }
 }

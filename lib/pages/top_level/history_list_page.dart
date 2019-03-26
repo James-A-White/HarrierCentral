@@ -62,13 +62,13 @@ class HistoryListPageState extends State<HistoryListPage> {
   }
 
   TextStyle headingStyle = TextStyle(
-                          fontFamily: 'AvenirNextCondensedDemiBold',
-                          fontStyle: FontStyle.normal,
-                          fontSize: 22.0,
-                          height: 0.6); 
+      fontFamily: 'AvenirNextCondensedDemiBold',
+      fontStyle: FontStyle.normal,
+      fontSize: 22.0,
+      height: 0.6);
 
   Widget _buildListView() {
-    num headingWidth = 55.0;
+    const num headingWidth = 55.0;
     return Container(
       decoration: Backgrounds.defaultHcBackgroundLight(),
       padding: const EdgeInsets.only(top: 0.0),
@@ -81,16 +81,64 @@ class HistoryListPageState extends State<HistoryListPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 80.0,top:20,right:20),
+                  Container(
+                    decoration: const BoxDecoration(
+                      // border: new Border.all(width: 1.0, color: Colors.black),
+                      //shape: BoxShape.circle,
+                      color: Colors.white,
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color: Color.fromARGB(70, 0, 0, 0),
+                          offset: Offset(0.0, 6.0),
+                          blurRadius: 10.0,
+                        ),
+                      ],
+                    ),
+                    //color:Color.fromARGB(30, 0, 0, 0),
+                    padding: const EdgeInsets.only(
+                        left: 5, top: 5, right: 20, bottom: 5),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Container(width:headingWidth,child:Text('Pack\r\nruns',style: headingStyle, maxLines: 2, textAlign: TextAlign.center,),),
-                        Container(width:headingWidth,child:Text('Hare\r\nruns',style: headingStyle,textAlign: TextAlign.center,),),
-                        Container(width:headingWidth,child:Text('Total\r\nruns',style: headingStyle,textAlign: TextAlign.center,),),
-                        Container(width:headingWidth,child:Text('Hash\r\npoints',style: headingStyle,textAlign: TextAlign.center,),),
-                      
+                        Container(
+                          height: 50,
+                          child:         Image.asset(
+          'images/other/hound_and_hare_drinking.png',
+        ),
+                        ),
+                        Container(
+                          width: headingWidth,
+                          child: Text(
+                            'Pack\r\nruns',
+                            style: headingStyle,
+                            maxLines: 2,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Container(
+                          width: headingWidth,
+                          child: Text(
+                            'Hare\r\nruns',
+                            style: headingStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Container(
+                          width: headingWidth,
+                          child: Text(
+                            'Total\r\nruns',
+                            style: headingStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Container(
+                          width: headingWidth,
+                          child: Text(
+                            'Hash\r\npoints',
+                            style: headingStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -98,20 +146,26 @@ class HistoryListPageState extends State<HistoryListPage> {
                     child: ListView.builder(
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: model.getKennelsCount(),
+                      padding: const EdgeInsets.only(top: 20),
+                      itemExtent: 60.0,
                       itemBuilder: (BuildContext context, int index) {
-                        return Container(
-                          height: 90.0,
-                          padding: const EdgeInsets.only(top: 10.0),
-                          child: KennelRunHistoryCountListItem(
-                              kennelRunHistoryCount:
-                                  model.kennelRunCountList[index]),
-                        );
+                        return
+
+                            // Container(
+                            //   height: 60.0,
+                            //   //padding: const EdgeInsets.only(top: 10.0),
+                            //   child:
+
+                            KennelRunHistoryCountListItem(
+                                kennelRunHistoryCount:
+                                    model.kennelRunCountList[index]);
+
+                        // );
                       },
                     ),
                   ),
                 ],
               )),
     );
-    
   }
 }

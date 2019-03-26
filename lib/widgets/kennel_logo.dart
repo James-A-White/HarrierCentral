@@ -36,7 +36,7 @@ class KennelLogo extends StatelessWidget {
                         fontSize: 400.0),
                     textAlign: TextAlign.center,
                     maxLines: 1,
-                    minFontSize: 1.0,
+                    minFontSize: 1.0, 
                   ),
                 ),
               ])

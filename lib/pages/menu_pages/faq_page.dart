@@ -99,13 +99,29 @@ class _FaqPageContentState extends State<FaqPageContent> {
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
-                  Text('\r\n1.2. What is Harrier Central?',
+                                    Text('\r\n1.2. What is a Hash Kennel?',
+                      style: headingStyle),
+                  Text(
+                    'A Hash Kennel is a group of people (usually) in a specific geographic area who like to Hash. You can think of a Kennel as being like a club. Before Harrier Central, the best way to find Hash events (and their Kennels) in a given area was to search the Web. Now you have one easy place to go look to find Hash Kennels throughout the world and see when they run.',
+                    style: bodyStyle,
+                    textAlign: TextAlign.justify,
+                  ),
+                  Text('\r\n1.3. What is Harrier Central?',
                       style: headingStyle),
                   Text(
                     'Harrier Central is an online service and mobile app to help you manage all aspects of your Hash Life and to allow Hash Kennel mismanagement to improve how they run their Hash organizations. It is intended to be a fun way to use technology to maximize your enjoyment of Hashing activities.',
                     style: bodyStyle,
                     textAlign: TextAlign.justify,
                   ),
+                  Text('\r\n1.4. What are Hash Points?',
+                      style: headingStyle),
+                  Text(
+                    'It\'s traditional for many Hash Kennels to record how many runs each Hasher has and to give rewards based on this. However, many Kennels have either lost track of run counts or never started in the first place. Hash Points are awarded for good Hash behavior (such as haring a run). Hash Points get reset at the beginning of each year to give newxomers a chance to achieve greatness quickly!',
+                    style: bodyStyle,
+                    textAlign: TextAlign.justify,
+                  ),
+
+
                   Text('\r\n2. Your Data', style: sectionStyle),
                   Text('\r\n2.1. What personal data do we store?',
                       style: headingStyle),
