@@ -906,6 +906,15 @@ class PackListView extends StatelessWidget {
                           context,
                           direction == DismissDirection.endToStart ? 3 : 4,
                           packList[index].eventPrice);
+                    } else {
+                      if (direction ==DismissDirection.endToStart)
+                      {
+                        packScopedModel.setRsvpState(
+                            rsvpYes.value,
+                            -1,
+                            attendenceOnIn.value,
+                            packList[index]);
+                      }
                     }
                     return Future<bool>.value(false);
                   },
@@ -961,7 +970,8 @@ class PackListView extends StatelessWidget {
                           ),
                         ),
                   secondaryBackground: packList[index].isPaid == 1
-                      ? Container(
+                      ? packList[index].attendenceState >= attendenceOnIn.value?
+                      Container(
                           color: Colors.grey,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
@@ -974,7 +984,32 @@ class PackListView extends StatelessWidget {
                               Padding(
                                 padding: EdgeInsets.only(right: 15.0),
                                 child: Text(
-                                  'Already paid',
+                                  'Already marked On-In',
+                                  style: TextStyle(
+                                      fontFamily: 'AvenirNextDemiBold',
+                                      fontStyle: FontStyle.normal,
+                                      color: Colors.white,
+                                      fontSize: 20.0,
+                                      height: 1.0),
+                                ),
+                              ),
+                            ], 
+                          ),
+                        )
+                      : Container(
+                          color: Colors.amber[800],
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: const <Widget>[
+                              Padding(
+                                padding: EdgeInsets.only(right: 15.0),
+                                child: Icon(Ionicons.ios_beer,
+                                    size: 35.0, color: Colors.white),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(right: 15.0),
+                                child: Text(
+                                  'Record as On-In',
                                   style: TextStyle(
                                       fontFamily: 'AvenirNextDemiBold',
                                       fontStyle: FontStyle.normal,
