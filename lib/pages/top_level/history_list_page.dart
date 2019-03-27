@@ -61,7 +61,7 @@ class HistoryListPageState extends State<HistoryListPage> {
     //model.notifyListeners();
   }
 
-  TextStyle headingStyle = TextStyle(
+  TextStyle headingStyle = const TextStyle(
       fontFamily: 'AvenirNextCondensedDemiBold',
       fontStyle: FontStyle.normal,
       fontSize: 22.0,

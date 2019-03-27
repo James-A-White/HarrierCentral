@@ -1,51 +1,71 @@
 import 'dart:convert';
 import 'dart:core';
 
-class UserRunHistoryModel {
-  UserRunHistoryModel(
+class UserEventHistoryModel {
+  UserEventHistoryModel(
       {this.eventId,
       this.eventStartDatetime,
       this.eventEndDatetime,
       this.eventName,
+      this.eventNumber,
+      this.locationOneLineDesc,
       this.userEventCounterIncrement,
       this.isHare,
       this.totalRunsThisKennel,
       this.totalRunsAllKennels,
+      this.totalHaringThisKennel,
       this.userStartEvent,
       this.rsvpState,
-      this.attendenceState});
+      this.attendenceState,
+      this.canEditRunAttendence});
 
   final String eventId;
   final DateTime eventStartDatetime;
   final DateTime eventEndDatetime;
   final String eventName;
+  final int eventNumber;
+  final String locationOneLineDesc;
   final int userEventCounterIncrement;
-  final int isHare;
-  final int totalRunsThisKennel;
+  int isHare;
+  int totalRunsThisKennel;
   final int totalRunsAllKennels;
+  int totalHaringThisKennel;
   final DateTime userStartEvent;
   final int rsvpState;
-  final int attendenceState;
+  int attendenceState;
+  final int canEditRunAttendence;
 
-  static List<UserRunHistoryModel> itemsFromJson(String jsonResult) {
-    final List<UserRunHistoryModel> items = <UserRunHistoryModel>[];
+  bool isLoading = false;
 
-    UserRunHistoryModel item;
+  static List<UserEventHistoryModel> itemsFromJson(String jsonResult) {
+    final List<UserEventHistoryModel> items = <UserEventHistoryModel>[];
+
+    UserEventHistoryModel item;
 
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
-        item = UserRunHistoryModel(
+        item = UserEventHistoryModel(
           eventId: jsonItem['eventId'],
-          eventStartDatetime: jsonItem['eventStartDatetime'] == null ? null : DateTime.parse(jsonItem['eventStartDatetime']),
-          eventEndDatetime: jsonItem['eventEndDatetime'] == null ? null : DateTime.parse(jsonItem['eventEndDatetime']),
+          eventStartDatetime: jsonItem['eventStartDatetime'] == null
+              ? null
+              : DateTime.parse(jsonItem['eventStartDatetime']),
+          eventEndDatetime: jsonItem['eventEndDatetime'] == null
+              ? null
+              : DateTime.parse(jsonItem['eventEndDatetime']),
           eventName: jsonItem['eventName'],
+          eventNumber: jsonItem['eventNumber'],
+          locationOneLineDesc: jsonItem['locationOneLineDesc'],
           userEventCounterIncrement: jsonItem['userEventCounterIncrement'],
           isHare: jsonItem['isHare'],
           totalRunsThisKennel: jsonItem['totalRunsThisKennel'],
           totalRunsAllKennels: jsonItem['totalRunsAllKennels'],
-          userStartEvent: jsonItem['userStartEvent'] == null ? null : DateTime.parse(jsonItem['userStartEvent']),
+          totalHaringThisKennel: jsonItem['totalHaringThisKennel'],
+          userStartEvent: jsonItem['userStartEvent'] == null
+              ? null
+              : DateTime.parse(jsonItem['userStartEvent']),
           rsvpState: jsonItem['rsvpState'],
           attendenceState: jsonItem['attendenceState'],
+          canEditRunAttendence: jsonItem['canEditRunAttendence'],
         );
 
         items.add(item);

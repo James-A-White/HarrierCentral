@@ -50,7 +50,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           return DecoratedBox(
             decoration: BoxDecoration(
               color:
-                  index.isEven ? Colors.white : Theme.of(context).accentColor,
+                  index.isEven ? Colors.grey[400] : Theme.of(context).accentColor,
             ),
           );
         },

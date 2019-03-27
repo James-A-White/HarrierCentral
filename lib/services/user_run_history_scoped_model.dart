@@ -3,34 +3,34 @@ import 'dart:convert';
 import 'dart:core';
 
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'package:scoped_model/scoped_model.dart';
 
+import 'package:harrier_central/data_models/join_event_model.dart';
 import 'package:harrier_central/data_models/user_run_history_model.dart';
+import 'package:harrier_central/services/join_event_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 
-import 'package:http/http.dart' as http;
-import 'package:scoped_model/scoped_model.dart';
-
 class UserRunHistoryScopedModel extends Model {
-
   UserRunHistoryScopedModel({
-     @required this.kennelId,
+    @required this.kennelId,
   });
 
   final String kennelId;
 
-  final List<UserRunHistoryModel> _eventList = <UserRunHistoryModel>[];
-  List<UserRunHistoryModel> get userEventList => _eventList;
+  final List<UserEventHistoryModel> _eventList = <UserEventHistoryModel>[];
+  List<UserEventHistoryModel> get userEventList => _eventList;
 
   bool _isLoading = false;
 
   bool get isLoading => _isLoading;
 
-  void addEditEventList(UserRunHistoryModel event) {
+  void addEditEventList(UserEventHistoryModel event) {
     if (_eventList.isNotEmpty) {
-      final UserRunHistoryModel evt = _eventList.firstWhere(
-          (UserRunHistoryModel e) => e.eventId == event.eventId,
+      final UserEventHistoryModel evt = _eventList.firstWhere(
+          (UserEventHistoryModel e) => e.eventId == event.eventId,
           orElse: () => null);
 
       if (evt != null) {
@@ -63,9 +63,7 @@ class UserRunHistoryScopedModel extends Model {
     return _eventList.length;
   }
 
-
-  Future<void> getUserEventsFromBackend(
-      bool showLoadingIndicator) async {
+  Future<void> getUserEventsFromBackend(bool showLoadingIndicator) async {
     if (showLoadingIndicator) {
       _isLoading = true;
       notifyListeners();
@@ -76,7 +74,7 @@ class UserRunHistoryScopedModel extends Model {
     final String accessToken =
         Utilities.generateToken(userId.toUpperCase(), 'getMyRuns');
 
-    final String body = jsonEncode(<String,Object>{
+    final String body = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
       'kennelId': kennelId,
@@ -85,7 +83,8 @@ class UserRunHistoryScopedModel extends Model {
 
     final http.Response response = await http
         .post(BASE_API_URL + 'get_my_runs',
-            headers: <String,String>{'content-type': 'application/json'}, body: body
+            headers: <String, String>{'content-type': 'application/json'},
+            body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -95,16 +94,67 @@ class UserRunHistoryScopedModel extends Model {
       },
     );
 
-    final List<UserRunHistoryModel> items = UserRunHistoryModel.itemsFromJson(response.body);
+    final List<UserEventHistoryModel> items =
+        UserEventHistoryModel.itemsFromJson(response.body);
 
-    for (int i = 0; i < items.length; i++)
-    {
+    for (int i = 0; i < items.length; i++) {
       addEditEventList(items[i]);
     }
 
     _isLoading = false;
 
     notifyListeners();
+  }
+
+  Future<JoinEventModel> setRsvpState(int rsvpState, int isHare, int attendenceState, String eventId) {
+    //bool isDirty = false;
+
+    // if ((rsvpState != -1) && (rsvpState != user.rsvpState)) {
+    //   user.requestedRsvpState = rsvpState;
+    //   user.rsvpState = -1;
+    //   isDirty = true;
+    // }
+
+    // if ((isHare != -1) && (isHare != user.isHare)) {
+    //   user.requestedHaringState = isHare;
+    //   user.isHare = -1;
+    //   isDirty = true;
+    // }
+
+    // if ((attendenceState != -1) && (user.attendenceState != attendenceState)) {
+    //   user.requestedAttendenceState = attendenceState;
+    //   user.attendenceState = -1;
+    //   isDirty = true;
+    // }
+
+    notifyListeners();
+    final JoinEventService srv = JoinEventService();
+
+    return srv
+        .joinEvent(eventId, rsvpState, isHare, attendenceState);
+
+      // if ((rsvpState != -1) && (rsvpState != user.rsvpState)) {
+      //   user.rsvpState = rsvpState;
+      //   user.requestedRsvpState = -1;
+      // }
+
+      // if ((isHare != -1) && (isHare != user.isHare)) {
+      //   user.isHare = isHare;
+      //   user.requestedHaringState = -1;
+      // }
+
+      // if ((attendenceState != -1) &&
+      //     (user.attendenceState != attendenceState)) {
+      //   user.attendenceState = attendenceState;
+      //   user.requestedAttendenceState = -1;
+      // }
+
+      // user.userRunCount = result.totalRunsThisKennel;
+
+      // run.rsvpYesCount = result.rsvpYesCount;
+      // run.rsvpNoCount = result.rsvpNoCount;
+      // run.rsvpMaybeCount = result.rsvpMaybeCount;
+      // run.haresCount = result.haresCount;
 
   }
 }
