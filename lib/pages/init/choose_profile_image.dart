@@ -590,7 +590,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                 getStringPref(StringPrefsEnum.facebookId),
                 getStringPref(StringPrefsEnum.gender),
                 '',
-                '00000000-0000-0000-0000-000000000000',
+                GUID_EMPTY,
                 '',
                 hasherTypeMember)
             .then((UserModel user) {

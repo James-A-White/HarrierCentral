@@ -74,7 +74,7 @@ class KennelRunHistoryTotalsScopedModel extends Model {
     final String body = jsonEncode(<String,Object>{
       'userId': userId,
       'accessToken': accessToken,
-      'kennelId': '00000000-0000-0000-0000-000000000000'
+      'kennelId': GUID_EMPTY
     });
 
     final http.Response response = await http

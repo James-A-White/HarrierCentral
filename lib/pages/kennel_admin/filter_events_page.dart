@@ -1,0 +1,411 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:scoped_model/scoped_model.dart';
+
+import 'package:harrier_central/data_models/join_event_model.dart';
+import 'package:harrier_central/data_models/kennel_model.dart';
+import 'package:harrier_central/data_models/lite_event_model.dart';
+import 'package:harrier_central/services/event_scoped_model.dart';
+import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/widgets/kennel_logo.dart';
+import 'package:harrier_central/widgets/filter_event_list_item.dart';
+
+class FilterEventsPage extends StatefulWidget {
+  const FilterEventsPage({Key key, @required this.kennel}) : super(key: key);
+
+  final Kennel kennel;
+
+  @override
+  FilterEventsPageState createState() => FilterEventsPageState();
+}
+
+class FilterEventsPageState extends State<FilterEventsPage> {
+  FilterEventsPageState();
+
+  EventsScopedModel model;
+
+  @override
+  void initState() {
+    super.initState();
+    model = EventsScopedModel(kennelId: widget.kennel.kennelId);
+  }
+
+  int pageIndex = 1;
+
+  void refreshListFromDb(bool showLoadingIndicator) {
+    model.getUserEventsFromBackend(showLoadingIndicator, 0, 1,1).then((void dummy) {
+      myRunCount = model.userEventList
+          .where(
+              (LiteEvent ueh) => ueh.attendenceState >= attendenceAtHash.value)
+          .length;
+      updateRunCounts();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScopedModel<EventsScopedModel>(
+      model: model,
+      child: Scaffold(
+        // floatingActionButton: SpeedDial(
+        //   // both default to 16
+        //   marginRight: 18,
+        //   marginBottom: 30,
+        //   animatedIcon: AnimatedIcons.menu_close,
+        //   animatedIconTheme: const IconThemeData(size: 22.0),
+        //   // this is ignored if animatedIcon is non null
+        //   // child:const  Icon(Icons.add),
+        //   visible: true,
+        //   curve: Curves.bounceIn,
+        //   overlayColor: Colors.black,
+        //   overlayOpacity: 0.5,
+        //   onOpen: () => print('OPENING DIAL'),
+        //   onClose: () => print('DIAL CLOSED'),
+        //   tooltip: 'Speed Dial',
+        //   heroTag: 'speed-dial-hero-tag',
+        //   backgroundColor: Theme.of(context).accentColor,
+        //   foregroundColor: Colors.white,
+        //   elevation: 8.0,
+        //   shape: CircleBorder(),
+        //   children: <SpeedDialChild>[
+        //     SpeedDialChild(
+        //       child: const Icon(MaterialCommunityIcons.email),
+        //       backgroundColor: Colors.teal[800],
+        //       label: 'Email this kennel\'s run history',
+        //       labelStyle: const TextStyle(fontSize: 18.0),
+        //       onTap: () => {
+        //             model
+        //                 .sendRunCountReportByEmail(
+        //                     kennelId: widget.kennel.kennelId,
+        //                     kennelName: widget.kennel.kennelName)
+        //                 .then((Map<String, String> result) {
+        //               if (result['result']
+        //                   .toLowerCase()
+        //                   .startsWith('success')) {
+        //                 Utilities.showAlert(
+        //                     context,
+        //                     'E-mail successfully sent',
+        //                     'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+        //                     'OK');
+        //               }
+        //             })
+        //           },
+        //     ),
+        //     SpeedDialChild(
+        //       child: const Icon(MaterialCommunityIcons.email_plus),
+        //       backgroundColor: Colors.blue[900],
+        //       label: 'Email all kennels run history',
+        //       labelStyle: const TextStyle(fontSize: 18.0),
+        //       onTap: () => {
+        //             model
+        //                 .sendRunCountReportByEmail(
+        //                     kennelId: GUID_EMPTY,
+        //                     kennelName: 'All of your Hash Kennels')
+        //                 .then((Map<String, String> result) {
+        //               if (result['result']
+        //                   .toLowerCase()
+        //                   .startsWith('success')) {
+        //                 Utilities.showAlert(
+        //                     context,
+        //                     'E-mail successfully sent',
+        //                     'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+        //                     'OK');
+        //               }
+        //             })
+        //           },
+        //     ),
+        //   ],
+        // ),
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: themeAppBarBackground,
+          title: Text(
+            'Events for ${widget.kennel.kennelShortName}',
+            style: const TextStyle(
+              color: Colors.white,
+            ),
+          ),
+        ),
+        body: ScopedModelDescendant<EventsScopedModel>(
+          builder:
+              (BuildContext context, Widget child, EventsScopedModel model) {
+            if ((model.userEventList.isEmpty) && (!model.isLoading)) {
+              // TODO(James): Check this statement and make sure the cast to FALSE is correct
+              refreshListFromDb(true);
+            }
+
+            return model.isLoading
+                ? _buildCircularProgressIndicator()
+                : _buildListView();
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCircularProgressIndicator() {
+    return const Center(
+      child: CircularProgressIndicator(),
+    );
+  }
+
+  Future<void> _handleRefresh() async {
+    model.clearKennelList();
+    model.getUserEventsFromBackend(false, 0, 1,1);
+    //model.notifyListeners();
+  }
+
+  static const TextStyle headingStyle = TextStyle(
+      fontFamily: 'AvenirNextCondensedDemiBold',
+      fontStyle: FontStyle.normal,
+      fontSize: 22.0,
+      height: 0.6);
+
+  static const TextStyle numberStyle = TextStyle(
+    fontFamily: 'AvenirNextCondensedDemiBold',
+    fontStyle: FontStyle.normal,
+    fontSize: 22.0,
+  );
+
+  int myRunCount = 0;
+
+  void updateRunCounts() {
+    myRunCount =
+        model.userEventList.where((LiteEvent ueh) => ueh.isVisible == 1).length;
+  }
+
+  Widget _buildListView() {
+    return Container(
+      decoration: Backgrounds.defaultHcBackgroundLight(),
+      padding: const EdgeInsets.only(top: 0.0),
+      child: model.getKennelsCount() == 0
+          ? const Center(child: Text('No Kennels available.'))
+          : RefreshIndicator(
+              onRefresh: () => _handleRefresh(),
+              displacement: 130.0,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  Container(
+                    decoration: const BoxDecoration(
+                      // border: new Border.all(width: 1.0, color: Colors.black),
+                      //shape: BoxShape.circle,
+                      color: Colors.white,
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color: Color.fromARGB(70, 0, 0, 0),
+                          offset: Offset(0.0, 6.0),
+                          blurRadius: 10.0,
+                        ),
+                      ],
+                    ),
+                    //color:Color.fromARGB(30, 0, 0, 0),
+                    padding: const EdgeInsets.only(
+                        left: 5, top: 5, right: 20, bottom: 5),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Container(
+                          child: AutoSizeText(
+                            '${widget.kennel.kennelName}',
+                            //'Super fucking long text thats sure to overflow and more',
+                            //'999',
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 18.0,
+                            maxLines: 1,
+                            style: numberStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                          //color: Colors.green,
+                        ),
+                        Container(
+                          height: 100,
+                          child: KennelLogo(
+                            kennelLogoUrl: widget.kennel.kennelLogo,
+                            kennelShortName: widget.kennel.kennelShortName,
+                            logoHeight: 100.0,
+                            leftPadding: 0.0,
+                          ),
+                        ),
+                        Container(
+                          child: AutoSizeText(
+                            'Published run count: ${myRunCount.toString()}',
+                            //'Super fucking long text thats sure to overflow and more',
+                            //'999',
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 18.0,
+                            maxLines: 1,
+                            style: numberStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                          //color: Colors.green,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: model.getKennelsCount(),
+                      padding: const EdgeInsets.only(top: 5),
+                      separatorBuilder: (BuildContext context, int index) =>
+                          const Divider(
+                            height: 1.0,
+                            color: Colors.black45,
+                          ),
+                      //itemExtent: 58.0,
+                      //shrinkWrap: true,
+                      itemBuilder: (BuildContext context, int index) {
+                        final LiteEvent eventModel = model.userEventList[index];
+                        return Dismissible(
+                          key: Key(eventModel.eventId),
+                          confirmDismiss: (DismissDirection direction) {
+                            if (eventModel.canEditRunAttendence != 0) {
+                              setState(() {
+                                // swipe from right to left to indicate that
+                                // the hasher either attended the run as a pack
+                                // member or as a hare
+                                if (direction == DismissDirection.endToStart) {
+                                  //eventModel.isLoading = true;
+                                  model
+                                      .updateEvent(
+                                          eventId: eventModel.eventId,
+                                          isCountedRun: 1,
+                                          isVisible: 1)
+                                      .then((dynamic notUsed) {
+                                    setState(() {
+                                      eventModel.isCountedRun = 1;
+                                      eventModel.isVisible = 1;
+                                      //eventModel.isLoading = false;
+                                    });
+
+                                    updateRunCounts();
+                                  });
+                                } else {
+                                  // swipe from left to right to
+                                  // indicate that the hasher did
+                                  // not participate in this event
+                                  // if (eventModel.attendenceState !=
+                                  //     attendenceNo.value) {
+
+                                  //eventModel.isLoading = true;
+                                  model
+                                      .updateEvent(
+                                          eventId: eventModel.eventId,
+                                          isCountedRun: 0,
+                                          isVisible: 0)
+                                      .then((dynamic notUsed) {
+                                    setState(() {
+                                      eventModel.isCountedRun = 0;
+                                      eventModel.isVisible = 0;
+                                      //eventModel.isLoading = false;
+                                    });
+
+                                    updateRunCounts();
+                                  });
+                                  // eventModel.attendenceState =
+                                  //     attendenceNo.value;
+                                }
+                                //}
+                              });
+                            }
+                            return Future<bool>.value(false);
+                          },
+                          background: Container(
+                              color: Colors.red,
+                              child: Row(children: const <Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(left: 10.0),
+                                  child: Icon(Ionicons.ios_eye_off,
+                                      color: Colors.white, size: 35.0),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(left: 15.0),
+                                  child: Text(
+                                      // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                      'Hide this event',
+                                      style: TextStyle(
+                                          fontFamily: 'AvenirNextDemiBold',
+                                          fontStyle: FontStyle.normal,
+                                          color: Colors.white,
+                                          fontSize: 17.0,
+                                          height: 1.0)),
+                                )
+                              ])),
+                          secondaryBackground: Container(
+                            color: Colors.green,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: const <Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(right: 15.0),
+                                  child: Icon(Ionicons.ios_eye,
+                                      color: Colors.white, size: 35.0),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(right: 15.0),
+                                  child: Text(
+                                      //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                      'Show this event',
+                                      style: TextStyle(
+                                          fontFamily: 'AvenirNextDemiBold',
+                                          fontStyle: FontStyle.normal,
+                                          color: Colors.white,
+                                          fontSize: 17.0,
+                                          height: 1.0)),
+                                )
+                              ],
+                            ),
+                          ),
+                          onDismissed: (DismissDirection direction) {
+                            print(direction.toString() +
+                                ' NOTE: We should never reach this point');
+                          },
+                          child: FilterEventListItem(
+                            eventModel: model.userEventList[index],
+                            kennelShortName: widget.kennel.kennelShortName,
+                            updateEvent: (num value) {
+                              value ??= 0;
+                              if (value != -1) {
+                                model
+                                    .updateEvent(
+                                        eventId: eventModel.eventId,
+                                        absoluteRunNumber: value)
+                                    .then((dynamic notUsed) {
+                                  setState(() {
+                                    refreshListFromDb(false);
+                                    
+                                  });
+                                });
+                              }
+                            },
+                          ),
+                        );
+
+                        // Container(
+                        //   height: 60.0,
+                        //   //padding: const EdgeInsets.only(top: 10.0),
+                        //   child:
+
+                        // KennelRunHistoryCountListItem(
+                        //     kennelRunHistoryCount:
+                        //         model.kennelRunCountList[index]);
+
+                        // );
+                      },
+                    ),
+                  ),
+                ],
+              )),
+    );
+  }
+}

@@ -24,14 +24,14 @@ class AddUserService {
       EnumHasherType<int> hasherType,
       {EnumAttendenceState<int> attendenceState = attndenceUnknown}) async {
     final String accessToken = Utilities.generateToken(
-        '00000000-0000-0000-0000-000000000000', 'addUser');
+        GUID_EMPTY, 'addUser');
 
     if ((eventId ?? '').isEmpty) {
-      eventId = '00000000-0000-0000-0000-000000000000';
+      eventId = GUID_EMPTY;
     }
 
     final String body = jsonEncode(<String, String>{
-      'userId': '00000000-0000-0000-0000-000000000000',
+      'userId': GUID_EMPTY,
       'accessToken': accessToken,
       'email': email,
       'firstName': firstName,

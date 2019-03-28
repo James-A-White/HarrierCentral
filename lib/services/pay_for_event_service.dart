@@ -19,11 +19,11 @@ class PayForEventService {
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     if ((userIdWhoPaid ?? '').isEmpty) {
-      userIdWhoPaid = '00000000-0000-0000-0000-000000000000';
+      userIdWhoPaid = GUID_EMPTY;
     }
 
     if ((hasherEventMapId ?? '').isEmpty) {
-      hasherEventMapId = '00000000-0000-0000-0000-000000000000';
+      hasherEventMapId = GUID_EMPTY;
     }
 
     final String tokenParameterString = hasherEventMapId.toUpperCase() +

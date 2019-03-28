@@ -14,7 +14,7 @@ class ApproveLoginService {
   Future<ApproveLoginModel> approveLogin() async {
     String userId = getStringPref(StringPrefsEnum.userId);
     if ((userId ?? '').isEmpty) {
-      userId = '00000000-0000-0000-0000-000000000000';
+      userId = GUID_EMPTY;
     }
 
     String deviceId = 'unknown';

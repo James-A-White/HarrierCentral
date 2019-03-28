@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:harrier_central/data_models/kennel_model.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
+import 'package:harrier_central/pages/kennel_admin/filter_events_page.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class KennelAdminMainPage extends StatelessWidget {
@@ -48,6 +49,25 @@ class KennelAdminMainPage extends StatelessWidget {
                     context,
                     MaterialPageRoute<dynamic>(
                       builder: (BuildContext context) => KennelMembersList(
+                            kennel: kennel
+                          ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Container(
+              width: 150.0,
+              child: RaisedButton(
+                child: const Text(
+                  'Filter Events',
+                  style: TextStyle(color: Colors.white),
+                ),
+                onPressed: () {
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      builder: (BuildContext context) => FilterEventsPage(
                             kennel: kennel
                           ),
                     ),

@@ -141,10 +141,10 @@ class PaymentReportScopedModel extends Model {
       String paidTo,
       String paidBy,
       int showAllTransactions}) async {
-    eventId ??= '00000000-0000-0000-0000-000000000000';
-    kennelId ??= '00000000-0000-0000-0000-000000000000';
-    paidTo ??= '00000000-0000-0000-0000-000000000000';
-    paidBy ??= '00000000-0000-0000-0000-000000000000';
+    eventId ??= GUID_EMPTY;
+    kennelId ??= GUID_EMPTY;
+    paidTo ??= GUID_EMPTY;
+    paidBy ??= GUID_EMPTY;
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 

@@ -3,14 +3,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:scoped_model/scoped_model.dart';
 
-import 'package:harrier_central/data_models/user_run_history_model.dart';
+import 'package:harrier_central/data_models/lite_event_model.dart';
 import 'package:harrier_central/data_models/join_event_model.dart';
-import 'package:harrier_central/services/user_run_history_scoped_model.dart';
+import 'package:harrier_central/services/event_scoped_model.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/user_event_list_item.dart';
 
@@ -38,21 +41,88 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
   String kennelId;
 
-  UserRunHistoryScopedModel model;
+  EventsScopedModel model;
 
   @override
   void initState() {
     super.initState();
-    model = UserRunHistoryScopedModel(kennelId: kennelId);
+    model = EventsScopedModel(kennelId: kennelId);
   }
 
   int pageIndex = 1;
 
   @override
   Widget build(BuildContext context) {
-    return ScopedModel<UserRunHistoryScopedModel>(
+    return ScopedModel<EventsScopedModel>(
       model: model,
       child: Scaffold(
+        floatingActionButton: SpeedDial(
+          // both default to 16
+          marginRight: 18,
+          marginBottom: 30,
+          animatedIcon: AnimatedIcons.menu_close,
+          animatedIconTheme: const IconThemeData(size: 22.0),
+          // this is ignored if animatedIcon is non null
+          // child:const  Icon(Icons.add),
+          visible: true,
+          curve: Curves.bounceIn,
+          overlayColor: Colors.black,
+          overlayOpacity: 0.5,
+          onOpen: () => print('OPENING DIAL'),
+          onClose: () => print('DIAL CLOSED'),
+          tooltip: 'Speed Dial',
+          heroTag: 'speed-dial-hero-tag',
+          backgroundColor: Theme.of(context).accentColor,
+          foregroundColor: Colors.white,
+          elevation: 8.0,
+          shape: CircleBorder(),
+          children: <SpeedDialChild>[
+            SpeedDialChild(
+              child: const Icon(MaterialCommunityIcons.email),
+              backgroundColor: Colors.teal[800],
+              label: 'Email this kennel\'s run history',
+              labelStyle: const TextStyle(fontSize: 18.0),
+              onTap: () => {
+                    model
+                        .sendRunCountReportByEmail(
+                            kennelId: kennelId, kennelName: widget.kennelName)
+                        .then((Map<String, String> result) {
+                      if (result['result']
+                          .toLowerCase()
+                          .startsWith('success')) {
+                        Utilities.showAlert(
+                            context,
+                            'E-mail successfully sent',
+                            'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                            'OK');
+                      }
+                    })
+                  },
+            ),
+            SpeedDialChild(
+              child: const Icon(MaterialCommunityIcons.email_plus),
+              backgroundColor: Colors.blue[900],
+              label: 'Email all kennels run history',
+              labelStyle: const TextStyle(fontSize: 18.0),
+              onTap: () => {
+                    model
+                        .sendRunCountReportByEmail(
+                            kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels')
+                        .then((Map<String, String> result) {
+                      if (result['result']
+                          .toLowerCase()
+                          .startsWith('success')) {
+                        Utilities.showAlert(
+                            context,
+                            'E-mail successfully sent',
+                            'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                            'OK');
+                      }
+                    })
+                  },
+            ),
+          ],
+        ),
         appBar: AppBar(
           centerTitle: true,
           backgroundColor: themeAppBarBackground,
@@ -63,14 +133,14 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
             ),
           ),
         ),
-        body: ScopedModelDescendant<UserRunHistoryScopedModel>(
+        body: ScopedModelDescendant<EventsScopedModel>(
           builder: (BuildContext context, Widget child,
-              UserRunHistoryScopedModel model) {
+              EventsScopedModel model) {
             if ((model.userEventList.isEmpty) && (!model.isLoading)) {
               // TODO(James): Check this statement and make sure the cast to FALSE is correct
-              model.getUserEventsFromBackend(true).then((void dummy) {
+              model.getUserEventsFromBackend(true,1,0,0).then((void dummy) {
                 myRunCount = model.userEventList
-                    .where((UserEventHistoryModel ueh) =>
+                    .where((LiteEvent ueh) =>
                         ueh.attendenceState >= attendenceAtHash.value)
                     .length;
               });
@@ -93,7 +163,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
   Future<void> _handleRefresh() async {
     model.clearKennelList();
-    model.getUserEventsFromBackend(false);
+    model.getUserEventsFromBackend(false,1,0,0);
     //model.notifyListeners();
   }
 
@@ -115,19 +185,18 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
     int runCounter = 1;
     int haringCounter = 1;
 
-    final List<UserEventHistoryModel> list = model.userEventList
-        .where((UserEventHistoryModel ueh) =>
+    final List<LiteEvent> list = model.userEventList
+        .where((LiteEvent ueh) =>
             ueh.attendenceState >= attendenceAtHash.value)
         .toList();
 
-    list.sort((UserEventHistoryModel a, UserEventHistoryModel b) =>
+    list.sort((LiteEvent a, LiteEvent b) =>
         a.eventStartDatetime.compareTo(b.eventStartDatetime));
 
     for (int i = 0; i < list.length; i++) {
       list[i].totalRunsThisKennel = runCounter;
       runCounter++;
-      if (list[i].isHare == isHareYes.value)
-      {
+      if (list[i].isHare == isHareYes.value) {
         list[i].totalHaringThisKennel = haringCounter;
         haringCounter++;
       }
@@ -217,12 +286,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                       //itemExtent: 58.0,
                       //shrinkWrap: true,
                       itemBuilder: (BuildContext context, int index) {
-                        final UserEventHistoryModel userEventHistoryModel =
+                        final LiteEvent eventModel =
                             model.userEventList[index];
                         return Dismissible(
-                            key: Key(userEventHistoryModel.eventId),
+                            key: Key(eventModel.eventId),
                             confirmDismiss: (DismissDirection direction) {
-                              if (userEventHistoryModel.canEditRunAttendence !=
+                              if (eventModel.canEditRunAttendence !=
                                   0) {
                                 setState(() {
                                   // swipe from right to left to indicate that
@@ -233,25 +302,25 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                     // here, we're going from an attendence state of
                                     // not at the Hash to being at the Hash,
                                     // so assume that the person was not a hare
-                                    if (userEventHistoryModel.attendenceState <
+                                    if (eventModel.attendenceState <
                                         attendenceAtHash.value) {
-                                      userEventHistoryModel.isLoading = true;
+                                      eventModel.isLoading = true;
                                       model
                                           .setRsvpState(
                                               rsvpYes.value,
                                               isHareNo.value,
                                               attendenceAtHash.value,
-                                              userEventHistoryModel.eventId)
+                                              eventModel.eventId)
                                           .then((JoinEventModel result) {
                                         setState(() {
-                                          userEventHistoryModel
+                                          eventModel
                                                   .attendenceState =
                                               attendenceAtHash.value;
-                                          userEventHistoryModel.isLoading =
+                                          eventModel.isLoading =
                                               false;
                                           myRunCount = model.userEventList
                                               .where(
-                                                  (UserEventHistoryModel ueh) =>
+                                                  (LiteEvent ueh) =>
                                                       ueh.attendenceState >=
                                                       attendenceAtHash.value)
                                               .length;
@@ -263,31 +332,31 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                       // here, the attendence was already at a Hash so we want
                                       // to cycle back and forth from being a hare to not being
                                       // a hare but leave the attendence and rsvp values at Yes
-                                      userEventHistoryModel.isLoading = true;
+                                      eventModel.isLoading = true;
                                       model
                                           .setRsvpState(
                                               rsvpYes.value,
-                                              userEventHistoryModel.isHare ==
+                                              eventModel.isHare ==
                                                       isHareNo.value
                                                   ? isHareYes.value
                                                   : isHareNo.value,
                                               attendenceAtHash.value,
-                                              userEventHistoryModel.eventId)
+                                              eventModel.eventId)
                                           .then((JoinEventModel result) {
                                         setState(() {
-                                          userEventHistoryModel.isHare =
-                                              userEventHistoryModel.isHare ==
+                                          eventModel.isHare =
+                                              eventModel.isHare ==
                                                       isHareNo.value
                                                   ? isHareYes.value
                                                   : isHareNo.value;
-                                          userEventHistoryModel
+                                          eventModel
                                                   .attendenceState =
                                               attendenceAtHash.value;
-                                          userEventHistoryModel.isLoading =
+                                          eventModel.isLoading =
                                               false;
                                           myRunCount = model.userEventList
                                               .where(
-                                                  (UserEventHistoryModel ueh) =>
+                                                  (LiteEvent ueh) =>
                                                       ueh.attendenceState >=
                                                       attendenceAtHash.value)
                                               .length;
@@ -300,26 +369,26 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                     // swipe from left to right to
                                     // indicate that the hasher did
                                     // not participate in this event
-                                    if (userEventHistoryModel.attendenceState !=
+                                    if (eventModel.attendenceState !=
                                         attendenceNo.value) {
-                                      userEventHistoryModel.isLoading = true;
+                                      eventModel.isLoading = true;
                                       model
                                           .setRsvpState(
                                               rsvpNo.value,
                                               isHareNo.value,
                                               attendenceNo.value,
-                                              userEventHistoryModel.eventId)
+                                              eventModel.eventId)
                                           .then((JoinEventModel result) {
                                         setState(() {
-                                          userEventHistoryModel
+                                          eventModel
                                                   .attendenceState =
                                               attendenceNo.value;
-                                          userEventHistoryModel.isLoading =
+                                          eventModel.isLoading =
                                               false;
 
                                           myRunCount = model.userEventList
                                               .where(
-                                                  (UserEventHistoryModel ueh) =>
+                                                  (LiteEvent ueh) =>
                                                       ueh.attendenceState >=
                                                       attendenceAtHash.value)
                                               .length;
@@ -327,7 +396,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
                                         updateMyRunCounts();
                                       });
-                                      userEventHistoryModel.attendenceState =
+                                      eventModel.attendenceState =
                                           attendenceNo.value;
                                     }
                                   }
@@ -335,7 +404,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                               }
                               return Future<bool>.value(false);
                             },
-                            background: userEventHistoryModel
+                            background: eventModel
                                         .canEditRunAttendence ==
                                     0
                                 ? Container(
@@ -382,7 +451,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                                 height: 1.0)),
                                       )
                                     ])),
-                            secondaryBackground: userEventHistoryModel
+                            secondaryBackground: eventModel
                                         .canEditRunAttendence ==
                                     0
                                 ? Container(
@@ -413,12 +482,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                                     height: 1.0)),
                                           )
                                         ]))
-                                : (userEventHistoryModel.attendenceState <
+                                : (eventModel.attendenceState <
                                             attendenceAtHash.value) ||
-                                        ((userEventHistoryModel
+                                        ((eventModel
                                                     .attendenceState >=
                                                 attendenceAtHash.value) &&
-                                            (userEventHistoryModel.isHare ==
+                                            (eventModel.isHare ==
                                                 isHareYes.value))
                                     ? Container(
                                         color: Colors.green,

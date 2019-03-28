@@ -7,14 +7,14 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:intl/intl.dart';
 
-import 'package:harrier_central/data_models/user_run_history_model.dart';
+import 'package:harrier_central/data_models/lite_event_model.dart';
 import 'package:harrier_central/util/enums.dart';
 
 class UserEventListItem extends StatelessWidget {
   const UserEventListItem(
       {@required this.userEventHistoryModel, @required this.kennelShortName});
 
-  final UserEventHistoryModel userEventHistoryModel;
+  final LiteEvent userEventHistoryModel;
   final String kennelShortName;
 
   @override

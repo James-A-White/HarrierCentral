@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:core';
 
-class UserEventHistoryModel {
-  UserEventHistoryModel(
+class LiteEvent {
+  LiteEvent(
       {this.eventId,
       this.eventStartDatetime,
       this.eventEndDatetime,
@@ -10,6 +10,10 @@ class UserEventHistoryModel {
       this.eventNumber,
       this.locationOneLineDesc,
       this.userEventCounterIncrement,
+      this.eventFacebookId,
+      this.isVisible,
+      this.isCountedRun,
+      this.absoluteEventNumber,
       this.isHare,
       this.totalRunsThisKennel,
       this.totalRunsAllKennels,
@@ -23,9 +27,13 @@ class UserEventHistoryModel {
   final DateTime eventStartDatetime;
   final DateTime eventEndDatetime;
   final String eventName;
-  final int eventNumber;
+  int eventNumber;
   final String locationOneLineDesc;
   final int userEventCounterIncrement;
+  final String eventFacebookId;
+  int isVisible;
+  int isCountedRun;
+  int absoluteEventNumber;
   int isHare;
   int totalRunsThisKennel;
   final int totalRunsAllKennels;
@@ -37,14 +45,14 @@ class UserEventHistoryModel {
 
   bool isLoading = false;
 
-  static List<UserEventHistoryModel> itemsFromJson(String jsonResult) {
-    final List<UserEventHistoryModel> items = <UserEventHistoryModel>[];
+  static List<LiteEvent> itemsFromJson(String jsonResult) {
+    final List<LiteEvent> items = <LiteEvent>[];
 
-    UserEventHistoryModel item;
+    LiteEvent item;
 
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
-        item = UserEventHistoryModel(
+        item = LiteEvent(
           eventId: jsonItem['eventId'],
           eventStartDatetime: jsonItem['eventStartDatetime'] == null
               ? null
@@ -56,6 +64,10 @@ class UserEventHistoryModel {
           eventNumber: jsonItem['eventNumber'],
           locationOneLineDesc: jsonItem['locationOneLineDesc'],
           userEventCounterIncrement: jsonItem['userEventCounterIncrement'],
+          eventFacebookId: jsonItem['eventFacebookId'],
+          isVisible: jsonItem['isVisible'],
+          isCountedRun: jsonItem['isCountedRun'],
+          absoluteEventNumber: jsonItem['absoluteEventNumber'],
           isHare: jsonItem['isHare'],
           totalRunsThisKennel: jsonItem['totalRunsThisKennel'],
           totalRunsAllKennels: jsonItem['totalRunsAllKennels'],

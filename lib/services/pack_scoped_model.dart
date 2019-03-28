@@ -275,7 +275,7 @@ class PackScopedModel extends Model {
     }
 
     final List<UserModel> dataFromResponse =
-        await _getPack(eventId, '00000000-0000-0000-0000-000000000000');
+        await _getPack(eventId, GUID_EMPTY);
 
     // TODO(James): Investigate why foreach loop was causing a LINT error
     for (int i = 0; i < dataFromResponse.length; i++)
