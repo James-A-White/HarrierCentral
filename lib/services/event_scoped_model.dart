@@ -8,7 +8,6 @@ import 'package:scoped_model/scoped_model.dart';
 
 import 'package:harrier_central/data_models/join_event_model.dart';
 import 'package:harrier_central/data_models/lite_event_model.dart';
-import 'package:harrier_central/data_models/single_result_model.dart';
 import 'package:harrier_central/services/join_event_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -35,11 +34,19 @@ class EventsScopedModel extends Model {
           orElse: () => null);
 
       if (evt != null) {
-        if (evt.eventNumber != event.eventNumber) {evt.eventNumber = event.eventNumber;}
-        if (evt.absoluteEventNumber != event.absoluteEventNumber) {evt.absoluteEventNumber = event.absoluteEventNumber;}
-        if (evt.isCountedRun != event.isCountedRun) {evt.isCountedRun = event.isCountedRun;}
-        if (evt.isVisible != event.isVisible) {evt.isVisible = event.isVisible;}
-        
+        if (evt.eventNumber != event.eventNumber) {
+          evt.eventNumber = event.eventNumber;
+        }
+        if (evt.absoluteEventNumber != event.absoluteEventNumber) {
+          evt.absoluteEventNumber = event.absoluteEventNumber;
+        }
+        if (evt.isCountedRun != event.isCountedRun) {
+          evt.isCountedRun = event.isCountedRun;
+        }
+        if (evt.isVisible != event.isVisible) {
+          evt.isVisible = event.isVisible;
+        }
+
         // //if (ken.kennelShortName != kennel.kennelShortName) {ken.kennelShortName = kennel.kennelShortName;}
         // //if (ken.locationName != kennel.locationName) {ken.locationName = kennel.locationName;}
         // if (ken.totalHaringThisKennel != event.totalHaringThisKennel) {
@@ -68,8 +75,8 @@ class EventsScopedModel extends Model {
     return _eventList.length;
   }
 
-  Future<void> getUserEventsFromBackend(
-      bool showLoadingIndicator, int filterByUser, int includeHidden, int includeFuture) async {
+  Future<void> getUserEventsFromBackend(bool showLoadingIndicator,
+      int filterByUser, int includeHidden, int includeFuture) async {
     if (showLoadingIndicator) {
       _isLoading = true;
       //notifyListeners();
@@ -77,11 +84,10 @@ class EventsScopedModel extends Model {
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final String paramString = '$kennelId#${filterByUser.toString()}';
+    //final String paramString = '$kennelId#${filterByUser.toString()}';
 
-    final String accessToken = Utilities.generateToken(
-        userId.toUpperCase(), 'getRuns',
-        paramString: paramString);
+    final String accessToken =
+        Utilities.generateToken(userId.toUpperCase(), 'getRuns');
 
     final String body = jsonEncode(<String, Object>{
       'userId': userId,
@@ -174,9 +180,8 @@ class EventsScopedModel extends Model {
     final String userName = getStringPref(StringPrefsEnum.displayName);
     final String emailAddress = getStringPref(StringPrefsEnum.email);
 
-    final String paramString = '$kennelId#1';
-
-    final String accessToken1 = Utilities.generateToken(userId, 'getRuns', paramString: paramString);
+    final String accessToken1 =
+        Utilities.generateToken(userId.toUpperCase(), 'getRuns');
 
     final String accessToken2 =
         Utilities.generateToken(userId, 'getMyKennelRunTotals');
@@ -215,11 +220,10 @@ class EventsScopedModel extends Model {
       int isVisible,
       int isCountedRun,
       int absoluteRunNumber}) async {
-
     isVisible ??= -1;
     isCountedRun ??= -1;
     absoluteRunNumber ??= -1;
-    
+
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken = Utilities.generateToken(userId, 'addEditEvent');
@@ -230,7 +234,7 @@ class EventsScopedModel extends Model {
       'eventId': eventId,
       'isVisible': isVisible.toString(),
       'isCountedRun': isCountedRun.toString(),
-      'absoluteEventNumber' : absoluteRunNumber.toString()
+      'absoluteEventNumber': absoluteRunNumber.toString()
     });
 
     return http

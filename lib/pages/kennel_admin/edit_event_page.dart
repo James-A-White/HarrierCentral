@@ -49,7 +49,7 @@ class EditEventPageState extends State<EditEventPage> {
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
       title: const Text(
-        'My Profile',
+        'Edit run',
         style: TextStyle(
           color: Colors.white,
         ),
@@ -93,7 +93,7 @@ class EditEventPageState extends State<EditEventPage> {
                                 child: Container(
                                   child: Center(
                                     child: Column(
-                                      children: [
+                                      children: <Widget> [
                                         Padding(
                                           padding: const EdgeInsets.only(
                                               top: 0.0, bottom: 8.0),
@@ -110,8 +110,8 @@ class EditEventPageState extends State<EditEventPage> {
                                             //   }
                                             // },
                                             keyboardType: TextInputType.number,
-                                            style: TextStyle(
-                                              fontFamily: "Poppins",
+                                            style: const TextStyle(
+                                              fontFamily: 'Poppins',
                                             ),
                                           ),
                                         ),

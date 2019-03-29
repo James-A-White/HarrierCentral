@@ -3,18 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:scoped_model/scoped_model.dart';
 
-import 'package:harrier_central/data_models/join_event_model.dart';
 import 'package:harrier_central/data_models/kennel_model.dart';
 import 'package:harrier_central/data_models/lite_event_model.dart';
 import 'package:harrier_central/services/event_scoped_model.dart';
-import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/filter_event_list_item.dart';
 
@@ -275,7 +271,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                                 // the hasher either attended the run as a pack
                                 // member or as a hare
                                 if (direction == DismissDirection.endToStart) {
-                                  //eventModel.isLoading = true;
+                                  eventModel.isLoading = true;
                                   model
                                       .updateEvent(
                                           eventId: eventModel.eventId,
@@ -285,7 +281,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                                     setState(() {
                                       eventModel.isCountedRun = 1;
                                       eventModel.isVisible = 1;
-                                      //eventModel.isLoading = false;
+                                      eventModel.isLoading = false;
                                     });
 
                                     updateRunCounts();
@@ -297,7 +293,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                                   // if (eventModel.attendenceState !=
                                   //     attendenceNo.value) {
 
-                                  //eventModel.isLoading = true;
+                                  eventModel.isLoading = true;
                                   model
                                       .updateEvent(
                                           eventId: eventModel.eventId,
@@ -307,7 +303,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                                     setState(() {
                                       eventModel.isCountedRun = 0;
                                       eventModel.isVisible = 0;
-                                      //eventModel.isLoading = false;
+                                      eventModel.isLoading = false;
                                     });
 
                                     updateRunCounts();
