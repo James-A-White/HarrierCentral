@@ -8,7 +8,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:scoped_model/scoped_model.dart';
 
-import 'package:harrier_central/data_models/future_run_model.dart';
+import 'package:harrier_central/data_models/planned_run_model.dart';
 import 'package:harrier_central/data_models/pay_for_event_model.dart';
 import 'package:harrier_central/data_models/process_qr_scan_for_checkin_model.dart';
 import 'package:harrier_central/data_models/user_model.dart';
@@ -25,7 +25,7 @@ class CheckInPackPage extends StatefulWidget {
     @required this.futureRun,
   });
 
-  final FutureRun futureRun;
+  final PlannedRun futureRun;
 
   @override
   State<CheckInPackPage> createState() {
@@ -570,7 +570,7 @@ class PackListView extends StatelessWidget {
   final List<UserModel> packList;
   final PackScopedModel packScopedModel;
   final PayScopedModel payScopedModel;
-  final FutureRun futureRun;
+  final PlannedRun futureRun;
 
   Widget buildRsvpAndPaymentSnackbar(
       BuildContext context, int index, PackScopedModel _packScopedModel) {

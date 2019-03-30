@@ -1,8 +1,8 @@
 import 'dart:core';
 
-class FutureRun {
+class PlannedRun {
 
-   FutureRun({
+   PlannedRun({
     this.eventId,
     this.kennelId,
     this.eventName,

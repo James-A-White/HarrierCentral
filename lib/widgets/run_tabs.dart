@@ -11,7 +11,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong/latlong.dart';
 
-import 'package:harrier_central/data_models/future_run_model.dart';
+import 'package:harrier_central/data_models/planned_run_model.dart';
 import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/pages/run_admin/run_start_end_qr_codes_page.dart';
 import 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
@@ -32,7 +32,7 @@ import 'package:url_launcher/url_launcher.dart';
 class RunTabs extends StatefulWidget {
   const RunTabs({Key key, @required this.futureRun}) : super(key: key);
 
-  final FutureRun futureRun;
+  final PlannedRun futureRun;
 
   @override
   State<RunTabs> createState() {

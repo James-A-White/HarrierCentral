@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/data_models/future_run_model.dart';
+import 'package:harrier_central/data_models/planned_run_model.dart';
 import 'package:harrier_central/data_models/user_model.dart';
 import 'package:harrier_central/services/pack_scoped_model.dart';
 import 'package:harrier_central/services/pay_scoped_model.dart';
@@ -29,7 +29,7 @@ class PaymentSnackBar extends SnackBar {
   final PayScopedModel payScopedModel;
   final BuildContext context;
   final List<UserModel> packList;
-  final FutureRun futureRun;
+  final PlannedRun futureRun;
 
   @override // TODO(James): implement content
   Widget get content => Column(

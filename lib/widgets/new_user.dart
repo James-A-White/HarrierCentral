@@ -545,7 +545,7 @@ class NewUserState extends State<NewUserWidget>
 
       final AuthorizeDeviceService srv = AuthorizeDeviceService();
       final Future<Map<String, String>> apiCall =
-          srv.authorizeDevice(scanResult);
+          srv.authorizeDevice(context,scanResult);
       apiCall.then((Map<String, String> result) {
         Future<dynamic>.delayed(const Duration(milliseconds: 3500))
             .then((void dummy) {

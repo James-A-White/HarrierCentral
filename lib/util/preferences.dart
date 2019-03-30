@@ -31,6 +31,10 @@ String getStringPref(StringPrefsEnum key) {
   return _sharedPreferences.getString(test);
 }
 
+Future<bool> clearAllPrefs() async {
+  return _sharedPreferences.clear();
+}
+
 Future<bool> setStringPref(StringPrefsEnum key, String value) async {
   return _sharedPreferences.setString(key.toString(), value);
 }

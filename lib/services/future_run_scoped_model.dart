@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:harrier_central/data_models/future_run_model.dart';
+import 'package:harrier_central/data_models/planned_run_model.dart';
 import 'package:harrier_central/data_models/join_event_model.dart';
 import 'package:harrier_central/services/join_event_service.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -14,8 +14,8 @@ import 'package:scoped_model/scoped_model.dart';
 
 class FutureRunScopedModel
  extends Model {
-  List<FutureRun> _futureRunsList = <FutureRun>[];
-  List<FutureRun> get futureRunsList => _futureRunsList;
+  List<PlannedRun> _futureRunsList = <PlannedRun>[];
+  List<PlannedRun> get futureRunsList => _futureRunsList;
 
   bool _isLoading = false;
 
@@ -32,7 +32,7 @@ class FutureRunScopedModel
   }
 
   void setRsvpState(
-      int rsvpState, int isHare, int attendenceState, FutureRun run) {
+      int rsvpState, int isHare, int attendenceState, PlannedRun run) {
 
     if (rsvpState != -1) {
       run.requestedRsvpState = rsvpState;
@@ -77,10 +77,10 @@ class FutureRunScopedModel
     });
   }
 
-  void addEditFutureRunList(FutureRun futureRun) {
+  void addEditFutureRunList(PlannedRun futureRun) {
     if (_futureRunsList.isNotEmpty) {
-      final FutureRun run = _futureRunsList.firstWhere(
-          (FutureRun evt) => evt.eventId == futureRun.eventId,
+      final PlannedRun run = _futureRunsList.firstWhere(
+          (PlannedRun evt) => evt.eventId == futureRun.eventId,
           orElse: () => null);
 
       if (run != null) {
@@ -153,7 +153,7 @@ class FutureRunScopedModel
       return Future<void>(() {});
     }
 
-    _futureRunsList ??= <FutureRun>[];
+    _futureRunsList ??= <PlannedRun>[];
 
     _isLoading = true;
     if (forceRefresh) {
@@ -164,7 +164,7 @@ class FutureRunScopedModel
     dataFromResponse.forEach(
       (dynamic run) {
         //parse kennel's details
-        final FutureRun thisRun = FutureRun(
+        final PlannedRun thisRun = PlannedRun(
           eventId: run['eventId'],
           kennelId: run['kennelId'],
           eventName: run['eventName'],

@@ -47,15 +47,15 @@ class AddUserService {
     });
 
     final String responseBody =
-        await ServiceCommon.sendRequest(context, body);
+        await ServiceCommon.sendRequest(context, 'add_user', body);
 
     if (responseBody == ERROR_KEY) {
-      return null;
+      return Future<UserModel>(null);
     } else {
       final List<UserModel> results = UserModel.listFromJson(responseBody);
 
       if (results.isEmpty) {
-        return null;
+        return Future<UserModel>(null);
       }
 
       return results[0];
