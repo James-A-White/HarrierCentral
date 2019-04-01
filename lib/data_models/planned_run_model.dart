@@ -1,5 +1,7 @@
 import 'dart:core';
 
+import 'package:harrier_central/util/constants.dart';
+
 class PlannedRun {
 
    PlannedRun({
@@ -40,6 +42,7 @@ class PlannedRun {
     this.kennelShortName,
     this.runSequence,
     this.distanceToEvent,
+    this.mismanagementRoleFlags
 
   });
 
@@ -86,6 +89,8 @@ class PlannedRun {
   final int runSequence;
   int distanceToEvent;
 
+  int mismanagementRoleFlags;
+
   bool  isExpanded = false;
 
  
@@ -93,6 +98,30 @@ class PlannedRun {
   int requestedRsvpState = -1;
   int requestedHaringState = -1;
   int requestedAttendenceState = -1;
+
+     bool get mmAuthAllowEditRsvp {
+    return (mismanagementRoleFlags & mmAuthAllowEditRsvpFlag) != 0;
+  }
+
+  bool get mmAuthAllowCheckInAndOut {
+    return (mismanagementRoleFlags & mmAuthAllowCheckInAndOutFlag) != 0;
+  }
+
+  bool get mmAuthAllowHashCash {
+    return (mismanagementRoleFlags & mmAuthAllowHashCashFlag) != 0;
+  }
+
+  bool get mmAuthShowCheckInSnackbar {
+    return (mismanagementRoleFlags & (mmAuthAllowEditRsvpFlag | mmAuthAllowHashCashFlag | mmAuthAllowCheckInAndOutFlag)) != 0;
+  }
+
+  bool get mmAuthAllowAddNewMember {
+    return (mismanagementRoleFlags & mmAuthAllowAddNewMemberFlag) != 0;
+  }
+
+  bool get hasMmPrivileges {
+    return mismanagementRoleFlags != 0;
+  }
 
   // int get requestedRsvpState => _requestedRsvpState;
   // int get requestedHaringState => _requestedHaringState;

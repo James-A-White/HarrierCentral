@@ -90,8 +90,8 @@ class FutureRunScopedModel
         if (run.eventStartDatetime != futureRun.eventStartDatetime) {
           run.eventStartDatetime = futureRun.eventStartDatetime;
         }
-        if (run.eventNumber != futureRun.eventNumber) {
-          run.eventNumber = futureRun.eventNumber;
+        if (run.eventNumber != futureRun.eventNumber) { 
+          run.eventNumber = futureRun.eventNumber; 
         }
         if (run.daysUntilNextRun != futureRun.daysUntilNextRun) {
           run.daysUntilNextRun = futureRun.daysUntilNextRun;
@@ -99,6 +99,12 @@ class FutureRunScopedModel
         if (run.distanceToEvent != futureRun.distanceToEvent) {
           run.distanceToEvent = futureRun.distanceToEvent;
         }
+        if (run.mismanagementRoleFlags != futureRun.mismanagementRoleFlags) {
+          run.mismanagementRoleFlags = futureRun.mismanagementRoleFlags;
+        }
+
+
+
         // // add fields here that might have been updated
         // if (ken.followingBool != kennel.followingBool) {ken.followingBool = kennel.followingBool;}
         // //if (ken.kennelName != kennel.kennelName) {ken.kennelName = kennel.kennelName;}
@@ -199,6 +205,7 @@ class FutureRunScopedModel
           kennelShortName: run['kennelShortName'],
           runSequence: run['runSequence'],
           distanceToEvent: run['distanceToEvent'],
+          mismanagementRoleFlags: run['mismanagementRoleFlags'],
         );
 
         thisRun.isExpanded = false;
@@ -211,4 +218,6 @@ class FutureRunScopedModel
 
     notifyListeners();
   }
+
+  
 }

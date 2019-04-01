@@ -140,7 +140,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
               // TODO(James): Check this statement and make sure the cast to FALSE is correct
               model.getUserEventsFromBackend(true,1,0,0).then((void dummy) {
                 myRunCount = model.userEventList
-                    .where((LiteEvent ueh) =>
+                    .where((Event ueh) =>
                         ueh.attendenceState >= attendenceAtHash.value)
                     .length;
               });
@@ -185,12 +185,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
     int runCounter = 1;
     int haringCounter = 1;
 
-    final List<LiteEvent> list = model.userEventList
-        .where((LiteEvent ueh) =>
+    final List<Event> list = model.userEventList
+        .where((Event ueh) =>
             ueh.attendenceState >= attendenceAtHash.value)
         .toList();
 
-    list.sort((LiteEvent a, LiteEvent b) =>
+    list.sort((Event a, Event b) =>
         a.eventStartDatetime.compareTo(b.eventStartDatetime));
 
     for (int i = 0; i < list.length; i++) {
@@ -286,7 +286,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                       //itemExtent: 58.0,
                       //shrinkWrap: true,
                       itemBuilder: (BuildContext context, int index) {
-                        final LiteEvent eventModel =
+                        final Event eventModel =
                             model.userEventList[index];
                         return Dismissible(
                             key: Key(eventModel.eventId),
@@ -320,7 +320,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                               false;
                                           myRunCount = model.userEventList
                                               .where(
-                                                  (LiteEvent ueh) =>
+                                                  (Event ueh) =>
                                                       ueh.attendenceState >=
                                                       attendenceAtHash.value)
                                               .length;
@@ -356,7 +356,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                               false;
                                           myRunCount = model.userEventList
                                               .where(
-                                                  (LiteEvent ueh) =>
+                                                  (Event ueh) =>
                                                       ueh.attendenceState >=
                                                       attendenceAtHash.value)
                                               .length;
@@ -388,7 +388,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
                                           myRunCount = model.userEventList
                                               .where(
-                                                  (LiteEvent ueh) =>
+                                                  (Event ueh) =>
                                                       ueh.attendenceState >=
                                                       attendenceAtHash.value)
                                               .length;

@@ -1,5 +1,7 @@
 import 'dart:core';
 
+import 'package:harrier_central/util/constants.dart';
+
 class Kennel {
   Kennel(
       {this.kennelId,
@@ -32,20 +34,22 @@ class Kennel {
       this.isMember,
       this.mismanagementRoleFlags,
       this.isHomeKennel,
-      this.authAllowCredit,
-      this.authCheckInAndOut,
-      this.authCustomLogo,
-      this.authCustomSongbook,
-      this.authFacebookIntegration,
-      this.authHaberdashery,
-      this.authHareRaisingManagement,
-      this.authMembersAllowed,
-      this.authPromoteEvents,
-      this.authPushNotifications,
-      this.authTrackPayments,
-      this.authWebsiteIntegration,
+      // this.authAllowCredit,
+      // this.authCheckInAndOut,
+      // this.authCustomLogo,
+      // this.authCustomSongbook,
+      // this.authFacebookIntegration,
+      // this.authHaberdashery,
+      // this.authHareRaisingManagement,
+      // this.authMembersAllowed,
+      // this.authPromoteEvents,
+      // this.authPushNotifications,
+      // this.authTrackPayments,
+      // this.authWebsiteIntegration,
       this.memberCount,
-      this.followingRequested});
+      this.followingRequested
+      
+      });
 
   final String kennelId;
   final int distance;
@@ -77,18 +81,39 @@ class Kennel {
   int isMember;
   final int mismanagementRoleFlags;
   int isHomeKennel;
-  final int authAllowCredit;
-  final int authCheckInAndOut;
-  final int authCustomLogo;
-  final int authCustomSongbook;
-  final int authFacebookIntegration;
-  final int authHaberdashery;
-  final int authHareRaisingManagement;
-  final int authMembersAllowed;
-  final int authPromoteEvents;
-  final int authPushNotifications;
-  final int authTrackPayments;
-  final int authWebsiteIntegration;
+
+  bool get mmAuthAllowEditRsvp {
+    return (mismanagementRoleFlags & mmAuthAllowEditRsvpFlag) != 0;
+  }
+
+  bool get mmAuthAllowCheckInAndOut {
+    return (mismanagementRoleFlags & mmAuthAllowCheckInAndOutFlag) != 0;
+  }
+
+  bool get mmAuthAllowHashCash {
+    return (mismanagementRoleFlags & mmAuthAllowHashCashFlag) != 0;
+  }
+
+  bool get mmAuthShowCheckInSnackbar {
+    return (mismanagementRoleFlags & (mmAuthAllowEditRsvpFlag | mmAuthAllowHashCashFlag | mmAuthAllowCheckInAndOutFlag)) != 0;
+  }
+
+  bool get mmAuthAllowAddNewMember {
+    return (mismanagementRoleFlags & mmAuthAllowAddNewMemberFlag) != 0;
+  }
+
+  // final int authAllowCredit;
+  // final int authCheckInAndOut;
+  // final int authCustomLogo;
+  // final int authCustomSongbook;
+  // final int authFacebookIntegration;
+  // final int authHaberdashery;
+  // final int authHareRaisingManagement;
+  // final int authMembersAllowed;
+  // final int authPromoteEvents;
+  // final int authPushNotifications;
+  // final int authTrackPayments;
+  // final int authWebsiteIntegration;
   final int memberCount;
 
   set followingState(int newState) {

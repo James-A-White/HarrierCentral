@@ -17,4 +17,9 @@ const String ERROR_KEY = 'HC_ERROR';
 
 const String GUID_EMPTY = '00000000-0000-0000-0000-000000000000';
 
+const int mmAuthAllowEditRsvpFlag = 0x00000001;
+const int mmAuthAllowCheckInAndOutFlag = 0x00000002;
+const int mmAuthAllowHashCashFlag = 0x00000004;
+const int mmAuthAllowAddNewMemberFlag = 0x00000008; 
+
 

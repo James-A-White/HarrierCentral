@@ -14,7 +14,7 @@ class UserEventListItem extends StatelessWidget {
   const UserEventListItem(
       {@required this.userEventHistoryModel, @required this.kennelShortName});
 
-  final LiteEvent userEventHistoryModel;
+  final Event userEventHistoryModel;
   final String kennelShortName;
 
   @override

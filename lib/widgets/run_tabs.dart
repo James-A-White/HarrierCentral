@@ -65,7 +65,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     //tabs.add(Tab(text: 'Desc'));
 
     tabs.add(const Tab(text: 'Map'));
-    if (isAdmin) {
+    if (widget.futureRun.hasMmPrivileges) {
       tabs.add(const Tab(text: 'Admin'));
     }
   }
@@ -431,8 +431,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                         ),
                                       ),
                                 IconButton(
-                                  icon: const Icon(
-                                      FontAwesome.check_circle),
+                                  icon: const Icon(FontAwesome.check_circle),
                                   color: widget.futureRun.requestedRsvpState ==
                                           rsvpYes.value
                                       ? Colors.blue
@@ -503,8 +502,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                         ),
                                       ),
                                 IconButton(
-                                  icon: const Icon(
-                                      FontAwesome.question_circle),
+                                  icon: const Icon(FontAwesome.question_circle),
                                   color: widget.futureRun.requestedRsvpState ==
                                           rsvpMaybe.value
                                       ? Colors.blue
@@ -579,8 +577,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                         ),
                                       ),
                                 IconButton(
-                                  icon: const Icon(
-                                      FontAwesome.times_circle),
+                                  icon: const Icon(FontAwesome.times_circle),
                                   color: widget.futureRun.requestedRsvpState ==
                                           rsvpNo.value
                                       ? Colors.blue
@@ -868,8 +865,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                 )
                                               : packList[index].rsvpState == 1
                                                   ? const Icon(
-                                                      FontAwesome
-                                                          .times_circle,
+                                                      FontAwesome.times_circle,
                                                       color: Colors.red,
                                                       size: 20.0)
                                                   : packList[index].rsvpState ==
@@ -1131,217 +1127,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             // decoration: BoxDecoration(
                             //     color: Theme.of(context).selectedRowColor),
                             child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: <Widget>[
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: <Widget>[
-                                    Container(
-                                      width: 150.0,
-                                      child: RaisedButton(
-                                        child: const Text(
-                                          'Check in Pack',
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.push<dynamic>(
-                                            context,
-                                            MaterialPageRoute<dynamic>(
-                                              builder: (BuildContext context) =>
-                                                  CheckInPackPage(
-                                                      futureRun:
-                                                          widget.futureRun),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-
-                                    Container(
-                                      width: 150.0,
-                                      child: RaisedButton(
-                                        child: const Text(
-                                          'Hash Cash',
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.push<dynamic>(
-                                            context,
-                                            MaterialPageRoute<dynamic>(
-                                              builder: (BuildContext context) =>
-                                                  PaymentReportPage(
-                                                    eventId: widget
-                                                        .futureRun.eventId,
-                                                    currencySymbol: widget
-                                                        .futureRun
-                                                        .currencySymbol,
-                                                    digitsAfterDecimal: widget
-                                                        .futureRun
-                                                        .digitsAfterDecimal,
-                                                    eventName: widget
-                                                        .futureRun.eventName,
-                                                  ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-
-                                    // Container(
-                                    //   width: 150.0,
-                                    //   child: RaisedButton(
-                                    //       child: const Text(
-                                    //         'Edit Run',
-                                    //         style:
-                                    //             TextStyle(color: Colors.white),
-                                    //       ),
-                                    //       onPressed: () {
-                                    //         //int i = 0;
-                                    //       }),
-                                    // ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: <Widget>[
-                                    Container(
-                                      width: 150.0,
-                                      child: RaisedButton(
-                                        child: const Text(
-                                          'Scan at Run Start',
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.push<dynamic>(
-                                            context,
-                                            MaterialPageRoute<dynamic>(
-                                              builder: (BuildContext context) =>
-                                                  CheckInScannerPage(
-                                                    kennelShortName: widget
-                                                        .futureRun
-                                                        .kennelShortName,
-                                                    eventId: widget
-                                                        .futureRun.eventId,
-                                                    eventName: widget
-                                                        .futureRun.eventName,
-                                                    eventNumber: widget
-                                                        .futureRun.eventNumber,
-                                                    isRunStart: 1,
-                                                  ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    Container(
-                                      width: 150.0,
-                                      child: RaisedButton(
-                                        child: const Text(
-                                          'Scan at Run End',
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.push<dynamic>(
-                                            context,
-                                            MaterialPageRoute<dynamic>(
-                                              builder: (BuildContext context) =>
-                                                  CheckInScannerPage(
-                                                    kennelShortName: widget
-                                                        .futureRun
-                                                        .kennelShortName,
-                                                    eventId: widget
-                                                        .futureRun.eventId,
-                                                    eventName: widget
-                                                        .futureRun.eventName,
-                                                    eventNumber: widget
-                                                        .futureRun.eventNumber,
-                                                    isRunStart: 0,
-                                                  ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: <Widget>[
-                                    Container(
-                                      width: 150.0,
-                                      child: RaisedButton(
-                                          child: const Text(
-                                            'Run Start QR',
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ),
-                                          onPressed: () {
-                                            Navigator.push<dynamic>(
-                                                context,
-                                                MaterialPageRoute<dynamic>(
-                                                    builder: (BuildContext
-                                                            context) =>
-                                                        RunStartEndQrCodes(
-                                                          kennelShortName: widget
-                                                              .futureRun
-                                                              .kennelShortName,
-                                                          eventId: widget
-                                                              .futureRun
-                                                              .eventId,
-                                                          eventName: widget
-                                                              .futureRun
-                                                              .eventName,
-                                                          eventNumber: widget
-                                                              .futureRun
-                                                              .eventNumber,
-                                                          eventStartDatetime: widget
-                                                              .futureRun
-                                                              .eventStartDatetime,
-                                                          isStart: true,
-                                                        )));
-                                          }),
-                                    ),
-                                    Container(
-                                      width: 150.0,
-                                      child: RaisedButton(
-                                          child: const Text(
-                                            'Run End QR',
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ),
-                                          onPressed: () {
-                                            Navigator.push<dynamic>(
-                                                context,
-                                                MaterialPageRoute<dynamic>(
-                                                    builder: (BuildContext
-                                                            context) =>
-                                                        RunStartEndQrCodes(
-                                                          kennelShortName: widget
-                                                              .futureRun
-                                                              .kennelShortName,
-                                                          eventId: widget
-                                                              .futureRun
-                                                              .eventId,
-                                                          eventName: widget
-                                                              .futureRun
-                                                              .eventName,
-                                                          eventNumber: widget
-                                                              .futureRun
-                                                              .eventNumber,
-                                                          eventStartDatetime: widget
-                                                              .futureRun
-                                                              .eventStartDatetime,
-                                                          isStart: false,
-                                                        )));
-                                          }),
-                                    ),
-                                  ],
-                                )
-                              ],
-                            ),
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: kiddies()),
                           )
                         ])
                       : List<Widget>.from(<Widget>[])),
@@ -1357,6 +1145,201 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           ],
         ),
       ),
+    );
+  }
+
+  List<Widget> kiddies() {
+    final List<Widget> kiddies = <Widget>[];
+
+    if (widget.futureRun.mmAuthAllowCheckInAndOut ||
+        widget.futureRun.mmAuthAllowEditRsvp) {
+      kiddies.add(rsvpRow());
+    }
+
+    if (widget.futureRun.mmAuthAllowCheckInAndOut) {
+      kiddies.add(attendenceRow());
+    }
+
+    kiddies.add(paymentRow());
+
+    return kiddies;
+  }
+
+  Row rsvpRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        !widget.futureRun.mmAuthAllowEditRsvp
+            ? Container()
+            : Container(
+                margin: const EdgeInsets.only(left: 10, right: 10),
+                width: 150.0,
+                child: RaisedButton(
+                  child: const Text(
+                    'Check in Pack',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onPressed: () {
+                    Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) =>
+                            CheckInPackPage(futureRun: widget.futureRun),
+                      ),
+                    );
+                  },
+                ),
+              ),
+        !widget.futureRun.mmAuthAllowHashCash
+            ? Container()
+            : Container(
+                margin: const EdgeInsets.only(left: 10, right: 10),
+                width: 150.0,
+                child: RaisedButton(
+                  child: const Text(
+                    'Hash Cash',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onPressed: () {
+                    Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => PaymentReportPage(
+                              eventId: widget.futureRun.eventId,
+                              currencySymbol: widget.futureRun.currencySymbol,
+                              digitsAfterDecimal:
+                                  widget.futureRun.digitsAfterDecimal,
+                              eventName: widget.futureRun.eventName,
+                            ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+        // Container(
+        //   width: 150.0,
+        //   child: RaisedButton(
+        //       child: const Text(
+        //         'Edit Run',
+        //         style:
+        //             TextStyle(color: Colors.white),
+        //       ),
+        //       onPressed: () {
+        //         //int i = 0;
+        //       }),
+        // ),
+      ],
+    );
+  }
+
+  Row attendenceRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Container(
+          margin: const EdgeInsets.only(left: 10, right: 10),
+          width: 150.0,
+          child: RaisedButton(
+            child: const Text(
+              'Scan at Run Start',
+              style: TextStyle(color: Colors.white),
+            ),
+            onPressed: () {
+              Navigator.push<dynamic>(
+                context,
+                MaterialPageRoute<dynamic>(
+                  builder: (BuildContext context) => CheckInScannerPage(
+                        kennelShortName: widget.futureRun.kennelShortName,
+                        eventId: widget.futureRun.eventId,
+                        eventName: widget.futureRun.eventName,
+                        eventNumber: widget.futureRun.eventNumber,
+                        isRunStart: 1,
+                      ),
+                ),
+              );
+            },
+          ),
+        ),
+        Container(
+          margin: const EdgeInsets.only(left: 10, right: 10),
+          width: 150.0,
+          child: RaisedButton(
+            child: const Text(
+              'Scan at Run End',
+              style: TextStyle(color: Colors.white),
+            ),
+            onPressed: () {
+              Navigator.push<dynamic>(
+                context,
+                MaterialPageRoute<dynamic>(
+                  builder: (BuildContext context) => CheckInScannerPage(
+                        kennelShortName: widget.futureRun.kennelShortName,
+                        eventId: widget.futureRun.eventId,
+                        eventName: widget.futureRun.eventName,
+                        eventNumber: widget.futureRun.eventNumber,
+                        isRunStart: 0,
+                      ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Row paymentRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Container(
+          margin: const EdgeInsets.only(left: 10, right: 10),
+          width: 150.0,
+          child: RaisedButton(
+              child: const Text(
+                'Run Start QR',
+                style: TextStyle(color: Colors.white),
+              ),
+              onPressed: () {
+                Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => RunStartEndQrCodes(
+                              kennelShortName: widget.futureRun.kennelShortName,
+                              eventId: widget.futureRun.eventId,
+                              eventName: widget.futureRun.eventName,
+                              eventNumber: widget.futureRun.eventNumber,
+                              eventStartDatetime:
+                                  widget.futureRun.eventStartDatetime,
+                              isStart: true,
+                            )));
+              }),
+        ),
+        Container(
+          margin: const EdgeInsets.only(left: 10, right: 10),
+          width: 150.0,
+          child: RaisedButton(
+              child: const Text(
+                'Run End QR',
+                style: TextStyle(color: Colors.white),
+              ),
+              onPressed: () {
+                Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => RunStartEndQrCodes(
+                              kennelShortName: widget.futureRun.kennelShortName,
+                              eventId: widget.futureRun.eventId,
+                              eventName: widget.futureRun.eventName,
+                              eventNumber: widget.futureRun.eventNumber,
+                              eventStartDatetime:
+                                  widget.futureRun.eventStartDatetime,
+                              isStart: false,
+                            )));
+              }),
+        ),
+      ],
     );
   }
 

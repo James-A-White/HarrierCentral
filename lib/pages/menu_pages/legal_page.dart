@@ -60,7 +60,7 @@ class _LegalPageContentState extends State<LegalPageContent> {
 
   int tapCounter = 0;
   void backdoorTap() {
-    Future<dynamic>.delayed(Duration(milliseconds: 2500)).then((void dummy) {
+    Future<dynamic>.delayed(const Duration(milliseconds: 2500)).then((void dummy) {
       print('Tapcounter reset = $tapCounter');
       tapCounter = 0;
     });

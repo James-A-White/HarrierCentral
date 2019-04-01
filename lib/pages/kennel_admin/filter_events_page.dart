@@ -40,7 +40,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
     model.getUserEventsFromBackend(showLoadingIndicator, 0, 1,1).then((void dummy) {
       myRunCount = model.userEventList
           .where(
-              (LiteEvent ueh) => ueh.attendenceState >= attendenceAtHash.value)
+              (Event ueh) => ueh.attendenceState >= attendenceAtHash.value)
           .length;
       updateRunCounts();
     });
@@ -175,7 +175,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
 
   void updateRunCounts() {
     myRunCount =
-        model.userEventList.where((LiteEvent ueh) => ueh.isVisible == 1).length;
+        model.userEventList.where((Event ueh) => ueh.isVisible == 1).length;
   }
 
   Widget _buildListView() {
@@ -261,7 +261,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                       //itemExtent: 58.0,
                       //shrinkWrap: true,
                       itemBuilder: (BuildContext context, int index) {
-                        final LiteEvent eventModel = model.userEventList[index];
+                        final Event eventModel = model.userEventList[index];
                         return Dismissible(
                           key: Key(eventModel.eventId),
                           confirmDismiss: (DismissDirection direction) {

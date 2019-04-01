@@ -43,330 +43,346 @@ class PaymentSnackBar extends SnackBar {
                 fontSize: 35.0,
                 height: 1.0),
           ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              Expanded(
-                flex: 1,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
+          !futureRun.mmAuthAllowEditRsvp
+              ? Container()
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
-                    IconButton(
-                      icon: Image.asset(
-                        'images/icons/x_icon.png',
-                        height: 30.0,
-                        width: 30.0,
-                        color: packList[index].requestedRsvpState != -1
-                            ? Colors.blue
-                            : packList[index].rsvpState == rsvpNo.value
-                                ? Colors.yellow
-                                : Colors.white,
-                      ),
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          IconButton(
+                            icon: Image.asset(
+                              'images/icons/x_icon.png',
+                              height: 30.0,
+                              width: 30.0,
+                              color: packList[index].requestedRsvpState != -1
+                                  ? Colors.blue
+                                  : packList[index].rsvpState == rsvpNo.value
+                                      ? Colors.yellow
+                                      : Colors.white,
+                            ),
 
-                      //tooltip: 'Select to follow a Kennel',
-                      iconSize: 30.0,
-                      alignment: Alignment.topCenter,
-                      splashColor: Colors.greenAccent,
-                      onPressed: () {
-                        packScopedModel.setRsvpState(
-                            rsvpNo.value,
-                            isHareNo.value,
-                            attendenceNo.value,
-                            packList[index]);
-                        Scaffold.of(context).hideCurrentSnackBar(
-                            reason: SnackBarClosedReason.hide);
-                      },
+                            //tooltip: 'Select to follow a Kennel',
+                            iconSize: 30.0,
+                            alignment: Alignment.topCenter,
+                            splashColor: Colors.greenAccent,
+                            onPressed: () {
+                              packScopedModel.setRsvpState(
+                                  rsvpNo.value,
+                                  isHareNo.value,
+                                  attendenceNo.value,
+                                  packList[index]);
+                              Scaffold.of(context).hideCurrentSnackBar(
+                                  reason: SnackBarClosedReason.hide);
+                            },
+                          ),
+                          const Text(
+                            'Not coming',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'AvenirNextCondensedDemiBold',
+                              fontStyle: FontStyle.normal,
+                              fontSize: 15.0,
+                              height: 0.7,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const Text(
-                      'Not coming',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'AvenirNextCondensedDemiBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 15.0,
-                        height: 0.7,
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          IconButton(
+                            icon: Image.asset(
+                              'images/icons/question_icon.png',
+                              height: 30.0,
+                              width: 30.0,
+                              color: packList[index].requestedRsvpState != -1
+                                  ? Colors.blue
+                                  : packList[index].rsvpState == rsvpMaybe.value
+                                      ? Colors.yellow
+                                      : Colors.white,
+                            ),
+
+                            //tooltip: 'Select to follow a Kennel',
+                            iconSize: 30.0,
+                            alignment: Alignment.topCenter,
+                            splashColor: Colors.greenAccent,
+                            onPressed: () {
+                              packScopedModel.setRsvpState(
+                                  rsvpMaybe.value,
+                                  isHareNo.value,
+                                  attendenceNo.value,
+                                  packList[index]);
+                              Scaffold.of(context).hideCurrentSnackBar(
+                                  reason: SnackBarClosedReason.hide);
+                            },
+                          ),
+                          const Text(
+                            'Maybe',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'AvenirNextCondensedDemiBold',
+                              fontStyle: FontStyle.normal,
+                              fontSize: 15.0,
+                              height: 0.7,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          IconButton(
+                            icon: Image.asset(
+                              'images/icons/check_icon.png',
+                              height: 30.0,
+                              width: 30.0,
+                              color: packList[index].requestedRsvpState != -1
+                                  ? Colors.blue
+                                  : ((packList[index].rsvpState ==
+                                              rsvpYes.value) &&
+                                          (packList[index].isHare ==
+                                              isHareNo.value))
+                                      ? Colors.yellow
+                                      : Colors.white,
+                            ),
+
+                            //tooltip: 'Select to follow a Kennel',
+                            iconSize: 30.0,
+                            alignment: Alignment.topCenter,
+                            splashColor: Colors.greenAccent,
+                            onPressed: () {
+                              packScopedModel.setRsvpState(rsvpYes.value,
+                                  isHareNo.value, -1, packList[index]);
+                              Scaffold.of(context).hideCurrentSnackBar(
+                                  reason: SnackBarClosedReason.hide);
+                            },
+                          ),
+                          const Text(
+                            'Coming',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'AvenirNextCondensedDemiBold',
+                              fontStyle: FontStyle.normal,
+                              fontSize: 15.0,
+                              height: 0.7,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          IconButton(
+                            icon: Image.asset(
+                              'images/icons/hare_icon.png',
+                              height: 30.0,
+                              width: 30.0,
+                              color: packList[index].requestedRsvpState != -1
+                                  ? Colors.blue
+                                  : ((packList[index].rsvpState ==
+                                              rsvpYes.value) &&
+                                          (packList[index].isHare ==
+                                              isHareYes.value))
+                                      ? Colors.yellow
+                                      : Colors.white,
+                            ),
+
+                            //tooltip: 'Select to follow a Kennel',
+                            iconSize: 30.0,
+                            alignment: Alignment.topCenter,
+                            splashColor: Colors.greenAccent,
+                            onPressed: () {
+                              packScopedModel.setRsvpState(rsvpYes.value,
+                                  isHareYes.value, -1, packList[index]);
+                              Scaffold.of(context).hideCurrentSnackBar(
+                                  reason: SnackBarClosedReason.hide);
+                            },
+                          ),
+                          const Text(
+                            'Will hare',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'AvenirNextCondensedDemiBold',
+                              fontStyle: FontStyle.normal,
+                              fontSize: 15.0,
+                              height: 0.7,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-              Expanded(
-                flex: 1,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
+          !futureRun.mmAuthAllowEditRsvp
+              ? Container()
+              : Padding(
+                  padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
+                  child: Container(color: Colors.white, height: 3.0),
+                ),
+          !futureRun.mmAuthAllowCheckInAndOut
+              ? Container()
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
-                    IconButton(
-                      icon: Image.asset(
-                        'images/icons/question_icon.png',
-                        height: 30.0,
-                        width: 30.0,
-                        color: packList[index].requestedRsvpState != -1
-                            ? Colors.blue
-                            : packList[index].rsvpState == rsvpMaybe.value
-                                ? Colors.yellow
-                                : Colors.white,
-                      ),
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          IconButton(
+                            icon: Image.asset(
+                              'images/icons/not_at_hash_icon.png',
+                              height: 30.0,
+                              width: 30.0,
+                              color:
+                                  packList[index].requestedAttendenceState != -1
+                                      ? Colors.blue
+                                      : ((packList[index].attendenceState ==
+                                                  attendenceNo.value) &&
+                                              (packList[index].rsvpState ==
+                                                  rsvpYes.value))
+                                          ? Colors.yellow
+                                          : Colors.white,
+                            ),
 
-                      //tooltip: 'Select to follow a Kennel',
-                      iconSize: 30.0,
-                      alignment: Alignment.topCenter,
-                      splashColor: Colors.greenAccent,
-                      onPressed: () {
-                        packScopedModel.setRsvpState(
-                            rsvpMaybe.value,
-                            isHareNo.value,
-                            attendenceNo.value,
-                            packList[index]);
-                        Scaffold.of(context).hideCurrentSnackBar(
-                            reason: SnackBarClosedReason.hide);
-                      },
+                            //tooltip: 'Select to follow a Kennel',
+                            iconSize: 30.0,
+                            alignment: Alignment.topCenter,
+                            splashColor: Colors.greenAccent,
+                            onPressed: () {
+                              packScopedModel.setRsvpState(
+                                  -1, -1, attendenceNo.value, packList[index]);
+                              Scaffold.of(context).hideCurrentSnackBar(
+                                  reason: SnackBarClosedReason.hide);
+                            },
+                          ),
+                          const Text(
+                            'Not at Hash',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'AvenirNextCondensedDemiBold',
+                              fontStyle: FontStyle.normal,
+                              fontSize: 15.0,
+                              height: 0.7,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const Text(
-                      'Maybe',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'AvenirNextCondensedDemiBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 15.0,
-                        height: 0.7,
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          IconButton(
+                            icon: Image.asset(
+                              'images/icons/runner_icon.png',
+                              height: 30.0,
+                              width: 30.0,
+                              color:
+                                  packList[index].requestedAttendenceState != -1
+                                      ? Colors.blue
+                                      : ((packList[index].attendenceState ==
+                                                  attendenceAtHash.value) &&
+                                              (packList[index].rsvpState ==
+                                                  rsvpYes.value))
+                                          ? Colors.yellow
+                                          : Colors.white,
+                            ),
+
+                            //tooltip: 'Select to follow a Kennel',
+                            iconSize: 30.0,
+                            alignment: Alignment.topCenter,
+                            splashColor: Colors.greenAccent,
+                            onPressed: () {
+                              packScopedModel.setRsvpState(rsvpYes.value, -1,
+                                  attendenceAtHash.value, packList[index]);
+                              Scaffold.of(context).hideCurrentSnackBar(
+                                  reason: SnackBarClosedReason.hide);
+                            },
+                          ),
+                          const Text(
+                            'At Hash',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'AvenirNextCondensedDemiBold',
+                              fontStyle: FontStyle.normal,
+                              fontSize: 15.0,
+                              height: 0.7,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          IconButton(
+                            icon: Image.asset(
+                              'images/icons/beer_icon.png',
+                              height: 30.0,
+                              width: 30.0,
+                              color:
+                                  packList[index].requestedAttendenceState != -1
+                                      ? Colors.blue
+                                      : ((packList[index].attendenceState ==
+                                                  attendenceOnIn.value) &&
+                                              (packList[index].rsvpState ==
+                                                  rsvpYes.value))
+                                          ? Colors.yellow
+                                          : Colors.white,
+                            ),
+
+                            //tooltip: 'Select to follow a Kennel',
+                            iconSize: 30.0,
+                            alignment: Alignment.topCenter,
+                            splashColor: Colors.greenAccent,
+                            onPressed: () {
+                              packScopedModel.setRsvpState(rsvpYes.value, -1,
+                                  attendenceOnIn.value, packList[index]);
+                              Scaffold.of(context).hideCurrentSnackBar(
+                                  reason: SnackBarClosedReason.hide);
+                            },
+                          ),
+                          const Text(
+                            'On In',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'AvenirNextCondensedDemiBold',
+                              fontStyle: FontStyle.normal,
+                              fontSize: 15.0,
+                              height: 0.7,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-              Expanded(
-                flex: 1,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    IconButton(
-                      icon: Image.asset(
-                        'images/icons/check_icon.png',
-                        height: 30.0,
-                        width: 30.0,
-                        color: packList[index].requestedRsvpState != -1
-                            ? Colors.blue
-                            : ((packList[index].rsvpState == rsvpYes.value) &&
-                                    (packList[index].isHare == isHareNo.value))
-                                ? Colors.yellow
-                                : Colors.white,
-                      ),
-
-                      //tooltip: 'Select to follow a Kennel',
-                      iconSize: 30.0,
-                      alignment: Alignment.topCenter,
-                      splashColor: Colors.greenAccent,
-                      onPressed: () {
-                        packScopedModel.setRsvpState(
-                            rsvpYes.value, isHareNo.value, -1, packList[index]);
-                        Scaffold.of(context).hideCurrentSnackBar(
-                            reason: SnackBarClosedReason.hide);
-                      },
-                    ),
-                    const Text(
-                      'Coming',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'AvenirNextCondensedDemiBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 15.0,
-                        height: 0.7,
-                      ),
-                    ),
-                  ],
+          !futureRun.mmAuthAllowCheckInAndOut
+              ? Container()
+              : Padding(
+                  padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
+                  child: Container(color: Colors.white, height: 3.0),
                 ),
-              ),
-              Expanded(
-                flex: 1,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    IconButton(
-                      icon: Image.asset(
-                        'images/icons/hare_icon.png',
-                        height: 30.0,
-                        width: 30.0,
-                        color: packList[index].requestedRsvpState != -1
-                            ? Colors.blue
-                            : ((packList[index].rsvpState == rsvpYes.value) &&
-                                    (packList[index].isHare == isHareYes.value))
-                                ? Colors.yellow
-                                : Colors.white,
-                      ),
-
-                      //tooltip: 'Select to follow a Kennel',
-                      iconSize: 30.0,
-                      alignment: Alignment.topCenter,
-                      splashColor: Colors.greenAccent,
-                      onPressed: () {
-                        packScopedModel.setRsvpState(rsvpYes.value,
-                            isHareYes.value, -1, packList[index]);
-                        Scaffold.of(context).hideCurrentSnackBar(
-                            reason: SnackBarClosedReason.hide);
-                      },
-                    ),
-                    const Text(
-                      'Will hare',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'AvenirNextCondensedDemiBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 15.0,
-                        height: 0.7,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
-            child: Container(color: Colors.white, height: 3.0),
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              Expanded(
-                flex: 1,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    IconButton(
-                      icon: Image.asset(
-                        'images/icons/not_at_hash_icon.png',
-                        height: 30.0,
-                        width: 30.0,
-                        color: packList[index].requestedAttendenceState != -1
-                            ? Colors.blue
-                            : ((packList[index].attendenceState ==
-                                        attendenceNo.value) &&
-                                    (packList[index].rsvpState ==
-                                        rsvpYes.value))
-                                ? Colors.yellow
-                                : Colors.white,
-                      ),
-
-                      //tooltip: 'Select to follow a Kennel',
-                      iconSize: 30.0,
-                      alignment: Alignment.topCenter,
-                      splashColor: Colors.greenAccent,
-                      onPressed: () {
-                        packScopedModel.setRsvpState(
-                            -1, -1, attendenceNo.value, packList[index]);
-                        Scaffold.of(context).hideCurrentSnackBar(
-                            reason: SnackBarClosedReason.hide);
-                      },
-                    ),
-                    const Text(
-                      'Not at Hash',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'AvenirNextCondensedDemiBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 15.0,
-                        height: 0.7,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 1,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    IconButton(
-                      icon: Image.asset(
-                        'images/icons/runner_icon.png',
-                        height: 30.0,
-                        width: 30.0,
-                        color: packList[index].requestedAttendenceState != -1
-                            ? Colors.blue
-                            : ((packList[index].attendenceState ==
-                                        attendenceAtHash.value) &&
-                                    (packList[index].rsvpState ==
-                                        rsvpYes.value))
-                                ? Colors.yellow
-                                : Colors.white,
-                      ),
-
-                      //tooltip: 'Select to follow a Kennel',
-                      iconSize: 30.0,
-                      alignment: Alignment.topCenter,
-                      splashColor: Colors.greenAccent,
-                      onPressed: () {
-                        packScopedModel.setRsvpState(rsvpYes.value, -1,
-                            attendenceAtHash.value, packList[index]);
-                        Scaffold.of(context).hideCurrentSnackBar(
-                            reason: SnackBarClosedReason.hide);
-                      },
-                    ),
-                    const Text(
-                      'At Hash',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'AvenirNextCondensedDemiBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 15.0,
-                        height: 0.7,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 1,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    IconButton(
-                      icon: Image.asset(
-                        'images/icons/beer_icon.png',
-                        height: 30.0,
-                        width: 30.0,
-                        color: packList[index].requestedAttendenceState != -1
-                            ? Colors.blue
-                            : ((packList[index].attendenceState ==
-                                        attendenceOnIn.value) &&
-                                    (packList[index].rsvpState ==
-                                        rsvpYes.value))
-                                ? Colors.yellow
-                                : Colors.white,
-                      ),
-
-                      //tooltip: 'Select to follow a Kennel',
-                      iconSize: 30.0,
-                      alignment: Alignment.topCenter,
-                      splashColor: Colors.greenAccent,
-                      onPressed: () {
-                        packScopedModel.setRsvpState(rsvpYes.value, -1,
-                            attendenceOnIn.value, packList[index]);
-                        Scaffold.of(context).hideCurrentSnackBar(
-                            reason: SnackBarClosedReason.hide);
-                      },
-                    ),
-                    const Text(
-                      'On In',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'AvenirNextCondensedDemiBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 15.0,
-                        height: 0.7,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
-            child: Container(color: Colors.white, height: 3.0),
-          ),
+          !futureRun.mmAuthAllowHashCash ? Container() :
           ScopedModelDescendant<PayScopedModel>(
             builder:
                 (BuildContext context, Widget child, PayScopedModel model) {
@@ -770,10 +786,6 @@ class PaymentSnackBar extends SnackBar {
 
     packList[index].isPaid = -1;
 
-
     Scaffold.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
   }
-
- 
-
 }

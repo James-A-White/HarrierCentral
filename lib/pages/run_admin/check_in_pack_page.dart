@@ -578,7 +578,7 @@ class PackListView extends StatelessWidget {
       context: context,
       index: index,
       futureRun: futureRun,
-      packScopedModel: packScopedModel,
+      packScopedModel: packScopedModel, 
       payScopedModel: payScopedModel,
       packList: packList,
     );
@@ -589,12 +589,14 @@ class PackListView extends StatelessWidget {
   Widget listItem(BuildContext context, int index) {
     return GestureDetector(
       onTap: () {
-        final SnackBar snackBar =
-            buildRsvpAndPaymentSnackbar(context, index, packScopedModel);
+        if (futureRun.mmAuthShowCheckInSnackbar) {
+          final SnackBar snackBar =
+              buildRsvpAndPaymentSnackbar(context, index, packScopedModel);
 
-        Scaffold.of(context)
-            .removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-        Scaffold.of(context).showSnackBar(snackBar);
+          Scaffold.of(context)
+              .removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+          Scaffold.of(context).showSnackBar(snackBar);
+        }
       },
       child: Container(
         width: MediaQuery.of(context).size.width,
@@ -717,10 +719,8 @@ class PackListView extends StatelessWidget {
                               ? const Icon(FontAwesome.question_circle,
                                   color: Colors.orange, size: 27.0)
                               : packList[index].isHare == 0
-                                  ? const Icon(
-                                      FontAwesome.check_circle,
-                                      color: Colors.green,
-                                      size: 27.0)
+                                  ? const Icon(FontAwesome.check_circle,
+                                      color: Colors.green, size: 27.0)
                                   : Image.asset('images/icons/hare_icon.png',
                                       color: Colors.deepPurple,
                                       height: 24.0,
@@ -907,13 +907,9 @@ class PackListView extends StatelessWidget {
                           direction == DismissDirection.endToStart ? 3 : 4,
                           packList[index].eventPrice);
                     } else {
-                      if (direction ==DismissDirection.endToStart)
-                      {
-                        packScopedModel.setRsvpState(
-                            rsvpYes.value,
-                            -1,
-                            attendenceOnIn.value,
-                            packList[index]);
+                      if (direction == DismissDirection.endToStart) {
+                        packScopedModel.setRsvpState(rsvpYes.value, -1,
+                            attendenceOnIn.value, packList[index]);
                       }
                     }
                     return Future<bool>.value(false);
@@ -970,57 +966,57 @@ class PackListView extends StatelessWidget {
                           ),
                         ),
                   secondaryBackground: packList[index].isPaid == 1
-                      ? packList[index].attendenceState >= attendenceOnIn.value?
-                      Container(
-                          color: Colors.grey,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: const <Widget>[
-                              Padding(
-                                padding: EdgeInsets.only(right: 15.0),
-                                child: Icon(FontAwesome.check_circle,
-                                    size: 35.0, color: Colors.white),
+                      ? packList[index].attendenceState >= attendenceOnIn.value
+                          ? Container(
+                              color: Colors.grey,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: const <Widget>[
+                                  Padding(
+                                    padding: EdgeInsets.only(right: 15.0),
+                                    child: Icon(FontAwesome.check_circle,
+                                        size: 35.0, color: Colors.white),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(right: 15.0),
+                                    child: Text(
+                                      'Already marked On-In',
+                                      style: TextStyle(
+                                          fontFamily: 'AvenirNextDemiBold',
+                                          fontStyle: FontStyle.normal,
+                                          color: Colors.white,
+                                          fontSize: 20.0,
+                                          height: 1.0),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Padding(
-                                padding: EdgeInsets.only(right: 15.0),
-                                child: Text(
-                                  'Already marked On-In',
-                                  style: TextStyle(
-                                      fontFamily: 'AvenirNextDemiBold',
-                                      fontStyle: FontStyle.normal,
-                                      color: Colors.white,
-                                      fontSize: 20.0,
-                                      height: 1.0),
-                                ),
+                            )
+                          : Container(
+                              color: Colors.amber[800],
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: const <Widget>[
+                                  Padding(
+                                    padding: EdgeInsets.only(right: 15.0),
+                                    child: Icon(Ionicons.ios_beer,
+                                        size: 35.0, color: Colors.white),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(right: 15.0),
+                                    child: Text(
+                                      'Record as On-In',
+                                      style: TextStyle(
+                                          fontFamily: 'AvenirNextDemiBold',
+                                          fontStyle: FontStyle.normal,
+                                          color: Colors.white,
+                                          fontSize: 20.0,
+                                          height: 1.0),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ], 
-                          ),
-                        )
-                      : Container(
-                          color: Colors.amber[800],
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: const <Widget>[
-                              Padding(
-                                padding: EdgeInsets.only(right: 15.0),
-                                child: Icon(Ionicons.ios_beer,
-                                    size: 35.0, color: Colors.white),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(right: 15.0),
-                                child: Text(
-                                  'Record as On-In',
-                                  style: TextStyle(
-                                      fontFamily: 'AvenirNextDemiBold',
-                                      fontStyle: FontStyle.normal,
-                                      color: Colors.white,
-                                      fontSize: 20.0,
-                                      height: 1.0),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
+                            )
                       : Container(
                           color: Colors.green,
                           child: Row(

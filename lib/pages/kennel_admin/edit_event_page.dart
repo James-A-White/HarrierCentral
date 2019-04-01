@@ -10,7 +10,7 @@ import 'package:harrier_central/util/styles.dart';
 class EditEventPage extends StatefulWidget {
   const EditEventPage({Key key, this.eventModel}) : super(key: key);
 
-  final LiteEvent eventModel;
+  final Event eventModel;
 
   @override
   EditEventPageState createState() => EditEventPageState();

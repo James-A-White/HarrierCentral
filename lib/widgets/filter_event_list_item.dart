@@ -14,7 +14,7 @@ class FilterEventListItem extends StatelessWidget {
   const FilterEventListItem(
       {@required this.eventModel, @required this.kennelShortName, @required this.updateEvent});
 
-  final LiteEvent eventModel;
+  final Event eventModel;
   final String kennelShortName;
   final Function updateEvent;
 

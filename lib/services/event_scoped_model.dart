@@ -20,17 +20,17 @@ class EventsScopedModel extends Model {
 
   final String kennelId;
 
-  final List<LiteEvent> _eventList = <LiteEvent>[];
-  List<LiteEvent> get userEventList => _eventList;
+  final List<Event> _eventList = <Event>[];
+  List<Event> get userEventList => _eventList;
 
   bool _isLoading = false;
 
   bool get isLoading => _isLoading;
 
-  void addEditEventList(LiteEvent event) {
+  void addEditEventList(Event event) {
     if (_eventList.isNotEmpty) {
-      final LiteEvent evt = _eventList.firstWhere(
-          (LiteEvent e) => e.eventId == event.eventId,
+      final Event evt = _eventList.firstWhere(
+          (Event e) => e.eventId == event.eventId,
           orElse: () => null);
 
       if (evt != null) {
@@ -112,7 +112,7 @@ class EventsScopedModel extends Model {
       },
     );
 
-    final List<LiteEvent> items = LiteEvent.itemsFromJson(response.body);
+    final List<Event> items = Event.itemsFromJson(response.body);
 
     for (int i = 0; i < items.length; i++) {
       addEditEventList(items[i]);
