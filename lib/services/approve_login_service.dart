@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show Platform;
 import 'package:device_info/device_info.dart';
+import 'package:package_info/package_info.dart';
 
 import 'package:harrier_central/data_models/approve_login_model.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -17,6 +18,17 @@ class ApproveLoginService {
       userId = GUID_EMPTY;
     }
 
+    final PackageInfo p = await PackageInfo.fromPlatform();
+
+    // setState(() {
+    //   appName = packageInfo.appName;
+    //   packageName = packageInfo.packageName;
+    //   version = packageInfo.version;
+    //   buildNumber = packageInfo.buildNumber;
+    // });
+
+    final String hcVersion =
+        'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
     String deviceId = 'unknown';
     String deviceType = 'unknown';
     String deviceName = 'unknown';
@@ -28,27 +40,29 @@ class ApproveLoginService {
 
     if (Platform.isAndroid) {
       final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      deviceId =androidInfo.androidId.toUpperCase();
+      deviceId = androidInfo.androidId.toUpperCase();
       deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
       deviceName = '<unknown>';
       systemName = androidInfo.host;
-      systemVersion ='${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch}' ;
-      manufacturer =androidInfo.brand;
+      systemVersion =
+          '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch}';
+      manufacturer = androidInfo.brand;
     } else if (Platform.isIOS) {
       final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-      deviceId =iosInfo.identifierForVendor.toUpperCase();
+      deviceId = iosInfo.identifierForVendor.toUpperCase();
       deviceType = iosInfo.model;
-      deviceName =iosInfo.name;
+      deviceName = iosInfo.name;
       systemName = iosInfo.systemName;
-      systemVersion =iosInfo.systemVersion;
+      systemVersion = iosInfo.systemVersion;
       manufacturer = 'Apple';
     }
 
-    final String accessToken = Utilities.generateToken(userId, 'approveLogin', paramString: deviceId);
+    final String accessToken =
+        Utilities.generateToken(userId, 'approveLogin', paramString: deviceId);
 
     final LatLon latLon = await Utilities.getLatLong();
 
-    final String body = jsonEncode(<String,String>{
+    final String body = jsonEncode(<String, String>{
       'userId': userId,
       'accessToken': accessToken,
       'deviceId': deviceId,
@@ -57,13 +71,15 @@ class ApproveLoginService {
       'systemName': systemName,
       'systemVersion': systemVersion,
       'manufacturer': manufacturer,
-      'latitude':(latLon?.latitude ?? DEFAULT_LATITUDE).toString(),
-      'longitude':(latLon?.longitude ?? DEFAULT_LONGITUDE).toString()
+      'latitude': (latLon?.latitude ?? DEFAULT_LATITUDE).toString(),
+      'longitude': (latLon?.longitude ?? DEFAULT_LONGITUDE).toString(),
+      'hcVersion': hcVersion,
     });
 
     final http.Response response = await http
         .post(BASE_API_URL + 'approve_login',
-            headers: <String,String> {'content-type': 'application/json'}, body: body
+            headers: <String, String>{'content-type': 'application/json'},
+            body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -73,8 +89,8 @@ class ApproveLoginService {
       },
     );
 
-  final ApproveLoginModel loginResult = ApproveLoginModel.itemFromJson(response.body);
-
+    final ApproveLoginModel loginResult =
+        ApproveLoginModel.itemFromJson(response.body);
 
     return loginResult;
   }

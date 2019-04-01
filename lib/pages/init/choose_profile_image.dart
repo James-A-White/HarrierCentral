@@ -600,6 +600,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
             setStringPref(
                 StringPrefsEnum.displayName, user.displayName);
             setStringPref(StringPrefsEnum.qrCode, user.qrCode);
+            setStringPref(StringPrefsEnum.supportCode, user.supportCode);
             setStringPref(
                 StringPrefsEnum.qrSecretCode, user.qrSecretCode);
             // after this executes, we will push and replace this to the main screen

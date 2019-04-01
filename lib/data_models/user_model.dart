@@ -30,6 +30,7 @@ class UserModel {
     this.paymentType,
     this.photo,
     this.qrCode,
+    this.supportCode,
     this.qrSecretCode,
     this.rsvpState,
     this.userEndEvent,
@@ -65,6 +66,7 @@ class UserModel {
   String lastName;
   String photo;
   String qrCode;
+  String supportCode;
   String qrSecretCode;
   int attendenceState;
   int isHare;
@@ -108,6 +110,7 @@ class UserModel {
           paymentType: jsonItem['paymentType'],
           photo: jsonItem['photo'],
           qrCode: jsonItem['qrCode'],
+          supportCode: jsonItem['supportCode'],
           qrSecretCode: jsonItem['qrSecretCode'],
           rsvpState: jsonItem['rsvpState'],
           userEndEvent:

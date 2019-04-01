@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/pages/menu_pages/get_reset_code_popup.dart';
 
 class LegalPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -56,6 +57,32 @@ class _LegalPageContentState extends State<LegalPageContent> {
       color: Colors.white,
       fontSize: 16.0,
       height: 1.0);
+
+  int tapCounter = 0;
+  void backdoorTap() {
+    Future<dynamic>.delayed(Duration(milliseconds: 2500)).then((void dummy) {
+      print('Tapcounter reset = $tapCounter');
+      tapCounter = 0;
+    });
+
+    tapCounter++;
+    if (tapCounter == 6) {
+      getResetCode();
+    }
+  }
+
+  void getResetCode() {
+    const GetResetCodePopup getResetCode = GetResetCodePopup();
+
+    final Future<void> dlg = showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return getResetCode;
+        });
+
+    dlg.then((void dummy) {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -278,9 +305,12 @@ class _LegalPageContentState extends State<LegalPageContent> {
                       ),
                       margin:
                           const EdgeInsets.only(top: 10, left: 20, right: 20)),
-                  Container(
-                      child: Text('\r\n6. Indemnity', style: headingStyle),
-                      margin: const EdgeInsets.only(top: 15)),
+                  GestureDetector(
+                    onTap: backdoorTap,
+                    child: Container(
+                        child: Text('\r\n6. Indemnity', style: headingStyle),
+                        margin: const EdgeInsets.only(top: 15)),
+                  ),
                   Text(
                     'You agree to defend, indemnify and hold harmless Harrier Central, its parent corporation, officers, directors, employees and agents, from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney\'s fees) arising from: (i) your use of and access to the Harrier Central Service; (ii) your violation of any term of these Terms of Service; (iii) your violation of any third party right, including without limitation any copyright, property, or privacy right. This defense and indemnification obligation will survive these Terms of Service and your use of the Harrier Central Service.',
                     style: bodyStyle,

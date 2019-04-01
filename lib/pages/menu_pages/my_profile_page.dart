@@ -34,6 +34,7 @@ class MyProfilePageState extends State<MyProfilePage> {
   TextEditingController resetCodeTextController;
   InputDecoration resetCodeDecoration;
 
+  @override
   void initState() {
     super.initState();
     resetCodeTextController = TextEditingController();
@@ -49,6 +50,21 @@ class MyProfilePageState extends State<MyProfilePage> {
 
   String userName = getStringPref(StringPrefsEnum.displayName);
   String userQrCode = getStringPref(StringPrefsEnum.qrSecretCode);
+  String supportCode = getStringPref(StringPrefsEnum.supportCode);
+
+  TextStyle headingStyle = const TextStyle(
+      fontFamily: 'AvenirNextRegular',
+      fontStyle: FontStyle.normal,
+      color: Colors.yellow,
+      fontSize: 22.0,
+      height: 1.0);
+
+  TextStyle largeText = const TextStyle(
+      fontFamily: 'AvenirNextRegular',
+      fontStyle: FontStyle.normal,
+      color: Colors.white,
+      fontSize: 40.0,
+      height: 1.0);
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +108,7 @@ class MyProfilePageState extends State<MyProfilePage> {
                           fit: StackFit.expand,
                           alignment: AlignmentDirectional.center,
                           children: <Widget>[
-                            Container(height: 800),
+                            Container(height: 900),
                             Positioned(
                               top: 10,
                               bottom: 20,
@@ -120,12 +136,12 @@ class MyProfilePageState extends State<MyProfilePage> {
                                                       'AvenirNextDemiBold',
                                                   fontStyle: FontStyle.normal,
                                                   color: Colors.white,
-                                                  fontSize: 24.0,
+                                                  fontSize: 32.0,
                                                   height: 1.0),
                                             ),
                                           ),
                                           Positioned(
-                                            top: 160,
+                                            top: 145,
                                             //bottom: 50,
                                             child: Container(
                                               height: (MediaQuery.of(context)
@@ -194,13 +210,48 @@ class MyProfilePageState extends State<MyProfilePage> {
                                 ),
                               ),
                             ),
-                            Positioned(
+                            const Positioned(
                                 top: 510,
                                 left: 0,
                                 right: 0,
                                 child: FancyDivider(innerColor: Colors.white)),
                             Positioned(
-                                top: 530,
+                              top: 535,
+                              left: 0,
+                              right: 0,
+                              child: Text(
+                                'Support Code:',
+                                style: headingStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Positioned(
+                              top: 565,
+                              left: 0,
+                              right: 0,
+                              child: Text(
+                                supportCode ?? '<no code>',
+                                style: largeText,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            const Positioned(
+                                top: 640,
+                                left: 0,
+                                right: 0,
+                                child: FancyDivider(innerColor: Colors.white)),
+                            Positioned(
+                              top: 670,
+                              left: 0,
+                              right: 0,
+                              child: Text(
+                                'Reset Code:',
+                                style: headingStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Positioned(
+                                top: 690,
                                 //bottom: 20,
                                 width: MediaQuery.of(context).size.width,
                                 child: Container(
@@ -212,10 +263,12 @@ class MyProfilePageState extends State<MyProfilePage> {
                                       child: Column(
                                         children: <Widget>[
                                           Container(
+                                            //color: Colors.white,
+                                            padding: const EdgeInsets.all(10.0),
                                             decoration: BoxDecoration(
                                               color: Colors.yellow[100],
                                               borderRadius:
-                                                  BorderRadius.circular(25.0),
+                                                  BorderRadius.circular(34.0),
                                             ),
                                             // padding: const EdgeInsets.only(
                                             //     top: 0.0, bottom: 8.0),
@@ -246,7 +299,7 @@ class MyProfilePageState extends State<MyProfilePage> {
                                                         .spaceAround,
                                                 children: <Widget>[
                                                   RaisedButton(
-                                                    padding: EdgeInsets.only(
+                                                    padding: const EdgeInsets.only(
                                                         top: 15,
                                                         bottom: 15,
                                                         left: 50,
@@ -276,8 +329,11 @@ class MyProfilePageState extends State<MyProfilePage> {
                                                               StringPrefsEnum
                                                                   .qrSecretCode);
 
-                                                                  Utilities.showAlert(context, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
-                                                                  
+                                                          Utilities.showAlert(
+                                                              context,
+                                                              'App Reset Successful',
+                                                              'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',
+                                                              'OK');
                                                         });
                                                       });
                                                     },
