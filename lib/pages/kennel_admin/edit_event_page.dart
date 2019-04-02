@@ -30,7 +30,7 @@ class EditEventPageState extends State<EditEventPage> {
       fillColor: Colors.white,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(25.0),
-        borderSide: BorderSide(),
+        borderSide: const BorderSide(),
       ),
     );
   }

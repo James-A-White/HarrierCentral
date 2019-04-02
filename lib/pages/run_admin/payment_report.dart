@@ -76,7 +76,7 @@ class PaymentReportPage extends StatelessWidget {
           SpeedDialChild(
             child: const Icon(Icons.mail_outline),
             backgroundColor: Colors.green,
-            label: 'Email me report',
+            label: 'Email me payment report',
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
               paymentReportModel
@@ -310,9 +310,9 @@ class _PaymentReportsListPageBodyState
                             : Dismissible(
                                 key: Key(index.toString()),
                                 confirmDismiss: (DismissDirection direction) {
-                                  print(direction.toString() +
-                                      ' ' +
-                                      index.toString());
+                                  // print(direction.toString() +
+                                  //     ' ' +
+                                  //     index.toString());
                                   payForEvent(
                                       filteredList[index],
                                       direction == DismissDirection.endToStart
@@ -391,7 +391,6 @@ class _PaymentReportsListPageBodyState
     );
   }
 
-  num finalValue = -1;
 
 // void setValue(num val) {
 //     setState(() {
@@ -417,12 +416,12 @@ class _PaymentReportsListPageBodyState
               currencySymbol: widget.currencySymbol,
               hemId: filteredList[index].hasherEventMapId,
               decimalDigits: widget.digitsAfterDecimal,
-              valueChanged: (num value) {
-                finalValue = value;
-              },
+              // valueChanged: (num value) { 
+              //   finalValue = value;
+              // },
             );
 
-            final Future<bool> dlg = showDialog<bool>(
+            final Future<int> dlg = showDialog<int>(
                 context: context,
                 barrierDismissible: false, // user must tap button!
                 builder: (BuildContext context) {
@@ -430,9 +429,9 @@ class _PaymentReportsListPageBodyState
                 });
 
             dlg.then(
-              (bool x) {
-                if (finalValue != -1) {
-                  payForEvent(filteredList[index], finalValue, pp.amount);
+              (int selectedTransactionType) {
+                if (selectedTransactionType != -1) {
+                  payForEvent(filteredList[index], selectedTransactionType, pp.amount);
                 }
               },
             );

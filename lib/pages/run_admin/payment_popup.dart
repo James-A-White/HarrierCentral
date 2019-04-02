@@ -11,8 +11,9 @@ class PaymentPopup extends StatefulWidget {
       @required this.amount,
       @required this.creditRemaining,
       @required this.creditAllowed,
-      @required this.decimalDigits,
-      @required this.valueChanged});
+      @required this.decimalDigits
+     // @required this.valueChanged
+     });
 
   final String hemId;
   final String currencySymbol;
@@ -21,7 +22,7 @@ class PaymentPopup extends StatefulWidget {
   final int creditAllowed;
   final int decimalDigits;
 
-  final Function valueChanged;
+  //final Function valueChanged;
 
   @override
   _PaymentPopupState createState() => _PaymentPopupState();
@@ -171,7 +172,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
               child: const Text('Cancel'),
               textColor: Colors.white,
               onPressed: () {
-                Navigator.of(context).pop(true);
+                Navigator.of(context).pop(-1);
               },
             ),
           ),
@@ -182,18 +183,19 @@ class _PaymentPopupState extends State<PaymentPopup> {
             child: const Text('Process'),
             textColor: Colors.white,
             onPressed: () {
-              Navigator.of(context).pop(true);
+              Navigator.of(context).pop(selectedValue);
             },
           ),
         ),
       ],
     );
-  }
+  } 
 
   void _handleRadioValueChange1(int value) {
     setState(() {
-      widget.valueChanged(selectedValue: value);
-      //selectedValue = value;
+            selectedValue = value;
+      
+
     });
   }
 }

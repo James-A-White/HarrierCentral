@@ -830,7 +830,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                     width: 300.0,
                                                     height: 300.0,
                                                     fit: BoxFit.fill,
-                                                    image: AssetImage(
+                                                    image: AssetImage((
                                                         'images/avatars/' +
                                                             packList[index]
                                                                 .photo
@@ -838,7 +838,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                                 .replaceFirst(
                                                                     'bundle://',
                                                                     '') +
-                                                            '.png'),
+                                                            '.png').toLowerCase()),
                                                   )
                                                 : Image(
                                                     width: 300.0,

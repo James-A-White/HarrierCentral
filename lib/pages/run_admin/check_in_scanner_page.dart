@@ -332,8 +332,6 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
 
     final String context2 = widget.isRunStart == 1 ? '0' : '1';
 
-    int ppSelectedValue = -1;
-
     final ProcessQrScanService srv = ProcessQrScanService();
     final Future<ProcessQrScanModel> apiCall = srv.processQrScan(
         widget.eventId, scanResult, 'CheckInOut', context2, 'admin', '');
@@ -352,26 +350,26 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
           currencySymbol: result.resultStr1,
           hemId: result.resultGuid2,
           decimalDigits: result.resultInt4,
-          valueChanged: (num value) {
-            ppSelectedValue = value;
-          },
+          // valueChanged: (num value) {
+          //   ppSelectedValue = value;
+          // },
         );
 
-        final Future<bool> dlg = showDialog<bool>(
+        final Future<int> dlg = showDialog<int>(
             context: context,
             barrierDismissible: false, // user must tap button!
             builder: (BuildContext context) {
               return pp;
             });
 
-        dlg.then((bool x) {
-          if (ppSelectedValue != -1) {
+        dlg.then((int selectedTransactionType) {
+          if (selectedTransactionType != -1) {
             final PayForEventService paySrv = PayForEventService();
             final Future<List<PayForEventModel>> retVal = paySrv.payForEvent(
                 result.resultGuid1,
                 widget.eventId,
                 result.resultGuid2,
-                ppSelectedValue,
+                selectedTransactionType,
                 pp.amount,
                 widget.isRunStart == 1
                     ? attendenceAtHash.value

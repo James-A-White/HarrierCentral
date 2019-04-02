@@ -42,7 +42,7 @@ packages:
       name: audioplayers
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.10.0"
+    version: "0.10.1"
   auto_size_text:
     dependency: "direct main"
     description:
@@ -306,7 +306,7 @@ packages:
       name: image_picker
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.5.0+6"
+    version: "0.5.0+9"
   intl:
     dependency: transitive
     description:

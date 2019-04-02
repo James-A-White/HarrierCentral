@@ -630,12 +630,12 @@ class PackListView extends StatelessWidget {
                         width: 70.0,
                         height: 70.0,
                         fit: BoxFit.fill,
-                        image: AssetImage('images/avatars/' +
+                        image: AssetImage(('images/avatars/' +
                             packList[index]
                                 .photo
                                 .toLowerCase()
                                 .replaceFirst('bundle://', '') +
-                            '.png'),
+                            '.png').toLowerCase()),
                       )
                     : Image(
                         width: 70.0,

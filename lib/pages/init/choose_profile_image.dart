@@ -12,6 +12,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:intl/intl.dart';
 
 import 'package:harrier_central/data_models/single_result_model.dart';
 import 'package:harrier_central/main.dart';
@@ -20,6 +21,7 @@ import 'package:harrier_central/services/update_avatar_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
+import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/data_models/user_model.dart';
@@ -402,8 +404,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                             fontFamily: 'WorkSansSemiBold'),
                                       ),
                                       const Padding(
-                                        padding:
-                                           EdgeInsets.only(top: 10.0),
+                                        padding: EdgeInsets.only(top: 10.0),
                                       ),
                                       Container(
                                         child: _getPreviewImage(),
@@ -597,12 +598,10 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           // if the call fails, user will be null
           if (user != null) {
             setStringPref(StringPrefsEnum.userId, user.hasherId);
-            setStringPref(
-                StringPrefsEnum.displayName, user.displayName);
+            setStringPref(StringPrefsEnum.displayName, user.displayName);
             setStringPref(StringPrefsEnum.qrCode, user.qrCode);
             setStringPref(StringPrefsEnum.supportCode, user.supportCode);
-            setStringPref(
-                StringPrefsEnum.qrSecretCode, user.qrSecretCode);
+            setStringPref(StringPrefsEnum.qrSecretCode, user.qrSecretCode);
             // after this executes, we will push and replace this to the main screen
             // the logic for this is in the underlying method
             _prepareAndUploadImageThenContinue(startTime, user);
@@ -658,13 +657,14 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     String fileName;
 
     String userId = getStringPref(StringPrefsEnum.userId);
+    final String datetime = DateFormat('yyyyMMddkkmmss').format(DateTime.now());
 
     if (widget.doAddUser) {
       // this is for either of the two cases where
       // a user has been added, either for this device
       // or the owner of this device adding other users. In both
       // cases, we should have a valid UserModel variable set
-      fileName = user.qrCode.replaceAll('UQR:', '') + '_thumb.jpg';
+      fileName = user.qrCode.replaceAll('UQR:', '') + '_${datetime}_thumb.jpg';
       // in case we are creating users not for this device
       // make sure we have the correct hash userId
       userId = user.hasherId;
@@ -672,14 +672,12 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       // in the case where we are simply updating the existing
       // profile image of the account associated with this device,
       // use the existing QR code stored in preferences as the base name for the photo
-      fileName = getStringPref(StringPrefsEnum.qrCode)
-              .replaceAll('UQR:', '') +
-          '_thumb.jpg';
+      fileName = getStringPref(StringPrefsEnum.qrCode).replaceAll('UQR:', '') + '_${datetime}_thumb.jpg';
     }
 
     switch (_radioImageTypeSelection) {
       case _SelectedImageTypeEnum.avatar:
-        profileImageUrl = 'bundle://Avatar-$_selectedAvatarIcon';
+        profileImageUrl = 'bundle://avatar-$_selectedAvatarIcon'.toLowerCase();
         break;
       case _SelectedImageTypeEnum.fromCamera:
       case _SelectedImageTypeEnum.fromGallery:
@@ -694,8 +692,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       // this is the case where we are adding a user for this device
       // when this code is finished, we want to redirect the user to the
       // main screen
-      setStringPref(
-          StringPrefsEnum.profilePhotoUrl, profileImageUrl);
+      setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
 
       final UpdateProfilePhotoService svc = UpdateProfilePhotoService();
       svc
@@ -716,7 +713,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         final num deltaTime = DateTime.now().millisecondsSinceEpoch - startTime;
 
         if (deltaTime > 1000) {
-          print('Delay to show uploading screen = $deltaTime milliseconds'); 
+          print('Delay to show uploading screen = $deltaTime milliseconds');
           Future<dynamic>.delayed(Duration(milliseconds: deltaTime))
               .then((void dummy) {
             Navigator.of(context)
@@ -756,20 +753,37 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       // this last case will be for updating the profile photo
       // of the user of this device, but without creating a
       // user
+      print('Uploading profile image');
+
       final UpdateProfilePhotoService svc = UpdateProfilePhotoService();
       svc
           .updateProfilePhoto(profileImageUrl, userId)
           .then((SingleResultModel result) {
-        if (_radioImageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
-          _imageFromCamera.then((File file) {
-            _upload(file, fileName);
-          });
-        } else if (_radioImageTypeSelection ==
-            _SelectedImageTypeEnum.fromGallery) {
-          _imageFromGallery.then((File file) {
-            _upload(file, fileName);
-          });
+        if (result.result.toLowerCase() == 'success') {
+          setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
+
+          if (_radioImageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
+            _imageFromCamera.then((File file) {
+              _upload(file, fileName);
+            });
+          } else if (_radioImageTypeSelection ==
+              _SelectedImageTypeEnum.fromGallery) {
+            _imageFromGallery.then((File file) {
+              _upload(file, fileName);
+            });
+          }
+        } else {
+          Utilities.showAlert(
+              context,
+              'Error Uploading Image',
+              'There was an error uploading your new profile image. Please try again later. If you continue to have a problem please contact us at connect@harriercentral.com',
+              'OK');
         }
+
+        Future<dynamic>.delayed(const Duration(milliseconds: 3500))
+            .then((void dummy) {
+          Navigator.of(context).pop(user);
+        });
       });
     }
   }

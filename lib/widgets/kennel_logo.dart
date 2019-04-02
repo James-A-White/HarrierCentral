@@ -22,13 +22,17 @@ class KennelLogo extends StatelessWidget {
         margin: EdgeInsets.only(left: leftPadding),
         child: kennelLogoUrl.contains('bundle://')
             ? Stack(alignment: Alignment.center, children: <Widget>[
-                Image.asset('images/generic_logos/' +
-                    kennelLogoUrl.replaceAll('bundle://', '') +
-                    '.png'),
+                Image.asset(((kennelLogoUrl.toLowerCase().contains('avatar')
+                        ? 'images/avatars/'
+                        : 'images/generic_logos/') +
+                            kennelLogoUrl.replaceAll('bundle://', '') +
+                            '.png')
+                    .toLowerCase()),
                 Padding(
                   padding: EdgeInsets.only(
                       left: logoHeight / 6, right: logoHeight / 6),
                   child: AutoSizeText(
+                    kennelShortName.toLowerCase().contains('my runs') ? '' :  // TODO(James): find a more elegant way of doing this
                     '$kennelShortName',
                     style: const TextStyle(
                         fontFamily: 'AvenirNextCondensedBold',
@@ -36,7 +40,7 @@ class KennelLogo extends StatelessWidget {
                         fontSize: 400.0),
                     textAlign: TextAlign.center,
                     maxLines: 1,
-                    minFontSize: 1.0, 
+                    minFontSize: 1.0,
                   ),
                 ),
               ])

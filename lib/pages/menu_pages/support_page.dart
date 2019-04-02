@@ -44,7 +44,7 @@ class SupportPageState extends State<SupportPage> {
       fillColor: Colors.red,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(25.0),
-        borderSide: BorderSide(),
+        borderSide: const BorderSide(),
       ),
     );
   }
