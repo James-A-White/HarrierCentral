@@ -8,3 +8,5 @@ Build 760: Version 0.6.5 - Added basic permissions for Kennel admin features, in
 
 Fix Avatar screen
 Add: Ability for users to change their profile information
+Add: Continue implementing permissions
+

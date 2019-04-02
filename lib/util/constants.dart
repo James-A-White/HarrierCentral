@@ -17,9 +17,23 @@ const String ERROR_KEY = 'HC_ERROR';
 
 const String GUID_EMPTY = '00000000-0000-0000-0000-000000000000';
 
+
+const int mmAuthIsGm = 0x80000000;                // TODO(James): Needs implementation
+const int mmAuthCanGrantPermissions = 0x40000000; // TODO(James): Needs implementation
+
 const int mmAuthAllowEditRsvpFlag = 0x00000001;
 const int mmAuthAllowCheckInAndOutFlag = 0x00000002;
 const int mmAuthAllowHashCashFlag = 0x00000004;
 const int mmAuthAllowAddNewMemberFlag = 0x00000008; 
+const int mmAuthAllowEnableDisableFacebookEvents = 0x00000010; // TODO(James): Needs implementation
+const int mmAuthEditRuns = 0x00000020; // TODO(James): Needs implementation
+const int mmAuthGenerateRunQrCodes = 0x00000040; // TODO(James): Needs implementation
+const int mmAuthManageMembers = 0x00000080; // TODO(James): Needs implementation
+
+
+
+
+
+
 
 

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:permission_handler/permission_handler.dart';
+import 'package:package_info/package_info.dart';
 
 import 'package:harrier_central/data_models/approve_login_model.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
@@ -24,6 +25,13 @@ class _AppEntryPageState extends State<AppEntryPage>
   CurvedAnimation _iconAnimation;
 
   Future<void> handleTimeout() async {
+
+
+    final PackageInfo p = await PackageInfo.fromPlatform();
+    final String hcVersion =
+        'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
+    
+    setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
 
     await PermissionHandler()
         .requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);

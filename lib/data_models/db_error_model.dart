@@ -32,7 +32,7 @@ class DbErrorModel {
       (dynamic jsonItem) {
         item = DbErrorModel(
           // isRsvped: jsonItem['isRsvped'],
-          errorId: jsonItem['errorId'],
+          errorId: jsonItem['errorId'].toString(),
           errorType: jsonItem['errorType'],
           errorTitle: jsonItem['errorTitle'],
           errorUserMessage: jsonItem['errorUserMessage'],

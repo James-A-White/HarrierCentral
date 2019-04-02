@@ -10,6 +10,7 @@ enum StringPrefsEnum {
   displayName,
   firstName,
   lastName,
+  harrierCentralVersion,
   hashName,
   email,
   gender,

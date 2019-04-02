@@ -419,11 +419,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 widget.futureRun.rsvpState != rsvpYes.value
                                     ? Container()
                                     : Positioned(
-                                        top: 4.0,
-                                        left: 3.0,
+                                        top: 6.5,
+                                        left: 6.5,
                                         child: Container(
-                                          height: 45,
-                                          width: 45,
+                                          height: 38,
+                                          width: 38,
                                           decoration: const BoxDecoration(
                                             color: Colors.white,
                                             shape: BoxShape.circle,
@@ -490,11 +490,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 widget.futureRun.rsvpState != rsvpMaybe.value
                                     ? Container()
                                     : Positioned(
-                                        top: 4.0,
-                                        left: 3.0,
+                                        top: 6.5,
+                                        left: 6.5,
                                         child: Container(
-                                          height: 45,
-                                          width: 45,
+                                          height: 38,
+                                          width: 38,
                                           decoration: const BoxDecoration(
                                             color: Colors.white,
                                             shape: BoxShape.circle,
@@ -551,6 +551,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                       Container(
                         width: MediaQuery.of(context).size.width / 5.5,
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start ,
                           children: <Widget>[
                             Text(
                                 'Not go: ' +
@@ -565,11 +566,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 widget.futureRun.rsvpState != rsvpNo.value
                                     ? Container()
                                     : Positioned(
-                                        top: 4.0,
-                                        left: 3.0,
+                                        top: 6.5,
+                                        left: 6.5,
                                         child: Container(
-                                          height: 45,
-                                          width: 45,
+                                          height: 38,
+                                          width: 38,
                                           decoration: const BoxDecoration(
                                             color: Colors.white,
                                             shape: BoxShape.circle,
@@ -636,52 +637,55 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 widget.futureRun.isHare != 1
                                     ? Container()
                                     : Positioned(
-                                        top: 4.0,
-                                        left: 3.0,
+                                        top: 6.5,
+                                        left: 6.5,
                                         child: Container(
-                                          height: 45,
-                                          width: 45,
+                                          height: 38,
+                                          width: 38,
                                           decoration: const BoxDecoration(
                                             color: Colors.white,
                                             shape: BoxShape.circle,
                                           ),
                                         ),
                                       ),
-                                IconButton(
-                                  icon: const ImageIcon(
-                                      AssetImage('images/icons/hare_icon.png')),
-                                  color:
-                                      widget.futureRun.requestedHaringState == 1
-                                          ? Colors.blue
-                                          : widget.futureRun.isHare == 1
-                                              ? Colors.deepPurple
-                                              : Colors.grey,
-                                  //tooltip: 'Select to follow a Kennel',
-                                  iconSize: 35.0,
-                                  alignment: Alignment.topCenter,
-                                  splashColor: Colors.greenAccent,
-                                  onPressed: () {
-                                    _promptForHare(widget.futureRun.hareList)
-                                        .then<dynamic>((bool willHare) {
-                                      if (willHare) {
-                                        _futureRunScopedModel.setRsvpState(
-                                            rsvpYes.value,
-                                            isHareYes.value,
-                                            -1,
-                                            widget.futureRun);
+                                Padding(
+                                  padding: const EdgeInsets.only(top:2.5,left:1.5,right:2.5,bottom:2),
+                                  child: IconButton(
+                                    icon: const ImageIcon(
+                                        AssetImage('images/icons/hare_icon.png')),
+                                    color:
+                                        widget.futureRun.requestedHaringState == 1
+                                            ? Colors.blue
+                                            : widget.futureRun.isHare == 1
+                                                ? Colors.deepPurple
+                                                : Colors.grey,
+                                    //tooltip: 'Select to follow a Kennel',
+                                    iconSize: 30.0,
+                                    alignment: Alignment.topCenter,
+                                    splashColor: Colors.greenAccent,
+                                    onPressed: () {
+                                      _promptForHare(widget.futureRun.hareList)
+                                          .then<dynamic>((bool willHare) {
+                                        if (willHare) {
+                                          _futureRunScopedModel.setRsvpState(
+                                              rsvpYes.value,
+                                              isHareYes.value,
+                                              -1,
+                                              widget.futureRun);
 
-                                        addThisDeviceUserToPackList();
-                                      }
-                                    });
+                                          addThisDeviceUserToPackList();
+                                        }
+                                      });
 
-                                    // model.setRsvpState(
-                                    //     rsvpHare.value, widget.futureRun);
-                                    //model.toggleFollowing(kennel);
+                                      // model.setRsvpState(
+                                      //     rsvpHare.value, widget.futureRun);
+                                      //model.toggleFollowing(kennel);
 
-                                    // setState(() {
-                                    // kennel.followingBool = kennel.followingBool == 0 ? 1 : 0;
-                                    // });
-                                  },
+                                      // setState(() {
+                                      // kennel.followingBool = kennel.followingBool == 0 ? 1 : 0;
+                                      // });
+                                    },
+                                  ),
                                 ),
                               ],
                             ),

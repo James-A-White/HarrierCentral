@@ -43,7 +43,10 @@ class AuthorizeDeviceService {
       final String responseBody =
           await ServiceCommon.sendRequest(context, 'authorize_device', body);
       if (responseBody == ERROR_KEY) {
-        return Future<Map<String, String>>(null);
+         return <String, String>{
+            'result': 'failed',
+            'message': 'Error calling authorize device'
+          };
       } else {
         final List<UserModel> results = UserModel.listFromJson(responseBody);
 

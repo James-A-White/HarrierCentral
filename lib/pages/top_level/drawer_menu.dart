@@ -7,6 +7,7 @@ import 'package:harrier_central/pages/menu_pages/my_profile_page.dart';
 import 'package:harrier_central/pages/menu_pages/imprint_page.dart';
 import 'package:harrier_central/pages/menu_pages/legal_page.dart';
 import 'package:harrier_central/pages/menu_pages/faq_page.dart';
+import 'package:harrier_central/pages/menu_pages/support_page.dart';
 //import 'package:harrier_central/pages/menu_pages/settings_page.dart';
 // import 'package:harrier_central/pages/menu_pages/in_app_purchase.dart';
 // import 'package:harrier_central/pages/menu_pages/user_feedback_page.dart';
@@ -206,6 +207,23 @@ class DrawerMenuState extends State<DrawerMenu> {
                       settings: const RouteSettings(),
                       builder: (BuildContext context) {
                         return const PrivacyPolicyPage();
+                      },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(FontAwesome.support, color: textColor),
+                title: Text('Support', style: style),
+                onTap: () async {
+                  //onTabTapped(EnumAppPages.settings);
+                  Navigator.pop(context);
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      settings: const RouteSettings(),
+                      builder: (BuildContext context) {
+                        return const SupportPage();
                       },
                     ),
                   );

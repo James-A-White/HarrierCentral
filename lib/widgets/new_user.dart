@@ -313,8 +313,7 @@ class NewUserState extends State<NewUserWidget>
                                 StringPrefsEnum.facebookId, facebookId);
                             setStringPref(
                                 StringPrefsEnum.facebookAccessToken, token);
-                            setStringPref(
-                                StringPrefsEnum.gender, gender);
+                            setStringPref(StringPrefsEnum.gender, gender);
 
                             userDetailsUi.firstName = firstName;
                             userDetailsUi.lastName = lastName;
@@ -448,13 +447,10 @@ class NewUserState extends State<NewUserWidget>
       });
 
       if (widget.isForThisDevice) {
-        setStringPref(
-            StringPrefsEnum.firstName, userDetailsUi.firstName);
-        setStringPref(
-            StringPrefsEnum.lastName, userDetailsUi.lastName);
+        setStringPref(StringPrefsEnum.firstName, userDetailsUi.firstName);
+        setStringPref(StringPrefsEnum.lastName, userDetailsUi.lastName);
         setStringPref(StringPrefsEnum.email, userDetailsUi.email);
-        setStringPref(
-            StringPrefsEnum.hashName, userDetailsUi.hashName);
+        setStringPref(StringPrefsEnum.hashName, userDetailsUi.hashName);
 
         Navigator.push(
           context,
@@ -545,24 +541,27 @@ class NewUserState extends State<NewUserWidget>
 
       final AuthorizeDeviceService srv = AuthorizeDeviceService();
       final Future<Map<String, String>> apiCall =
-          srv.authorizeDevice(context,scanResult);
+          srv.authorizeDevice(context, scanResult);
       apiCall.then((Map<String, String> result) {
-        Future<dynamic>.delayed(const Duration(milliseconds: 3500))
-            .then((void dummy) {
-          if (result['result'] == 'success') {
-            setState(() => _scanState = 0);
-            Navigator.pushReplacement<dynamic, dynamic>(
-                context,
-                MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) => const MainNavigationPage()));
-          } else {
-            // downloading from the cloud failed
-            setState(() => _scanState = 2);
-            Utilities.showInSnackBar(
-                context, widget.scaffoldKey, result['message'],
-                durationInSeconds: 7);
-          }
-        });
+        if (result != null) {
+          Future<dynamic>.delayed(const Duration(milliseconds: 3500))
+              .then((void dummy) {
+            if (result['result'] == 'success') {
+              setState(() => _scanState = 0);
+              Navigator.pushReplacement<dynamic, dynamic>(
+                  context,
+                  MaterialPageRoute<dynamic>(
+                      builder: (BuildContext context) =>
+                          const MainNavigationPage()));
+            } else {
+              // downloading from the cloud failed
+              setState(() => _scanState = 2);
+              Utilities.showInSnackBar(
+                  context, widget.scaffoldKey, result['message'],
+                  durationInSeconds: 7);
+            }
+          });
+        }
       });
     }
     // return Future<void>(() {});((){});
@@ -652,9 +651,6 @@ class NewUserState extends State<NewUserWidget>
     }
     // return Future<void>(() {});((){});
   }
-
-
-
 }
 
 class TabIndicationPainter extends CustomPainter {

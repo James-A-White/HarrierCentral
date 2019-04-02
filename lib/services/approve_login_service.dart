@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show Platform;
 import 'package:device_info/device_info.dart';
-import 'package:package_info/package_info.dart';
 
 import 'package:harrier_central/data_models/approve_login_model.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -18,17 +17,8 @@ class ApproveLoginService {
       userId = GUID_EMPTY;
     }
 
-    final PackageInfo p = await PackageInfo.fromPlatform();
-
-    // setState(() {
-    //   appName = packageInfo.appName;
-    //   packageName = packageInfo.packageName;
-    //   version = packageInfo.version;
-    //   buildNumber = packageInfo.buildNumber;
-    // });
-
-    final String hcVersion =
-        'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
+    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
+        
     String deviceId = 'unknown';
     String deviceType = 'unknown';
     String deviceName = 'unknown';

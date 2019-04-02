@@ -113,16 +113,18 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
                       srv.authorizeDevice(context,
                           getResetCodeTextController.text.toUpperCase());
                   apiCall.then((Map<String, String> result) {
-                    setState(() {
-                      getResetCodeTextController.text =
-                          getStringPref(StringPrefsEnum.displayName);
+                    if (result != null) {
+                      setState(() {
+                        getResetCodeTextController.text =
+                            getStringPref(StringPrefsEnum.displayName);
 
-                      Utilities.showAlert(
-                          context,
-                          'App Reset Successful',
-                          'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',
-                          'OK');
-                    });
+                        Utilities.showAlert(
+                            context,
+                            'App Reset Successful',
+                            'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',
+                            'OK');
+                      });
+                    }
                   });
                 },
               ),
