@@ -18,7 +18,7 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
     const TextStyle numberStyle = TextStyle(
       fontFamily: 'AvenirNextCondensedDemiBold',
       fontStyle: FontStyle.normal,
-      fontSize: 22.0,
+      fontSize: 32.0,
     );
 
     return
@@ -97,14 +97,14 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                 //   //color: Colors.red,
                 // ),
                 Container(
-                  padding: EdgeInsets.only(left:53.0),
-                  //width: textWidth,
+                  //padding: EdgeInsets.only(left:53.0),
+                  width: 140,
                   child: AutoSizeText(
                     '${kennelRunHistoryCount.totalRunsThisKennel.toString()}',
                     //'Super fucking long text thats sure to overflow and more',
                     //'999',
                     overflow: TextOverflow.ellipsis,
-                    minFontSize: 18.0,
+                    minFontSize: 22.0,
                     maxLines: 1,
                     style: numberStyle,
                     textAlign: TextAlign.center,
@@ -112,14 +112,15 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                   //color: Colors.green,
                 ),
                 Container(
-                  padding: EdgeInsets.only(left:50.0),
+                  //padding: EdgeInsets.only(left:50.0),
                   //width: textWidth,
+                  width:80,
                   child: AutoSizeText(
                     '${kennelRunHistoryCount.totalHaringThisKennel.toString()}',
                     //'Super fucking long text thats sure to overflow and more',
                     //'999',
                     overflow: TextOverflow.ellipsis,
-                    minFontSize: 18.0,
+                    minFontSize: 22.0,
                     maxLines: 1,
                     style: numberStyle,
                     textAlign: TextAlign.center,

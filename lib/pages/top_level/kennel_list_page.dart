@@ -64,7 +64,7 @@ class KennelsListPageState extends State<KennelsListPage> {
 
   Widget _buildListView() {
     return Container(
-      decoration: Backgrounds.defaultHcBackgroundLight(),
+      decoration: Backgrounds.defaultHcBackground(),
       padding: const EdgeInsets.only(top: 0.0),
       child: model.getKennelsCount() == 0
           ? const Center(child: Text('No Kennels available.'))
@@ -76,7 +76,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                 itemCount: model.getKennelsCount(),
                 itemBuilder: (BuildContext context, int index) {
                   return Container(
-                    height: 130.0,
+                    height: 150.0,
                     padding: const EdgeInsets.all(0.0),
                     child: ListView(
                         scrollDirection: Axis.horizontal,

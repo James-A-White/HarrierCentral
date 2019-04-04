@@ -55,15 +55,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 
   void _initTabs() {
     tabs.clear();
-
-    if ((widget.futureRun.eventImage ?? '').isNotEmpty &&
-        widget.futureRun.eventImage.startsWith('http')) {
-      tabs.add(const Tab(text: 'Photo'));
-    }
     tabs.add(const Tab(text: 'Details'));
     tabs.add(const Tab(text: 'RSVP'));
-    //tabs.add(Tab(text: 'Desc'));
-
     tabs.add(const Tab(text: 'Map'));
     if (widget.futureRun.hasMmPrivileges) {
       tabs.add(const Tab(text: 'Admin'));
@@ -122,19 +115,6 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
-  Padding buildPhotoView() {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: CachedNetworkImage(
-        imageUrl: widget.futureRun.eventImage,
-        // errorWidget:
-        //     (BuildContext context, String url, Exception error) =>
-        //         const  Icon(Icons.error),
-      ),
-      //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
-    );
-  }
-
   TextStyle headerStyle = const TextStyle(
       color: Colors.yellow,
       fontFamily: 'AvenirNextRegular',
@@ -171,6 +151,26 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       child: SingleChildScrollView(
         child: Column(
           children: <Widget>[
+            (((widget.futureRun.eventImage ?? '').isNotEmpty &&
+                    widget.futureRun.eventImage.startsWith('http')))
+                ? Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: CachedNetworkImage(
+                      imageUrl: widget.futureRun.eventImage,
+                      // errorWidget:
+                      //     (BuildContext context, String url, Exception error) =>
+                      //         const  Icon(Icons.error),
+                    )
+                    //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
+                    )
+                : Container(),
+            (((widget.futureRun.eventImage ?? '').isNotEmpty &&
+                    widget.futureRun.eventImage.startsWith('http')))
+                ? const Padding(
+                    padding: EdgeInsets.only(top: 20.0, bottom: 10.0),
+                    child: FancyDivider(innerColor: Colors.white),
+                  )
+                : Container(),
             Padding(
               padding: const EdgeInsets.only(
                   top: 25, left: 20, right: 20, bottom: 10),
@@ -551,7 +551,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                       Container(
                         width: MediaQuery.of(context).size.width / 5.5,
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start ,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
                             Text(
                                 'Not go: ' +
@@ -649,12 +649,17 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                         ),
                                       ),
                                 Padding(
-                                  padding: const EdgeInsets.only(top:2.5,left:1.5,right:2.5,bottom:2),
+                                  padding: const EdgeInsets.only(
+                                      top: 2.5,
+                                      left: 1.5,
+                                      right: 2.5,
+                                      bottom: 2),
                                   child: IconButton(
-                                    icon: const ImageIcon(
-                                        AssetImage('images/icons/hare_icon.png')),
+                                    icon: const ImageIcon(AssetImage(
+                                        'images/icons/hare_icon.png')),
                                     color:
-                                        widget.futureRun.requestedHaringState == 1
+                                        widget.futureRun.requestedHaringState ==
+                                                1
                                             ? Colors.blue
                                             : widget.futureRun.isHare == 1
                                                 ? Colors.deepPurple
@@ -830,15 +835,16 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                     width: 300.0,
                                                     height: 300.0,
                                                     fit: BoxFit.fill,
-                                                    image: AssetImage((
-                                                        'images/avatars/' +
-                                                            packList[index]
-                                                                .photo
-                                                                .toLowerCase()
-                                                                .replaceFirst(
-                                                                    'bundle://',
-                                                                    '') +
-                                                            '.png').toLowerCase()),
+                                                    image: AssetImage(
+                                                        ('images/avatars/' +
+                                                                packList[index]
+                                                                    .photo
+                                                                    .toLowerCase()
+                                                                    .replaceFirst(
+                                                                        'bundle://',
+                                                                        '') +
+                                                                '.png')
+                                                            .toLowerCase()),
                                                   )
                                                 : Image(
                                                     width: 300.0,
@@ -1072,38 +1078,40 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               preferredSize: const Size.fromHeight(120.0),
               child: Padding(
                 padding: const EdgeInsets.only(
-                    top: 15, left: 5, right: 5, bottom: 15),
+                    top: 0, left: 0, right: 0, bottom: 15),
                 child: Container(
-                  //width: 320.0,
-                  height: 40.0,
+                  width: MediaQuery.of(context).size.width,
+                  height: 50.0,
                   decoration: BoxDecoration(
                     color: Theme.of(context).primaryColorLight,
-                    borderRadius: const BorderRadius.all(Radius.circular(45.0)),
+                    borderRadius: const BorderRadius.all(Radius.circular(0.0)),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-                    child: TabBar(
-                      labelStyle: const TextStyle(
-                          fontFamily: 'AvenirNextCondensedMedium',
-                          fontStyle: FontStyle.normal,
-                          fontSize: 14.0,
-                          height: 1.0),
-                      unselectedLabelStyle: const TextStyle(
-                          fontFamily: 'AvenirNextCondensedMedium',
-                          fontStyle: FontStyle.normal,
-                          fontSize: 14.0,
-                          height: 1.0),
-                      isScrollable: true,
-                      unselectedLabelColor: Colors.black,
-                      labelColor: Colors.white,
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      indicator: BubbleTabIndicator(
-                        indicatorHeight: 25.0,
-                        indicatorColor: Theme.of(context).buttonColor,
-                        tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 5.0, right: 5.0),
+                      child: TabBar(
+                        labelStyle: const TextStyle(
+                            fontFamily: 'AvenirNextCondensedMedium',
+                            fontStyle: FontStyle.normal,
+                            fontSize: 18.0,
+                            height: 1.0),
+                        unselectedLabelStyle: const TextStyle(
+                            fontFamily: 'AvenirNextCondensedMedium',
+                            fontStyle: FontStyle.normal,
+                            fontSize: 18.0,
+                            height: 1.0),
+                        isScrollable: true,
+                        unselectedLabelColor: Colors.black,
+                        labelColor: Colors.white,
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        indicator: BubbleTabIndicator(
+                          indicatorHeight: 40.0,
+                          indicatorColor: Theme.of(context).buttonColor,
+                          tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                        ),
+                        tabs: tabs,
+                        controller: _tabController,
                       ),
-                      tabs: tabs,
-                      controller: _tabController,
                     ),
                   ),
                 ),
@@ -1112,31 +1120,23 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
             Expanded(
               child: TabBarView(
                 controller: _tabController,
-                children: (((widget.futureRun.eventImage ?? '').isNotEmpty &&
-                        widget.futureRun.eventImage.startsWith('http'))
-                    ? List<Widget>.from(<Widget>[buildPhotoView()])
-                    : List<Widget>.from(<Widget>[]))
-                  ..addAll(
-                    List<Widget>.from(
-                      <Widget>[
-                        buildRunDetailsView(),
-                        buildRsvpView(),
-                        buildMapView(),
-                      ],
-                    ),
-                  )
-                  ..addAll(isAdmin
-                      ? List<Widget>.from(<Widget>[
-                          Container(
-                            // decoration: BoxDecoration(
-                            //     color: Theme.of(context).selectedRowColor),
-                            child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: kiddies()),
-                          )
-                        ])
-                      : List<Widget>.from(<Widget>[])),
+                children: List<Widget>.from(
+                  <Widget>[
+                    buildRunDetailsView(),
+                    buildRsvpView(),
+                    buildMapView(), 
+                  ],
+                )..addAll(isAdmin
+                    ? List<Widget>.from(<Widget>[
+                        Container(
+                          // decoration: BoxDecoration(
+                          //     color: Theme.of(context).selectedRowColor),
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: kiddies()),
+                        )
+                      ])
+                    : List<Widget>.from(<Widget>[])),
                 // children: tabs.map((Tab tab) {
                 //   return Center(
                 //       child: Text(
@@ -1178,6 +1178,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
             : Container(
                 margin: const EdgeInsets.only(left: 10, right: 10),
                 width: 150.0,
+                height: 100.0,
                 child: RaisedButton(
                   child: const Text(
                     'Check in Pack',
@@ -1199,6 +1200,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
             : Container(
                 margin: const EdgeInsets.only(left: 10, right: 10),
                 width: 150.0,
+                height: 100.0,
                 child: RaisedButton(
                   child: const Text(
                     'Hash Cash',
@@ -1244,6 +1246,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         Container(
           margin: const EdgeInsets.only(left: 10, right: 10),
           width: 150.0,
+          height: 100.0,
           child: RaisedButton(
             child: const Text(
               'Scan at Run Start',
@@ -1268,6 +1271,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         Container(
           margin: const EdgeInsets.only(left: 10, right: 10),
           width: 150.0,
+          height: 100.0,
           child: RaisedButton(
             child: const Text(
               'Scan at Run End',
@@ -1300,6 +1304,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         Container(
           margin: const EdgeInsets.only(left: 10, right: 10),
           width: 150.0,
+          height: 100.0,
           child: RaisedButton(
               child: const Text(
                 'Run Start QR',
@@ -1323,6 +1328,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         Container(
           margin: const EdgeInsets.only(left: 10, right: 10),
           width: 150.0,
+          height: 100.0,
           child: RaisedButton(
               child: const Text(
                 'Run End QR',

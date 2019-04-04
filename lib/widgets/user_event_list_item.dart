@@ -38,8 +38,8 @@ class UserEventListItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           userEventHistoryModel.isLoading
-              ? const Icon(MaterialCommunityIcons.cloud_upload,
-                  color: Colors.blue, size: 35.0)
+              ? Icon(FontAwesome.hourglass_2,
+                  color: Colors.blue[800], size: 35.0)
               : userEventHistoryModel.attendenceState < attendenceAtHash.value
                   ? const Icon(FontAwesome.times_circle,
                       color: Colors.red, size: 35.0)

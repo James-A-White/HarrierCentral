@@ -116,7 +116,7 @@ class HistoryListPageState extends State<HistoryListPage> {
                         //   ),
                         // ),
                         Container(
-                          padding: EdgeInsets.only(top:10,left:100.0),
+                          padding: EdgeInsets.only(top:10,left:105.0),
                           //width: headingWidth,
                           child: Text(
                             'Total\r\nruns',
@@ -125,7 +125,7 @@ class HistoryListPageState extends State<HistoryListPage> {
                           ),
                         ),
                         Container(
-                          padding: EdgeInsets.only(top:10, left:27.0),
+                          padding: EdgeInsets.only(top:10, left:65.0),
                           //width: headingWidth,
                           child: Text(
                             'Times\r\nhared',

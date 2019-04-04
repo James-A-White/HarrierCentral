@@ -694,10 +694,15 @@ class PackListView extends StatelessWidget {
               left: 75.0,
               bottom: 3.0,
               child: packList[index].rsvpState == -1
-                  ? Container()
+                  ? CircleAvatar(
+                                      backgroundColor:
+                                          
+                                              Colors.grey[350],
+                                      radius: 14.0,
+                                    ) 
                   : CircleAvatar(
                       backgroundColor: packList[index].rsvpState == 0
-                          ? Colors.transparent
+                          ? Colors.grey[350] 
                           : Colors.white,
                       radius: 14.0,
                     ),
@@ -708,8 +713,8 @@ class PackListView extends StatelessWidget {
                   ? 2.0
                   : packList[index].isHare == 1 ? 5.0 : 3.5,
               child: packList[index].rsvpState < 0
-                  ? const Icon(MaterialCommunityIcons.cloud_upload,
-                      color: Colors.blue)
+                  ?  Icon(FontAwesome.hourglass_2,
+                      color: Colors.blue[800])
                   : packList[index].rsvpState == 0
                       ? Container()
                       : packList[index].rsvpState == rsvpNo.value
@@ -740,21 +745,26 @@ class PackListView extends StatelessWidget {
                       right: 0,
                       child: Text('No pack members loaded'))
                   : Positioned(
-                      left: 115.0,
+                      left: 155.0,
                       bottom: 3.0,
                       child: (packList[index].attendenceState <
                                   attendenceAtHash.value) &&
                               (packList[index].requestedAttendenceState <
                                   attendenceAtHash.value)
-                          ? Container()
+                          ? CircleAvatar(
+                                      backgroundColor:
+                                          
+                                              Colors.grey[350],
+                                      radius: 14.0,
+                                    )
                           : (packList[index].rsvpState != rsvpYes.value) &&
                                   (packList[index].requestedRsvpState !=
                                       rsvpYes.value)
                               ? Container()
                               : packList[index].isPaid == -1
-                                  ? const Icon(
-                                      MaterialCommunityIcons.cloud_upload,
-                                      color: Colors.blue)
+                                  ? Icon(
+                                      FontAwesome.hourglass_2,
+                                      color: Colors.blue[800])
                                   : CircleAvatar(
                                       backgroundColor:
                                           packList[index].attendenceState == 0
@@ -775,7 +785,7 @@ class PackListView extends StatelessWidget {
                         right: 0,
                         child: Text('No pack members loaded'))
                     : Positioned(
-                        left: 117.0,
+                        left: 157.0,
                         bottom:
                             packList[index].attendenceState < -1 ? 4.5 : 5.5,
                         child: (packList[index].attendenceState < attendenceAtHash.value) &&
@@ -809,14 +819,19 @@ class PackListView extends StatelessWidget {
             ),
 
             Positioned(
-              left: 155.0,
+              left: 115.0,
               bottom: 3.0,
               child: (packList[index].rsvpState != rsvpYes.value) &&
                       (packList[index].requestedRsvpState != rsvpYes.value)
-                  ? Container()
+                  ? CircleAvatar(
+                                      backgroundColor:
+                                          
+                                              Colors.grey[350],
+                                      radius: 14.0,
+                                    )
                   : packList[index].attendenceState < 0
-                      ? const Icon(MaterialCommunityIcons.cloud_upload,
-                          color: Colors.blue)
+                      ?  Icon(FontAwesome.hourglass_2,
+                          color: Colors.blue[800])
                       : CircleAvatar(
                           backgroundColor: packList[index].attendenceState == 0
                               ? Colors.transparent
@@ -825,7 +840,7 @@ class PackListView extends StatelessWidget {
                         ),
             ),
             Positioned(
-              left: 157.0,
+              left: 117.0,
               bottom: packList[index].attendenceState <= 0 ? 4.5 : 5.5,
               child: (packList[index].rsvpState != rsvpYes.value) &&
                       (packList[index].requestedRsvpState != rsvpYes.value)
@@ -1296,259 +1311,3 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
   }
 }
 
-// KEEP THIS CODE
-// KEEP THIS CODE
-// KEEP THIS CODE
-// KEEP THIS CODE
-
-// class PackGridView extends StatelessWidget {
-//   const PackGridView({
-//     Key key,
-//     @required this.packList,
-//     @required this.packScopedModel,
-//     @required this.payScopedModel,
-//     @required this.futureRun,
-//   }) : super(key: key);
-
-//   final List<PackModel> packList;
-//   final PackScopedModel packScopedModel;
-//   final PayScopedModel payScopedModel;
-//   final FutureRun futureRun;
-
-//   Widget buildRsvpAndPaymentSnackbar(
-//       BuildContext context, int index, PackScopedModel _packScopedModel) {
-//     final snackbar = PaymentSnackBar(
-//       context: context,
-//       index: index,
-//       futureRun: futureRun,
-//       packScopedModel: packScopedModel,
-//       payScopedModel: payScopedModel,
-//       packList: packList,
-//     );
-
-//     return snackbar;
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return StaggeredGridView.countBuilder(
-//       crossAxisCount: 3,
-//       itemCount: packList?.length ?? 0,
-//       addRepaintBoundaries: false,
-//       itemBuilder: (BuildContext context, int index) {
-//         return packList.isEmpty
-//             ? Container(
-//                 color: Colors.grey[300],
-//                 width: 70.0,
-//                 height: 70.0,
-//                 child: const Padding(
-//                     padding: const EdgeInsets.all(5.0),
-//                     child: Center(child: CircularProgressIndicator())),
-//               )
-//             : GestureDetector(
-//                 onTap: () {
-//                   final snackBar = buildRsvpAndPaymentSnackbar(
-//                       context, index, packScopedModel);
-
-//                   Scaffold.of(context)
-//                       .removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-//                   Scaffold.of(context).showSnackBar(snackBar);
-//                 },
-//                 child: Stack(
-//                   children: <Widget>[
-//                     packList[index].photo.startsWith('http')
-//                         ? CachedNetworkImage(
-//                             imageUrl: packList[index].photo,
-//                             //placeholder: CircularProgressIndicator(),
-//                             //errorWidget:const  Icon(Icons.error),
-//                             placeholder: (context, url) => const CircularProgressIndicator(),
-//                             errorWidget: (context, url, error) => const  Icon(Icons.error),
-//                             //fadeOutDuration:  Duration(seconds: 1),
-//                             fadeInDuration: const Duration(milliseconds: 0),
-//                             width: 300.0,
-//                             height: 300.0,
-//                             fit: BoxFit.fill)
-//                         : packList[index].photo.startsWith('bundle')
-//                             ? Image(
-//                                 width: 300.0,
-//                                 height: 300.0,
-//                                 fit: BoxFit.fill,
-//                                 image: AssetImage('images/avatars/' +
-//                                     packList[index]
-//                                         .photo
-//                                         .toLowerCase()
-//                                         .replaceFirst('bundle://', '') +
-//                                     '.png'),
-//                               )
-//                             : Image(
-//                                 width: 300.0,
-//                                 height: 300.0,
-//                                 fit: BoxFit.fill,
-//                                 image:
-//                                     AssetImage('images/avatars/avatar-2.png'),
-//                               ),
-//                     Positioned(
-//                       left: 3.0,
-//                       bottom: 1.0,
-//                       child: CircleAvatar(
-//                         backgroundColor: packList[index].rsvpState == 0
-//                             ? Colors.transparent
-//                             : packList[index].rsvpState == -1
-//                                 ? Colors.blue
-//                                 : Colors.white,
-//                         radius: 14.0,
-//                       ),
-//                     ),
-//                     Positioned(
-//                       left: 5.0,
-//                       bottom: packList[index].rsvpState <= 0
-//                           ? 2.5
-//                           : packList[index].isHare == 1 ? 3.0 : 3.5,
-//                       child: packList[index].rsvpState <= 0
-//                           ? CircleAvatar(
-//                               backgroundColor: Colors.transparent,
-//                               radius: 12.0,
-//                             )
-//                           : packList[index].rsvpState == rsvpNo.value
-//                               ?const  Icon(FontAwesomeIcons.solidTimesCircle,
-//                                   color: Colors.red, size: 24.0)
-//                               : packList[index].rsvpState == rsvpMaybe.value
-//                                   ?const  Icon(FontAwesomeIcons.solidQuestionCircle,
-//                                       color: Colors.orange, size: 24.0)
-//                                   : packList[index].isHare == 0
-//                                       ?const  Icon(FontAwesomeIcons.solidCheckCircle,
-//                                           color: Colors.green, size: 24.0)
-//                                       : Image.asset(
-//                                           'images/icons/hare_icon.png',
-//                                           color: Colors.deepPurple,
-//                                           height: 24.0,
-//                                           width: 24.0),
-
-//                       // AssetImage(
-//                       //     'images/icons/hare_icon.png'),
-//                     ),
-//                     Positioned(
-//                       right: 3.0,
-//                       bottom: 1.0,
-//                       child: packList[index].rsvpState != rsvpYes.value
-//                           ? Container()
-//                           : CircleAvatar(
-//                               backgroundColor:
-//                                   packList[index].attendenceState == 0
-//                                       ? Colors.transparent
-//                                       : packList[index].attendenceState == -1
-//                                           ? Colors.blue
-//                                           : Colors.white,
-//                               radius: 14.0,
-//                             ),
-//                     ),
-//                     Positioned(
-//                       right: 5.0,
-//                       bottom: packList[index].attendenceState <= 0 ? 2.5 : 3.5,
-//                       child: packList[index].rsvpState != rsvpYes.value
-//                           ? Container()
-//                           : packList[index].attendenceState ==
-//                                   attendenceNo.value
-//                               ? Image.asset('images/icons/not_at_hash_icon.png',
-//                                   height: 24.0,
-//                                   width: 24.0,
-//                                   color: Colors.red[700])
-//                               : packList[index].attendenceState ==
-//                                       attendenceAtHash.value
-//                                   ? Image.asset('images/icons/runner_icon.png',
-//                                       height: 24.0,
-//                                       width: 24.0,
-//                                       color: Colors.red)
-//                                   : packList[index].attendenceState >=
-//                                           attendenceOnIn.value
-//                                       ? Image.asset(
-//                                           'images/icons/beer_icon.png',
-//                                           height: 24.0,
-//                                           width: 24.0,
-//                                           color: Colors.green)
-//                                       : Image.asset(
-//                                           'images/icons/beer_icon.png',
-//                                           height: 24.0,
-//                                           width: 24.0,
-//                                           color: Colors.transparent),
-//                     ),
-
-//                     // Payment icons
-
-//                     ScopedModelDescendant<PayScopedModel>(builder:
-//                         (BuildContext context, Widget child,
-//                             PayScopedModel model) {
-//                       return Positioned(
-//                         right: 0.0,
-//                         left: 0.0,
-//                         bottom: 1.0,
-//                         child: packList[index].attendenceState <
-//                                 attendenceAtHash.value
-//                             ? Container()
-//                             : packList[index].rsvpState != rsvpYes.value
-//                                 ? Container()
-//                                 : CircleAvatar(
-//                                     backgroundColor:
-//                                         packList[index].attendenceState == 0
-//                                             ? Colors.transparent
-//                                             : packList[index].isPaid == -1
-//                                                 ? Colors.blue
-//                                                 : Colors.white,
-//                                     radius: 14.0,
-//                                   ),
-//                       );
-//                     }),
-
-//                     ScopedModelDescendant<PayScopedModel>(
-//                       builder: (BuildContext context, Widget child,
-//                           PayScopedModel model) {
-//                         return Positioned(
-//                             right: 0.0,
-//                             left: 0.0,
-//                             bottom: packList[index].attendenceState < -1
-//                                 ? 2.5
-//                                 : 3.5,
-//                             child: packList[index].attendenceState < attendenceAtHash.value
-//                                 ? Container()
-//                                 : packList[index].rsvpState != rsvpYes.value
-//                                     ? Container()
-//                                     : ((packList[index].attendenceState <=
-//                                                 attendenceNo.value) &&
-//                                             (packList[index].requestedAttendenceState <=
-//                                                 attendenceNo.value))
-//                                         ? Image.asset('images/icons/dollar_sign_icon.png',
-//                                             height: 24.0,
-//                                             width: 24.0,
-//                                             color: Colors.transparent)
-//                                         : packList[index].isPaid == isPaidNo.value
-//                                             ? Image.asset(
-//                                                 'images/icons/dollar_sign_icon.png',
-//                                                 height: 24.0,
-//                                                 width: 24.0,
-//                                                 color: Colors.red)
-//                                             : packList[index].isPaid == isPaidYes.value
-//                                                 ? Image.asset(
-//                                                     'images/icons/payment_type_${packList[index].paymentType}.png',
-//                                                     height: 24.0,
-//                                                     width: 24.0,
-//                                                     color: Colors.green)
-//                                                 : Container()
-
-//                             // AssetImage(
-//                             //     'images/icons/hare_icon.png'),
-//                             );
-//                       },
-//                     ),
-//                   ],
-//                 )); //TODO: Replace this with another avatar for missing image
-//       },
-//       staggeredTileBuilder: (int index) {
-//         return packList[index].isHare == 0
-//             ? StaggeredTile.count(1, 1)
-//             : StaggeredTile.count(2, 2);
-//       },
-//       mainAxisSpacing: 8.0,
-//       crossAxisSpacing: 8.0,
-//     );
-//   }
-// }

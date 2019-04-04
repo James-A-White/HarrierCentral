@@ -52,8 +52,8 @@ class FilterEventListItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           eventModel.isLoading
-              ? const Icon(MaterialCommunityIcons.cloud_upload,
-                  color: Colors.blue, size: 35.0)
+              ? Icon(FontAwesome.hourglass_2,
+                  color: Colors.blue[800], size: 35.0)
               : (eventModel.eventFacebookId?.length ?? 0) > 2
                   ?  Icon(FontAwesome.facebook_square,
                       color: eventModel.isVisible == 1 ? const Color.fromARGB(255, 59, 89, 152) : Colors.grey, size: 35.0)

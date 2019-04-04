@@ -120,8 +120,8 @@ class PackScopedModel extends Model {
 
   void sortPackList() 
   {
-     _packList.sort((UserModel a,UserModel b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()));
-     //_filteredPackList.sort((a,b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()));
+     _packList.sort((UserModel a,UserModel b) => (a.displayName ?? '').toLowerCase().compareTo((b.displayName ?? '').toLowerCase()));
+     _filteredPackList.sort((UserModel a,UserModel b) => (a.displayName ?? '').toLowerCase().compareTo((b.displayName ?? '').toLowerCase()));
   }
 
   String packListFilter = '';
@@ -135,10 +135,10 @@ class PackScopedModel extends Model {
   void _filterPackList()
   {
     _filteredPackList = _packList.where((UserModel user) =>
-            (user.firstName + ' ' + user.lastName + ' ' + user.displayName).toLowerCase().contains(packListFilter.toLowerCase()))
+            ((user.firstName ?? '') + ' ' + (user.lastName ?? '') + ' ' + (user.displayName ?? '')).toLowerCase().contains(packListFilter.toLowerCase()))
         .toList();
   }
-
+ 
   void addEditUser(UserModel packModel) {
     if (_packList.isNotEmpty) {
       final UserModel packItem = _packList.firstWhere(

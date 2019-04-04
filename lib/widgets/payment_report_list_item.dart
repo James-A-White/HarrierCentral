@@ -38,7 +38,7 @@ class PaymentReportListItem extends StatelessWidget {
                   right: 10.0,
                   top: 7.0,
                   child: paymentReportItem.isTransactionInProgress
-                      ? const Icon(FontAwesome.cloud_upload, color: Colors.blue)
+                      ? Icon(FontAwesome.hourglass_2, color: Colors.blue[800])
                       : Image.asset(
                           'images/icons/payment_type_${paymentReportItem.paymentType.value}.png',
                           height: 30.0,

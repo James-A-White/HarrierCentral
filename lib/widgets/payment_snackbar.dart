@@ -34,6 +34,9 @@ class PaymentSnackBar extends SnackBar {
   @override
   Duration get duration => Duration(seconds:30);
 
+  @override
+  Color get backgroundColor => Theme.of(context).accentColor;
+
   @override // TODO(James): implement content
   Widget get content => Column(
         mainAxisSize: MainAxisSize.min,
@@ -156,7 +159,7 @@ class PaymentSnackBar extends SnackBar {
                                               rsvpYes.value) &&
                                           (packList[index].isHare ==
                                               isHareNo.value))
-                                      ? Color.fromARGB(255, 0, 255, 0)
+                                      ? Colors.yellow
                                       : Colors.white,
                             ),
 
