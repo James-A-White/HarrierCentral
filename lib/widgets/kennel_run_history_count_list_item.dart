@@ -70,7 +70,7 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
             },
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.only(left: 10.0),
@@ -82,38 +82,23 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                   ),
                 ),
 
+                // Container(
+                //   width: textWidth,
+                //   child: AutoSizeText(
+                //     '${kennelRunHistoryCount.totalPackRunsThisKennel.toString()}',
+                //     //'Super fucking long text thats sure to overflow and more',
+                //     //'999',
+                //     overflow: TextOverflow.ellipsis,
+                //     minFontSize: 18.0,
+                //     maxLines: 1,
+                //     style: numberStyle,
+                //     textAlign: TextAlign.center,
+                //   ),
+                //   //color: Colors.red,
+                // ),
                 Container(
-                  width: textWidth,
-                  child: AutoSizeText(
-                    '${kennelRunHistoryCount.totalPackRunsThisKennel.toString()}',
-                    //'Super fucking long text thats sure to overflow and more',
-                    //'999',
-                    overflow: TextOverflow.ellipsis,
-                    minFontSize: 18.0,
-                    maxLines: 1,
-                    style: numberStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                  //color: Colors.red,
-                ),
-
-                Container(
-                  width: textWidth,
-                  child: AutoSizeText(
-                    '${kennelRunHistoryCount.totalHaringThisKennel.toString()}',
-                    //'Super fucking long text thats sure to overflow and more',
-                    //'999',
-                    overflow: TextOverflow.ellipsis,
-                    minFontSize: 18.0,
-                    maxLines: 1,
-                    style: numberStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                  //color: Colors.blue,
-                ),
-
-                Container(
-                  width: textWidth,
+                  padding: EdgeInsets.only(left:53.0),
+                  //width: textWidth,
                   child: AutoSizeText(
                     '${kennelRunHistoryCount.totalRunsThisKennel.toString()}',
                     //'Super fucking long text thats sure to overflow and more',
@@ -127,20 +112,37 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                   //color: Colors.green,
                 ),
                 Container(
-                  width: textWidth,
+                  padding: EdgeInsets.only(left:50.0),
+                  //width: textWidth,
                   child: AutoSizeText(
-                    //'${kennelRunHistoryCount.totalPackRunsThisKennel.toString()}',
+                    '${kennelRunHistoryCount.totalHaringThisKennel.toString()}',
                     //'Super fucking long text thats sure to overflow and more',
-                    '${((kennelRunHistoryCount.totalPackRunsThisKennel * 3) + (kennelRunHistoryCount.totalHaringThisKennel * 10)).toString()}',
+                    //'999',
                     overflow: TextOverflow.ellipsis,
                     minFontSize: 18.0,
                     maxLines: 1,
                     style: numberStyle,
                     textAlign: TextAlign.center,
                   ),
-                  //color: Colors.purple,
+                  //color: Colors.blue,
                 ),
-                Container(width: 1, height: 1)
+
+
+                // Container(
+                //   width: textWidth,
+                //   child: AutoSizeText(
+                //     //'${kennelRunHistoryCount.totalPackRunsThisKennel.toString()}',
+                //     //'Super fucking long text thats sure to overflow and more',
+                //     '${((kennelRunHistoryCount.totalPackRunsThisKennel * 3) + (kennelRunHistoryCount.totalHaringThisKennel * 10)).toString()}',
+                //     overflow: TextOverflow.ellipsis,
+                //     minFontSize: 18.0,
+                //     maxLines: 1,
+                //     style: numberStyle,
+                //     textAlign: TextAlign.center,
+                //   ),
+                //   //color: Colors.purple,
+                // ),
+                //Container(width: 1, height: 1)
 
                 // Column(
                 //     mainAxisSize: MainAxisSize.max,

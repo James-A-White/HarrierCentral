@@ -668,7 +668,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       // in case we are creating users not for this device
       // make sure we have the correct hash userId
       userId = user.hasherId;
-    } else {
+    } else { 
       // in the case where we are simply updating the existing
       // profile image of the account associated with this device,
       // use the existing QR code stored in preferences as the base name for the photo

@@ -114,7 +114,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             // },
           ),
           TabData(
-            iconData: MaterialCommunityIcons.dog,
+            iconData: FontAwesome.home,
             title: 'Kennels',
             // onclick: () => Navigator.of(context).push<dynamic>(
             //       MaterialPageRoute<dynamic>(
@@ -123,7 +123,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             //     ),
           ),
           TabData(
-            iconData: Entypo.open_book,
+            iconData: FontAwesome.list_ul,
             title: 'History',
             // onclick: () => Navigator.of(context).push<dynamic>(
             //       MaterialPageRoute<dynamic>(

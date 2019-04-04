@@ -572,7 +572,7 @@ class PackListView extends StatelessWidget {
   final PayScopedModel payScopedModel;
   final PlannedRun futureRun;
 
-  Widget buildRsvpAndPaymentSnackbar(
+  SnackBar buildRsvpAndPaymentSnackbar(
       BuildContext context, int index, PackScopedModel _packScopedModel) {
     final SnackBar snackbar = PaymentSnackBar(
       context: context,
@@ -580,7 +580,7 @@ class PackListView extends StatelessWidget {
       futureRun: futureRun,
       packScopedModel: packScopedModel, 
       payScopedModel: payScopedModel,
-      packList: packList,
+      packList: packList
     );
 
     return snackbar;

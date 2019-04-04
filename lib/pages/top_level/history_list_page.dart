@@ -98,33 +98,26 @@ class HistoryListPageState extends State<HistoryListPage> {
                     padding: const EdgeInsets.only(
                         left: 5, top: 5, right: 20, bottom: 5),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
+        //                 Container(
+        //                   height: 50,
+        //                   child:         Image.asset(
+        //   'images/other/hound_and_hare_drinking.png',
+        // ),
+        //                 ),
+                        // Container(
+                        //   width: headingWidth,
+                        //   child: Text(
+                        //     'Pack\r\nruns',
+                        //     style: headingStyle,
+                        //     maxLines: 2,
+                        //     textAlign: TextAlign.center,
+                        //   ),
+                        // ),
                         Container(
-                          height: 50,
-                          child:         Image.asset(
-          'images/other/hound_and_hare_drinking.png',
-        ),
-                        ),
-                        Container(
-                          width: headingWidth,
-                          child: Text(
-                            'Pack\r\nruns',
-                            style: headingStyle,
-                            maxLines: 2,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        Container(
-                          width: headingWidth,
-                          child: Text(
-                            'Hare\r\nruns',
-                            style: headingStyle,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        Container(
-                          width: headingWidth,
+                          padding: EdgeInsets.only(top:10,left:100.0),
+                          //width: headingWidth,
                           child: Text(
                             'Total\r\nruns',
                             style: headingStyle,
@@ -132,13 +125,23 @@ class HistoryListPageState extends State<HistoryListPage> {
                           ),
                         ),
                         Container(
-                          width: headingWidth,
+                          padding: EdgeInsets.only(top:10, left:27.0),
+                          //width: headingWidth,
                           child: Text(
-                            'Hash\r\npoints',
+                            'Times\r\nhared',
                             style: headingStyle,
                             textAlign: TextAlign.center,
                           ),
                         ),
+
+                        // Container(
+                        //   width: headingWidth,
+                        //   child: Text(
+                        //     'Hash\r\npoints',
+                        //     style: headingStyle,
+                        //     textAlign: TextAlign.center,
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),

@@ -10,4 +10,14 @@ Build 362: Version 0.7.0 - Lots of big fixes, added ability for users to update 
 Fix Avatar screen
 Add: Continue implementing permissions
 Add: Ability to search for Hashers in the system but not members of a kennel 
+Debug: find out where I need to dispose of memory
+
+
+
+
+
+To check out:
+flutter_background_geolocation 0.3.4
+intro_slider 1.2.0
+
 

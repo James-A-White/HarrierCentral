@@ -31,6 +31,9 @@ class PaymentSnackBar extends SnackBar {
   final List<UserModel> packList;
   final PlannedRun futureRun;
 
+  @override
+  Duration get duration => Duration(seconds:30);
+
   @override // TODO(James): implement content
   Widget get content => Column(
         mainAxisSize: MainAxisSize.min,
@@ -153,7 +156,7 @@ class PaymentSnackBar extends SnackBar {
                                               rsvpYes.value) &&
                                           (packList[index].isHare ==
                                               isHareNo.value))
-                                      ? Colors.yellow
+                                      ? Color.fromARGB(255, 0, 255, 0)
                                       : Colors.white,
                             ),
 

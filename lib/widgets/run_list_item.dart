@@ -51,7 +51,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     //     child:
     return Card(
         elevation: 4.0,
-        margin: const EdgeInsets.only(top: 20.0, left: 15.0, right: 15.0),
+        margin: const EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
         color: (widget.futureRun.isExpanded ?? false)
             ? Theme.of(context).selectedRowColor
             : Colors.white,
@@ -114,7 +114,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                   // );
                 },
                 padding: const EdgeInsets.only(
-                    top: 10.0, left: 10.0, right: 10.0, bottom: 10.0),
+                    top: 10.0, left: 4.0, right: 10.0, bottom: 10.0),
                 child: Stack(
                   children: <Widget>[
                     widget.futureRun.haresCount == 0
