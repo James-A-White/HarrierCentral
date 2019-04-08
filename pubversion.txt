@@ -6,6 +6,8 @@ Build 69: Added ability to allow mismanagement to show and hide Hash runs and up
 Build 70: Version 0.6.4 - Added user support features that allow secret recovery mode and a support ID, app now also reports its version on launch and login
 Build 760: Version 0.6.5 - Added basic permissions for Kennel admin features, increased build number to 760 - need full testing prior to release
 Build 362: Version 0.7.0 - Lots of big fixes, added ability for users to update their profile information (names, e-mail and photo)
+Build 137: Version 0.7.0 - Re-designed the profile photo screen to make it more intuitive
+Build 138: Fixed a bug with the Facebook login on the create account screen not filling in the form fields correctly
 
 Fix Avatar screen
 Add: Continue implementing permissions

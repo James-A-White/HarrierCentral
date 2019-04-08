@@ -315,6 +315,7 @@ class NewUserState extends State<NewUserWidget>
                                 StringPrefsEnum.facebookAccessToken, token);
                             setStringPref(StringPrefsEnum.gender, gender);
 
+                            userDetailsUi.updateUi(firstName, lastName, email);
                             userDetailsUi.firstName = firstName;
                             userDetailsUi.lastName = lastName;
                             userDetailsUi.email = email;

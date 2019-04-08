@@ -14,6 +14,7 @@ class UserDetailsUi extends StatefulWidget {
   String lastName;
   String email;
   String hashName;
+  Function updateUi;
 
   @override
   _UserDetailsUiState createState() => _UserDetailsUiState();
@@ -41,6 +42,15 @@ class _UserDetailsUiState extends State<UserDetailsUi>
     signupLastNameController.text = widget.lastName;
     signupHashNameController.text = widget.hashName;
     WidgetsBinding.instance.addObserver(this);
+    widget.updateUi = updateUi;
+  }
+
+  void updateUi(String firstName, String lastName, String email) {
+    setState(() {
+      signupEmailController.text = email;
+      signupFirstNameController.text = firstName;
+      signupLastNameController.text = lastName;
+    });
   }
 
   @override
@@ -195,9 +205,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
   }
 }
 
-
-class UserDetailReturnValues
-{
+class UserDetailReturnValues {
   String firstName;
   String lastName;
   String email;
