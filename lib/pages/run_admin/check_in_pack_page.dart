@@ -575,13 +575,12 @@ class PackListView extends StatelessWidget {
   SnackBar buildRsvpAndPaymentSnackbar(
       BuildContext context, int index, PackScopedModel _packScopedModel) {
     final SnackBar snackbar = PaymentSnackBar(
-      context: context,
-      index: index,
-      futureRun: futureRun,
-      packScopedModel: packScopedModel, 
-      payScopedModel: payScopedModel,
-      packList: packList
-    );
+        context: context,
+        index: index,
+        futureRun: futureRun,
+        packScopedModel: packScopedModel,
+        payScopedModel: payScopedModel,
+        packList: packList);
 
     return snackbar;
   }
@@ -631,11 +630,12 @@ class PackListView extends StatelessWidget {
                         height: 70.0,
                         fit: BoxFit.fill,
                         image: AssetImage(('images/avatars/' +
-                            packList[index]
-                                .photo
-                                .toLowerCase()
-                                .replaceFirst('bundle://', '') +
-                            '.png').toLowerCase()),
+                                packList[index]
+                                    .photo
+                                    .toLowerCase()
+                                    .replaceFirst('bundle://', '') +
+                                '.png')
+                            .toLowerCase()),
                       )
                     : Image(
                         width: 70.0,
@@ -695,14 +695,12 @@ class PackListView extends StatelessWidget {
               bottom: 3.0,
               child: packList[index].rsvpState == -1
                   ? CircleAvatar(
-                                      backgroundColor:
-                                          
-                                              Colors.grey[350],
-                                      radius: 14.0,
-                                    ) 
+                      backgroundColor: Colors.grey[350],
+                      radius: 14.0,
+                    )
                   : CircleAvatar(
                       backgroundColor: packList[index].rsvpState == 0
-                          ? Colors.grey[350] 
+                          ? Colors.grey[350]
                           : Colors.white,
                       radius: 14.0,
                     ),
@@ -712,9 +710,8 @@ class PackListView extends StatelessWidget {
               bottom: packList[index].rsvpState <= 0
                   ? 2.0
                   : packList[index].isHare == 1 ? 5.0 : 3.5,
-              child: packList[index].rsvpState < 0
-                  ?  Icon(FontAwesome.hourglass_2,
-                      color: Colors.blue[800])
+              child: (packList[index].rsvpState < 0) || (packList[index].isHare < 0)
+                  ? Icon(delayIcon, color: Colors.blue[800])
                   : packList[index].rsvpState == 0
                       ? Container()
                       : packList[index].rsvpState == rsvpNo.value
@@ -731,8 +728,6 @@ class PackListView extends StatelessWidget {
                                       height: 24.0,
                                       width: 24.0),
 
-              // AssetImage(
-              //     'images/icons/hare_icon.png'),
             ),
 
             ScopedModelDescendant<PayScopedModel>(builder:
@@ -752,18 +747,15 @@ class PackListView extends StatelessWidget {
                               (packList[index].requestedAttendenceState <
                                   attendenceAtHash.value)
                           ? CircleAvatar(
-                                      backgroundColor:
-                                          
-                                              Colors.grey[350],
-                                      radius: 14.0,
-                                    )
+                              backgroundColor: Colors.grey[350],
+                              radius: 14.0,
+                            )
                           : (packList[index].rsvpState != rsvpYes.value) &&
                                   (packList[index].requestedRsvpState !=
                                       rsvpYes.value)
                               ? Container()
                               : packList[index].isPaid == -1
-                                  ? Icon(
-                                      FontAwesome.hourglass_2,
+                                  ? Icon(delayIcon,
                                       color: Colors.blue[800])
                                   : CircleAvatar(
                                       backgroundColor:
@@ -812,8 +804,6 @@ class PackListView extends StatelessWidget {
                                             ? Image.asset('images/icons/payment_type_${packList[index].paymentType}.png', height: 24.0, width: 24.0, color: Colors.green)
                                             : Container()
 
-                        // AssetImage(
-                        //     'images/icons/hare_icon.png'),
                         );
               },
             ),
@@ -824,14 +814,11 @@ class PackListView extends StatelessWidget {
               child: (packList[index].rsvpState != rsvpYes.value) &&
                       (packList[index].requestedRsvpState != rsvpYes.value)
                   ? CircleAvatar(
-                                      backgroundColor:
-                                          
-                                              Colors.grey[350],
-                                      radius: 14.0,
-                                    )
+                      backgroundColor: Colors.grey[350],
+                      radius: 14.0,
+                    )
                   : packList[index].attendenceState < 0
-                      ?  Icon(FontAwesome.hourglass_2,
-                          color: Colors.blue[800])
+                      ? Icon(delayIcon, color: Colors.blue[800])
                       : CircleAvatar(
                           backgroundColor: packList[index].attendenceState == 0
                               ? Colors.transparent
@@ -1310,4 +1297,3 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
     );
   }
 }
-

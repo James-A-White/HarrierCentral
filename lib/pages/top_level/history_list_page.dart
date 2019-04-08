@@ -68,7 +68,6 @@ class HistoryListPageState extends State<HistoryListPage> {
       height: 0.6);
 
   Widget _buildListView() {
-    const num headingWidth = 55.0;
     return Container(
       decoration: Backgrounds.defaultHcBackgroundLight(),
       padding: const EdgeInsets.only(top: 0.0),
@@ -116,7 +115,7 @@ class HistoryListPageState extends State<HistoryListPage> {
                         //   ),
                         // ),
                         Container(
-                          padding: EdgeInsets.only(top:10,left:105.0),
+                          padding: const EdgeInsets.only(top:10,left:105.0),
                           //width: headingWidth,
                           child: Text(
                             'Total\r\nruns',
@@ -125,7 +124,7 @@ class HistoryListPageState extends State<HistoryListPage> {
                           ),
                         ),
                         Container(
-                          padding: EdgeInsets.only(top:10, left:65.0),
+                          padding: const EdgeInsets.only(top:10, left:65.0),
                           //width: headingWidth,
                           child: Text(
                             'Times\r\nhared',

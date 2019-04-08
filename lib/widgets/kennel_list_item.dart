@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:intl/intl.dart';
+import 'package:scoped_model/scoped_model.dart';
 
 import 'package:harrier_central/data_models/kennel_model.dart';
 import 'package:harrier_central/pages/kennel_admin/kennel_admin_main.dart';
@@ -8,9 +10,9 @@ import 'package:harrier_central/services/kennel_scoped_model.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/services/future_run_scoped_model.dart';
+import 'package:harrier_central/util/styles.dart';
 
-import 'package:intl/intl.dart';
-import 'package:scoped_model/scoped_model.dart';
+
 
 class KennelsListItem extends StatelessWidget {
   const KennelsListItem({
@@ -49,7 +51,7 @@ class KennelsListItem extends StatelessWidget {
                                         IconButton(
                                           icon: Icon(
                                               (kennel.followingRequested != null)
-                                                  ? FontAwesome.hourglass_2
+                                                  ? delayIcon
                                                   : (kennel.followingBool == 1)
                                                       ? const Icon(FontAwesome.check_circle)
                                                           .icon
@@ -214,7 +216,7 @@ class KennelsListItem extends StatelessWidget {
                     //                     IconButton(
                     //                       icon: Icon(
                     //                           (kennel.followingRequested != null)
-                    //                               ? FontAwesome.hourglass_2
+                    //                               ? delayIcon
                     //                               : (kennel.followingBool == 1)
                     //                                   ? const Icon(FontAwesome.check_circle)
                     //                                       .icon

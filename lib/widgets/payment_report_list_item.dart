@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data_models/payment_report_model.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/styles.dart';
 
 class PaymentReportListItem extends StatelessWidget {
   const PaymentReportListItem(
@@ -38,7 +38,7 @@ class PaymentReportListItem extends StatelessWidget {
                   right: 10.0,
                   top: 7.0,
                   child: paymentReportItem.isTransactionInProgress
-                      ? Icon(FontAwesome.hourglass_2, color: Colors.blue[800])
+                      ? Icon(delayIcon, color: Colors.blue[800])
                       : Image.asset(
                           'images/icons/payment_type_${paymentReportItem.paymentType.value}.png',
                           height: 30.0,

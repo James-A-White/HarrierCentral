@@ -13,7 +13,6 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const num textWidth = 55.0;
 
     const TextStyle numberStyle = TextStyle(
       fontFamily: 'AvenirNextCondensedDemiBold',

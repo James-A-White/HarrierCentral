@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:intl/intl.dart';
+import 'package:harrier_central/util/styles.dart';
 
 import 'package:harrier_central/data_models/lite_event_model.dart';
 import 'package:harrier_central/pages/kennel_admin/edit_event_page.dart';
@@ -52,7 +53,7 @@ class FilterEventListItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           eventModel.isLoading
-              ? Icon(FontAwesome.hourglass_2,
+              ? Icon(delayIcon,
                   color: Colors.blue[800], size: 35.0)
               : (eventModel.eventFacebookId?.length ?? 0) > 2
                   ?  Icon(FontAwesome.facebook_square,

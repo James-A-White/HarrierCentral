@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data_models/user_model.dart';
+import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/services/service_common.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -23,12 +24,14 @@ class AddUserService {
       String eventId,
       EnumHasherType<int> hasherType,
       {EnumAttendenceState<int> attendenceState = attndenceUnknown}) async {
-    final String accessToken = Utilities.generateToken(
-        GUID_EMPTY, 'addUser');
+    final String accessToken = Utilities.generateToken(GUID_EMPTY, 'addUser');
 
     if ((eventId ?? '').isEmpty) {
       eventId = GUID_EMPTY;
     }
+
+    final String hcVersion =
+        getStringPref(StringPrefsEnum.harrierCentralVersion);
 
     final String body = jsonEncode(<String, String>{
       'userId': GUID_EMPTY,
@@ -43,7 +46,8 @@ class AddUserService {
       'memberKennelId': memberKennelId,
       'eventId': eventId,
       'hasherType': hasherType.value.toString(),
-      'attendenceState': attendenceState.value.toString()
+      'attendenceState': attendenceState.value.toString(),
+      'hcVersion': hcVersion
     });
 
     final String responseBody =

@@ -108,24 +108,36 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
                 child: const Text('Reset device'),
                 textColor: Colors.white,
                 onPressed: () {
-                  final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                  final Future<Map<String, String>> apiCall =
-                      srv.authorizeDevice(context,
-                          getResetCodeTextController.text.toUpperCase());
-                  apiCall.then((Map<String, String> result) {
-                    if (result != null) {
-                      setState(() {
-                        getResetCodeTextController.text =
-                            getStringPref(StringPrefsEnum.displayName);
+                  if (getResetCodeTextController.text.toUpperCase() ==
+                      'RC:CLEARD') {
 
-                        Utilities.showAlert(
-                            context,
-                            'App Reset Successful',
-                            'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',
-                            'OK');
-                      });
-                    }
-                  });
+                    clearAllPrefs();
+
+                    Utilities.showAlert(
+                              context,
+                              'App Cleared Successful',
+                              'Your app has been successfully cleared. Please close and restart the app to start the installation process again.',
+                              'OK');
+                  } else {
+                    final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                    final Future<Map<String, String>> apiCall =
+                        srv.authorizeDevice(context,
+                            getResetCodeTextController.text.toUpperCase());
+                    apiCall.then((Map<String, String> result) {
+                      if (result != null) {
+                        setState(() {
+                          getResetCodeTextController.text =
+                              getStringPref(StringPrefsEnum.displayName);
+
+                          Utilities.showAlert(
+                              context,
+                              'App Reset Successful',
+                              'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',
+                              'OK');
+                        });
+                      }
+                    });
+                  }
                 },
               ),
 

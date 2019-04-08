@@ -17,8 +17,9 @@ class ApproveLoginService {
       userId = GUID_EMPTY;
     }
 
-    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
-        
+    final String hcVersion =
+        getStringPref(StringPrefsEnum.harrierCentralVersion);
+
     String deviceId = 'unknown';
     String deviceType = 'unknown';
     String deviceName = 'unknown';

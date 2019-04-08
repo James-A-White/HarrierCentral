@@ -151,8 +151,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       child: SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            (((widget.futureRun.eventImage ?? '').isNotEmpty &&
-                    widget.futureRun.eventImage.startsWith('http')))
+            ((widget.futureRun.eventImage ?? '').isNotEmpty &&
+                    widget.futureRun.eventImage.startsWith('http'))
                 ? Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: CachedNetworkImage(
@@ -164,8 +164,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
                     )
                 : Container(),
-            (((widget.futureRun.eventImage ?? '').isNotEmpty &&
-                    widget.futureRun.eventImage.startsWith('http')))
+            ((widget.futureRun.eventImage ?? '').isNotEmpty &&
+                    widget.futureRun.eventImage.startsWith('http'))
                 ? const Padding(
                     padding: EdgeInsets.only(top: 20.0, bottom: 10.0),
                     child: FancyDivider(innerColor: Colors.white),

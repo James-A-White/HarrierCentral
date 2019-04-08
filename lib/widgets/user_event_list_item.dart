@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 
 import 'package:harrier_central/data_models/lite_event_model.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/styles.dart';
 
 class UserEventListItem extends StatelessWidget {
   const UserEventListItem(
@@ -38,7 +39,7 @@ class UserEventListItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           userEventHistoryModel.isLoading
-              ? Icon(FontAwesome.hourglass_2,
+              ? Icon(delayIcon,
                   color: Colors.blue[800], size: 35.0)
               : userEventHistoryModel.attendenceState < attendenceAtHash.value
                   ? const Icon(FontAwesome.times_circle,

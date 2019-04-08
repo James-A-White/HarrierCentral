@@ -32,7 +32,7 @@ class PaymentSnackBar extends SnackBar {
   final PlannedRun futureRun;
 
   @override
-  Duration get duration => Duration(seconds:30);
+  Duration get duration => const Duration(seconds:30);
 
   @override
   Color get backgroundColor => Theme.of(context).accentColor;
