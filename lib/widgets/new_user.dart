@@ -24,6 +24,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/user_details_ui.dart';
 import 'package:harrier_central/data_models/user_model.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:harrier_central/widgets/fancy_divider.dart';
 
 class NewUserWidget extends StatefulWidget {
   const NewUserWidget(
@@ -55,6 +56,26 @@ class NewUserState extends State<NewUserWidget>
 
   Color left = Colors.black;
   Color right = Colors.white;
+
+  final FocusNode resetCodeFocusNode = FocusNode();
+  TextEditingController resetCodeTextController;
+  InputDecoration resetCodeDecoration;
+
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    resetCodeTextController = TextEditingController();
+    resetCodeDecoration = InputDecoration(
+      labelText: 'Invite Code',
+      fillColor: Colors.red,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(25.0),
+        borderSide: const BorderSide(),
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -189,6 +210,8 @@ class NewUserState extends State<NewUserWidget>
     );
   }
 
+  String userName = '';
+
   Widget _buildSignIn(BuildContext context) {
     return Container(
       //color: Colors.red,
@@ -200,8 +223,8 @@ class NewUserState extends State<NewUserWidget>
         overflow: Overflow.visible,
         children: <Widget>[
           Positioned(
-              top: 60,
-              bottom: 140,
+              top: 30,
+              bottom: 300,
               //width:150,
               //height:150,
               child: _cameraPreviewWidget()
@@ -209,51 +232,132 @@ class NewUserState extends State<NewUserWidget>
               //   child: _cameraPreviewWidget(), width: 200.0, height: 200.0),
               ),
           Positioned(
-            bottom: 30,
-            child: Container(
-              margin: const EdgeInsets.only(top: 170.0),
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(Radius.circular(5.0)),
-                boxShadow: <BoxShadow>[
-                  BoxShadow(
-                    color: LoginColors.loginGradientStart,
-                    offset: const Offset(1.0, 6.0),
-                    blurRadius: 20.0,
+            bottom: 230,
+            child: RaisedButton(
+                highlightColor: Colors.transparent,
+                splashColor: LoginColors.loginGradientEnd,
+                //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 10.0, horizontal: 42.0),
+                  child: Text(
+                    controller == null ? 'Scan Invite Code' : 'Stop Scanning',
+                    style: textStyleButton,
                   ),
-                  BoxShadow(
-                    color: LoginColors.loginGradientEnd,
-                    offset: const Offset(1.0, 6.0),
-                    blurRadius: 20.0,
-                  ),
-                ],
-                gradient: LinearGradient(
-                    colors: <Color>[
-                      LoginColors.loginGradientEnd,
-                      LoginColors.loginGradientStart
-                    ],
-                    begin: const FractionalOffset(0.2, 0.2),
-                    end: const FractionalOffset(1.0, 1.0),
-                    stops: const <double>[0.0, 1.0],
-                    tileMode: TileMode.clamp),
-              ),
-              child: MaterialButton(
-                  highlightColor: Colors.transparent,
-                  splashColor: LoginColors.loginGradientEnd,
-                  //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10.0, horizontal: 42.0),
-                    child: Text(
-                      controller == null ? 'Start Scanning' : 'Stop Scanning',
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 25.0,
-                          fontFamily: 'WorkSansBold'),
+                ),
+                onPressed: () => scanUserBarcode()),
+          ),
+          const Positioned(
+              left: 0,
+              right: 0,
+              bottom: 177,
+              child: Padding(
+                padding: EdgeInsets.only(top: 20.0, bottom: 10.0),
+                child: FancyDivider(
+                  innerColor: Colors.white,
+                  useTextOr: true,
+                ),
+              )),
+          Positioned(
+              bottom: 0,
+              //bottom: 20,
+              width: MediaQuery.of(context).size.width,
+              child: Container(
+                padding: const EdgeInsets.only(
+                    left: 30.0, right: 30.0, bottom: 10.0),
+
+                //color: const Color.fromARGB(255, 255, 255, 255),
+                child: Container(
+                  child: Center(
+                    child: Column(
+                      children: <Widget>[
+                        Container(
+                          //color: Colors.white,
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            color: Colors.yellow[100],
+                            borderRadius: BorderRadius.circular(5.0),
+                          ),
+                          // padding: const EdgeInsets.only(
+                          //     top: 0.0, bottom: 8.0),
+                          child: TextFormField(
+                            autocorrect: false,
+                            controller: resetCodeTextController,
+                            focusNode: resetCodeFocusNode,
+                            decoration: resetCodeDecoration,
+                            // validator: (val) {
+                            //   if (val.length == 0) {
+                            //     return "Email cannot be empty";
+                            //   } else {
+                            //     return null;
+                            //   }
+                            // },
+                            keyboardType: TextInputType.text,
+                            style: const TextStyle(
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 25),
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                RaisedButton(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10.0, horizontal: 42.0),
+                                  onPressed: () {
+                                    setState(() {
+                                      isLoading = true;
+
+                                      final AuthorizeDeviceService srv =
+                                          AuthorizeDeviceService();
+                                      final Future<Map<String, String>>
+                                          apiCall = srv.authorizeDevice(
+                                              context,
+                                              'RC:' +
+                                                  resetCodeTextController.text
+                                                      .toUpperCase());
+                                      apiCall
+                                          .then((Map<String, String> result) {
+                                        setState(() {
+                                          isLoading = false;
+                                        });
+
+                                        if (result['result'] != 'failed') {
+                                          userName = getStringPref(
+                                              StringPrefsEnum.displayName);
+
+                                          Utilities.showAlert(
+                                                  context,
+                                                  'Profile Load Successful',
+                                                  'The app has been successfully loaded for $userName.',
+                                                  'OK')
+                                              .then((void dummy) {
+                                            Navigator.pushReplacement<dynamic,
+                                                    dynamic>(
+                                                context,
+                                                MaterialPageRoute<dynamic>(
+                                                    builder: (BuildContext
+                                                            context) =>
+                                                        const MainNavigationPage()));
+                                          });
+                                        }
+                                      });
+                                    });
+                                  },
+                                  child: Text(
+                                    'Use Invite Code',
+                                    style: textStyleButton,
+                                  ),
+                                ),
+                              ]),
+                        ),
+                      ],
                     ),
                   ),
-                  onPressed: () => scanUserBarcode()),
-            ),
-          ),
+                ),
+              )),
         ],
       ),
 

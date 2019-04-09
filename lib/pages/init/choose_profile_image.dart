@@ -384,9 +384,9 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                           top: 250,
                           child: Container(
                               width: MediaQuery.of(context).size.width,
-                              padding: const EdgeInsets.only(top: 10),
+                              padding: const EdgeInsets.only(top: 20),
                               child:
-                                  const FancyDivider(innerColor: Colors.white)),
+                                  const FancyDivider(innerColor: Colors.white,)),
                         ),
 
                         Positioned(

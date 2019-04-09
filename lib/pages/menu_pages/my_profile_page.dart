@@ -304,14 +304,15 @@ class MyProfilePageState extends State<MyProfilePage> {
                                                 ),
                                                 
                                                 const FancyDivider(
-                                                    innerColor: Colors.white),
+                                                      innerColor: Colors.white),
+                                                
                                                 //SizedBox(height: 30),
                                                 Container(
                                                   height: 220,
                                                   color: Colors.white,
                                                   padding:const EdgeInsets.all(10.0),
                                                   margin: const EdgeInsets.only(
-                                                      top: 40, bottom: 30),
+                                                      top: 20, bottom: 30),
                                                   child: ProfilePhoto(
                                                     profilePhotoUrl: _photo,
                                                     photoHeight: 200.0,

@@ -263,7 +263,7 @@ class SupportPageState extends State<SupportPage> {
                                     ),
                                   ),
                                   const Positioned(
-                                      top: 510,
+                                      top: 513,
                                       left: 0,
                                       right: 0,
                                       child: FancyDivider(
@@ -289,7 +289,7 @@ class SupportPageState extends State<SupportPage> {
                                     ),
                                   ),
                                   const Positioned(
-                                      top: 640,
+                                      top: 650,
                                       left: 0,
                                       right: 0,
                                       child: FancyDivider(

@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong/latlong.dart';
+import 'package:scoped_model/scoped_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:harrier_central/data_models/planned_run_model.dart';
 import 'package:harrier_central/data_models/user_model.dart';
@@ -25,9 +27,6 @@ import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 import 'package:harrier_central/util/styles.dart';
-
-import 'package:scoped_model/scoped_model.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class RunTabs extends StatefulWidget {
   const RunTabs({Key key, @required this.futureRun}) : super(key: key);
@@ -167,7 +166,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
             ((widget.futureRun.eventImage ?? '').isNotEmpty &&
                     widget.futureRun.eventImage.startsWith('http'))
                 ? const Padding(
-                    padding: EdgeInsets.only(top: 20.0, bottom: 10.0),
+                    padding: EdgeInsets.only(top: 32.0, bottom: 0.0),
                     child: FancyDivider(innerColor: Colors.white),
                   )
                 : Container(),
@@ -178,7 +177,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                   style: titleStyle, textAlign: TextAlign.center, maxLines: 2),
             ),
             const Padding(
-              padding: EdgeInsets.only(top: 20.0, bottom: 10.0),
+              padding: EdgeInsets.only(top: 40.0, bottom: 10.0),
               child: FancyDivider(innerColor: Colors.white),
             ),
             Stack(
@@ -335,7 +334,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               ],
             ),
             const Padding(
-              padding: EdgeInsets.only(top: 10.0),
+              padding: EdgeInsets.only(top: 32.0),
               child: FancyDivider(innerColor: Colors.white),
             ),
             Padding(
