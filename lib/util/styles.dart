@@ -3,6 +3,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 Color themeButtonColors = const Color.fromARGB(255, 13, 115, 124);
 Color themeAppBarBackground = const Color.fromARGB(255, 13, 115, 124);
+Color themeAppBarBackground40 = const Color.fromARGB(102, 13, 115, 124);
 Color themeNavBarBackground = const Color.fromARGB(255, 190, 190, 190);
 Color themeBackgroundColor = const Color.fromARGB(255, 61, 27, 142);
 Color themeLearnMoreLink = Colors.yellow;

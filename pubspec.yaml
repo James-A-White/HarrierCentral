@@ -31,6 +31,7 @@ dependencies:
   http: ^0.12.0+2
   image_cropper: ^1.0.0 
   image_picker: ^0.5.2
+  intro_slider: ^1.2.0
   package_info: ^0.4.0+2
   permission_handler: 2.2.0 #permission_handler: ^3.0.0 incompatible with geolocator 20 Feb 2019
   qr_flutter: ^2.0.0
@@ -106,6 +107,7 @@ flutter:
     - images/generic_logos/
     - images/icons/
     - images/init/
+    - images/init/intro/
     - images/other/
 
   fonts:
@@ -115,15 +117,27 @@ flutter:
         - asset: fonts/AvenirNext-BoldItalic.ttf
         - asset: fonts/AvenirNext-Heavy.ttf
         - asset: fonts/AvenirNext-HeavyItalic.ttf
-        - asset: fonts/AvenirNext-UltraLight.ttf
-        - asset: fonts/AvenirNext-UltraLightItalic.ttf
 
     - family: AvenirNext
       fonts:
         - asset: fonts/AvenirNext-Regular.ttf
         - asset: fonts/AvenirNext-Italic.ttf
           style: italic
-        
+
+    - family: AvenirNextRegular
+      fonts:
+        - asset: fonts/AvenirNext-Regular.ttf
+        - asset: fonts/AvenirNext-Italic.ttf
+          style: italic
+
+
+    - family: AvenirNextUltraLight
+      fonts:
+        - asset: fonts/AvenirNext-UltraLight.ttf
+        - asset: fonts/AvenirNext-UltraLightItalic.ttf
+          style: italic
+
+
     - family: AvenirNextMedium
       fonts:
         - asset: fonts/AvenirNext-Medium.ttf

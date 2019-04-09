@@ -52,13 +52,12 @@ class _AppEntryPageState extends State<AppEntryPage>
         if (loginResult.serverStatusCode == serverStatusUp.value) {
           if (loginResult.approvalCode == loginApprovalApproved.value) {
             if (userId == null) {
-              //if (true) {
-              Navigator.of(context)
-                  .pushNamed(RouteNames.NEW_ACCOUNT.toString());
-              //     .then<dynamic>((void test) {
-              //   _iconAnimationController.dispose();
-              // }
-              // );
+
+              // Navigator.of(context)
+              //     .pushNamed(RouteNames.NEW_ACCOUNT.toString());
+
+              Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+                  
             } else {
               Navigator.pushReplacement<dynamic, dynamic>(
                   context,
