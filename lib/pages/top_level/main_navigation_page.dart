@@ -39,7 +39,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     tabTitles.add('Upcoming Runs');
     tabTitles.add('Kennels');
-    tabTitles.add('History');
+    tabTitles.add('Your Total Run Counts');
     tabTitles.add('Scanner');
     tabTitles.add('Friends');
 

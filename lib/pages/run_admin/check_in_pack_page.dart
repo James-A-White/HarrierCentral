@@ -19,6 +19,8 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/new_user.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
+import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
+import 'package:harrier_central/data_models/all_hasher_model.dart';
 
 class CheckInPackPage extends StatefulWidget {
   const CheckInPackPage({
@@ -71,6 +73,20 @@ class CheckInPackPageState extends State<CheckInPackPage> {
         });
       });
     }
+  }
+
+  void findHasher() {
+    Navigator.push<AllHasherListModel>(
+      context,
+      MaterialPageRoute<AllHasherListModel>(
+        settings: const RouteSettings(),
+        builder: (BuildContext context) {
+          return const FindHasherPage();
+        },
+      ),
+    ).then((AllHasherListModel hasher){
+        print(hasher.displayName);
+    });
   }
 
   void showVirginVisitorPopup() {
@@ -312,6 +328,13 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 label: 'Add Virgin / Visitor',
                 labelStyle: const TextStyle(fontSize: 18.0),
                 onTap: () => showVirginVisitorPopup(),
+              ),
+              SpeedDialChild(
+                child: const Icon(FontAwesome.heart),
+                backgroundColor: Colors.blue,
+                label: 'Find Hasher',
+                labelStyle: const TextStyle(fontSize: 18.0),
+                onTap: () => findHasher(),
               )
             ],
           ),
@@ -710,7 +733,8 @@ class PackListView extends StatelessWidget {
               bottom: packList[index].rsvpState <= 0
                   ? 2.0
                   : packList[index].isHare == 1 ? 5.0 : 3.5,
-              child: (packList[index].rsvpState < 0) || (packList[index].isHare < 0)
+              child: (packList[index].rsvpState < 0) ||
+                      (packList[index].isHare < 0)
                   ? Icon(delayIcon, color: Colors.blue[800])
                   : packList[index].rsvpState == 0
                       ? Container()
@@ -727,7 +751,6 @@ class PackListView extends StatelessWidget {
                                       color: Colors.deepPurple,
                                       height: 24.0,
                                       width: 24.0),
-
             ),
 
             ScopedModelDescendant<PayScopedModel>(builder:
@@ -755,8 +778,7 @@ class PackListView extends StatelessWidget {
                                       rsvpYes.value)
                               ? Container()
                               : packList[index].isPaid == -1
-                                  ? Icon(delayIcon,
-                                      color: Colors.blue[800])
+                                  ? Icon(delayIcon, color: Colors.blue[800])
                                   : CircleAvatar(
                                       backgroundColor:
                                           packList[index].attendenceState == 0
@@ -802,9 +824,7 @@ class PackListView extends StatelessWidget {
                                             color: Colors.red)
                                         : packList[index].isPaid == isPaidYes.value
                                             ? Image.asset('images/icons/payment_type_${packList[index].paymentType}.png', height: 24.0, width: 24.0, color: Colors.green)
-                                            : Container()
-
-                        );
+                                            : Container());
               },
             ),
 

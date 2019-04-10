@@ -80,76 +80,76 @@ class HistoryListPageState extends State<HistoryListPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
-                  Container(
-                    decoration: const BoxDecoration(
-                      // border: new Border.all(width: 1.0, color: Colors.black),
-                      //shape: BoxShape.circle,
-                      color: Colors.white,
-                      boxShadow: <BoxShadow>[
-                        BoxShadow(
-                          color: Color.fromARGB(70, 0, 0, 0),
-                          offset: Offset(0.0, 6.0),
-                          blurRadius: 10.0,
-                        ),
-                      ],
-                    ),
-                    //color:Color.fromARGB(30, 0, 0, 0),
-                    padding: const EdgeInsets.only(
-                        left: 5, top: 5, right: 20, bottom: 5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-        //                 Container(
-        //                   height: 50,
-        //                   child:         Image.asset(
-        //   'images/other/hound_and_hare_drinking.png',
-        // ),
+        //           Container(
+        //             decoration: const BoxDecoration(
+        //               // border: new Border.all(width: 1.0, color: Colors.black),
+        //               //shape: BoxShape.circle,
+        //               color: Colors.white,
+        //               boxShadow: <BoxShadow>[
+        //                 BoxShadow(
+        //                   color: Color.fromARGB(70, 0, 0, 0),
+        //                   offset: Offset(0.0, 6.0),
+        //                   blurRadius: 10.0,
         //                 ),
-                        // Container(
-                        //   width: headingWidth,
-                        //   child: Text(
-                        //     'Pack\r\nruns',
-                        //     style: headingStyle,
-                        //     maxLines: 2,
-                        //     textAlign: TextAlign.center,
-                        //   ),
-                        // ),
-                        Container(
-                          padding: const EdgeInsets.only(top:10,left:105.0),
-                          //width: headingWidth,
-                          child: Text(
-                            'Total\r\nruns',
-                            style: headingStyle,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.only(top:10, left:65.0),
-                          //width: headingWidth,
-                          child: Text(
-                            'Times\r\nhared',
-                            style: headingStyle,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
+        //               ],
+        //             ),
+        //             //color:Color.fromARGB(30, 0, 0, 0),
+        //             padding: const EdgeInsets.only(
+        //                 left: 5, top: 5, right: 20, bottom: 5),
+        //             child: Row(
+        //               mainAxisAlignment: MainAxisAlignment.start,
+        //               children: <Widget>[
+        // //                 Container(
+        // //                   height: 50,
+        // //                   child:         Image.asset(
+        // //   'images/other/hound_and_hare_drinking.png',
+        // // ),
+        // //                 ),
+        //                 // Container(
+        //                 //   width: headingWidth,
+        //                 //   child: Text(
+        //                 //     'Pack\r\nruns',
+        //                 //     style: headingStyle,
+        //                 //     maxLines: 2,
+        //                 //     textAlign: TextAlign.center,
+        //                 //   ),
+        //                 // ),
+        //                 // Container(
+        //                 //   padding: const EdgeInsets.only(top:10,left:105.0),
+        //                 //   //width: headingWidth,
+        //                 //   child: Text(
+        //                 //     'Total\r\nruns',
+        //                 //     style: headingStyle,
+        //                 //     textAlign: TextAlign.center,
+        //                 //   ),
+        //                 // ),
+        //                 // Container(
+        //                 //   padding: const EdgeInsets.only(top:10, left:65.0),
+        //                 //   //width: headingWidth,
+        //                 //   child: Text(
+        //                 //     'Times\r\nhared',
+        //                 //     style: headingStyle,
+        //                 //     textAlign: TextAlign.center,
+        //                 //   ),
+        //                 // ),
 
-                        // Container(
-                        //   width: headingWidth,
-                        //   child: Text(
-                        //     'Hash\r\npoints',
-                        //     style: headingStyle,
-                        //     textAlign: TextAlign.center,
-                        //   ),
-                        // ),
-                      ],
-                    ),
-                  ),
+        //                 // Container(
+        //                 //   width: headingWidth,
+        //                 //   child: Text(
+        //                 //     'Hash\r\npoints',
+        //                 //     style: headingStyle,
+        //                 //     textAlign: TextAlign.center,
+        //                 //   ),
+        //                 // ),
+        //               ],
+        //             ),
+        //           ),
                   Expanded(
                     child: ListView.builder(
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: model.getKennelsCount(),
                       padding: const EdgeInsets.only(top: 20),
-                      itemExtent: 60.0,
+                      itemExtent: 100.0,
                       itemBuilder: (BuildContext context, int index) {
                         return
 
