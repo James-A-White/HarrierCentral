@@ -42,11 +42,11 @@ class Utilities {
     if (position != null) {
       latLon.latitude = position.latitude;
       latLon.longitude = position.longitude;
-      setNumPref(NumPrefsEnum.latitude, latLon.latitude);
-      setNumPref(NumPrefsEnum.longitude, latLon.longitude);
+      setDoublePref(DoublePrefsEnum.latitude, latLon.latitude);
+      setDoublePref(DoublePrefsEnum.longitude, latLon.longitude);
     } else {
-      latLon.latitude = getNumPref(NumPrefsEnum.latitude);
-      latLon.longitude = getNumPref(NumPrefsEnum.longitude);
+      latLon.latitude = getDoublePref(DoublePrefsEnum.latitude);
+      latLon.longitude = getDoublePref(DoublePrefsEnum.longitude);
     }
 
     return latLon;

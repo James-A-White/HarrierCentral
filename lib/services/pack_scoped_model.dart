@@ -12,10 +12,7 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/utilities.dart';
 
-
-
 class PackScopedModel extends Model {
-
   List<UserModel> _packList;
   //List<UserModel> get packList => _packList;
 
@@ -87,8 +84,8 @@ class PackScopedModel extends Model {
       final JoinEventService srv = JoinEventService();
 
       srv
-          .joinEvent(
-              user.eventId, rsvpState, isHare, attendenceState, user.hasherId, user.hasherEventMapId)
+          .joinEvent(user.eventId, rsvpState, isHare, attendenceState,
+              user.hasherId, user.hasherEventMapId)
           .then<dynamic>((JoinEventModel result) {
         if ((rsvpState != -1) && (rsvpState != user.rsvpState)) {
           user.rsvpState = rsvpState;
@@ -118,32 +115,51 @@ class PackScopedModel extends Model {
     }
   }
 
-  void sortPackList() 
-  {
-     _packList.sort((UserModel a,UserModel b) => (a.displayName ?? '').toLowerCase().compareTo((b.displayName ?? '').toLowerCase()));
-     _filteredPackList.sort((UserModel a,UserModel b) => (a.displayName ?? '').toLowerCase().compareTo((b.displayName ?? '').toLowerCase()));
+  void joinEvent(String eventId, int rsvpState, int isHare, int attendenceState,
+      String hasherId) {
+    final JoinEventService srv = JoinEventService();
+
+    srv
+        .joinEvent(eventId, rsvpState, isHare, attendenceState, hasherId, '00000000-0000-0000-0000-000000000000')
+        .then<dynamic>((JoinEventModel result) {
+
+          notifyListeners();
+        });
+  }
+
+  void sortPackList() {
+    _packList.sort((UserModel a, UserModel b) => (a.displayName ?? '')
+        .toLowerCase()
+        .compareTo((b.displayName ?? '').toLowerCase()));
+    _filteredPackList.sort((UserModel a, UserModel b) => (a.displayName ?? '')
+        .toLowerCase()
+        .compareTo((b.displayName ?? '').toLowerCase()));
   }
 
   String packListFilter = '';
 
-  void filterPackList(String filter)
-  {
-     packListFilter = filter;
-     _filterPackList();
+  void filterPackList(String filter) {
+    packListFilter = filter;
+    _filterPackList();
   }
 
-  void _filterPackList()
-  {
-    _filteredPackList = _packList.where((UserModel user) =>
-            ((user.firstName ?? '') + ' ' + (user.lastName ?? '') + ' ' + (user.displayName ?? '')).toLowerCase().contains(packListFilter.toLowerCase()))
+  void _filterPackList() {
+    _filteredPackList = _packList
+        .where((UserModel user) => ((user.firstName ?? '') +
+                ' ' +
+                (user.lastName ?? '') +
+                ' ' +
+                (user.displayName ?? ''))
+            .toLowerCase()
+            .contains(packListFilter.toLowerCase()))
         .toList();
   }
- 
+
   void addEditUser(UserModel packModel) {
     if (_packList.isNotEmpty) {
       final UserModel packItem = _packList.firstWhere(
-          (UserModel pi) => packModel.hasherEventMapId ==
-                      pi.hasherEventMapId &&
+          (UserModel pi) =>
+              packModel.hasherEventMapId == pi.hasherEventMapId &&
                   (packModel.hasherId ==
                       null) // this covers people who are visitors and virgins
               ||
@@ -263,9 +279,9 @@ class PackScopedModel extends Model {
     //   return null;
     // }
 
-    _packList ??= <UserModel>[]; 
+    _packList ??= <UserModel>[];
 
-    if (showLoadingIndicator) { 
+    if (showLoadingIndicator) {
       _isLoading = true;
       notifyListeners();
     }
@@ -278,8 +294,7 @@ class PackScopedModel extends Model {
         await _getPack(eventId, GUID_EMPTY);
 
     // TODO(James): Investigate why foreach loop was causing a LINT error
-    for (int i = 0; i < dataFromResponse.length; i++)
-    {
+    for (int i = 0; i < dataFromResponse.length; i++) {
       final UserModel item = dataFromResponse[i];
       addEditUser(item);
     }

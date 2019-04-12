@@ -27,19 +27,19 @@ class GetAllHashersService {
 
     final List<AllHasherListModel> hashers = <AllHasherListModel>[];
 
-    if ((result != null) && (result.isNotEmpty)) { 
+    if ((result != null) && (result.isNotEmpty)) {
       for (int i = 0; i < result.length; i++) {
         if (result[i]['removed_flag'] == 0) {
           final AllHasherListModel hasher = AllHasherListModel(
-            firstName: result[i]['first_name'],
-            lastName: result[i]['last_name'],
-            hashName: result[i]['hash_name'],
-            displayName: result[i]['display_name'],
-            photo: result[i]['photo'],
-            nameDisplayPref: result[i]['name_display_pref'],
-            updatedAt: DateTime.parse(result[i]['updated_at']),
-            removed: result[i]['removed']
-          );
+              userId: result[i]['user_id'],
+              firstName: result[i]['first_name'],
+              lastName: result[i]['last_name'],
+              hashName: result[i]['hash_name'],
+              displayName: result[i]['display_name'],
+              photo: result[i]['photo'],
+              nameDisplayPref: result[i]['name_display_pref'],
+              updatedAt: DateTime.parse(result[i]['updated_at']),
+              removed: result[i]['removed_flag']);
           hashers.add(hasher);
         }
       }
@@ -135,45 +135,53 @@ class GetAllHashersService {
     }
   }
 
-  Future<List<AllHasherListModel>> getAllHashers() async {
-    final num timeValue = await getLastUpdatedTime();
-    final DateTime updatedAfter = timeValue == null
-        ? DateTime(2019, 1, 1)
-        : DateTime.fromMillisecondsSinceEpoch(timeValue);
+  Future<List<AllHasherListModel>> getAllHashers(bool forceRefresh) async {
+    final num lastLoad = getIntPref(IntPrefsEnum.lastLoadHasherData) ?? 0;
 
-    String userId = getStringPref(StringPrefsEnum.userId);
-    if ((userId ?? '').isEmpty) {
-      userId = GUID_EMPTY;
-    }
+    if (forceRefresh || ((DateTime.now().millisecondsSinceEpoch - lastLoad) > 86400000)) {
+      final num timeValue = await getLastUpdatedTime();
+      final DateTime updatedAfter = timeValue == null
+          ? DateTime(2019, 1, 1)
+          : DateTime.fromMillisecondsSinceEpoch(timeValue);
 
-    final String accessToken = Utilities.generateToken(userId, 'getAllHashers');
+      String userId = getStringPref(StringPrefsEnum.userId);
+      if ((userId ?? '').isEmpty) {
+        userId = GUID_EMPTY;
+      }
 
-    final String body = jsonEncode(<String, String>{
-      'userId': userId,
-      'accessToken': accessToken,
-      'updatedAfter': updatedAfter.toUtc().toString().substring(0, 19)
-    });
+      final String accessToken =
+          Utilities.generateToken(userId, 'getAllHashers');
 
-    final http.Response response = await http
-        .post(BASE_API_URL + 'get_all_hashers',
-            headers: <String, String>{'content-type': 'application/json'},
-            body: body
-            // Send authorization headers to your backend
-            //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-            )
-        .catchError(
-      (dynamic error) {
-        return false;
-      },
-    );
+      final String body = jsonEncode(<String, String>{
+        'userId': userId,
+        'accessToken': accessToken,
+        'updatedAfter': updatedAfter.toUtc().toString().substring(0, 19)
+      });
 
-    List<AllHasherListModel> updatedHasherRecords =
-        AllHasherListModel.itemsFromJson(response.body);
+      final http.Response response = await http
+          .post(BASE_API_URL + 'get_all_hashers',
+              headers: <String, String>{'content-type': 'application/json'},
+              body: body
+              // Send authorization headers to your backend
+              //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+              )
+          .catchError(
+        (dynamic error) {
+          return false;
+        },
+      );
 
-    updatedHasherRecords ??= <AllHasherListModel>[];
+      List<AllHasherListModel> updatedHasherRecords =
+          AllHasherListModel.itemsFromJson(response.body);
 
-    if (updatedHasherRecords.isNotEmpty) {
-      await updateDatabase(updatedHasherRecords);
+      updatedHasherRecords ??= <AllHasherListModel>[];
+
+      setIntPref(IntPrefsEnum.lastLoadHasherData,
+          DateTime.now().millisecondsSinceEpoch);
+
+      if (updatedHasherRecords.isNotEmpty) {
+        await updateDatabase(updatedHasherRecords);
+      }
     }
 
     final List<AllHasherListModel> allHasherRecords =

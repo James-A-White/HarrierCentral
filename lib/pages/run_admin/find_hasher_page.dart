@@ -28,7 +28,7 @@ class FindHasherPageState extends State<FindHasherPage> {
 
   void findHasher() {
     final GetAllHashersService svc = GetAllHashersService();
-    svc.getAllHashers().then((List<AllHasherListModel> list) {
+    svc.getAllHashers(false).then((List<AllHasherListModel> list) {
       hasherList = list;
       setState(() {
         if (hasherList != null) {
@@ -179,9 +179,9 @@ class FindHasherPageState extends State<FindHasherPage> {
           SpeedDialChild(
             child: const Icon(FontAwesome.heart),
             backgroundColor: Colors.blue,
-            label: 'Find Hasher',
+            label: '<unused>',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () => findHasher(),
+            onTap: () {},
           )
         ],
       ),
@@ -230,9 +230,58 @@ class HasherListView extends StatelessWidget {
       //splashColor: Colors.red,
       highlightColor: Colors.red,
       onTap: () {
-        Future<dynamic>.delayed(const Duration(milliseconds: 500))
-            .then((void dummy) {
-          Navigator.of(context).pop(hasherList[index]);
+        return showDialog<bool>(
+            context: context,
+            barrierDismissible: false, // user must tap button!
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Add Hasher to Run?'),
+                content: SingleChildScrollView(
+                  child: ListBody(
+                    children: <Widget>[
+                      Text(
+                        'Do you want to add ${hasherList[index].displayName} to your run?',
+                        textAlign: TextAlign.justify,
+                        style: const TextStyle(
+                            fontFamily: 'AvenirNextRegular',
+                            fontStyle: FontStyle.normal,
+                            fontSize: 16.0,
+                            height: 1.0),
+                      )
+                    ],
+                  ),
+                ),
+                actions: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(right: 60.0),
+                    child: Container(
+                      width: 100.0,
+                      child: RaisedButton(
+                        color: Colors.red,
+                        child: const Text('Cancel'),
+                        textColor: Colors.white,
+                        onPressed: () {
+                          Navigator.of(context).pop(false);
+                        },
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 100.0,
+                    child: RaisedButton(
+                      child: const Text('Add Hasher'),
+                      textColor: Colors.white,
+                      onPressed: () {
+                        Navigator.of(context).pop(true);
+                      },
+                    ),
+                  ),
+                ],
+              );
+            }).then((bool doAddHasher) {
+          if (doAddHasher) {
+            Navigator.of(context).pop(hasherList[index]);
+          }
         });
       },
       child: Container(
@@ -329,7 +378,65 @@ class HasherListView extends StatelessWidget {
                       padding: EdgeInsets.all(5.0),
                       child: Center(child: CircularProgressIndicator())),
                 )
-              : listItem(context, index);
+              : Dismissible(
+                  key: Key(index.toString()),
+                  confirmDismiss: (DismissDirection direction) {
+                    Navigator.of(context).pop(hasherList[index]);
+                    return Future<bool>.value(false);
+                  },
+                  background: Container(
+                    color: Colors.green,
+                    child: Row(
+                      children: const <Widget>[
+                        Padding(
+                          padding: EdgeInsets.only(left: 15.0),
+                          child: Icon(
+                            FontAwesome.plus_circle,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Padding(
+                          padding:  EdgeInsets.only(left: 15.0),
+                          child: Text('Add to run',
+                              style:  TextStyle(
+                                  fontFamily: 'AvenirNextDemiBold',
+                                  fontStyle: FontStyle.normal,
+                                  color: Colors.white,
+                                  fontSize: 17.0,
+                                  height: 1.0)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  secondaryBackground: Container(
+                      color: Colors.green,
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: const <Widget>[
+                            Padding(
+                              padding: EdgeInsets.only(right: 15.0),
+                              child: Icon(
+                                FontAwesome.plus_circle,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(right: 15.0),
+                              child: Text(' Add to run',
+                                  style: TextStyle(
+                                      fontFamily: 'AvenirNextDemiBold',
+                                      fontStyle: FontStyle.normal,
+                                      color: Colors.white,
+                                      fontSize: 17.0,
+                                      height: 1.0)),
+                            )
+                          ])),
+                  onDismissed: (DismissDirection direction) {
+                    print(direction.toString() +
+                        ' NOTE: We should never reach this point');
+                  },
+                  child: listItem(context, index),
+                );
         });
   }
 }

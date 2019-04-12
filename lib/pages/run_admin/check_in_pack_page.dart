@@ -75,7 +75,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     }
   }
 
-  void findHasher() {
+  void findHasher(PackScopedModel packScopedModel) {
     Navigator.push<AllHasherListModel>(
       context,
       MaterialPageRoute<AllHasherListModel>(
@@ -84,8 +84,12 @@ class CheckInPackPageState extends State<CheckInPackPage> {
           return const FindHasherPage();
         },
       ),
-    ).then((AllHasherListModel hasher){
-        print(hasher.displayName);
+    ).then((AllHasherListModel hasher) {
+      if ((hasher != null) && (hasher.userId != null))
+      {
+      packScopedModel.joinEvent(widget.futureRun.eventId, rsvpYes.value,
+          isHareNo.value, attendenceAtHash.value, hasher.userId);
+      }
     });
   }
 
@@ -330,11 +334,11 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 onTap: () => showVirginVisitorPopup(),
               ),
               SpeedDialChild(
-                child: const Icon(FontAwesome.heart),
+                child: const Icon(MaterialCommunityIcons.account_search),
                 backgroundColor: Colors.blue,
                 label: 'Find Hasher',
                 labelStyle: const TextStyle(fontSize: 18.0),
-                onTap: () => findHasher(),
+                onTap: () => findHasher(_packScopedModel),
               )
             ],
           ),

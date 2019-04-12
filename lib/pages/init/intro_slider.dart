@@ -33,10 +33,10 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
 
     slides.add(
       Slide(
-        title: 'Welcome to Harrier Central!',
+        title: 'Welcome to Harrier Central',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description: 'The World\'s Most Fun Way to Manage Your Hash Life',
+        description: 'The World\'s Best Way to Manage Your Hash Life',
         styleDescription: descriptionStyle,
         pathImage: 'images/other/hc_app_icon.png',
         //widthImage: 150,
@@ -100,7 +100,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         maxLineTitle: 2,
         styleTitle: titleStyle,
         description:
-            'We don\'t Share Your Data with Anyone. Your Data is Locked Securely Away in the HC Cloud.',
+            'We don\'t Share Your Data with *Anyone* Outside of Harrier Central',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_data_security.png',
         heightImage: 220,
@@ -116,11 +116,8 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         maxLineTitle: 2,
         styleTitle: titleStyle,
         description:
-            'Harrier Central is Beta software still under development. If you experience problems, please do not leave a negative reivew, contact us first so we can fix it. Negative reviews hang around forever, but we can kill most bugs in just a few days with your help!',
-        styleDescription: const TextStyle(
-            color: Colors.black,
-            fontSize: 19.0,
-            fontFamily: 'AvenirNextRegular'),
+            'We are building 5-star software, but we\'re not done yet! Please contact us with bug reports and feature requests',
+        styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_beta_testing.png',
         heightImage: 180,
         colorBegin: const Color.fromARGB(255, 221, 255, 69),
@@ -135,11 +132,8 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         maxLineTitle: 2,
         styleTitle: titleStyle,
         description:
-            'We Need Just a Bit of Information to Create Your Custom Harrier Central Experience!',
-        styleDescription: const TextStyle(
-            color: Colors.black,
-            fontSize: 24.0,
-            fontFamily: 'AvenirNextRegular'),
+            'Now We Need Just a Bit of Information to Create Your Custom Harrier Central Experience!',
+        styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_info_sign.png',
         //widthImage: 250,
         heightImage: 180,
@@ -155,11 +149,10 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
     Navigator.of(context)
         .pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
 
-    // setState(() {
-    //   refreshSlide();
-    // }
+        // Navigator.of(context)
+        // .pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
 
-    //);
+
   }
 
   Widget renderNextBtn() {

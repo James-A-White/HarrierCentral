@@ -20,7 +20,9 @@ enum StringPrefsEnum {
   facebookProfilePhoto,
 }
 
-enum NumPrefsEnum { latitude, longitude }
+enum DoublePrefsEnum { latitude, longitude }
+
+enum IntPrefsEnum { lastLoadHasherData }
 
 SharedPreferences _sharedPreferences;
 
@@ -41,11 +43,20 @@ Future<bool> setStringPref(StringPrefsEnum key, String value) async {
   return _sharedPreferences.setString(key.toString(), value);
 }
 
-num getNumPref(NumPrefsEnum key) {
+num getDoublePref(DoublePrefsEnum key) {
   final String test = key.toString();
   return _sharedPreferences.getDouble(test);
 }
 
-Future<bool> setNumPref(NumPrefsEnum key, num value) async {
+Future<bool> setDoublePref(DoublePrefsEnum key, double value) async {
   return _sharedPreferences.setDouble(key.toString(), value);
+}
+
+num getIntPref(IntPrefsEnum key) {
+  final String test = key.toString();
+  return _sharedPreferences.getInt(test);
+}
+
+Future<bool> setIntPref(IntPrefsEnum key, int value) async {
+  return _sharedPreferences.setInt(key.toString(), value);
 }
