@@ -17,6 +17,8 @@ const String ERROR_KEY = 'HC_ERROR';
 
 const String GUID_EMPTY = '00000000-0000-0000-0000-000000000000';
 
+const String DB_NAME = 'HcDb.db';
+
 
 const int mmAuthIsGm = 0x80000000;                // TODO(James): Needs implementation
 const int mmAuthCanGrantPermissions = 0x40000000; // TODO(James): Needs implementation
@@ -29,6 +31,8 @@ const int mmAuthAllowEnableDisableFacebookEvents = 0x00000010; // TODO(James): N
 const int mmAuthEditRuns = 0x00000020; // TODO(James): Needs implementation
 const int mmAuthGenerateRunQrCodes = 0x00000040; // TODO(James): Needs implementation
 const int mmAuthManageMembers = 0x00000080; // TODO(James): Needs implementation
+
+const int cacheDurationAllHashers = 60 * 86400000; // 60 days cache duration 
 
 
 

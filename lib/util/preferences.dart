@@ -22,7 +22,10 @@ enum StringPrefsEnum {
 
 enum DoublePrefsEnum { latitude, longitude }
 
-enum IntPrefsEnum { lastLoadHasherData }
+enum IntPrefsEnum { 
+  lastUpdateAllHasherData,
+  lastCacheClearAllHasherData
+  }
 
 SharedPreferences _sharedPreferences;
 
