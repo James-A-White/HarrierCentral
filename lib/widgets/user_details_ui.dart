@@ -75,7 +75,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
       ),
       child: Container(
         width: 300.0,
-        height: 230.0,
+        height: 205.0,
         child: Column(
           children: <Widget>[
             Padding(

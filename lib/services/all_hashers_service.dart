@@ -81,7 +81,7 @@ class AllHasherSqlTableHelper {
   }
 
   static Map<String, dynamic> toMap(AllHasherListModel item) {
-    Map<String, dynamic> map = <String, dynamic>{
+    final Map<String, dynamic> map = <String, dynamic>{
       AllHasherSqlTableHelper.colUserId: item.userId,
       AllHasherSqlTableHelper.colFirstName: item.firstName,
       AllHasherSqlTableHelper.colLastName: item.lastName,

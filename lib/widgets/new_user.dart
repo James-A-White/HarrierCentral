@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:core';
-import 'dart:math';
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -10,7 +10,6 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:audioplayers/audio_cache.dart';
 import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:harrier_central/main.dart';
@@ -25,6 +24,7 @@ import 'package:harrier_central/widgets/user_details_ui.dart';
 import 'package:harrier_central/data_models/user_model.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
+import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 
 class NewUserWidget extends StatefulWidget {
   const NewUserWidget(
@@ -51,11 +51,9 @@ class NewUserWidget extends StatefulWidget {
 
 class NewUserState extends State<NewUserWidget>
     with SingleTickerProviderStateMixin {
-  final PageController _pageController = PageController();
-  int _scanState = 0;
+  List<Tab> tabs = <Tab>[];
 
-  Color left = Colors.black;
-  Color right = Colors.white;
+  bool isAdmin = true;
 
   final FocusNode resetCodeFocusNode = FocusNode();
   TextEditingController resetCodeTextController;
@@ -63,9 +61,127 @@ class NewUserState extends State<NewUserWidget>
 
   bool isLoading = false;
 
+  PageController _pageController;
+  TabController _tabController;
+
+  String userName = '';
+
+  final String userId = getStringPref(StringPrefsEnum.userId);
+
+  GlobalKey tabKey;
+
+  int _scanState = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: Backgrounds.defaultHcBackground(),
+        child: Stack(
+          alignment: AlignmentDirectional.center,
+          children: <Widget>[
+            // Positioned(
+            //     top: 30,
+            //     left: 0,
+            //     right: 0,
+            //     child: Text(
+            //       'QR Code Scanner',
+            //       textAlign: TextAlign.center,
+            //       style: const TextStyle(
+            //           fontFamily: 'AvenirNextRegular',
+            //           fontStyle: FontStyle.normal,
+            //           color: Colors.white,
+            //           fontSize: 24.0,
+            //           height: 1.0),
+            //     )),
+            Positioned(
+              top: 20,
+              left: 20,
+              right: 20,
+              child: Container(
+                width: 340.0,
+                height: 45.0,
+                child: Text('Set up Harrier Central',
+                    textAlign: TextAlign.center, style: titleStyle),
+              ),
+            ),
+
+            Positioned(
+              top: 70,
+              left: 20,
+              right: 20,
+              child: Container(
+                width: 340.0,
+                height: 45.0,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColorLight,
+                  borderRadius: const BorderRadius.all(Radius.circular(35.0)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 1.0, right: 1.0),
+                  child: TabBar(
+                    labelStyle: const TextStyle(
+                        fontFamily: 'AvenirNextCondensedMedium',
+                        fontStyle: FontStyle.normal,
+                        fontSize: 17.0,
+                        height: 0.8),
+                    unselectedLabelStyle: const TextStyle(
+                        fontFamily: 'AvenirNextCondensedMedium',
+                        fontStyle: FontStyle.normal,
+                        fontSize: 17.0,
+                        height: 0.8),
+                    isScrollable: false,
+                    unselectedLabelColor: Colors.black,
+                    labelColor: Colors.white,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicator: BubbleTabIndicator(
+                      indicatorHeight: 35.0,
+                      indicatorColor: Theme.of(context).buttonColor,
+                      tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                    ),
+                    tabs: tabs,
+                    controller: _tabController,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+                top: 130,
+                bottom: 0,
+                child: Container(
+                  key: tabKey,
+                  //color: Colors.teal,
+                  width: MediaQuery.of(context).size.width,
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: <Widget>[
+                      _buildSignUp(context),
+                      _buildInvite(context),
+                      _buildTransfer(context),
+                    ],
+                  ),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pageController?.dispose();
+    _tabController.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
+    _initTabs();
+
+    _pageController = PageController(initialPage: 0, keepPage: true);
+    _tabController = TabController(vsync: this, length: tabs.length);
+
     resetCodeTextController = TextEditingController();
     resetCodeDecoration = InputDecoration(
       labelText: 'Invite Code',
@@ -77,142 +193,15 @@ class NewUserState extends State<NewUserWidget>
     );
   }
 
-  @override
-  void dispose() {
-    _pageController?.dispose();
-    super.dispose();
-  }
-
-  GlobalKey<ScaffoldState> scaffoldKey;
-
-  @override
-  Widget build(BuildContext context) {
-    {
-      final AppBar appBar = AppBar(
-        centerTitle: true,
-        backgroundColor: themeAppBarBackground,
-        title: const Text(
-          'Add Member',
-          style: TextStyle(
-            color: Colors.white,
-          ),
-        ),
-      );
-
-      return Scaffold(
-          key: scaffoldKey,
-          appBar: widget.isForThisDevice ? null : appBar,
-          body: SingleChildScrollView(
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height >= 500.0
-                  ? MediaQuery.of(context).size.height -
-                      (widget.isForThisDevice ? 0 : appBar.preferredSize.height)
-                  : 500.0,
-              decoration: Backgrounds.defaultHcBackground(),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(top: 45.0),
-                    child: Image(
-                        width: widget.isForThisDevice == true ? 50.0 : 100.0,
-                        height: widget.isForThisDevice == true ? 50.0 : 100.0,
-                        fit: BoxFit.fill,
-                        image:
-                            const AssetImage('images/other/hc_app_icon.png')),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20.0),
-                    child: _buildMenuBar(context),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: PageView(
-                      controller: _pageController,
-                      onPageChanged: (int i) {
-                        if (i == 0) {
-                          setState(() {
-                            right = Colors.white;
-                            left = Colors.black;
-                          });
-                        } else if (i == 1) {
-                          setState(() {
-                            right = Colors.black;
-                            left = Colors.white;
-                          });
-                        }
-                      },
-                      children: <Widget>[
-                        ConstrainedBox(
-                          constraints: const BoxConstraints.expand(),
-                          child: _buildSignUp(context),
-                        ),
-                        ConstrainedBox(
-                          constraints: const BoxConstraints.expand(),
-                          child: _buildSignIn(context),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
+  void _initTabs() {
+    if (tabs.isEmpty) {
+      tabs.add(const Tab(text: 'New user'));
+      tabs.add(const Tab(text: 'Invite'));
+      tabs.add(const Tab(text: 'Transfer'));
     }
   }
 
-  Widget _buildMenuBar(BuildContext context) {
-    return Container(
-      width: 300.0,
-      height: 50.0,
-      decoration: const BoxDecoration(
-        color: Color(0x552B2B2B),
-        borderRadius: BorderRadius.all(Radius.circular(25.0)),
-      ),
-      child: CustomPaint(
-        painter: TabIndicationPainter(pageController: _pageController),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Expanded(
-              child: FlatButton(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onPressed: _onSignInTabPress,
-                child: Text(
-                  'New',
-                  style: TextStyle(
-                      color: left,
-                      fontSize: 16.0,
-                      fontFamily: 'WorkSansSemiBold'),
-                ),
-              ),
-            ),
-            //Container(height: 33.0, width: 1.0, color: Colors.white),
-            Expanded(
-              child: FlatButton(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onPressed: _onSignUpTabPress,
-                child: Text(
-                  'Existing',
-                  style: TextStyle(
-                      color: right,
-                      fontSize: 16.0,
-                      fontFamily: 'WorkSansSemiBold'),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String userName = '';
-
-  Widget _buildSignIn(BuildContext context) {
+  Widget _buildInvite(BuildContext context) {
     return Container(
       //color: Colors.red,
       // padding: const EdgeInsets.only(top: 23.0),
@@ -223,43 +212,29 @@ class NewUserState extends State<NewUserWidget>
         overflow: Overflow.visible,
         children: <Widget>[
           Positioned(
-              top: 30,
-              bottom: 300,
-              //width:150,
-              //height:150,
-              child: _cameraPreviewWidget()
-              // child:Container(
-              //   child: _cameraPreviewWidget(), width: 200.0, height: 200.0),
-              ),
-          Positioned(
-            bottom: 230,
-            child: RaisedButton(
-                highlightColor: Colors.transparent,
-                splashColor: LoginColors.loginGradientEnd,
-                //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 10.0, horizontal: 42.0),
-                  child: Text(
-                    controller == null ? 'Scan Invite Code' : 'Stop Scanning',
-                    style: textStyleButton,
+            top: 0,
+            child: !widget.isForThisDevice
+                ? Container()
+                : Column(
+                    children: <Widget>[
+                      Container(
+                        width: MediaQuery.of(context).size.width,
+                        padding: const EdgeInsets.only(
+                            top: 10, left: 20.0, right: 20.0, bottom: 25.0),
+                        child: Text(
+                            'Use this if you have received an invite code from a Hash group.',
+                            textAlign: TextAlign.center,
+                            style: smallHeadingStyle),
+                      ),
+                      Container(
+                          padding: const EdgeInsets.only(top: 15),
+                          width: MediaQuery.of(context).size.width,
+                          child: const FancyDivider(innerColor: Colors.white)),
+                    ],
                   ),
-                ),
-                onPressed: () => scanUserBarcode()),
           ),
-          const Positioned(
-              left: 0,
-              right: 0,
-              bottom: 177,
-              child: Padding(
-                padding: EdgeInsets.only(top: 20.0, bottom: 10.0),
-                child: FancyDivider(
-                  innerColor: Colors.white,
-                  useTextOr: true,
-                ),
-              )),
           Positioned(
-              bottom: 0,
+              top: 135,
               //bottom: 20,
               width: MediaQuery.of(context).size.width,
               child: Container(
@@ -275,8 +250,8 @@ class NewUserState extends State<NewUserWidget>
                           //color: Colors.white,
                           padding: const EdgeInsets.all(10.0),
                           decoration: BoxDecoration(
-                            color: Colors.yellow[100],
-                            borderRadius: BorderRadius.circular(5.0),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
                           // padding: const EdgeInsets.only(
                           //     top: 0.0, bottom: 8.0),
@@ -366,6 +341,75 @@ class NewUserState extends State<NewUserWidget>
     );
   }
 
+  Widget _buildTransfer(BuildContext context) {
+    return SingleChildScrollView(
+      //color: Colors.red,
+      // padding: const EdgeInsets.only(top: 23.0),
+      // child: Column(
+      //   children: <Widget>[
+      child: Stack(
+        alignment: Alignment.topCenter,
+        overflow: Overflow.visible,
+        children: <Widget>[
+          Container(
+            width: 10,
+            height: math.min(500, MediaQuery.of(context).size.height - 100),
+          ),
+          Positioned(
+            top: 0,
+            child: !widget.isForThisDevice
+                ? Container()
+                : Column(
+                    children: <Widget>[
+                      Container(
+                        width: MediaQuery.of(context).size.width,
+                        padding: const EdgeInsets.only(
+                            top: 10, left: 20.0, right: 20.0, bottom: 25.0),
+                        child: Text(
+                            'Use this to transfer your Harrier Central account to a new phone.',
+                            textAlign: TextAlign.center,
+                            style: smallHeadingStyle),
+                      ),
+                      Container(
+                          padding: const EdgeInsets.only(top: 15),
+                          width: MediaQuery.of(context).size.width,
+                          child: const FancyDivider(innerColor: Colors.white)),
+                    ],
+                  ),
+          ),
+          Positioned(
+              top: 132,
+              bottom: 80,
+              //width:150,
+              //height:150,
+              child: _cameraPreviewWidget()
+              // child:Container(
+              //   child: _cameraPreviewWidget(), width: 200.0, height: 200.0),
+              ),
+          Positioned(
+            bottom: 0,
+            child: RaisedButton(
+                highlightColor: Colors.transparent,
+                splashColor: LoginColors.loginGradientEnd,
+                //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 10.0, horizontal: 42.0),
+                  child: Text(
+                    controller == null ? 'Scan Transfer Code' : 'Stop Scanning',
+                    style: textStyleButton,
+                  ),
+                ),
+                onPressed: () => scanUserBarcode()),
+          )
+        ],
+      ),
+
+      //   ],
+      // ),
+    );
+  }
+
   UserDetailsUi userDetailsUi;
 
   Widget _buildSignUp(BuildContext context) {
@@ -375,14 +419,26 @@ class NewUserState extends State<NewUserWidget>
       email: '',
       hashName: '',
     );
-    return Container(
-      padding: const EdgeInsets.only(top: 23.0),
+    return SingleChildScrollView(
+      //padding: const EdgeInsets.only(top: 0.0),
       child: Column(
         children: <Widget>[
           !widget.isForThisDevice
               ? Container()
-              : Utilities.elegantDivider(
-                  'First Connect\r\nto FB (optional)', 0.0, 5.0),
+              : Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          top: 10, left: 20.0, right: 20.0, bottom: 25.0),
+                      child: Text(
+                          'Use this if you have never been entered into Harrier Central',
+                          textAlign: TextAlign.center,
+                          style: smallHeadingStyle),
+                    ),
+                    Utilities.elegantDivider(
+                        'First Connect\r\nto FB (optional)', 0.0, 5.0),
+                  ],
+                ),
           !widget.isForThisDevice
               ? Container()
               : Row(
@@ -390,58 +446,74 @@ class NewUserState extends State<NewUserWidget>
                   children: <Widget>[
                     Padding(
                       padding: const EdgeInsets.only(top: 10.0, right: 0.0),
-                      child: GestureDetector(
-                        onTap: () {
-                          final FacebookLogin facebookLogin = FacebookLogin();
-                          facebookLogin
-                              .logInWithReadPermissions(<String>['email']).then(
-                                  (FacebookLoginResult result) async {
-                            final String token = result.accessToken.token;
-                            final http.Response graphResponse = await http.get(
-                                'https://graph.facebook.com/v3.2/me?fields=name,first_name,last_name,picture.width(640),email,gender&access_token=$token');
+                      child: Row(
+                        children: <Widget>[
+                          GestureDetector(
+                            onTap: () {
+                              final FacebookLogin facebookLogin =
+                                  FacebookLogin();
+                              facebookLogin.logInWithReadPermissions(<String>[
+                                'email'
+                              ]).then((FacebookLoginResult result) async {
+                                final String token = result.accessToken.token;
+                                final http.Response graphResponse = await http.get(
+                                    'https://graph.facebook.com/v3.2/me?fields=name,first_name,last_name,picture.width(640),email,gender&access_token=$token');
 
-                            final dynamic profile =
-                                json.decode(graphResponse.body);
+                                final dynamic profile =
+                                    json.decode(graphResponse.body);
 
-                            final String firstName = profile['first_name'];
-                            final String lastName = profile['last_name'];
-                            final String email = profile['email'];
-                            final String facebookId = profile['id'];
-                            final String gender = profile['gender'];
-                            final dynamic picture =
-                                profile['picture']['data']['url'];
+                                final String firstName = profile['first_name'];
+                                final String lastName = profile['last_name'];
+                                final String email = profile['email'];
+                                final String facebookId = profile['id'];
+                                final String gender = profile['gender'];
+                                final dynamic picture =
+                                    profile['picture']['data']['url'];
 
-                            setStringPref(
-                                StringPrefsEnum.facebookProfilePhoto, picture);
-                            setStringPref(
-                                StringPrefsEnum.facebookId, facebookId);
-                            setStringPref(
-                                StringPrefsEnum.facebookAccessToken, token);
-                            setStringPref(StringPrefsEnum.gender, gender);
+                                setStringPref(
+                                    StringPrefsEnum.facebookProfilePhoto,
+                                    picture);
+                                setStringPref(
+                                    StringPrefsEnum.facebookId, facebookId);
+                                setStringPref(
+                                    StringPrefsEnum.facebookAccessToken, token);
+                                setStringPref(StringPrefsEnum.gender, gender);
 
-                            userDetailsUi.updateUi(firstName, lastName, email);
-                            userDetailsUi.firstName = firstName;
-                            userDetailsUi.lastName = lastName;
-                            userDetailsUi.email = email;
+                                userDetailsUi.updateUi(
+                                    firstName, lastName, email);
+                                userDetailsUi.firstName = firstName;
+                                userDetailsUi.lastName = lastName;
+                                userDetailsUi.email = email;
 
-                            Utilities.showAlert(
-                                context,
-                                'Facebook profile loaded',
-                                'We have copied your Facebook profile information (name, email and profile photo) to the app. Please continue to register by adding your Hash name.',
-                                'OK');
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(15.0),
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
+                                Utilities.showAlert(
+                                    context,
+                                    'Facebook profile loaded',
+                                    'We have copied your Facebook profile information (name, email and profile photo) to the app. Please continue to register by adding your Hash name.',
+                                    'OK');
+                              });
+                            },
+                            child: Container(
+                              width: 250,
+                              child:
+                                  Image.asset('images/init/facebook_login.png'),
+                            ),
                           ),
-                          child: const Icon(
-                            FontAwesome.facebook_f,
-                            color: Color(0xFF0084ff),
+                          GestureDetector(
+                            onTap: () {
+                              Utilities.showAlert(
+                                  context,
+                                  'Why Connect with Facebook?',
+                                  'If you are not on a Hash group\'s Mismanagement, this only saves you time typing in your name and e-mail address. For those with administrative access to Harrier Central, having your Facebook credentials allows us to automatically download run information from your Hash group\'s Facebook events and add them to the app.',
+                                  'OK');
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.only(left:20),
+                              height: 40,
+                              child: Image.asset(
+                                  'images/icons/more_info_button.png'),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   ],
@@ -449,69 +521,40 @@ class NewUserState extends State<NewUserWidget>
           !widget.isForThisDevice
               ? Container()
               : Utilities.elegantDivider('Then add\r\ndetails', 15.0, 20.0),
-          Stack(
-            alignment: Alignment.topCenter,
-            overflow: Overflow.visible,
-            children: <Widget>[
-              userDetailsUi,
-              Container(
-                margin: const EdgeInsets.only(top: 210.0),
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(5.0)),
-                  boxShadow: <BoxShadow>[
-                    BoxShadow(
-                      color: LoginColors.loginGradientStart,
-                      offset: const Offset(1.0, 6.0),
-                      blurRadius: 20.0,
-                    ),
-                    BoxShadow(
-                      color: LoginColors.loginGradientEnd,
-                      offset: const Offset(1.0, 6.0),
-                      blurRadius: 20.0,
-                    ),
-                  ],
-                  gradient: LinearGradient(
-                      colors: <Color>[
-                        LoginColors.loginGradientEnd,
-                        LoginColors.loginGradientStart
-                      ],
-                      begin: const FractionalOffset(0.2, 0.2),
-                      end: const FractionalOffset(1.0, 1.0),
-                      stops: const <double>[0.0, 1.0],
-                      tileMode: TileMode.clamp),
+          userDetailsUi,
+          Padding(
+            padding: const EdgeInsets.only(top: 18.0),
+            child: RaisedButton(
+                highlightColor: Colors.transparent,
+                splashColor: LoginColors.loginGradientEnd,
+                child: const Padding(
+                  padding:
+                      EdgeInsets.symmetric(vertical: 10.0, horizontal: 42.0),
+                  child: Text(
+                    'Next',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 25.0,
+                        fontFamily: 'WorkSansBold'),
+                  ),
                 ),
-                child: MaterialButton(
-                    highlightColor: Colors.transparent,
-                    splashColor: LoginColors.loginGradientEnd,
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(
-                          vertical: 10.0, horizontal: 42.0),
-                      child: Text(
-                        'NEXT >>',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 25.0,
-                            fontFamily: 'WorkSansBold'),
-                      ),
-                    ),
-                    onPressed: () => _onSignUpButtonPress()),
-              ),
-            ],
+                onPressed: () => _onSignUpButtonPress()),
           ),
+          const SizedBox(height: 30),
         ],
       ),
     );
   }
 
-  void _onSignInTabPress() {
-    _pageController.animateToPage(0,
-        duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
-  }
+  // void _onSignInTabPress() {
+  //   _pageController.animateToPage(0,
+  //       duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
+  // }
 
-  void _onSignUpTabPress() {
-    _pageController?.animateToPage(1,
-        duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
-  }
+  // void _onSignUpTabPress() {
+  //   _pageController?.animateToPage(1,
+  //       duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
+  // }
 
   void _onSignUpButtonPress() {
     bool canProcess = true;
@@ -590,21 +633,6 @@ class NewUserState extends State<NewUserWidget>
       }
     }
   }
-
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  // QR Code Scanner support
-  //
-  //
-  //
-  //
-  //
-  //
 
   String barcode = 'Waiting for Scan';
 
@@ -756,53 +784,4 @@ class NewUserState extends State<NewUserWidget>
     }
     // return Future<void>(() {});((){});
   }
-}
-
-class TabIndicationPainter extends CustomPainter {
-  TabIndicationPainter(
-      {this.dxTarget = 125.0,
-      this.dxEntry = 25.0,
-      this.radius = 21.0,
-      this.dy = 25.0,
-      this.pageController})
-      : super(repaint: pageController) {
-    painter = Paint()
-      ..color = const Color(0xFFFFFFFF)
-      ..style = PaintingStyle.fill;
-  }
-
-  Paint painter;
-  final double dxTarget;
-  final double dxEntry;
-  final double radius;
-  final double dy;
-
-  final PageController pageController;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final ScrollPosition pos = pageController.position;
-    final double fullExtent =
-        pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
-
-    final double pageOffset = pos.extentBefore / fullExtent;
-
-    final bool left2right = dxEntry < dxTarget;
-    final Offset entry = Offset(left2right ? dxEntry : dxTarget, dy);
-    final Offset target = Offset(left2right ? dxTarget : dxEntry, dy);
-
-    final Path path = Path();
-    path.addArc(
-        Rect.fromCircle(center: entry, radius: radius), 0.5 * pi, 1 * pi);
-    path.addRect(Rect.fromLTRB(entry.dx, dy - radius, target.dx, dy + radius));
-    path.addArc(
-        Rect.fromCircle(center: target, radius: radius), 1.5 * pi, 1 * pi);
-
-    canvas.translate(size.width * pageOffset, 0.0);
-    canvas.drawShadow(path, const Color(0xFFfbab66), 3.0, true);
-    canvas.drawPath(path, painter);
-  }
-
-  @override
-  bool shouldRepaint(TabIndicationPainter oldDelegate) => true;
 }
