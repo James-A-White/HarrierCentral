@@ -1,44 +1,42 @@
-// import 'dart:async';
-// import 'dart:io';
+import 'dart:async';
+import 'dart:io';
 
-// import 'package:path/path.dart';
-// import 'package:path_provider/path_provider.dart';
-// import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
-// class DBProvider {
-//   DBProvider._();
-//   static final DBProvider db = DBProvider._();
+import 'package:harrier_central/services/all_hashers_service.dart';
+import 'package:harrier_central/services/cities_service.dart';
+import 'package:harrier_central/util/constants.dart';
 
-//   Database _database;
+class DBProvider {
+  DBProvider._();
+  static final DBProvider db = DBProvider._();
 
-//   Future<Database> get database async {
-//     if (_database != null) {
-//       return _database;
-//     }
-//     // if _database is null we instantiate it
-//     _database = await initDB();
-//     return _database;
-//   }
+  Database _database;
 
-//   dynamic initDB() async {
-//     final Directory documentsDirectory =
-//         await getApplicationDocumentsDirectory();
-//     final String path = join(documentsDirectory.path, 'hashers.db');
-//     return await openDatabase(path, version: 1, onOpen: (Database db) {},
-//         onCreate: (Database db, int version) async {
-//       await db.execute('CREATE TABLE hashers ('
-//           'id INTEGER PRIMARY KEY,'
-//           'user_id TEXT,'
-//           'first_name TEXT,'
-//           'last_name TEXT,'
-//           'display_name TEXT,'
-//           'hash_name TEXT,'
-//           'photo TEXT,'
-//           'name_display_pref NUM,'
-//           'updated_at TEXT,'
-//           'updated_at_value NUM,'
-//           'removed_flag NUM'
-//           ')');
-//     });
-//   }
-// }
+  Future<Database> get database async {
+    if (_database != null) {
+      return _database;
+    }
+    // if _database is null we instantiate it
+    _database = await initDB();
+    return _database;
+  }
+
+  Future<Database> initDB() async {
+    final Directory documentsDirectory =
+        await getApplicationDocumentsDirectory();
+    final String path = join(documentsDirectory.path, DB_NAME);
+    return openDatabase(path, version: 1, onOpen: (Database db) {},
+        onCreate: (Database db, int version) async {
+      await AllHashersTableHelper.createTable(db, version);
+      await CitiesTableHelper.createTable(db, version);
+
+      final String json = await rootBundle.loadString('database/cities.json');
+      final CitiesService srv = CitiesService();
+      await srv.bulkUpdateDatabase(json,db);
+    });
+  }
+}

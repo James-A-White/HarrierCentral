@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
+import 'package:sqflite/sqflite.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
+
 import 'package:harrier_central/data_models/main_navigation_model.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/pages/top_level/history_list_page.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 import 'package:harrier_central/services/kennel_scoped_model.dart';
+import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/services/kennel_run_history_totals_scoped_model.dart';
-
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);
@@ -44,6 +47,17 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     tabTitles.add('Friends');
 
     appBarText = tabTitles[0];
+
+    // this is here to force the database to be instnatiated upon startup.
+    // the first time this is run, the database will be created. On subsequent
+    // runs, the database will simply be opened.
+
+    DBProvider.db.database.then((Database db) {
+      setState(() {
+        setIntPref(IntPrefsEnum.dbCreated, 1);
+      });
+    });
+
     super.initState();
   }
 
@@ -64,9 +78,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final int dbCreated = getIntPref(IntPrefsEnum.dbCreated) ?? 0;
     Widget _getPage(int pageIndex) {
       Widget w;
-
       appBarText = tabTitles[pageIndex];
 
       switch (pageIndex) {
@@ -84,7 +98,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           w = const UserQrCodePage();
           break;
       }
-
       return w;
     }
 
@@ -95,9 +108,22 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       ),
       body: Container(
         decoration: const BoxDecoration(color: Colors.white),
-        child: Center(
-          child: _getPage(currentPage),
-        ),
+        child: dbCreated == 0
+            ? Container(
+                decoration: Backgrounds.defaultHcBackground(),
+                height: MediaQuery.of(context).size.height,
+                width: MediaQuery.of(context).size.width,
+                child: Center(
+                  child: Image.asset(
+                    'images/other/creating_database.png',
+                    height: 250,
+                    width: 250,
+                  ),
+                ),
+              )
+            : Center(
+                child: _getPage(currentPage),
+              ),
       ),
       bottomNavigationBar: FancyBottomNavigation(
         circleColor: themeButtonColors,

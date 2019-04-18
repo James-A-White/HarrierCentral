@@ -24,7 +24,13 @@ enum DoublePrefsEnum { latitude, longitude }
 
 enum IntPrefsEnum { 
   lastUpdateAllHasherData,
-  lastCacheClearAllHasherData
+  lastCacheClearAllHasherData,
+
+  lastUpdateCitiesData,
+  lastCacheClearCitiesData,
+
+  dbCreated,
+
   }
 
 SharedPreferences _sharedPreferences;

@@ -42,7 +42,10 @@ class PlannedRun {
     this.kennelShortName,
     this.runSequence,
     this.distanceToEvent,
-    this.mismanagementRoleFlags
+    this.mismanagementRoleFlags,
+
+    // HC3
+    this.isVisible
 
   });
 
@@ -83,6 +86,8 @@ class PlannedRun {
   int rsvpState;
   int attendenceState;
   int isHare;
+
+  int isVisible;
 
   final int totalRunsThisKennel;
   final String kennelShortName;

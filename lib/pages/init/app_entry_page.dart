@@ -6,13 +6,14 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:package_info/package_info.dart';
 
 import 'package:harrier_central/data_models/approve_login_model.dart';
+import 'package:harrier_central/data_models/cities_model.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
 import 'package:harrier_central/services/approve_login_service.dart';
+import 'package:harrier_central/services/cities_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
-
 
 class AppEntryPage extends StatefulWidget {
   @override
@@ -25,16 +26,14 @@ class _AppEntryPageState extends State<AppEntryPage>
   CurvedAnimation _iconAnimation;
 
   Future<void> handleTimeout() async {
-
-
     final PackageInfo p = await PackageInfo.fromPlatform();
     final String hcVersion =
         'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
-    
+
     setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
 
-    await PermissionHandler()
-        .requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);
+    await PermissionHandler().requestPermissions(
+        <PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
@@ -44,7 +43,8 @@ class _AppEntryPageState extends State<AppEntryPage>
 
       if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
         if (loginResult.messageDisplayType == loginMessageTypeAlert.value) {
-          await _displayAlert(context,loginResult.loginMessage,loginResult.loginMessageTitle);
+          await _displayAlert(
+              context, loginResult.loginMessage, loginResult.loginMessageTitle);
         }
       }
 
@@ -52,17 +52,23 @@ class _AppEntryPageState extends State<AppEntryPage>
         if (loginResult.serverStatusCode == serverStatusUp.value) {
           if (loginResult.approvalCode == loginApprovalApproved.value) {
             if (userId == null) {
-
               // Navigator.of(context)
               //     .pushNamed(RouteNames.NEW_ACCOUNT.toString());
 
-              Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
-                  
+              Navigator.of(context)
+                  .pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
             } else {
+              final CitiesService srv = CitiesService();
+              srv.getAllRecords(false).then((List<CitiesModel> cities) {
+                print(
+                    'City list downloaded & updated. Cities loaded = ${cities.length.toString()}');
+              });
+
               Navigator.pushReplacement<dynamic, dynamic>(
                   context,
                   MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => const MainNavigationPage()));
+                      builder: (BuildContext context) =>
+                          const MainNavigationPage()));
               //     .then<dynamic>((void test) {
               //    _iconAnimationController.dispose();
               // });
@@ -81,7 +87,8 @@ class _AppEntryPageState extends State<AppEntryPage>
     //// return Future<void>(() {});((){});
   }
 
-  Future<bool> _displayAlert(BuildContext context, String alertText, String alertTitle) async {
+  Future<bool> _displayAlert(
+      BuildContext context, String alertText, String alertTitle) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -125,10 +132,8 @@ class _AppEntryPageState extends State<AppEntryPage>
   dynamic startTimeout() async {
     initPrefs().then((void dummy) {});
 
-
-
-
-    return Timer(const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME), handleTimeout);
+    return Timer(
+        const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME), handleTimeout);
   }
 
   //bool _visible = true;
@@ -144,7 +149,6 @@ class _AppEntryPageState extends State<AppEntryPage>
     _iconAnimation.addListener(() => setState(() {}));
 
     _iconAnimationController.forward();
-
 
     startTimeout();
   }

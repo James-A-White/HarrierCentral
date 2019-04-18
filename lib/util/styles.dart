@@ -36,6 +36,13 @@ TextStyle headingStyle = const TextStyle(
       fontSize: 24.0,
       height: 1.0);
 
+TextStyle headingStyleOnLightBg = TextStyle(
+      fontFamily: 'AvenirNextRegular',
+      fontStyle: FontStyle.normal,
+      color: Colors.blue[800],
+      fontSize: 24.0,
+      height: 1.0);
+
 TextStyle smallHeadingStyle = const TextStyle(
       fontFamily: 'AvenirNextDemiBold',
       fontStyle: FontStyle.normal,

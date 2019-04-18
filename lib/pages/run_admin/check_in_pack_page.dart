@@ -62,6 +62,12 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     }
   }
 
+  @override
+  void initState() {
+    getPack(false);
+    super.initState();
+  }
+
   void getPack(bool forceRefresh) {
     if ((packList == null) || forceRefresh) {
       _packScopedModel
@@ -85,10 +91,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
         },
       ),
     ).then((AllHasherListModel hasher) {
-      if ((hasher != null) && (hasher.userId != null))
-      {
-      packScopedModel.joinEvent(widget.futureRun.eventId, rsvpYes.value,
-          isHareNo.value, attendenceAtHash.value, hasher.userId);
+      if ((hasher != null) && (hasher.userId != null)) {
+        packScopedModel.joinEvent(widget.futureRun.eventId, rsvpYes.value,
+            isHareNo.value, attendenceAtHash.value, hasher.userId);
       }
     });
   }
@@ -223,7 +228,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
   @override
   Widget build(BuildContext context) {
-    getPack(false);
+    
     return ScopedModel<PackScopedModel>(
       model: _packScopedModel,
       child: ScopedModel<PayScopedModel>(
@@ -356,38 +361,55 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                         .maxHeight,
                     right: 0.0,
                     left: 0.0,
-                    child: (packList == null || packList.isEmpty)
-                        ? Center(
+                    child: (_packScopedModel.isLoading)
+                        ? Container(
+                          height:MediaQuery.of(context).size.height-180,
+                        child:Center(
                             child: Container(
-                                height: 50,
-                                width: 50,
-                                child: const CircularProgressIndicator()))
-                        : Container(
-                            key: packListBox,
-                            height: constraints.maxHeight -
-                                searchBar(
-                                        _packScopedModel, constraints.maxWidth)
-                                    .constraints
-                                    .maxHeight,
-                            child: RefreshIndicator(
-                              onRefresh: () => _reloadPack(true),
-                              child: ScopedModelDescendant<PackScopedModel>(
-                                builder: (BuildContext context, Widget child,
-                                    PackScopedModel model) {
-                                  print(DateTime.now()
-                                          .millisecondsSinceEpoch
-                                          .toString() +
-                                      ' pack list update, #items = ' +
-                                      packList.length.toString());
-                                  return PackListView(
-                                      packList: packList,
-                                      packScopedModel: _packScopedModel,
-                                      payScopedModel: _payScopedModel,
-                                      futureRun: widget.futureRun);
-                                },
-                              ),
+                              height: 50,
+                              width: 50,
+                              child: const CircularProgressIndicator(),
                             ),
-                          ),
+                          ),)
+                        : (packList == null || packList.isEmpty)
+                            ? Container(
+                              padding: EdgeInsets.only(left:30,right:30, bottom:60),
+                              height: constraints.maxHeight -
+                                    searchBar(_packScopedModel,
+                                            constraints.maxWidth)
+                                        .constraints
+                                        .maxHeight,
+                                child: Center(
+                                  child: Text(
+                                      'There are no pack members associated with this run or Kennel', style: headingStyleOnLightBg, textAlign: TextAlign.center,),
+                                ),
+                              )
+                            : Container(
+                                key: packListBox,
+                                height: constraints.maxHeight -
+                                    searchBar(_packScopedModel,
+                                            constraints.maxWidth)
+                                        .constraints
+                                        .maxHeight,
+                                child: RefreshIndicator(
+                                  onRefresh: () => _reloadPack(true),
+                                  child: ScopedModelDescendant<PackScopedModel>(
+                                    builder: (BuildContext context,
+                                        Widget child, PackScopedModel model) {
+                                      print(DateTime.now()
+                                              .millisecondsSinceEpoch
+                                              .toString() +
+                                          ' pack list update, #items = ' +
+                                          packList.length.toString());
+                                      return PackListView(
+                                          packList: packList,
+                                          packScopedModel: _packScopedModel,
+                                          payScopedModel: _payScopedModel,
+                                          futureRun: widget.futureRun);
+                                    },
+                                  ),
+                                ),
+                              ),
                   ),
                 ]),
           ),
@@ -910,16 +932,40 @@ class PackListView extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: packList?.length ?? 0,
         itemBuilder: (BuildContext context, int index) {
-          return ((packList == null) || (packList.isEmpty))
-              ? Container(
-                  color: Colors.grey[300],
-                  width: 70.0,
-                  height: 70.0,
-                  child: const Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: Center(child: CircularProgressIndicator())),
-                )
-              : Dismissible(
+          return 
+          // (packScopedModel.isLoading) 
+          //               ? Center(
+          //                   child: Container(
+          //                     height: 50,
+          //                     width: 50,
+          //                     child: const CircularProgressIndicator(),
+          //                   ),
+          //                 ) :
+          
+
+
+
+
+
+
+
+
+
+
+          
+          // ((packList == null) || (packList.isEmpty)) 
+          //     ?  Container(
+          //                     // height: constraints.maxHeight -
+          //                     //       searchBar(_packScopedModel,
+          //                     //               constraints.maxWidth)
+          //                     //           .constraints
+          //                     //           .maxHeight,
+          //                       child: Center(
+          //                         child: Text(
+          //                             'There are no pack members associated with this run or Kennel'),
+          //                       ),
+          //                     ) :
+              Dismissible(
                   key: Key(index.toString()),
                   confirmDismiss: (DismissDirection direction) {
                     if (packList[index].isPaid != 1) {

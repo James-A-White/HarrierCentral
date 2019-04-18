@@ -25,8 +25,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: ScopedModelDescendant<FutureRunScopedModel>(
+    return Scaffold(body: ScopedModelDescendant<FutureRunScopedModel>(
       builder:
           (BuildContext context, Widget child, FutureRunScopedModel model) {
         this.model = model;
@@ -49,8 +48,9 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         itemBuilder: (_, int index) {
           return DecoratedBox(
             decoration: BoxDecoration(
-              color:
-                  index.isEven ? Colors.grey[400] : Theme.of(context).accentColor,
+              color: index.isEven
+                  ? Colors.grey[400]
+                  : Theme.of(context).accentColor,
             ),
           );
         },
@@ -76,8 +76,11 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                 //padding: const EdgeInsets.only( bottom: 40.0),
                 itemCount: model.getFutureRunsCount(),
                 itemBuilder: (BuildContext context, int index) {
-                  if (model.futureRunsList[index].daysUntilNextRun < 9999) {
+                  if ((model.futureRunsList[index].daysUntilNextRun < 9999) &&
+                      (model.futureRunsList[index].isVisible != 0)) {
                     return RunListItem(futureRun: model.futureRunsList[index]);
+                  } else {
+                    return Container();
                   }
                 },
               ),

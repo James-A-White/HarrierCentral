@@ -102,6 +102,9 @@ class FutureRunScopedModel
         if (run.mismanagementRoleFlags != futureRun.mismanagementRoleFlags) {
           run.mismanagementRoleFlags = futureRun.mismanagementRoleFlags;
         }
+        if (run.isVisible != futureRun.isVisible) {
+          run.isVisible = futureRun.isVisible;
+        }
 
 
 
@@ -206,6 +209,7 @@ class FutureRunScopedModel
           runSequence: run['runSequence'],
           distanceToEvent: run['distanceToEvent'],
           mismanagementRoleFlags: run['mismanagementRoleFlags'],
+          isVisible: run['isVisible']
         );
 
         thisRun.isExpanded = false;

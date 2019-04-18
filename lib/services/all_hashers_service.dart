@@ -12,9 +12,11 @@ import 'package:harrier_central/data_models/all_hasher_model.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/database/database.dart';
 
-class AllHasherSqlTableHelper {
-  AllHasherSqlTableHelper._privateConstructor();
+
+class AllHashersTableHelper {
+  AllHashersTableHelper._privateConstructor();
 
   static const String _databaseName = DB_NAME;
   static const int _databaseVersion = 1;
@@ -35,31 +37,31 @@ class AllHasherSqlTableHelper {
 
   // make this a singleton class
 
-  static final AllHasherSqlTableHelper instance =
-      AllHasherSqlTableHelper._privateConstructor();
+  static final AllHashersTableHelper instance =
+      AllHashersTableHelper._privateConstructor();
 
-  // only have a single app-wide reference to the database
-  static Database _database;
-  Future<Database> get database async {
-    if (_database != null) {
-      return _database;
-    }
-    // lazily instantiate the db the first time it is accessed
-    _database = await _initDatabase();
-    return _database;
-  }
+  // // only have a single app-wide reference to the database
+  // static Database _database;
+  // Future<Database> get database async {
+  //   if (_database != null) {
+  //     return _database;
+  //   }
+  //   // lazily instantiate the db the first time it is accessed
+  //   _database = await _initDatabase();
+  //   return _database;
+  // }
 
-  // this opens the database (and creates it if it doesn't exist)
-  Future<Database> _initDatabase() async {
-    final Directory documentsDirectory =
-        await getApplicationDocumentsDirectory();
-    final String path = join(documentsDirectory.path, _databaseName);
-    return await openDatabase(path,
-        version: _databaseVersion, onCreate: _onCreate);
-  }
+  // // this opens the database (and creates it if it doesn't exist)
+  // Future<Database> _initDatabase() async {
+  //   final Directory documentsDirectory =
+  //       await getApplicationDocumentsDirectory();
+  //   final String path = join(documentsDirectory.path, _databaseName);
+  //   return await openDatabase(path,
+  //       version: _databaseVersion, onCreate: _onCreate);
+  // }
 
   // SQL code to create the database table
-  Future<dynamic> _onCreate(Database db, int version) async {
+  static Future<dynamic> createTable(Database db, int version) async {
     await db.execute('''
           CREATE TABLE $table (
             $colId INTEGER PRIMARY KEY,
@@ -82,17 +84,17 @@ class AllHasherSqlTableHelper {
 
   static Map<String, dynamic> toMap(AllHasherListModel item) {
     final Map<String, dynamic> map = <String, dynamic>{
-      AllHasherSqlTableHelper.colUserId: item.userId,
-      AllHasherSqlTableHelper.colFirstName: item.firstName,
-      AllHasherSqlTableHelper.colLastName: item.lastName,
-      AllHasherSqlTableHelper.colDisplayName: item.displayName,
-      AllHasherSqlTableHelper.colHashName: item.hashName,
-      AllHasherSqlTableHelper.colPhoto: item.photo,
-      AllHasherSqlTableHelper.colNameDisplayPref: item.nameDisplayPref,
-      AllHasherSqlTableHelper.colUpdatedAt: item.updatedAt.toString(),
-      AllHasherSqlTableHelper.colUpdatedAtValue:
+      AllHashersTableHelper.colUserId: item.userId,
+      AllHashersTableHelper.colFirstName: item.firstName,
+      AllHashersTableHelper.colLastName: item.lastName,
+      AllHashersTableHelper.colDisplayName: item.displayName,
+      AllHashersTableHelper.colHashName: item.hashName,
+      AllHashersTableHelper.colPhoto: item.photo,
+      AllHashersTableHelper.colNameDisplayPref: item.nameDisplayPref,
+      AllHashersTableHelper.colUpdatedAt: item.updatedAt.toString(),
+      AllHashersTableHelper.colUpdatedAtValue:
           item.updatedAt.millisecondsSinceEpoch,
-      AllHasherSqlTableHelper.colRemovedFlag: item.removed
+      AllHashersTableHelper.colRemovedFlag: item.removed
     };
 
     return map;
@@ -100,30 +102,27 @@ class AllHasherSqlTableHelper {
 
   static AllHasherListModel fromMap(Map<String, dynamic> map) {
     final AllHasherListModel item = AllHasherListModel(
-      userId: map[AllHasherSqlTableHelper.colUserId],
-      firstName: map[AllHasherSqlTableHelper.colFirstName],
-      lastName: map[AllHasherSqlTableHelper.colLastName],
-      displayName: map[AllHasherSqlTableHelper.colDisplayName],
-      hashName: map[AllHasherSqlTableHelper.colHashName],
-      photo: map[AllHasherSqlTableHelper.colPhoto],
-      nameDisplayPref: map[AllHasherSqlTableHelper.colNameDisplayPref],
-      updatedAt: DateTime.parse(map[AllHasherSqlTableHelper.colUpdatedAt]),
-      removed: map[AllHasherSqlTableHelper.colRemovedFlag],
+      userId: map[AllHashersTableHelper.colUserId],
+      firstName: map[AllHashersTableHelper.colFirstName],
+      lastName: map[AllHashersTableHelper.colLastName],
+      displayName: map[AllHashersTableHelper.colDisplayName],
+      hashName: map[AllHashersTableHelper.colHashName],
+      photo: map[AllHashersTableHelper.colPhoto],
+      nameDisplayPref: map[AllHashersTableHelper.colNameDisplayPref],
+      updatedAt: DateTime.parse(map[AllHashersTableHelper.colUpdatedAt]),
+      removed: map[AllHashersTableHelper.colRemovedFlag],
     );
 
     return item;
   }
 }
 
-
-
-
 class GetAllHashersService {
-  static final AllHasherSqlTableHelper instance =
-      AllHasherSqlTableHelper._privateConstructor();
+  static final AllHashersTableHelper instance =
+      AllHashersTableHelper._privateConstructor();
 
   Future<num> getLastUpdatedTime() async {
-    final Database db = await AllHasherSqlTableHelper.instance.database;
+    final Database db = await DBProvider.db.database;
     final List<Map<String, dynamic>> table = await db
         .rawQuery('SELECT MAX(updated_at_value) AS maxDate FROM hashers');
     final num timeValue = table.first['maxDate'];
@@ -132,10 +131,10 @@ class GetAllHashersService {
   }
 
   Future<List<AllHasherListModel>> getHashersFromLocalDb() async {
-    final Database db = await AllHasherSqlTableHelper.instance.database;
+    final Database db = await DBProvider.db.database;
 
     final List<Map<String, dynamic>> result =
-        await db.query(AllHasherSqlTableHelper.table);
+        await db.query(AllHashersTableHelper.table);
 
     final List<AllHasherListModel> hashers = <AllHasherListModel>[];
 
@@ -143,7 +142,7 @@ class GetAllHashersService {
       for (int i = 0; i < result.length; i++) {
         if (result[i]['removed_flag'] == 0) {
           final AllHasherListModel hasher =
-              AllHasherSqlTableHelper.fromMap(result[i]);
+              AllHashersTableHelper.fromMap(result[i]);
           hashers.add(hasher);
         }
       }
@@ -152,7 +151,7 @@ class GetAllHashersService {
   }
 
   Future<void> clearDatabase() async {
-    final Database db = await AllHasherSqlTableHelper.instance.database;
+    final Database db = await DBProvider.db.database;
     await db.rawDelete('DELETE FROM hashers').then((void dummy) {
       setIntPref(IntPrefsEnum.lastCacheClearAllHasherData,
           DateTime.now().millisecondsSinceEpoch);
@@ -160,22 +159,22 @@ class GetAllHashersService {
   }
 
   Future<void> updateDatabase(List<AllHasherListModel> hasherList) async {
-    final Database db = await AllHasherSqlTableHelper.instance.database;
+    final Database db = await DBProvider.db.database;
 
     for (int i = 0; i < hasherList?.length ?? 0; i++) {
       final Map<String, dynamic> row =
-          AllHasherSqlTableHelper.toMap(hasherList[i]);
+          AllHashersTableHelper.toMap(hasherList[i]);
 
       final List<Map<String, dynamic>> table = await db.rawQuery(
           'SELECT * FROM hashers WHERE user_id = "${hasherList[i].userId}"');
       if ((table == null) || (table.isEmpty)) {
-        final int result = await db.insert(AllHasherSqlTableHelper.table, row);
+        final int result = await db.insert(AllHashersTableHelper.table, row);
         print(result.toString() +
             ' inserted into to the AllHashers table @ ${DateTime.now().millisecondsSinceEpoch}');
       } else {
         final String rowId = table.first['id'].toString();
 
-        final int result = await db.update(AllHasherSqlTableHelper.table, row,
+        final int result = await db.update(AllHashersTableHelper.table, row,
             where: 'id = $rowId');
         print(result.toString() +
             ' update only to the AllHashers table @ ${DateTime.now().millisecondsSinceEpoch}');

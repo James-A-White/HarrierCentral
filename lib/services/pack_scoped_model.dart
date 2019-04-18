@@ -304,8 +304,11 @@ class PackScopedModel extends Model {
     //     addEditUser(item);}
     // );
 
-    sortPackList();
-    _filterPackList();
+    if (_packList.isNotEmpty)
+    {
+      sortPackList();
+      _filterPackList();
+    }
 
     _isLoading = false;
 

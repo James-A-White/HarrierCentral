@@ -32,7 +32,7 @@ const int mmAuthEditRuns = 0x00000020; // TODO(James): Needs implementation
 const int mmAuthGenerateRunQrCodes = 0x00000040; // TODO(James): Needs implementation
 const int mmAuthManageMembers = 0x00000080; // TODO(James): Needs implementation
 
-const int cacheDurationAllHashers = 60 * 86400000; // 60 days cache duration 
+const int cacheDurationAllHashers = 60 * 86400000; // 60 days cache duration
 
 
 
