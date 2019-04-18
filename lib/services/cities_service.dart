@@ -164,7 +164,7 @@ class CitiesService {
         final String rowId = table.first['id'].toString();
 
         await db.transaction<dynamic>((Transaction txn) async {
-          int result = await db.update(CitiesTableHelper.table, row,
+          final int result = await db.update(CitiesTableHelper.table, row,
               where: 'id = $rowId');
           print(result.toString() +
               ' update to the ${CitiesTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');

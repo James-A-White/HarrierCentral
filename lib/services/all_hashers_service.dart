@@ -1,11 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show Directory;
 
 import 'package:http/http.dart' as http;
-import 'package:path/path.dart' show join;
-import 'package:path_provider/path_provider.dart'
-    show getApplicationDocumentsDirectory;
+
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/data_models/all_hasher_model.dart';
@@ -17,9 +14,6 @@ import 'package:harrier_central/database/database.dart';
 
 class AllHashersTableHelper {
   AllHashersTableHelper._privateConstructor();
-
-  static const String _databaseName = DB_NAME;
-  static const int _databaseVersion = 1;
 
   static const String table = 'hashers';
 

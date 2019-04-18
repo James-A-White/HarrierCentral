@@ -373,7 +373,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                           ),)
                         : (packList == null || packList.isEmpty)
                             ? Container(
-                              padding: EdgeInsets.only(left:30,right:30, bottom:60),
+                              padding: const EdgeInsets.only(left:30,right:30, bottom:60),
                               height: constraints.maxHeight -
                                     searchBar(_packScopedModel,
                                             constraints.maxWidth)
