@@ -8,6 +8,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import 'package:harrier_central/util/preferences.dart';
+//import 'package:harrier_central/services/regions_service.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
@@ -165,22 +166,22 @@ class SupportPageState extends State<SupportPage> {
                                                 Positioned(
                                                   top: 50,
                                                   child: AutoSizeText(
-                                                    'Secret QR code for:',
-                                                    //'QR Code for xxx',
-                                                    textAlign: TextAlign.center,
-                                                    maxLines: 1,
-                                                    style: headingStyle
-                                                  ),
+                                                      'Secret QR code for:',
+                                                      //'QR Code for xxx',
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      maxLines: 1,
+                                                      style: headingStyle),
                                                 ),
                                                 Positioned(
                                                   top: 75,
                                                   child: AutoSizeText(
-                                                    '$userName',
-                                                    //'QR Code for xxx',
-                                                    textAlign: TextAlign.center,
-                                                    maxLines: 1,
-                                                    style: largeText
-                                                  ),
+                                                      '$userName',
+                                                      //'QR Code for xxx',
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      maxLines: 1,
+                                                      style: largeText),
                                                 ),
                                                 Positioned(
                                                   top: 145,
@@ -368,50 +369,52 @@ class SupportPageState extends State<SupportPage> {
                                                                   left: 50,
                                                                   right: 50),
                                                           onPressed: () {
-                                                            setState(() {
-                                                              isLoading = true;
+                                                            // RegionsService svc =RegionsService();
+                                                            // svc.getAllRecords(true);
+                                                            if (resetCodeTextController.text.length == 6) {
+                                                              setState(() {
+                                                                isLoading =
+                                                                    true;
 
-                                                              final AuthorizeDeviceService
-                                                                  srv =
-                                                                  AuthorizeDeviceService();
-                                                              final Future<
-                                                                      Map<String,
-                                                                          String>>
-                                                                  apiCall =
-                                                                  srv.authorizeDevice(
-                                                                      context,
-                                                                      'RC:' +
-                                                                          resetCodeTextController
-                                                                              .text
-                                                                              .toUpperCase());
-                                                              apiCall.then((Map<
-                                                                      String,
-                                                                      String>
-                                                                  result) {
-                                                                setState(() {
-                                                                  isLoading =
-                                                                      false;
+                                                                final AuthorizeDeviceService
+                                                                    srv =
+                                                                    AuthorizeDeviceService();
+                                                                final Future<
+                                                                        Map<String,
+                                                                            String>>
+                                                                    apiCall =
+                                                                    srv.authorizeDevice(
+                                                                        context,
+                                                                        'RC:' +
+                                                                            resetCodeTextController.text.toUpperCase());
+                                                                apiCall.then((Map<
+                                                                        String,
+                                                                        String>
+                                                                    result) {
+                                                                  setState(() {
+                                                                    isLoading =
+                                                                        false;
+                                                                  });
+
+                                                                  if (result[
+                                                                          'result'] !=
+                                                                      'failed') {
+                                                                    userName = getStringPref(
+                                                                        StringPrefsEnum
+                                                                            .displayName);
+                                                                    userQrCode =
+                                                                        getStringPref(
+                                                                            StringPrefsEnum.qrSecretCode);
+
+                                                                    Utilities.showAlert(
+                                                                        context,
+                                                                        'App Reset Successful',
+                                                                        'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',
+                                                                        'OK');
+                                                                  }
                                                                 });
-
-                                                                if (result[
-                                                                        'result'] !=
-                                                                    'failed') {
-                                                                  userName = getStringPref(
-                                                                      StringPrefsEnum
-                                                                          .displayName);
-                                                                  userQrCode =
-                                                                      getStringPref(
-                                                                          StringPrefsEnum
-                                                                              .qrSecretCode);
-
-                                                                  Utilities.showAlert(
-                                                                      context,
-                                                                      'App Reset Successful',
-                                                                      'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',
-                                                                      'OK');
-                                                                }
                                                               });
-                                                            });
+                                                            }
                                                           },
                                                           child: const Text(
                                                             'Reset App',
@@ -427,7 +430,6 @@ class SupportPageState extends State<SupportPage> {
                                           ),
                                         ),
                                       )),
-                               
                                 ],
                               ),
                             ),

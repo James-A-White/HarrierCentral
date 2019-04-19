@@ -8,6 +8,7 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:harrier_central/services/all_hashers_service.dart';
 import 'package:harrier_central/services/cities_service.dart';
+import 'package:harrier_central/services/regions_service.dart';
 import 'package:harrier_central/util/constants.dart';
 
 class DBProvider {
@@ -33,10 +34,15 @@ class DBProvider {
         onCreate: (Database db, int version) async {
       await AllHashersTableHelper.createTable(db, version);
       await CitiesTableHelper.createTable(db, version);
+      await RegionsTableHelper.createTable(db, version);
 
-      final String json = await rootBundle.loadString('database/cities.json');
-      final CitiesService srv = CitiesService();
-      await srv.bulkUpdateDatabase(json,db);
+      final String cityJson = await rootBundle.loadString('database/cities.json');
+      final CitiesService citySrv = CitiesService();
+      await citySrv.bulkUpdateDatabase(cityJson,db);
+
+      final String regionJson = await rootBundle.loadString('database/regions.json');
+      final RegionsService regionSrv = RegionsService();
+      await regionSrv.bulkUpdateDatabase(regionJson,db);
     });
   }
 }

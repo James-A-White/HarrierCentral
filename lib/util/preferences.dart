@@ -28,6 +28,8 @@ enum IntPrefsEnum {
 
   lastUpdateCitiesData,
   lastCacheClearCitiesData,
+  lastUpdateRegionsData,
+  lastCacheClearRegionsData,
 
   dbCreated,
 

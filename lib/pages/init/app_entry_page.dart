@@ -6,10 +6,10 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:package_info/package_info.dart';
 
 import 'package:harrier_central/data_models/approve_login_model.dart';
-import 'package:harrier_central/data_models/cities_model.dart';
+import 'package:harrier_central/services/cities_service.dart';
+import 'package:harrier_central/services/regions_service.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
 import 'package:harrier_central/services/approve_login_service.dart';
-import 'package:harrier_central/services/cities_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -62,6 +62,13 @@ class _AppEntryPageState extends State<AppEntryPage>
               srv.getAllRecords(false).then((List<CitiesModel> cities) {
                 print(
                     'City list downloaded & updated. Cities loaded = ${cities.length.toString()}');
+              });
+
+
+              final RegionsService rSrv = RegionsService();
+              rSrv.getAllRecords(false).then((List<RegionsModel> regions) {
+                print(
+                    'Region list downloaded & updated. Regions loaded = ${regions.length.toString()}');
               });
 
               Navigator.pushReplacement<dynamic, dynamic>(

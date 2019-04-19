@@ -197,7 +197,7 @@ class GetAllHashersService {
       final num timeValue = await getLastUpdatedTime();
       final DateTime updatedAfter = timeValue == null
           ? DateTime(2019, 1, 1)
-          : DateTime.fromMillisecondsSinceEpoch(timeValue);
+          : DateTime.fromMillisecondsSinceEpoch(timeValue+1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
@@ -210,7 +210,7 @@ class GetAllHashersService {
       final String body = jsonEncode(<String, String>{
         'userId': userId,
         'accessToken': accessToken,
-        'updatedAfter': updatedAfter.toUtc().toString().substring(0, 19)
+        'updatedAfter': updatedAfter.toString().substring(0, 19)
       });
 
       final http.Response response = await http
