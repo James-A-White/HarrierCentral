@@ -11,7 +11,6 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/database/database.dart';
 
-
 class AllHashersTableHelper {
   AllHashersTableHelper._privateConstructor();
 
@@ -73,7 +72,8 @@ class AllHashersTableHelper {
           ''');
 
     await db.execute('CREATE INDEX idx_user_id ON $table($colUserId);');
-    await db.execute('CREATE INDEX idx_update_at_value ON $table($colUpdatedAtValue);');
+    await db.execute(
+        'CREATE INDEX idx_update_at_value ON $table($colUpdatedAtValue);');
   }
 
   static Map<String, dynamic> toMap(AllHasherListModel item) {
@@ -155,6 +155,10 @@ class GetAllHashersService {
   Future<void> updateDatabase(List<AllHasherListModel> hasherList) async {
     final Database db = await DBProvider.db.database;
 
+    final int i = hasherList.length;
+
+    print('Hasher records received from cloud = $i');
+
     for (int i = 0; i < hasherList?.length ?? 0; i++) {
       final Map<String, dynamic> row =
           AllHashersTableHelper.toMap(hasherList[i]);
@@ -197,7 +201,7 @@ class GetAllHashersService {
       final num timeValue = await getLastUpdatedTime();
       final DateTime updatedAfter = timeValue == null
           ? DateTime(2019, 1, 1)
-          : DateTime.fromMillisecondsSinceEpoch(timeValue+1000);
+          : DateTime.fromMillisecondsSinceEpoch(timeValue + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
