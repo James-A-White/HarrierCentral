@@ -8,6 +8,7 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:harrier_central/data/services/all_hashers_service.dart';
 import 'package:harrier_central/data/services/cities_service.dart';
+import 'package:harrier_central/data/services/countries_service.dart';
 import 'package:harrier_central/data/services/regions_service.dart';
 import 'package:harrier_central/util/constants.dart';
 
@@ -35,34 +36,45 @@ class DBProvider {
       await AllHashersTableHelper.createTable(db, version);
       await CitiesTableHelper.createTable(db, version);
       await RegionsTableHelper.createTable(db, version);
+      await CountriesTableHelper.createTable(db, version);
 
-      if (informUser != null) 
-      {
-        informUser('Loading city data\r\n0% complete'); 
+      if (informUser != null) {
+        informUser('Loading city data\r\n0% complete');
       }
       // first load the cities from the static text file into SQFLITE
-      final String cityJson = await rootBundle.loadString('database/cities.json');
+      final String cityJson =
+          await rootBundle.loadString('database/cities.json');
       final CitiesService citySrv = CitiesService();
-      await citySrv.bulkUpdateDatabase(cityJson,db,informUser);
+      await citySrv.bulkUpdateDatabase(cityJson, db, informUser);
       // then go out and query the back end for any changes that have been made to those cities
 
-      if (informUser != null) 
-      {
+      if (informUser != null) {
         informUser('Loading region data\r\n0% complete');
       }
       // first load the regions from the static text file into SQFLITE
-      final String regionJson = await rootBundle.loadString('database/regions.json');
+      final String regionJson =
+          await rootBundle.loadString('database/regions.json');
       final RegionsService regionSrv = RegionsService();
-      await regionSrv.bulkUpdateDatabase(regionJson,db,informUser);
+      await regionSrv.bulkUpdateDatabase(regionJson, db, informUser);
       // then go out and query the back end for any changes that have been made to those cities
-      
-      if (informUser != null) 
-      {
+
+      if (informUser != null) {
+        informUser('Loading country data\r\n0% complete');
+      }
+      // first load the regions from the static text file into SQFLITE
+      final String countriesJson =
+          await rootBundle.loadString('database/countries.json');
+      final CountriesService countriesSrv = CountriesService();
+      await countriesSrv.bulkUpdateDatabase(countriesJson, db, informUser);
+      // then go out and query the back end for any changes that have been made to those cities
+
+      if (informUser != null) {
         informUser('Updating from\r\ncloud back-end');
       }
 
-      await citySrv.updateFromBackend(db,true);
-      await regionSrv.updateFromBackend(db,true);
+      await citySrv.updateFromBackend(db, true);
+      await regionSrv.updateFromBackend(db, true);
+      await countriesSrv.updateFromBackend(db, true);
     });
   }
 }

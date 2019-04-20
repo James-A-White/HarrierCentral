@@ -105,6 +105,7 @@ flutter:
     - assets/sounds/camera.mp3
     - database/cities.json
     - database/regions.json
+    - database/countries.json
     - images/avatars/
     - images/backgrounds/
     - images/generic_logos/
