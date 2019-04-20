@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/data_models/kennel_run_history_totals_model.dart';
+import 'package:harrier_central/data/models/kennel_run_history_totals_model.dart';
 import 'package:harrier_central/pages/history_sub_pages/user_run_history_list_page.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/data_models/kennel_member_model.dart';
+import 'package:harrier_central/data/models/kennel_member_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:harrier_central/pages/kennel_admin/user_secret_qr_page.dart';
 

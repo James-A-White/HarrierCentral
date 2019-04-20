@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 
-import 'package:harrier_central/data_models/planned_run_model.dart';
+import 'package:harrier_central/data/models/planned_run_model.dart';
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
-import 'package:harrier_central/services/future_run_scoped_model.dart';
+import 'package:harrier_central/data/services/future_run_scoped_model.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 

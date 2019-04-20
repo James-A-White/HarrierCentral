@@ -3,9 +3,9 @@ import 'dart:core';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:harrier_central/services/get_reset_code_service.dart';
-import 'package:harrier_central/data_models/single_result_model.dart';
-import 'package:harrier_central/services/authorize_device_service.dart';
+import 'package:harrier_central/data/services/get_reset_code_service.dart';
+import 'package:harrier_central/data/models/single_result_model.dart';
+import 'package:harrier_central/data/services/authorize_device_service.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/preferences.dart';
 

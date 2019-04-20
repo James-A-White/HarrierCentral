@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/data_models/payment_report_model.dart';
+import 'package:harrier_central/data/models/payment_report_model.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/styles.dart';
 

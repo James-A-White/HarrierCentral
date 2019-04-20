@@ -8,9 +8,9 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/profile_photo.dart';
-import 'package:harrier_central/data_models/user_model.dart';
+import 'package:harrier_central/data/models/user_model.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
-import 'package:harrier_central/services/edit_user_service.dart';
+import 'package:harrier_central/data/services/edit_user_service.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
 
 // import 'package:harrier_central/widgets/user_details_ui.dart';

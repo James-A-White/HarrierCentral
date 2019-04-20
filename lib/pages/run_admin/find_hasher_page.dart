@@ -7,8 +7,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
-import 'package:harrier_central/data_models/all_hasher_model.dart';
-import 'package:harrier_central/services/all_hashers_service.dart';
+import 'package:harrier_central/data/models/all_hasher_model.dart';
+import 'package:harrier_central/data/services/all_hashers_service.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class FindHasherPage extends StatefulWidget {

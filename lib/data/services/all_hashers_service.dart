@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/data_models/all_hasher_model.dart';
+import 'package:harrier_central/data/models/all_hasher_model.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';

@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 
 import 'package:permission_handler/permission_handler.dart';
 import 'package:package_info/package_info.dart';
+import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/data_models/approve_login_model.dart';
-import 'package:harrier_central/services/cities_service.dart';
-import 'package:harrier_central/services/regions_service.dart';
+import 'package:harrier_central/data/models/approve_login_model.dart';
+import 'package:harrier_central/data/services/cities_service.dart';
+import 'package:harrier_central/data/services/regions_service.dart';
+import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
-import 'package:harrier_central/services/approve_login_service.dart';
+import 'package:harrier_central/data/services/approve_login_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -58,18 +60,17 @@ class _AppEntryPageState extends State<AppEntryPage>
               Navigator.of(context)
                   .pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
             } else {
-              final CitiesService srv = CitiesService();
-              srv.getAllRecords(false).then((List<CitiesModel> cities) {
-                print(
-                    'City list downloaded & updated. Cities loaded = ${cities.length.toString()}');
-              });
+              Database db = await DBProvider.db.database;
 
+              final CitiesService srv = CitiesService();
+              bool result = await srv.updateFromBackend(db,false);
+              String resultStr = result ? 'successfully' : 'unsuccessfully';
+              print('City list downloaded $resultStr');
 
               final RegionsService rSrv = RegionsService();
-              rSrv.getAllRecords(false).then((List<RegionsModel> regions) {
-                print(
-                    'Region list downloaded & updated. Regions loaded = ${regions.length.toString()}');
-              });
+              result = await rSrv.updateFromBackend(db,false);
+              resultStr = result ? 'successfully' : 'unsuccessfully';
+              print('Region list downloaded $resultStr');
 
               Navigator.pushReplacement<dynamic, dynamic>(
                   context,

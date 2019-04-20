@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:harrier_central/data_models/planned_run_model.dart';
-import 'package:harrier_central/data_models/join_event_model.dart';
-import 'package:harrier_central/services/join_event_service.dart';
+import 'package:harrier_central/data/models/planned_run_model.dart';
+import 'package:harrier_central/data/models/join_event_model.dart';
+import 'package:harrier_central/data/services/join_event_service.dart';
 import 'package:harrier_central/util/constants.dart';
 
 import 'package:harrier_central/util/preferences.dart';

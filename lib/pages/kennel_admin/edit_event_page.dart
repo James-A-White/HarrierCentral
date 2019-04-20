@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/data_models/lite_event_model.dart';
+import 'package:harrier_central/data/models/lite_event_model.dart';
 
 import 'package:harrier_central/util/styles.dart';
 // import 'package:harrier_central/widgets/user_details_ui.dart';

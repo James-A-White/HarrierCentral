@@ -1,7 +1,7 @@
 
-import 'package:harrier_central/data_models/pay_for_event_model.dart';
-import 'package:harrier_central/services/pay_for_event_service.dart';
-import 'package:harrier_central/data_models/user_model.dart';
+import 'package:harrier_central/data/models/pay_for_event_model.dart';
+import 'package:harrier_central/data/services/pay_for_event_service.dart';
+import 'package:harrier_central/data/models/user_model.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 

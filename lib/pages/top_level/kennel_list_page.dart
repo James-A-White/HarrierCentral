@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/services/kennel_scoped_model.dart';
+import 'package:harrier_central/data/services/kennel_scoped_model.dart';
 import 'package:harrier_central/widgets/kennel_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 

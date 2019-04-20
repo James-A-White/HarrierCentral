@@ -8,7 +8,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:harrier_central/util/styles.dart';
 
-import 'package:harrier_central/data_models/lite_event_model.dart';
+import 'package:harrier_central/data/models/lite_event_model.dart';
 import 'package:harrier_central/pages/kennel_admin/edit_event_page.dart';
 
 class FilterEventListItem extends StatelessWidget {

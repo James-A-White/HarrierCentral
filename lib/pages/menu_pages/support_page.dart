@@ -8,11 +8,11 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import 'package:harrier_central/util/preferences.dart';
-//import 'package:harrier_central/services/regions_service.dart';
+//import 'package:harrier_central/data/services/regions_service.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
-import 'package:harrier_central/services/authorize_device_service.dart';
+import 'package:harrier_central/data/services/authorize_device_service.dart';
 
 // import 'package:harrier_central/widgets/user_details_ui.dart';
 // import 'package:harrier_central/widgets/fancy_divider.dart';

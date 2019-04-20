@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/data_models/db_error_model.dart';
+import 'package:harrier_central/data/models/db_error_model.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/utilities.dart';
 

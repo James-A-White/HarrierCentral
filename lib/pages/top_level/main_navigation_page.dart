@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 
-import 'package:harrier_central/data_models/main_navigation_model.dart';
+import 'package:harrier_central/data/models/main_navigation_model.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/pages/top_level/history_list_page.dart';
@@ -13,9 +13,9 @@ import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
-import 'package:harrier_central/services/kennel_scoped_model.dart';
+import 'package:harrier_central/data/services/kennel_scoped_model.dart';
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/services/kennel_run_history_totals_scoped_model.dart';
+import 'package:harrier_central/data/services/kennel_run_history_totals_scoped_model.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);
@@ -31,6 +31,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   List<String> tabTitles = <String>[];
 
   String appBarText;
+  String initializationMessage = '';
 
   @override
   void initState() {
@@ -52,13 +53,19 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     // the first time this is run, the database will be created. On subsequent
     // runs, the database will simply be opened.
 
-    DBProvider.db.database.then((Database db) {
+    DBProvider.db.initDB(informUser).then((Database db) {
       setState(() {
         setIntPref(IntPrefsEnum.dbCreated, 1);
       });
     });
 
     super.initState();
+  }
+
+  void informUser(String message) {
+    setState(() {
+      initializationMessage = message;
+    });
   }
 
   void onTabTapped(EnumAppPages index) {
@@ -114,12 +121,25 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 height: MediaQuery.of(context).size.height,
                 width: MediaQuery.of(context).size.width,
                 child: Center(
-                  child: Image.asset(
-                    'images/other/creating_database.png',
-                    height: 250,
-                    width: 250,
-                  ),
-                ),
+                    child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Image.asset(
+                      'images/other/creating_database.png',
+                      height: 250,
+                      width: 250,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Text(
+                        initializationMessage,
+                        style: headingStyle,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                )),
               )
             : Center(
                 child: _getPage(currentPage),

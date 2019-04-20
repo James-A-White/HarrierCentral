@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
-import 'package:harrier_central/data_models/main_navigation_model.dart';
+import 'package:harrier_central/data/models/main_navigation_model.dart';
 import 'package:harrier_central/pages/menu_pages/my_profile_page.dart';
 import 'package:harrier_central/pages/menu_pages/imprint_page.dart';
 import 'package:harrier_central/pages/menu_pages/legal_page.dart';

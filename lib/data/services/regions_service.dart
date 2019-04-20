@@ -9,7 +9,6 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 
-
 class RegionsModel {
   RegionsModel(
       {this.regionId,
@@ -34,13 +33,13 @@ class RegionsModel {
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
         item = RegionsModel(
-          regionId: jsonItem['regionId'].toString(),
-          regionName: jsonItem['regionName'],
-          countryId: jsonItem['countryId'].toString(),
-          flagFile: jsonItem['flagFile'],
-          updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0,19)),
-          removed: jsonItem['removed']
-        );
+            regionId: jsonItem['regionId'].toString(),
+            regionName: jsonItem['regionName'],
+            countryId: jsonItem['countryId'].toString(),
+            flagFile: jsonItem['flagFile'],
+            updatedAt: DateTime.parse(
+                jsonItem['updatedAt'].toString().substring(0, 19)),
+            removed: jsonItem['removed']);
 
         items.add(item);
       },
@@ -54,14 +53,15 @@ class RegionsModel {
   }
 }
 
-
 class RegionsTableHelper {
   RegionsTableHelper._privateConstructor();
 
   static const String table = 'regions';
-  static const num forceRequeryInterval = 1 * 86400000;
-  //static const num forceRequeryInterval = 1 * 1000;
-  static const num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
+  //static const num forceRequeryInterval = 1 * 86400000;
+  static const num forceRequeryInterval = 1 * 1000;
+  static const num cacheDuration = 365 *
+      3 *
+      86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
   static const String storedProcName = 'getAllRegions';
   static const String restApiMethodName = 'hc3_get_all_regions';
 
@@ -106,6 +106,7 @@ class RegionsTableHelper {
         'CREATE INDEX idx_${table}_update_at_value ON $table($colUpdatedAtValue);');
   }
 
+
   static Map<String, dynamic> toMap(RegionsModel item) {
     final Map<String, dynamic> map = <String, dynamic>{
       RegionsTableHelper.colRegionId: item.regionId,
@@ -127,7 +128,8 @@ class RegionsTableHelper {
       regionName: map[RegionsTableHelper.colRegionName],
       countryId: map[RegionsTableHelper.colCountryId],
       flagFile: map[RegionsTableHelper.colFlagFile],
-      updatedAt: DateTime.parse(map[RegionsTableHelper.colUpdatedAt].toString().substring(0,19)),
+      updatedAt: DateTime.parse(
+          map[RegionsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[RegionsTableHelper.colRemoved],
     );
 
@@ -139,9 +141,7 @@ class RegionsService {
   static final RegionsTableHelper instance =
       RegionsTableHelper._privateConstructor();
 
-  Future<num> getLastUpdatedTime() async {
-    final Database db = await DBProvider.db.database;
-    //print(await db.rawQuery('SELECT TOP 10 * FROM ${RegionsTableHelper.table}'));
+  Future<num> getLastUpdatedTime(Database db) async {
 
     final List<Map<String, dynamic>> table = await db.rawQuery(
         'SELECT MAX(${RegionsTableHelper.colUpdatedAtValue}) AS maxDate FROM ${RegionsTableHelper.table}');
@@ -191,7 +191,7 @@ class RegionsService {
         await db.transaction<dynamic>((Transaction txn) async {
           final int result = await txn.insert(RegionsTableHelper.table, row);
           print(result.toString() +
-              ' inserted into to the ${RegionsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
+              ' inserted into to the ${RegionsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
         });
       } else {
         final String rowId = table.first['id'].toString();
@@ -200,78 +200,92 @@ class RegionsService {
           final int result = await db.update(RegionsTableHelper.table, row,
               where: 'id = $rowId');
           print(result.toString() +
-              ' update to the ${RegionsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
+              ' update to the ${RegionsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
         });
       }
     }
   }
 
-  Future<int> bulkUpdateDatabase(String rawResults, Database db) async {
+  Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser) async {
     int updateCounter = 0;
     int insertCounter = 0;
 
-    final dynamic jsonResult = json.decode(rawResults);
+    final List<dynamic> jsonResultSets = json.decode(rawResults);
 
-    final int i = jsonResult.length;
+    final int len = jsonResultSets.length;
+    int lastPercentage = 0;
 
-    print('region records received from cloud = $i');
+    print('Region records received from cloud = $len');
 
-    await jsonResult.forEach((dynamic jsonItem) async {
+    for (int i = 0; i < jsonResultSets.length; i++) {
+      final List<dynamic> jsonResults = jsonResultSets[i];
 
-      jsonItem.addAll(<String, dynamic>{
-        'updatedAtValue':
-            DateTime.parse(jsonItem['updatedAt'].toString().substring(0,19)).millisecondsSinceEpoch,
-      });
+      for (int j = 0; j < jsonResults.length; j++) {
+        final Map<String, dynamic> jsonItem = jsonResults[j];
 
-      final String query =
-          'SELECT * FROM ${RegionsTableHelper.table} WHERE ${RegionsTableHelper.remoteDbId} = "${jsonItem['regionId'].toString()}"';
-      final List<Map<String, dynamic>> table = await db.rawQuery(query);
+        final int percentage = (100 * (j/jsonResults.length)).round();
+        if ((percentage != lastPercentage) && (informUser != null))
+        {
+          lastPercentage =percentage;
+          informUser('Loading region data\r\n$percentage% complete');   
+        }
 
-      if ((table == null) || (table.isEmpty)) {
-        //print(table.length.toString());
-        await db.transaction<dynamic>((Transaction txn) async {
-          //final int result =
-              await txn.insert(RegionsTableHelper.table, jsonItem); 
-          insertCounter++;
-          // print(result.toString() +
-          //     ' inserted into to the ${RegionsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
+        jsonItem.addAll(<String, dynamic>{
+          'updatedAtValue':
+              DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19))
+                  .millisecondsSinceEpoch,
         });
-      } else {
-        final String rowId = table.first['id'].toString();
 
-        await db.transaction<dynamic>((Transaction txn) async {
-          //final int result = 
-          await txn.update(RegionsTableHelper.table, jsonItem,
-              where: 'id = $rowId');
-          updateCounter++;
-          // print(result.toString() +
-          //     ' update to the ${RegionsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
-        });
+        final String query =
+            'SELECT * FROM ${RegionsTableHelper.table} WHERE ${RegionsTableHelper.remoteDbId} = "${jsonItem['regionId']}"';
+        final List<Map<String, dynamic>> table = await db.rawQuery(query);
+
+        if ((table == null) || (table.isEmpty)) {
+          //print(table.length.toString());
+          await db.transaction<dynamic>((Transaction txn) async {
+            //final int result =
+            await txn.insert(RegionsTableHelper.table, jsonItem);
+            insertCounter++;
+            // print(result.toString() +
+            //     ' inserted into to the ${RegionsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
+          });
+        } else {
+          final String rowId = table.first['id'].toString();
+
+          await db.transaction<dynamic>((Transaction txn) async {
+            //final int result =
+            await txn.update(RegionsTableHelper.table, jsonItem,
+                where: 'id = $rowId');
+            updateCounter++;
+            // print(result.toString() +
+            //     ' update to the ${RegionsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
+          });
+        }
       }
-    });
-    print('$insertCounter region records inserted, $updateCounter region records updated');
+    }
+
+    print(
+        '$insertCounter region records inserted, $updateCounter region records updated');
     return insertCounter;
   }
 
-  Future<List<RegionsModel>> getAllRecords(bool forceRefresh) async {
+  Future<bool> updateFromBackend(Database db, bool forceRefresh) async {
     final int lastUpdate = getIntPref(RegionsTableHelper.lastUpdatedKey) ?? 0;
 
     if (forceRefresh ||
         ((DateTime.now().millisecondsSinceEpoch - lastUpdate) >
             RegionsTableHelper.forceRequeryInterval)) {
       // check to see if we need to clear the cache
-      int lastCacheClear =
-          getIntPref(RegionsTableHelper.lastCacheClearKey);
-      
-      if (lastCacheClear == null)
-      {
-        // if lastCacheClear is null that means we've never cleared the 
+      int lastCacheClear = getIntPref(RegionsTableHelper.lastCacheClearKey);
+
+      if (lastCacheClear == null) {
+        // if lastCacheClear is null that means we've never cleared the
         // cache. This happens on startup. So, go ahead and set the lastCacheClear
         // date to now and set lastCacheClear to now to prevent the
         // cache from clearing immediatly upon startup
         lastCacheClear = DateTime.now().millisecondsSinceEpoch;
         setIntPref(RegionsTableHelper.lastCacheClearKey,
-          DateTime.now().millisecondsSinceEpoch);
+            DateTime.now().millisecondsSinceEpoch);
       }
 
       if (lastCacheClear + RegionsTableHelper.cacheDuration <
@@ -283,10 +297,10 @@ class RegionsService {
 
       // get the last updated time of any of the records in
       // the table and add one second to it
-      final num timeValue = await getLastUpdatedTime();
+      final num timeValue = await getLastUpdatedTime(db);
       final DateTime updatedAfter = timeValue == null
           ? DateTime(2019, 1, 1)
-          : DateTime.fromMillisecondsSinceEpoch(timeValue+1000);
+          : DateTime.fromMillisecondsSinceEpoch(timeValue + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
@@ -319,16 +333,15 @@ class RegionsService {
 
       // TODO(James): Fix issue where one city is returned every time, change the lastUpdated param to the database to the lastUpdatedValue (bigint) from lastUpdated (datetime)
       if (response.body.length > 20) {
-        final Database db = await DBProvider.db.database;
-        await bulkUpdateDatabase(response.body, db);
+        await bulkUpdateDatabase(response.body, db, null);
       }
 
       setIntPref(RegionsTableHelper.lastUpdatedKey,
           DateTime.now().millisecondsSinceEpoch);
     }
 
-    final List<RegionsModel> allRecords = await selectAllFromLocalDb();
+    //final List<RegionsModel> allRecords = await selectAllFromLocalDb();
 
-    return allRecords;
+    return true;
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/data_models/kennel_model.dart';
+import 'package:harrier_central/data/models/kennel_model.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
 import 'package:harrier_central/pages/kennel_admin/filter_events_page.dart';

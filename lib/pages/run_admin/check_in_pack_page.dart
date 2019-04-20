@@ -8,19 +8,19 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:scoped_model/scoped_model.dart';
 
-import 'package:harrier_central/data_models/planned_run_model.dart';
-import 'package:harrier_central/data_models/pay_for_event_model.dart';
-import 'package:harrier_central/data_models/process_qr_scan_for_checkin_model.dart';
-import 'package:harrier_central/data_models/user_model.dart';
-import 'package:harrier_central/services/pack_scoped_model.dart';
-import 'package:harrier_central/services/pay_scoped_model.dart';
+import 'package:harrier_central/data/models/planned_run_model.dart';
+import 'package:harrier_central/data/models/pay_for_event_model.dart';
+import 'package:harrier_central/data/models/process_qr_scan_for_checkin_model.dart';
+import 'package:harrier_central/data/models/user_model.dart';
+import 'package:harrier_central/data/services/pack_scoped_model.dart';
+import 'package:harrier_central/data/services/pay_scoped_model.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/new_user.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
 import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
-import 'package:harrier_central/data_models/all_hasher_model.dart';
+import 'package:harrier_central/data/models/all_hasher_model.dart';
 
 class CheckInPackPage extends StatefulWidget {
   const CheckInPackPage({

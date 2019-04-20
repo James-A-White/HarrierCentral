@@ -7,8 +7,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:fast_qr_reader_view/fast_qr_reader_view.dart'; 
 import 'package:audioplayers/audio_cache.dart';
 
-import 'package:harrier_central/data_models/process_qr_scan_model.dart';
-import 'package:harrier_central/services/process_qr_scan_service.dart';
+import 'package:harrier_central/data/models/process_qr_scan_model.dart';
+import 'package:harrier_central/data/services/process_qr_scan_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';

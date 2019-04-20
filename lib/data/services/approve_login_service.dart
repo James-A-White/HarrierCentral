@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io' show Platform;
 import 'package:device_info/device_info.dart';
 
-import 'package:harrier_central/data_models/approve_login_model.dart';
+import 'package:harrier_central/data/models/approve_login_model.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';

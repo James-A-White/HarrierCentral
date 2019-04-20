@@ -4,9 +4,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/data_models/user_model.dart';
+import 'package:harrier_central/data/models/user_model.dart';
 import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/services/service_common.dart';
+import 'package:harrier_central/data/services/service_common.dart';
 import 'package:harrier_central/util/constants.dart';
 
 class EditUserService {

@@ -6,11 +6,11 @@ import 'package:audioplayers/audio_cache.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/services/process_qr_scan_service.dart';
-import 'package:harrier_central/data_models/process_qr_scan_model.dart';
+import 'package:harrier_central/data/services/process_qr_scan_service.dart';
+import 'package:harrier_central/data/models/process_qr_scan_model.dart';
 import 'package:harrier_central/pages/run_admin/payment_popup.dart';
-import 'package:harrier_central/services/pay_for_event_service.dart';
-import 'package:harrier_central/data_models/pay_for_event_model.dart';
+import 'package:harrier_central/data/services/pay_for_event_service.dart';
+import 'package:harrier_central/data/models/pay_for_event_model.dart';
 import 'package:harrier_central/util/enums.dart';
 
 class CheckInScannerPage extends StatefulWidget {

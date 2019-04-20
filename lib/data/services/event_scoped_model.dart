@@ -6,9 +6,9 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:scoped_model/scoped_model.dart';
 
-import 'package:harrier_central/data_models/join_event_model.dart';
-import 'package:harrier_central/data_models/lite_event_model.dart';
-import 'package:harrier_central/services/join_event_service.dart';
+import 'package:harrier_central/data/models/join_event_model.dart';
+import 'package:harrier_central/data/models/lite_event_model.dart';
+import 'package:harrier_central/data/services/join_event_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';

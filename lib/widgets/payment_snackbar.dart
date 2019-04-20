@@ -4,13 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/data_models/planned_run_model.dart';
-import 'package:harrier_central/data_models/user_model.dart';
-import 'package:harrier_central/services/pack_scoped_model.dart';
-import 'package:harrier_central/services/pay_scoped_model.dart';
+import 'package:harrier_central/data/models/planned_run_model.dart';
+import 'package:harrier_central/data/models/user_model.dart';
+import 'package:harrier_central/data/services/pack_scoped_model.dart';
+import 'package:harrier_central/data/services/pay_scoped_model.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/pages/run_admin/other_payment_popup.dart';
-import 'package:harrier_central/data_models/pay_for_event_model.dart';
+import 'package:harrier_central/data/models/pay_for_event_model.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 

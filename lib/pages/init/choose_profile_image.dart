@@ -15,17 +15,17 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:tinycolor/tinycolor.dart';
 
-import 'package:harrier_central/data_models/single_result_model.dart';
+import 'package:harrier_central/data/models/single_result_model.dart';
 import 'package:harrier_central/pages/init/avatar_icons_page.dart';
-import 'package:harrier_central/services/update_avatar_service.dart';
+import 'package:harrier_central/data/services/update_avatar_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/data_models/user_model.dart';
-import 'package:harrier_central/services/add_user_service.dart';
+import 'package:harrier_central/data/models/user_model.dart';
+import 'package:harrier_central/data/services/add_user_service.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 
 class ChooseProfileImage extends StatefulWidget {

@@ -6,11 +6,11 @@ import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
-import 'package:harrier_central/data_models/pay_for_event_model.dart';
-import 'package:harrier_central/data_models/payment_report_model.dart';
+import 'package:harrier_central/data/models/pay_for_event_model.dart';
+import 'package:harrier_central/data/models/payment_report_model.dart';
 import 'package:harrier_central/pages/run_admin/payment_popup.dart';
-import 'package:harrier_central/services/pay_for_event_service.dart';
-import 'package:harrier_central/services/payment_report_scoped_model.dart';
+import 'package:harrier_central/data/services/pay_for_event_service.dart';
+import 'package:harrier_central/data/services/payment_report_scoped_model.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';

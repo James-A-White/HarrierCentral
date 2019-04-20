@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/data_models/planned_run_model.dart';
+import 'package:harrier_central/data/models/planned_run_model.dart';
 import 'package:harrier_central/widgets/run_tabs.dart';
 import 'package:harrier_central/util/styles.dart';
 

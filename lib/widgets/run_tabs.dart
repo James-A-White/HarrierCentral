@@ -13,13 +13,13 @@ import 'package:latlong/latlong.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:harrier_central/data_models/planned_run_model.dart';
-import 'package:harrier_central/data_models/user_model.dart';
+import 'package:harrier_central/data/models/planned_run_model.dart';
+import 'package:harrier_central/data/models/user_model.dart';
 import 'package:harrier_central/pages/run_admin/run_start_end_qr_codes_page.dart';
 import 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
 import 'package:harrier_central/pages/run_admin/payment_report.dart';
-import 'package:harrier_central/services/future_run_scoped_model.dart';
-import 'package:harrier_central/services/get_pack_service.dart';
+import 'package:harrier_central/data/services/future_run_scoped_model.dart';
+import 'package:harrier_central/data/services/get_pack_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';

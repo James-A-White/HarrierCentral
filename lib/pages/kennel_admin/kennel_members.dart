@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 
-import 'package:harrier_central/services/kennel_member_scoped_model.dart';
+import 'package:harrier_central/data/services/kennel_member_scoped_model.dart';
 import 'package:harrier_central/pages/kennel_admin/add_member_page.dart';
 import 'package:harrier_central/widgets/kennel_member_list_item.dart';
-import 'package:harrier_central/data_models/kennel_model.dart';
+import 'package:harrier_central/data/models/kennel_model.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class KennelMembersList extends StatefulWidget {
