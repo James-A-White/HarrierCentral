@@ -8,7 +8,6 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/data/models/approve_login_model.dart';
 import 'package:harrier_central/data/hc3_services/sync_master_data_service.dart';
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
 import 'package:harrier_central/data/services/approve_login_service.dart';

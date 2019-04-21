@@ -1,18 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:crypto/crypto.dart';
-
 import 'package:flutter/material.dart';
+
+import 'package:crypto/crypto.dart';
+import 'package:intl/intl.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:harrier_central/localization.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 
-import 'package:intl/intl.dart';
 
-import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class LatLon {
   double latitude;
@@ -98,6 +98,7 @@ class Utilities {
 
     return finalStr;
   }
+
 
   static String getDistance(int meters, BuildContext context) {
     const bool isMetric = true;

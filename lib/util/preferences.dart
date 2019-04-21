@@ -35,6 +35,9 @@ enum IntPrefsEnum {
   lastUpdateKennelData,
   lastCacheClearKennelData,
 
+  lastUpdateUserKennelData,
+  lastCacheClearUserKennelData,
+
   dbCreated,
 }
 

@@ -101,6 +101,7 @@ class KennelsTableHelper {
   KennelsTableHelper._privateConstructor();
 
   static const String tableName = 'kennels';
+
   //static const num forceRequeryInterval = 1 * 86400000;
   static const num forceRequeryInterval = 1 * 1000;
   static const num cacheDuration = 365 *
@@ -407,7 +408,7 @@ class KennelsService {
       // the table and add one second to it
       final num timeValue = await getLastUpdatedTime(db);
       final DateTime updatedAfter = timeValue == null
-          ? DateTime(2019, 1, 1)
+          ? DateTime(2000, 1, 1)
           : DateTime.fromMillisecondsSinceEpoch(timeValue + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);

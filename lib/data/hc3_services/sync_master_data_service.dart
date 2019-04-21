@@ -67,10 +67,10 @@ class SyncMasterDataService {
       // the table and add one second to it
       await getLastUpdatedTimes(db);
 
-      final DateTime citiesUpdatedAfter = _citiesLastUpdated == null ? DateTime(2019, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_citiesLastUpdated + 1000);
-      final DateTime regionsUpdatedAfter = _regionsLastUpdated == null ? DateTime(2019, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_regionsLastUpdated + 1000);
-      final DateTime countriesUpdatedAfter = _countriesLastUpdated == null ? DateTime(2019, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_countriesLastUpdated + 1000);
-      final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime(2019, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
+      final DateTime citiesUpdatedAfter = _citiesLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_citiesLastUpdated + 1000);
+      final DateTime regionsUpdatedAfter = _regionsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_regionsLastUpdated + 1000);
+      final DateTime countriesUpdatedAfter = _countriesLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_countriesLastUpdated + 1000);
+      final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
