@@ -1,5 +1,3 @@
-
-
 import 'dart:async';
 import 'dart:convert';
 
@@ -12,10 +10,8 @@ import 'package:http/http.dart' as http;
 import 'package:scoped_model/scoped_model.dart';
 
 class KennelScopedModel extends Model {
-
   final List<Kennel> _kennelsList = <Kennel>[];
   List<Kennel> get kennelsList => _kennelsList;
-
 
   bool _isLoading = false;
 
@@ -23,9 +19,7 @@ class KennelScopedModel extends Model {
 
   void addEditKennelList(Kennel kennel) {
     if (_kennelsList.isNotEmpty) {
-      final Kennel ken = _kennelsList.firstWhere(
-          (Kennel k) => k.kennelId == kennel.kennelId,
-          orElse: () => null);
+      final Kennel ken = _kennelsList.firstWhere((Kennel k) => k.kennelId == kennel.kennelId, orElse: () => null);
       if (ken != null) {
         // add fields here that might have been updated
         if (ken.followingBool != kennel.followingBool) {
@@ -66,10 +60,9 @@ class KennelScopedModel extends Model {
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final String accessToken =
-        Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
+    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
 
-    final String body = jsonEncode(<String,Object>{
+    final String body = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
       'kennelId': kennel.kennelId,
@@ -77,10 +70,7 @@ class KennelScopedModel extends Model {
       'isFollowing': kennel.followingRequested,
     });
 
-    final http.Response response = await http
-        .post(BASE_API_URL + 'join_kennel',
-            headers: <String,String>{'content-type': 'application/json'}, body: body)
-        .catchError(
+    final http.Response response = await http.post(BASE_API_URL + 'join_kennel', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
       (dynamic error) {
         return false;
       },
@@ -112,10 +102,9 @@ class KennelScopedModel extends Model {
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final String accessToken =
-        Utilities.generateToken(userId.toUpperCase(), 'getAllKennels');
+    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'getAllKennels');
 
-    final String body = jsonEncode(<String,Object>{
+    final String body = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
       'userLatitude': latLon.latitude,
@@ -123,8 +112,7 @@ class KennelScopedModel extends Model {
     });
 
     final http.Response response = await http
-        .post(BASE_API_URL + 'get_all_kennels',
-            headers: <String,String>{'content-type': 'application/json'}, body: body
+        .post(BASE_API_URL + 'get_all_kennels', headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -137,8 +125,7 @@ class KennelScopedModel extends Model {
     return json.decode(response.body);
   }
 
-  Future<void> getKennelsFromBackend(
-      bool showLoadingIndicator) async {
+  Future<void> getKennelsFromBackend(bool showLoadingIndicator) async {
     if (showLoadingIndicator) {
       _isLoading = true;
       notifyListeners();
@@ -166,10 +153,8 @@ class KennelScopedModel extends Model {
           importOnlyTaggedEvents: newKennel['importOnlyTaggedEvents'],
           facebookTagForImport: newKennel['facebookTagForImport'],
           defaultEventCurrencyType: newKennel['defaultEventCurrencyType'],
-          defaultEventPriceForNonMembers:
-              (newKennel['defaultEventPriceForNonMembers'] ?? 0).toDouble(),
-          defaultEventPriceForMembers:
-              (newKennel['defaultEventPriceForMembers'] ?? 0).toDouble(),
+          defaultEventPriceForNonMembers: (newKennel['defaultEventPriceForNonMembers'] ?? 0).toDouble(),
+          defaultEventPriceForMembers: (newKennel['defaultEventPriceForMembers'] ?? 0).toDouble(),
           //defaultRunStartTime: DateTime.parse(['defaultRunStartTime'] ?? '2000-01-01 19:00:00'),
           kennelShortName: newKennel['kennelShortName'],
           kennelLogo: newKennel['kennelLogo'],
@@ -202,10 +187,9 @@ class KennelScopedModel extends Model {
     );
 
     // if (pageIndex == 1) {
-      _isLoading = false;
+    _isLoading = false;
     //}
 
     notifyListeners();
-
   }
 }

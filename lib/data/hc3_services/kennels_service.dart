@@ -106,8 +106,8 @@ class KennelsTableHelper {
   static const num cacheDuration = 365 *
       3 *
       86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
-  static const String storedProcName = 'getAllKennels';
-  static const String restApiMethodName = 'hc3_get_all_kennels';
+  static const String storedProcName = 'getKennelsMd';
+  static const String restApiMethodName = 'hc3_get_kennels_md';
 
   static const IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateKennelData;
   static const IntPrefsEnum lastCacheClearKey =

@@ -72,8 +72,8 @@ class CitiesTableHelper {
   //static const num forceRequeryInterval = 1 * 86400000;
   static const num forceRequeryInterval = 1 * 1000;
   static const num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
-  static const String storedProcName = 'getAllCities';
-  static const String restApiMethodName = 'hc3_get_all_cities';
+  static const String storedProcName = 'getCitiesMd';
+  static const String restApiMethodName = 'hc3_get_cities_md';
 
   static const IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateCitiesData;
   static const IntPrefsEnum lastCacheClearKey =

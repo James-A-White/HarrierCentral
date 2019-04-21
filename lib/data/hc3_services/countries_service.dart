@@ -84,8 +84,8 @@ class CountriesTableHelper {
   static const num cacheDuration = 365 *
       3 *
       86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
-  static const String storedProcName = 'getAllCountries';
-  static const String restApiMethodName = 'hc3_get_all_countries';
+  static const String storedProcName = 'getCountriesMd';
+  static const String restApiMethodName = 'hc3_get_countries_md';
 
   static const IntPrefsEnum lastUpdatedKey =
       IntPrefsEnum.lastUpdateCountriesData;
