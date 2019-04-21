@@ -6,13 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/util/preferences.dart';
-//import 'package:harrier_central/data/services/regions_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_master_data_service.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/data/services/authorize_device_service.dart';
+import 'package:harrier_central/database/database.dart';
 
 // import 'package:harrier_central/widgets/user_details_ui.dart';
 // import 'package:harrier_central/widgets/fancy_divider.dart';
@@ -368,10 +370,49 @@ class SupportPageState extends State<SupportPage> {
                                                                   bottom: 15,
                                                                   left: 50,
                                                                   right: 50),
-                                                          onPressed: () {
-                                                            // RegionsService svc =RegionsService();
-                                                            // svc.getAllRecords(true);
-                                                            if (resetCodeTextController.text.length == 6) {
+                                                          onPressed: () async {
+
+
+
+
+
+
+
+
+
+
+
+                                                            Database db =
+                                                                await DBProvider
+                                                                    .db
+                                                                    .database;
+
+                                                            final SyncMasterDataService
+                                                                cSrv =
+                                                                SyncMasterDataService();
+                                                            final bool result =
+                                                                await cSrv
+                                                                    .updateFromBackend(
+                                                                        db,
+                                                                        false);
+                                                            final String
+                                                                resultStr =
+                                                                result
+                                                                    ? 'successfully'
+                                                                    : 'unsuccessfully';
+                                                            print(
+                                                                'Master data synchronized $resultStr');
+
+
+
+
+
+                                                                
+
+                                                            if (resetCodeTextController
+                                                                    .text
+                                                                    .length ==
+                                                                6) {
                                                               setState(() {
                                                                 isLoading =
                                                                     true;

@@ -7,8 +7,8 @@ import 'package:package_info/package_info.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/data/models/approve_login_model.dart';
-import 'package:harrier_central/data/services/cities_service.dart';
-import 'package:harrier_central/data/services/regions_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_master_data_service.dart';
+import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
 import 'package:harrier_central/data/services/approve_login_service.dart';
@@ -54,32 +54,21 @@ class _AppEntryPageState extends State<AppEntryPage>
         if (loginResult.serverStatusCode == serverStatusUp.value) {
           if (loginResult.approvalCode == loginApprovalApproved.value) {
             if (userId == null) {
-              // Navigator.of(context)
-              //     .pushNamed(RouteNames.NEW_ACCOUNT.toString());
-
               Navigator.of(context)
                   .pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
             } else {
-              Database db = await DBProvider.db.database;
+              final Database db = await DBProvider.db.database;
 
-              final CitiesService srv = CitiesService();
-              bool result = await srv.updateFromBackend(db,false);
-              String resultStr = result ? 'successfully' : 'unsuccessfully';
-              print('City list downloaded $resultStr');
-
-              final RegionsService rSrv = RegionsService();
-              result = await rSrv.updateFromBackend(db,false);
-              resultStr = result ? 'successfully' : 'unsuccessfully';
-              print('Region list downloaded $resultStr');
+              final SyncMasterDataService cSrv = SyncMasterDataService();
+              final bool result = await cSrv.updateFromBackend(db,false);
+              final String resultStr = result ? 'successfully' : 'unsuccessfully';
+              print('Master data synchronized $resultStr');
 
               Navigator.pushReplacement<dynamic, dynamic>(
                   context,
                   MaterialPageRoute<dynamic>(
                       builder: (BuildContext context) =>
                           const MainNavigationPage()));
-              //     .then<dynamic>((void test) {
-              //    _iconAnimationController.dispose();
-              // });
             }
           } else {
             // TODO(James): Handle cases where login is disapproved

@@ -78,7 +78,7 @@ class CountriesModel {
 class CountriesTableHelper {
   CountriesTableHelper._privateConstructor();
 
-  static const String table = 'countries';
+  static const String tableName = 'countries';
   //static const num forceRequeryInterval = 1 * 86400000;
   static const num forceRequeryInterval = 1 * 1000;
   static const num cacheDuration = 365 *
@@ -118,7 +118,7 @@ class CountriesTableHelper {
   // SQL code to create the database table
   static Future<dynamic> createTable(Database db, int version) async {
     await db.execute('''
-          CREATE TABLE $table (
+          CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
 
             $colCountryId TEXT NOT NULL,
@@ -140,9 +140,9 @@ class CountriesTableHelper {
           )
           ''');
 
-    await db.execute('CREATE INDEX idx_${table}_id ON $table($remoteDbId);');
+    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
     await db.execute(
-        'CREATE INDEX idx_${table}_update_at_value ON $table($colUpdatedAtValue);');
+        'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
   static Map<String, dynamic> toMap(CountriesModel item) {
@@ -196,7 +196,7 @@ class CountriesService {
 
   Future<num> getLastUpdatedTime(Database db) async {
     final List<Map<String, dynamic>> table = await db.rawQuery(
-        'SELECT MAX(${CountriesTableHelper.colUpdatedAtValue}) AS maxDate FROM ${CountriesTableHelper.table}');
+        'SELECT MAX(${CountriesTableHelper.colUpdatedAtValue}) AS maxDate FROM ${CountriesTableHelper.tableName}');
     final num timeValue = table.first['maxDate'];
     print(timeValue.toString());
     return timeValue;
@@ -206,7 +206,7 @@ class CountriesService {
     final Database db = await DBProvider.db.database;
 
     final List<Map<String, dynamic>> result =
-        await db.query(CountriesTableHelper.table);
+        await db.query(CountriesTableHelper.tableName);
 
     final List<CountriesModel> records = <CountriesModel>[];
 
@@ -224,7 +224,7 @@ class CountriesService {
   Future<void> clearTable() async {
     final Database db = await DBProvider.db.database;
     await db
-        .rawDelete('DELETE FROM ${CountriesTableHelper.table}')
+        .rawDelete('DELETE FROM ${CountriesTableHelper.tableName}')
         .then((void dummy) {
       setIntPref(CountriesTableHelper.lastCacheClearKey,
           DateTime.now().millisecondsSinceEpoch);
@@ -238,21 +238,21 @@ class CountriesService {
       final Map<String, dynamic> row = CountriesTableHelper.toMap(items[i]);
 
       final List<Map<String, dynamic>> table = await db.rawQuery(
-          'SELECT * FROM ${CountriesTableHelper.table} WHERE ${CountriesTableHelper.remoteDbId} = "${items[i].countryId}"');
+          'SELECT * FROM ${CountriesTableHelper.tableName} WHERE ${CountriesTableHelper.remoteDbId} = "${items[i].countryId}"');
       if ((table == null) || (table.isEmpty)) {
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.insert(CountriesTableHelper.table, row);
+          final int result = await txn.insert(CountriesTableHelper.tableName, row);
           print(result.toString() +
-              ' inserted into to the ${CountriesTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
+              ' inserted into to the ${CountriesTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch}');
         });
       } else {
         final String rowId = table.first['id'].toString();
 
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await db.update(CountriesTableHelper.table, row,
+          final int result = await db.update(CountriesTableHelper.tableName, row,
               where: 'id = $rowId');
           print(result.toString() +
-              ' update to the ${CountriesTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
+              ' update to the ${CountriesTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch}');
         });
       }
     }
@@ -288,13 +288,13 @@ class CountriesService {
         });
 
         final String query =
-            'SELECT * FROM ${CountriesTableHelper.table} WHERE ${CountriesTableHelper.remoteDbId} = "${jsonItem['countryId']}"';
+            'SELECT * FROM ${CountriesTableHelper.tableName} WHERE ${CountriesTableHelper.remoteDbId} = "${jsonItem['countryId']}"';
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
 
         if ((table == null) || (table.isEmpty)) {
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.insert(CountriesTableHelper.table, jsonItem);
+            await txn.insert(CountriesTableHelper.tableName, jsonItem);
             insertCounter++;
             // print(result.toString() +
             //     ' inserted into to the ${RegionsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -304,7 +304,7 @@ class CountriesService {
 
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.update(CountriesTableHelper.table, jsonItem,
+            await txn.update(CountriesTableHelper.tableName, jsonItem,
                 where: 'id = $rowId');
             updateCounter++;
             // print(result.toString() +
@@ -341,7 +341,7 @@ class CountriesService {
       if (lastCacheClear + CountriesTableHelper.cacheDuration <
           DateTime.now().millisecondsSinceEpoch) {
         print(
-            'clearing ${CountriesTableHelper.table} cache @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+            'clearing ${CountriesTableHelper.tableName} cache @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
         await clearTable();
       }
 
