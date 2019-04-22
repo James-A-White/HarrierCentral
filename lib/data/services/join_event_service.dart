@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:http/http.dart' as http;
+
 import 'package:harrier_central/data/models/join_event_model.dart';
 import 'package:harrier_central/data/models/user_model.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -8,7 +10,7 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/utilities.dart';
 
-import 'package:http/http.dart' as http;
+
 
 
 

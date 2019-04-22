@@ -2,9 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/constants.dart';
 
 class HasherKennelMapModel {
   HasherKennelMapModel({this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.removed, this.updatedAt});
@@ -163,6 +166,29 @@ class HasherKennelMapTdService {
     });
   }
 
+  Future<void> toggleFollowing(Map<String, dynamic> kennel) async {
+
+    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
+
+    final String body = jsonEncode(<String, Object>{'userId': userId, 'accessToken': accessToken, 'kennelId': kennel['kennelId'], 'targetUserId': userId, 'isFollowing': kennel['followingRequested']});
+
+    final http.Response response = await http.post(BASE_API_URL + 'hc3_join_kennel', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
+      (dynamic error) {
+        return false;
+      },
+    );
+
+    final Database db = await DBProvider.db.database;
+    bulkUpdateDatabase(response.body, db, null);
+
+    final dynamic result = json.decode(response.body);
+    kennel['following'] = result[0][0]['following'];
+    kennel['followingRequested'] = -1;
+
+    //print(response.body);
+  }
+
   Future<void> updateDatabase(List<HasherKennelMapModel> items) async {
     final Database db = await DBProvider.db.database;
 
@@ -239,7 +265,7 @@ class HasherKennelMapTdService {
       }
     }
 
-    print('$insertCounter kennel records inserted, $updateCounter kennel records updated');
+    print('$insertCounter hasher kennel map records inserted, $updateCounter hasher kennel map records updated');
     return insertCounter;
   }
 }

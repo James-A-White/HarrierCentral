@@ -13,7 +13,6 @@ import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
-import 'package:harrier_central/data/services/kennel_scoped_model.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/services/kennel_run_history_totals_scoped_model.dart';
 
@@ -36,7 +35,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   @override
   void initState() {
     tabs.add(const FutureRunsListPage());
-    tabs.add(KennelsListPage(kennelModel: kennelModel));
+    tabs.add(const KennelsListPage());
     tabs.add(const UserQrCodePage());
     tabs.add(const UserQrCodePage());
     tabs.add(const UserQrCodePage());
@@ -73,7 +72,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     //setIntPref(IntPrefsEnum.mainViewCurrentTab, index);
   }
 
-  final KennelScopedModel kennelModel = KennelScopedModel();
+
   final KennelRunHistoryTotalsScopedModel kennelRunHistoryTotalsScopedModel =
       KennelRunHistoryTotalsScopedModel();
 
@@ -95,7 +94,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           w = const FutureRunsListPage();
           break;
         case 1:
-          w = KennelsListPage(kennelModel: kennelModel);
+          w = const KennelsListPage();
           break;
         case 2:
           w = HistoryListPage(
