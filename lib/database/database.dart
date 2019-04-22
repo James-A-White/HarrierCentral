@@ -70,7 +70,7 @@ class DBProvider {
       }
 
       final SyncDataService cSrv = SyncDataService();
-      final bool result = await cSrv.updateFromBackend(db, SyncDataService.flagAllMasterData, false);
+      final bool result = await cSrv.updateFromBackend(db, SyncDataService.flagsAllData, false);
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Master data synchronized $resultStr');
     });

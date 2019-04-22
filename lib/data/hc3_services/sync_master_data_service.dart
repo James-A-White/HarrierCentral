@@ -26,6 +26,8 @@ class SyncDataService {
 
   static const int flagHasherKennelMapTable = 0x00010000;
 
+  static const int flagsAllData = 0x0001001f;
+
   num _hashersLastUpdated;
   num _citiesLastUpdated;
   num _regionsLastUpdated;
@@ -111,7 +113,7 @@ class SyncDataService {
         'regionsUpdatedAfter': (flags & flagRegionsTable) == 0 ? 'ignore' : regionsUpdatedAfter.toString().substring(0, 19),
         'countriesUpdatedAfter': (flags & flagCountriesTable) == 0 ? 'ignore' : countriesUpdatedAfter.toString().substring(0, 19),
         'kennelsUpdatedAfter': (flags & flagKennelsTable) == 0 ? 'ignore' : kennelsUpdatedAfter.toString().substring(0, 19),
-        'hasherKennelMapUpdatedAfter': (flags & flagKennelsTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
+        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
       });
 
       final http.Response response = await http

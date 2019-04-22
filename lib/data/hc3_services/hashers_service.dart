@@ -241,7 +241,7 @@ class HashersService {
       }
     }
 
-    print('$insertCounter region records inserted, $updateCounter region records updated');
+    print('$insertCounter hasher records inserted, $updateCounter hasher records updated');
     return insertCounter;
   }
 }

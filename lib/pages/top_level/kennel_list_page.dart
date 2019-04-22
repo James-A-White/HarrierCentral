@@ -54,7 +54,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           const String query = ''' 
       
         SELECT  
-          k.*, hkm.hkmId, hkm.following,
+          k.*, hkm.hkmId, COALESCE(hkm.following,0) as following,
           c.cityName || ', ' || CASE WHEN n.showRegion = 1 THEN r.regionName || ', ' ELSE '' END || n.countryName as location
           FROM kennels k
           INNER JOIN cities c on c.cityId = k.cityId
