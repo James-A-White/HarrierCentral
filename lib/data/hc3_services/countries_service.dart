@@ -84,8 +84,6 @@ class CountriesTableHelper {
   static const num cacheDuration = 365 *
       3 *
       86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
-  static const String storedProcName = 'getCountriesMd';
-  static const String restApiMethodName = 'hc3_get_countries_md';
 
   static const IntPrefsEnum lastUpdatedKey =
       IntPrefsEnum.lastUpdateCountriesData;
@@ -317,81 +315,5 @@ class CountriesService {
     print(
         '$insertCounter country records inserted, $updateCounter country records updated');
     return insertCounter;
-  }
-
-  Future<bool> updateFromBackend(Database db, bool forceRefresh) async {
-    final int lastUpdate = getIntPref(CountriesTableHelper.lastUpdatedKey) ?? 0;
-
-    if (forceRefresh ||
-        ((DateTime.now().millisecondsSinceEpoch - lastUpdate) >
-            CountriesTableHelper.forceRequeryInterval)) {
-      // check to see if we need to clear the cache
-      int lastCacheClear = getIntPref(CountriesTableHelper.lastCacheClearKey);
-
-      if (lastCacheClear == null) {
-        // if lastCacheClear is null that means we've never cleared the
-        // cache. This happens on startup. So, go ahead and set the lastCacheClear
-        // date to now and set lastCacheClear to now to prevent the
-        // cache from clearing immediatly upon startup
-        lastCacheClear = DateTime.now().millisecondsSinceEpoch;
-        setIntPref(CountriesTableHelper.lastCacheClearKey,
-            DateTime.now().millisecondsSinceEpoch);
-      }
-
-      if (lastCacheClear + CountriesTableHelper.cacheDuration <
-          DateTime.now().millisecondsSinceEpoch) {
-        print(
-            'clearing ${CountriesTableHelper.tableName} cache @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        await clearTable();
-      }
-
-      // get the last updated time of any of the records in
-      // the table and add one second to it
-      final num timeValue = await getLastUpdatedTime(db);
-      final DateTime updatedAfter = timeValue == null
-          ? DateTime(2000, 1, 1)
-          : DateTime.fromMillisecondsSinceEpoch(timeValue + 1000);
-
-      String userId = getStringPref(StringPrefsEnum.userId);
-      if ((userId ?? '').isEmpty) {
-        userId = GUID_EMPTY;
-      }
-
-      final String accessToken =
-          Utilities.generateToken(userId, CountriesTableHelper.storedProcName);
-
-      final String timeStr = updatedAfter.toString().substring(0, 19);
-
-      final String body = jsonEncode(<String, String>{
-        'userId': userId,
-        'accessToken': accessToken,
-        'updatedAfter': timeStr
-      });
-
-      final http.Response response = await http
-          .post(BASE_API_URL + CountriesTableHelper.restApiMethodName,
-              headers: <String, String>{'content-type': 'application/json'},
-              body: body
-              // Send authorization headers to your backend
-              //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-              )
-          .catchError(
-        (dynamic error) {
-          return false;
-        },
-      );
-
-      // TODO(James): Fix issue where one country is returned every time, change the lastUpdated param to the database to the lastUpdatedValue (bigint) from lastUpdated (datetime)
-      if (response.body.length > 20) {
-        await bulkUpdateDatabase(response.body, db, null);
-      }
-
-      setIntPref(CountriesTableHelper.lastUpdatedKey,
-          DateTime.now().millisecondsSinceEpoch);
-    }
-
-    //final List<RegionsModel> allRecords = await selectAllFromLocalDb();
-
-    return true;
   }
 }

@@ -7,8 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
-import 'package:harrier_central/data/models/all_hasher_model.dart';
-import 'package:harrier_central/data/services/all_hashers_service.dart';
+import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class FindHasherPage extends StatefulWidget {
@@ -23,19 +22,19 @@ class FindHasherPage extends StatefulWidget {
 class FindHasherPageState extends State<FindHasherPage> {
   GlobalKey hasherListBox = GlobalKey();
 
-  List<AllHasherListModel> hasherList;
-  List<AllHasherListModel> filteredList;
+  List<HashersModel> hasherList;
+  List<HashersModel> filteredList;
 
   void findHasher() {
-    final GetAllHashersService svc = GetAllHashersService();
-    svc.getAllHashers(false).then((List<AllHasherListModel> list) {
+    final HashersService svc = HashersService();
+    svc.selectAllFromLocalDb().then((List<HashersModel> list) {
       hasherList = list;
       setState(() {
         if (hasherList != null) {
-          hasherList.sort((AllHasherListModel a, AllHasherListModel b) =>
-              (a.displayName ?? '')
+          hasherList.sort((HashersModel a, HashersModel b) =>
+              (a.dispName ?? '')
                   .toLowerCase()
-                  .compareTo((b.displayName ?? '').toLowerCase()));
+                  .compareTo((b.dispName ?? '').toLowerCase()));
           filteredList = hasherList;
         } else {
           filteredList = null;
@@ -51,11 +50,11 @@ class FindHasherPageState extends State<FindHasherPage> {
           filteredList = hasherList;
         } else {
           filteredList = hasherList
-              .where((AllHasherListModel user) => ((user.firstName ?? '') +
+              .where((HashersModel user) => ((user.firstName ?? '') +
                       ' ' +
                       (user.lastName ?? '') +
                       ' ' +
-                      (user.displayName ?? ''))
+                      (user.dispName ?? ''))
                   .toLowerCase()
                   .contains(filterText.toLowerCase()))
               .toList();
@@ -223,7 +222,7 @@ class FindHasherPageState extends State<FindHasherPage> {
 class HasherListView extends StatelessWidget {
   const HasherListView({Key key, this.hasherList}) : super(key: key);
 
-  final List<AllHasherListModel> hasherList;
+  final List<HashersModel> hasherList;
 
   Widget listItem(BuildContext context, int index) {
     return InkWell(
@@ -240,7 +239,7 @@ class HasherListView extends StatelessWidget {
                   child: ListBody(
                     children: <Widget>[
                       Text(
-                        'Do you want to add ${hasherList[index].displayName} to your run?',
+                        'Do you want to add ${hasherList[index].dispName} to your run?',
                         textAlign: TextAlign.justify,
                         style: const TextStyle(
                             fontFamily: 'AvenirNextRegular',
@@ -334,7 +333,7 @@ class HasherListView extends StatelessWidget {
             Positioned(
               left: 77.0,
               top: 19.0,
-              child: Text(hasherList[index].displayName,
+              child: Text(hasherList[index].dispName,
                   style: const TextStyle(
                       fontFamily: 'AvenirNextCondensedMedium',
                       fontStyle: FontStyle.normal,

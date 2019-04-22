@@ -6,7 +6,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_td_service.dart';
+import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/services/kennel_scoped_model.dart';
 import 'package:harrier_central/widgets/kennel_list_item.dart';

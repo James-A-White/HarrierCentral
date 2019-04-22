@@ -14,13 +14,13 @@ import 'package:harrier_central/data/models/process_qr_scan_for_checkin_model.da
 import 'package:harrier_central/data/models/user_model.dart';
 import 'package:harrier_central/data/services/pack_scoped_model.dart';
 import 'package:harrier_central/data/services/pay_scoped_model.dart';
+import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/new_user.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
 import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
-import 'package:harrier_central/data/models/all_hasher_model.dart';
 
 class CheckInPackPage extends StatefulWidget {
   const CheckInPackPage({
@@ -82,18 +82,18 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   }
 
   void findHasher(PackScopedModel packScopedModel) {
-    Navigator.push<AllHasherListModel>(
+    Navigator.push<HashersModel>(
       context,
-      MaterialPageRoute<AllHasherListModel>(
+      MaterialPageRoute<HashersModel>(
         settings: const RouteSettings(),
         builder: (BuildContext context) {
           return const FindHasherPage();
         },
       ),
-    ).then((AllHasherListModel hasher) {
-      if ((hasher != null) && (hasher.userId != null)) {
+    ).then((HashersModel hasher) {
+      if ((hasher != null) && (hasher.hasherId != null)) {
         packScopedModel.joinEvent(widget.futureRun.eventId, rsvpYes.value,
-            isHareNo.value, attendenceAtHash.value, hasher.userId);
+            isHareNo.value, attendenceAtHash.value, hasher.hasherId);
       }
     });
   }

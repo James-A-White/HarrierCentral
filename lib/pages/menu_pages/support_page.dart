@@ -274,7 +274,7 @@ class SupportPageState extends State<SupportPage> {
                                                         Database db = await DBProvider.db.database;
 
                                                         final SyncDataService cSrv = SyncDataService();
-                                                        final bool result = await cSrv.updateFromBackend(db, SyncDataService.flagAllMasterDataWithoutHashers, false);
+                                                        final bool result = await cSrv.updateFromBackend(db, SyncDataService.flagAllMasterData, false);
                                                         final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                                         print('Master data synchronized $resultStr');
 
