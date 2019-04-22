@@ -34,7 +34,23 @@ class KennelsListPageState extends State<KennelsListPage> {
 
   @override
   void initState() {
-    if (Singletons.kennelMainPageList == null) {
+    refreshFromTable(false);
+    // DBProvider.db.database.then((Database db) {
+    //   db.rawQuery('SELECT id,kennelId FROM kennels ORDER BY id').then((List<Map<String,dynamic>> result) {
+    //     print(result);
+    //   });
+    // });
+
+    // DBProvider.db.database.then((Database db) {
+    //   db.rawQuery('SELECT id,kennelId,userId FROM hasherKennelMap ORDER BY id').then((List<Map<String,dynamic>> result) {
+    //     print(result.toString().replaceAll('},', '},\r\n'));
+    //   });
+    // });
+    super.initState();
+  }
+
+  void refreshFromTable(bool forceRefresh) {
+    if (forceRefresh || (Singletons.kennelMainPageList == null)) {
       final Geolocator locator = Geolocator();
 
       Utilities.getLatLong().then((LatLon ll) {
@@ -55,17 +71,22 @@ class KennelsListPageState extends State<KennelsListPage> {
           Singletons.kennelMainPageList = <Map<String, dynamic>>[];
           try {
             db.rawQuery(query).then((List<Map<String, dynamic>> results) {
-              for (int i = 0; i < results.length; i++) {
-                locator.distanceBetween(ll.latitude, ll.longitude, results[i]['latitude'], results[i]['longitude']).then((double dist) {
-                  final Map<String, dynamic> item = <String, dynamic>{};
-                  item.addAll(<String, dynamic>{'distance': dist.round()});
-                  item.addAll(results[i]);
-                  Singletons.kennelMainPageList.add(item);
-                  if (i == results.length - 1) {
-                    setState(() {});
-                  }
-                });
-              }
+              
+                for (int i = 0; i < results.length; i++) {
+                  locator.distanceBetween(ll.latitude, ll.longitude, results[i]['latitude'], results[i]['longitude']).then((double dist) {
+                    final Map<String, dynamic> item = <String, dynamic>{};
+                    item.addAll(<String, dynamic>{'distance': dist.round()});
+                    item.addAll(results[i]);
+                    Singletons.kennelMainPageList.add(item);
+                    if (i == results.length - 1)
+                    {
+                      setState(() {
+                        
+                      });
+                    }
+                  });
+                }
+              
             });
           } catch (e) {
             print(e);
@@ -73,8 +94,6 @@ class KennelsListPageState extends State<KennelsListPage> {
         });
       });
     }
-
-    super.initState();
   }
 
   @override
@@ -98,7 +117,9 @@ class KennelsListPageState extends State<KennelsListPage> {
   }
 
   Future<void> _handleRefresh() async {
-    model.getKennelsFromBackend(false);
+    model.getKennelsFromBackend(false).then((void dummy) {
+      refreshFromTable(true);
+    });
   }
 
   Widget _buildListView() {

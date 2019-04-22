@@ -6,15 +6,13 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_td_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_master_data_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/data/models/kennel_model.dart';
 
-
 class KennelScopedModel extends Model {
-
   bool _isLoading = false;
 
   bool get isLoading => _isLoading;
@@ -61,8 +59,8 @@ class KennelScopedModel extends Model {
 
     final Database db = await DBProvider.db.database;
 
-    final HasherKennelMapTdService cSrv = HasherKennelMapTdService();
-    final bool result = await cSrv.updateFromBackend(db, false);
+    final SyncDataService cSrv = SyncDataService();
+    final bool result = await cSrv.updateFromBackend(db, SyncDataService.flagKennelsTable | SyncDataService.flagHasherKennelMapTable, false);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Kennel user data synchronized $resultStr');
 

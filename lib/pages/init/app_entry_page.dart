@@ -58,8 +58,8 @@ class _AppEntryPageState extends State<AppEntryPage>
             } else {
               final Database db = await DBProvider.db.database;
 
-              final SyncMasterDataService cSrv = SyncMasterDataService();
-              final bool result = await cSrv.updateFromBackend(db,false);
+              final SyncDataService cSrv = SyncDataService();
+              final bool result = await cSrv.updateFromBackend(db,SyncDataService.flagAllMasterDataWithoutHashers,false);
               final String resultStr = result ? 'successfully' : 'unsuccessfully';
               print('Master data synchronized $resultStr');
 

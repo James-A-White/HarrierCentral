@@ -11,12 +11,25 @@ import 'package:harrier_central/data/hc3_services/cities_service.dart';
 import 'package:harrier_central/data/hc3_services/regions_service.dart';
 import 'package:harrier_central/data/hc3_services/countries_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
+import 'package:harrier_central/data/hc3_services/hasher_kennel_map_td_service.dart';
 
-class SyncMasterDataService {
+class SyncDataService {
+  static const int flagHashersTable = 0x00000001;
+  static const int flagCitiesTable = 0x00000002;
+  static const int flagRegionsTable = 0x00000004;
+  static const int flagCountriesTable = 0x00000008;
+  static const int flagKennelsTable = 0x00000010;
+
+  static const int flagAllMasterDataWithoutHashers = 0x0000001E;
+  static const int flagAllMasterData = 0x0000001F;
+
+  static const int flagHasherKennelMapTable = 0x00010000;
+
   num _citiesLastUpdated;
   num _regionsLastUpdated;
   num _countriesLastUpdated;
   num _kennelsLastUpdated;
+  num _hasherKennelMapLastUpdated;
 
   Future<num> _getLastUpdatedTime(Database db, String colName, String tableName) async {
     final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
@@ -25,24 +38,28 @@ class SyncMasterDataService {
     return timeValue;
   }
 
-  Future<void> getLastUpdatedTimes(Database db) async {
-    _citiesLastUpdated = await _getLastUpdatedTime(db, CitiesTableHelper.colUpdatedAtValue, CitiesTableHelper.tableName);
-    _regionsLastUpdated = await _getLastUpdatedTime(db, RegionsTableHelper.colUpdatedAtValue, RegionsTableHelper.tableName);
-    _countriesLastUpdated = await _getLastUpdatedTime(db, CountriesTableHelper.colUpdatedAtValue, CountriesTableHelper.tableName);
-    _kennelsLastUpdated = await _getLastUpdatedTime(db, KennelsTableHelper.colUpdatedAtValue, KennelsTableHelper.tableName);
+  Future<void> getLastUpdatedTimes(Database db, int flags) async {
+    _citiesLastUpdated = (flags & flagCitiesTable) == 0 ? 0 : await _getLastUpdatedTime(db, CitiesTableHelper.colUpdatedAtValue, CitiesTableHelper.tableName);
+    _regionsLastUpdated = (flags & flagRegionsTable) == 0 ? 0 : await _getLastUpdatedTime(db, RegionsTableHelper.colUpdatedAtValue, RegionsTableHelper.tableName);
+    _countriesLastUpdated = (flags & flagCountriesTable) == 0 ? 0 : await _getLastUpdatedTime(db, CountriesTableHelper.colUpdatedAtValue, CountriesTableHelper.tableName);
+    _kennelsLastUpdated = (flags & flagKennelsTable) == 0 ? 0 : await _getLastUpdatedTime(db, KennelsTableHelper.colUpdatedAtValue, KennelsTableHelper.tableName);
+    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? 0 : await _getLastUpdatedTime(db, HasherKennelMapTdTableHelper.colUpdatedAtValue, HasherKennelMapTdTableHelper.tableName);
   }
 
-  Future<bool> updateFromBackend(Database db, bool forceRefresh) async {
-    final int citiesLastUpdate = getIntPref(CitiesTableHelper.lastUpdatedKey) ?? 0;
-    final int regionsLastUpdate = getIntPref(RegionsTableHelper.lastUpdatedKey) ?? 0;
-    final int countriesLastUpdate = getIntPref(CountriesTableHelper.lastUpdatedKey) ?? 0;
-    final int kennelsLastUpdate = getIntPref(KennelsTableHelper.lastUpdatedKey) ?? 0;
+  Future<bool> updateFromBackend(Database db, int flags, bool forceRefresh) async {
+    final int citiesLastUpdate = (flags & flagCitiesTable) == 0 ? null : getIntPref(CitiesTableHelper.lastUpdatedKey) ?? 0;
+    final int regionsLastUpdate = (flags & flagRegionsTable) == 0 ? null : getIntPref(RegionsTableHelper.lastUpdatedKey) ?? 0;
+    final int countriesLastUpdate = (flags & flagCountriesTable) == null ? 0 : getIntPref(CountriesTableHelper.lastUpdatedKey) ?? 0;
+    final int kennelsLastUpdate = (flags & flagKennelsTable) == 0 ? null : getIntPref(KennelsTableHelper.lastUpdatedKey) ?? 0;
+    final int hasherKennelMapLastUpdate = (flags & flagHasherKennelMapTable) == 0 ? null : getIntPref(HasherKennelMapTdTableHelper.lastUpdatedKey) ?? 0;
 
     if (forceRefresh ||
-        ((DateTime.now().millisecondsSinceEpoch - citiesLastUpdate) > CitiesTableHelper.forceRequeryInterval) ||
-        ((DateTime.now().millisecondsSinceEpoch - regionsLastUpdate) > RegionsTableHelper.forceRequeryInterval) ||
-        ((DateTime.now().millisecondsSinceEpoch - countriesLastUpdate) > CountriesTableHelper.forceRequeryInterval) ||
-        ((DateTime.now().millisecondsSinceEpoch - kennelsLastUpdate) > KennelsTableHelper.forceRequeryInterval)) {
+        ((citiesLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - citiesLastUpdate) > CitiesTableHelper.forceRequeryInterval) || 
+        ((regionsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - regionsLastUpdate) > RegionsTableHelper.forceRequeryInterval) ||
+        ((countriesLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - countriesLastUpdate) > CountriesTableHelper.forceRequeryInterval) ||
+        ((kennelsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - kennelsLastUpdate) > KennelsTableHelper.forceRequeryInterval) ||
+        ((hasherKennelMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherKennelMapLastUpdate) > HasherKennelMapTdTableHelper.forceRequeryInterval) 
+        ) {
       // check to see if we need to clear the cache
       //int lastCacheClear = getIntPref(CitiesTableHelper.lastCacheClearKey);
 
@@ -65,31 +82,33 @@ class SyncMasterDataService {
 
       // get the last updated time of any of the records in
       // the table and add one second to it
-      await getLastUpdatedTimes(db);
+      await getLastUpdatedTimes(db, flags);
 
       final DateTime citiesUpdatedAfter = _citiesLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_citiesLastUpdated + 1000);
       final DateTime regionsUpdatedAfter = _regionsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_regionsLastUpdated + 1000);
       final DateTime countriesUpdatedAfter = _countriesLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_countriesLastUpdated + 1000);
       final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
+      final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
         userId = GUID_EMPTY;
       }
 
-      final String accessToken = Utilities.generateToken(userId, 'syncMasterData');
+      final String accessToken = Utilities.generateToken(userId, 'syncData');
 
       final String body = jsonEncode(<String, String>{
         'userId': userId,
         'accessToken': accessToken,
-        'citiesUpdatedAfter': citiesUpdatedAfter.toString().substring(0, 19),
-        'regionsUpdatedAfter': regionsUpdatedAfter.toString().substring(0, 19),
-        'countriesUpdatedAfter': countriesUpdatedAfter.toString().substring(0, 19),
-        'kennelsUpdatedAfter': kennelsUpdatedAfter.toString().substring(0, 19),
+        'citiesUpdatedAfter': (flags & flagCitiesTable) == 0 ? 'ignore' : citiesUpdatedAfter.toString().substring(0, 19),
+        'regionsUpdatedAfter': (flags & flagRegionsTable) == 0 ? 'ignore' : regionsUpdatedAfter.toString().substring(0, 19),
+        'countriesUpdatedAfter': (flags & flagCountriesTable) == 0 ? 'ignore' : countriesUpdatedAfter.toString().substring(0, 19),
+        'kennelsUpdatedAfter': (flags & flagKennelsTable) == 0 ? 'ignore' : kennelsUpdatedAfter.toString().substring(0, 19),
+        'hasherKennelMapUpdatedAfter': (flags & flagKennelsTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
       });
 
       final http.Response response = await http
-          .post(BASE_API_URL + 'hc3_sync_master_data', headers: <String, String>{'content-type': 'application/json'}, body: body
+          .post(BASE_API_URL + 'hc3_sync_data', headers: <String, String>{'content-type': 'application/json'}, body: body
               // Send authorization headers to your backend
               //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
               )
@@ -108,21 +127,31 @@ class SyncMasterDataService {
         if (ms.startsWith(r'[{"cityId"')) {
           final CitiesService cSrv = CitiesService();
           cSrv.bulkUpdateDatabase('[$ms]', db, null);
+          print('cities updated');
         }
 
         if (ms.startsWith(r'[{"regionId"')) {
           final RegionsService rSrv = RegionsService();
           rSrv.bulkUpdateDatabase('[$ms]', db, null);
+          print('regions updated');
         }
 
         if (ms.startsWith(r'[{"countryId"')) {
           final CountriesService nSrv = CountriesService();
           nSrv.bulkUpdateDatabase('[$ms]', db, null);
+          print('countries updated');
         }
 
         if (ms.startsWith(r'[{"kennelId"')) {
           final KennelsService kSrv = KennelsService();
           kSrv.bulkUpdateDatabase('[$ms]', db, null);
+          print('kennels updated');
+        }
+
+        if (ms.startsWith(r'[{"hkmId"')) {
+          final HasherKennelMapTdService hkmSrv = HasherKennelMapTdService();
+          hkmSrv.bulkUpdateDatabase('[$ms]', db, null);
+          print('hasher kennel map updated');
         }
       }
     }

@@ -60,44 +60,30 @@ class SupportPageState extends State<SupportPage> {
 
   Widget _buildCircularProgressIndicator() {
     return Center(
-      child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Applying Reset Code',
-              style: headingStyle,
-              textAlign: TextAlign.center,
-            ),
-            Container(height: 30),
-            SpinKitCircle(
-              size: 75.0,
-              itemBuilder: (_, int index) {
-                return DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: index.isEven
-                        ? Colors.grey[50]
-                        : Theme.of(context).accentColor,
-                  ),
-                );
-              },
-            ),
-          ]),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        Text(
+          'Applying Reset Code',
+          style: headingStyle,
+          textAlign: TextAlign.center,
+        ),
+        Container(height: 30),
+        SpinKitCircle(
+          size: 75.0,
+          itemBuilder: (_, int index) {
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                color: index.isEven ? Colors.grey[50] : Theme.of(context).accentColor,
+              ),
+            );
+          },
+        ),
+      ]),
     );
   }
 
-  TextStyle headingStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.yellow,
-      fontSize: 22.0,
-      height: 1.0);
+  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 22.0, height: 1.0);
 
-  TextStyle largeText = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.white,
-      fontSize: 32.0,
-      height: 1.0);
+  TextStyle largeText = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 32.0, height: 1.0);
 
   @override
   Widget build(BuildContext context) {
@@ -114,15 +100,10 @@ class SupportPageState extends State<SupportPage> {
     return Scaffold(
       appBar: appBar,
       body: isLoading
-          ? Container(
-              height: MediaQuery.of(context).size.height -
-                  appBar.preferredSize.height,
-              decoration: Backgrounds.defaultHcBackground(),
-              child: _buildCircularProgressIndicator())
+          ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
           : Container(
               decoration: Backgrounds.defaultHcBackground(),
-              height: MediaQuery.of(context).size.height -
-                  appBar.preferredSize.height,
+              height: MediaQuery.of(context).size.height - appBar.preferredSize.height,
               child: SingleChildScrollView(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(
@@ -130,8 +111,7 @@ class SupportPageState extends State<SupportPage> {
                       ),
                   child: IntrinsicHeight(
                     child: Padding(
-                      padding:
-                          const EdgeInsets.only(top: 30, left: 20, right: 20),
+                      padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -155,33 +135,26 @@ class SupportPageState extends State<SupportPage> {
                                     width: MediaQuery.of(context).size.width,
                                     child: Center(
                                       child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
+                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
                                         children: <Widget>[
                                           Expanded(
                                             child: Stack(
-                                              alignment:
-                                                  AlignmentDirectional.center,
+                                              alignment: AlignmentDirectional.center,
                                               children: <Widget>[
                                                 Positioned(
                                                   top: 50,
-                                                  child: AutoSizeText(
-                                                      'Secret QR code for:',
+                                                  child: AutoSizeText('Secret QR code for:',
                                                       //'QR Code for xxx',
-                                                      textAlign:
-                                                          TextAlign.center,
+                                                      textAlign: TextAlign.center,
                                                       maxLines: 1,
                                                       style: headingStyle),
                                                 ),
                                                 Positioned(
                                                   top: 75,
-                                                  child: AutoSizeText(
-                                                      '$userName',
+                                                  child: AutoSizeText('$userName',
                                                       //'QR Code for xxx',
-                                                      textAlign:
-                                                          TextAlign.center,
+                                                      textAlign: TextAlign.center,
                                                       maxLines: 1,
                                                       style: largeText),
                                                 ),
@@ -189,71 +162,27 @@ class SupportPageState extends State<SupportPage> {
                                                   top: 145,
                                                   //bottom: 50,
                                                   child: Container(
-                                                    height: (MediaQuery.of(
-                                                                        context)
-                                                                    .size
-                                                                    .width *
-                                                                0.8 <
-                                                            MediaQuery.of(
-                                                                        context)
-                                                                    .size
-                                                                    .height *
-                                                                0.4)
-                                                        ? MediaQuery.of(context)
-                                                                .size
-                                                                .width *
-                                                            0.8
-                                                        : MediaQuery.of(context)
-                                                                .size
-                                                                .height *
-                                                            0.4,
-                                                    width: (MediaQuery.of(
-                                                                        context)
-                                                                    .size
-                                                                    .width *
-                                                                0.8 <
-                                                            MediaQuery.of(
-                                                                        context)
-                                                                    .size
-                                                                    .height *
-                                                                0.4)
-                                                        ? MediaQuery.of(context)
-                                                                .size
-                                                                .width *
-                                                            0.8
-                                                        : MediaQuery.of(context)
-                                                                .size
-                                                                .height *
-                                                            0.4,
+                                                    height: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
+                                                    width: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
                                                     child: QrImage(
-                                                        backgroundColor:
-                                                            Colors.white,
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(10.0),
-                                                        data:
-                                                            'USC:${userQrCode.toUpperCase()}',
+                                                        backgroundColor: Colors.white,
+                                                        padding: const EdgeInsets.all(10.0),
+                                                        data: 'USC:${userQrCode.toUpperCase()}',
                                                         //data: 'testing123',
                                                         version: 4,
                                                         //size: 200.0,
-                                                        errorCorrectionLevel:
-                                                            3),
+                                                        errorCorrectionLevel: 3),
                                                   ),
                                                 ),
                                                 Positioned(
                                                   top: 420,
                                                   child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 32.0,
-                                                            right: 32.0),
+                                                    padding: const EdgeInsets.only(left: 32.0, right: 32.0),
                                                     child: FlatButton(
                                                       textColor: Colors.white,
-                                                      child: const Text(
-                                                          'Learn more about this feature'),
+                                                      child: const Text('Learn more about this feature'),
                                                       onPressed: () {
-                                                        _displayInstructions(
-                                                            context);
+                                                        _displayInstructions(context);
                                                       },
                                                     ),
                                                   ),
@@ -265,12 +194,7 @@ class SupportPageState extends State<SupportPage> {
                                       ),
                                     ),
                                   ),
-                                  const Positioned(
-                                      top: 513,
-                                      left: 0,
-                                      right: 0,
-                                      child: FancyDivider(
-                                          innerColor: Colors.white)),
+                                  const Positioned(top: 513, left: 0, right: 0, child: FancyDivider(innerColor: Colors.white)),
                                   Positioned(
                                     top: 535,
                                     left: 0,
@@ -291,12 +215,7 @@ class SupportPageState extends State<SupportPage> {
                                       textAlign: TextAlign.center,
                                     ),
                                   ),
-                                  const Positioned(
-                                      top: 650,
-                                      left: 0,
-                                      right: 0,
-                                      child: FancyDivider(
-                                          innerColor: Colors.white)),
+                                  const Positioned(top: 650, left: 0, right: 0, child: FancyDivider(innerColor: Colors.white)),
                                   Positioned(
                                     top: 670,
                                     left: 0,
@@ -321,24 +240,18 @@ class SupportPageState extends State<SupportPage> {
                                               children: <Widget>[
                                                 Container(
                                                   //color: Colors.white,
-                                                  padding: const EdgeInsets.all(
-                                                      10.0),
+                                                  padding: const EdgeInsets.all(10.0),
                                                   decoration: BoxDecoration(
                                                     color: Colors.yellow[100],
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5.0),
+                                                    borderRadius: BorderRadius.circular(5.0),
                                                   ),
                                                   // padding: const EdgeInsets.only(
                                                   //     top: 0.0, bottom: 8.0),
                                                   child: TextFormField(
                                                     autocorrect: false,
-                                                    controller:
-                                                        resetCodeTextController,
-                                                    focusNode:
-                                                        resetCodeFocusNode,
-                                                    decoration:
-                                                        resetCodeDecoration,
+                                                    controller: resetCodeTextController,
+                                                    focusNode: resetCodeFocusNode,
+                                                    decoration: resetCodeDecoration,
                                                     // validator: (val) {
                                                     //   if (val.length == 0) {
                                                     //     return "Email cannot be empty";
@@ -346,125 +259,52 @@ class SupportPageState extends State<SupportPage> {
                                                     //     return null;
                                                     //   }
                                                     // },
-                                                    keyboardType:
-                                                        TextInputType.text,
+                                                    keyboardType: TextInputType.text,
                                                     style: const TextStyle(
                                                       fontFamily: 'Poppins',
                                                     ),
                                                   ),
                                                 ),
                                                 Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          top: 25),
-                                                  child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceAround,
-                                                      children: <Widget>[
-                                                        RaisedButton(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                      .only(
-                                                                  top: 15,
-                                                                  bottom: 15,
-                                                                  left: 50,
-                                                                  right: 50),
-                                                          onPressed: () async {
+                                                  padding: const EdgeInsets.only(top: 25),
+                                                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+                                                    RaisedButton(
+                                                      padding: const EdgeInsets.only(top: 15, bottom: 15, left: 50, right: 50),
+                                                      onPressed: () async {
+                                                        Database db = await DBProvider.db.database;
 
+                                                        final SyncDataService cSrv = SyncDataService();
+                                                        final bool result = await cSrv.updateFromBackend(db, SyncDataService.flagAllMasterDataWithoutHashers, false);
+                                                        final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                                                        print('Master data synchronized $resultStr');
 
+                                                        if (resetCodeTextController.text.length == 6) {
+                                                          setState(() {
+                                                            isLoading = true;
 
-
-
-
-
-
-
-
-
-                                                            Database db =
-                                                                await DBProvider
-                                                                    .db
-                                                                    .database;
-
-                                                            final SyncMasterDataService
-                                                                cSrv =
-                                                                SyncMasterDataService();
-                                                            final bool result =
-                                                                await cSrv
-                                                                    .updateFromBackend(
-                                                                        db,
-                                                                        false);
-                                                            final String
-                                                                resultStr =
-                                                                result
-                                                                    ? 'successfully'
-                                                                    : 'unsuccessfully';
-                                                            print(
-                                                                'Master data synchronized $resultStr');
-
-
-
-
-
-                                                                
-
-                                                            if (resetCodeTextController
-                                                                    .text
-                                                                    .length ==
-                                                                6) {
+                                                            final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                                                            final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, 'RC:' + resetCodeTextController.text.toUpperCase());
+                                                            apiCall.then((Map<String, String> result) {
                                                               setState(() {
-                                                                isLoading =
-                                                                    true;
-
-                                                                final AuthorizeDeviceService
-                                                                    srv =
-                                                                    AuthorizeDeviceService();
-                                                                final Future<
-                                                                        Map<String,
-                                                                            String>>
-                                                                    apiCall =
-                                                                    srv.authorizeDevice(
-                                                                        context,
-                                                                        'RC:' +
-                                                                            resetCodeTextController.text.toUpperCase());
-                                                                apiCall.then((Map<
-                                                                        String,
-                                                                        String>
-                                                                    result) {
-                                                                  setState(() {
-                                                                    isLoading =
-                                                                        false;
-                                                                  });
-
-                                                                  if (result[
-                                                                          'result'] !=
-                                                                      'failed') {
-                                                                    userName = getStringPref(
-                                                                        StringPrefsEnum
-                                                                            .displayName);
-                                                                    userQrCode =
-                                                                        getStringPref(
-                                                                            StringPrefsEnum.qrSecretCode);
-
-                                                                    Utilities.showAlert(
-                                                                        context,
-                                                                        'App Reset Successful',
-                                                                        'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',
-                                                                        'OK');
-                                                                  }
-                                                                });
+                                                                isLoading = false;
                                                               });
-                                                            }
-                                                          },
-                                                          child: const Text(
-                                                            'Reset App',
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .white),
-                                                          ),
-                                                        ),
-                                                      ]),
+
+                                                              if (result['result'] != 'failed') {
+                                                                userName = getStringPref(StringPrefsEnum.displayName);
+                                                                userQrCode = getStringPref(StringPrefsEnum.qrSecretCode);
+
+                                                                Utilities.showAlert(context, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
+                                                              }
+                                                            });
+                                                          });
+                                                        }
+                                                      },
+                                                      child: const Text(
+                                                        'Reset App',
+                                                        style: TextStyle(color: Colors.white),
+                                                      ),
+                                                    ),
+                                                  ]),
                                                 ),
                                               ],
                                             ),
@@ -499,11 +339,7 @@ class SupportPageState extends State<SupportPage> {
                 Text(
                   'Harrier Central does not use either usernames or passwords. Instead we identify you using a \'secret QR code\'. This QR code can be used to allow Harrier Central running on another device to access your account. If you want to install Harrier Central on another device, when you first install the app, select \'existing user\' and use the scanner to scan this code. The app on the new device will then be configured to access your account',
                   textAlign: TextAlign.justify,
-                  style: TextStyle(
-                      fontFamily: 'AvenirNextRegular',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 16.0,
-                      height: 1.0),
+                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                 )
               ],
             ),

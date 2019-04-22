@@ -72,8 +72,8 @@ class DBProvider {
         informUser('Updating from\r\ncloud back-end');
       }
 
-      final SyncMasterDataService cSrv = SyncMasterDataService();
-      final bool result = await cSrv.updateFromBackend(db, false);
+      final SyncDataService cSrv = SyncDataService();
+      final bool result = await cSrv.updateFromBackend(db, SyncDataService.flagAllMasterDataWithoutHashers, false);
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Master data synchronized $resultStr');
     });
