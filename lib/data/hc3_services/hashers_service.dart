@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
 
 class HashersModel {
   HashersModel({this.hasherId, this.firstName, this.lastName, this.dispName, this.hashName, this.photo, this.dispPref, this.removed, this.updatedAt});
@@ -142,13 +139,6 @@ class HashersTableHelper {
 
 class HashersService {
   static final HashersTableHelper instance = HashersTableHelper._privateConstructor();
-
-  Future<num> getLastUpdatedTime(Database db) async {
-    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${HashersTableHelper.colUpdatedAtValue}) AS maxDate FROM ${HashersTableHelper.tableName}');
-    final num timeValue = table.first['maxDate'];
-    print(timeValue.toString());
-    return timeValue;
-  }
 
   Future<List<HashersModel>> selectAllFromLocalDb() async {
     final Database db = await DBProvider.db.database;

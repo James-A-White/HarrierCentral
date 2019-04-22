@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
 
 class CountriesModel {
   CountriesModel(
@@ -191,33 +188,6 @@ class CountriesTableHelper {
 class CountriesService {
   static final CountriesTableHelper instance =
       CountriesTableHelper._privateConstructor();
-
-  Future<num> getLastUpdatedTime(Database db) async {
-    final List<Map<String, dynamic>> table = await db.rawQuery(
-        'SELECT MAX(${CountriesTableHelper.colUpdatedAtValue}) AS maxDate FROM ${CountriesTableHelper.tableName}');
-    final num timeValue = table.first['maxDate'];
-    print(timeValue.toString());
-    return timeValue;
-  }
-
-  Future<List<CountriesModel>> selectAllFromLocalDb() async {
-    final Database db = await DBProvider.db.database;
-
-    final List<Map<String, dynamic>> result =
-        await db.query(CountriesTableHelper.tableName);
-
-    final List<CountriesModel> records = <CountriesModel>[];
-
-    if ((result != null) && (result.isNotEmpty)) {
-      for (int i = 0; i < result.length; i++) {
-        if (result[i]['removed'] == 0) {
-          final CountriesModel record = CountriesTableHelper.fromMap(result[i]);
-          records.add(record);
-        }
-      }
-    }
-    return records;
-  }
 
   Future<void> clearTable() async {
     final Database db = await DBProvider.db.database;

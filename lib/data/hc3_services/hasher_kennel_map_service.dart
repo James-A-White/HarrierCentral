@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
 
 class HasherKennelMapModel {
   HasherKennelMapModel({this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.removed, this.updatedAt});
@@ -158,31 +155,6 @@ class HasherKennelMapTableHelper {
 
 class HasherKennelMapTdService {
   static final HasherKennelMapTableHelper instance = HasherKennelMapTableHelper._privateConstructor();
-
-  Future<num> getLastUpdatedTime(Database db) async {
-    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${HasherKennelMapTableHelper.colUpdatedAtValue}) AS maxDate FROM ${HasherKennelMapTableHelper.tableName}');
-    final num timeValue = table.first['maxDate'];
-    print(timeValue.toString());
-    return timeValue;
-  }
-
-  Future<List<HasherKennelMapModel>> selectAllFromLocalDb() async {
-    final Database db = await DBProvider.db.database;
-
-    final List<Map<String, dynamic>> result = await db.query(HasherKennelMapTableHelper.tableName);
-
-    final List<HasherKennelMapModel> records = <HasherKennelMapModel>[];
-
-    if ((result != null) && (result.isNotEmpty)) {
-      for (int i = 0; i < result.length; i++) {
-        if (result[i]['removed'] == 0) {
-          final HasherKennelMapModel record = HasherKennelMapTableHelper.fromMap(result[i]);
-          records.add(record);
-        }
-      }
-    }
-    return records;
-  }
 
   Future<void> clearTable() async {
     final Database db = await DBProvider.db.database;

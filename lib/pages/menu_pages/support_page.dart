@@ -271,7 +271,7 @@ class SupportPageState extends State<SupportPage> {
                                                     RaisedButton(
                                                       padding: const EdgeInsets.only(top: 15, bottom: 15, left: 50, right: 50),
                                                       onPressed: () async {
-                                                        Database db = await DBProvider.db.database;
+                                                        final Database db = await DBProvider.db.database;
 
                                                         final SyncDataService cSrv = SyncDataService();
                                                         final bool result = await cSrv.updateFromBackend(db, SyncDataService.flagAllMasterData, false);

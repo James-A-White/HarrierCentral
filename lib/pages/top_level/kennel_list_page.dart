@@ -6,8 +6,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
+
 import 'package:harrier_central/data/services/kennel_scoped_model.dart';
 import 'package:harrier_central/widgets/kennel_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
@@ -50,7 +49,7 @@ class KennelsListPageState extends State<KennelsListPage> {
   }
 
   void refreshFromTable(bool forceRefresh) {
-    if (forceRefresh || (Singletons.kennelMainPageList == null)) {
+    if (forceRefresh || (singletonKennelMainPageList == null)) {
       final Geolocator locator = Geolocator();
 
       Utilities.getLatLong().then((LatLon ll) {
@@ -68,7 +67,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           
           ''';
 
-          Singletons.kennelMainPageList = <Map<String, dynamic>>[];
+          singletonKennelMainPageList = <Map<String, dynamic>>[];
           try {
             db.rawQuery(query).then((List<Map<String, dynamic>> results) {
               
@@ -77,7 +76,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                     final Map<String, dynamic> item = <String, dynamic>{};
                     item.addAll(<String, dynamic>{'distance': dist.round()});
                     item.addAll(results[i]);
-                    Singletons.kennelMainPageList.add(item);
+                    singletonKennelMainPageList.add(item);
                     if (i == results.length - 1)
                     {
                       setState(() {
@@ -103,7 +102,7 @@ class KennelsListPageState extends State<KennelsListPage> {
       child: Scaffold(
         body: ScopedModelDescendant<KennelScopedModel>(
           builder: (BuildContext context, Widget child, KennelScopedModel model) {
-            return Singletons.kennelMainPageList == null ? _buildCircularProgressIndicator() : _buildListView();
+            return singletonKennelMainPageList == null ? _buildCircularProgressIndicator() : _buildListView();
           },
         ),
       ),
@@ -123,24 +122,24 @@ class KennelsListPageState extends State<KennelsListPage> {
   }
 
   Widget _buildListView() {
-    Singletons.kennelMainPageList.sort((Map<String, dynamic> a, Map<String, dynamic> b) => (a['distance']).compareTo(b['distance']));
+    singletonKennelMainPageList.sort((Map<String, dynamic> a, Map<String, dynamic> b) => (a['distance']).compareTo(b['distance']));
     return Container(
       decoration: Backgrounds.defaultHcBackground(),
       padding: const EdgeInsets.only(top: 0.0),
-      child: Singletons.kennelMainPageList.isEmpty
+      child: singletonKennelMainPageList.isEmpty
           ? const Center(child: Text('No Kennels available.'))
           : RefreshIndicator(
               onRefresh: () => _handleRefresh(),
               displacement: 40.0,
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: Singletons.kennelMainPageList.length,
+                itemCount: singletonKennelMainPageList.length,
                 itemBuilder: (BuildContext context, int index) {
                   return Container(
                     height: 150.0,
                     padding: const EdgeInsets.all(0.0),
                     child: ListView(scrollDirection: Axis.horizontal, children: <Widget>[
-                      KennelsListItem(kennel: Singletons.kennelMainPageList[index]),
+                      KennelsListItem(kennel: singletonKennelMainPageList[index]),
                     ]),
                   );
                 },

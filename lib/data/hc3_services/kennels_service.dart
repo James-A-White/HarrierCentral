@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
 
 class KennelsModel {
   KennelsModel(
@@ -247,33 +244,6 @@ class KennelsTableHelper {
 class KennelsService {
   static final KennelsTableHelper instance =
       KennelsTableHelper._privateConstructor();
-
-  Future<num> getLastUpdatedTime(Database db) async {
-    final List<Map<String, dynamic>> table = await db.rawQuery(
-        'SELECT MAX(${KennelsTableHelper.colUpdatedAtValue}) AS maxDate FROM ${KennelsTableHelper.tableName}');
-    final num timeValue = table.first['maxDate'];
-    print(timeValue.toString());
-    return timeValue;
-  }
-
-  Future<List<KennelsModel>> selectAllFromLocalDb() async {
-    final Database db = await DBProvider.db.database;
-
-    final List<Map<String, dynamic>> result =
-        await db.query(KennelsTableHelper.tableName);
-
-    final List<KennelsModel> records = <KennelsModel>[];
-
-    if ((result != null) && (result.isNotEmpty)) {
-      for (int i = 0; i < result.length; i++) {
-        if (result[i]['removed'] == 0) {
-          final KennelsModel record = KennelsTableHelper.fromMap(result[i]);
-          records.add(record);
-        }
-      }
-    }
-    return records;
-  }
 
   Future<void> clearTable() async {
     final Database db = await DBProvider.db.database;

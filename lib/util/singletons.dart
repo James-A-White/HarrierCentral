@@ -1,6 +1,1 @@
-
-
-class Singletons
-{
-    static List<Map<String, dynamic>> kennelMainPageList;
-}
+List<Map<String, dynamic>> singletonKennelMainPageList;
