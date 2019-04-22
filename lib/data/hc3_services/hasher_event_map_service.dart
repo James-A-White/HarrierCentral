@@ -1,0 +1,242 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:sqflite/sqflite.dart';
+
+import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/util/preferences.dart';
+
+class HasherEventMapModel {
+  HasherEventMapModel({this.hemId, this.userId, this.eventId, this.userStartEvent, this.userEndEvent, this.rsvpState, this.attendenceState, this.isHare, this.eventCountOverride, this.removed, this.updatedAt});
+
+  final String hemId;
+  final String userId;
+  final String eventId;
+  final String userStartEvent;
+  final String userEndEvent;
+  final int rsvpState;
+  final int attendenceState;
+  final int isHare;
+  final num eventCountOverride;
+
+  final int removed;
+  final DateTime updatedAt;
+
+  static List<HasherEventMapModel> itemsFromJson(String jsonResult) {
+    final List<HasherEventMapModel> items = <HasherEventMapModel>[];
+
+    HasherEventMapModel item;
+
+    json.decode(jsonResult).forEach(
+      (dynamic jsonItem) {
+        item = HasherEventMapModel(
+            hemId: jsonItem['hemId'],
+            userId: jsonItem['userId'],
+            eventId: jsonItem['eventId'],
+            userStartEvent: jsonItem['userStartEvent'],
+            userEndEvent: jsonItem['userEndEvent'],
+            rsvpState: jsonItem['rsvpState'],
+            attendenceState: jsonItem['attendenceState'],
+            isHare: jsonItem['isHare'],
+            eventCountOverride: jsonItem['eventCountOverride'],
+            updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
+            removed: jsonItem['removed']);
+
+        items.add(item);
+      },
+    );
+
+    if (items.isEmpty) {
+      return null;
+    }
+
+    return items;
+  }
+}
+
+class HasherEventMapTableHelper {
+  HasherEventMapTableHelper._privateConstructor();
+
+  static const String tableName = 'hasherEventMap';
+  //static const num forceRequeryInterval = 1 * 86400000;
+  static const num forceRequeryInterval = 1 * 1000;
+  static const num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
+
+  static const IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateHasherEventMapData;
+  static const IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearHasherEventMapData;
+
+  static const String colId = 'id';
+  static const String remoteDbId = 'hemId';
+
+  static const String colHemId = 'hemId';
+  static const String colUserId = 'userId';
+  static const String colEventId = 'eventId';
+  static const String colUserStartEvent = 'userStartEvent';
+  static const String colUserEndEvent = 'userEndEvent';
+  static const String colRsvpState = 'rsvpState';
+  static const String colAttendenceState = 'attendenceState';
+  static const String colIsHare = 'isHare';
+  static const String colEventCountOverride = 'eventCountOverride';
+
+  static const String colRemoved = 'removed';
+  static const String colUpdatedAt = 'updatedAt';
+  static const String colUpdatedAtValue = 'updatedAtValue';
+
+  // make this a singleton class
+
+  static final HasherEventMapTableHelper instance = HasherEventMapTableHelper._privateConstructor();
+
+  // SQL code to create the database table
+  static Future<dynamic> createTable(Database db, int version) async {
+    await db.execute('''
+          CREATE TABLE $tableName (
+            $colId INTEGER PRIMARY KEY,
+
+            $colHemId TEXT NOT NULL,
+            $colUserId TEXT NOT NULL,
+            $colEventId TEXT NOT NULL,
+            $colUserStartEvent TEXT,
+            $colUserEndEvent TEXT,
+            $colRsvpState INT,
+            $colAttendenceState INT,
+            $colIsHare INT,
+            $colEventCountOverride NUM,
+
+            $colRemoved NUM,
+            $colUpdatedAt TEXT,
+            $colUpdatedAtValue NUM NULL
+          )
+          ''');
+
+    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
+    await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
+  }
+
+  static Map<String, dynamic> toMap(HasherEventMapModel item) {
+    final Map<String, dynamic> map = <String, dynamic>{
+      HasherEventMapTableHelper.colHemId: item.hemId,
+      HasherEventMapTableHelper.colUserId: item.userId,
+      HasherEventMapTableHelper.colEventId: item.eventId,
+      HasherEventMapTableHelper.colUserStartEvent: item.userStartEvent,
+      HasherEventMapTableHelper.colUserEndEvent: item.userEndEvent,
+      HasherEventMapTableHelper.colRsvpState: item.rsvpState,
+      HasherEventMapTableHelper.colAttendenceState: item.attendenceState,
+      HasherEventMapTableHelper.colIsHare: item.isHare,
+      HasherEventMapTableHelper.colEventCountOverride: item.eventCountOverride,
+      HasherEventMapTableHelper.colUpdatedAt: item.updatedAt.toString(),
+      HasherEventMapTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
+      HasherEventMapTableHelper.colRemoved: item.removed
+    };
+
+    return map;
+  }
+
+  static HasherEventMapModel fromMap(Map<String, dynamic> map) {
+    final HasherEventMapModel item = HasherEventMapModel(
+      hemId: map[HasherEventMapTableHelper.colHemId],
+      userId: map[HasherEventMapTableHelper.colUserId],
+      eventId: map[HasherEventMapTableHelper.colEventId],
+      userStartEvent: map[HasherEventMapTableHelper.colUserStartEvent],
+      userEndEvent: map[HasherEventMapTableHelper.colUserEndEvent],
+      rsvpState: map[HasherEventMapTableHelper.colRsvpState],
+      attendenceState: map[HasherEventMapTableHelper.colAttendenceState],
+      isHare: map[HasherEventMapTableHelper.colIsHare],
+      eventCountOverride: map[HasherEventMapTableHelper.colEventCountOverride],
+      updatedAt: DateTime.parse(map[HasherEventMapTableHelper.colUpdatedAt].toString().substring(0, 19)),
+      removed: map[HasherEventMapTableHelper.colRemoved],
+    );
+
+    return item;
+  }
+}
+
+class HasherEventMapService {
+  static final HasherEventMapTableHelper instance = HasherEventMapTableHelper._privateConstructor();
+
+  Future<void> clearTable() async {
+    final Database db = await DBProvider.db.database;
+    await db.rawDelete('DELETE FROM ${HasherEventMapTableHelper.tableName}').then((void dummy) {
+      setIntPref(HasherEventMapTableHelper.lastCacheClearKey, DateTime.now().millisecondsSinceEpoch);
+    });
+  }
+
+  Future<void> updateDatabase(List<HasherEventMapModel> items) async {
+    final Database db = await DBProvider.db.database;
+
+    for (int i = 0; i < items?.length ?? 0; i++) {
+      final Map<String, dynamic> row = HasherEventMapTableHelper.toMap(items[i]);
+
+      final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${HasherEventMapTableHelper.tableName} WHERE ${HasherEventMapTableHelper.remoteDbId} = "${items[i].hemId}"');
+      if ((table == null) || (table.isEmpty)) {
+        await db.transaction<dynamic>((Transaction txn) async {
+          final int result = await txn.insert(HasherEventMapTableHelper.tableName, row);
+          print(result.toString() + ' inserted into to the ${HasherEventMapTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+        });
+      } else {
+        final String rowId = table.first['id'].toString();
+
+        await db.transaction<dynamic>((Transaction txn) async {
+          final int result = await db.update(HasherEventMapTableHelper.tableName, row, where: 'id = $rowId');
+          print(result.toString() + ' update to the ${HasherEventMapTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+        });
+      }
+    }
+  }
+
+  Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser) async {
+    int updateCounter = 0;
+    int insertCounter = 0;
+
+    final List<dynamic> jsonResultSets = json.decode(rawResults);
+
+    final int len = jsonResultSets.length;
+    int lastPercentage = 0;
+
+    print('Region records received from cloud = $len');
+
+    for (int i = 0; i < jsonResultSets.length; i++) {
+      final List<dynamic> jsonResults = jsonResultSets[i];
+
+      for (int j = 0; j < jsonResults.length; j++) {
+        final Map<String, dynamic> jsonItem = jsonResults[j];
+
+        final int percentage = (100 * (j / jsonResults.length)).round();
+        if ((percentage != lastPercentage) && (informUser != null)) {
+          lastPercentage = percentage;
+          informUser('Loading region data\r\n$percentage% complete');
+        }
+
+        jsonItem.addAll(<String, dynamic>{
+          'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch,
+        });
+
+        final String query = 'SELECT * FROM ${HasherEventMapTableHelper.tableName} WHERE ${HasherEventMapTableHelper.remoteDbId} = "${jsonItem['hemId']}"';
+        final List<Map<String, dynamic>> table = await db.rawQuery(query);
+
+        if ((table == null) || (table.isEmpty)) {
+          //print(table.length.toString());
+          await db.transaction<dynamic>((Transaction txn) async {
+            //final int result =
+            await txn.insert(HasherEventMapTableHelper.tableName, jsonItem);
+            insertCounter++;
+            // print(result.toString() +
+            //     ' inserted into to the ${HasherEventMapTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
+          });
+        } else {
+          final String rowId = table.first['id'].toString();
+
+          await db.transaction<dynamic>((Transaction txn) async {
+            //final int result =
+            await txn.update(HasherEventMapTableHelper.tableName, jsonItem, where: 'id = $rowId');
+            updateCounter++;
+            // print(result.toString() +
+            //     ' update to the ${HasherEventMapTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
+          });
+        }
+      }
+    }
+
+    print('$insertCounter hasher event map records inserted, $updateCounter hasher event map records updated');
+    return insertCounter;
+  }
+}

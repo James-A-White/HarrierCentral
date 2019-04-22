@@ -67,8 +67,8 @@ class HasherKennelMapTableHelper {
   static const num forceRequeryInterval = 1 * 1000;
   static const num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
 
-  static const IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateUserKennelData;
-  static const IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearUserKennelData;
+  static const IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateHasherKennelMaplData;
+  static const IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearHasherKennelMapData;
 
   static const String colId = 'id';
   static const String remoteDbId = 'hkmId';
@@ -156,7 +156,7 @@ class HasherKennelMapTableHelper {
   }
 }
 
-class HasherKennelMapTdService {
+class HasherKennelMapService {
   static final HasherKennelMapTableHelper instance = HasherKennelMapTableHelper._privateConstructor();
 
   Future<void> clearTable() async {

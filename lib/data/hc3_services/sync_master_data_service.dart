@@ -13,6 +13,7 @@ import 'package:harrier_central/data/hc3_services/countries_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
+import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 
 class SyncDataService {
   static const int flagHashersTable = 0x00000001;
@@ -25,8 +26,9 @@ class SyncDataService {
   static const int flagAllMasterData = 0x0000001F;
 
   static const int flagHasherKennelMapTable = 0x00010000;
+  static const int flagHasherEventMapTable = 0x00010000;
 
-  static const int flagsAllData = 0x0001001f;
+  static const int flagsAllData = 0x0003001f;
 
   num _hashersLastUpdated;
   num _citiesLastUpdated;
@@ -34,6 +36,7 @@ class SyncDataService {
   num _countriesLastUpdated;
   num _kennelsLastUpdated;
   num _hasherKennelMapLastUpdated;
+  num _hasherEventMapLastUpdated;
 
   Future<num> getLastUpdatedTime(Database db, String colName, String tableName) async {
     final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
@@ -49,6 +52,7 @@ class SyncDataService {
     _countriesLastUpdated = (flags & flagCountriesTable) == 0 ? 0 : await getLastUpdatedTime(db, CountriesTableHelper.colUpdatedAtValue, CountriesTableHelper.tableName);
     _kennelsLastUpdated = (flags & flagKennelsTable) == 0 ? 0 : await getLastUpdatedTime(db, KennelsTableHelper.colUpdatedAtValue, KennelsTableHelper.tableName);
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? 0 : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.tableName);
+    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? 0 : await getLastUpdatedTime(db, HasherEventMapTableHelper.colUpdatedAtValue, HasherEventMapTableHelper.tableName);
   }
 
   Future<bool> updateFromBackend(Database db, int flags, bool forceRefresh) async {
@@ -58,6 +62,7 @@ class SyncDataService {
     final int countriesLastUpdate = (flags & flagCountriesTable) == null ? 0 : getIntPref(CountriesTableHelper.lastUpdatedKey) ?? 0;
     final int kennelsLastUpdate = (flags & flagKennelsTable) == 0 ? null : getIntPref(KennelsTableHelper.lastUpdatedKey) ?? 0;
     final int hasherKennelMapLastUpdate = (flags & flagHasherKennelMapTable) == 0 ? null : getIntPref(HasherKennelMapTableHelper.lastUpdatedKey) ?? 0;
+    final int hasherEventMapLastUpdate = (flags & flagHasherEventMapTable) == 0 ? null : getIntPref(HasherEventMapTableHelper.lastUpdatedKey) ?? 0;
 
     if (forceRefresh ||
         ((hashersLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hashersLastUpdate) > HashersTableHelper.forceRequeryInterval) || 
@@ -65,7 +70,8 @@ class SyncDataService {
         ((regionsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - regionsLastUpdate) > RegionsTableHelper.forceRequeryInterval) ||
         ((countriesLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - countriesLastUpdate) > CountriesTableHelper.forceRequeryInterval) ||
         ((kennelsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - kennelsLastUpdate) > KennelsTableHelper.forceRequeryInterval) ||
-        ((hasherKennelMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherKennelMapLastUpdate) > HasherKennelMapTableHelper.forceRequeryInterval) 
+        ((hasherKennelMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherKennelMapLastUpdate) > HasherKennelMapTableHelper.forceRequeryInterval) ||
+        ((hasherEventMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherEventMapLastUpdate) > HasherEventMapTableHelper.forceRequeryInterval) 
         ) {
       // check to see if we need to clear the cache
       //int lastCacheClear = getIntPref(CitiesTableHelper.lastCacheClearKey);
@@ -97,6 +103,7 @@ class SyncDataService {
       final DateTime countriesUpdatedAfter = _countriesLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_countriesLastUpdated + 1000);
       final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
       final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+      final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
@@ -114,6 +121,7 @@ class SyncDataService {
         'countriesUpdatedAfter': (flags & flagCountriesTable) == 0 ? 'ignore' : countriesUpdatedAfter.toString().substring(0, 19),
         'kennelsUpdatedAfter': (flags & flagKennelsTable) == 0 ? 'ignore' : kennelsUpdatedAfter.toString().substring(0, 19),
         'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
+        'hasherEventMapUpdatedAfter': (flags & flagHasherEventMapTable) == 0 ? 'ignore' : hasherEventMapUpdatedAfter.toString().substring(0, 19),
       });
 
       final http.Response response = await http
@@ -165,9 +173,15 @@ class SyncDataService {
         }
 
         if (ms.startsWith(r'[{"hkmId"')) {
-          final HasherKennelMapTdService hkmSrv = HasherKennelMapTdService();
+          final HasherKennelMapService hkmSrv = HasherKennelMapService();
           hkmSrv.bulkUpdateDatabase('[$ms]', db, null);
           print('hasher kennel map updated');
+        }
+
+        if (ms.startsWith(r'[{"hemId"')) {
+          final HasherEventMapService hkmSrv = HasherEventMapService();
+          hkmSrv.bulkUpdateDatabase('[$ms]', db, null);
+          print('hasher event map updated');
         }
       }
     }

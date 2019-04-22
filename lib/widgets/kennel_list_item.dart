@@ -115,7 +115,7 @@ class KennelListItemState extends State<KennelsListItem> {
                               alignment: Alignment.topCenter,
                               splashColor: Colors.greenAccent,
                               onPressed: () {
-                                final HasherKennelMapTdService srv = HasherKennelMapTdService();
+                                final HasherKennelMapService srv = HasherKennelMapService();
                                 int followingRequested = widget.kennel['following'] + 1;
                                 if (followingRequested > 2)
                                 {

@@ -12,6 +12,7 @@ import 'package:harrier_central/data/hc3_services/countries_service.dart';
 import 'package:harrier_central/data/hc3_services/regions_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
+import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_master_data_service.dart';
 import 'package:harrier_central/util/constants.dart';
 
@@ -40,6 +41,7 @@ class DBProvider {
       await CountriesTableHelper.createTable(db, version);
       await KennelsTableHelper.createTable(db, version);
       await HasherKennelMapTableHelper.createTable(db, version);
+      await HasherEventMapTableHelper.createTable(db, version);
 
       if (informUser != null) {
         informUser('Loading city data\r\n0% complete');
