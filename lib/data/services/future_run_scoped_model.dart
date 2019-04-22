@@ -158,6 +158,12 @@ class FutureRunScopedModel
   }
 
   Future<void> getFutureRunsFromBackend(bool forceRefresh) async {
+    if (forceRefresh)
+    {
+      // clear runs so that if someone stops following a kennel, those runs will not
+      // continue to be cached
+      clearFutureRunsList();
+    }
     if (!forceRefresh && (_futureRunsList != null)) {
       return Future<void>(() {});
     }
