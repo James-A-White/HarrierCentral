@@ -90,7 +90,9 @@ class KennelsListPageState extends State<KennelsListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: singletonKennelMainPageList == null ? _buildCircularProgressIndicator() : _buildListView());
+
+    return Scaffold(
+      body: singletonKennelMainPageList == null ? _buildCircularProgressIndicator() : _buildListView());
   }
 
   Widget _buildCircularProgressIndicator() {

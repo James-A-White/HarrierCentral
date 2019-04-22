@@ -96,6 +96,17 @@ const EnumHasherType<int> hasherTypeVirgin = EnumHasherType<int>(2);
 
 //////////////////////////
 
+class EnumFollowType<int> extends Enum<int> {
+  const EnumFollowType(int val) : super(val);
+}
+
+const EnumFollowType<int> followTypeCancel = EnumFollowType<int>(-1);
+const EnumFollowType<int> followTypeAuto = EnumFollowType<int>(0);
+const EnumFollowType<int> followTypeFollow = EnumFollowType<int>(1);
+const EnumFollowType<int> followTypeIgnore = EnumFollowType<int>(2);
+
+//////////////////////////
+
 class EnumServerStatus<int> extends Enum<int> {
   const EnumServerStatus(int val) : super(val);
 }

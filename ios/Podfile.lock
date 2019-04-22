@@ -132,7 +132,7 @@ SPEC CHECKSUMS:
   geolocator: 6741991ed4867659b4a6087f50b43839e1d78bac
   google_api_availability: f07cd62cdd46ec432b95a702e35e558b817e05aa
   image_cropper: 189eec25d148f56694f670438e9458323ba2880a
-  image_picker: a211f28b95a560433c00f5cd3773f4710a20404d
+  image_picker: 16e5fec1fbc87fd3b297c53e4048521eaf17cd06
   intro_slider: 85847639533bfd8e898d76844e0aa2cf412ee190
   location_permissions: 698172f5e27a2514775fe1c62294f00f9b93a1bc
   package_info: 78cabb3c322943c55d39676f4a5bfc748c01d055

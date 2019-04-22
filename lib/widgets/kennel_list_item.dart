@@ -6,7 +6,9 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
+import 'package:harrier_central/widgets/follow_kennel_popup.dart';
 import 'package:harrier_central/data/services/future_run_scoped_model.dart';
 
 class KennelsListItem extends StatefulWidget {
@@ -35,81 +37,11 @@ class KennelListItemState extends State<KennelsListItem> {
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    // Container(
-                    //   //color: Colors.red,
-                    //   //padding: const EdgeInsets.only(top: 12.0),
-                    //   child: ScopedModelDescendant<FutureRunScopedModel>(
-                    //     builder: (BuildContext runContext, Widget runChild,
-                    //             FutureRunScopedModel runModel) =>
-                    //         ScopedModelDescendant<KennelScopedModel>(
-                    //           builder:
-                    //               (BuildContext context, Widget child,
-                    //                       KennelScopedModel model) =>
-                    //                   IconButton(
-                    //                     icon: Icon(
-                    //                         (kennel.followingRequested != null)
-                    //                             ? delayIcon
-                    //                             : (kennel.followingBool == 1)
-                    //                                 ? const Icon(FontAwesome.check_circle)
-                    //                                     .icon
-                    //                                 : (kennel.followingRequested ??
-                    //                                             kennel
-                    //                                                 .followingBool) ==
-                    //                                         2
-                    //                                     ? const Icon(FontAwesome
-                    //                                             .times_circle)
-                    //                                         .icon
-                    //                                     : const Icon(FontAwesome
-                    //                                             .circle_thin)
-                    //                                         .icon,
-                    //                         color: kennel.followingRequested != null
-                    //                             ? Colors.blue[800]
-                    //                             : kennel.followingBool == 1
-                    //                                 ? Colors.green
-                    //                                 : kennel.followingBool == 2
-                    //                                     ? Colors.red
-                    //                                     : Colors.grey.shade700),
-                    //                     tooltip: 'Select to follow a Kennel',
-                    //                     iconSize: 35.0,
-                    //                     alignment: Alignment.topCenter,
-                    //                     splashColor: Colors.greenAccent,
-                    //                     onPressed: () {
-                    //                       model.toggleFollowing(kennel);
-                    //                       runModel.clearFutureRunsList();
-
-                    //                       // setState(() {
-                    //                       // kennel.followingBool = kennel.followingBool == 0 ? 1 : 0;
-                    //                       // });
-                    //                     },
-                    //                   ),
-                    //         ),
-                    //   ),
-
-                    //   alignment: Alignment.topCenter,
-                    //   //height: 40.0,
-                    // ),
-
                     Container(
-                      //color: Colors.red,
-                      //padding: const EdgeInsets.only(top: 12.0),
                       child: ScopedModelDescendant<FutureRunScopedModel>(
                         builder: (BuildContext runContext, Widget runChild, FutureRunScopedModel runModel) => IconButton(
-                              icon: Icon(
-                                widget.kennel['followingRequested'] != -1
-                                ? delayIcon
-                                : widget.kennel['following'] == 1 
-                                  ? const Icon(FontAwesome.check_circle).icon 
-                                  : widget.kennel['following'] == 2 
-                                    ? const Icon(FontAwesome.times_circle).icon 
-                                    : const Icon(FontAwesome.circle_thin).icon,
-                                  color: 
-                                    widget.kennel['followingRequested'] != -1
-                                    ? Colors.blue
-                                    : widget.kennel['following'] == 1 
-                                      ? Colors.green 
-                                      : widget.kennel['following'] == 2 
-                                        ? Colors.red 
-                                        : Colors.grey.shade700),
+                              icon: Icon(widget.kennel['followingRequested'] != -1 ? delayIcon : widget.kennel['following'] == 1 ? const Icon(FontAwesome.check_circle).icon : widget.kennel['following'] == 2 ? const Icon(FontAwesome.times_circle).icon : const Icon(FontAwesome.star).icon,
+                                  color: widget.kennel['followingRequested'] != -1 ? Colors.blue : widget.kennel['following'] == 1 ? Colors.green : widget.kennel['following'] == 2 ? Colors.red : Colors.yellow[800]),
                               tooltip: 'Select to follow a Kennel',
                               iconSize: 35.0,
                               alignment: Alignment.topCenter,
@@ -117,8 +49,7 @@ class KennelListItemState extends State<KennelsListItem> {
                               onPressed: () {
                                 final HasherKennelMapService srv = HasherKennelMapService();
                                 int followingRequested = widget.kennel['following'] + 1;
-                                if (followingRequested > 2)
-                                {
+                                if (followingRequested > 2) {
                                   followingRequested = 0;
                                 }
                                 widget.kennel['followingRequested'] = followingRequested;
@@ -126,20 +57,11 @@ class KennelListItemState extends State<KennelsListItem> {
                                 srv.toggleFollowing(widget.kennel).then((void dummy) {
                                   setState(() {});
                                 });
-                                // model.toggleFollowing(kennel);
-                                // runModel.clearFutureRunsList();
-
-                                // setState(() {
-                                // kennel.followingBool = kennel.followingBool == 0 ? 1 : 0;
-                                // });
                               },
                             ),
                       ),
-
                       alignment: Alignment.topCenter,
-                      //height: 40.0,
                     ),
-
                     Container(
                       width: MediaQuery.of(context).size.width - 70,
                       padding: const EdgeInsets.only(left: 0.0, bottom: 2.0),
@@ -164,7 +86,6 @@ class KennelListItemState extends State<KennelsListItem> {
                     //   );
                     // },
                     child: Stack(
-                  //crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Container(
                       width: MediaQuery.of(context).size.width,
@@ -185,12 +106,6 @@ class KennelListItemState extends State<KennelsListItem> {
                       child: Column(
                           mainAxisSize: MainAxisSize.max,
                           children: <Widget>[
-                            // Text(
-                            //   '${kennel.kennelName}',
-                            //   style:
-                            //       TextStyle(fontSize: 22.0, fontWeight: FontWeight.w400),
-                            //   textAlign: TextAlign.left,
-                            // ),
                             Container(width: 10.0, height: 10.0),
                             Text(
                               '${widget.kennel['location']}',
@@ -220,80 +135,6 @@ class KennelListItemState extends State<KennelsListItem> {
                           ],
                           crossAxisAlignment: CrossAxisAlignment.start),
                     ),
-                    // Positioned(
-                    //   left: 0,
-                    //   top: 0,
-                    //   child:
-
-                    //   Container(
-                    //     padding: const EdgeInsets.only(top: 12.0),
-                    //     child: ScopedModelDescendant<FutureRunScopedModel>(
-                    //       builder: (BuildContext runContext, Widget runChild,
-                    //               FutureRunScopedModel runModel) =>
-                    //           ScopedModelDescendant<KennelScopedModel>(
-                    //             builder:
-                    //                 (BuildContext context, Widget child,
-                    //                         KennelScopedModel model) =>
-                    //                     IconButton(
-                    //                       icon: Icon(
-                    //                           (kennel.followingRequested != null)
-                    //                               ? delayIcon
-                    //                               : (kennel.followingBool == 1)
-                    //                                   ? const Icon(FontAwesome.check_circle)
-                    //                                       .icon
-                    //                                   : (kennel.followingRequested ??
-                    //                                               kennel
-                    //                                                   .followingBool) ==
-                    //                                           2
-                    //                                       ? const Icon(FontAwesome
-                    //                                               .times_circle)
-                    //                                           .icon
-                    //                                       : const Icon(FontAwesome
-                    //                                               .circle_thin)
-                    //                                           .icon,
-                    //                           color: kennel.followingRequested != null
-                    //                               ? Colors.blue[800]
-                    //                               : kennel.followingBool == 1
-                    //                                   ? Colors.green
-                    //                                   : kennel.followingBool == 2
-                    //                                       ? Colors.red
-                    //                                       : Colors.grey.shade700),
-                    //                       tooltip: 'Select to follow a Kennel',
-                    //                       iconSize: 35.0,
-                    //                       alignment: Alignment.topCenter,
-                    //                       splashColor: Colors.greenAccent,
-                    //                       onPressed: () {
-                    //                         model.toggleFollowing(kennel);
-                    //                         runModel.clearFutureRunsList();
-
-                    //                         // setState(() {
-                    //                         // kennel.followingBool = kennel.followingBool == 0 ? 1 : 0;
-                    //                         // });
-                    //                       },
-                    //                     ),
-                    //           ),
-                    //     ),
-                    //     // child: IconButton(
-                    //     //   icon:const  Icon(
-                    //     //       kennel.followingBool == 0
-                    //     //           ? Icons.radio_button_unchecked
-                    //     //           : Icons.radio_button_checked,
-                    //     //       color: Colors.blueGrey),
-                    //     //   tooltip: 'Select to follow a Kennel',
-                    //     //   iconSize: 35.0,
-                    //     //   alignment: Alignment.topCenter,
-                    //     //   splashColor: Colors.greenAccent,
-                    //     //   onPressed: () {
-                    //     //     // setState(() {
-                    //     //     // kennel.followingBool = kennel.followingBool == 0 ? 1 : 0;
-                    //     //     // });
-                    //     //   },
-                    //     // ),
-                    //     alignment: Alignment.topCenter,
-                    //     //height: 40.0,
-                    //   ),
-
-                    // ),
                   ],
                 )),
                 // const Divider(
@@ -310,13 +151,25 @@ class KennelListItemState extends State<KennelsListItem> {
                 color: Colors.black54,
                 splashColor: Theme.of(context).highlightColor,
                 onPressed: () {
-                  // Navigator.push<dynamic>(
-                  //   context,
-                  //   MaterialPageRoute<dynamic>(
-                  //     builder: (BuildContext context) =>
-                  //         KennelAdminMainPage(kennel: kennel),
-                  //   ),
-                  // );
+                  final FollowKennelPopup otherPaymentPopup = FollowKennelPopup(kennelName: widget.kennel['kennelName']);
+
+                  final Future<EnumFollowType<int>> dlg = showDialog<EnumFollowType<int>>(
+                      context: context,
+                      barrierDismissible: false, // user must tap button!
+                      builder: (BuildContext context) {
+                        return otherPaymentPopup;
+                      });
+
+                  dlg.then((EnumFollowType<int> x) {
+                    if (x.value != -1) {
+                      final HasherKennelMapService srv = HasherKennelMapService();
+                      widget.kennel['followingRequested'] = x.value;
+                      setState(() {});
+                      srv.toggleFollowing(widget.kennel).then((void dummy) {
+                        setState(() {});
+                      });
+                    }
+                  });
                 },
               ),
             ),
