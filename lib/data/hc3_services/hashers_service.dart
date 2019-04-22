@@ -208,7 +208,7 @@ class HashersService {
         final int percentage = (100 * (j / jsonResults.length)).round();
         if ((percentage != lastPercentage) && (informUser != null)) {
           lastPercentage = percentage;
-          informUser('Loading region data\r\n$percentage% complete');
+          informUser('Loading packs \r\n$percentage% complete');
         }
 
         jsonItem.addAll(<String, dynamic>{

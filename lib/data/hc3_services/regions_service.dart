@@ -65,8 +65,9 @@ class RegionsTableHelper {
       IntPrefsEnum.lastCacheClearRegionsData;
 
   static const String colId = 'id';
-  static const String colRegionId = 'regionId';
   static const String remoteDbId = 'regionId';
+
+  static const String colRegionId = 'regionId';
   static const String colRegionName = 'regionName';
   static const String colCountryId = 'countryId';
   static const String colFlagFile = 'flagFile';

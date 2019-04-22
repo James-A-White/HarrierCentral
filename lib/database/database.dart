@@ -13,6 +13,7 @@ import 'package:harrier_central/data/hc3_services/regions_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_master_data_service.dart';
 import 'package:harrier_central/util/constants.dart';
 
@@ -42,6 +43,7 @@ class DBProvider {
       await KennelsTableHelper.createTable(db, version);
       await HasherKennelMapTableHelper.createTable(db, version);
       await HasherEventMapTableHelper.createTable(db, version);
+      await NarrowEventsTableHelper.createTable(db, version);
 
       if (informUser != null) {
         informUser('Loading city data\r\n0% complete');
@@ -67,12 +69,8 @@ class DBProvider {
       final CountriesService countriesSrv = CountriesService();
       await countriesSrv.bulkUpdateDatabase(countriesJson, db, informUser);
 
-      if (informUser != null) {
-        informUser('Updating from\r\ncloud back-end');
-      }
-
       final SyncDataService cSrv = SyncDataService();
-      final bool result = await cSrv.updateFromBackend(db, SyncDataService.flagsAllData, false);
+      final bool result = await cSrv.updateFromBackend(db, SyncDataService.flagsAllData, false, informUser: informUser);
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Master data synchronized $resultStr');
     });

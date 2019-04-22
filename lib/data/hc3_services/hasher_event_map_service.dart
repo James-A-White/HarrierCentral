@@ -203,7 +203,7 @@ class HasherEventMapService {
         final int percentage = (100 * (j / jsonResults.length)).round();
         if ((percentage != lastPercentage) && (informUser != null)) {
           lastPercentage = percentage;
-          informUser('Loading region data\r\n$percentage% complete');
+          informUser('Loading hasher data \r\n$percentage% complete');
         }
 
         jsonItem.addAll(<String, dynamic>{
