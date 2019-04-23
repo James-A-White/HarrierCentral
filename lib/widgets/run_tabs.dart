@@ -1,13 +1,15 @@
 import 'dart:core';
 
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong/latlong.dart';
 import 'package:scoped_model/scoped_model.dart';
@@ -38,10 +40,6 @@ class RunTabs extends StatefulWidget {
     return RunTabsState();
   }
 }
-
-const double detailsFontSize = 16.0;
-const double detailLineSpace = 1.0;
-const double detailLineSpaceForBold = 0.892;
 
 class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   final List<Tab> tabs = <Tab>[];
@@ -114,33 +112,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
-  TextStyle headerStyle = const TextStyle(
-      color: Colors.yellow,
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      fontSize: detailsFontSize,
-      height: detailLineSpace);
 
-  TextStyle infoStyle = const TextStyle(
-      color: Colors.white,
-      fontFamily: 'AvenirNextDemiBold',
-      fontStyle: FontStyle.normal,
-      fontSize: detailsFontSize,
-      height: detailLineSpaceForBold);
-
-  TextStyle bodyStyle = const TextStyle(
-      color: Colors.white,
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      fontSize: 20.0,
-      height: 1.0);
-
-  TextStyle titleStyle = const TextStyle(
-      color: Colors.white,
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      fontSize: 30.0,
-      height: 1.0);
 
   Container buildRunDetailsView() {
     return Container(

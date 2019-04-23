@@ -10,6 +10,38 @@ Color themeLearnMoreLink = Colors.yellow;
 
 IconData delayIcon = Ionicons.md_clock;
 
+const double detailsFontSize = 16.0;
+const double detailLineSpace = 1.0;
+const double detailLineSpaceForBold = 0.892;
+
+  TextStyle headerStyle = const TextStyle(
+      color: Colors.yellow,
+      fontFamily: 'AvenirNextRegular',
+      fontStyle: FontStyle.normal,
+      fontSize: detailsFontSize,
+      height: detailLineSpace);
+
+  TextStyle infoStyle = const TextStyle(
+      color: Colors.white,
+      fontFamily: 'AvenirNextDemiBold',
+      fontStyle: FontStyle.normal,
+      fontSize: detailsFontSize,
+      height: detailLineSpaceForBold);
+
+  TextStyle bodyStyle = const TextStyle(
+      color: Colors.white,
+      fontFamily: 'AvenirNextRegular',
+      fontStyle: FontStyle.normal,
+      fontSize: 20.0,
+      height: 1.0);
+
+  // TextStyle titleStyle = const TextStyle(
+  //     color: Colors.white,
+  //     fontFamily: 'AvenirNextRegular',
+  //     fontStyle: FontStyle.normal,
+  //     fontSize: 30.0,
+  //     height: 1.0);
+
 TextStyle textStyleButton = const TextStyle(
     fontFamily: 'AvenirNextDemiBold',
     fontStyle: FontStyle.normal,
@@ -21,6 +53,13 @@ TextStyle textStyleDisabledButton = TextStyle(
     fontStyle: FontStyle.normal,
     fontSize: 22.0,
     color: Colors.grey[350]);
+
+TextStyle smallTitleStyle = const TextStyle(
+      fontFamily: 'AvenirNextDemiBold',
+      fontStyle: FontStyle.normal,
+      color: Colors.white,
+      fontSize: 20.0,
+      height: 1.0);
 
 TextStyle titleStyle = const TextStyle(
       fontFamily: 'AvenirNextDemiBold',

@@ -7,6 +7,7 @@ import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/pages/detail_pages/kennel_detail.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/follow_kennel_popup.dart';
 import 'package:harrier_central/data/services/future_run_scoped_model.dart';
@@ -76,15 +77,15 @@ class KennelListItemState extends State<KennelsListItem> {
                   ],
                 ),
                 InkWell(
-                    // onTap: () {
-                    //   Navigator.of(context).push<dynamic>(
-                    //     MaterialPageRoute<dynamic>(
-                    //       builder: (BuildContext context) {
-                    //         return KennelDetailPage(kennel: kennel);
-                    //       },
-                    //     ),
-                    //   );
-                    // },
+                    onTap: () {
+                      Navigator.of(context).push<dynamic>(
+                        MaterialPageRoute<dynamic>(
+                          builder: (BuildContext context) {
+                            return KennelDetailPage(kennel: widget.kennel);
+                          },
+                        ),
+                      );
+                    },
                     child: Stack(
                   children: <Widget>[
                     Container(
