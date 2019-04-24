@@ -69,7 +69,7 @@ longitude: jsonItem['longitude'],
 class NarrowEventsTableHelper {
   NarrowEventsTableHelper._privateConstructor();
 
-  static const String tableName = 'NarrowEvents';
+  static const String tableName = 'narrowEvents';
   //static const num forceRequeryInterval = 1 * 86400000;
   static const num forceRequeryInterval = 1 * 1000;
   static const num cacheDuration = 365 *

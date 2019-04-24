@@ -55,7 +55,11 @@ class KennelsListPageState extends State<KennelsListPage> {
       
         SELECT  
           k.*, hkm.hkmId, COALESCE(hkm.following,0) as following,
-          c.cityName || ', ' || CASE WHEN n.showRegion = 1 THEN r.regionName || ', ' ELSE '' END || n.countryName as location
+          c.cityName || ', ' || CASE WHEN n.showRegion = 1 THEN r.regionName || ', ' ELSE '' END || n.countryName as location,
+          (SELECT min(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime >= datetime('now') ) as nextRunDate,
+          (SELECT max(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime <= datetime('now') ) as lastRunDate,
+          n.digitsAfterDecimal,
+          n.currencySymbol
           FROM kennels k
           INNER JOIN cities c on c.cityId = k.cityId
           INNER JOIN regions r on r.regionId = k.regionId
@@ -64,7 +68,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           
           ''';
 
-          singletonKennelMainPageList = <Map<String, dynamic>>[];
+          singletonKennelMainPageList = <Map<String, dynamic>>[]; 
           try {
             db.rawQuery(query).then((List<Map<String, dynamic>> results) {
               for (int i = 0; i < results.length; i++) {

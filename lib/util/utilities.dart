@@ -12,8 +12,6 @@ import 'package:harrier_central/localization.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 
-
-
 class LatLon {
   double latitude;
   double longitude;
@@ -25,13 +23,10 @@ class Utilities {
 
     PermissionStatus _locationPermission;
 
-      _locationPermission ??= await PermissionHandler()
-          .checkPermissionStatus(PermissionGroup.location);
-    
+    _locationPermission ??= await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
 
     if (_locationPermission == PermissionStatus.granted) {
-      position = await Geolocator()
-          .getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
+      position = await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
     }
 
     final LatLon latLon = LatLon();
@@ -52,53 +47,51 @@ class Utilities {
     return latLon;
   }
 
-  static String generateToken(String userId, String procName,
-      {String paramString = ''}) {
-    final Duration difference =
-        DateTime.now().toUtc().difference(DateTime.utc(1993, 7, 25, 15, 0, 0));
+  static String generateToken(String userId, String procName, {String paramString = ''}) {
+    final Duration difference = DateTime.now().toUtc().difference(DateTime.utc(1993, 7, 25, 15, 0, 0));
     //final int timeBlocks = (difference.inSeconds / 5760).toInt();
     final int timeBlocks = difference.inSeconds ~/ 5760;
     if (paramString.isNotEmpty) {
       paramString = '#' + paramString;
     }
-    final String accessString =
-        '${userId.toUpperCase()}#$procName#${timeBlocks.toString()}$paramString';
+    final String accessString = '${userId.toUpperCase()}#$procName#${timeBlocks.toString()}$paramString';
     final List<int> bytes = utf8.encode(accessString); // data being hashed
     final Digest digest = sha256.convert(bytes);
     return '$digest'.toUpperCase();
   }
 
-  static String getFormattedMoney(
-      num amount, num decimalPlaces, String currencySymbol) {
-    String formatDecimals = '#####0.00';
-    switch (decimalPlaces) {
-      case 0:
-        formatDecimals = '#####0';
-        break;
-      case 1:
-        formatDecimals = '#####0.0';
-        break;
-      case 2:
-        formatDecimals = '#####0.00';
-        break;
-      case 3:
-        formatDecimals = '#####0.000';
-        break;
-      case 4:
-        formatDecimals = '#####0.0000';
-        break;
-      default:
-        formatDecimals = '#####0.00';
-        break;
+  static String getFormattedMoney(num amount, num decimalPlaces, String currencySymbol) {
+    String finalStr = '';
+    if (amount != null) {
+      String formatDecimals = '#####0.00';
+      switch (decimalPlaces) {
+        case 0:
+          formatDecimals = '#####0';
+          break;
+        case 1:
+          formatDecimals = '#####0.0';
+          break;
+        case 2:
+          formatDecimals = '#####0.00';
+          break;
+        case 3:
+          formatDecimals = '#####0.000';
+          break;
+        case 4:
+          formatDecimals = '#####0.0000';
+          break;
+        default:
+          formatDecimals = '#####0.00';
+          break;
+      }
+
+      final String amountStr = NumberFormat(formatDecimals).format(amount);
+
+      finalStr = currencySymbol.replaceAll('^', amountStr);
     }
-
-    final String amountStr = NumberFormat(formatDecimals).format(amount);
-
-    final String finalStr = currencySymbol.replaceAll('^', amountStr);
 
     return finalStr;
   }
-
 
   static String getDistance(int meters, BuildContext context) {
     const bool isMetric = true;
@@ -108,34 +101,28 @@ class Utilities {
       if (meters < 1000) {
         result = '$meters ${AppLocalizations.of(context).meters}';
       } else if (meters < 10000) {
-        result =
-            '${NumberFormat('#####.0').format(meters / 1000.0)} ${AppLocalizations.of(context).kilometers}';
+        result = '${NumberFormat('#####.0').format(meters / 1000.0)} ${AppLocalizations.of(context).kilometers}';
       } else {
-        result =
-            '${NumberFormat('#####').format(meters / 1000.0)} ${AppLocalizations.of(context).kilometers}';
+        result = '${NumberFormat('#####').format(meters / 1000.0)} ${AppLocalizations.of(context).kilometers}';
       }
     } else {
       final double miles = meters * 0.0006;
 
       if (miles < 3) {
-        result =
-            '${NumberFormat('#####.00').format(miles)} ${AppLocalizations.of(context).miles}';
+        result = '${NumberFormat('#####.00').format(miles)} ${AppLocalizations.of(context).miles}';
       } else if (miles < 10) {
-        result =
-            '${NumberFormat('#####.0').format(miles)} ${AppLocalizations.of(context).miles}';
+        result = '${NumberFormat('#####.0').format(miles)} ${AppLocalizations.of(context).miles}';
       } else {
-        result =
-            '${NumberFormat('#####').format(miles)} ${AppLocalizations.of(context).miles}';
+        result = '${NumberFormat('#####').format(miles)} ${AppLocalizations.of(context).miles}';
       }
     }
 
     return result;
   }
 
-  static Widget elegantDivider(
-      String text, num topPadding, num bottomPadding) {
+  static Widget elegantDivider(String text, num topPadding, num bottomPadding) {
     return Padding(
-      padding: EdgeInsets.only(top: topPadding, bottom:bottomPadding),
+      padding: EdgeInsets.only(top: topPadding, bottom: bottomPadding),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -159,10 +146,7 @@ class Utilities {
             child: Text(
               text,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16.0,
-                  fontFamily: 'WorkSansMedium'),
+              style: const TextStyle(color: Colors.white, fontSize: 16.0, fontFamily: 'WorkSansMedium'),
             ),
           ),
           Container(
@@ -185,27 +169,21 @@ class Utilities {
     );
   }
 
-
-
-    static void showInSnackBar(BuildContext context, GlobalKey<ScaffoldState> scaffoldKey, String value, {int durationInSeconds = 3}) {
+  static void showInSnackBar(BuildContext context, GlobalKey<ScaffoldState> scaffoldKey, String value, {int durationInSeconds = 3}) {
     FocusScope.of(context).requestFocus(FocusNode());
     scaffoldKey.currentState?.removeCurrentSnackBar();
     scaffoldKey.currentState.showSnackBar(SnackBar(
       content: Text(
         value,
         textAlign: TextAlign.center,
-        style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16.0,
-            fontFamily: 'WorkSansSemiBold'),
+        style: const TextStyle(color: Colors.white, fontSize: 16.0, fontFamily: 'WorkSansSemiBold'),
       ),
       backgroundColor: Colors.blue,
       duration: Duration(seconds: durationInSeconds),
     ));
   }
 
-  static Future<bool> showAlert(BuildContext context, String title, String body,
-      String buttonText) async {
+  static Future<bool> showAlert(BuildContext context, String title, String body, String buttonText) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -218,11 +196,7 @@ class Utilities {
                 Text(
                   body,
                   textAlign: TextAlign.justify,
-                  style: const TextStyle(
-                      fontFamily: 'AvenirNextRegular',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 16.0,
-                      height: 1.0),
+                  style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                 )
               ],
             ),

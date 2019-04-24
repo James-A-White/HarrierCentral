@@ -3,17 +3,38 @@ import 'package:flutter_map/flutter_map.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:latlong/latlong.dart';
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
 import 'package:harrier_central/pages/kennel_admin/filter_events_page.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-class KennelDetailPage extends StatelessWidget {
+class KennelDetailPage extends StatefulWidget {
   const KennelDetailPage({@required this.kennel});
   final Map<String, dynamic> kennel;
+
+  @override
+  KennelDetailPageState createState() => KennelDetailPageState();
+}
+
+class KennelDetailPageState extends State<KennelDetailPage> {
+  num sliderValue;
+
+  @override
+  void initState() {
+    sliderValue = 5.0;
+    super.initState();
+  }
+
+  MapController mapController = MapController();
+
+  int flexLeft = 3;
+  int flexRight = 7;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +43,7 @@ class KennelDetailPage extends StatelessWidget {
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
         title: Text(
-          '${kennel['kennelShortName']}',
+          '${widget.kennel['kennelShortName']}',
           style: const TextStyle(
             color: Colors.white,
           ),
@@ -37,16 +58,16 @@ class KennelDetailPage extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: <Widget>[
-                ((kennel['kennelCoverPhoto'] ?? '').isNotEmpty && kennel['kennelCoverPhoto'].startsWith('http'))
+                ((widget.kennel['kennelCoverPhoto'] ?? '').isNotEmpty && widget.kennel['kennelCoverPhoto'].startsWith('http'))
                     ? Column(mainAxisSize: MainAxisSize.max, children: <Widget>[
                         Row(mainAxisAlignment: MainAxisAlignment.start, mainAxisSize: MainAxisSize.max, children: <Widget>[
                           KennelLogo(
-                            kennelLogoUrl: kennel['kennelLogo'],
-                            kennelShortName: kennel['kennelShortName'],
+                            kennelLogoUrl: widget.kennel['kennelLogo'],
+                            kennelShortName: widget.kennel['kennelShortName'],
                             logoHeight: 80.0,
                             leftPadding: 0.0,
                           ),
-                          Container(width: MediaQuery.of(context).size.width - 120, padding: EdgeInsets.only(left: 15.0), child: Text(kennel['kennelName'], maxLines: 3, style: smallTitleStyle))
+                          Container(width: MediaQuery.of(context).size.width - 120, padding: EdgeInsets.only(left: 15.0), child: Text(widget.kennel['kennelName'], maxLines: 3, style: smallTitleStyle))
                           //Container(width: MediaQuery.of(context).size.width - 120, padding: const EdgeInsets.only(left: 15.0), child: Text('Test of a long hash name that will span several lines and then keep going until we get an elipsis', maxLines: 3, overflow:TextOverflow.ellipsis, style: smallTitleStyle))
                         ]),
                         const Padding(
@@ -56,7 +77,7 @@ class KennelDetailPage extends StatelessWidget {
                         Padding(
                             padding: const EdgeInsets.only(top: 20, bottom: 5),
                             child: CachedNetworkImage(
-                              imageUrl: kennel['kennelCoverPhoto'],
+                              imageUrl: widget.kennel['kennelCoverPhoto'],
                               // errorWidget:
                               //     (BuildContext context, String url, Exception error) =>
                               //         const  Icon(Icons.error),
@@ -65,8 +86,8 @@ class KennelDetailPage extends StatelessWidget {
                             ),
                       ])
                     : KennelLogo(
-                        kennelLogoUrl: kennel['kennelLogo'],
-                        kennelShortName: kennel['kennelShortName'],
+                        kennelLogoUrl: widget.kennel['kennelLogo'],
+                        kennelShortName: widget.kennel['kennelShortName'],
                         logoHeight: 200.0,
                         leftPadding: 0.0,
                       ),
@@ -74,10 +95,10 @@ class KennelDetailPage extends StatelessWidget {
                   padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
                   child: FancyDivider(innerColor: Colors.white),
                 ),
-                (kennel['kennelDescription'] ?? '').isNotEmpty
+                (widget.kennel['kennelDescription'] ?? '').isNotEmpty
                     ? Column(
                         children: <Widget>[
-                          Text(kennel['kennelDescription'].trim(), style: bodyStyle),
+                          Text(widget.kennel['kennelDescription'].trim(), style: bodyStyle),
                           const Padding(
                             padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
                             child: FancyDivider(innerColor: Colors.white),
@@ -94,9 +115,11 @@ class KennelDetailPage extends StatelessWidget {
                       child: Center(
                         // Map
                         child: FlutterMap(
+                          mapController: mapController,
                           options: MapOptions(
-                            center: LatLng(kennel['latitude'], kennel['longitude']),
-                            zoom: 4.0,
+                            interactive: false,
+                            center: LatLng(widget.kennel['latitude'], widget.kennel['longitude']),
+                            zoom: sliderValue,
                           ),
                           layers: <LayerOptions>[
                             TileLayerOptions(
@@ -110,9 +133,9 @@ class KennelDetailPage extends StatelessWidget {
                                 Marker(
                                   width: 240.0,
                                   height: 240.0,
-                                  point: LatLng(kennel['latitude'], kennel['longitude']),
+                                  point: LatLng(widget.kennel['latitude'], widget.kennel['longitude']),
                                   builder: (BuildContext ctx) => GestureDetector(
-                                        onTap: () => _launchMaps(kennel['latitude'], kennel['longitude']),
+                                        onTap: () => _launchMaps(widget.kennel['latitude'], widget.kennel['longitude']),
                                         child: Container(
                                           margin: const EdgeInsets.only(bottom: 110.0),
                                           child: Stack(alignment: AlignmentDirectional.topCenter, children: <Widget>[
@@ -120,8 +143,8 @@ class KennelDetailPage extends StatelessWidget {
                                             Positioned(
                                               top: 14,
                                               child: KennelLogo(
-                                                kennelLogoUrl: kennel['kennelLogo'],
-                                                kennelShortName: kennel['kennelShortName'],
+                                                kennelLogoUrl: widget.kennel['kennelLogo'],
+                                                kennelShortName: widget.kennel['kennelShortName'],
                                                 logoHeight: 60.0,
                                                 leftPadding: 0.0,
                                               ),
@@ -138,10 +161,165 @@ class KennelDetailPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                                    const Padding(
-                  padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
-                  child: FancyDivider(innerColor: Colors.white),
-                ),
+                    Container(
+                      padding: EdgeInsets.only(top: 10.0),
+                      child: Slider(
+                          value: sliderValue,
+                          activeColor: Colors.yellow,
+                          inactiveColor: Colors.grey,
+                          min: 1.0,
+                          max: 20.0,
+                          onChanged: (double val) {
+                            // setState(() {
+                            if (mapController != null) {
+                              mapController.move(LatLng(widget.kennel['latitude'], widget.kennel['longitude']), val);
+                            }
+                            setState(() {
+                              sliderValue = val;
+                            });
+
+                            //});
+                          }),
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            'Location:',
+                            style: listLabelStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          flex: flexLeft,
+                        ),
+                        Expanded(
+                            child: Text(
+                              '  ' + widget.kennel['location'] ?? '',
+                              style: listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            flex: flexRight),
+                      ],
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            'Last run:',
+                            style: listLabelStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          flex: flexLeft,
+                        ),
+                        Expanded(
+                            child: Text(
+                              widget.kennel['lastRunDate'] != null ? '  ' + DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennel['lastRunDate'].substring(0, 19))) : '  <no run found>',
+                              style: listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            flex: flexRight),
+                      ],
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            'Next run:',
+                            style: listLabelStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          flex: flexLeft,
+                        ),
+                        Expanded(
+                            child: Text(
+                              widget.kennel['nextRunDate'] != null ? '  ' + DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennel['nextRunDate'].substring(0, 19))) : '  <no run found>',
+                              style: listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            flex: flexRight),
+                      ],
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            'Hash cash:',
+                            style: listLabelStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          flex: flexLeft,
+                        ),
+                        Expanded(
+                            child: Text(
+                              widget.kennel['defaultPriceForMembers'] == null ? '  <not provided>' : '  ${Utilities.getFormattedMoney(widget.kennel['defaultPriceForMembers'], widget.kennel['digitsAfterDecimal'], widget.kennel['currencySymbol'])}    (members)',
+                              style: listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            flex: flexRight),
+                      ],
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            '',
+                            style: listLabelStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          flex: flexLeft,
+                        ),
+                        Expanded(
+                            child: Text(
+                              widget.kennel['defaultPriceForNonMembers'] == null ? '  <not provided>' : '  ${Utilities.getFormattedMoney(widget.kennel['defaultPriceForNonMembers'], widget.kennel['digitsAfterDecimal'], widget.kennel['currencySymbol'])}    (non-members)',
+                              style: listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            flex: flexRight),
+                      ],
+                    ), 
+                    ((widget.kennel['kennelWebsiteUrl'] == null) || (widget.kennel['kennelWebsiteUrl'].trim().isEmpty)) ? Container() :
+                    Container(
+                      padding: EdgeInsets.only(top:30), 
+                      width:180,
+                      child: RaisedButton(
+                        padding: const EdgeInsets.only(top: 8.0, left: 8.0, bottom: 8.0),
+                        child: Row(children: <Widget>[
+                          Stack(alignment: AlignmentDirectional.center, children: <Widget>[Container(height: 30, width: 30, decoration:  BoxDecoration(color: Colors.blue[800], shape: BoxShape.circle)), const Positioned(bottom:1.4,child: Icon(SimpleLineIcons.globe, color: Colors.white))]),
+                          const Padding(
+                            padding: EdgeInsets.only(left: 20, right: 0),
+                            child: Text('Open website'),
+                          ),
+                        ]),
+                        textColor: Colors.white,
+                        
+                        onPressed: () {
+                           launch(widget.kennel['kennelWebsiteUrl']);
+                        },
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
+                      child: FancyDivider(innerColor: Colors.white),
+                    ),
                   ],
                 ),
                 Container(
@@ -156,7 +334,7 @@ class KennelDetailPage extends StatelessWidget {
                       //   context,
                       //   MaterialPageRoute<dynamic>(
                       //     builder: (BuildContext context) => KennelMembersList(
-                      //           kennel: kennel
+                      //           widget.kennel: widget.kennel
                       //         ),
                       //   ),
                       // );
@@ -175,7 +353,7 @@ class KennelDetailPage extends StatelessWidget {
                       //   context,
                       //   MaterialPageRoute<dynamic>(
                       //     builder: (BuildContext context) => FilterEventsPage(
-                      //           kennel: kennel
+                      //           widget.kennel: widget.kennel
                       //         ),
                       //   ),
                       // );

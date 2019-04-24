@@ -162,57 +162,57 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                       children: <Widget>[
                         Text(
                           'Run:',
-                          style: headerStyle,
+                          style: listLabelStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           'Date:',
-                          style: headerStyle,
+                          style: listLabelStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           'Time:',
-                          style: headerStyle,
+                          style: listLabelStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           'Run fees:',
-                          style: headerStyle,
+                          style: listLabelStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           '',
-                          style: headerStyle,
+                          style: listLabelStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           'Bag drop:',
-                          style: headerStyle,
+                          style: listLabelStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           'Hares:',
-                          style: headerStyle,
+                          style: listLabelStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           'Distance:',
-                          style: headerStyle,
+                          style: listLabelStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           'Street:',
-                          style: headerStyle,
+                          style: listLabelStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           'City:',
-                          style: headerStyle,
+                          style: listLabelStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           'Location:',
-                          style: headerStyle,
+                          style: listLabelStyle,
                           textAlign: TextAlign.left,
                         ),
                       ]),
@@ -225,43 +225,43 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                       children: <Widget>[
                         Text(
                           '#${widget.futureRun.eventNumber}',
-                          style: infoStyle,
+                          style: listValueStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           DateFormat('E, MMM d')
                               .format(widget.futureRun.eventStartDatetime),
-                          style: infoStyle,
+                          style: listValueStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           DateFormat('h:mm a')
                               .format(widget.futureRun.eventStartDatetime),
-                          style: infoStyle,
+                          style: listValueStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           (widget.futureRun.eventPriceForMembers > 0)
                               ? '${Utilities.getFormattedMoney(widget.futureRun.eventPriceForMembers, widget.futureRun.digitsAfterDecimal, widget.futureRun.currencySymbol)} (members)'
                               : '',
-                          style: infoStyle,
+                          style: listValueStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           (widget.futureRun.eventPriceForNonMembers > 0)
                               ? '${Utilities.getFormattedMoney(widget.futureRun.eventPriceForNonMembers, widget.futureRun.digitsAfterDecimal, widget.futureRun.currencySymbol)} (non-members)'
                               : '',
-                          style: infoStyle,
+                          style: listValueStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           'Unknown',
-                          style: infoStyle,
+                          style: listValueStyle,
                           textAlign: TextAlign.left,
                         ),
                         Text(
                           widget.futureRun.hareList,
-                          style: infoStyle,
+                          style: listValueStyle,
                           textAlign: TextAlign.left,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -270,17 +270,17 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             ? Text(
                                 Utilities.getDistance(
                                     widget.futureRun.distanceToEvent, context),
-                                style: infoStyle,
+                                style: listValueStyle,
                                 textAlign: TextAlign.left,
                               )
                             : Text(
                                 '<unknown>',
-                                style: infoStyle,
+                                style: listValueStyle,
                                 textAlign: TextAlign.left,
                               ),
                         Text(
                           widget.futureRun.locationStreet ?? '',
-                          style: infoStyle,
+                          style: listValueStyle,
                           textAlign: TextAlign.left,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -289,14 +289,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                           (widget.futureRun.locationPostCode ?? '') +
                               ' ' +
                               (widget.futureRun.locationCity ?? ''),
-                          style: infoStyle,
+                          style: listValueStyle,
                           textAlign: TextAlign.left,
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           widget.futureRun.locationOneLineDesc ?? '',
-                          style: infoStyle,
+                          style: listValueStyle,
                           textAlign: TextAlign.left,
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,

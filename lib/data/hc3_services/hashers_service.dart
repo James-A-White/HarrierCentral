@@ -52,7 +52,7 @@ class HashersModel {
 class HashersTableHelper {
   HashersTableHelper._privateConstructor();
 
-  static const String tableName = 'Hashers';
+  static const String tableName = 'hashers';
   //static const num forceRequeryInterval = 1 * 86400000;
   static const num forceRequeryInterval = 1 * 1000;
   static const num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes

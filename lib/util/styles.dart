@@ -12,16 +12,16 @@ IconData delayIcon = Ionicons.md_clock;
 
 const double detailsFontSize = 16.0;
 const double detailLineSpace = 1.0;
-const double detailLineSpaceForBold = 0.892;
+const double detailLineSpaceForBold = 1.0;
 
-  TextStyle headerStyle = const TextStyle(
+  TextStyle listLabelStyle = const TextStyle(
       color: Colors.yellow,
       fontFamily: 'AvenirNextRegular',
       fontStyle: FontStyle.normal,
       fontSize: detailsFontSize,
       height: detailLineSpace);
 
-  TextStyle infoStyle = const TextStyle(
+  TextStyle listValueStyle = const TextStyle(
       color: Colors.white,
       fontFamily: 'AvenirNextDemiBold',
       fontStyle: FontStyle.normal,
