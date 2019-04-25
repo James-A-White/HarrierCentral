@@ -33,6 +33,7 @@ const int mmAuthAllowEnableDisableFacebookEvents = 0x00000010; // TODO(James): N
 const int mmAuthEditRuns = 0x00000020; // TODO(James): Needs implementation
 const int mmAuthGenerateRunQrCodes = 0x00000040; // TODO(James): Needs implementation
 const int mmAuthManageMembers = 0x00000080; // TODO(James): Needs implementation
+const int mmAuthAccessKennelAdmin = 0x00000100; // TODO(James): Needs implementation
 
 const int cacheDurationAllHashers = 60 * 86400000; // 60 days cache duration
 

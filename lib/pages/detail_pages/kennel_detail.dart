@@ -11,6 +11,7 @@ import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/data/services/email_reports_service.dart';
 import 'package:harrier_central/pages/kennel_admin/filter_events_page.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 
@@ -28,6 +29,7 @@ class KennelDetailPageState extends State<KennelDetailPage> {
   @override
   void initState() {
     sliderValue = 5.0;
+    isAdmin = (widget.kennel['mismanagementRoleFlags'] & mmAuthAccessKennelAdmin) != 0;
     super.initState();
   }
 
@@ -36,9 +38,14 @@ class KennelDetailPageState extends State<KennelDetailPage> {
   int flexLeft = 3;
   int flexRight = 7;
 
+  bool isAdmin = false;
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
@@ -85,11 +92,17 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                             //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
                             ),
                       ])
-                    : KennelLogo(
-                        kennelLogoUrl: widget.kennel['kennelLogo'],
-                        kennelShortName: widget.kennel['kennelShortName'],
-                        logoHeight: 200.0,
-                        leftPadding: 0.0,
+                    : Column(
+                        children: <Widget>[
+                          Container(width: MediaQuery.of(context).size.width - 40, child: Text(widget.kennel['kennelName'], textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
+                          //Container(width: MediaQuery.of(context).size.width - 40, child: Text('this is a test of what a long kennel name might look like', textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
+                          KennelLogo(
+                            kennelLogoUrl: widget.kennel['kennelLogo'],
+                            kennelShortName: widget.kennel['kennelShortName'],
+                            logoHeight: 200.0,
+                            leftPadding: 0.0,
+                          ),
+                        ],
                       ),
                 const Padding(
                   padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
@@ -316,57 +329,116 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                               },
                             ),
                           ),
-                    const Padding(
-                      padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
-                      child: FancyDivider(innerColor: Colors.white),
-                    ),
                   ],
                 ),
-                Container(
-                  width: 150.0,
-                  child: RaisedButton(
-                    child: const Text(
-                      'Members',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    onPressed: () {
-                      EmailReportsService svc = EmailReportsService();
-                      svc.sendKennelRunStatsReportByEmail(kennelId: widget.kennel['kennelId'], kennelName: widget.kennel['kennelName'],digitsAfterDecimal: widget.kennel['digitsAfterDecimal'],currencySymbol: widget.kennel['currencySymbol']).then((Map<String, String> result) {
-                        if (result['result'].toLowerCase().startsWith('success')) {
-                          Utilities.showAlert(context, 'E-mail successfully sent', 'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
-                        }
-                      });
+                !isAdmin
+                    ? Container()
+                    : Column(
+                        children: <Widget>[
+                          const Padding(
+                            padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
+                            child: FancyDivider(innerColor: Colors.white),
+                          ),
+                          Text(
+                            'Kennel Admin Functions',
+                            style: headingStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                          Container(
+                            margin: EdgeInsets.only(top: 20, bottom: 15),
+                            width: 220,
+                            height: 50,
+                            child: RaisedButton(
+                              padding: const EdgeInsets.only(top: 8.0, left: 8.0, bottom: 8.0),
+                              child: Row(children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 10.0),
+                                  child: Image.asset('images/icons/excel.png', height: 30.0, width: 30.0),
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.only(left: 20, right: 0),
+                                  child: Text('Email run stats'),
+                                ),
+                              ]),
+                              textColor: Colors.white,
+                              onPressed: () {
+                                EmailReportsService svc = EmailReportsService();
+                                svc.sendKennelRunStatsReportByEmail(kennelId: widget.kennel['kennelId'], kennelName: widget.kennel['kennelName'], digitsAfterDecimal: widget.kennel['digitsAfterDecimal'], currencySymbol: widget.kennel['currencySymbol']).then((Map<String, String> result) {
+                                  _scaffoldKey.currentState?.hideCurrentSnackBar();
 
-                      // Navigator.push<dynamic>(
-                      //   context,
-                      //   MaterialPageRoute<dynamic>(
-                      //     builder: (BuildContext context) => KennelMembersList(
-                      //           widget.kennel: widget.kennel
-                      //         ),
-                      //   ),
-                      // );
-                    },
-                  ),
-                ),
-                Container(
-                  width: 150.0,
-                  child: RaisedButton(
-                    child: const Text(
-                      'Filter Events',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    onPressed: () {
-                      // Navigator.push<dynamic>(
-                      //   context,
-                      //   MaterialPageRoute<dynamic>(
-                      //     builder: (BuildContext context) => FilterEventsPage(
-                      //           widget.kennel: widget.kennel
-                      //         ),
-                      //   ),
-                      // );
-                    },
-                  ),
-                ),
+                                  if (result['result'].toLowerCase().startsWith('success')) {
+                                    Utilities.showAlert(context, 'E-mail successfully sent', 'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+                                  }
+                                });
+
+                                Utilities.showInSnackBar(context, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 6);
+                              },
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 15, bottom: 15),
+                            child: Container(
+                              width: 220,
+                              height: 50,
+                              child: RaisedButton(
+                                padding: const EdgeInsets.only(top: 2.0, left: 8.0, bottom: 8.0),
+                                child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: Icon(Ionicons.md_people, color: Colors.white),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 20, top: 8),
+                                    child: Text('Manage Members'),
+                                  ),
+                                ]),
+                                textColor: Colors.white,
+                                onPressed: () {
+                                  // Navigator.push<dynamic>(
+                                  //   context,
+                                  //   MaterialPageRoute<dynamic>(
+                                  //     builder: (BuildContext context) => KennelMembersList(
+                                  //           widget.kennel: widget.kennel
+                                  //         ),
+                                  //   ),
+                                  // );
+                                },
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 15, bottom: 15),
+                            child: Container(
+                              width: 220,
+                              height: 50,
+                              child: RaisedButton(
+                                padding: const EdgeInsets.only(top: 2.0, left: 8.0, bottom: 8.0),
+                                child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: Icon(MaterialCommunityIcons.filter_variant, color: Colors.white),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 20, top: 8),
+                                    child: Text('Filter events'),
+                                  ),
+                                ]),
+                                textColor: Colors.white,
+                                onPressed: () {
+                                  // Navigator.push<dynamic>(
+                                  //   context,
+                                  //   MaterialPageRoute<dynamic>(
+                                  //     builder: (BuildContext context) => FilterEventsPage(
+                                  //           widget.kennel: widget.kennel
+                                  //         ),
+                                  //   ),
+                                  // );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
               ],
             ),
           ),
