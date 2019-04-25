@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AzureFunctionsVersion>v2</AzureFunctionsVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="EPPlus" Version="4.5.3.1" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.26" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.6.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.SendGrid" Version="3.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="RunListTemplate.html" />
+    <None Remove="RunListTemplate %28copy%29.html" />
+    <None Remove="HTML\RunCard.html" />
+    <None Remove="HTML\PageTemplate.html" />
+    <None Remove="HTML\AccordionCardTemplate.html" />
+    <None Remove="HTML\AccordionTemplate.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="host.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="HTML\PageTemplate.html" />
+    <EmbeddedResource Include="HTML\AccordionCardTemplate.html" />
+    <EmbeddedResource Include="HTML\AccordionTemplate.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="HTML\" />
+    <Folder Include="Properties\PublishProfiles\" />
+  </ItemGroup>
+</Project>

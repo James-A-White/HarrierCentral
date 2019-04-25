@@ -8,7 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/widgets/kennel_logo.dart';
-import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
+import 'package:harrier_central/data/services/email_reports_service.dart';
 import 'package:harrier_central/pages/kennel_admin/filter_events_page.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
@@ -295,27 +295,27 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                             ),
                             flex: flexRight),
                       ],
-                    ), 
-                    ((widget.kennel['kennelWebsiteUrl'] == null) || (widget.kennel['kennelWebsiteUrl'].trim().isEmpty)) ? Container() :
-                    Container(
-                      padding: EdgeInsets.only(top:30), 
-                      width:180,
-                      child: RaisedButton(
-                        padding: const EdgeInsets.only(top: 8.0, left: 8.0, bottom: 8.0),
-                        child: Row(children: <Widget>[
-                          Stack(alignment: AlignmentDirectional.center, children: <Widget>[Container(height: 30, width: 30, decoration:  BoxDecoration(color: Colors.blue[800], shape: BoxShape.circle)), const Positioned(bottom:1.4,child: Icon(SimpleLineIcons.globe, color: Colors.white))]),
-                          const Padding(
-                            padding: EdgeInsets.only(left: 20, right: 0),
-                            child: Text('Open website'),
-                          ),
-                        ]),
-                        textColor: Colors.white,
-                        
-                        onPressed: () {
-                           launch(widget.kennel['kennelWebsiteUrl']);
-                        },
-                      ),
                     ),
+                    ((widget.kennel['kennelWebsiteUrl'] == null) || (widget.kennel['kennelWebsiteUrl'].trim().isEmpty))
+                        ? Container()
+                        : Container(
+                            padding: EdgeInsets.only(top: 30),
+                            width: 180,
+                            child: RaisedButton(
+                              padding: const EdgeInsets.only(top: 8.0, left: 8.0, bottom: 8.0),
+                              child: Row(children: <Widget>[
+                                Stack(alignment: AlignmentDirectional.center, children: <Widget>[Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.blue[800], shape: BoxShape.circle)), const Positioned(bottom: 1.4, child: Icon(SimpleLineIcons.globe, color: Colors.white))]),
+                                const Padding(
+                                  padding: EdgeInsets.only(left: 20, right: 0),
+                                  child: Text('Open website'),
+                                ),
+                              ]),
+                              textColor: Colors.white,
+                              onPressed: () {
+                                launch(widget.kennel['kennelWebsiteUrl']);
+                              },
+                            ),
+                          ),
                     const Padding(
                       padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
                       child: FancyDivider(innerColor: Colors.white),
@@ -330,6 +330,13 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                       style: TextStyle(color: Colors.white),
                     ),
                     onPressed: () {
+                      EmailReportsService svc = EmailReportsService();
+                      svc.sendKennelRunStatsReportByEmail(kennelId: widget.kennel['kennelId'], kennelName: widget.kennel['kennelName'],digitsAfterDecimal: widget.kennel['digitsAfterDecimal'],currencySymbol: widget.kennel['currencySymbol']).then((Map<String, String> result) {
+                        if (result['result'].toLowerCase().startsWith('success')) {
+                          Utilities.showAlert(context, 'E-mail successfully sent', 'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+                        }
+                      });
+
                       // Navigator.push<dynamic>(
                       //   context,
                       //   MaterialPageRoute<dynamic>(

@@ -11,7 +11,9 @@ const String BASE_PROFILE_PHOTOS_URL = 'https://harriercentral.blob.core.windows
 
 const String EMAIL_PAYMENT_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendPaymentReport';
 const String EMAIL_RUN_REPORT_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendRunCountsReport';
-//const String EMAIL_PAYMENT_API_KEY = 'x1RkI1c7tVCEGO2vQvL6yk6ebtCiitOrTb6aVr5LyqiNRTe91H0Nbw==';
+const String EMAIL_KENNEL_RUN_STATS_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendKennelRunStatsReport';
+
+
 
 const String ERROR_KEY = 'HC_ERROR';
 
