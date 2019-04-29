@@ -83,23 +83,23 @@ class Kennel {
   int isHomeKennel;
 
   bool get mmAuthAllowEditRsvp {
-    return (mismanagementRoleFlags & mmAuthAllowEditRsvpFlag) != 0;
+    return ((mismanagementRoleFlags ?? 0) & mmAuthAllowEditRsvpFlag) != 0;
   }
 
   bool get mmAuthAllowCheckInAndOut {
-    return (mismanagementRoleFlags & mmAuthAllowCheckInAndOutFlag) != 0;
+    return ((mismanagementRoleFlags ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0;
   }
 
   bool get mmAuthAllowHashCash {
-    return (mismanagementRoleFlags & mmAuthAllowHashCashFlag) != 0;
+    return ((mismanagementRoleFlags ?? 0) & mmAuthAllowHashCashFlag) != 0;
   }
 
   bool get mmAuthShowCheckInSnackbar {
-    return (mismanagementRoleFlags & (mmAuthAllowEditRsvpFlag | mmAuthAllowHashCashFlag | mmAuthAllowCheckInAndOutFlag)) != 0;
+    return ((mismanagementRoleFlags ?? 0) & (mmAuthAllowEditRsvpFlag | mmAuthAllowHashCashFlag | mmAuthAllowCheckInAndOutFlag)) != 0;
   }
 
   bool get mmAuthAllowAddNewMember {
-    return (mismanagementRoleFlags & mmAuthAllowAddNewMemberFlag) != 0;
+    return ((mismanagementRoleFlags ?? 0) & mmAuthAllowAddNewMemberFlag) != 0;
   }
 
   // final int authAllowCredit;

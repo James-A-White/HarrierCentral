@@ -12,8 +12,7 @@ import 'package:harrier_central/data/models/lite_event_model.dart';
 import 'package:harrier_central/pages/kennel_admin/edit_event_page.dart';
 
 class FilterEventListItem extends StatelessWidget {
-  const FilterEventListItem(
-      {@required this.eventModel, @required this.kennelShortName, @required this.updateEvent});
+  const FilterEventListItem({@required this.eventModel, @required this.kennelShortName, @required this.updateEvent});
 
   final Event eventModel;
   final String kennelShortName;
@@ -35,80 +34,72 @@ class FilterEventListItem extends StatelessWidget {
   Widget listItem(BuildContext context) {
     return GestureDetector(
       onTap: () {
-         Navigator.push<num>(
-              context,
-              MaterialPageRoute<num>(
-                builder: (BuildContext context) =>
-                    EditEventPage(eventModel: eventModel),
-              ),
-            ).then((num value) {
-              updateEvent(value);
-            });
+        Navigator.push<num>(
+          context,
+          MaterialPageRoute<num>(
+            builder: (BuildContext context) => EditEventPage(eventModel: eventModel),
+          ),
+        ).then((num value) {
+          updateEvent(value);
+        });
       },
-    
-    child: Container(
-      margin: const EdgeInsets.only(left: 5, top: 5, bottom: 5),
-      width: MediaQuery.of(context).size.width,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          eventModel.isLoading
-              ? Icon(delayIcon,
-                  color: Colors.blue[800], size: 35.0)
-              : (eventModel.eventFacebookId?.length ?? 0) > 2
-                  ?  Icon(FontAwesome.facebook_square,
-                      color: eventModel.isVisible == 1 ? const Color.fromARGB(255, 59, 89, 152) : Colors.grey, size: 35.0)
-                      
-                      
-                  :  Container(height:1.0,width:35.0), 
+      child: Container(
+        margin: const EdgeInsets.only(left: 5, top: 5, bottom: 5),
+        width: MediaQuery.of(context).size.width,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            eventModel.isLoading
+                ? Icon(delayIcon, color: Colors.blue[800], size: 35.0)
+                : (eventModel.eventFacebookId?.length ?? 0) > 2
+                    ? Icon(FontAwesome.facebook_square, color: eventModel.isVisible == 1 ? const Color.fromARGB(255, 59, 89, 152) : Colors.grey, size: 35.0)
+                    : Container(
+                        foregroundDecoration: 
+                        eventModel.isVisible == 1 ? BoxDecoration() :
+                        BoxDecoration(
+                          color: Colors.grey,
+                          backgroundBlendMode: BlendMode.saturation,
+                        ),
+                        child: Opacity(opacity: eventModel.isVisible == 1 ? 1.0 : 0.5,child: Image.asset('images/other/hc_app_icon.png', height: 35, width: 35)),
+                      ),
 
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(top:4.0,left: 8.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    '${eventModel.eventName}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        color: eventModel.isVisible == 1 ? Colors.black87 : Colors.grey,
-                        fontFamily: 'AvenirNextCondensedDemiBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 18.0,
-                        height: 0.85),
-                    textAlign: TextAlign.left,
-                  ),
-                  Text(
-                    eventModel.eventStartDatetime.year !=
-                            DateTime.now().year
-                        ? 'Run #${eventModel.eventNumber.toString()} on ${DateFormat("E, MMM d, yyyy \'at\' h:mm a").format(eventModel.eventStartDatetime)}'
-                        : 'Run #${eventModel.eventNumber.toString()} on ${DateFormat("E, MMM d \'at\' h:mm a").format(eventModel.eventStartDatetime)}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        color: eventModel.isVisible == 1 ? Colors.black87 : Colors.grey,
-                        fontFamily: 'AvenirNextCondensedDemiBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 18.0,
-                        height: 0.85),
-                    textAlign: TextAlign.left,
-                  ),
-                ],
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 4.0, left: 8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      '${eventModel.eventName}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: eventModel.isVisible == 1 ? Colors.black87 : Colors.grey, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85),
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      eventModel.eventStartDatetime.year != DateTime.now().year
+                          ? 'Run #${eventModel.eventNumber.toString()} on ${DateFormat("E, MMM d, yyyy \'at\' h:mm a").format(eventModel.eventStartDatetime)}'
+                          : 'Run #${eventModel.eventNumber.toString()} on ${DateFormat("E, MMM d \'at\' h:mm a").format(eventModel.eventStartDatetime)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: eventModel.isVisible == 1 ? Colors.black87 : Colors.grey, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85),
+                      textAlign: TextAlign.left,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          // Container(
-          //   //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
-          //   margin: const EdgeInsets.only(top: 7.0, bottom: 7.0),
-          //   padding: const EdgeInsets.only(top: 7.0, bottom: 7.0),
-          //   height: 1.0,
-          //   color: Colors.grey[800],
-          // ),
-        ],
+            // Container(
+            //   //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
+            //   margin: const EdgeInsets.only(top: 7.0, bottom: 7.0),
+            //   padding: const EdgeInsets.only(top: 7.0, bottom: 7.0),
+            //   height: 1.0,
+            //   color: Colors.grey[800],
+            // ),
+          ],
+        ),
       ),
-    ),);
+    );
   }
 }

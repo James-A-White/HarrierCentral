@@ -306,6 +306,48 @@ class SupportPageState extends State<SupportPage> {
                                                     ),
                                                   ]),
                                                 ),
+                                                 Padding(
+                                                  padding: const EdgeInsets.only(top: 25),
+                                                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+                                                    RaisedButton(
+                                                      padding: const EdgeInsets.only(top: 15, bottom: 15, left: 50, right: 50),
+                                                      onPressed: () async {
+                                                        final Database db = await DBProvider.db.database;
+
+                                                        final SyncDataService cSrv = SyncDataService();
+                                                        final bool result = await cSrv.updateFromBackend(db, SyncDataService.flagAllMasterData, false);
+                                                        final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                                                        print('Master data synchronized $resultStr');
+
+                                                        if (resetCodeTextController.text.length == 6) {
+                                                          setState(() {
+                                                            isLoading = true;
+
+                                                            final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                                                            final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, 'RC:' + resetCodeTextController.text.toUpperCase());
+                                                            apiCall.then((Map<String, String> result) {
+                                                              setState(() {
+                                                                isLoading = false;
+                                                              });
+
+                                                              if (result['result'] != 'failed') {
+                                                                userName = getStringPref(StringPrefsEnum.displayName);
+                                                                userQrCode = getStringPref(StringPrefsEnum.qrSecretCode);
+
+                                                                Utilities.showAlert(context, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
+                                                              }
+                                                            });
+                                                          });
+                                                        }
+                                                      },
+                                                      child: const Text(
+                                                        'Reload Database',
+                                                        style: TextStyle(color: Colors.white),
+                                                      ),
+                                                    ),
+                                                  ]),
+                                                ),
+                                            
                                               ],
                                             ),
                                           ),

@@ -214,7 +214,7 @@ class FutureRunScopedModel
           kennelShortName: run['kennelShortName'],
           runSequence: run['runSequence'],
           distanceToEvent: run['distanceToEvent'],
-          mismanagementRoleFlags: run['mismanagementRoleFlags'],
+          mismanagementRoleFlags: run['mismanagementRoleFlags'] ?? 0,
           isVisible: run['isVisible']
         );
 

@@ -10,6 +10,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/data/services/email_reports_service.dart';
 import 'package:harrier_central/pages/kennel_admin/filter_events_page.dart';
+import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/utilities.dart';
@@ -94,7 +95,7 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                       ])
                     : Column(
                         children: <Widget>[
-                          Container(width: MediaQuery.of(context).size.width - 40, child: Text(widget.kennel['kennelName'], textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
+                          Container(margin: EdgeInsets.only(bottom:20.0),  width: MediaQuery.of(context).size.width - 40, child: Text(widget.kennel['kennelName'], textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
                           //Container(width: MediaQuery.of(context).size.width - 40, child: Text('this is a test of what a long kennel name might look like', textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
                           KennelLogo(
                             kennelLogoUrl: widget.kennel['kennelLogo'],
@@ -394,14 +395,14 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                                 ]),
                                 textColor: Colors.white,
                                 onPressed: () {
-                                  // Navigator.push<dynamic>(
-                                  //   context,
-                                  //   MaterialPageRoute<dynamic>(
-                                  //     builder: (BuildContext context) => KennelMembersList(
-                                  //           widget.kennel: widget.kennel
-                                  //         ),
-                                  //   ),
-                                  // );
+                                  Navigator.push<dynamic>(
+                                    context,
+                                    MaterialPageRoute<dynamic>(
+                                      builder: (BuildContext context) => KennelMembersList(
+                                            kennel: widget.kennel
+                                          ),
+                                    ),
+                                  );
                                 },
                               ),
                             ),
@@ -425,14 +426,14 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                                 ]),
                                 textColor: Colors.white,
                                 onPressed: () {
-                                  // Navigator.push<dynamic>(
-                                  //   context,
-                                  //   MaterialPageRoute<dynamic>(
-                                  //     builder: (BuildContext context) => FilterEventsPage(
-                                  //           widget.kennel: widget.kennel
-                                  //         ),
-                                  //   ),
-                                  // );
+                                  Navigator.push<dynamic>(
+                                    context,
+                                    MaterialPageRoute<dynamic>(
+                                      builder: (BuildContext context) => FilterEventsPage(
+                                            kennel: widget.kennel
+                                          ),
+                                    ),
+                                  );
                                 },
                               ),
                             ),

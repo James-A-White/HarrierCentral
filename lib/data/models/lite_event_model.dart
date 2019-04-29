@@ -82,8 +82,8 @@ class Event {
               : DateTime.parse(jsonItem['userStartEvent']),
           rsvpState: jsonItem['rsvpState'],
           attendenceState: jsonItem['attendenceState'],
-          canEditRunAttendence: jsonItem['canEditRunAttendence'],
-          mismanagementRoleFlags: jsonItem['mismanagementRoleFlags'],
+          canEditRunAttendence: jsonItem['canEditRunAttendence'] ?? 0,
+          mismanagementRoleFlags: jsonItem['mismanagementRoleFlags'] ?? 0,
         );
 
         items.add(item);
@@ -97,8 +97,10 @@ class Event {
     return items;
   }
 
+  
+
     bool get mmAuthAllowEditRsvp {
-    return (mismanagementRoleFlags & mmAuthAllowEditRsvpFlag) != 0;
+    return ((mismanagementRoleFlags ?? 0) & mmAuthAllowEditRsvpFlag) != 0;
   }
 
   bool get mmAuthAllowCheckInAndOut {

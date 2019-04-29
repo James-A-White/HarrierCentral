@@ -7,19 +7,22 @@ class KennelLogo extends StatelessWidget {
       {@required this.kennelLogoUrl,
       @required this.kennelShortName,
       @required this.logoHeight,
-      @required this.leftPadding});
+      this.leftPadding,
+      this.rightPadding
+      });
 
   final String kennelLogoUrl;
   final String kennelShortName;
   final double logoHeight;
   final double leftPadding;
+  final double rightPadding;
 
   @override
   Widget build(BuildContext context) {
     return Container(
         width: logoHeight,
         height: logoHeight,
-        margin: EdgeInsets.only(left: leftPadding),
+        margin: EdgeInsets.only(left: leftPadding ?? 0,right:rightPadding ?? 0),
         child: kennelLogoUrl.contains('bundle://')
             ? Stack(alignment: Alignment.center, children: <Widget>[
                 Image.asset(((kennelLogoUrl.toLowerCase().contains('avatar')

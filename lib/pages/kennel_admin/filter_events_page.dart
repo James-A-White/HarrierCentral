@@ -6,7 +6,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:scoped_model/scoped_model.dart';
 
-import 'package:harrier_central/data/models/kennel_model.dart';
 import 'package:harrier_central/data/models/lite_event_model.dart';
 import 'package:harrier_central/data/services/event_scoped_model.dart';
 import 'package:harrier_central/util/enums.dart';
@@ -17,7 +16,7 @@ import 'package:harrier_central/widgets/filter_event_list_item.dart';
 class FilterEventsPage extends StatefulWidget {
   const FilterEventsPage({Key key, @required this.kennel}) : super(key: key);
 
-  final Kennel kennel;
+  final Map<String,dynamic> kennel;
 
   @override
   FilterEventsPageState createState() => FilterEventsPageState();
@@ -31,7 +30,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
   @override
   void initState() {
     super.initState();
-    model = EventsScopedModel(kennelId: widget.kennel.kennelId);
+    model = EventsScopedModel(kennelId: widget.kennel['kennelId']);
   }
 
   int pageIndex = 1;
@@ -124,7 +123,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
           centerTitle: true,
           backgroundColor: themeAppBarBackground,
           title: Text(
-            'Events for ${widget.kennel.kennelShortName}',
+            'Events for ${widget.kennel['kennelShortName']}',
             style: const TextStyle(
               color: Colors.white,
             ),
@@ -207,45 +206,54 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                     //color:Color.fromARGB(30, 0, 0, 0),
                     padding: const EdgeInsets.only(
                         left: 5, top: 5, right: 20, bottom: 5),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Container(
-                          child: AutoSizeText(
-                            '${widget.kennel.kennelName}',
-                            //'Super fucking long text thats sure to overflow and more',
-                            //'999',
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 18.0,
-                            maxLines: 1,
-                            style: numberStyle,
-                            textAlign: TextAlign.center,
+                    child: 
+                    
+                    
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget> [
+                                                  Container(
+                            height: 75,
+                            child: KennelLogo(
+                              kennelLogoUrl: widget.kennel['kennelLogo'],
+                              kennelShortName: widget.kennel['kennelShortName'],
+                              logoHeight: 75.0,
+                              rightPadding: 15.0,
+                            ),
                           ),
-                          //color: Colors.green,
-                        ),
-                        Container(
-                          height: 100,
-                          child: KennelLogo(
-                            kennelLogoUrl: widget.kennel.kennelLogo,
-                            kennelShortName: widget.kennel.kennelShortName,
-                            logoHeight: 100.0,
-                            leftPadding: 0.0,
+                        Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Container(
+                            child: AutoSizeText(
+                              '${widget.kennel['kennelName']}',
+                              //'Super fucking long text thats sure to overflow and more',
+                              //'999',
+                              overflow: TextOverflow.ellipsis,
+                              minFontSize: 18.0,
+                              maxLines: 1,
+                              style: numberStyle,
+                              textAlign: TextAlign.left,
+                            ),
+                            //color: Colors.green,
                           ),
-                        ),
-                        Container(
-                          child: AutoSizeText(
-                            'Published run count: ${myRunCount.toString()}',
-                            //'Super fucking long text thats sure to overflow and more',
-                            //'999',
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 18.0,
-                            maxLines: 1,
-                            style: numberStyle,
-                            textAlign: TextAlign.center,
+
+                          Container(
+                            child: AutoSizeText(
+                              'Published run count: ${myRunCount.toString()}',
+                              //'Super fucking long text thats sure to overflow and more',
+                              //'999',
+                              overflow: TextOverflow.ellipsis,
+                              minFontSize: 18.0,
+                              maxLines: 1,
+                              style: numberStyle,
+                              textAlign: TextAlign.left,
+                            ),
+                            //color: Colors.green,
                           ),
-                          //color: Colors.green,
-                        ),
-                      ],
+                        ],
+                      ),],
                     ),
                   ),
                   Expanded(
@@ -368,7 +376,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                           },
                           child: FilterEventListItem(
                             eventModel: model.userEventList[index],
-                            kennelShortName: widget.kennel.kennelShortName,
+                            kennelShortName: widget.kennel['kennelShortName'],
                             updateEvent: (num value) {
                               value ??= 0;
                               if (value != -1) {

@@ -38,7 +38,7 @@ class HasherKennelMapModel {
           kennelId: jsonItem['kennelId'],
           following: jsonItem['following'],
           isMember: jsonItem['isMember'],
-          mismanagementRoleFlags: jsonItem['mismanagementRoleFlags'],
+          mismanagementRoleFlags: jsonItem['mismanagementRoleFlags'] ?? 0,
           userRoleFlags: jsonItem['userRoleFlags'],
           appAccessFlags: jsonItem['appAccessFlags'],
           historicalPackRunCount: jsonItem['historicalPackRunCount'],

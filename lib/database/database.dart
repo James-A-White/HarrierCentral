@@ -32,6 +32,17 @@ class DBProvider {
     return _database;
   }
 
+  Future<bool> resetDb() async
+  {
+
+    if (_database != null) {
+      final Directory documentsDirectory = await getApplicationDocumentsDirectory();
+      final String path = join(documentsDirectory.path, DB_NAME);
+    }
+
+    return true;
+  }
+
   Future<Database> initDB(Function informUser) async {
     final Directory documentsDirectory = await getApplicationDocumentsDirectory();
     final String path = join(documentsDirectory.path, DB_NAME);

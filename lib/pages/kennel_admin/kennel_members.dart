@@ -7,16 +7,15 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:harrier_central/data/services/kennel_member_scoped_model.dart';
 import 'package:harrier_central/pages/kennel_admin/add_member_page.dart';
 import 'package:harrier_central/widgets/kennel_member_list_item.dart';
-import 'package:harrier_central/data/models/kennel_model.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class KennelMembersList extends StatefulWidget {
   const KennelMembersList({Key key, @required this.kennel}) : super(key: key);
 
-  final Kennel kennel;
+  final Map<String,dynamic> kennel;
 
   @override
-  KennelMemberListState createState() => KennelMemberListState(kennel: kennel);
+  KennelMemberListState createState() => KennelMemberListState();
 
   // @override
   // Widget build(BuildContext context) {
@@ -45,9 +44,9 @@ class KennelMembersList extends StatefulWidget {
 }
 
 class KennelMemberListState extends State<KennelMembersList> {
-  KennelMemberListState({@required this.kennel});
+  KennelMemberListState();
 
-  final Kennel kennel;
+
 
   final KennelMemberScopedModel kennelMemberModel = KennelMemberScopedModel();
 
@@ -59,7 +58,7 @@ class KennelMemberListState extends State<KennelMembersList> {
   Widget build(BuildContext context) {
 
     if (kennelMemberModel.kennelMembersList.isEmpty) {
-      kennelMemberModel.getKennelMembersFromBackend(1, true, kennel.kennelId);
+      kennelMemberModel.getKennelMembersFromBackend(1, true, widget.kennel['kennelId']);
     }
 
     return Scaffold(
@@ -67,7 +66,7 @@ class KennelMemberListState extends State<KennelMembersList> {
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
         title: Text(
-          '${kennel.kennelShortName} Members',
+          '${widget.kennel['kennelShortName']} Members',
           style: const TextStyle(
             color: Colors.white,
           ),
@@ -95,7 +94,7 @@ class KennelMemberListState extends State<KennelMembersList> {
   }
 
   Future<void> _handleRefresh() async {
-    model.getKennelMembersFromBackend(1, false, kennel.kennelId);
+    model.getKennelMembersFromBackend(1, false, widget.kennel['kennelId']);
     //model.notifyListeners();
   }
 
@@ -143,7 +142,7 @@ class KennelMemberListState extends State<KennelMembersList> {
                 context,
                 MaterialPageRoute<dynamic>(
                   builder: (BuildContext context) => AddMemberPage(
-                        kennelId: kennel.kennelId,
+                        kennelId: widget.kennel['kennelId'],
                       ),
                 ),
               );
