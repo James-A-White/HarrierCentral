@@ -1,0 +1,297 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+
+
+import 'package:harrier_central/pages/run_admin/receipt_detail_page.dart';
+import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
+import 'package:harrier_central/data/hc3_services/receipts_service.dart';
+
+class ReceiptsList extends StatefulWidget {
+  const ReceiptsList({Key key, @required this.eventName, @required this.eventId, @required this.digitsAfterDecimal, @required this.currencySymbol}) : super(key: key);
+
+  final String eventName;
+  final String eventId;
+  final String currencySymbol;
+  final int digitsAfterDecimal;
+
+  @override
+  ReceiptsListState createState() => ReceiptsListState();
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   if ((ReceiptsModel?.ReceiptsList?.length ?? 0) == 0) {
+  //     ReceiptsModel.getReceiptsFromBackend(1, true, kennel.kennelId);
+  //   }
+
+  //   return Scaffold(
+  //     appBar: AppBar(
+  //       centerTitle: true,
+  //       backgroundColor: themeAppBarBackground,
+  //       title: Text(
+  //         '${kennel.kennelShortName} Members',
+  //         style: const TextStyle(
+  //           color: Colors.white,
+  //         ),
+  //       ),
+  //     ),
+  //     body: ScopedModel<ReceiptscopedModel>(
+  //         model: ReceiptsModel,
+  //         child: ReceiptsListState(
+  //           kennelId: kennel.kennelId,
+  //         )),
+  //   );
+
+}
+
+class ReceiptsListState extends State<ReceiptsList> {
+  ReceiptsListState();
+
+  int pageIndex = 1;
+
+  List<Map<String, dynamic>> receiptsList = <Map<String, dynamic>>[];
+
+  @override
+  void initState() {
+    refreshFromTable();
+    DBProvider.db.database.then((Database db) {
+      db.rawQuery('SELECT * FROM receipts ORDER BY id').then((List<Map<String, dynamic>> result) {
+        print(result);
+      });
+    });
+
+    // DBProvider.db.database.then((Database db) {
+    //   db.rawQuery('SELECT id,kennelId,userId FROM hasherKennelMap ORDER BY id').then((List<Map<String,dynamic>> result) {
+    //     print(result.toString().replaceAll('},', '},\r\n'));
+    //   });
+    // });
+    super.initState();
+  }
+
+  void refreshFromTable() {
+    DBProvider.db.database.then((Database db) {
+      //receiptsList ??= <Map<String, dynamic>>[];
+      try {
+        db.query(ReceiptsTableHelper.tableName).then((List<Map<String, dynamic>> results) {
+          setState(() {
+            receiptsList = results;
+          });
+        });
+      } catch (e) {
+        print(e);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: themeAppBarBackground,
+          title: Text(
+            '${widget.eventName} receipts',
+            style: const TextStyle(
+              color: Colors.white,
+            ),
+          ),
+        ),
+        floatingActionButton: SpeedDial(
+          // both default to 16
+          marginRight: 18,
+          marginBottom: 30,
+          animatedIcon: AnimatedIcons.menu_close,
+          animatedIconTheme: const IconThemeData(size: 22.0),
+          // this is ignored if animatedIcon is non null
+          // child:const  Icon(Icons.add),
+          visible: true,
+          curve: Curves.bounceIn,
+          overlayColor: Colors.black,
+          overlayOpacity: 0.5,
+          onOpen: () => print('OPENING DIAL'),
+          onClose: () => print('DIAL CLOSED'),
+          tooltip: 'Speed Dial',
+          heroTag: 'speed-dial-hero-tag',
+          backgroundColor: Theme.of(context).accentColor,
+          foregroundColor: Colors.white,
+          elevation: 8.0,
+          shape: CircleBorder(),
+          children: <SpeedDialChild>[
+            SpeedDialChild(
+                child: const Icon(MaterialCommunityIcons.playlist_plus),
+                backgroundColor: Colors.blue,
+                label: 'Add Receipt',
+                labelStyle: const TextStyle(fontSize: 18.0),
+                onTap: () => Navigator.push<void>(
+                      context,
+                      MaterialPageRoute<void>(
+                          builder: (BuildContext context) => ReceiptDetailPage(
+                                eventId: widget.eventId,
+                              )),
+                    ).then<dynamic>((void receipt) {
+                      refreshFromTable();
+                    })
+                // if (user != null) {
+                //   _packScopedModel.addEditUser(user);
+                //   searchController.text =
+                //       user.firstName + ' ' + user.lastName;
+                //   _packScopedModel.filterPackList(
+                //       user.firstName + ' ' + user.lastName);
+                //   packList = _packScopedModel.filteredPackList;
+                //   _packScopedModel.forceRefresh();
+                // }
+                //}),
+
+                ),
+          ],
+        ),
+        body:
+            //  model.isLoading
+            //     ? _buildCircularProgressIndicator()
+            //     :
+            _buildListView());
+  }
+
+  // Widget _buildCircularProgressIndicator() {
+  //   return const Center(
+  //     child: CircularProgressIndicator(),
+  //   );
+  // }
+
+  Future<void> _handleRefresh() async {
+    final Database db = await DBProvider.db.database;
+
+    final SyncEventAdminService cSrv = SyncEventAdminService();
+    final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagReceiptsTable, true, widget.eventId);
+    final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    print('Receipts data synchronized $resultStr');
+    refreshFromTable();
+  }
+
+  Widget _buildListView() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 10.0),
+            child: receiptsList.isEmpty
+                ? const Center(child: Text('No receipts available.'))
+                : RefreshIndicator(
+                    onRefresh: () => _handleRefresh(),
+                    displacement: 40.0,
+                    child: ListView.separated(
+                      separatorBuilder: (BuildContext context, int index) => const Divider(
+                            height: 1.0,
+                            color: Colors.black45,
+                          ),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: receiptsList.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Container(
+                          height: 50.0,
+                          padding: const EdgeInsets.all(0.0),
+                          child: ListView(scrollDirection: Axis.horizontal, children: <Widget>[
+                            ReceiptListItem(
+                                currencySymbol: widget.currencySymbol,
+                                digitsAfterDecimal: widget.digitsAfterDecimal,
+                                receipt: receiptsList[index],
+                                itemPressed: () {
+                                  Navigator.push<void>(
+                                    context,
+                                    MaterialPageRoute<void>(
+                                        builder: (BuildContext context) => ReceiptDetailPage(
+                                              eventId: widget.eventId,
+                                              receiptItem: receiptsList[index],
+                                            )),
+                                  ).then<dynamic>((void receipt) {
+                                    refreshFromTable();
+                                  });
+                                }),
+                          ]),
+                        );
+                      },
+                    ),
+                  ),
+          ),
+        ),
+
+        // Container(
+        //   width: 150.0,
+        //   child: RaisedButton(
+        //     child: const Text(
+        //       'Add Member',
+        //       style: TextStyle(color: Colors.white),
+        //     ),
+        //     onPressed: () {
+        //       Navigator.push<dynamic>(
+        //         context,
+        //         MaterialPageRoute<dynamic>(
+        //           builder: (BuildContext context) => AddMemberPage(
+        //                 kennelId: widget.kennel['kennelId'],
+        //               ),
+        //         ),
+        //       );
+        //     },
+        //   ),
+        // ),
+      ],
+    );
+  }
+}
+
+class ReceiptListItem extends StatelessWidget {
+  const ReceiptListItem({@required this.receipt, @required this.itemPressed, @required this.currencySymbol, @required this.digitsAfterDecimal});
+
+  final Map<String, dynamic> receipt;
+  final Function itemPressed;
+  final int digitsAfterDecimal;
+  final String currencySymbol;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        itemPressed();
+      },
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        child: Row(
+          // crossAxisAlignment: CrossAxisAlignment.center,
+          // mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Expanded(
+              flex: 3,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 10.0),
+                child: Text(
+                  '${Utilities.getFormattedMoney(receipt['receiptAmount'], digitsAfterDecimal, currencySymbol)}',
+                  style:  TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0,color: Colors.blue[700]),
+                  textAlign: TextAlign.right,
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+              width: 10,
+            ),
+            Expanded(
+              flex: 7,
+              child: Text(
+                '${receipt['receiptShortDesc']}',
+                style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
+                textAlign: TextAlign.left,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

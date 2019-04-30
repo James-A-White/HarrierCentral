@@ -34,16 +34,16 @@ class DBProvider {
     return _database;
   }
 
-  Future<bool> resetDb() async
-  {
+  // Future<bool> resetDb() async
+  // {
 
-    if (_database != null) {
-      final Directory documentsDirectory = await getApplicationDocumentsDirectory();
-      final String path = join(documentsDirectory.path, DB_NAME);
-    }
+  //   if (_database != null) {
+  //     final Directory documentsDirectory = await getApplicationDocumentsDirectory();
+  //     final String path = join(documentsDirectory.path, DB_NAME);
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
   Future<Database> initDB(Function informUser) async {
     final Directory documentsDirectory = await getApplicationDocumentsDirectory();
@@ -62,7 +62,7 @@ class DBProvider {
       // create admin tables
       await HasherEventMapTableHelper.createTable(db, version,HasherEventMapTableType.admin);
       await PaymentsTableHelper.createTable(db, version);
-      await ReceiptssTableHelper.createTable(db, version);
+      await ReceiptsTableHelper.createTable(db, version);
       
       if (informUser != null) {
         informUser('Loading city data\r\n0% complete');

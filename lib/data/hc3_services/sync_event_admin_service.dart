@@ -36,7 +36,7 @@ class SyncEventAdminService {
     _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? 0 : await getLastUpdatedTime(db, HasherEventMapTableHelper.colUpdatedAtValue, HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin));
     _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? 0 : await getLastUpdatedTime(db, NarrowEventsTableHelper.colUpdatedAtValue, NarrowEventsTableHelper.tableName);
     _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? 0 : await getLastUpdatedTime(db, PaymentsTableHelper.colUpdatedAtValue, PaymentsTableHelper.tableName);
-    _receiptsLastUpdated = (flags & flagReceiptsTable) == 0 ? 0 : await getLastUpdatedTime(db, ReceiptssTableHelper.colUpdatedAtValue, ReceiptssTableHelper.tableName);
+    _receiptsLastUpdated = (flags & flagReceiptsTable) == 0 ? 0 : await getLastUpdatedTime(db, ReceiptsTableHelper.colUpdatedAtValue, ReceiptsTableHelper.tableName);
   }
 
   Future<bool> updateFromBackend(Database db, int flags, bool forceRefresh, String eventId, {Function informUser}) async {
@@ -55,11 +55,11 @@ class SyncEventAdminService {
     final int hasherEventMapLastUpdate = (flags & flagHasherEventMapTable) == 0 ? null : getIntPref(HasherEventMapTableHelper.getLastUpdatedKey(HasherEventMapTableType.admin)) ?? 0;
     final int narrowEventsLastUpdate = (flags & flagNarrowEventsTable) == 0 ? null : getIntPref(NarrowEventsTableHelper.lastUpdatedKey) ?? 0;
     final int paymentsLastUpdate = (flags & flagReceiptsTable) == 0 ? null : getIntPref(PaymentsTableHelper.lastUpdatedKey) ?? 0;
-    final int receiptsLastUpdate = (flags & flagReceiptsTable) == 0 ? null : getIntPref(ReceiptssTableHelper.lastUpdatedKey) ?? 0;
+    final int receiptsLastUpdate = (flags & flagReceiptsTable) == 0 ? null : getIntPref(ReceiptsTableHelper.lastUpdatedKey) ?? 0;
 
     if (forceRefresh ||
         ((paymentsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - paymentsLastUpdate) > PaymentsTableHelper.forceRequeryInterval) ||
-        ((receiptsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - receiptsLastUpdate) > ReceiptssTableHelper.forceRequeryInterval) ||
+        ((receiptsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - receiptsLastUpdate) > ReceiptsTableHelper.forceRequeryInterval) ||
         ((hasherEventMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherEventMapLastUpdate) > HasherEventMapTableHelper.forceRequeryInterval) ||
         ((narrowEventsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - narrowEventsLastUpdate) > NarrowEventsTableHelper.forceRequeryInterval)) {
       // check to see if we need to clear the cache

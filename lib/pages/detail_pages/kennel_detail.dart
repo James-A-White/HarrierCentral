@@ -75,7 +75,7 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                             logoHeight: 80.0,
                             leftPadding: 0.0,
                           ),
-                          Container(width: MediaQuery.of(context).size.width - 120, padding: EdgeInsets.only(left: 15.0), child: Text(widget.kennel['kennelName'], maxLines: 3, style: smallTitleStyle))
+                          Container(width: MediaQuery.of(context).size.width - 120, padding: const EdgeInsets.only(left: 15.0), child: Text(widget.kennel['kennelName'], maxLines: 3, style: smallTitleStyle))
                           //Container(width: MediaQuery.of(context).size.width - 120, padding: const EdgeInsets.only(left: 15.0), child: Text('Test of a long hash name that will span several lines and then keep going until we get an elipsis', maxLines: 3, overflow:TextOverflow.ellipsis, style: smallTitleStyle))
                         ]),
                         const Padding(
@@ -95,7 +95,7 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                       ])
                     : Column(
                         children: <Widget>[
-                          Container(margin: EdgeInsets.only(bottom:20.0),  width: MediaQuery.of(context).size.width - 40, child: Text(widget.kennel['kennelName'], textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
+                          Container(margin: const EdgeInsets.only(bottom:20.0),  width: MediaQuery.of(context).size.width - 40, child: Text(widget.kennel['kennelName'], textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
                           //Container(width: MediaQuery.of(context).size.width - 40, child: Text('this is a test of what a long kennel name might look like', textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
                           KennelLogo(
                             kennelLogoUrl: widget.kennel['kennelLogo'],
@@ -176,7 +176,7 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.only(top: 10.0),
+                      padding: const EdgeInsets.only(top: 10.0),
                       child: Slider(
                           value: sliderValue,
                           activeColor: Colors.yellow,
@@ -313,7 +313,7 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                     ((widget.kennel['kennelWebsiteUrl'] == null) || (widget.kennel['kennelWebsiteUrl'].trim().isEmpty))
                         ? Container()
                         : Container(
-                            padding: EdgeInsets.only(top: 30),
+                            padding: const EdgeInsets.only(top: 30),
                             width: 180,
                             child: RaisedButton(
                               padding: const EdgeInsets.only(top: 8.0, left: 8.0, bottom: 8.0),
@@ -346,7 +346,7 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                             textAlign: TextAlign.center,
                           ),
                           Container(
-                            margin: EdgeInsets.only(top: 20, bottom: 15),
+                            margin: const EdgeInsets.only(top: 20, bottom: 15),
                             width: 220,
                             height: 50,
                             child: RaisedButton(
@@ -363,7 +363,7 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                               ]),
                               textColor: Colors.white,
                               onPressed: () {
-                                EmailReportsService svc = EmailReportsService();
+                                final EmailReportsService svc = EmailReportsService();
                                 svc.sendKennelRunStatsReportByEmail(kennelId: widget.kennel['kennelId'], kennelName: widget.kennel['kennelName'], digitsAfterDecimal: widget.kennel['digitsAfterDecimal'], currencySymbol: widget.kennel['currencySymbol']).then((Map<String, String> result) {
                                   _scaffoldKey.currentState?.hideCurrentSnackBar();
 
@@ -383,12 +383,12 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                               height: 50,
                               child: RaisedButton(
                                 padding: const EdgeInsets.only(top: 2.0, left: 8.0, bottom: 8.0),
-                                child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: const <Widget>[
                                   Padding(
-                                    padding: const EdgeInsets.only(left: 10),
+                                    padding:  EdgeInsets.only(left: 10),
                                     child: Icon(Ionicons.md_people, color: Colors.white),
                                   ),
-                                  const Padding(
+                                   Padding(
                                     padding: EdgeInsets.only(left: 20, top: 8),
                                     child: Text('Manage Members'),
                                   ),
@@ -414,12 +414,12 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                               height: 50,
                               child: RaisedButton(
                                 padding: const EdgeInsets.only(top: 2.0, left: 8.0, bottom: 8.0),
-                                child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: const <Widget>[
                                   Padding(
-                                    padding: const EdgeInsets.only(left: 10),
+                                    padding: EdgeInsets.only(left: 10),
                                     child: Icon(MaterialCommunityIcons.filter_variant, color: Colors.white),
                                   ),
-                                  const Padding(
+                                   Padding(
                                     padding: EdgeInsets.only(left: 20, top: 8),
                                     child: Text('Filter events'),
                                   ),

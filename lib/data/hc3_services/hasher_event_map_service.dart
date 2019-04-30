@@ -102,14 +102,14 @@ class HasherEventMapTableHelper {
 
   static IntPrefsEnum getLastUpdatedKey(HasherEventMapTableType tblType) {
     if (tblType == HasherEventMapTableType.admin) {
-      return IntPrefsEnum.lastUpdateAdminHasherEventMapData;;
+      return IntPrefsEnum.lastUpdateAdminHasherEventMapData;
     }
     return IntPrefsEnum.lastUpdateHasherEventMapData;
   }
 
   static IntPrefsEnum getLastCacheClearKey(HasherEventMapTableType tblType) {
     if (tblType == HasherEventMapTableType.admin) {
-      return IntPrefsEnum.lastCacheClearAdminHasherEventMapData;;
+      return IntPrefsEnum.lastCacheClearAdminHasherEventMapData;
     }
     return IntPrefsEnum.lastCacheClearHasherEventMapData;
   }

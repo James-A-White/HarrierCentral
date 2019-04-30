@@ -21,6 +21,8 @@ PODS:
     - Flutter
   - flutter_full_pdf_viewer (1.0.1):
     - Flutter
+  - flutter_image_compress (0.0.1):
+    - Flutter
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
   - FMDB/standard (2.7.5)
@@ -59,6 +61,7 @@ DEPENDENCIES:
   - Flutter (from `.symlinks/flutter/ios`)
   - flutter_facebook_login (from `.symlinks/plugins/flutter_facebook_login/ios`)
   - flutter_full_pdf_viewer (from `.symlinks/plugins/flutter_full_pdf_viewer/ios`)
+  - flutter_image_compress (from `.symlinks/plugins/flutter_image_compress/ios`)
   - geolocator (from `.symlinks/plugins/geolocator/ios`)
   - google_api_availability (from `.symlinks/plugins/google_api_availability/ios`)
   - image_cropper (from `.symlinks/plugins/image_cropper/ios`)
@@ -93,6 +96,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_facebook_login/ios"
   flutter_full_pdf_viewer:
     :path: ".symlinks/plugins/flutter_full_pdf_viewer/ios"
+  flutter_image_compress:
+    :path: ".symlinks/plugins/flutter_image_compress/ios"
   geolocator:
     :path: ".symlinks/plugins/geolocator/ios"
   google_api_availability:
@@ -128,6 +133,7 @@ SPEC CHECKSUMS:
   Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
   flutter_facebook_login: f1f88c32d5888d6b5f3301fd87cc7de26f02877e
   flutter_full_pdf_viewer: 8a6723fa44d3e421520b70ca95fa38155a68eccf
+  flutter_image_compress: c29e818cdf6e4276875601a245b6bb18eb444157
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   geolocator: 6741991ed4867659b4a6087f50b43839e1d78bac
   google_api_availability: f07cd62cdd46ec432b95a702e35e558b817e05aa

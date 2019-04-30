@@ -1,6 +1,5 @@
 import 'dart:core';
 
-
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -21,6 +20,7 @@ import 'package:harrier_central/data/models/user_model.dart';
 import 'package:harrier_central/pages/run_admin/run_start_end_qr_codes_page.dart';
 import 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
 import 'package:harrier_central/pages/run_admin/payment_report.dart';
+import 'package:harrier_central/pages/run_admin/receipts_page.dart';
 import 'package:harrier_central/data/services/future_run_scoped_model.dart';
 import 'package:harrier_central/data/services/get_pack_service.dart';
 import 'package:harrier_central/database/database.dart';
@@ -72,9 +72,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   final String userId = getStringPref(StringPrefsEnum.userId);
 
   Future<void> _getPackWithRefresh() async {
-    _getPackService
-        .getPack(widget.futureRun.eventId)
-        .then((List<UserModel> _thePack) {
+    _getPackService.getPack(widget.futureRun.eventId).then((List<UserModel> _thePack) {
       packList = _thePack;
       setState(() {});
     });
@@ -84,9 +82,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 
   void getPack(bool forceRefresh) {
     if ((packList == null) || forceRefresh) {
-      _getPackService
-          .getPack(widget.futureRun.eventId)
-          .then((List<UserModel> _thePack) {
+      _getPackService.getPack(widget.futureRun.eventId).then((List<UserModel> _thePack) {
         packList = _thePack;
         setState(() {});
       });
@@ -99,22 +95,19 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     _initTabs();
     _tabController = TabController(vsync: this, length: tabs.length);
     _tabController.addListener(() async {
-      if (fabIsVisible !=
-          (tabs[_tabController.index].text.toLowerCase() == 'rsvp')) {
+      if (fabIsVisible != (tabs[_tabController.index].text.toLowerCase() == 'rsvp')) {
         setState(() {
-          fabIsVisible =
-              tabs[_tabController.index].text.toLowerCase() == 'rsvp';
-        }); 
+          fabIsVisible = tabs[_tabController.index].text.toLowerCase() == 'rsvp';
+        });
       }
 
-      if ((_tabController.indexIsChanging) && (_tabController.index == 3))
-      {
-              final Database db = await DBProvider.db.database;
+      if ((_tabController.indexIsChanging) && (_tabController.index == 3)) {
+        final Database db = await DBProvider.db.database;
 
-              final SyncEventAdminService cSrv = SyncEventAdminService();
-              final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagsAllData, false, widget.futureRun.eventId);
-              final String resultStr = result ? 'successfully' : 'unsuccessfully';
-              print('Event admin data synchronized $resultStr');
+        final SyncEventAdminService cSrv = SyncEventAdminService();
+        final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagsAllData, false, widget.futureRun.eventId);
+        final String resultStr = result ? 'successfully' : 'unsuccessfully';
+        print('Event admin data synchronized $resultStr');
       }
     });
   }
@@ -125,8 +118,6 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
-
-
   Container buildRunDetailsView() {
     return Container(
       // Details
@@ -135,8 +126,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       child: SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            ((widget.futureRun.eventImage ?? '').isNotEmpty &&
-                    widget.futureRun.eventImage.startsWith('http'))
+            ((widget.futureRun.eventImage ?? '').isNotEmpty && widget.futureRun.eventImage.startsWith('http'))
                 ? Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: CachedNetworkImage(
@@ -148,18 +138,15 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
                     )
                 : Container(),
-            ((widget.futureRun.eventImage ?? '').isNotEmpty &&
-                    widget.futureRun.eventImage.startsWith('http'))
+            ((widget.futureRun.eventImage ?? '').isNotEmpty && widget.futureRun.eventImage.startsWith('http'))
                 ? const Padding(
                     padding: EdgeInsets.only(top: 32.0, bottom: 0.0),
                     child: FancyDivider(innerColor: Colors.white),
                   )
                 : Container(),
             Padding(
-              padding: const EdgeInsets.only(
-                  top: 25, left: 20, right: 20, bottom: 10),
-              child: AutoSizeText(widget.futureRun.eventName,
-                  style: titleStyle, textAlign: TextAlign.center, maxLines: 2),
+              padding: const EdgeInsets.only(top: 25, left: 20, right: 20, bottom: 10),
+              child: AutoSizeText(widget.futureRun.eventName, style: titleStyle, textAlign: TextAlign.center, maxLines: 2),
             ),
             const Padding(
               padding: EdgeInsets.only(top: 40.0, bottom: 10.0),
@@ -168,153 +155,138 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
             Stack(
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.only(
-                      top: 20.0, right: 30.0, left: 20.0, bottom: 20.0),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: <Widget>[
-                        Text(
-                          'Run:',
-                          style: listLabelStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          'Date:',
-                          style: listLabelStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          'Time:',
-                          style: listLabelStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          'Run fees:',
-                          style: listLabelStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          '',
-                          style: listLabelStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          'Bag drop:',
-                          style: listLabelStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          'Hares:',
-                          style: listLabelStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          'Distance:',
-                          style: listLabelStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          'Street:',
-                          style: listLabelStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          'City:',
-                          style: listLabelStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          'Location:',
-                          style: listLabelStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                      ]),
+                  padding: const EdgeInsets.only(top: 20.0, right: 30.0, left: 20.0, bottom: 20.0),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: <Widget>[
+                    Text(
+                      'Run:',
+                      style: listLabelStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      'Date:',
+                      style: listLabelStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      'Time:',
+                      style: listLabelStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      'Run fees:',
+                      style: listLabelStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      '',
+                      style: listLabelStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      'Bag drop:',
+                      style: listLabelStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      'Hares:',
+                      style: listLabelStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      'Distance:',
+                      style: listLabelStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      'Street:',
+                      style: listLabelStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      'City:',
+                      style: listLabelStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      'Location:',
+                      style: listLabelStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                  ]),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(
-                      top: 21.0, right: 20.0, left: 102.0, bottom: 20.0),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          '#${widget.futureRun.eventNumber}',
-                          style: listValueStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          DateFormat('E, MMM d')
-                              .format(widget.futureRun.eventStartDatetime),
-                          style: listValueStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          DateFormat('h:mm a')
-                              .format(widget.futureRun.eventStartDatetime),
-                          style: listValueStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          (widget.futureRun.eventPriceForMembers > 0)
-                              ? '${Utilities.getFormattedMoney(widget.futureRun.eventPriceForMembers, widget.futureRun.digitsAfterDecimal, widget.futureRun.currencySymbol)} (members)'
-                              : '',
-                          style: listValueStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          (widget.futureRun.eventPriceForNonMembers > 0)
-                              ? '${Utilities.getFormattedMoney(widget.futureRun.eventPriceForNonMembers, widget.futureRun.digitsAfterDecimal, widget.futureRun.currencySymbol)} (non-members)'
-                              : '',
-                          style: listValueStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          'Unknown',
-                          style: listValueStyle,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          widget.futureRun.hareList,
-                          style: listValueStyle,
-                          textAlign: TextAlign.left,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        widget.futureRun.distanceToEvent >= 0
-                            ? Text(
-                                Utilities.getDistance(
-                                    widget.futureRun.distanceToEvent, context),
-                                style: listValueStyle,
-                                textAlign: TextAlign.left,
-                              )
-                            : Text(
-                                '<unknown>',
-                                style: listValueStyle,
-                                textAlign: TextAlign.left,
-                              ),
-                        Text(
-                          widget.futureRun.locationStreet ?? '',
-                          style: listValueStyle,
-                          textAlign: TextAlign.left,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          (widget.futureRun.locationPostCode ?? '') +
-                              ' ' +
-                              (widget.futureRun.locationCity ?? ''),
-                          style: listValueStyle,
-                          textAlign: TextAlign.left,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          widget.futureRun.locationOneLineDesc ?? '',
-                          style: listValueStyle,
-                          textAlign: TextAlign.left,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ]),
+                  padding: const EdgeInsets.only(top: 21.0, right: 20.0, left: 102.0, bottom: 20.0),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                    Text(
+                      '#${widget.futureRun.eventNumber}',
+                      style: listValueStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      DateFormat('E, MMM d').format(widget.futureRun.eventStartDatetime),
+                      style: listValueStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      DateFormat('h:mm a').format(widget.futureRun.eventStartDatetime),
+                      style: listValueStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      (widget.futureRun.eventPriceForMembers > 0) ? '${Utilities.getFormattedMoney(widget.futureRun.eventPriceForMembers, widget.futureRun.digitsAfterDecimal, widget.futureRun.currencySymbol)} (members)' : '',
+                      style: listValueStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      (widget.futureRun.eventPriceForNonMembers > 0) ? '${Utilities.getFormattedMoney(widget.futureRun.eventPriceForNonMembers, widget.futureRun.digitsAfterDecimal, widget.futureRun.currencySymbol)} (non-members)' : '',
+                      style: listValueStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      'Unknown',
+                      style: listValueStyle,
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      widget.futureRun.hareList,
+                      style: listValueStyle,
+                      textAlign: TextAlign.left,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    widget.futureRun.distanceToEvent >= 0
+                        ? Text(
+                            Utilities.getDistance(widget.futureRun.distanceToEvent, context),
+                            style: listValueStyle,
+                            textAlign: TextAlign.left,
+                          )
+                        : Text(
+                            '<unknown>',
+                            style: listValueStyle,
+                            textAlign: TextAlign.left,
+                          ),
+                    Text(
+                      widget.futureRun.locationStreet ?? '',
+                      style: listValueStyle,
+                      textAlign: TextAlign.left,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      (widget.futureRun.locationPostCode ?? '') + ' ' + (widget.futureRun.locationCity ?? ''),
+                      style: listValueStyle,
+                      textAlign: TextAlign.left,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      widget.futureRun.locationOneLineDesc ?? '',
+                      style: listValueStyle,
+                      textAlign: TextAlign.left,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ]),
                 ),
               ],
             ),
@@ -323,8 +295,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               child: FancyDivider(innerColor: Colors.white),
             ),
             Padding(
-              padding: const EdgeInsets.only(
-                  top: 30.0, right: 20.0, left: 20.0, bottom: 20.0),
+              padding: const EdgeInsets.only(top: 30.0, right: 20.0, left: 20.0, bottom: 20.0),
               child: Text(widget.futureRun.eventDescription, style: bodyStyle),
             ),
           ],
@@ -333,21 +304,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     );
   }
 
-  TextStyle rsvpTitlesView = const TextStyle(
-      color: Colors.white,
-      fontFamily: 'AvenirNextCondensedDemiBold',
-      fontStyle: FontStyle.normal,
-      fontSize: 17.0,
-      height: 0.85);
+  TextStyle rsvpTitlesView = const TextStyle(color: Colors.white, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 17.0, height: 0.85);
 
   void addThisDeviceUserToPackList() {
     if (packList != null) {
       final String userId = getStringPref(StringPrefsEnum.userId);
 
-      if (packList
-          .where((UserModel user) =>
-              user.hasherId.toLowerCase() == (userId.toLowerCase()))
-          .isEmpty) {
+      if (packList.where((UserModel user) => user.hasherId.toLowerCase() == (userId.toLowerCase())).isEmpty) {
         // add the user of this device to the RSVP list if they were not already in it
         final UserModel newUser = UserModel();
         newUser.hasherId = userId;
@@ -371,8 +334,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     return Container(
       child: Center(
         child: ScopedModelDescendant<FutureRunScopedModel>(
-          builder: (BuildContext context, Widget child,
-              FutureRunScopedModel _futureRunScopedModel) {
+          builder: (BuildContext context, Widget child, FutureRunScopedModel _futureRunScopedModel) {
             futureRunScopedModel = _futureRunScopedModel;
 
             if (!_futureRunScopedModel.isLoading) {
@@ -390,11 +352,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         child: Column(
                           children: <Widget>[
                             Text(
-                              'Going: ' +
-                                  (widget.futureRun.rsvpYesCount >= 0
-                                      ? (widget.futureRun.rsvpYesCount)
-                                          .toString()
-                                      : ''),
+                              'Going: ' + (widget.futureRun.rsvpYesCount >= 0 ? (widget.futureRun.rsvpYesCount).toString() : ''),
                               style: rsvpTitlesView,
                             ),
                             Stack(
@@ -416,23 +374,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       ),
                                 IconButton(
                                   icon: const Icon(FontAwesome.check_circle),
-                                  color: widget.futureRun.requestedRsvpState ==
-                                          rsvpYes.value
-                                      ? Colors.blue
-                                      : widget.futureRun.rsvpState ==
-                                              rsvpYes.value
-                                          ? Colors.green
-                                          : Colors.grey,
+                                  color: widget.futureRun.requestedRsvpState == rsvpYes.value ? Colors.blue : widget.futureRun.rsvpState == rsvpYes.value ? Colors.green : Colors.grey,
                                   //tooltip: 'Select to follow a Kennel',
                                   iconSize: 35.0,
                                   alignment: Alignment.topCenter,
                                   splashColor: Colors.greenAccent,
                                   onPressed: () {
-                                    _futureRunScopedModel.setRsvpState(
-                                        rsvpYes.value,
-                                        isHareNo.value,
-                                        -1,
-                                        widget.futureRun);
+                                    _futureRunScopedModel.setRsvpState(rsvpYes.value, isHareNo.value, -1, widget.futureRun);
 
                                     addThisDeviceUserToPackList();
                                   },
@@ -461,11 +409,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         child: Column(
                           children: <Widget>[
                             Text(
-                              'Maybe: ' +
-                                  (widget.futureRun.rsvpMaybeCount >= 0
-                                      ? widget.futureRun.rsvpMaybeCount
-                                          .toString()
-                                      : ''),
+                              'Maybe: ' + (widget.futureRun.rsvpMaybeCount >= 0 ? widget.futureRun.rsvpMaybeCount.toString() : ''),
                               style: rsvpTitlesView,
                             ),
                             Stack(
@@ -487,24 +431,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       ),
                                 IconButton(
                                   icon: const Icon(FontAwesome.question_circle),
-                                  color: widget.futureRun.requestedRsvpState ==
-                                          rsvpMaybe.value
-                                      ? Colors.blue
-                                      : widget.futureRun.rsvpState ==
-                                              rsvpMaybe.value
-                                          ? Colors.orange
-                                          : Colors.grey,
+                                  color: widget.futureRun.requestedRsvpState == rsvpMaybe.value ? Colors.blue : widget.futureRun.rsvpState == rsvpMaybe.value ? Colors.orange : Colors.grey,
                                   //tooltip: 'Select to follow a Kennel',
                                   iconSize: 35.0,
                                   alignment: Alignment.topCenter,
                                   splashColor: Colors.greenAccent,
                                   onPressed: () {
                                     setState(() {
-                                      _futureRunScopedModel.setRsvpState(
-                                          rsvpMaybe.value,
-                                          isHareNo.value,
-                                          -1,
-                                          widget.futureRun);
+                                      _futureRunScopedModel.setRsvpState(rsvpMaybe.value, isHareNo.value, -1, widget.futureRun);
 
                                       addThisDeviceUserToPackList();
                                     });
@@ -537,13 +471,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
-                            Text(
-                                'Not go: ' +
-                                    (widget.futureRun.rsvpNoCount >= 0
-                                        ? widget.futureRun.rsvpNoCount
-                                            .toString()
-                                        : ''),
-                                style: rsvpTitlesView),
+                            Text('Not go: ' + (widget.futureRun.rsvpNoCount >= 0 ? widget.futureRun.rsvpNoCount.toString() : ''), style: rsvpTitlesView),
                             Stack(
                               alignment: AlignmentDirectional.center,
                               children: <Widget>[
@@ -563,23 +491,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       ),
                                 IconButton(
                                   icon: const Icon(FontAwesome.times_circle),
-                                  color: widget.futureRun.requestedRsvpState ==
-                                          rsvpNo.value
-                                      ? Colors.blue
-                                      : widget.futureRun.rsvpState ==
-                                              rsvpNo.value
-                                          ? Colors.red
-                                          : Colors.grey,
+                                  color: widget.futureRun.requestedRsvpState == rsvpNo.value ? Colors.blue : widget.futureRun.rsvpState == rsvpNo.value ? Colors.red : Colors.grey,
                                   //tooltip: 'Select to follow a Kennel',
                                   iconSize: 35.0,
                                   alignment: Alignment.topCenter,
                                   splashColor: Colors.greenAccent,
                                   onPressed: () {
-                                    _futureRunScopedModel.setRsvpState(
-                                        rsvpNo.value,
-                                        isHareNo.value,
-                                        -1,
-                                        widget.futureRun);
+                                    _futureRunScopedModel.setRsvpState(rsvpNo.value, isHareNo.value, -1, widget.futureRun);
 
                                     addThisDeviceUserToPackList();
                                     //model.toggleFollowing(kennel);
@@ -609,12 +527,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         width: MediaQuery.of(context).size.width / 5.5,
                         child: Column(
                           children: <Widget>[
-                            Text(
-                                'Hares: ' +
-                                    (widget.futureRun.haresCount >= 0
-                                        ? widget.futureRun.haresCount.toString()
-                                        : ''),
-                                style: rsvpTitlesView),
+                            Text('Hares: ' + (widget.futureRun.haresCount >= 0 ? widget.futureRun.haresCount.toString() : ''), style: rsvpTitlesView),
                             Stack(
                               alignment: AlignmentDirectional.center,
                               children: <Widget>[
@@ -633,34 +546,18 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                         ),
                                       ),
                                 Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 2.5,
-                                      left: 1.5,
-                                      right: 2.5,
-                                      bottom: 2),
+                                  padding: const EdgeInsets.only(top: 2.5, left: 1.5, right: 2.5, bottom: 2),
                                   child: IconButton(
-                                    icon: const ImageIcon(AssetImage(
-                                        'images/icons/hare_icon.png')),
-                                    color:
-                                        widget.futureRun.requestedHaringState ==
-                                                1
-                                            ? Colors.blue
-                                            : widget.futureRun.isHare == 1
-                                                ? Colors.deepPurple
-                                                : Colors.grey,
+                                    icon: const ImageIcon(AssetImage('images/icons/hare_icon.png')),
+                                    color: widget.futureRun.requestedHaringState == 1 ? Colors.blue : widget.futureRun.isHare == 1 ? Colors.deepPurple : Colors.grey,
                                     //tooltip: 'Select to follow a Kennel',
                                     iconSize: 30.0,
                                     alignment: Alignment.topCenter,
                                     splashColor: Colors.greenAccent,
                                     onPressed: () {
-                                      _promptForHare(widget.futureRun.hareList)
-                                          .then<dynamic>((bool willHare) {
+                                      _promptForHare(widget.futureRun.hareList).then<dynamic>((bool willHare) {
                                         if (willHare) {
-                                          _futureRunScopedModel.setRsvpState(
-                                              rsvpYes.value,
-                                              isHareYes.value,
-                                              -1,
-                                              widget.futureRun);
+                                          _futureRunScopedModel.setRsvpState(rsvpYes.value, isHareYes.value, -1, widget.futureRun);
 
                                           addThisDeviceUserToPackList();
                                         }
@@ -698,8 +595,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                   child: Container(
                     key: packListBox,
                     color: const Color.fromARGB(60, 255, 255, 255),
-                    margin: const EdgeInsets.only(
-                        left: 16.0, right: 16.0, bottom: 15.0),
+                    margin: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 15.0),
                     padding: const EdgeInsets.all(8.0),
                     child: Scrollbar(
                       child: RefreshIndicator(
@@ -709,8 +605,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                           itemCount: packList?.length ?? 0,
                           itemBuilder: (BuildContext context, int index) {
                             if (packList[index].hasherId == userId) {
-                              packList[index].rsvpState =
-                                  widget.futureRun.rsvpState;
+                              packList[index].rsvpState = widget.futureRun.rsvpState;
                               packList[index].isHare = widget.futureRun.isHare;
                             }
 
@@ -719,11 +614,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                     color: Colors.grey[300],
                                     width: 70.0,
                                     height: 70.0,
-                                    child: const Padding(
-                                        padding: EdgeInsets.all(5.0),
-                                        child: Center(
-                                            child:
-                                                CircularProgressIndicator())),
+                                    child: const Padding(padding: EdgeInsets.all(5.0), child: Center(child: CircularProgressIndicator())),
                                   )
                                 : GestureDetector(
                                     onTap: () {
@@ -734,8 +625,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       } else {
                                         switch (packList[index].rsvpState) {
                                           case 1:
-                                            actionText =
-                                                ' will not join the Hash';
+                                            actionText = ' will not join the Hash';
                                             break;
                                           case 2:
                                             actionText = ' might join the Hash';
@@ -755,21 +645,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       final SnackBar snackBar = SnackBar(
                                         duration: const Duration(seconds: 2),
                                         content: Text(
-                                          packList[index].displayName +
-                                              actionText,
-                                          style: const TextStyle(
-                                              fontFamily:
-                                                  'AvenirNextCondensedDemiBold',
-                                              fontStyle: FontStyle.normal,
-                                              fontSize: 20.0,
-                                              height: 0.85),
+                                          packList[index].displayName + actionText,
+                                          style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
                                         ),
-                                        backgroundColor:
-                                            Theme.of(context).accentColor,
+                                        backgroundColor: Theme.of(context).accentColor,
                                       );
 
-                                      Scaffold.of(context)
-                                          .showSnackBar(snackBar);
+                                      Scaffold.of(context).showSnackBar(snackBar);
                                     },
                                     child: Stack(
                                       children: <Widget>[
@@ -807,35 +689,22 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                                 //     const  Icon(Icons
                                                 //         .error),
 
-                                                fadeInDuration: const Duration(
-                                                    milliseconds: 0),
+                                                fadeInDuration: const Duration(milliseconds: 0),
                                                 width: 300.0,
                                                 height: 300.0,
                                                 fit: BoxFit.fill)
-                                            : packList[index]
-                                                    .photo
-                                                    .startsWith('bundle')
+                                            : packList[index].photo.startsWith('bundle')
                                                 ? Image(
                                                     width: 300.0,
                                                     height: 300.0,
                                                     fit: BoxFit.fill,
-                                                    image: AssetImage(
-                                                        ('images/avatars/' +
-                                                                packList[index]
-                                                                    .photo
-                                                                    .toLowerCase()
-                                                                    .replaceFirst(
-                                                                        'bundle://',
-                                                                        '') +
-                                                                '.png')
-                                                            .toLowerCase()),
+                                                    image: AssetImage(('images/avatars/' + packList[index].photo.toLowerCase().replaceFirst('bundle://', '') + '.png').toLowerCase()),
                                                   )
                                                 : Image(
                                                     width: 300.0,
                                                     height: 300.0,
                                                     fit: BoxFit.fill,
-                                                    image: const AssetImage(
-                                                        'images/avatars/avatar-2.png'),
+                                                    image: const AssetImage('images/avatars/avatar-2.png'),
                                                   ),
                                         const Positioned(
                                           right: 1.0,
@@ -847,43 +716,17 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                         ),
                                         Positioned(
                                           right: 3.0,
-                                          bottom: packList[index].rsvpState <= 0
-                                              ? 2.5
-                                              : packList[index].isHare == 1
-                                                  ? 3.0
-                                                  : 3.5,
+                                          bottom: packList[index].rsvpState <= 0 ? 2.5 : packList[index].isHare == 1 ? 3.0 : 3.5,
                                           child: packList[index].rsvpState <= 0
                                               ? const CircleAvatar(
                                                   backgroundColor: Colors.blue,
                                                   radius: 10.0,
                                                 )
                                               : packList[index].rsvpState == 1
-                                                  ? const Icon(
-                                                      FontAwesome.times_circle,
-                                                      color: Colors.red,
-                                                      size: 20.0)
-                                                  : packList[index].rsvpState ==
-                                                          2
-                                                      ? const Icon(
-                                                          FontAwesome
-                                                              .question_circle,
-                                                          color: Colors.orange,
-                                                          size: 20.0)
-                                                      : packList[index]
-                                                                  .isHare ==
-                                                              0
-                                                          ? const Icon(
-                                                              FontAwesome
-                                                                  .check_circle,
-                                                              color:
-                                                                  Colors.green,
-                                                              size: 20.0)
-                                                          : Image.asset(
-                                                              'images/icons/hare_icon.png',
-                                                              color: Colors
-                                                                  .deepPurple,
-                                                              height: 20.0,
-                                                              width: 20.0),
+                                                  ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 20.0)
+                                                  : packList[index].rsvpState == 2
+                                                      ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 20.0)
+                                                      : packList[index].isHare == 0 ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 20.0) : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 20.0, width: 20.0),
 
                                           // AssetImage(
                                           //     'images/icons/hare_icon.png'),
@@ -893,9 +736,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                   ); // TODO(James): Replace this with another avatar for missing image
                           },
                           staggeredTileBuilder: (int index) {
-                            return packList[index].isHare != 1
-                                ? const StaggeredTile.count(1, 1)
-                                : const StaggeredTile.count(2, 2);
+                            return packList[index].isHare != 1 ? const StaggeredTile.count(1, 1) : const StaggeredTile.count(2, 2);
                           },
                           mainAxisSpacing: 8.0,
                           crossAxisSpacing: 8.0,
@@ -929,8 +770,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         // Map
         child: FlutterMap(
           options: MapOptions(
-            center:
-                LatLng(widget.futureRun.latitude, widget.futureRun.longitude),
+            center: LatLng(widget.futureRun.latitude, widget.futureRun.longitude),
             zoom: 15.0,
           ),
           layers: <LayerOptions>[
@@ -945,11 +785,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                 Marker(
                   width: 120.0,
                   height: 120.0,
-                  point: LatLng(
-                      widget.futureRun.latitude, widget.futureRun.longitude),
+                  point: LatLng(widget.futureRun.latitude, widget.futureRun.longitude),
                   builder: (BuildContext ctx) => GestureDetector(
-                        onTap: () => _launchMaps(widget.futureRun.latitude,
-                            widget.futureRun.longitude),
+                        onTap: () => _launchMaps(widget.futureRun.latitude, widget.futureRun.longitude),
                         child: Container(
                           padding: const EdgeInsets.only(bottom: 58.0),
                           child: Image.asset('images/icons/map_pin_foot.png'),
@@ -1003,8 +841,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               label: 'I\'m not coming',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
-                futureRunScopedModel.setRsvpState(
-                    rsvpNo.value, isHareNo.value, -1, widget.futureRun);
+                futureRunScopedModel.setRsvpState(rsvpNo.value, isHareNo.value, -1, widget.futureRun);
 
                 addThisDeviceUserToPackList();
               },
@@ -1015,8 +852,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               label: 'I might come',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
-                futureRunScopedModel.setRsvpState(
-                    rsvpMaybe.value, isHareNo.value, -1, widget.futureRun);
+                futureRunScopedModel.setRsvpState(rsvpMaybe.value, isHareNo.value, -1, widget.futureRun);
 
                 addThisDeviceUserToPackList();
               },
@@ -1027,24 +863,20 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               label: 'I\'m coming',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
-                futureRunScopedModel.setRsvpState(
-                    rsvpYes.value, isHareNo.value, -1, widget.futureRun);
+                futureRunScopedModel.setRsvpState(rsvpYes.value, isHareNo.value, -1, widget.futureRun);
 
                 addThisDeviceUserToPackList();
               },
             ),
             SpeedDialChild(
-              child: const ImageIcon(AssetImage('images/icons/hare_icon.png'),
-                  color: Colors.purple),
+              child: const ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.purple),
               backgroundColor: Colors.white,
               label: 'I will hare',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
-                _promptForHare(widget.futureRun.hareList)
-                    .then<dynamic>((bool willHare) {
+                _promptForHare(widget.futureRun.hareList).then<dynamic>((bool willHare) {
                   if (willHare) {
-                    futureRunScopedModel.setRsvpState(
-                        rsvpYes.value, isHareYes.value, -1, widget.futureRun);
+                    futureRunScopedModel.setRsvpState(rsvpYes.value, isHareYes.value, -1, widget.futureRun);
 
                     addThisDeviceUserToPackList();
                   }
@@ -1061,8 +893,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
             PreferredSize(
               preferredSize: const Size.fromHeight(120.0),
               child: Padding(
-                padding: const EdgeInsets.only(
-                    top: 0, left: 0, right: 0, bottom: 15),
+                padding: const EdgeInsets.only(top: 0, left: 0, right: 0, bottom: 15),
                 child: Container(
                   width: MediaQuery.of(context).size.width,
                   height: 50.0,
@@ -1074,16 +905,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 5.0, right: 5.0),
                       child: TabBar(
-                        labelStyle: const TextStyle(
-                            fontFamily: 'AvenirNextCondensedMedium',
-                            fontStyle: FontStyle.normal,
-                            fontSize: 18.0,
-                            height: 1.0),
-                        unselectedLabelStyle: const TextStyle(
-                            fontFamily: 'AvenirNextCondensedMedium',
-                            fontStyle: FontStyle.normal,
-                            fontSize: 18.0,
-                            height: 1.0),
+                        labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                        unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
                         isScrollable: true,
                         unselectedLabelColor: Colors.black,
                         labelColor: Colors.white,
@@ -1108,16 +931,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                   <Widget>[
                     buildRunDetailsView(),
                     buildRsvpView(),
-                    buildMapView(), 
+                    buildMapView(),
                   ],
                 )..addAll(isAdmin
                     ? List<Widget>.from(<Widget>[
                         Container(
                           // decoration: BoxDecoration(
                           //     color: Theme.of(context).selectedRowColor),
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: kiddies()),
+                          child: Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: kiddies()),
                         )
                       ])
                     : List<Widget>.from(<Widget>[])),
@@ -1139,8 +960,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   List<Widget> kiddies() {
     final List<Widget> kiddies = <Widget>[];
 
-    if (widget.futureRun.mmAuthAllowCheckInAndOut ||
-        widget.futureRun.mmAuthAllowEditRsvp) {
+    if (widget.futureRun.mmAuthAllowCheckInAndOut || widget.futureRun.mmAuthAllowEditRsvp) {
       kiddies.add(rsvpRow());
     }
 
@@ -1174,8 +994,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     Navigator.push<dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) =>
-                            CheckInPackPage(futureRun: widget.futureRun),
+                        builder: (BuildContext context) => CheckInPackPage(futureRun: widget.futureRun),
                       ),
                     );
                   },
@@ -1199,8 +1018,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         builder: (BuildContext context) => PaymentReportPage(
                               eventId: widget.futureRun.eventId,
                               currencySymbol: widget.futureRun.currencySymbol,
-                              digitsAfterDecimal:
-                                  widget.futureRun.digitsAfterDecimal,
+                              digitsAfterDecimal: widget.futureRun.digitsAfterDecimal,
                               eventName: widget.futureRun.eventName,
                             ),
                       ),
@@ -1305,8 +1123,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                               eventId: widget.futureRun.eventId,
                               eventName: widget.futureRun.eventName,
                               eventNumber: widget.futureRun.eventNumber,
-                              eventStartDatetime:
-                                  widget.futureRun.eventStartDatetime,
+                              eventStartDatetime: widget.futureRun.eventStartDatetime,
                               isStart: true,
                             )));
               }),
@@ -1329,8 +1146,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                               eventId: widget.futureRun.eventId,
                               eventName: widget.futureRun.eventName,
                               eventNumber: widget.futureRun.eventNumber,
-                              eventStartDatetime:
-                                  widget.futureRun.eventStartDatetime,
+                              eventStartDatetime: widget.futureRun.eventStartDatetime,
                               isStart: false,
                             )));
               }),
@@ -1356,18 +1172,15 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                 Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => RunStartEndQrCodes(
-                              kennelShortName: widget.futureRun.kennelShortName,
-                              eventId: widget.futureRun.eventId,
+                        builder: (BuildContext context) => ReceiptsList(
                               eventName: widget.futureRun.eventName,
-                              eventNumber: widget.futureRun.eventNumber,
-                              eventStartDatetime:
-                                  widget.futureRun.eventStartDatetime,
-                              isStart: true,
+                              eventId: widget.futureRun.eventId,
+                              digitsAfterDecimal: widget.futureRun.digitsAfterDecimal,
+                              currencySymbol: widget.futureRun.currencySymbol
                             )));
               }),
         ),
-       
+
         // Container(
         //   margin: const EdgeInsets.only(left: 10, right: 10),
         //   width: 150.0,
@@ -1392,16 +1205,12 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         //                     )));
         //       }),
         // ),
-     
-     
       ],
     );
   }
 
-
   Future<void> _launchMaps(double lat, double lon) async {
-    final String googleWebUrl =
-        'https://www.google.com/maps/search/?api=1&query=$lat,$lon';
+    final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$lat,$lon';
     //String googleAppUrl = 'comgooglemaps://maps.google.com/maps/place/<name>/@<lat>,<long>,15z/data=<mode-value>';
     final String googleAppUrl = 'comgooglemaps://?q=$lat,$lon';
     final String appleUrl = 'https://maps.apple.com/?sll=$lat,$lon';
@@ -1427,10 +1236,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       content: Text(
         value,
         textAlign: TextAlign.center,
-        style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16.0,
-            fontFamily: 'WorkSansSemiBold'),
+        style: const TextStyle(color: Colors.white, fontSize: 16.0, fontFamily: 'WorkSansSemiBold'),
       ),
       backgroundColor: Colors.blue,
       duration: const Duration(seconds: 3),
