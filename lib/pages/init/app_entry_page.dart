@@ -7,7 +7,7 @@ import 'package:package_info/package_info.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/data/models/approve_login_model.dart';
-import 'package:harrier_central/data/hc3_services/sync_master_data_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
 import 'package:harrier_central/data/services/approve_login_service.dart';
@@ -58,8 +58,8 @@ class _AppEntryPageState extends State<AppEntryPage>
             } else {
               final Database db = await DBProvider.db.database;
 
-              final SyncDataService cSrv = SyncDataService();
-              final bool result = await cSrv.updateFromBackend(db,SyncDataService.flagAllMasterData,false);
+              final SyncUserDataService cSrv = SyncUserDataService();
+              final bool result = await cSrv.updateFromBackend(db,SyncUserDataService.flagAllMasterData,false);
               final String resultStr = result ? 'successfully' : 'unsuccessfully';
               print('Master data synchronized $resultStr');
 

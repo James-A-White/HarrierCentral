@@ -9,7 +9,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/data/hc3_services/sync_master_data_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
@@ -273,8 +273,8 @@ class SupportPageState extends State<SupportPage> {
                                                       onPressed: () async {
                                                         final Database db = await DBProvider.db.database;
 
-                                                        final SyncDataService cSrv = SyncDataService();
-                                                        final bool result = await cSrv.updateFromBackend(db, SyncDataService.flagAllMasterData, false);
+                                                        final SyncUserDataService cSrv = SyncUserDataService();
+                                                        final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagAllMasterData, false);
                                                         final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                                         print('Master data synchronized $resultStr');
 
@@ -314,8 +314,8 @@ class SupportPageState extends State<SupportPage> {
                                                       onPressed: () async {
                                                         final Database db = await DBProvider.db.database;
 
-                                                        final SyncDataService cSrv = SyncDataService();
-                                                        final bool result = await cSrv.updateFromBackend(db, SyncDataService.flagAllMasterData, false);
+                                                        final SyncUserDataService cSrv = SyncUserDataService();
+                                                        final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagAllMasterData, false);
                                                         final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                                         print('Master data synchronized $resultStr');
 

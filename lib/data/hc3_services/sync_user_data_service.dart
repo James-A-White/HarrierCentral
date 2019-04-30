@@ -16,7 +16,7 @@ import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 
-class SyncDataService {
+class SyncUserDataService {
   static const int flagHashersTable = 0x00000001;
   static const int flagCitiesTable = 0x00000002;
   static const int flagRegionsTable = 0x00000004;
@@ -55,7 +55,7 @@ class SyncDataService {
     _countriesLastUpdated = (flags & flagCountriesTable) == 0 ? 0 : await getLastUpdatedTime(db, CountriesTableHelper.colUpdatedAtValue, CountriesTableHelper.tableName);
     _kennelsLastUpdated = (flags & flagKennelsTable) == 0 ? 0 : await getLastUpdatedTime(db, KennelsTableHelper.colUpdatedAtValue, KennelsTableHelper.tableName);
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? 0 : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.tableName);
-    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? 0 : await getLastUpdatedTime(db, HasherEventMapTableHelper.colUpdatedAtValue, HasherEventMapTableHelper.tableName);
+    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? 0 : await getLastUpdatedTime(db, HasherEventMapTableHelper.colUpdatedAtValue, HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user));
     _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? 0 : await getLastUpdatedTime(db, NarrowEventsTableHelper.colUpdatedAtValue, NarrowEventsTableHelper.tableName);
   }
 
@@ -66,7 +66,7 @@ class SyncDataService {
     final int countriesLastUpdate = (flags & flagCountriesTable) == null ? 0 : getIntPref(CountriesTableHelper.lastUpdatedKey) ?? 0;
     final int kennelsLastUpdate = (flags & flagKennelsTable) == 0 ? null : getIntPref(KennelsTableHelper.lastUpdatedKey) ?? 0;
     final int hasherKennelMapLastUpdate = (flags & flagHasherKennelMapTable) == 0 ? null : getIntPref(HasherKennelMapTableHelper.lastUpdatedKey) ?? 0;
-    final int hasherEventMapLastUpdate = (flags & flagHasherEventMapTable) == 0 ? null : getIntPref(HasherEventMapTableHelper.lastUpdatedKey) ?? 0;
+    final int hasherEventMapLastUpdate = (flags & flagHasherEventMapTable) == 0 ? null : getIntPref(HasherEventMapTableHelper.getLastUpdatedKey(HasherEventMapTableType.user)) ?? 0;
     final int narrowEventsLastUpdate = (flags & flagNarrowEventsTable) == 0 ? null : getIntPref(NarrowEventsTableHelper.lastUpdatedKey) ?? 0;
 
     if (forceRefresh ||
@@ -117,7 +117,7 @@ class SyncDataService {
         userId = GUID_EMPTY;
       }
 
-      final String accessToken = Utilities.generateToken(userId, 'syncData');
+      final String accessToken = Utilities.generateToken(userId, 'syncUserData');
 
       final String body = jsonEncode(<String, String>{
         'userId': userId,
@@ -133,7 +133,7 @@ class SyncDataService {
       });
 
       final http.Response response = await http
-          .post(BASE_API_URL + 'hc3_sync_data', headers: <String, String>{'content-type': 'application/json'}, body: body
+          .post(BASE_API_URL + 'hc3_sync_user_data', headers: <String, String>{'content-type': 'application/json'}, body: body
               // Send authorization headers to your backend
               //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
               )
@@ -194,7 +194,7 @@ class SyncDataService {
 
         if (ms.startsWith(r'[{"hemId"')) {
           final HasherEventMapService hemSrv = HasherEventMapService();
-          await hemSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+          await hemSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherEventMapTableType.user);
           print('hasher event map updated');
         }
       }

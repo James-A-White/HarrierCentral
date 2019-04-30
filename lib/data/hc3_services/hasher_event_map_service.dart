@@ -54,16 +54,23 @@ class HasherEventMapModel {
   }
 }
 
+enum HasherEventMapTableType {
+  user,
+  admin,
+}
+
+const String hemTableName = 'hasherEventMap';
+const String hemAdminTableName = 'hasherEventMapForRunAdmin';
+
 class HasherEventMapTableHelper {
   HasherEventMapTableHelper._privateConstructor();
 
-  static const String tableName = 'hasherEventMap';
   //static const num forceRequeryInterval = 1 * 86400000;
   static const num forceRequeryInterval = 1 * 1000;
   static const num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
 
-  static const IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateHasherEventMapData;
-  static const IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearHasherEventMapData;
+  // static const IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateHasherEventMapData;
+  // static const IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearHasherEventMapData;
 
   static const String colId = 'id';
   static const String remoteDbId = 'hemId';
@@ -86,10 +93,31 @@ class HasherEventMapTableHelper {
 
   static final HasherEventMapTableHelper instance = HasherEventMapTableHelper._privateConstructor();
 
+  static String getTableName(HasherEventMapTableType tblType) {
+    if (tblType == HasherEventMapTableType.admin) {
+      return hemAdminTableName;
+    }
+    return hemTableName;
+  }
+
+  static IntPrefsEnum getLastUpdatedKey(HasherEventMapTableType tblType) {
+    if (tblType == HasherEventMapTableType.admin) {
+      return IntPrefsEnum.lastUpdateAdminHasherEventMapData;;
+    }
+    return IntPrefsEnum.lastUpdateHasherEventMapData;
+  }
+
+  static IntPrefsEnum getLastCacheClearKey(HasherEventMapTableType tblType) {
+    if (tblType == HasherEventMapTableType.admin) {
+      return IntPrefsEnum.lastCacheClearAdminHasherEventMapData;;
+    }
+    return IntPrefsEnum.lastCacheClearHasherEventMapData;
+  }
+
   // SQL code to create the database table
-  static Future<dynamic> createTable(Database db, int version) async {
+  static Future<dynamic> createTable(Database db, int version, HasherEventMapTableType tblType) async {
     await db.execute('''
-          CREATE TABLE $tableName (
+          CREATE TABLE ${getTableName(tblType)} (
             $colId INTEGER PRIMARY KEY,
 
             $colHemId TEXT NOT NULL,
@@ -108,8 +136,8 @@ class HasherEventMapTableHelper {
           )
           ''');
 
-    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
+    await db.execute('CREATE INDEX idx_${getTableName(tblType)}_id ON ${getTableName(tblType)}($remoteDbId);');
+    await db.execute('CREATE INDEX idx_${getTableName(tblType)}_update_at_value ON ${getTableName(tblType)}($colUpdatedAtValue);');
   }
 
   static Map<String, dynamic> toMap(HasherEventMapModel item) {
@@ -151,39 +179,39 @@ class HasherEventMapTableHelper {
 }
 
 class HasherEventMapService {
-  static final HasherEventMapTableHelper instance = HasherEventMapTableHelper._privateConstructor();
+  //static final HasherEventMapTableHelper instance = HasherEventMapTableHelper._privateConstructor();
 
-  Future<void> clearTable() async {
+  Future<void> clearTable(HasherEventMapTableType tblType) async {
     final Database db = await DBProvider.db.database;
-    await db.rawDelete('DELETE FROM ${HasherEventMapTableHelper.tableName}').then((void dummy) {
-      setIntPref(HasherEventMapTableHelper.lastCacheClearKey, DateTime.now().millisecondsSinceEpoch);
+    await db.rawDelete('DELETE FROM ${HasherEventMapTableHelper.getTableName(tblType)}').then((void dummy) {
+      setIntPref(HasherEventMapTableHelper.getLastCacheClearKey(tblType), DateTime.now().millisecondsSinceEpoch);
     });
   }
 
-  Future<void> updateDatabase(List<HasherEventMapModel> items) async {
+  Future<void> updateDatabase(List<HasherEventMapModel> items, HasherEventMapTableType tblType) async {
     final Database db = await DBProvider.db.database;
 
     for (int i = 0; i < items?.length ?? 0; i++) {
       final Map<String, dynamic> row = HasherEventMapTableHelper.toMap(items[i]);
 
-      final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${HasherEventMapTableHelper.tableName} WHERE ${HasherEventMapTableHelper.remoteDbId} = "${items[i].hemId}"');
+      final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${HasherEventMapTableHelper.getTableName(tblType)} WHERE ${HasherEventMapTableHelper.remoteDbId} = "${items[i].hemId}"');
       if ((table == null) || (table.isEmpty)) {
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.insert(HasherEventMapTableHelper.tableName, row);
-          print(result.toString() + ' inserted into to the ${HasherEventMapTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          final int result = await txn.insert(HasherEventMapTableHelper.getTableName(tblType), row);
+          print(result.toString() + ' inserted into to the ${HasherEventMapTableHelper.getTableName(tblType)} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
         });
       } else {
         final String rowId = table.first['id'].toString();
 
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await db.update(HasherEventMapTableHelper.tableName, row, where: 'id = $rowId');
-          print(result.toString() + ' update to the ${HasherEventMapTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          final int result = await db.update(HasherEventMapTableHelper.getTableName(tblType), row, where: 'id = $rowId');
+          print(result.toString() + ' update to the ${HasherEventMapTableHelper.getTableName(tblType)} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
         });
       }
     }
   }
 
-  Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser) async {
+  Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser, HasherEventMapTableType tblType) async {
     int updateCounter = 0;
     int insertCounter = 0;
 
@@ -192,7 +220,7 @@ class HasherEventMapService {
     final int len = jsonResultSets.length;
     int lastPercentage = 0;
 
-    print('Region records received from cloud = $len');
+    print('Hasher event map records received from cloud = $len');
 
     for (int i = 0; i < jsonResultSets.length; i++) {
       final List<dynamic> jsonResults = jsonResultSets[i];
@@ -210,14 +238,14 @@ class HasherEventMapService {
           'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch,
         });
 
-        final String query = 'SELECT * FROM ${HasherEventMapTableHelper.tableName} WHERE ${HasherEventMapTableHelper.remoteDbId} = "${jsonItem['hemId']}"';
+        final String query = 'SELECT * FROM ${HasherEventMapTableHelper.getTableName(tblType)} WHERE ${HasherEventMapTableHelper.remoteDbId} = "${jsonItem['hemId']}"';
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
 
         if ((table == null) || (table.isEmpty)) {
           //print(table.length.toString());
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.insert(HasherEventMapTableHelper.tableName, jsonItem);
+            await txn.insert(HasherEventMapTableHelper.getTableName(tblType), jsonItem);
             insertCounter++;
             // print(result.toString() +
             //     ' inserted into to the ${HasherEventMapTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -227,7 +255,7 @@ class HasherEventMapService {
 
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.update(HasherEventMapTableHelper.tableName, jsonItem, where: 'id = $rowId');
+            await txn.update(HasherEventMapTableHelper.getTableName(tblType), jsonItem, where: 'id = $rowId');
             updateCounter++;
             // print(result.toString() +
             //     ' update to the ${HasherEventMapTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');

@@ -7,7 +7,7 @@ import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/database/database.dart';
 
-import 'package:harrier_central/data/hc3_services/sync_master_data_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/widgets/kennel_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/singletons.dart';
@@ -111,8 +111,8 @@ class KennelsListPageState extends State<KennelsListPage> {
   Future<void> _handleRefresh() async {
     final Database db = await DBProvider.db.database;
 
-    final SyncDataService cSrv = SyncDataService();
-    cSrv.updateFromBackend(db, SyncDataService.flagKennelsTable | SyncDataService.flagHasherKennelMapTable, false).then((bool result) {
+    final SyncUserDataService cSrv = SyncUserDataService();
+    cSrv.updateFromBackend(db, SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable, false).then((bool result) {
       refreshFromTable(true);
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Kennel user data synchronized $resultStr');

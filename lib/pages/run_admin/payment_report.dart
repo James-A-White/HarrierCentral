@@ -471,32 +471,32 @@ class _PaymentReportsListPageBodyState
             item.creditAmount = amount;
             // now update the counters at the top
 
-            // decrease the count for non-paid hashers
-            final PaymentReportModel notPaidHashersTotalRecord = model
-                .paymentReportTotalsList
-                .firstWhere((PaymentReportModel evt) =>
-                    evt.paymentType.value == paymentNotPaidTotals.value);
-            notPaidHashersTotalRecord.paymentReference =
-                (int.parse(notPaidHashersTotalRecord.paymentReference) - 1)
-                    .toString();
+            // // decrease the count for non-paid hashers
+            // final PaymentReportModel notPaidHashersTotalRecord = model
+            //     .paymentReportTotalsList
+            //     .firstWhere((PaymentReportModel evt) =>
+            //         evt.paymentType.value == paymentNotPaidTotals.value);
+            // notPaidHashersTotalRecord.paymentReference =
+            //     (int.parse(notPaidHashersTotalRecord.paymentReference) - 1)
+            //         .toString();
 
-            final PaymentReportModel paymentTypeTotalRecord = model
-                .paymentReportTotalsList
-                .firstWhere((PaymentReportModel evt) =>
-                    evt.paymentType.value == (selectedValue + 100));
+            // final PaymentReportModel paymentTypeTotalRecord = model
+            //     .paymentReportTotalsList
+            //     .firstWhere((PaymentReportModel evt) =>
+            //         evt.paymentType.value == (selectedValue + 100));
 
-            if (paymentTypeTotalRecord != null) {
-              // increase the counter for the type of payment made
-              paymentTypeTotalRecord.paymentReference =
-                  (int.parse(paymentTypeTotalRecord.paymentReference) + 1)
-                      .toString();
-              // update the cash amount total
-              if ((selectedValue != paymentFreeRun.value) &&
-                  (selectedValue != paymentNotPaid.value) &&
-                  (selectedValue != paymentHashCredit.value)) {
-                paymentTypeTotalRecord.creditAmount += amount;
-              }
-            }
+            // if (paymentTypeTotalRecord != null) {
+            //   // increase the counter for the type of payment made
+            //   paymentTypeTotalRecord.paymentReference =
+            //       (int.parse(paymentTypeTotalRecord.paymentReference) + 1)
+            //           .toString();
+            //   // update the cash amount total
+            //   if ((selectedValue != paymentFreeRun.value) &&
+            //       (selectedValue != paymentNotPaid.value) &&
+            //       (selectedValue != paymentHashCredit.value)) {
+            //     paymentTypeTotalRecord.creditAmount += amount;
+            //   }
+            // }
           });
         } else {
           //setState(() => barcode = 'Error processing payment');

@@ -14,6 +14,7 @@ import 'package:intl/intl.dart';
 import 'package:latlong/latlong.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/data/models/planned_run_model.dart';
 import 'package:harrier_central/data/models/user_model.dart';
@@ -22,6 +23,8 @@ import 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
 import 'package:harrier_central/pages/run_admin/payment_report.dart';
 import 'package:harrier_central/data/services/future_run_scoped_model.dart';
 import 'package:harrier_central/data/services/get_pack_service.dart';
+import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
@@ -95,13 +98,23 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     super.initState();
     _initTabs();
     _tabController = TabController(vsync: this, length: tabs.length);
-    _tabController.addListener(() {
+    _tabController.addListener(() async {
       if (fabIsVisible !=
           (tabs[_tabController.index].text.toLowerCase() == 'rsvp')) {
         setState(() {
           fabIsVisible =
               tabs[_tabController.index].text.toLowerCase() == 'rsvp';
-        });
+        }); 
+      }
+
+      if ((_tabController.indexIsChanging) && (_tabController.index == 3))
+      {
+              final Database db = await DBProvider.db.database;
+
+              final SyncEventAdminService cSrv = SyncEventAdminService();
+              final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagsAllData, false, widget.futureRun.eventId);
+              final String resultStr = result ? 'successfully' : 'unsuccessfully';
+              print('Event admin data synchronized $resultStr');
       }
     });
   }
@@ -1137,6 +1150,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 
     kiddies.add(paymentRow());
 
+    kiddies.add(receiptsRow());
+
     return kiddies;
   }
 
@@ -1323,6 +1338,66 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       ],
     );
   }
+
+  Row receiptsRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Container(
+          margin: const EdgeInsets.only(left: 10, right: 10),
+          width: 150.0,
+          height: 100.0,
+          child: RaisedButton(
+              child: const Text(
+                'Manage receipts',
+                style: TextStyle(color: Colors.white),
+              ),
+              onPressed: () {
+                Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => RunStartEndQrCodes(
+                              kennelShortName: widget.futureRun.kennelShortName,
+                              eventId: widget.futureRun.eventId,
+                              eventName: widget.futureRun.eventName,
+                              eventNumber: widget.futureRun.eventNumber,
+                              eventStartDatetime:
+                                  widget.futureRun.eventStartDatetime,
+                              isStart: true,
+                            )));
+              }),
+        ),
+       
+        // Container(
+        //   margin: const EdgeInsets.only(left: 10, right: 10),
+        //   width: 150.0,
+        //   height: 100.0,
+        //   child: RaisedButton(
+        //       child: const Text(
+        //         'Run End QR',
+        //         style: TextStyle(color: Colors.white),
+        //       ),
+        //       onPressed: () {
+        //         Navigator.push<dynamic>(
+        //             context,
+        //             MaterialPageRoute<dynamic>(
+        //                 builder: (BuildContext context) => RunStartEndQrCodes(
+        //                       kennelShortName: widget.futureRun.kennelShortName,
+        //                       eventId: widget.futureRun.eventId,
+        //                       eventName: widget.futureRun.eventName,
+        //                       eventNumber: widget.futureRun.eventNumber,
+        //                       eventStartDatetime:
+        //                           widget.futureRun.eventStartDatetime,
+        //                       isStart: false,
+        //                     )));
+        //       }),
+        // ),
+     
+     
+      ],
+    );
+  }
+
 
   Future<void> _launchMaps(double lat, double lon) async {
     final String googleWebUrl =

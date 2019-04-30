@@ -225,7 +225,7 @@ class NarrowEventsService {
     final int len = jsonResultSets.length;
     int lastPercentage = 0;
 
-    print('Region records received from cloud = $len');
+    print('Event records received from cloud = $len');
 
     for (int i = 0; i < jsonResultSets.length; i++) {
       final List<dynamic> jsonResults = jsonResultSets[i];
