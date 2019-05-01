@@ -221,7 +221,7 @@ class ReceiptsService {
         final String rowId = table.first['id'].toString();
 
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await db.update(ReceiptsTableHelper.tableName, row, where: 'id = $rowId');
+          final int result = await txn.update(ReceiptsTableHelper.tableName, row, where: 'id = $rowId');
           print(result.toString() + ' update to the ${ReceiptsTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
         });
       }

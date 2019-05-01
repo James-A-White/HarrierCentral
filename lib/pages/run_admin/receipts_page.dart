@@ -5,10 +5,11 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
-
 import 'package:harrier_central/pages/run_admin/receipt_detail_page.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/receipts_service.dart';
@@ -23,30 +24,6 @@ class ReceiptsList extends StatefulWidget {
 
   @override
   ReceiptsListState createState() => ReceiptsListState();
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   if ((ReceiptsModel?.ReceiptsList?.length ?? 0) == 0) {
-  //     ReceiptsModel.getReceiptsFromBackend(1, true, kennel.kennelId);
-  //   }
-
-  //   return Scaffold(
-  //     appBar: AppBar(
-  //       centerTitle: true,
-  //       backgroundColor: themeAppBarBackground,
-  //       title: Text(
-  //         '${kennel.kennelShortName} Members',
-  //         style: const TextStyle(
-  //           color: Colors.white,
-  //         ),
-  //       ),
-  //     ),
-  //     body: ScopedModel<ReceiptscopedModel>(
-  //         model: ReceiptsModel,
-  //         child: ReceiptsListState(
-  //           kennelId: kennel.kennelId,
-  //         )),
-  //   );
 
 }
 
@@ -66,17 +43,11 @@ class ReceiptsListState extends State<ReceiptsList> {
       });
     });
 
-    // DBProvider.db.database.then((Database db) {
-    //   db.rawQuery('SELECT id,kennelId,userId FROM hasherKennelMap ORDER BY id').then((List<Map<String,dynamic>> result) {
-    //     print(result.toString().replaceAll('},', '},\r\n'));
-    //   });
-    // });
     super.initState();
   }
 
   void refreshFromTable() {
     DBProvider.db.database.then((Database db) {
-      //receiptsList ??= <Map<String, dynamic>>[];
       try {
         db.query(ReceiptsTableHelper.tableName).then((List<Map<String, dynamic>> results) {
           setState(() {
@@ -174,6 +145,64 @@ class ReceiptsListState extends State<ReceiptsList> {
     refreshFromTable();
   }
 
+  Future<void> setReceiptReimbursementStatus(String receiptId, bool cancelReimbursement) async {
+    final String userId = getStringPref(StringPrefsEnum.userId);
+
+    final Database db = await DBProvider.db.database;
+
+    await db.transaction<dynamic>((Transaction txn) async {
+          final String guidFlag = cancelReimbursement ? GUID_9 : GUID_8;
+          final String sql = 'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
+          final int result = await txn.rawUpdate(sql);
+          print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          refreshFromTable();
+      });
+
+    final ReceiptsModel item =
+        ReceiptsModel(receiptId: receiptId, eventId: widget.eventId, receiptShortDescription: '', receiptAmount: -1, notes: '', reimbursedBy: cancelReimbursement ? GUID_MAX : userId, reimbursedAmount: 0, reimbursedOn: '1999/1/1', reimbursedNotes: '', imageUrl: '', removed: -1);
+
+    setState(() {
+      final ReceiptsService srv = ReceiptsService();
+      srv.uploadReceipt(context, item).then((String result) {
+        DBProvider.db.database.then((Database db) {
+          srv.bulkUpdateDatabase(result, db, null).then((int notUsed) {
+            refreshFromTable();
+          });
+        });
+      });
+    });
+  }
+
+    Future<void> setReceiptRemovedStatus(String receiptId, bool removed) async {
+
+    final Database db = await DBProvider.db.database;
+
+    await db.transaction<dynamic>((Transaction txn) async {
+          final String guidFlag = removed ? GUID_9 : GUID_8;
+          final String sql = 'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
+          final int result = await txn.rawUpdate(sql);
+          print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          refreshFromTable();
+      });
+
+    final ReceiptsModel item =
+        ReceiptsModel(receiptId: receiptId, eventId: widget.eventId, receiptShortDescription: '', receiptAmount: -1, notes: '', reimbursedBy: GUID_EMPTY, reimbursedAmount: -1, reimbursedOn: '1999/1/1', reimbursedNotes: '', imageUrl: '', removed: removed ? 0 : 1);
+
+    setState(() {
+      final ReceiptsService srv = ReceiptsService();
+      srv.uploadReceipt(context, item).then((String result) {
+        DBProvider.db.database.then((Database db) {
+          srv.bulkUpdateDatabase(result, db, null).then((int notUsed) {
+            refreshFromTable();
+          });
+        });
+      });
+    });
+  }
+
+
+
+
   Widget _buildListView() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -194,27 +223,117 @@ class ReceiptsListState extends State<ReceiptsList> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: receiptsList.length,
                       itemBuilder: (BuildContext context, int index) {
-                        return Container(
-                          height: 50.0,
-                          padding: const EdgeInsets.all(0.0),
-                          child: ListView(scrollDirection: Axis.horizontal, children: <Widget>[
-                            ReceiptListItem(
-                                currencySymbol: widget.currencySymbol,
-                                digitsAfterDecimal: widget.digitsAfterDecimal,
-                                receipt: receiptsList[index],
-                                itemPressed: () {
-                                  Navigator.push<void>(
-                                    context,
-                                    MaterialPageRoute<void>(
-                                        builder: (BuildContext context) => ReceiptDetailPage(
-                                              eventId: widget.eventId,
-                                              receiptItem: receiptsList[index],
-                                            )),
-                                  ).then<dynamic>((void receipt) {
-                                    refreshFromTable();
-                                  });
-                                }),
-                          ]),
+                        final Map<String,dynamic> receipt = receiptsList[index];
+                        return Dismissible(
+                          key: Key(receipt['receiptId']),
+                          confirmDismiss: (DismissDirection direction) {
+                            if (direction == DismissDirection.endToStart) {
+                              setReceiptReimbursementStatus(receipt['receiptId'], (receipt['reimbursedBy'] != null) && (receipt['reimbursedBy'] != GUID_EMPTY));
+                            } else if (direction == DismissDirection.startToEnd)
+                            {
+                              setReceiptRemovedStatus(receipt['receiptId'], receipt['removed'] == 1);
+                            }
+                            return Future<bool>.value(false);
+                          },
+                          background: receipt['removed'] == 0 ?
+                                                    Container(
+
+                              color: Colors.red,
+                              child: Row(children: const <Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(left: 10.0),
+                                  child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
+                                ),
+                                Padding( 
+                                  padding: EdgeInsets.only(left: 15.0),
+                                  child: Text(
+                                      // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                      'Ignore receipt',
+                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                )
+                              ]))
+                          
+                         : Container(
+
+                              color: Colors.green,
+                              child: Row(children: const <Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(left: 10.0),
+                                  child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
+                                ),
+                                Padding( 
+                                  padding: EdgeInsets.only(left: 15.0),
+                                  child: Text(
+                                      // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                      'Restore receipt',
+                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                )
+                              ])),
+
+                          secondaryBackground: (receipt['reimbursedBy'] != null) && (receipt['reimbursedBy'] != GUID_EMPTY) && (receipt['reimbursedBy'] != GUID_8) ?
+                          Container(
+                            color: Colors.yellow,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: const <Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(right: 15.0),
+                                  child: Icon(FontAwesome.times_circle, color: Colors.black, size: 35.0),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(right: 15.0),
+                                  child: Text(
+                                      //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                      'Cancel Reimbursement',
+                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 17.0, height: 1.0)),
+                                )
+                              ],
+                            ),
+                          )
+                          : Container(
+                            color: Colors.green,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: const <Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(right: 15.0),
+                                  child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(right: 15.0),
+                                  child: Text(
+                                      //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                      'Receipt reimbursed',
+                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                )
+                              ],
+                            ),
+                          ),
+                          onDismissed: (DismissDirection direction) {
+                            print(direction.toString() + ' NOTE: We should never reach this point');
+                          },
+                          child: Container(
+                            height: 50.0,
+                            padding: const EdgeInsets.all(0.0),
+                            child: ListView(scrollDirection: Axis.horizontal, children: <Widget>[
+                              ReceiptListItem(
+                                  currencySymbol: widget.currencySymbol,
+                                  digitsAfterDecimal: widget.digitsAfterDecimal,
+                                  receipt: receiptsList[index],
+                                  itemPressed: () {
+                                    Navigator.push<void>(
+                                      context,
+                                      MaterialPageRoute<void>(
+                                          builder: (BuildContext context) => ReceiptDetailPage(
+                                                eventId: widget.eventId,
+                                                receiptItem: receiptsList[index],
+                                              )),
+                                    ).then<dynamic>((void receipt) {
+                                      refreshFromTable();
+                                    });
+                                  }),
+                            ]),
+                          ),
                         );
                       },
                     ),
@@ -267,12 +386,21 @@ class ReceiptListItem extends StatelessWidget {
           // mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             Expanded(
+              flex: 1,
+              child: Padding(padding: const EdgeInsets.only(left: 10.0), child: 
+              ((receipt['reimbursedBy'] == null) || (receipt['reimbursedBy'] == GUID_EMPTY)) 
+                ? const Icon(FontAwesome.circle_thin, size: 35.0, color: Colors.grey) 
+                : receipt['reimbursedBy'] == GUID_8 || receipt['reimbursedBy'] == GUID_9
+                  ? Icon(delayIcon, size: 35.0, color: Colors.blue)
+                  : Icon(FontAwesome.check_circle, size: 35.0, color: receipt['removed'] == 0 ? Colors.green : Colors.grey),),
+            ),
+            Expanded(
               flex: 3,
               child: Padding(
                 padding: const EdgeInsets.only(left: 10.0),
                 child: Text(
                   '${Utilities.getFormattedMoney(receipt['receiptAmount'], digitsAfterDecimal, currencySymbol)}',
-                  style:  TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0,color: Colors.blue[700]),
+                  style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0, color: receipt['removed'] == 0 ? Colors.blue[700] : Colors.grey),
                   textAlign: TextAlign.right,
                 ),
               ),
@@ -282,10 +410,11 @@ class ReceiptListItem extends StatelessWidget {
               width: 10,
             ),
             Expanded(
-              flex: 7,
+              flex: 6,
               child: Text(
                 '${receipt['receiptShortDesc']}',
-                style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
+                
+                style:  TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0,color: receipt['removed'] == 0 ? Colors.black : Colors.grey),
                 textAlign: TextAlign.left,
               ),
             ),

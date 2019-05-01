@@ -55,8 +55,8 @@ class FilterEventListItem extends StatelessWidget {
                     ? Icon(FontAwesome.facebook_square, color: eventModel.isVisible == 1 ? const Color.fromARGB(255, 59, 89, 152) : Colors.grey, size: 35.0)
                     : Container(
                         foregroundDecoration: 
-                        eventModel.isVisible == 1 ? BoxDecoration() :
-                        BoxDecoration(
+                        eventModel.isVisible == 1 ? const BoxDecoration() :
+                        const BoxDecoration(
                           color: Colors.grey,
                           backgroundBlendMode: BlendMode.saturation,
                         ),

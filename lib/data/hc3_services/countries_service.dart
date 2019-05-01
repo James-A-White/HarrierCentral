@@ -217,7 +217,7 @@ class CountriesService {
         final String rowId = table.first['id'].toString();
 
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await db.update(CountriesTableHelper.tableName, row,
+          final int result = await txn.update(CountriesTableHelper.tableName, row,
               where: 'id = $rowId');
           print(result.toString() +
               ' update to the ${CountriesTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch}');

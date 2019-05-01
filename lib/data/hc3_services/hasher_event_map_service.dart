@@ -204,7 +204,7 @@ class HasherEventMapService {
         final String rowId = table.first['id'].toString();
 
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await db.update(HasherEventMapTableHelper.getTableName(tblType), row, where: 'id = $rowId');
+          final int result = await txn.update(HasherEventMapTableHelper.getTableName(tblType), row, where: 'id = $rowId');
           print(result.toString() + ' update to the ${HasherEventMapTableHelper.getTableName(tblType)} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
         });
       }

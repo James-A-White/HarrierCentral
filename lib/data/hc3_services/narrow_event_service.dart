@@ -207,7 +207,7 @@ class NarrowEventsService {
         final String rowId = table.first['id'].toString();
 
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await db.update(NarrowEventsTableHelper.tableName, row,
+          final int result = await txn.update(NarrowEventsTableHelper.tableName, row,
               where: 'id = $rowId');
           print(result.toString() +
               ' update to the ${NarrowEventsTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');

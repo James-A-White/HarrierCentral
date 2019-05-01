@@ -247,7 +247,7 @@ class PaymentsService {
         final String rowId = table.first['id'].toString();
 
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await db.update(PaymentsTableHelper.tableName, row,
+          final int result = await txn.update(PaymentsTableHelper.tableName, row,
               where: 'id = $rowId');
           print(result.toString() +
               ' update to the ${PaymentsTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');

@@ -274,7 +274,7 @@ class KennelsService {
         final String rowId = table.first['id'].toString();
 
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await db.update(KennelsTableHelper.tableName, row,
+          final int result = await txn.update(KennelsTableHelper.tableName, row,
               where: 'id = $rowId');
           print(result.toString() +
               ' update to the ${KennelsTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');

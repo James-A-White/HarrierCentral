@@ -129,7 +129,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
       if (_imageFromCamera != null) {
         receiptImageUrl = _upload(_imageFromCamera, widget.eventId.toUpperCase() + '_' + DateTime.now().millisecondsSinceEpoch.toString() + '.jpg');
-      }
+      } 
 
       final ReceiptsModel item = ReceiptsModel(
         receiptId: widget.receiptItem == null ? GUID_EMPTY : widget.receiptItem['receiptId'], 
@@ -139,7 +139,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
         notes: '',
         reimbursedBy: GUID_EMPTY,
         reimbursedAmount: -1,
-        reimbursedOn: '2000/1/1' ,
+        reimbursedOn: '1999/1/1' ,
         reimbursedNotes: '',
         imageUrl: receiptImageUrl, 
         removed: 0);
