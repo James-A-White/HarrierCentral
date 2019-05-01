@@ -11,7 +11,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/data/services/service_common.dart';
 
 class ReceiptsModel {
-  ReceiptsModel({this.receiptId, this.eventId, this.userId, this.receiptAmount, this.costCategory = 0, this.dateUploaded, this.imageUrl, this.receiptShortDescription, this.removed, this.updatedAt});
+  ReceiptsModel({this.receiptId, this.eventId, this.userId, this.receiptAmount, this.costCategory = 0, this.dateUploaded, this.imageUrl, this.receiptShortDescription, this.notes, this.reimbursedBy, this.reimbursedOn, this.reimbursedAmount, this.reimbursedNotes, this.removed, this.updatedAt});
 
   final String receiptId;
   final String eventId;
@@ -21,6 +21,11 @@ class ReceiptsModel {
   final DateTime dateUploaded;
   final String imageUrl;
   final String receiptShortDescription;
+  final String notes;
+  final String reimbursedBy;
+  final String reimbursedOn;
+  final num reimbursedAmount;
+  final String reimbursedNotes;
   final int removed;
   final DateTime updatedAt;
 
@@ -40,6 +45,11 @@ class ReceiptsModel {
             dateUploaded: DateTime.parse(jsonItem['dateUploaded'].toString().substring(0, 19)),
             imageUrl: jsonItem['imageUrl'],
             receiptShortDescription: jsonItem['receiptShortDescription'],
+            notes: jsonItem['notes'],
+            reimbursedBy: jsonItem['reimbursedBy'],
+            reimbursedOn: jsonItem['reimbursedOn'],
+            reimbursedAmount: jsonItem['reimbursedAmount'],
+            reimbursedNotes: jsonItem['reimbursedNotes'],
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
 
@@ -77,6 +87,11 @@ class ReceiptsTableHelper {
   static const String colDateUploaded = 'dateUploaded';
   static const String colImageUrl = 'imageUrl';
   static const String colReceiptShortDescription = 'receiptShortDesc';
+  static const String colNotes = 'notes';
+  static const String colReimbursedBy = 'reimbursedBy';
+  static const String colReimbursedOn = 'reimbursedOn';
+  static const String colReimbursedAmount = 'reimbursedAmount';
+  static const String colReimbursedNotes = 'reimbursedNotes';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -100,6 +115,11 @@ class ReceiptsTableHelper {
             $colDateUploaded TEXT,
             $colImageUrl TEXT,
             $colReceiptShortDescription TEXT,
+            $colNotes TEXT,
+            $colReimbursedBy TEXT,
+            $colReimbursedOn TEXT,
+            $colReimbursedAmount NUM,
+            $colReimbursedNotes TEXT,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
@@ -121,6 +141,11 @@ class ReceiptsTableHelper {
       ReceiptsTableHelper.colDateUploaded: item.dateUploaded,
       ReceiptsTableHelper.colImageUrl: item.imageUrl,
       ReceiptsTableHelper.colReceiptShortDescription: item.receiptShortDescription,
+      ReceiptsTableHelper.colNotes: item.notes,
+      ReceiptsTableHelper.colReimbursedBy: item.reimbursedBy,
+      ReceiptsTableHelper.colReimbursedOn: item.reimbursedOn,
+      ReceiptsTableHelper.colReimbursedAmount: item.reimbursedAmount,
+      ReceiptsTableHelper.colReimbursedNotes: item.reimbursedNotes,
       ReceiptsTableHelper.colUpdatedAt: item.updatedAt.toString(),
       ReceiptsTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       ReceiptsTableHelper.colRemoved: item.removed
@@ -130,14 +155,20 @@ class ReceiptsTableHelper {
   }
 
   static String toQueryBody(String userId, String accessToken, ReceiptsModel item) {
-    final String map = jsonEncode(<String, Object>{ 
+    final String map = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
       ReceiptsTableHelper.colReceiptId: item.receiptId,
       ReceiptsTableHelper.colEventId: item.eventId,
-      ReceiptsTableHelper.colReceiptAmount: item.receiptAmount,
-      ReceiptsTableHelper.colImageUrl: item.imageUrl,
       ReceiptsTableHelper.colReceiptShortDescription: item.receiptShortDescription,
+      ReceiptsTableHelper.colReceiptAmount: item.receiptAmount,
+      ReceiptsTableHelper.colNotes: item.notes,
+      ReceiptsTableHelper.colReimbursedBy: item.reimbursedBy,
+      ReceiptsTableHelper.colReimbursedOn: item.reimbursedOn,
+      ReceiptsTableHelper.colReimbursedAmount: item.reimbursedAmount,
+      ReceiptsTableHelper.colReimbursedNotes: item.reimbursedNotes,
+      ReceiptsTableHelper.colImageUrl: item.imageUrl,
+
       ReceiptsTableHelper.colRemoved: item.removed
     });
     return map;
@@ -153,6 +184,11 @@ class ReceiptsTableHelper {
       dateUploaded: DateTime.parse(map[ReceiptsTableHelper.colDateUploaded].toString().substring(0, 19)),
       imageUrl: map[ReceiptsTableHelper.colImageUrl],
       receiptShortDescription: map[ReceiptsTableHelper.colReceiptShortDescription],
+      notes: map[ReceiptsTableHelper.colNotes],
+      reimbursedBy: map[ReceiptsTableHelper.colReimbursedBy],
+      reimbursedOn: map[ReceiptsTableHelper.colReimbursedOn],
+      reimbursedAmount: map[ReceiptsTableHelper.colReimbursedAmount],
+      reimbursedNotes: map[ReceiptsTableHelper.colReimbursedNotes],
       updatedAt: DateTime.parse(map[ReceiptsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[ReceiptsTableHelper.colRemoved],
     );
@@ -250,16 +286,13 @@ class ReceiptsService {
   }
 
   Future<String> uploadReceipt(BuildContext context, ReceiptsModel item) async {
-    
     final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken =
-        Utilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
+    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
 
     final String body = ReceiptsTableHelper.toQueryBody(userId, accessToken, item);
 
     final String responseBody = await ServiceCommon.sendRequest(context, 'hc3_add_edit_receipt', body);
 
     return responseBody;
-
   }
 }

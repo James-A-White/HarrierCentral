@@ -131,7 +131,18 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
         receiptImageUrl = _upload(_imageFromCamera, widget.eventId.toUpperCase() + '_' + DateTime.now().millisecondsSinceEpoch.toString() + '.jpg');
       }
 
-      final ReceiptsModel item = ReceiptsModel(receiptId: widget.receiptItem == null ? GUID_EMPTY : widget.receiptItem['receiptId'], eventId: widget.eventId, receiptShortDescription: _shortDescription, receiptAmount: num.parse(_receiptAmount), imageUrl: receiptImageUrl, removed: 0);
+      final ReceiptsModel item = ReceiptsModel(
+        receiptId: widget.receiptItem == null ? GUID_EMPTY : widget.receiptItem['receiptId'], 
+        eventId: widget.eventId, 
+        receiptShortDescription: _shortDescription, 
+        receiptAmount: num.parse(_receiptAmount),
+        notes: '',
+        reimbursedBy: GUID_EMPTY,
+        reimbursedAmount: -1,
+        reimbursedOn: '2000/1/1' ,
+        reimbursedNotes: '',
+        imageUrl: receiptImageUrl, 
+        removed: 0);
 
       setState(() {
         _isLoading = true;
