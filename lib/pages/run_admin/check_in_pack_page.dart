@@ -21,6 +21,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/new_user.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
 import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
+import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 
 class CheckInPackPage extends StatefulWidget {
   const CheckInPackPage({
@@ -368,7 +369,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                             child: Container(
                               height: 50,
                               width: 50,
-                              child: const CircularProgressIndicator(),
+                              child: const HcCircularProgressIndicator(),
                             ),
                           ),)
                         : (packList == null || packList.isEmpty)
@@ -938,7 +939,7 @@ class PackListView extends StatelessWidget {
           //                   child: Container(
           //                     height: 50,
           //                     width: 50,
-          //                     child: const CircularProgressIndicator(),
+          //                     child: const HcCircularProgressIndicator(),
           //                   ),
           //                 ) :
           

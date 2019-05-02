@@ -8,6 +8,7 @@ import 'package:harrier_central/data/services/kennel_member_scoped_model.dart';
 import 'package:harrier_central/pages/kennel_admin/add_member_page.dart';
 import 'package:harrier_central/widgets/kennel_member_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 
 class KennelMembersList extends StatefulWidget {
   const KennelMembersList({Key key, @required this.kennel}) : super(key: key);
@@ -89,7 +90,7 @@ class KennelMemberListState extends State<KennelMembersList> {
 
   Widget _buildCircularProgressIndicator() {
     return const Center(
-      child: CircularProgressIndicator(),
+      child: HcCircularProgressIndicator(),
     );
   }
 

@@ -9,6 +9,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 
 class FindHasherPage extends StatefulWidget {
   const FindHasherPage();
@@ -198,7 +199,7 @@ class FindHasherPageState extends State<FindHasherPage> {
                         child: Container(
                             height: 50,
                             width: 50,
-                            child: const CircularProgressIndicator()))
+                            child: const HcCircularProgressIndicator()))
                     : Container(
                         key: hasherListBox,
                         height: constraints.maxHeight -
@@ -375,7 +376,7 @@ class HasherListView extends StatelessWidget {
                   height: 70.0,
                   child: const Padding(
                       padding: EdgeInsets.all(5.0),
-                      child: Center(child: CircularProgressIndicator())),
+                      child: Center(child: HcCircularProgressIndicator())),
                 )
               : Dismissible(
                   key: Key(index.toString()),

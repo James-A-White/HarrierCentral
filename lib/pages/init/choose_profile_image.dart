@@ -95,10 +95,10 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         ((facebookProfileUrl ?? '').isNotEmpty)) {
       facebookProfileImage = CachedNetworkImage(
           imageUrl: facebookProfileUrl,
-          //placeholder: const CircularProgressIndicator(),
+          //placeholder: const HcCircularProgressIndicator(),
           //errorWidget: const  Icon(Icons.error),
           // placeholder: (BuildContext context, String url) =>
-          //     const CircularProgressIndicator(),
+          //     const HcCircularProgressIndicator(),
           // errorWidget: (BuildContext context, String url, Exception error) =>
           //     const  Icon(Icons.error),
           //fadeOutDuration:  Duration(seconds: 1),

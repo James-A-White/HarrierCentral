@@ -32,9 +32,9 @@ class KennelMemberListItem extends StatelessWidget {
             child: kennelMember.photo.startsWith('http')
                 ? CachedNetworkImage(
                     imageUrl: kennelMember.photo,
-                    //placeholder: const CircularProgressIndicator(),
+                    //placeholder: const HcCircularProgressIndicator(),
                     //errorWidget: const  Icon(Icons.error),
-                    // placeholder: (BuildContext context,String url) => const CircularProgressIndicator(),
+                    // placeholder: (BuildContext context,String url) => const HcCircularProgressIndicator(),
 
                     // TODO(James): Replace avatar icon with missing image icon
                     errorWidget: (BuildContext context,String url,Object error) => Image.asset('images/avatars/avatar-2.png', height:80, width:80, fit: BoxFit.fill),

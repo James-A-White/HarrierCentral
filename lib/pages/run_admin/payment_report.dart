@@ -15,6 +15,7 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/payment_report_list_item.dart';
+import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 
 class PaymentReportPage extends StatelessWidget {
   PaymentReportPage(
@@ -151,7 +152,7 @@ class _PaymentReportsListPageBodyState
 
   Widget _buildCircularProgressIndicator() {
     return const Center(
-      child: CircularProgressIndicator(),
+      child: HcCircularProgressIndicator(),
     );
   }
 

@@ -13,7 +13,6 @@ import 'package:intl/intl.dart';
 import 'package:latlong/latlong.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/data/models/planned_run_model.dart';
 import 'package:harrier_central/data/models/user_model.dart';
@@ -23,8 +22,6 @@ import 'package:harrier_central/pages/run_admin/payment_report.dart';
 import 'package:harrier_central/pages/run_admin/receipts_page.dart';
 import 'package:harrier_central/data/services/future_run_scoped_model.dart';
 import 'package:harrier_central/data/services/get_pack_service.dart';
-import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
@@ -32,6 +29,7 @@ import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 
 class RunTabs extends StatefulWidget {
   const RunTabs({Key key, @required this.futureRun}) : super(key: key);
@@ -58,9 +56,6 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     tabs.add(const Tab(text: 'Details'));
     tabs.add(const Tab(text: 'RSVP'));
     tabs.add(const Tab(text: 'Map'));
-    if (widget.futureRun.hasMmPrivileges) {
-      tabs.add(const Tab(text: 'Admin'));
-    }
   }
 
   TabController _tabController;
@@ -99,15 +94,6 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         setState(() {
           fabIsVisible = tabs[_tabController.index].text.toLowerCase() == 'rsvp';
         });
-      }
-
-      if ((_tabController.indexIsChanging) && (_tabController.index == 3)) {
-        final Database db = await DBProvider.db.database;
-
-        final SyncEventAdminService cSrv = SyncEventAdminService();
-        final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagsAllData, false, widget.futureRun.eventId);
-        final String resultStr = result ? 'successfully' : 'unsuccessfully';
-        print('Event admin data synchronized $resultStr');
       }
     });
   }
@@ -614,7 +600,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                     color: Colors.grey[300],
                                     width: 70.0,
                                     height: 70.0,
-                                    child: const Padding(padding: EdgeInsets.all(5.0), child: Center(child: CircularProgressIndicator())),
+                                    child: const Padding(padding: EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator())),
                                   )
                                 : GestureDetector(
                                     onTap: () {
@@ -658,7 +644,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                         packList[index].photo.startsWith('http')
                                             ? CachedNetworkImage(
                                                 imageUrl: packList[index].photo,
-                                                //placeholder: const CircularProgressIndicator(),
+                                                //placeholder: const HcCircularProgressIndicator(),
                                                 //errorWidget: const  Icon(Icons.error),
 
                                                 // placeholder:
@@ -927,21 +913,12 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
             Expanded(
               child: TabBarView(
                 controller: _tabController,
-                children: List<Widget>.from(
+                children: 
                   <Widget>[
                     buildRunDetailsView(),
                     buildRsvpView(),
                     buildMapView(),
-                  ],
-                )..addAll(isAdmin
-                    ? List<Widget>.from(<Widget>[
-                        Container(
-                          // decoration: BoxDecoration(
-                          //     color: Theme.of(context).selectedRowColor),
-                          child: Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: kiddies()),
-                        )
-                      ])
-                    : List<Widget>.from(<Widget>[])),
+                  ]
                 // children: tabs.map((Tab tab) {
                 //   return Center(
                 //       child: Text(

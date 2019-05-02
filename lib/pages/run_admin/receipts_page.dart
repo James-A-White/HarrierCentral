@@ -131,7 +131,7 @@ class ReceiptsListState extends State<ReceiptsList> {
 
   // Widget _buildCircularProgressIndicator() {
   //   return const Center(
-  //     child: CircularProgressIndicator(),
+  //     child: HcCircularProgressIndicator(),
   //   );
   // }
 

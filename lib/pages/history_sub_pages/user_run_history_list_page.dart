@@ -16,6 +16,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/user_event_list_item.dart';
+import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 
 class UserRunHistoryListPage extends StatefulWidget {
   const UserRunHistoryListPage({Key key, @required this.kennelId, @required this.kennelName, @required this.kennelShortName, @required this.kennelLogo}) : super(key: key);
@@ -126,7 +127,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
   Widget _buildCircularProgressIndicator() {
     return const Center(
-      child: CircularProgressIndicator(),
+      child: HcCircularProgressIndicator(),
     );
   }
 

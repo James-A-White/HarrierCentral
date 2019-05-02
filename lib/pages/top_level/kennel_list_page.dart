@@ -12,6 +12,7 @@ import 'package:harrier_central/widgets/kennel_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/singletons.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 
 class KennelsListPage extends StatefulWidget {
   const KennelsListPage({Key key}) : super(key: key);
@@ -104,7 +105,7 @@ class KennelsListPageState extends State<KennelsListPage> {
 
   Widget _buildCircularProgressIndicator() {
     return const Center(
-      child: CircularProgressIndicator(),
+      child: HcCircularProgressIndicator(),
     );
   }
 

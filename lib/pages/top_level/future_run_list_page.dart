@@ -1,14 +1,15 @@
 import 'dart:async';
 
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/material.dart';
+
+
+import 'package:scoped_model/scoped_model.dart';
 
 import 'package:harrier_central/data/services/future_run_scoped_model.dart';
 import 'package:harrier_central/widgets/run_list_item.dart';
+import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/util/styles.dart';
 
-import 'package:scoped_model/scoped_model.dart';
-//
 
 class FutureRunsListPage extends StatefulWidget {
   const FutureRunsListPage({Key key}) : super(key: key);
@@ -35,27 +36,10 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         }
 
         return model.isLoading
-            ? _buildCircularProgressIndicator()
+            ? const HcCircularProgressIndicator()
             : _buildListView();
       },
     ));
-  }
-
-  Widget _buildCircularProgressIndicator() {
-    return Center(
-      child: SpinKitCircle(
-        size: 75.0,
-        itemBuilder: (_, int index) {
-          return DecoratedBox(
-            decoration: BoxDecoration(
-              color: index.isEven
-                  ? Colors.grey[400]
-                  : Theme.of(context).accentColor,
-            ),
-          );
-        },
-      ),
-    );
   }
 
   Future<void> _handleRefresh() async {
