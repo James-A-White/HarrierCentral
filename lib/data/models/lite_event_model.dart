@@ -99,7 +99,7 @@ class Event {
 
   
 
-    bool get mmAuthAllowEditRsvp {
+  bool get mmAuthAllowEditRsvp {
     return ((mismanagementRoleFlags ?? 0) & mmAuthAllowEditRsvpFlag) != 0;
   }
 

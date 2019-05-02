@@ -26,7 +26,7 @@ class _AppEntryPageState extends State<AppEntryPage>
   AnimationController _iconAnimationController;
   CurvedAnimation _iconAnimation;
 
-  Future<void> handleTimeout() async {
+  Future<void> handleTimeout(BuildContext context) async {
     final PackageInfo p = await PackageInfo.fromPlatform();
     final String hcVersion =
         'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
@@ -39,7 +39,7 @@ class _AppEntryPageState extends State<AppEntryPage>
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     final ApproveLoginService svc = ApproveLoginService();
-    await svc.approveLogin().then((ApproveLoginModel loginResult) async {
+    await svc.approveLogin(context).then((ApproveLoginModel loginResult) async {
       const bool allowContinueFromMessage = true;
 
       if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
@@ -129,7 +129,7 @@ class _AppEntryPageState extends State<AppEntryPage>
     initPrefs().then((void dummy) {});
 
     return Timer(
-        const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME), handleTimeout);
+        const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME), () => handleTimeout(context));
   }
 
   //bool _visible = true;

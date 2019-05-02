@@ -27,7 +27,7 @@ class RunDetailsPage extends StatelessWidget {
                 context,
                 MaterialPageRoute<dynamic>(
                   builder: (BuildContext context) => RunAdminMainPage(
-                        futureRun: futureRun 
+                        eventId: futureRun.eventId
                       ),
                 ),
               );//_select(choices[0]);

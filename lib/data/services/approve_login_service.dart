@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show Platform;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 import 'package:device_info/device_info.dart';
 
 import 'package:harrier_central/data/models/approve_login_model.dart';
@@ -11,7 +15,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:http/http.dart' as http;
 
 class ApproveLoginService {
-  Future<ApproveLoginModel> approveLogin() async {
+  Future<ApproveLoginModel> approveLogin(BuildContext context) async {
     String userId = getStringPref(StringPrefsEnum.userId);
     if ((userId ?? '').isEmpty) {
       userId = GUID_EMPTY;
@@ -67,7 +71,7 @@ class ApproveLoginService {
       'hcVersion': hcVersion,
     });
 
-    final http.Response response = await http
+    final Future<http.Response> response = http
         .post(BASE_API_URL + 'approve_login',
             headers: <String, String>{'content-type': 'application/json'},
             body: body
@@ -80,9 +84,21 @@ class ApproveLoginService {
       },
     );
 
+    response.timeout(const Duration(seconds: LOGIN_TIMEOUT), onTimeout: () => _onTimeout(context));
+
+    final http.Response resp = await response;
+
     final ApproveLoginModel loginResult =
-        ApproveLoginModel.itemFromJson(response.body);
+        ApproveLoginModel.itemFromJson(resp.body);
 
     return loginResult;
+  }
+
+  Future<http.Response> _onTimeout(BuildContext context) {
+    Utilities.showAlert(context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit').then((void dummy) async {
+        await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
+    });
+    
+    return null;
   }
 }
