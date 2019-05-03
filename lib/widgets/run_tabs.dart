@@ -16,10 +16,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:harrier_central/data/models/planned_run_model.dart';
 import 'package:harrier_central/data/models/user_model.dart';
-import 'package:harrier_central/pages/run_admin/run_start_end_qr_codes_page.dart';
-import 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
-import 'package:harrier_central/pages/run_admin/payment_report.dart';
-import 'package:harrier_central/pages/run_admin/receipts_page.dart';
 import 'package:harrier_central/data/services/future_run_scoped_model.dart';
 import 'package:harrier_central/data/services/get_pack_service.dart';
 import 'package:harrier_central/util/enums.dart';
@@ -27,7 +23,6 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
-import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 
@@ -934,257 +929,257 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     );
   }
 
-  List<Widget> kiddies() {
-    final List<Widget> kiddies = <Widget>[];
+  // List<Widget> kiddies() {
+  //   final List<Widget> kiddies = <Widget>[];
 
-    if (widget.futureRun.mmAuthAllowCheckInAndOut || widget.futureRun.mmAuthAllowEditRsvp) {
-      kiddies.add(rsvpRow());
-    }
+  //   if (widget.futureRun.mmAuthAllowCheckInAndOut || widget.futureRun.mmAuthAllowEditRsvp) {
+  //     kiddies.add(rsvpRow());
+  //   }
 
-    if (widget.futureRun.mmAuthAllowCheckInAndOut) {
-      kiddies.add(attendenceRow());
-    }
+  //   if (widget.futureRun.mmAuthAllowCheckInAndOut) {
+  //     kiddies.add(attendenceRow());
+  //   }
 
-    kiddies.add(paymentRow());
+  //   kiddies.add(paymentRow());
 
-    kiddies.add(receiptsRow());
+  //   kiddies.add(receiptsRow());
 
-    return kiddies;
-  }
+  //   return kiddies;
+  // }
 
-  Row rsvpRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        !widget.futureRun.mmAuthAllowEditRsvp
-            ? Container()
-            : Container(
-                margin: const EdgeInsets.only(left: 10, right: 10),
-                width: 150.0,
-                height: 100.0,
-                child: RaisedButton(
-                  child: const Text(
-                    'Check in Pack',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  onPressed: () {
-                    Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => CheckInPackPage(futureRun: widget.futureRun),
-                      ),
-                    );
-                  },
-                ),
-              ),
-        !widget.futureRun.mmAuthAllowHashCash
-            ? Container()
-            : Container(
-                margin: const EdgeInsets.only(left: 10, right: 10),
-                width: 150.0,
-                height: 100.0,
-                child: RaisedButton(
-                  child: const Text(
-                    'Hash Cash',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  onPressed: () {
-                    Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => PaymentReportPage(
-                              eventId: widget.futureRun.eventId,
-                              currencySymbol: widget.futureRun.currencySymbol,
-                              digitsAfterDecimal: widget.futureRun.digitsAfterDecimal,
-                              eventName: widget.futureRun.eventName,
-                            ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+  // Row rsvpRow() {
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.center,
+  //     children: <Widget>[
+  //       !widget.futureRun.mmAuthAllowEditRsvp
+  //           ? Container()
+  //           : Container(
+  //               margin: const EdgeInsets.only(left: 10, right: 10),
+  //               width: 150.0,
+  //               height: 100.0,
+  //               child: RaisedButton(
+  //                 child: const Text(
+  //                   'Check in Pack',
+  //                   style: TextStyle(color: Colors.white),
+  //                 ),
+  //                 onPressed: () {
+  //                   Navigator.push<dynamic>(
+  //                     context,
+  //                     MaterialPageRoute<dynamic>(
+  //                       builder: (BuildContext context) => CheckInPackPage(futureRun: widget.futureRun),
+  //                     ),
+  //                   );
+  //                 },
+  //               ),
+  //             ),
+  //       !widget.futureRun.mmAuthAllowHashCash
+  //           ? Container()
+  //           : Container(
+  //               margin: const EdgeInsets.only(left: 10, right: 10),
+  //               width: 150.0,
+  //               height: 100.0,
+  //               child: RaisedButton(
+  //                 child: const Text(
+  //                   'Hash Cash',
+  //                   style: TextStyle(color: Colors.white),
+  //                 ),
+  //                 onPressed: () {
+  //                   Navigator.push<dynamic>(
+  //                     context,
+  //                     MaterialPageRoute<dynamic>(
+  //                       builder: (BuildContext context) => PaymentReportPage(
+  //                             eventId: widget.futureRun.eventId,
+  //                             currencySymbol: widget.futureRun.currencySymbol,
+  //                             digitsAfterDecimal: widget.futureRun.digitsAfterDecimal,
+  //                             eventName: widget.futureRun.eventName,
+  //                           ),
+  //                     ),
+  //                   );
+  //                 },
+  //               ),
+  //             ),
 
-        // Container(
-        //   width: 150.0,
-        //   child: RaisedButton(
-        //       child: const Text(
-        //         'Edit Run',
-        //         style:
-        //             TextStyle(color: Colors.white),
-        //       ),
-        //       onPressed: () {
-        //         //int i = 0;
-        //       }),
-        // ),
-      ],
-    );
-  }
+  //       // Container(
+  //       //   width: 150.0,
+  //       //   child: RaisedButton(
+  //       //       child: const Text(
+  //       //         'Edit Run',
+  //       //         style:
+  //       //             TextStyle(color: Colors.white),
+  //       //       ),
+  //       //       onPressed: () {
+  //       //         //int i = 0;
+  //       //       }),
+  //       // ),
+  //     ],
+  //   );
+  // }
 
-  Row attendenceRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Container(
-          margin: const EdgeInsets.only(left: 10, right: 10),
-          width: 150.0,
-          height: 100.0,
-          child: RaisedButton(
-            child: const Text(
-              'Scan at Run Start',
-              style: TextStyle(color: Colors.white),
-            ),
-            onPressed: () {
-              Navigator.push<dynamic>(
-                context,
-                MaterialPageRoute<dynamic>(
-                  builder: (BuildContext context) => CheckInScannerPage(
-                        kennelShortName: widget.futureRun.kennelShortName,
-                        eventId: widget.futureRun.eventId,
-                        eventName: widget.futureRun.eventName,
-                        eventNumber: widget.futureRun.eventNumber,
-                        isRunStart: 1,
-                      ),
-                ),
-              );
-            },
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.only(left: 10, right: 10),
-          width: 150.0,
-          height: 100.0,
-          child: RaisedButton(
-            child: const Text(
-              'Scan at Run End',
-              style: TextStyle(color: Colors.white),
-            ),
-            onPressed: () {
-              Navigator.push<dynamic>(
-                context,
-                MaterialPageRoute<dynamic>(
-                  builder: (BuildContext context) => CheckInScannerPage(
-                        kennelShortName: widget.futureRun.kennelShortName,
-                        eventId: widget.futureRun.eventId,
-                        eventName: widget.futureRun.eventName,
-                        eventNumber: widget.futureRun.eventNumber,
-                        isRunStart: 0,
-                      ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
+  // Row attendenceRow() {
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.center,
+  //     children: <Widget>[
+  //       Container(
+  //         margin: const EdgeInsets.only(left: 10, right: 10),
+  //         width: 150.0,
+  //         height: 100.0,
+  //         child: RaisedButton(
+  //           child: const Text(
+  //             'Scan at Run Start',
+  //             style: TextStyle(color: Colors.white),
+  //           ),
+  //           onPressed: () {
+  //             Navigator.push<dynamic>(
+  //               context,
+  //               MaterialPageRoute<dynamic>(
+  //                 builder: (BuildContext context) => CheckInScannerPage(
+  //                       kennelShortName: widget.futureRun.kennelShortName,
+  //                       eventId: widget.futureRun.eventId,
+  //                       eventName: widget.futureRun.eventName,
+  //                       eventNumber: widget.futureRun.eventNumber,
+  //                       isRunStart: 1,
+  //                     ),
+  //               ),
+  //             );
+  //           },
+  //         ),
+  //       ),
+  //       Container(
+  //         margin: const EdgeInsets.only(left: 10, right: 10),
+  //         width: 150.0,
+  //         height: 100.0,
+  //         child: RaisedButton(
+  //           child: const Text(
+  //             'Scan at Run End',
+  //             style: TextStyle(color: Colors.white),
+  //           ),
+  //           onPressed: () {
+  //             Navigator.push<dynamic>(
+  //               context,
+  //               MaterialPageRoute<dynamic>(
+  //                 builder: (BuildContext context) => CheckInScannerPage(
+  //                       kennelShortName: widget.futureRun.kennelShortName,
+  //                       eventId: widget.futureRun.eventId,
+  //                       eventName: widget.futureRun.eventName,
+  //                       eventNumber: widget.futureRun.eventNumber,
+  //                       isRunStart: 0,
+  //                     ),
+  //               ),
+  //             );
+  //           },
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
-  Row paymentRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Container(
-          margin: const EdgeInsets.only(left: 10, right: 10),
-          width: 150.0,
-          height: 100.0,
-          child: RaisedButton(
-              child: const Text(
-                'Run Start QR',
-                style: TextStyle(color: Colors.white),
-              ),
-              onPressed: () {
-                Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => RunStartEndQrCodes(
-                              kennelShortName: widget.futureRun.kennelShortName,
-                              eventId: widget.futureRun.eventId,
-                              eventName: widget.futureRun.eventName,
-                              eventNumber: widget.futureRun.eventNumber,
-                              eventStartDatetime: widget.futureRun.eventStartDatetime,
-                              isStart: true,
-                            )));
-              }),
-        ),
-        Container(
-          margin: const EdgeInsets.only(left: 10, right: 10),
-          width: 150.0,
-          height: 100.0,
-          child: RaisedButton(
-              child: const Text(
-                'Run End QR',
-                style: TextStyle(color: Colors.white),
-              ),
-              onPressed: () {
-                Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => RunStartEndQrCodes(
-                              kennelShortName: widget.futureRun.kennelShortName,
-                              eventId: widget.futureRun.eventId,
-                              eventName: widget.futureRun.eventName,
-                              eventNumber: widget.futureRun.eventNumber,
-                              eventStartDatetime: widget.futureRun.eventStartDatetime,
-                              isStart: false,
-                            )));
-              }),
-        ),
-      ],
-    );
-  }
+  // Row paymentRow() {
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.center,
+  //     children: <Widget>[
+  //       Container(
+  //         margin: const EdgeInsets.only(left: 10, right: 10),
+  //         width: 150.0,
+  //         height: 100.0,
+  //         child: RaisedButton(
+  //             child: const Text(
+  //               'Run Start QR',
+  //               style: TextStyle(color: Colors.white),
+  //             ),
+  //             onPressed: () {
+  //               Navigator.push<dynamic>(
+  //                   context,
+  //                   MaterialPageRoute<dynamic>(
+  //                       builder: (BuildContext context) => RunStartEndQrCodes(
+  //                             kennelShortName: widget.futureRun.kennelShortName,
+  //                             eventId: widget.futureRun.eventId,
+  //                             eventName: widget.futureRun.eventName,
+  //                             eventNumber: widget.futureRun.eventNumber,
+  //                             eventStartDatetime: widget.futureRun.eventStartDatetime,
+  //                             isStart: true,
+  //                           )));
+  //             }),
+  //       ),
+  //       Container(
+  //         margin: const EdgeInsets.only(left: 10, right: 10),
+  //         width: 150.0,
+  //         height: 100.0,
+  //         child: RaisedButton(
+  //             child: const Text(
+  //               'Run End QR',
+  //               style: TextStyle(color: Colors.white),
+  //             ),
+  //             onPressed: () {
+  //               Navigator.push<dynamic>(
+  //                   context,
+  //                   MaterialPageRoute<dynamic>(
+  //                       builder: (BuildContext context) => RunStartEndQrCodes(
+  //                             kennelShortName: widget.futureRun.kennelShortName,
+  //                             eventId: widget.futureRun.eventId,
+  //                             eventName: widget.futureRun.eventName,
+  //                             eventNumber: widget.futureRun.eventNumber,
+  //                             eventStartDatetime: widget.futureRun.eventStartDatetime,
+  //                             isStart: false,
+  //                           )));
+  //             }),
+  //       ),
+  //     ],
+  //   );
+  // }
 
-  Row receiptsRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Container(
-          margin: const EdgeInsets.only(left: 10, right: 10),
-          width: 150.0,
-          height: 100.0,
-          child: RaisedButton(
-              child: const Text(
-                'Manage receipts',
-                style: TextStyle(color: Colors.white),
-              ),
-              onPressed: () {
-                Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => ReceiptsList(
-                              eventName: widget.futureRun.eventName,
-                              eventId: widget.futureRun.eventId,
-                              digitsAfterDecimal: widget.futureRun.digitsAfterDecimal,
-                              currencySymbol: widget.futureRun.currencySymbol
-                            )));
-              }),
-        ),
+  // Row receiptsRow() {
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.center,
+  //     children: <Widget>[
+  //       Container(
+  //         margin: const EdgeInsets.only(left: 10, right: 10),
+  //         width: 150.0,
+  //         height: 100.0,
+  //         child: RaisedButton(
+  //             child: const Text(
+  //               'Manage receipts',
+  //               style: TextStyle(color: Colors.white),
+  //             ),
+  //             onPressed: () {
+  //               Navigator.push<dynamic>(
+  //                   context,
+  //                   MaterialPageRoute<dynamic>(
+  //                       builder: (BuildContext context) => ReceiptsList(
+  //                             eventName: widget.futureRun.eventName,
+  //                             eventId: widget.futureRun.eventId,
+  //                             digitsAfterDecimal: widget.futureRun.digitsAfterDecimal,
+  //                             currencySymbol: widget.futureRun.currencySymbol
+  //                           )));
+  //             }),
+  //       ),
 
-        // Container(
-        //   margin: const EdgeInsets.only(left: 10, right: 10),
-        //   width: 150.0,
-        //   height: 100.0,
-        //   child: RaisedButton(
-        //       child: const Text(
-        //         'Run End QR',
-        //         style: TextStyle(color: Colors.white),
-        //       ),
-        //       onPressed: () {
-        //         Navigator.push<dynamic>(
-        //             context,
-        //             MaterialPageRoute<dynamic>(
-        //                 builder: (BuildContext context) => RunStartEndQrCodes(
-        //                       kennelShortName: widget.futureRun.kennelShortName,
-        //                       eventId: widget.futureRun.eventId,
-        //                       eventName: widget.futureRun.eventName,
-        //                       eventNumber: widget.futureRun.eventNumber,
-        //                       eventStartDatetime:
-        //                           widget.futureRun.eventStartDatetime,
-        //                       isStart: false,
-        //                     )));
-        //       }),
-        // ),
-      ],
-    );
-  }
+  //       // Container(
+  //       //   margin: const EdgeInsets.only(left: 10, right: 10),
+  //       //   width: 150.0,
+  //       //   height: 100.0,
+  //       //   child: RaisedButton(
+  //       //       child: const Text(
+  //       //         'Run End QR',
+  //       //         style: TextStyle(color: Colors.white),
+  //       //       ),
+  //       //       onPressed: () {
+  //       //         Navigator.push<dynamic>(
+  //       //             context,
+  //       //             MaterialPageRoute<dynamic>(
+  //       //                 builder: (BuildContext context) => RunStartEndQrCodes(
+  //       //                       kennelShortName: widget.futureRun.kennelShortName,
+  //       //                       eventId: widget.futureRun.eventId,
+  //       //                       eventName: widget.futureRun.eventName,
+  //       //                       eventNumber: widget.futureRun.eventNumber,
+  //       //                       eventStartDatetime:
+  //       //                           widget.futureRun.eventStartDatetime,
+  //       //                       isStart: false,
+  //       //                     )));
+  //       //       }),
+  //       // ),
+  //     ],
+  //   );
+  // }
 
   Future<void> _launchMaps(double lat, double lon) async {
     final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$lat,$lon';

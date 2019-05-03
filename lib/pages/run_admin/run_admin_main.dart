@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/data/models/planned_run_model.dart';
 import 'package:harrier_central/pages/run_admin/run_start_end_qr_codes_page.dart';
 import 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
 import 'package:harrier_central/pages/run_admin/payment_report.dart';
@@ -58,9 +57,9 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
   void refreshFromTables() {
     DBProvider.db.database.then((Database db) {
       try {
-        String dollarSign = r'$';
+        const String dollarSign = r'$^';
 
-        String sql = '''
+        final String sql = '''
 
           SELECT e.*,hkm.mismanagementRoleFlags,k.kennelShortName,coalesce(c.digitsAfterDecimal,2) as digitsAfterDecimal, coalesce(c.currencySymbol,"$dollarSign") as currencySymbol from ${NarrowEventsTableHelper.tableName} e
           INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
@@ -105,9 +104,9 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
     final List<Widget> kiddies = <Widget>[];
 
     if (event != null) {
-      // if (widget.futureRun.mmAuthAllowCheckInAndOut || widget.futureRun.mmAuthAllowEditRsvp) {
-      //   kiddies.add(rsvpRow());
-      // }
+      if ((((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) || (((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowHashCashFlag) != 0)) {
+        kiddies.add(rsvpRow());
+      }
 
       if (((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) {
         kiddies.add(startAndEndScannerRow());
@@ -121,73 +120,60 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
     return kiddies;
   }
 
-  // Row rsvpRow() {
-  //   return Row(
-  //     mainAxisAlignment: MainAxisAlignment.center,
-  //     children: <Widget>[
-  //       !widget.futureRun.mmAuthAllowEditRsvp
-  //           ? Container()
-  //           : Container(
-  //               margin: const EdgeInsets.only(left: 10, right: 10),
-  //               width: 150.0,
-  //               height: 100.0,
-  //               child: RaisedButton(
-  //                 child: const Text(
-  //                   'Check in Pack',
-  //                   style: TextStyle(color: Colors.white),
-  //                 ),
-  //                 onPressed: () {
-  //                   Navigator.push<dynamic>(
-  //                     context,
-  //                     MaterialPageRoute<dynamic>(
-  //                       builder: (BuildContext context) => CheckInPackPage(futureRun: widget.futureRun),
-  //                     ),
-  //                   );
-  //                 },
-  //               ),
-  //             ),
-  //       !widget.futureRun.mmAuthAllowHashCash
-  //           ? Container()
-  //           : Container(
-  //               margin: const EdgeInsets.only(left: 10, right: 10),
-  //               width: 150.0,
-  //               height: 100.0,
-  //               child: RaisedButton(
-  //                 child: const Text(
-  //                   'Hash Cash',
-  //                   style: TextStyle(color: Colors.white),
-  //                 ),
-  //                 onPressed: () {
-  //                   Navigator.push<dynamic>(
-  //                     context,
-  //                     MaterialPageRoute<dynamic>(
-  //                       builder: (BuildContext context) => PaymentReportPage(
-  //                             eventId: widget.futureRun.eventId,
-  //                             currencySymbol: widget.futureRun.currencySymbol,
-  //                             digitsAfterDecimal: widget.futureRun.digitsAfterDecimal,
-  //                             eventName: widget.futureRun.eventName,
-  //                           ),
-  //                     ),
-  //                   );
-  //                 },
-  //               ),
-  //             ),
-
-  //       // Container(
-  //       //   width: 150.0,
-  //       //   child: RaisedButton(
-  //       //       child: const Text(
-  //       //         'Edit Run',
-  //       //         style:
-  //       //             TextStyle(color: Colors.white),
-  //       //       ),
-  //       //       onPressed: () {
-  //       //         //int i = 0;
-  //       //       }),
-  //       // ),
-  //     ],
-  //   );
-  // }
+  Row rsvpRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        !(((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowEditRsvpFlag) != 0)
+            ? Container()
+            : Container(
+                margin: const EdgeInsets.only(left: 10, right: 10),
+                width: 150.0,
+                height: 100.0,
+                child: RaisedButton(
+                  child: const Text(
+                    'Check in Pack',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onPressed: () {
+                    Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => CheckInPackPage(eventId: event['eventId']),
+                      ),
+                    );
+                  },
+                ),
+              ),
+        !(((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowHashCashFlag) != 0)
+            ? Container()
+            : Container(
+                margin: const EdgeInsets.only(left: 10, right: 10),
+                width: 150.0,
+                height: 100.0,
+                child: RaisedButton(
+                  child: const Text(
+                    'Hash Cash',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onPressed: () {
+                    Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => PaymentReportPage(
+                              eventId: event['eventId'],
+                              currencySymbol: event['currencySymbol'],
+                              digitsAfterDecimal: event['digitsAfterDecimal'],
+                              eventName: event['eventName'],
+                            ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+      ],
+    );
+  }
 
   Row startAndEndScannerRow() {
     return Row(
@@ -318,31 +304,6 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                 Navigator.push<dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => ReceiptsList(eventName: event['eventName'], eventId: event['eventId'], digitsAfterDecimal: event['digitsAfterDecimal'], currencySymbol: event['currencySymbol'])));
               }),
         ),
-
-        // Container(
-        //   margin: const EdgeInsets.only(left: 10, right: 10),
-        //   width: 150.0,
-        //   height: 100.0,
-        //   child: RaisedButton(
-        //       child: const Text(
-        //         'Run End QR',
-        //         style: TextStyle(color: Colors.white),
-        //       ),
-        //       onPressed: () {
-        //         Navigator.push<dynamic>(
-        //             context,
-        //             MaterialPageRoute<dynamic>(
-        //                 builder: (BuildContext context) => RunStartEndQrCodes(
-        //                       kennelShortName: widget.futureRun.kennelShortName,
-        //                       eventId: widget.futureRun.eventId,
-        //                       eventName: widget.futureRun.eventName,
-        //                       eventNumber: widget.futureRun.eventNumber,
-        //                       eventStartDatetime:
-        //                           widget.futureRun.eventStartDatetime,
-        //                       isStart: false,
-        //                     )));
-        //       }),
-        // ),
       ],
     );
   }

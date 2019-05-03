@@ -7,7 +7,11 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
 
 class NarrowEventsModel {
-  NarrowEventsModel({this.eventId, this.eventStartDatetime, this.kennelId, this.isVisible, this.isCountedRun, this.eventNumber, this.eventName, this.latitude, this.longitude, this.removed, this.updatedAt});
+  NarrowEventsModel({this.eventId, this.eventStartDatetime, this.kennelId, this.isVisible, this.isCountedRun, this.eventNumber, this.eventName, this.latitude, this.longitude, 
+  
+  this.eventPriceForMembers,
+this.eventPriceForNonMembers,
+this.removed, this.updatedAt});
 
   final String eventId;
   final DateTime eventStartDatetime;
@@ -18,6 +22,8 @@ class NarrowEventsModel {
   final String eventName;
   final num latitude;
   final num longitude;
+  final num eventPriceForMembers;
+final num eventPriceForNonMembers;
   final int removed;
   final DateTime updatedAt;
 
@@ -38,6 +44,8 @@ class NarrowEventsModel {
             eventName: jsonItem['eventName'],
             latitude: jsonItem['latitude'],
             longitude: jsonItem['longitude'],
+            eventPriceForMembers: jsonItem['eventPriceForMembers'],
+eventPriceForNonMembers: jsonItem['eventPriceForNonMembers'],
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
 
@@ -76,6 +84,8 @@ class NarrowEventsTableHelper {
   static const String colEventName = 'eventName';
   static const String colLatitude = 'latitude';
   static const String colLongitude = 'longitude';
+  static const String colEventPriceForMembers= 'eventPriceForMembers';
+static const String colEventPriceForNonMembers= 'eventPriceForNonMembers';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -100,6 +110,8 @@ class NarrowEventsTableHelper {
             $colEventName TEXT,
             $colLatitude NUM,
             $colLongitude NUM,
+            $colEventPriceForMembers NUM,
+            $colEventPriceForNonMembers NUM,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
@@ -122,6 +134,9 @@ class NarrowEventsTableHelper {
       NarrowEventsTableHelper.colEventName: item.eventName,
       NarrowEventsTableHelper.colLatitude: item.latitude,
       NarrowEventsTableHelper.colLongitude: item.longitude,
+      NarrowEventsTableHelper.colEventPriceForMembers: item.eventPriceForMembers,
+      NarrowEventsTableHelper.colEventPriceForNonMembers: item.eventPriceForNonMembers,
+
       NarrowEventsTableHelper.colUpdatedAt: item.updatedAt.toString(),
       NarrowEventsTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       NarrowEventsTableHelper.colRemoved: item.removed
@@ -141,6 +156,8 @@ class NarrowEventsTableHelper {
       eventName: map[NarrowEventsTableHelper.colEventName],
       latitude: map[NarrowEventsTableHelper.colLatitude],
       longitude: map[NarrowEventsTableHelper.colLongitude],
+      eventPriceForMembers: map[NarrowEventsTableHelper.colEventPriceForMembers],
+      eventPriceForNonMembers: map[NarrowEventsTableHelper.colEventPriceForNonMembers],
       updatedAt: DateTime.parse(map[NarrowEventsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[NarrowEventsTableHelper.colRemoved],
     );

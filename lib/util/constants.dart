@@ -3,8 +3,8 @@
 const double DEFAULT_LATITUDE = 51.5033;
 const double DEFAULT_LONGITUDE = 0.1195;
 
-const int LOGIN_TIMEOUT = 7;
-const int DEFAULT_HTTP_TIMEOUT = 7;
+const int LOGIN_TIMEOUT = 10;
+const int DEFAULT_HTTP_TIMEOUT = 10;
 
 const int SPLASH_SCREEN_DISPLAY_TIME = 1;
 

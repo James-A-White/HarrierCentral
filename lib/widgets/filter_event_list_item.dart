@@ -9,7 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:harrier_central/util/styles.dart';
 
 import 'package:harrier_central/data/models/lite_event_model.dart';
-import 'package:harrier_central/pages/kennel_admin/edit_event_page.dart';
+import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 
 class FilterEventListItem extends StatelessWidget {
   const FilterEventListItem({@required this.eventModel, @required this.kennelShortName, @required this.updateEvent});
@@ -31,16 +31,23 @@ class FilterEventListItem extends StatelessWidget {
     return listItem(context);
   }
 
+
+                //   MaterialPageRoute<dynamic>(
+                //   builder: (BuildContext context) => RunAdminMainPage(
+                //         eventId: futureRun.eventId
+                //       ),
+                // ),
+
   Widget listItem(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push<num>(
+        Navigator.push<void>(
           context,
           MaterialPageRoute<num>(
-            builder: (BuildContext context) => EditEventPage(eventModel: eventModel),
+            builder: (BuildContext context) => RunAdminMainPage(eventId: eventModel.eventId),
           ),
-        ).then((num value) {
-          updateEvent(value);
+        ).then((void dummy) {
+          //updateEvent(value);
         });
       },
       child: Container(

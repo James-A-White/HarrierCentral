@@ -7,8 +7,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/data/models/planned_run_model.dart';
 import 'package:harrier_central/data/models/pay_for_event_model.dart';
 import 'package:harrier_central/data/models/process_qr_scan_for_checkin_model.dart';
 import 'package:harrier_central/data/models/user_model.dart';
@@ -18,17 +18,26 @@ import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/new_user.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
 import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
+import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
+import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
+import 'package:harrier_central/data/hc3_services/kennels_service.dart';
+import 'package:harrier_central/data/hc3_services/countries_service.dart';
+import 'package:harrier_central/util/preferences.dart';
+
+
 
 class CheckInPackPage extends StatefulWidget {
   const CheckInPackPage({
-    @required this.futureRun,
+    @required this.eventId,
   });
 
-  final PlannedRun futureRun;
+  final String eventId;
 
   @override
   State<CheckInPackPage> createState() {
@@ -42,14 +51,18 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
   GlobalKey packListBox = GlobalKey();
 
+  bool _isLoading = true;
+
   List<UserModel> packList;
+
+    Map<String, dynamic> event;
 
   num snackBarButtonSize = 35.0;
 
   Future<void> _reloadPack(bool showReloadingIndicator) async {
     _packScopedModel
         .getpackFromBackend(
-            widget.futureRun.eventId, showReloadingIndicator, true)
+            widget.eventId, showReloadingIndicator, true)
         .then((List<UserModel> _thePack) {
       packList = _thePack;
 
@@ -63,16 +76,58 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     }
   }
 
+String userId = getStringPref(StringPrefsEnum.userId);
+
+ void refreshFromTables() {
+    DBProvider.db.database.then((Database db) {
+      try {
+        const String dollarSign = r'$^';
+
+        final String sql = ''' 
+
+          SELECT e.*,hkm.mismanagementRoleFlags,
+          k.kennelShortName,k.kennelName,
+          coalesce(c.digitsAfterDecimal,2) as digitsAfterDecimal, 
+          coalesce(c.currencySymbol,"$dollarSign") as currencySymbol,
+          coalesce(e.eventPriceForMembers,k.defaultPriceForMembers) as eventPriceForMembers,
+          coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers) as eventPriceForNonMembers
+          FROM ${NarrowEventsTableHelper.tableName} e
+          INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
+          LEFT OUTER JOIN ${CountriesTableHelper.tableName} c on c.countryId = k.countryId
+          LEFT OUTER JOIN ${HasherKennelMapTableHelper.tableName} hkm on e.kennelId = hkm.kennelId
+          WHERE e.eventId = "${widget.eventId}"
+          AND hkm.userId = "$userId"
+          
+          ''';
+
+        db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
+          setState(() {
+            if (results.isNotEmpty) {
+              event = results[0];
+              getPack(false);
+              setState(() {
+                _isLoading = false;
+              });
+              
+            }
+          });
+        });
+      } catch (e) {
+        print(e);
+      }
+    });
+  }
+
   @override
   void initState() {
-    getPack(false);
+    refreshFromTables();
     super.initState();
   }
 
   void getPack(bool forceRefresh) {
     if ((packList == null) || forceRefresh) {
       _packScopedModel
-          .getpackFromBackend(widget.futureRun.eventId, true, false)
+          .getpackFromBackend(widget.eventId, true, false)
           .then((List<UserModel> _thePack) {
         packList = _thePack;
         setState(() {
@@ -93,7 +148,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       ),
     ).then((HashersModel hasher) {
       if ((hasher != null) && (hasher.hasherId != null)) {
-        packScopedModel.joinEvent(widget.futureRun.eventId, rsvpYes.value,
+        packScopedModel.joinEvent(widget.eventId, rsvpYes.value,
             isHareNo.value, attendenceAtHash.value, hasher.hasherId);
       }
     });
@@ -130,7 +185,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       if (type != 'cancel') {
         _packScopedModel
             .joinEventAsVisitor(
-                name, email, phoneNumber, evv, widget.futureRun.eventId)
+                name, email, phoneNumber, evv, widget.eventId)
             .then((UserModel result) {
           _packScopedModel.addEditUser(result);
           _packScopedModel.sortPackList();
@@ -289,8 +344,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                           builder: (BuildContext context) => NewUserWidget(
                                 scaffoldKey: scaffoldKey,
                                 isForThisDevice: false,
-                                eventId: widget.futureRun.eventId,
-                                kennelId: widget.futureRun.kennelId,
+                                eventId: widget.eventId,
+                                kennelId: event['kennelId'],
                                 attendenceState: attendenceAtHash,
                               )),
                     ).then<dynamic>((UserModel user) {
@@ -348,8 +403,10 @@ class CheckInPackPageState extends State<CheckInPackPage> {
               )
             ],
           ),
-          appBar: getAppBar(widget.futureRun.eventName),
-          body: LayoutBuilder(
+          appBar: getAppBar(_isLoading ? '... Loading' : event['kennelName']),
+          body: _isLoading ? const HcCircularProgressIndicator() :
+          
+          LayoutBuilder(
             builder: (BuildContext scaffoldContext,
                     BoxConstraints constraints) =>
                 Stack(children: <Widget>[
@@ -367,8 +424,6 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                           height:MediaQuery.of(context).size.height-180,
                         child:Center(
                             child: Container(
-                              height: 50,
-                              width: 50,
                               child: const HcCircularProgressIndicator(),
                             ),
                           ),)
@@ -406,7 +461,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                                           packList: packList,
                                           packScopedModel: _packScopedModel,
                                           payScopedModel: _payScopedModel,
-                                          futureRun: widget.futureRun);
+                                          event: event);
                                     },
                                   ),
                                 ),
@@ -524,14 +579,14 @@ class CheckInPackPageState extends State<CheckInPackPage> {
           rsvpState: result.rsvpState,
           attendenceState: result.attendenceState,
           displayName: result.scannedUserName,
-          eventId: widget.futureRun.eventId,
+          eventId: widget.eventId,
           isMember: result.isMember,
           isHare: result.isHare,
           hasherEventMapId: result.hasherEventMapId,
           isFollowing: result.isFollowing,
-          currencySymbol: widget.futureRun.currencySymbol,
+          currencySymbol: event['currencySymbol'],
           eventPrice: result.runPriceThisUser,
-          digitsAfterDecimal: widget?.futureRun?.digitsAfterDecimal ?? 2,
+          digitsAfterDecimal: event['digitsAfterDecimal'] ?? 2,
           virginVisitorType: result.virginVisitorType,
           userStartEvent: result.userStartEvent,
           userEndEvent: result.userEndEvent,
@@ -614,20 +669,20 @@ class PackListView extends StatelessWidget {
     @required this.packList,
     @required this.packScopedModel,
     @required this.payScopedModel,
-    @required this.futureRun,
+    @required this.event
   }) : super(key: key);
 
   final List<UserModel> packList;
   final PackScopedModel packScopedModel;
   final PayScopedModel payScopedModel;
-  final PlannedRun futureRun;
+  final Map<String,dynamic> event;
 
   SnackBar buildRsvpAndPaymentSnackbar(
       BuildContext context, int index, PackScopedModel _packScopedModel) {
     final SnackBar snackbar = PaymentSnackBar(
         context: context,
         index: index,
-        futureRun: futureRun,
+        event: event,
         packScopedModel: packScopedModel,
         payScopedModel: payScopedModel,
         packList: packList);
@@ -638,7 +693,7 @@ class PackListView extends StatelessWidget {
   Widget listItem(BuildContext context, int index) {
     return GestureDetector(
       onTap: () {
-        if (futureRun.mmAuthShowCheckInSnackbar) {
+        if (((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) {
           final SnackBar snackBar =
               buildRsvpAndPaymentSnackbar(context, index, packScopedModel);
 
@@ -1174,21 +1229,21 @@ class PackListView extends StatelessWidget {
           (paymentType == paymentBankTransferOtherAmount.value)) {
         final num fundsDifference = paymentAmount -
             (hasher.isMember == 1
-                ? futureRun.eventPriceForMembers
-                : futureRun.eventPriceForNonMembers);
+                ? event['eventPriceForMembers']
+                : event['eventPriceForNonMembers']);
 
         final String credit = Utilities.getFormattedMoney(fundsDifference,
-            futureRun?.digitsAfterDecimal ?? 2, futureRun.currencySymbol);
+            event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
 
         final double hashCashAmount = hasher.isMember == 1
-            ? futureRun.eventPriceForMembers
-            : futureRun.eventPriceForNonMembers;
+            ? event['eventPriceForMembers']
+            : event['eventPriceForNonMembers'];
 
         final String hashCash = Utilities.getFormattedMoney(hashCashAmount,
-            futureRun?.digitsAfterDecimal ?? 2, futureRun.currencySymbol);
+            event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
 
         final String amountPaid = Utilities.getFormattedMoney(paymentAmount,
-            futureRun?.digitsAfterDecimal ?? 2, futureRun.currencySymbol);
+            event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
 
         final String paymentMethod = paymentType == paymentCashOtherAmount.value
             ? 'in cash'
@@ -1202,7 +1257,7 @@ class PackListView extends StatelessWidget {
                 return AlertDialog(
                   title: const Text('Credit applied to account'),
                   content: Text(
-                      '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${futureRun.kennelShortName}'),
+                      '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${event['kennelShortName']}'),
                   actions: <Widget>[
                     // usually buttons at the bottom of the dialog
                     FlatButton(

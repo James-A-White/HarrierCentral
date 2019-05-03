@@ -4,11 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/data/models/planned_run_model.dart';
 import 'package:harrier_central/data/models/user_model.dart';
 import 'package:harrier_central/data/services/pack_scoped_model.dart';
 import 'package:harrier_central/data/services/pay_scoped_model.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/pages/run_admin/other_payment_popup.dart';
 import 'package:harrier_central/data/models/pay_for_event_model.dart';
 
@@ -21,7 +21,8 @@ class PaymentSnackBar extends SnackBar {
     @required this.payScopedModel,
     @required this.context,
     @required this.packList,
-    @required this.futureRun,
+    @required this.event
+
   }) : super(content: const Text('test'));
 
   final int index;
@@ -29,7 +30,8 @@ class PaymentSnackBar extends SnackBar {
   final PayScopedModel payScopedModel;
   final BuildContext context;
   final List<UserModel> packList;
-  final PlannedRun futureRun;
+  final Map<String, dynamic> event;
+
 
   @override
   Duration get duration => const Duration(seconds:30);
@@ -37,7 +39,12 @@ class PaymentSnackBar extends SnackBar {
   @override
   Color get backgroundColor => Theme.of(context).accentColor;
 
-  @override // TODO(James): implement content
+  String formatMoney(num money)
+  {
+    return Utilities.getFormattedMoney(money, event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
+  }
+
+  @override 
   Widget get content => Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -49,7 +56,7 @@ class PaymentSnackBar extends SnackBar {
                 fontSize: 35.0,
                 height: 1.0),
           ),
-          !futureRun.mmAuthAllowEditRsvp
+          !(((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowEditRsvpFlag) != 0)
               ? Container()
               : Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,13 +240,13 @@ class PaymentSnackBar extends SnackBar {
                     ),
                   ],
                 ),
-          !futureRun.mmAuthAllowEditRsvp
+          !(((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowEditRsvpFlag) != 0)
               ? Container()
               : Padding(
                   padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
                   child: Container(color: Colors.white, height: 3.0),
                 ),
-          !futureRun.mmAuthAllowCheckInAndOut
+          !(((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0)
               ? Container()
               : Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -382,13 +389,13 @@ class PaymentSnackBar extends SnackBar {
                     ),
                   ],
                 ),
-          !futureRun.mmAuthAllowCheckInAndOut
+          !(((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0)
               ? Container()
               : Padding(
                   padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
                   child: Container(color: Colors.white, height: 3.0),
                 ),
-          !futureRun.mmAuthAllowHashCash ? Container() :
+          !(((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowHashCashFlag) != 0) ? Container() :
           ScopedModelDescendant<PayScopedModel>(
             builder:
                 (BuildContext context, Widget child, PayScopedModel model) {
@@ -547,12 +554,12 @@ class PaymentSnackBar extends SnackBar {
                                   context,
                                   paymentCash.value,
                                   packList[index].isMember != 1
-                                      ? futureRun.eventPriceForNonMembers
-                                      : futureRun.eventPriceForNonMembers);
+                                      ? event['eventPriceForNonMembers']
+                                      : event['eventPriceForNonMembers']);
                             },
                           ),
                           Text(
-                            'Paid ${packList[index].isMember != 1 ? futureRun.eventPriceForNonMembers : futureRun.eventPriceForMembers}\r\ncash',
+                            'Paid ${formatMoney(packList[index].isMember != 1 ? event['eventPriceForNonMembers'] : event['eventPriceForMembers'])}\r\ncash',
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontFamily: 'AvenirNextCondensedDemiBold',
@@ -589,12 +596,12 @@ class PaymentSnackBar extends SnackBar {
                                   context,
                                   paymentBankTransfer.value,
                                   packList[index].isMember != 1
-                                      ? futureRun.eventPriceForNonMembers
-                                      : futureRun.eventPriceForNonMembers);
+                                      ? event['eventPriceForNonMembers']
+                                      : event['eventPriceForMembers']);
                             },
                           ),
                           Text(
-                            'Paid ${packList[index].isMember != 1 ? futureRun.eventPriceForNonMembers : futureRun.eventPriceForMembers}\r\nbank transfer',
+                            'Paid ${formatMoney(packList[index].isMember != 1 ? event['eventPriceForNonMembers'] : event['eventPriceForMembers'])}\r\nbank transfer',
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontFamily: 'AvenirNextCondensedDemiBold',
@@ -631,12 +638,12 @@ class PaymentSnackBar extends SnackBar {
                                   context,
                                   paymentHashCredit.value,
                                   packList[index].isMember != 1
-                                      ? futureRun.eventPriceForNonMembers
-                                      : futureRun.eventPriceForNonMembers);
+                                      ? event['eventPriceForNonMembers']
+                                      : event['eventPriceForMembers']);
                             },
                           ),
                           Text(
-                            'Credit ${packList[index].isMember != 1 ? futureRun.eventPriceForNonMembers : futureRun.eventPriceForMembers}\r\n(${packList[index].credit < 0 ? 'Owes' : 'Credit'} ${Utilities.getFormattedMoney(packList[index].credit.abs(), futureRun?.digitsAfterDecimal ?? 2, futureRun.currencySymbol)})',
+                            'Credit ${formatMoney(packList[index].isMember != 1 ? event['eventPriceForNonMembers'] : event['eventPriceForMembers'])}\r\n(${packList[index].credit < 0 ? 'Owes' : 'Credit'} ${Utilities.getFormattedMoney(packList[index].credit.abs(), event['digitsAfterDecimal'] ?? 2, event['currencySymbol'])})',
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontFamily: 'AvenirNextCondensedDemiBold',
@@ -668,7 +675,7 @@ class PaymentSnackBar extends SnackBar {
   void payOther(
       int index, PackScopedModel _packScopedModel, BuildContext context) {
     final OtherPaymentPopup otherPaymentPopup =
-        OtherPaymentPopup(currencySymbol: futureRun.currencySymbol);
+        OtherPaymentPopup(currencySymbol: event['currencySymbol']);
 
     final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
         context: context,
@@ -744,21 +751,21 @@ class PaymentSnackBar extends SnackBar {
           (paymentType == paymentBankTransferOtherAmount.value)) {
         final num fundsDifference = paymentAmount -
             (hasher.isMember == 1
-                ? futureRun.eventPriceForMembers
-                : futureRun.eventPriceForNonMembers);
+                ? event['eventPriceForMembers']
+                : event['eventPriceForNonMembers']);
 
         final String credit = Utilities.getFormattedMoney(fundsDifference,
-            futureRun?.digitsAfterDecimal ?? 2, futureRun.currencySymbol);
+            event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
 
         final double hashCashAmount = hasher.isMember == 1
-            ? futureRun.eventPriceForMembers
-            : futureRun.eventPriceForNonMembers;
+            ? event['eventPriceForMembers']
+            : event['eventPriceForNonMembers'];
 
         final String hashCash = Utilities.getFormattedMoney(hashCashAmount,
-            futureRun?.digitsAfterDecimal ?? 2, futureRun.currencySymbol);
+            event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
 
         final String amountPaid = Utilities.getFormattedMoney(paymentAmount,
-            futureRun?.digitsAfterDecimal ?? 2, futureRun.currencySymbol);
+            event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
 
         final String paymentMethod = paymentType == paymentCashOtherAmount.value
             ? 'in cash'
@@ -772,7 +779,7 @@ class PaymentSnackBar extends SnackBar {
                 return AlertDialog(
                   title: const Text('Credit applied to account'),
                   content: Text(
-                      '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${futureRun.kennelShortName}'),
+                      '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${event['kennelShortName']}'),
                   actions: <Widget>[
                     // usually buttons at the bottom of the dialog
                     FlatButton(
