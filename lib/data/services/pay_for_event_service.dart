@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:harrier_central/data/models/pay_for_event_model.dart';
+//import 'package:harrier_central/data/models/pay_for_event_model.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
@@ -9,13 +9,14 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:http/http.dart' as http;
 
 class PayForEventService {
-  Future<List<PayForEventModel>> payForEvent(
+  Future<void> payForEvent(
       String userIdWhoPaid,
       String eventId,
       String hasherEventMapId,
       int paymentType,
       num paymentAmount,
-      int minimumAttendenceValue) async {
+      int minimumAttendenceValue,
+      ) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     if ((userIdWhoPaid ?? '').isEmpty) {
@@ -46,10 +47,12 @@ class PayForEventService {
       'paymentType': paymentType.toString(),
       'paymentAmount': paymentAmount.toString(),
       'minimumAttendenceValue': minimumAttendenceValue.toString(),
+
+
     });
 
     final http.Response response = await http
-        .post(BASE_API_URL + 'pay_for_event',
+        .post(BASE_API_URL + 'hc3_pay_for_event',
             headers: <String, String>{'content-type': 'application/json'},
             body: body
             // Send authorization headers to your backend
@@ -61,28 +64,30 @@ class PayForEventService {
       },
     );
 
-    final List<PayForEventModel> itemList = <PayForEventModel>[];
+    print(response.body);
 
-    PayForEventModel item;
-    json.decode(response.body).forEach(
-      (dynamic items) {
-        item = PayForEventModel(
-          result: items['result'],
-          waitingForCount: items['waitingForCount'],
-          atHashCount: items['atHashCount'],
-          onInCount: items['onInCount'],
-          onTrailCount: items['onTrailCount'],
-          paidCount: items['paidCount'],
-          buttonState: items['buttonState'],
-          totalRunsThisKennel: items['totalRunsThisKennel'],
-          isPaid: items['isPaid'],
-          hasherEventMapId: items['hasherEventMapId'],
-        );
+    // final List<PayForEventModel> itemList = <PayForEventModel>[];
 
-        itemList.add(item);
-      },
-    );
+    // PayForEventModel item;
+    // json.decode(response.body).forEach(
+    //   (dynamic items) {
+    //     item = PayForEventModel(
+    //       result: items['result'],
+    //       waitingForCount: items['waitingForCount'],
+    //       atHashCount: items['atHashCount'],
+    //       onInCount: items['onInCount'],
+    //       onTrailCount: items['onTrailCount'],
+    //       paidCount: items['paidCount'],
+    //       buttonState: items['buttonState'],
+    //       totalRunsThisKennel: items['totalRunsThisKennel'],
+    //       isPaid: items['isPaid'],
+    //       hasherEventMapId: items['hasherEventMapId'],
+    //     );
 
-    return itemList;
+    //     itemList.add(item);
+    //   },
+    // );
+
+    return;
   }
 }

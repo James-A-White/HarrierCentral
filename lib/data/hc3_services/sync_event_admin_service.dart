@@ -7,6 +7,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
@@ -45,17 +46,17 @@ class SyncEventAdminService {
 
   Future<bool> updateFromBackend(Database db, int flags, bool forceRefresh, String eventId, {Function informUser}) async {
     if (getStringPref(StringPrefsEnum.adminEventId) != eventId) {
-        final PaymentsService paySrv = PaymentsService();
-        final HasherEventMapService hem2srv = HasherEventMapService();
-        final HasherKennelMapService hkm2srv = HasherKennelMapService();
-        final ReceiptsService recSrv = ReceiptsService();
+      final PaymentsService paySrv = PaymentsService();
+      final HasherEventMapService hem2srv = HasherEventMapService();
+      final HasherKennelMapService hkm2srv = HasherKennelMapService();
+      final ReceiptsService recSrv = ReceiptsService();
 
-        paySrv.clearTable();
-        hem2srv.clearTable(HasherEventMapTableType.admin);
-        hkm2srv.clearTable(HasherKennelMapTableType.admin);
-        recSrv.clearTable();
+      paySrv.clearTable();
+      hem2srv.clearTable(HasherEventMapTableType.admin);
+      hkm2srv.clearTable(HasherKennelMapTableType.admin);
+      recSrv.clearTable();
 
-        await setStringPref(StringPrefsEnum.adminEventId, eventId);
+      await setStringPref(StringPrefsEnum.adminEventId, eventId);
     }
 
     final int hasherEventMapLastUpdate = (flags & flagHasherEventMapTable) == 0 ? null : getIntPref(HasherEventMapTableHelper.getLastUpdatedKey(HasherEventMapTableType.admin)) ?? 0;
@@ -129,44 +130,53 @@ class SyncEventAdminService {
         },
       );
 
-      final String s = response.body.substring(1, response.body.length - 1);
-
-      final RegExp r = RegExp(r'\[(\{(.*?)\})\]', multiLine: true);
-      final Iterable<Match> matches = r.allMatches(s);
-      for (int i = 0; i < matches.length; i++) {
-        final String ms = matches.elementAt(i).group(0);
-
-        if (ms.startsWith(r'[{"paymentId"')) {
-          final PaymentsService nSrv = PaymentsService();
-          await nSrv.bulkUpdateDatabase('[$ms]', db, informUser);
-          print('payments updated');
-        }
-
-        if (ms.startsWith(r'[{"receiptId"')) {
-          final ReceiptsService kSrv = ReceiptsService();
-          await kSrv.bulkUpdateDatabase('[$ms]', db, informUser);
-          print('receipts updated');
-        }
-
-        if (ms.startsWith(r'[{"eventId"')) {
-          final NarrowEventsService eSrv = NarrowEventsService();
-          await eSrv.bulkUpdateDatabase('[$ms]', db, informUser);
-          print('events updated');
-        }
-
-        if (ms.startsWith(r'[{"hemId"')) {
-          final HasherEventMapService hemSrv = HasherEventMapService();
-          await hemSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherEventMapTableType.admin);
-          print('hasher event map for admin updated');
-        }
-
-        if (ms.startsWith(r'[{"hkmId"')) {
-          final HasherKennelMapService hkmSrv = HasherKennelMapService();
-          await hkmSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherKennelMapTableType.admin);
-          print('hasher event map for admin updated');
-        }
-      }
+      await processReturnRecords(response.body, db: db, informUser: informUser);
     }
     return true;
+  }
+
+  static Future<void> processReturnRecords(String jsonResults, {Database db,Function informUser}) async {
+    
+    db ??= await DBProvider.db.database;
+    
+    if (jsonResults.startsWith('[[')) {
+      jsonResults = jsonResults.substring(1, jsonResults.length - 1);
+    }
+
+    final RegExp r = RegExp(r'\[(\{(.*?)\})\]', multiLine: true);
+    final Iterable<Match> matches = r.allMatches(jsonResults);
+    for (int i = 0; i < matches.length; i++) {
+      final String ms = matches.elementAt(i).group(0);
+
+      if (ms.startsWith(r'[{"paymentId"')) {
+        final PaymentsService nSrv = PaymentsService();
+        await nSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        print('payments updated');
+      }
+
+      if (ms.startsWith(r'[{"receiptId"')) {
+        final ReceiptsService kSrv = ReceiptsService();
+        await kSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        print('receipts updated');
+      }
+
+      if (ms.startsWith(r'[{"eventId"')) {
+        final NarrowEventsService eSrv = NarrowEventsService();
+        await eSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        print('events updated');
+      }
+
+      if (ms.startsWith(r'[{"hemId"')) {
+        final HasherEventMapService hemSrv = HasherEventMapService();
+        await hemSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherEventMapTableType.admin);
+        print('hasher event map for admin updated');
+      }
+
+      if (ms.startsWith(r'[{"hkmId"')) {
+        final HasherKennelMapService hkmSrv = HasherKennelMapService();
+        await hkmSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherKennelMapTableType.admin);
+        print('hasher event map for admin updated');
+      }
+    }
   }
 }

@@ -372,7 +372,7 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                                   }
                                 });
 
-                                Utilities.showInSnackBar(context, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 6);
+                                Utilities.showInSnackBar(context, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 10);
                               },
                             ),
                           ),

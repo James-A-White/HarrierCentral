@@ -7,11 +7,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class PaymentReportListItem extends StatelessWidget {
-  const PaymentReportListItem(
-      {@required this.paymentReportItem,
-      @required this.currencySymbol,
-      @required this.digitsAfterDecimal,
-      @required this.onTap});
+  const PaymentReportListItem({@required this.paymentReportItem, @required this.currencySymbol, @required this.digitsAfterDecimal, @required this.onTap});
 
   final PaymentsModel paymentReportItem;
   final String currencySymbol;
@@ -20,8 +16,7 @@ class PaymentReportListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String amountPaid = Utilities.getFormattedMoney(
-        paymentReportItem.creditAmount ?? 0, digitsAfterDecimal, currencySymbol); 
+    final String amountPaid = Utilities.getFormattedMoney(paymentReportItem.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
     return InkWell(
       onTap: onTap,
@@ -35,29 +30,18 @@ class PaymentReportListItem extends StatelessWidget {
               //fit: StackFit.expand,
               children: <Widget>[
                 Positioned(
-                  right: 10.0,
-                  top: 7.0,
-                  child: false
-                      ? Icon(delayIcon, color: Colors.blue[800])
-                      : Image.asset(
-                          'images/icons/payment_type_${paymentReportItem.paymentType ?? paymentNotPaid.value}.png',
-                          height: 30.0,
-                          width: 30.0,
-                          color: (paymentReportItem.paymentType ?? paymentNotPaid.value) <=
-                                  paymentNotPaid.value
-                              ? Colors.red
-                              : Colors.green[700]),
+                  right: paymentReportItem.isLoading ? 6.0 : 10.0,
+                  top: paymentReportItem.isLoading ? 2.5 : 7.0,
+                  child: paymentReportItem.isLoading
+                      ? Icon(delayIcon, color: Colors.blue[800], size: 37.0)
+                      : Image.asset('images/icons/payment_type_${paymentReportItem.paymentType ?? paymentNotPaid.value}.png', height: 30.0, width: 30.0, color: (paymentReportItem.paymentType ?? paymentNotPaid.value) <= paymentNotPaid.value ? Colors.red : Colors.green[700]),
                 ),
                 Positioned(
                   left: 10.0,
                   top: 7.0,
                   child: Text(
                     '${paymentReportItem.paidByName}',
-                    style: TextStyle(
-                        fontFamily: (paymentReportItem.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 22.0,
-                        height: 1.0),
+                    style: TextStyle(fontFamily: (paymentReportItem.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -66,11 +50,7 @@ class PaymentReportListItem extends StatelessWidget {
                   top: 7.0,
                   child: Text(
                     '$amountPaid',
-                    style: const TextStyle(
-                        fontFamily: 'AvenirNextCondensedDemiBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 22.0,
-                        height: 1.0),
+                    style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
                     textAlign: TextAlign.right,
                   ),
                 ),
@@ -85,8 +65,7 @@ class PaymentReportListItem extends StatelessWidget {
 }
 
 class TotalsCell extends StatelessWidget {
-  const TotalsCell(
-     {
+  const TotalsCell({
     @required this.creditAmount,
     @required this.counter,
     @required this.color,
@@ -95,7 +74,6 @@ class TotalsCell extends StatelessWidget {
     @required this.digitsAfterDecimal,
     @required this.onTap,
   });
-
 
   final EnumPaymentType<int> paymentRecordType;
   final Color color;
@@ -107,17 +85,9 @@ class TotalsCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String total = (creditAmount ?? 0) <= 0 ? '' : Utilities.getFormattedMoney(creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
-
-    final String total = (creditAmount ?? 0) <= 0
-        ? ''
-        : Utilities.getFormattedMoney(
-            creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
-
-    const TextStyle textStyle = TextStyle(
-        color: Colors.black,
-        fontSize: 24.0,
-        fontFamily: 'AvenirNextCondensedDemiBold');
+    const TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 24.0, fontFamily: 'AvenirNextCondensedDemiBold');
     return Container(
       width: 40,
       child: Column(
@@ -132,11 +102,7 @@ class TotalsCell extends StatelessWidget {
           IconButton(
             padding: const EdgeInsets.all(0),
             onPressed: onTap,
-            icon: Image.asset(
-                'images/icons/payment_type_${paymentRecordType.value}.png',
-                height: 35.0,
-                width: 35.0,
-                color: color),
+            icon: Image.asset('images/icons/payment_type_${paymentRecordType.value}.png', height: 35.0, width: 35.0, color: color),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 1.0),

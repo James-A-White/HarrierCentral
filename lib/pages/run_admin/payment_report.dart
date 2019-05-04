@@ -2,14 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:intl/intl.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:intl/intl.dart';
 
-import 'package:harrier_central/data/models/pay_for_event_model.dart';
-import 'package:harrier_central/data/models/payment_report_model.dart';
 import 'package:harrier_central/pages/run_admin/payment_popup.dart';
-import 'package:harrier_central/data/services/pay_for_event_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
@@ -37,6 +34,7 @@ class PaymentReportState extends State<PaymentReportPage> {
   PaymentReportState();
 
   List<PaymentsModel> paymentsList = <PaymentsModel>[];
+  List<PaymentsModel> filteredList = <PaymentsModel>[];
 
   bool _isLoading = true;
 
@@ -59,18 +57,23 @@ class PaymentReportState extends State<PaymentReportPage> {
       final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable, true, widget.event['eventId']);
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Payments data synchronized $resultStr');
-      _isLoading = false;
-      refreshFromTable();
-      refreshTotals();
+
+      refreshFromTable().then((void dummy) {
+        setState(() {
+          _isLoading = false;
+          refreshTotals();
+        });
+      });
     });
   }
 
-  void refreshFromTable() {
-    DBProvider.db.database.then((Database db) {
-      try {
-        final String sql = '''
+  Future<void> refreshFromTable() async {
+    final Database db = await DBProvider.db.database;
+
+    final String sql = '''
 
           SELECT
+          hem.hemId as pkHemId,
           COALESCE(CASE WHEN hem.displayName IS NULL THEN NULL ELSE hem.displayName || CASE WHEN hem.virginVisitorType = 1 THEN " (Virgin)" ELSE " (Visitor)" END END, h.dispName,'<hasher not found>') as paidByName,
           COALESCE(paidTo.dispName,'<hasher not found>') as paidToName,
           COALESCE(hkm.isMember,0) as isMember,
@@ -87,15 +90,9 @@ class PaymentReportState extends State<PaymentReportPage> {
           WHERE hem.attendenceState >= 20
           ''';
 
-        db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
-          setState(() {
-            paymentsList = PaymentsTableHelper.listFromMap(results);
-          });
-        });
-      } catch (e) {
-        print(e);
-      }
-    });
+    final List<Map<String, dynamic>> results = await db.rawQuery(sql);
+    paymentsList = PaymentsTableHelper.listFromMap(results);
+    applyFilter();
   }
 
   List<Map<String, dynamic>> paymentTotals;
@@ -131,9 +128,28 @@ class PaymentReportState extends State<PaymentReportPage> {
     print('Payment totals refreshed at ' + DateTime.now().millisecondsSinceEpoch.toString());
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final List<PaymentsModel> filteredList = paymentsList
+  void payForEvent(PaymentsModel item, int paymentType, num amount) {
+    final PaymentsService paySrv = PaymentsService();
+    final Future<void> retVal = paySrv.payForEvent(
+      widget.event['eventId'],
+      item.pkHemId,
+      paymentType,
+      amount,
+      attendenceAtHash.value,
+    );
+    retVal.then(
+      (void paymentResult) {
+        refreshFromTable().then((void dummy) {
+          setState(() {
+            refreshTotals();
+          });
+        });
+      },
+    );
+  }
+
+  void applyFilter() {
+    filteredList = paymentsList
         .where((PaymentsModel evt) =>
             ((filterValue & 1) != 0 && ((evt.paymentType ?? paymentNotPaid.value) == paymentNotPaid.value)) ||
             ((filterValue & 2) != 0 && (evt.paymentType == paymentCash.value)) ||
@@ -144,7 +160,15 @@ class PaymentReportState extends State<PaymentReportPage> {
             ((filterValue & 64) != 0 && (evt.paymentType == paymentHashCredit.value)))
         .toList();
 
+    filteredList.sort((PaymentsModel a, PaymentsModel b) => a.paidByName.compareTo(b.paidByName));
+  }
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
+        key: _scaffoldKey,
         appBar: AppBar(
           centerTitle: true,
           backgroundColor: themeAppBarBackground,
@@ -182,120 +206,126 @@ class PaymentReportState extends State<PaymentReportPage> {
               label: 'Email me payment report',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
-                // paymentReportModel
-                //     .sendPaymentReportByEmail(
-                //         eventId: eventId, eventName: eventName)
-                //     .then((Map<String, String> result) {
-                //   if (result['result'].toLowerCase().startsWith('success')) {
-                //     Utilities.showAlert(
-                //         context,
-                //         'E-mail successfully sent',
-                //         'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                //         'OK');
-                //   }
-                // });
+                PaymentsService.sendPaymentReportByEmail(eventId: widget.event['eventId'], eventName: widget.event['eventName']).then((Map<String, String> result) {
+                  _scaffoldKey.currentState?.hideCurrentSnackBar();
+                  if (result['result'].toLowerCase().startsWith('success')) {
+                    Utilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+                  } else {
+                    Utilities.showAlert(context, 'Error sending report', 'There was a problem sending the report to:\r\n\r\n${result['email']}\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
+                  }
+                });
+                Utilities.showInSnackBar(context, _scaffoldKey, 'Payment Report being processed...', durationInSeconds: 10);
               },
             ),
           ],
         ),
-        body: _isLoading
+        body: (_isLoading || (paymentTotals == null) || (paymentTotals.isEmpty))
             ? const HcCircularProgressIndicator()
             : Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
-                  ((paymentTotals == null) || (paymentTotals.isEmpty))
-                      ? Container()
-                      : Container(
-                          padding: const EdgeInsets.only(top: 10),
-                          color: Colors.white,
-                          height: 120.0,
-                          child: Column(
-                            children: <Widget>[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: <Widget>[
-                                  TotalsCell(
-                                    creditAmount: 0,
-                                    counter: paymentTotals[0]['count'] + paymentTotals[paymentNotPaid.value]['count'],
-                                    color: (filterValue & 1) != 0 ? Colors.red : Colors.black26,
-                                    paymentRecordType: paymentNotPaid,
-                                    currencySymbol: widget.event['currencySymbol'],
-                                    digitsAfterDecimal: widget.event['digitsAfterDecimal'],
-                                    onTap: () {
-                                      filterTapped(1);
-                                    },
-                                  ),
-                                  TotalsCell(
-                                    creditAmount: paymentTotals[paymentCash.value]['totalCollected'],
-                                    counter: paymentTotals[paymentCash.value]['count'],
-                                    color: (filterValue & 2) != 0 ? Colors.green : Colors.black26,
-                                    paymentRecordType: paymentCash,
-                                    currencySymbol: widget.event['currencySymbol'],
-                                    digitsAfterDecimal: widget.event['digitsAfterDecimal'],
-                                    onTap: () {
-                                      filterTapped(2);
-                                    },
-                                  ),
-                                  TotalsCell(
-                                    creditAmount: paymentTotals[paymentCashOtherAmount.value]['totalCollected'],
-                                    counter: paymentTotals[paymentCashOtherAmount.value]['count'],
-                                    color: (filterValue & 4) != 0 ? Colors.green : Colors.black26,
-                                    paymentRecordType: paymentCashOtherAmount,
-                                    currencySymbol: widget.event['currencySymbol'],
-                                    digitsAfterDecimal: widget.event['digitsAfterDecimal'],
-                                    onTap: () {
-                                      filterTapped(4);
-                                    },
-                                  ),
-                                  TotalsCell(
-                                    creditAmount: paymentTotals[paymentFreeRun.value]['totalCollected'],
-                                    counter: paymentTotals[paymentFreeRun.value]['count'],
-                                    color: (filterValue & 8) != 0 ? Colors.green : Colors.black26,
-                                    paymentRecordType: paymentFreeRun,
-                                    currencySymbol: widget.event['currencySymbol'],
-                                    digitsAfterDecimal: widget.event['digitsAfterDecimal'],
-                                    onTap: () {
-                                      filterTapped(8);
-                                    },
-                                  ),
-                                  TotalsCell(
-                                    creditAmount: paymentTotals[paymentBankTransfer.value]['totalCollected'],
-                                    counter: paymentTotals[paymentBankTransfer.value]['count'],
-                                    color: (filterValue & 16) != 0 ? Colors.green : Colors.black26,
-                                    paymentRecordType: paymentBankTransfer,
-                                    currencySymbol: widget.event['currencySymbol'],
-                                    digitsAfterDecimal: widget.event['digitsAfterDecimal'],
-                                    onTap: () {
-                                      filterTapped(16);
-                                    },
-                                  ),
-                                  TotalsCell(
-                                    creditAmount: paymentTotals[paymentBankTransferOtherAmount.value]['totalCollected'],
-                                    counter: paymentTotals[paymentBankTransferOtherAmount.value]['count'],
-                                    color: (filterValue & 32) != 0 ? Colors.green : Colors.black26,
-                                    paymentRecordType: paymentBankTransferOtherAmount,
-                                    currencySymbol: widget.event['currencySymbol'],
-                                    digitsAfterDecimal: widget.event['digitsAfterDecimal'],
-                                    onTap: () {
-                                      filterTapped(32);
-                                    },
-                                  ),
-                                  TotalsCell(
-                                    creditAmount: paymentTotals[paymentHashCredit.value]['totalCollected'],
-                                    counter: paymentTotals[paymentHashCredit.value]['count'],
-                                    color: (filterValue & 64) != 0 ? Colors.green : Colors.black26,
-                                    paymentRecordType: paymentHashCredit,
-                                    currencySymbol: widget.event['currencySymbol'],
-                                    digitsAfterDecimal: widget.event['digitsAfterDecimal'],
-                                    onTap: () {
-                                      filterTapped(64);
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                  Container(
+                    padding: const EdgeInsets.only(top: 10),
+                    decoration: const BoxDecoration(
+                      // border: new Border.all(width: 1.0, color: Colors.black),
+                      //shape: BoxShape.circle,
+                      color: Colors.white,
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color: Color.fromARGB(70, 0, 0, 0),
+                          offset: Offset(0.0, 6.0),
+                          blurRadius: 10.0,
                         ),
+                      ],
+                    ),
+                    height: 120.0,
+                    child: Column(
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            TotalsCell(
+                              creditAmount: 0,
+                              counter: paymentTotals[0]['count'] + paymentTotals[paymentNotPaid.value]['count'],
+                              color: (filterValue & 1) != 0 ? Colors.red : Colors.black26,
+                              paymentRecordType: paymentNotPaid,
+                              currencySymbol: widget.event['currencySymbol'],
+                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              onTap: () {
+                                filterTapped(1);
+                              },
+                            ),
+                            TotalsCell(
+                              creditAmount: paymentTotals[paymentCash.value]['totalCollected'],
+                              counter: paymentTotals[paymentCash.value]['count'],
+                              color: (filterValue & 2) != 0 ? Colors.green : Colors.black26,
+                              paymentRecordType: paymentCash,
+                              currencySymbol: widget.event['currencySymbol'],
+                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              onTap: () {
+                                filterTapped(2);
+                              },
+                            ),
+                            TotalsCell(
+                              creditAmount: paymentTotals[paymentCashOtherAmount.value]['totalCollected'],
+                              counter: paymentTotals[paymentCashOtherAmount.value]['count'],
+                              color: (filterValue & 4) != 0 ? Colors.green : Colors.black26,
+                              paymentRecordType: paymentCashOtherAmount,
+                              currencySymbol: widget.event['currencySymbol'],
+                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              onTap: () {
+                                filterTapped(4);
+                              },
+                            ),
+                            TotalsCell(
+                              creditAmount: paymentTotals[paymentFreeRun.value]['totalCollected'],
+                              counter: paymentTotals[paymentFreeRun.value]['count'],
+                              color: (filterValue & 8) != 0 ? Colors.green : Colors.black26,
+                              paymentRecordType: paymentFreeRun,
+                              currencySymbol: widget.event['currencySymbol'],
+                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              onTap: () {
+                                filterTapped(8);
+                              },
+                            ),
+                            TotalsCell(
+                              creditAmount: paymentTotals[paymentBankTransfer.value]['totalCollected'],
+                              counter: paymentTotals[paymentBankTransfer.value]['count'],
+                              color: (filterValue & 16) != 0 ? Colors.green : Colors.black26,
+                              paymentRecordType: paymentBankTransfer,
+                              currencySymbol: widget.event['currencySymbol'],
+                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              onTap: () {
+                                filterTapped(16);
+                              },
+                            ),
+                            TotalsCell(
+                              creditAmount: paymentTotals[paymentBankTransferOtherAmount.value]['totalCollected'],
+                              counter: paymentTotals[paymentBankTransferOtherAmount.value]['count'],
+                              color: (filterValue & 32) != 0 ? Colors.green : Colors.black26,
+                              paymentRecordType: paymentBankTransferOtherAmount,
+                              currencySymbol: widget.event['currencySymbol'],
+                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              onTap: () {
+                                filterTapped(32);
+                              },
+                            ),
+                            TotalsCell(
+                              creditAmount: paymentTotals[paymentHashCredit.value]['totalCollected'],
+                              counter: paymentTotals[paymentHashCredit.value]['count'],
+                              color: (filterValue & 64) != 0 ? Colors.green : Colors.black26,
+                              paymentRecordType: paymentHashCredit,
+                              currencySymbol: widget.event['currencySymbol'],
+                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              onTap: () {
+                                filterTapped(64);
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 10.0),
@@ -318,12 +348,10 @@ class PaymentReportState extends State<PaymentReportPage> {
                                           key: Key(index.toString()),
                                           confirmDismiss: (DismissDirection direction) {
                                             print(direction.toString() + ' ' + index.toString() + ' ' + widget.event['eventPriceForNonMembers'].toString());
-                                            // payForEvent(
-                                            //     filteredList[index],
-                                            //     direction == DismissDirection.endToStart
-                                            //         ? 3
-                                            //         : 4,
-                                            //     filteredList[index].debitAmount);
+                                            setState(() {
+                                              filteredList[index].isLoading = true;
+                                            });
+                                            payForEvent(filteredList[index], direction == DismissDirection.endToStart ? 3 : 4, (filteredList[index].isMember != 0) ? filteredList[index].eventPriceForMembers : filteredList[index].eventPriceForNonMembers);
                                             return Future<bool>.value(false);
                                           },
                                           background: Container(
@@ -349,8 +377,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                 ),
                                                 Padding(
                                                   padding: const EdgeInsets.only(right: 15.0),
-                                                  child: Text(
-                                                      '${Utilities.getFormattedMoney((filteredList[index].isMember != 0) ? filteredList[index].eventPriceForMembers : filteredList[index].eventPriceForNonMembers, widget.event['digitsAfterDecimal'], widget.event['currencySymbol'])} Bank Transfer',
+                                                  child: Text('${Utilities.getFormattedMoney((filteredList[index].isMember != 0) ? filteredList[index].eventPriceForMembers : filteredList[index].eventPriceForNonMembers, widget.event['digitsAfterDecimal'], widget.event['currencySymbol'])} Cash',
                                                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                 )
                                               ])),
@@ -379,6 +406,7 @@ class PaymentReportState extends State<PaymentReportPage> {
       filterValue = 127;
     }
 
+    applyFilter();
     setState(() {});
   }
 
@@ -391,365 +419,209 @@ class PaymentReportState extends State<PaymentReportPage> {
         currencySymbol: widget.event['currencySymbol'],
         digitsAfterDecimal: widget.event['digitsAfterDecimal'],
         onTap: () {
-          // if (filteredList[index].paymentType.value == paymentNotPaid.value) {
-          //   final PaymentPopup pp = PaymentPopup(
-          //     amount: filteredList[index].debitAmount,
-          //     creditAllowed:
-          //         1, // TODO(James): fix this in the DB so that Kennnels can disable credit
-          //     creditRemaining: filteredList[index].creditRemaining,
-          //     currencySymbol: currencySymbol,
-          //     hemId: filteredList[index].hasherEventMapId,
-          //     decimalDigits: digitsAfterDecimal,
-          //     // valueChanged: (num value) {
-          //     //   finalValue = value;
-          //     // },
-          //   );
+          if ((item.paymentType == null) || (item.paymentType == paymentNotPaid.value)) {
+            final PaymentPopup pp = PaymentPopup(
+              amount: (item.isMember != 0) ? item.eventPriceForMembers : item.eventPriceForNonMembers,
+              creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
+              creditRemaining: 0,
+              currencySymbol: widget.event['currencySymbol'],
+              hemId: item.pkHemId,
+              decimalDigits: widget.event['decimalDigits'],
+              // valueChanged: (num value) {
+              //   finalValue = value;
+              // },
+            );
 
-          //   final Future<int> dlg = showDialog<int>(
-          //       context: context,
-          //       barrierDismissible: false, // user must tap button!
-          //       builder: (BuildContext context) {
-          //         return pp;
-          //       });
+            final Future<int> dlg = showDialog<int>(
+                context: context,
+                barrierDismissible: false, // user must tap button!
+                builder: (BuildContext context) {
+                  return pp;
+                });
 
-          //   dlg.then(
-          //     (int selectedTransactionType) {
-          //       if (selectedTransactionType != -1) {
-          //         payForEvent(filteredList[index], selectedTransactionType, pp.amount);
-          //       }
-          //     },
-          //   );
-          // } else {
-          //   _displayPaymentDetails(filteredList[index], context)
-          //       .then((bool doCancelTransaction) {
-          //     if (doCancelTransaction) {
-          //       payForEvent(filteredList[index], paymentNotPaid.value, 0);
-          //     }
-          //   });
-          // }
+            dlg.then(
+              (int selectedTransactionType) {
+                if (selectedTransactionType != -1) {
+                  setState(() {
+                    item.isLoading = true;
+                  });
+                  payForEvent(item, selectedTransactionType, pp.amount);
+                }
+              },
+            );
+          } else {
+            _displayPaymentDetails(item, context).then((bool doCancelTransaction) {
+              if (doCancelTransaction) {
+                setState(() {
+                  item.isLoading = true;
+                });
+                payForEvent(item, paymentNotPaid.value, 0);
+              }
+            });
+          }
         },
       ),
     );
   }
+
+  Future<bool> _displayPaymentDetails(PaymentsModel item, BuildContext context) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 16.0);
+
+        const TextStyle bodyStyle = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0);
+
+        String paymentTypeStr = '';
+
+        switch (item.paymentType) {
+          case 1:
+            paymentTypeStr = 'Not paid';
+            break;
+          case 2:
+            paymentTypeStr = 'Free run';
+            break;
+          case 3:
+            paymentTypeStr = 'Cash';
+            break;
+          case 4:
+            paymentTypeStr = 'Bank transfer';
+            break;
+          case 5:
+            paymentTypeStr = 'Cash (other amount)';
+            break;
+          case 6:
+            paymentTypeStr = 'Hash credit';
+            break;
+          case 7:
+            paymentTypeStr = 'Transfer (other amt)';
+            break;
+          default:
+            paymentTypeStr = 'Other';
+        }
+
+        final String amountStr = Utilities.getFormattedMoney(item?.creditAmount ?? 0, widget.event['digitsAfterDecimal'], widget.event['currencySymbol']);
+
+        return AlertDialog(
+          title: const Text('Payment Detail'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Expanded(
+                      flex: 3,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: const <Widget>[
+                          Text(
+                            'Pay Ref:',
+                            style: headingStyle,
+                          ),
+                          Text(
+                            'Paid by:',
+                            style: headingStyle,
+                          ),
+                          Text(
+                            'Paid to:',
+                            style: headingStyle,
+                          ),
+                          Text(
+                            'Amount:',
+                            style: headingStyle,
+                          ),
+                          Text(
+                            'Date:',
+                            style: headingStyle,
+                          ),
+                          Text(
+                            'Time:',
+                            style: headingStyle,
+                          ),
+                          Text(
+                            'Type:',
+                            style: headingStyle,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 7,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 4.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              item.paymentReference,
+                              style: bodyStyle,
+                            ),
+                            Text(
+                              item.paidByName,
+                              style: bodyStyle,
+                              maxLines: 1,
+                            ),
+                            // AutoSizeText(
+                            //   item.paidBy,
+                            //   style: bodyStyle,
+                            //   maxLines: 1,
+                            //   minFontSize: 12.0,
+                            // ),
+                            Text(
+                              item.paidToName,
+                              style: bodyStyle,
+                              maxLines: 1,
+                            ),
+
+                            // AutoSizeText(
+                            //   item.paidTo,
+                            //   style: bodyStyle,
+                            //   maxLines: 1,
+                            //   minFontSize: 12.0,
+                            // ),
+                            Text(
+                              amountStr,
+                              style: bodyStyle,
+                            ),
+                            Text(
+                              (item?.paidDate == null) ? '' : DateFormat('MMM dd, yyyy').format(item.paidDate),
+                              style: bodyStyle,
+                            ),
+                            Text(
+                              (item?.paidDate == null) ? '' : DateFormat('kk:mm').format(item.paidDate),
+                              style: bodyStyle,
+                            ),
+                            Text(
+                              paymentTypeStr,
+                              style: bodyStyle,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('Cancel transaction'),
+              onPressed: () {
+                Navigator.of(context, rootNavigator: true).pop(true);
+              },
+            ),
+            FlatButton(
+              child: const Text('Close'),
+              onPressed: () {
+                Navigator.of(context, rootNavigator: true).pop(false);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
-
-//   // Widget _buildCircularProgressIndicator() {
-//   //   return const Center(
-//   //     child: HcCircularProgressIndicator(),
-//   //   );
-//   // }
-
-//   Future<void> _handleRefresh() async {
-//     model.getPaymentReportsFromBackend(1, false, eventId);
-//     //model.notifyListeners();
-//   }
-
-//   void filterTapped(int positionFlag, EnumPaymentType<int> paymentType) {
-//     if (filterValue == 127) {
-//       filterValue = positionFlag;
-//     } else {
-//       filterValue = filterValue ^ positionFlag;
-//     }
-
-//     if (filterValue == 0) {
-//       filterValue = 127;
-//     }
-
-//     setState(() {});
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-
-//  }
-
-// // void setValue(num val) {
-// //     setState(() {
-// //       finalValue = val;
-// //     });
-// //   }
-
-//   Container listItem(int index, List<PaymentReportModel> filteredList) {
-//     return Container(
-//       height: 40.0,
-//       padding: const EdgeInsets.all(0.0),
-//       child: PaymentReportListItem(
-//         paymentReportItem: filteredList[index],
-//         currencySymbol: currencySymbol,
-//         digitsAfterDecimal: digitsAfterDecimal,
-//         onTap: () {
-//           if (filteredList[index].paymentType.value == paymentNotPaid.value) {
-//             final PaymentPopup pp = PaymentPopup(
-//               amount: filteredList[index].debitAmount,
-//               creditAllowed:
-//                   1, // TODO(James): fix this in the DB so that Kennnels can disable credit
-//               creditRemaining: filteredList[index].creditRemaining,
-//               currencySymbol: currencySymbol,
-//               hemId: filteredList[index].hasherEventMapId,
-//               decimalDigits: digitsAfterDecimal,
-//               // valueChanged: (num value) {
-//               //   finalValue = value;
-//               // },
-//             );
-
-//             final Future<int> dlg = showDialog<int>(
-//                 context: context,
-//                 barrierDismissible: false, // user must tap button!
-//                 builder: (BuildContext context) {
-//                   return pp;
-//                 });
-
-//             dlg.then(
-//               (int selectedTransactionType) {
-//                 if (selectedTransactionType != -1) {
-//                   payForEvent(filteredList[index], selectedTransactionType, pp.amount);
-//                 }
-//               },
-//             );
-//           } else {
-//             _displayPaymentDetails(filteredList[index], context)
-//                 .then((bool doCancelTransaction) {
-//               if (doCancelTransaction) {
-//                 payForEvent(filteredList[index], paymentNotPaid.value, 0);
-//               }
-//             });
-//           }
-//         },
-//       ),
-//     );
-//   }
-
-//   void payForEvent(PaymentReportModel item, int selectedValue, num amount) {
-//     setState(() {
-//       item.isTransactionInProgress = true;
-//     });
-//     final PayForEventService paySrv = PayForEventService();
-//     final Future<List<PayForEventModel>> retVal = paySrv.payForEvent(
-//         item.userIdWhoPaid,
-//         eventId,
-//         item.hasherEventMapId,
-//         selectedValue,
-//         amount,
-//         attendenceAtHash.value);
-//     retVal.then(
-//       (List<PayForEventModel> paymentResult) {
-//         if (paymentResult.isNotEmpty) {
-//           setState(() {
-//             item.isTransactionInProgress = false;
-//             // update the UI
-//             // start by updating the user's payment status to reflect the payment type
-//             item.paymentType = EnumPaymentType<int>(selectedValue);
-//             item.creditAmount = amount;
-//             // now update the counters at the top
-
-//             // // decrease the count for non-paid hashers
-//             // final PaymentReportModel notPaidHashersTotalRecord = model
-//             //     .paymentReportTotalsList
-//             //     .firstWhere((PaymentReportModel evt) =>
-//             //         evt.paymentType.value == paymentNotPaidTotals.value);
-//             // notPaidHashersTotalRecord.paymentReference =
-//             //     (int.parse(notPaidHashersTotalRecord.paymentReference) - 1)
-//             //         .toString();
-
-//             // final PaymentReportModel paymentTypeTotalRecord = model
-//             //     .paymentReportTotalsList
-//             //     .firstWhere((PaymentReportModel evt) =>
-//             //         evt.paymentType.value == (selectedValue + 100));
-
-//             // if (paymentTypeTotalRecord != null) {
-//             //   // increase the counter for the type of payment made
-//             //   paymentTypeTotalRecord.paymentReference =
-//             //       (int.parse(paymentTypeTotalRecord.paymentReference) + 1)
-//             //           .toString();
-//             //   // update the cash amount total
-//             //   if ((selectedValue != paymentFreeRun.value) &&
-//             //       (selectedValue != paymentNotPaid.value) &&
-//             //       (selectedValue != paymentHashCredit.value)) {
-//             //     paymentTypeTotalRecord.creditAmount += amount;
-//             //   }
-//             // }
-//           });
-//         } else {
-//           //setState(() => barcode = 'Error processing payment');
-//         }
-//       },
-//     );
-//   }
-
-//   Future<bool> _displayPaymentDetails(
-//       PaymentReportModel item, BuildContext context) async {
-//     return showDialog<bool>(
-//       context: context,
-//       barrierDismissible: false, // user must tap button!
-//       builder: (BuildContext context) {
-//         const TextStyle headingStyle = TextStyle(
-//             fontFamily: 'AvenirNextMedium',
-//             fontStyle: FontStyle.normal,
-//             fontSize: 16.0);
-
-//         const TextStyle bodyStyle = TextStyle(
-//             fontFamily: 'AvenirNextDemiBold',
-//             fontStyle: FontStyle.normal,
-//             fontSize: 16.0);
-
-//         String paymentTypeStr = '';
-
-//         switch (item.paymentType.value) {
-//           case 1:
-//             paymentTypeStr = 'Not paid';
-//             break;
-//           case 2:
-//             paymentTypeStr = 'Free run';
-//             break;
-//           case 3:
-//             paymentTypeStr = 'Cash';
-//             break;
-//           case 4:
-//             paymentTypeStr = 'Bank transfer';
-//             break;
-//           case 5:
-//             paymentTypeStr = 'Cash (other amount)';
-//             break;
-//           case 6:
-//             paymentTypeStr = 'Hash credit';
-//             break;
-//           case 7:
-//             paymentTypeStr = 'Transfer (other amt)';
-//             break;
-//           default:
-//             paymentTypeStr = 'Other';
-//         }
-
-//         final String amountStr = Utilities.getFormattedMoney(
-//             item?.creditAmount ?? 0,
-//             digitsAfterDecimal,
-//             currencySymbol);
-
-//         return AlertDialog(
-//           title: const Text('Payment Detail'),
-//           content: SingleChildScrollView(
-//             child: ListBody(
-//               children: <Widget>[
-//                 Row(
-//                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                   children: <Widget>[
-//                     Expanded(
-//                       flex: 3,
-//                       child: Column(
-//                         crossAxisAlignment: CrossAxisAlignment.end,
-//                         children: const <Widget>[
-//                           Text(
-//                             'Pay Ref:',
-//                             style: headingStyle,
-//                           ),
-//                           Text(
-//                             'Paid by:',
-//                             style: headingStyle,
-//                           ),
-//                           Text(
-//                             'Paid to:',
-//                             style: headingStyle,
-//                           ),
-//                           Text(
-//                             'Amount:',
-//                             style: headingStyle,
-//                           ),
-//                           Text(
-//                             'Date:',
-//                             style: headingStyle,
-//                           ),
-//                           Text(
-//                             'Time:',
-//                             style: headingStyle,
-//                           ),
-//                           Text(
-//                             'Type:',
-//                             style: headingStyle,
-//                           ),
-//                         ],
-//                       ),
-//                     ),
-//                     Expanded(
-//                       flex: 7,
-//                       child: Padding(
-//                         padding: const EdgeInsets.only(left: 4.0),
-//                         child: Column(
-//                           crossAxisAlignment: CrossAxisAlignment.start,
-//                           children: <Widget>[
-//                             Text(
-//                               item.paymentReference,
-//                               style: bodyStyle,
-//                             ),
-//                             Text(
-//                               item.paidBy,
-//                               style: bodyStyle,
-//                               maxLines: 1,
-//                             ),
-//                             // AutoSizeText(
-//                             //   item.paidBy,
-//                             //   style: bodyStyle,
-//                             //   maxLines: 1,
-//                             //   minFontSize: 12.0,
-//                             // ),
-//                             Text(
-//                               item.paidTo,
-//                               style: bodyStyle,
-//                               maxLines: 1,
-//                             ),
-
-//                             // AutoSizeText(
-//                             //   item.paidTo,
-//                             //   style: bodyStyle,
-//                             //   maxLines: 1,
-//                             //   minFontSize: 12.0,
-//                             // ),
-//                             Text(
-//                               amountStr,
-//                               style: bodyStyle,
-//                             ),
-//                             Text(
-//                               (item?.paymentDate == null)
-//                                   ? ''
-//                                   : DateFormat('MMM dd, yyyy')
-//                                       .format(item.paymentDate),
-//                               style: bodyStyle,
-//                             ),
-//                             Text(
-//                               (item?.paymentDate == null)
-//                                   ? ''
-//                                   : DateFormat('kk:mm')
-//                                       .format(item.paymentDate),
-//                               style: bodyStyle,
-//                             ),
-//                             Text(
-//                               paymentTypeStr,
-//                               style: bodyStyle,
-//                             ),
-//                           ],
-//                         ),
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           ),
-//           actions: <Widget>[
-//             FlatButton(
-//               child: const Text('Cancel transaction'),
-//               onPressed: () {
-//                 Navigator.of(context).pop(true);
-//               },
-//             ),
-//             FlatButton(
-//               child: const Text('Close'),
-//               onPressed: () {
-//                 Navigator.of(context).pop(false);
-//               },
-//             ),
-//           ],
-//         );
-//       },
-//     );
-//   }
-// }

@@ -205,6 +205,13 @@ class HasherEventMapTableHelper {
 class HasherEventMapService {
   //static final HasherEventMapTableHelper instance = HasherEventMapTableHelper._privateConstructor();
 
+  static Future<num> getLastUpdatedTime(HasherEventMapTableType tblType) async {
+    final Database db = await DBProvider.db.database;
+    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${HasherEventMapTableHelper.colUpdatedAtValue}) AS maxDate FROM ${HasherEventMapTableHelper.getTableName(tblType)}');
+    final num timeValue = table.first['maxDate'];
+    return timeValue;
+  }
+  
   Future<void> clearTable(HasherEventMapTableType tblType) async {
     final Database db = await DBProvider.db.database;
     await db.rawDelete('DELETE FROM ${HasherEventMapTableHelper.getTableName(tblType)}').then((void dummy) {
