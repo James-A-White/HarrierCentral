@@ -335,6 +335,7 @@ class PaymentsService {
 
   Future<void> payForEvent(
     String eventId,
+    String hasherId,
     String hasherEventMapId,
     int paymentType,
     num paymentAmount,
@@ -346,7 +347,11 @@ class PaymentsService {
       hasherEventMapId = GUID_EMPTY;
     }
 
-    final String tokenParameterString = hasherEventMapId.toUpperCase() + '#' + GUID_EMPTY + '#' + paymentAmount.toInt().toString() + '#' + eventId.toUpperCase();
+    if ((hasherId ?? '').isEmpty) {
+      hasherId = GUID_EMPTY;
+    }
+
+    final String tokenParameterString = hasherEventMapId.toUpperCase() + '#' + hasherId + '#' + paymentAmount.toInt().toString() + '#' + eventId.toUpperCase();
 
     final String accessToken = Utilities.generateToken(userId, 'payForEvent', paramString: tokenParameterString);
 
@@ -359,7 +364,7 @@ class PaymentsService {
     final String body = jsonEncode(<String, String>{
       'userId': userId,
       'accessToken': accessToken,
-      'userIdWhoPaid': GUID_EMPTY,
+      'userIdWhoPaid': hasherId,
       'eventId': eventId,
       'hasherEventMapId': hasherEventMapId,
       'paymentType': paymentType.toString(),

@@ -10,6 +10,7 @@ import 'package:harrier_central/pages/run_admin/payment_popup.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/payment_report_list_item.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/database/database.dart';
@@ -132,6 +133,7 @@ class PaymentReportState extends State<PaymentReportPage> {
     final PaymentsService paySrv = PaymentsService();
     final Future<void> retVal = paySrv.payForEvent(
       widget.event['eventId'],
+      GUID_EMPTY,
       item.pkHemId,
       paymentType,
       amount,

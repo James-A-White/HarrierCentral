@@ -9,11 +9,11 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/data/models/pay_for_event_model.dart';
+//import 'package:harrier_central/data/models/pay_for_event_model.dart';
 import 'package:harrier_central/data/models/process_qr_scan_for_checkin_model.dart';
 import 'package:harrier_central/data/models/user_model.dart';
 import 'package:harrier_central/data/services/pack_scoped_model.dart';
-import 'package:harrier_central/data/services/pay_scoped_model.dart';
+// import 'package:harrier_central/data/services/pay_scoped_model.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
@@ -28,6 +28,7 @@ import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/countries_service.dart';
+import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 
 
@@ -47,7 +48,7 @@ class CheckInPackPage extends StatefulWidget {
 
 class CheckInPackPageState extends State<CheckInPackPage> {
   final PackScopedModel _packScopedModel = PackScopedModel();
-  final PayScopedModel _payScopedModel = PayScopedModel();
+  //final PayScopedModel _payScopedModel = PayScopedModel();
 
   GlobalKey packListBox = GlobalKey();
 
@@ -287,9 +288,7 @@ String userId = getStringPref(StringPrefsEnum.userId);
     
     return ScopedModel<PackScopedModel>(
       model: _packScopedModel,
-      child: ScopedModel<PayScopedModel>(
-        model: _payScopedModel,
-        child: Scaffold(
+      child:  Scaffold(
           key: scaffoldKey,
           floatingActionButton: SpeedDial(
             // both default to 16
@@ -460,7 +459,7 @@ String userId = getStringPref(StringPrefsEnum.userId);
                                       return PackListView(
                                           packList: packList,
                                           packScopedModel: _packScopedModel,
-                                          payScopedModel: _payScopedModel,
+                                        
                                           event: event);
                                     },
                                   ),
@@ -470,8 +469,7 @@ String userId = getStringPref(StringPrefsEnum.userId);
                 ]),
           ),
         ),
-      ),
-    );
+      );
   }
 
 //
@@ -656,36 +654,45 @@ String userId = getStringPref(StringPrefsEnum.userId);
   //     futureRun: widget.futureRun,
   //     packScopedModel: _packScopedModel,
   //     payScopedModel: _payScopedModel,
-  //     packList: packList,
+  //     widget.packList: widget.packList,
   //   );
 
   //   return snackbar;
   // }
 }
 
-class PackListView extends StatelessWidget {
+class PackListView extends StatefulWidget {
   const PackListView({
     Key key,
     @required this.packList,
     @required this.packScopedModel,
-    @required this.payScopedModel,
     @required this.event
   }) : super(key: key);
 
   final List<UserModel> packList;
   final PackScopedModel packScopedModel;
-  final PayScopedModel payScopedModel;
   final Map<String,dynamic> event;
+
+  @override
+  State<PackListView> createState() {
+    return PackListViewState();
+  }
+
+}
+
+class PackListViewState extends State<PackListView> {
 
   SnackBar buildRsvpAndPaymentSnackbar(
       BuildContext context, int index, PackScopedModel _packScopedModel) {
     final SnackBar snackbar = PaymentSnackBar(
         context: context,
         index: index,
-        event: event,
-        packScopedModel: packScopedModel,
-        payScopedModel: payScopedModel,
-        packList: packList);
+        event: widget.event,
+        packScopedModel: widget.packScopedModel,
+        packList: widget.packList,
+        onCompletedCallback: () {
+
+        },);
 
     return snackbar;
   }
@@ -693,9 +700,9 @@ class PackListView extends StatelessWidget {
   Widget listItem(BuildContext context, int index) {
     return GestureDetector(
       onTap: () {
-        if (((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) {
+        if (((widget.event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) {
           final SnackBar snackBar =
-              buildRsvpAndPaymentSnackbar(context, index, packScopedModel);
+              buildRsvpAndPaymentSnackbar(context, index, widget.packScopedModel);
 
           Scaffold.of(context)
               .removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
@@ -706,9 +713,9 @@ class PackListView extends StatelessWidget {
         width: MediaQuery.of(context).size.width,
         child: Stack(
           children: <Widget>[
-            packList[index].photo.startsWith('http')
+            widget.packList[index].photo.startsWith('http')
                 ? CachedNetworkImage(
-                    imageUrl: packList[index].photo,
+                    imageUrl: widget.packList[index].photo,
                     // placeholder: (context, url) => Container(
                     //     child: Center(
                     //       child: Container(
@@ -729,13 +736,13 @@ class PackListView extends StatelessWidget {
                     width: 70.0,
                     height: 70.0,
                     fit: BoxFit.fill)
-                : packList[index].photo.startsWith('bundle')
+                : widget.packList[index].photo.startsWith('bundle')
                     ? Image(
                         width: 70.0,
                         height: 70.0,
                         fit: BoxFit.fill,
                         image: AssetImage(('images/avatars/' +
-                                packList[index]
+                                widget.packList[index]
                                     .photo
                                     .toLowerCase()
                                     .replaceFirst('bundle://', '') +
@@ -752,7 +759,7 @@ class PackListView extends StatelessWidget {
             Positioned(
               left: 77.0,
               top: 3.0,
-              child: Text(packList[index].displayName,
+              child: Text(widget.packList[index].displayName,
                   style: const TextStyle(
                       fontFamily: 'AvenirNextCondensedMedium',
                       fontStyle: FontStyle.normal,
@@ -772,23 +779,23 @@ class PackListView extends StatelessWidget {
             Positioned(
               right: 3.0,
               bottom: 0.0,
-              child: packList[index].userRunCount < 1
+              child: widget.packList[index].userRunCount < 1
                   ? const Text('')
                   : Text(
-                      packList[index].userRunCount.toString() +
-                          (packList[index].userRunCount == 1
+                      widget.packList[index].userRunCount.toString() +
+                          (widget.packList[index].userRunCount == 1
                               ? ' Run'
                               : ' Runs'),
                       style: TextStyle(
                         fontFamily:
-                            checkSpecialRun(packList[index].userRunCount) ==
+                            checkSpecialRun(widget.packList[index].userRunCount) ==
                                     true
                                 ? 'AvenirNextDemiBold'
                                 : 'AvenirNext',
                         fontStyle: FontStyle.normal,
                         fontSize: 25.0,
                         height: 1.0,
-                        color: checkSpecialRun(packList[index].userRunCount) ==
+                        color: checkSpecialRun(widget.packList[index].userRunCount) ==
                                 true
                             ? Colors.red[700]
                             : Colors.black,
@@ -798,13 +805,13 @@ class PackListView extends StatelessWidget {
             Positioned(
               left: 75.0,
               bottom: 3.0,
-              child: packList[index].rsvpState == -1
+              child: widget.packList[index].rsvpState == -1
                   ? CircleAvatar(
                       backgroundColor: Colors.grey[350],
                       radius: 14.0,
                     )
                   : CircleAvatar(
-                      backgroundColor: packList[index].rsvpState == 0
+                      backgroundColor: widget.packList[index].rsvpState == 0
                           ? Colors.grey[350]
                           : Colors.white,
                       radius: 14.0,
@@ -812,21 +819,21 @@ class PackListView extends StatelessWidget {
             ),
             Positioned(
               left: 76.0,
-              bottom: packList[index].rsvpState <= 0
+              bottom: widget.packList[index].rsvpState <= 0
                   ? 2.0
-                  : packList[index].isHare == 1 ? 5.0 : 3.5,
-              child: (packList[index].rsvpState < 0) ||
-                      (packList[index].isHare < 0)
+                  : widget.packList[index].isHare == 1 ? 5.0 : 3.5,
+              child: (widget.packList[index].rsvpState < 0) ||
+                      (widget.packList[index].isHare < 0)
                   ? Icon(delayIcon, color: Colors.blue[800])
-                  : packList[index].rsvpState == 0
+                  : widget.packList[index].rsvpState == 0
                       ? Container()
-                      : packList[index].rsvpState == rsvpNo.value
+                      : widget.packList[index].rsvpState == rsvpNo.value
                           ? const Icon(FontAwesome.times_circle,
                               color: Colors.red, size: 27.0)
-                          : packList[index].rsvpState == rsvpMaybe.value
+                          : widget.packList[index].rsvpState == rsvpMaybe.value
                               ? const Icon(FontAwesome.question_circle,
                                   color: Colors.orange, size: 27.0)
-                              : packList[index].isHare == 0
+                              : widget.packList[index].isHare == 0
                                   ? const Icon(FontAwesome.check_circle,
                                       color: Colors.green, size: 27.0)
                                   : Image.asset('images/icons/hare_icon.png',
@@ -835,9 +842,7 @@ class PackListView extends StatelessWidget {
                                       width: 24.0),
             ),
 
-            ScopedModelDescendant<PayScopedModel>(builder:
-                (BuildContext context, Widget child, PayScopedModel model) {
-              return packList.isEmpty
+              widget.packList.isEmpty
                   ? const Positioned(
                       top: 0,
                       bottom: 0,
@@ -847,33 +852,30 @@ class PackListView extends StatelessWidget {
                   : Positioned(
                       left: 155.0,
                       bottom: 3.0,
-                      child: (packList[index].attendenceState <
+                      child: (widget.packList[index].attendenceState <
                                   attendenceAtHash.value) &&
-                              (packList[index].requestedAttendenceState <
+                              (widget.packList[index].requestedAttendenceState <
                                   attendenceAtHash.value)
                           ? CircleAvatar(
                               backgroundColor: Colors.grey[350],
                               radius: 14.0,
                             )
-                          : (packList[index].rsvpState != rsvpYes.value) &&
-                                  (packList[index].requestedRsvpState !=
+                          : (widget.packList[index].rsvpState != rsvpYes.value) &&
+                                  (widget.packList[index].requestedRsvpState !=
                                       rsvpYes.value)
                               ? Container()
-                              : packList[index].isPaid == -1
+                              : widget.packList[index].isPaid == -1
                                   ? Icon(delayIcon, color: Colors.blue[800])
                                   : CircleAvatar(
                                       backgroundColor:
-                                          packList[index].attendenceState == 0
+                                          widget.packList[index].attendenceState == 0
                                               ? Colors.transparent
                                               : Colors.white,
                                       radius: 14.0,
                                     ),
-                    );
-            }),
-            ScopedModelDescendant<PayScopedModel>(
-              builder:
-                  (BuildContext context, Widget child, PayScopedModel model) {
-                return packList.isEmpty
+                    ),
+
+                widget.packList.isEmpty
                     ? const Positioned(
                         top: 0,
                         bottom: 0,
@@ -883,46 +885,44 @@ class PackListView extends StatelessWidget {
                     : Positioned(
                         left: 157.0,
                         bottom:
-                            packList[index].attendenceState < -1 ? 4.5 : 5.5,
-                        child: (packList[index].attendenceState < attendenceAtHash.value) &&
-                                (packList[index].requestedAttendenceState <
+                            widget.packList[index].attendenceState < -1 ? 4.5 : 5.5,
+                        child: (widget.packList[index].attendenceState < attendenceAtHash.value) &&
+                                (widget.packList[index].requestedAttendenceState <
                                     attendenceAtHash.value)
                             ? Container()
-                            : (packList[index].rsvpState != rsvpYes.value) && (packList[index].requestedRsvpState != rsvpYes.value)
+                            : (widget.packList[index].rsvpState != rsvpYes.value) && (widget.packList[index].requestedRsvpState != rsvpYes.value)
                                 ? Container()
-                                : ((packList[index].attendenceState <= attendenceNo.value) &&
-                                        (packList[index].requestedAttendenceState <=
+                                : ((widget.packList[index].attendenceState <= attendenceNo.value) &&
+                                        (widget.packList[index].requestedAttendenceState <=
                                             attendenceNo.value))
                                     ? Image.asset(
                                         'images/icons/dollar_sign_icon.png',
                                         height: 24.0,
                                         width: 24.0,
                                         color: Colors.transparent)
-                                    : packList[index].isPaid == isPaidNo.value
+                                    : widget.packList[index].isPaid == isPaidNo.value
                                         ? Image.asset(
                                             'images/icons/dollar_sign_icon.png',
                                             height: 24.0,
                                             width: 24.0,
                                             color: Colors.red)
-                                        : packList[index].isPaid == isPaidYes.value
-                                            ? Image.asset('images/icons/payment_type_${packList[index].paymentType}.png', height: 24.0, width: 24.0, color: Colors.green)
-                                            : Container());
-              },
-            ),
+                                        : widget.packList[index].isPaid == isPaidYes.value
+                                            ? Image.asset('images/icons/payment_type_${widget.packList[index].paymentType}.png', height: 24.0, width: 24.0, color: Colors.green)
+                                            : Container()),
 
             Positioned(
               left: 115.0,
               bottom: 3.0,
-              child: (packList[index].rsvpState != rsvpYes.value) &&
-                      (packList[index].requestedRsvpState != rsvpYes.value)
+              child: (widget.packList[index].rsvpState != rsvpYes.value) &&
+                      (widget.packList[index].requestedRsvpState != rsvpYes.value)
                   ? CircleAvatar(
                       backgroundColor: Colors.grey[350],
                       radius: 14.0,
                     )
-                  : packList[index].attendenceState < 0
+                  : widget.packList[index].attendenceState < 0
                       ? Icon(delayIcon, color: Colors.blue[800])
                       : CircleAvatar(
-                          backgroundColor: packList[index].attendenceState == 0
+                          backgroundColor: widget.packList[index].attendenceState == 0
                               ? Colors.transparent
                               : Colors.white,
                           radius: 14.0,
@@ -930,18 +930,18 @@ class PackListView extends StatelessWidget {
             ),
             Positioned(
               left: 117.0,
-              bottom: packList[index].attendenceState <= 0 ? 4.5 : 5.5,
-              child: (packList[index].rsvpState != rsvpYes.value) &&
-                      (packList[index].requestedRsvpState != rsvpYes.value)
+              bottom: widget.packList[index].attendenceState <= 0 ? 4.5 : 5.5,
+              child: (widget.packList[index].rsvpState != rsvpYes.value) &&
+                      (widget.packList[index].requestedRsvpState != rsvpYes.value)
                   ? Container()
-                  : packList[index].attendenceState == attendenceNo.value
+                  : widget.packList[index].attendenceState == attendenceNo.value
                       ? Image.asset('images/icons/not_at_hash_icon.png',
                           height: 24.0, width: 24.0, color: Colors.red[700])
-                      : packList[index].attendenceState ==
+                      : widget.packList[index].attendenceState ==
                               attendenceAtHash.value
                           ? Image.asset('images/icons/runner_icon.png',
                               height: 24.0, width: 24.0, color: Colors.red)
-                          : packList[index].attendenceState >=
+                          : widget.packList[index].attendenceState >=
                                   attendenceOnIn.value
                               ? Image.asset('images/icons/beer_icon.png',
                                   height: 24.0,
@@ -986,7 +986,7 @@ class PackListView extends StatelessWidget {
               color: Colors.black45,
             ),
         physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: packList?.length ?? 0,
+        itemCount: widget.packList?.length ?? 0,
         itemBuilder: (BuildContext context, int index) {
           return 
           // (packScopedModel.isLoading) 
@@ -1009,7 +1009,7 @@ class PackListView extends StatelessWidget {
 
 
           
-          // ((packList == null) || (packList.isEmpty)) 
+          // ((widget.packList == null) || (widget.packList.isEmpty)) 
           //     ?  Container(
           //                     // height: constraints.maxHeight -
           //                     //       searchBar(_packScopedModel,
@@ -1024,25 +1024,24 @@ class PackListView extends StatelessWidget {
               Dismissible(
                   key: Key(index.toString()),
                   confirmDismiss: (DismissDirection direction) {
-                    if (packList[index].isPaid != 1) {
-                      packScopedModel.forceRefresh();
+                    if (widget.packList[index].isPaid != 1) {
+                      widget.packScopedModel.forceRefresh();
                       print(direction.toString() + ' ' + index.toString());
                       processPayment(
                           index,
-                          packScopedModel,
-                          payScopedModel,
+                          widget.packScopedModel,
                           context,
                           direction == DismissDirection.endToStart ? 3 : 4,
-                          packList[index].eventPrice);
+                          widget.packList[index].eventPrice);
                     } else {
                       if (direction == DismissDirection.endToStart) {
-                        packScopedModel.setRsvpState(rsvpYes.value, -1,
-                            attendenceOnIn.value, packList[index]);
+                        widget.packScopedModel.setRsvpState(rsvpYes.value, -1,
+                            attendenceOnIn.value, widget.packList[index]);
                       }
                     }
                     return Future<bool>.value(false);
                   },
-                  background: packList[index].isPaid == 1
+                  background: widget.packList[index].isPaid == 1
                       ? Container(
                           color: Colors.grey,
                           child: Row(
@@ -1082,7 +1081,7 @@ class PackListView extends StatelessWidget {
                               Padding(
                                 padding: const EdgeInsets.only(left: 15.0),
                                 child: Text(
-                                    '${Utilities.getFormattedMoney(packList[index].eventPrice, packList[index].digitsAfterDecimal, packList[index].currencySymbol)} Bank Transfer',
+                                    '${Utilities.getFormattedMoney(widget.packList[index].eventPrice, widget.packList[index].digitsAfterDecimal, widget.packList[index].currencySymbol)} Bank Transfer',
                                     style: const TextStyle(
                                         fontFamily: 'AvenirNextDemiBold',
                                         fontStyle: FontStyle.normal,
@@ -1093,8 +1092,8 @@ class PackListView extends StatelessWidget {
                             ],
                           ),
                         ),
-                  secondaryBackground: packList[index].isPaid == 1
-                      ? packList[index].attendenceState >= attendenceOnIn.value
+                  secondaryBackground: widget.packList[index].isPaid == 1
+                      ? widget.packList[index].attendenceState >= attendenceOnIn.value
                           ? Container(
                               color: Colors.grey,
                               child: Row(
@@ -1161,7 +1160,7 @@ class PackListView extends StatelessWidget {
                               Padding(
                                 padding: const EdgeInsets.only(right: 15.0),
                                 child: Text(
-                                    '${Utilities.getFormattedMoney(packList[index].eventPrice, packList[index].digitsAfterDecimal, packList[index].currencySymbol)} Cash',
+                                    '${Utilities.getFormattedMoney(widget.packList[index].eventPrice, widget.packList[index].digitsAfterDecimal, widget.packList[index].currencySymbol)} Cash',
                                     style: const TextStyle(
                                         fontFamily: 'AvenirNextDemiBold',
                                         fontStyle: FontStyle.normal,
@@ -1184,11 +1183,10 @@ class PackListView extends StatelessWidget {
   void processPayment(
       int index,
       PackScopedModel _packScopedModel,
-      PayScopedModel _payScopedModel,
       BuildContext context,
       int paymentType,
       num paymentAmount) {
-    final UserModel hasher = packList[index];
+    final UserModel hasher = widget.packList[index];
 
     if (hasher.rsvpState < rsvpYes.value) {
       hasher.rsvpState = -1;
@@ -1197,87 +1195,91 @@ class PackListView extends StatelessWidget {
 
     _packScopedModel.forceRefresh();
 
-    _payScopedModel
-        .payForEvent(
-            packList, index, paymentType, paymentAmount, attendenceAtHash.value)
-        .then((List<PayForEventModel> result) {
-      if (paymentType == paymentNotPaid.value) {
-        hasher.isPaid = 0;
-      } else {
-        hasher.isPaid = 1;
-      }
+    // _payScopedModel
+    //     .payForEvent(
+    //         widget.packList, index, paymentType, paymentAmount, attendenceAtHash.value)
+    //     .then((List<PayForEventModel> result) {
+    //   if (paymentType == paymentNotPaid.value) {
+    //     hasher.isPaid = 0;
+    //   } else {
+    //     hasher.isPaid = 1;
+    //   }
 
-      if (hasher.hasherEventMapId != result[0].hasherEventMapId) {
-        hasher.hasherEventMapId = result[0].hasherEventMapId;
-      }
+    //   if (hasher.hasherEventMapId != result[0].hasherEventMapId) {
+    //     hasher.hasherEventMapId = result[0].hasherEventMapId;
+    //   }
 
-      if (hasher.userRunCount != result[0].totalRunsThisKennel) {
-        hasher.userRunCount = result[0].totalRunsThisKennel;
-      }
+    //   if (hasher.userRunCount != result[0].totalRunsThisKennel) {
+    //     hasher.userRunCount = result[0].totalRunsThisKennel;
+    //   }
 
-      hasher.rsvpState = rsvpYes.value;
-      hasher.requestedRsvpState = -1;
+    //   hasher.rsvpState = rsvpYes.value;
+    //   hasher.requestedRsvpState = -1;
 
-      if (hasher.attendenceState < attendenceAtHash.value) {
-        hasher.attendenceState = attendenceAtHash.value;
-      }
+    //   if (hasher.attendenceState < attendenceAtHash.value) {
+    //     hasher.attendenceState = attendenceAtHash.value;
+    //   }
 
-      _packScopedModel.forceRefresh();
+    //   _packScopedModel.forceRefresh();
 
-      packList[index].paymentType = paymentType;
-      if ((paymentType == paymentCashOtherAmount.value) ||
-          (paymentType == paymentBankTransferOtherAmount.value)) {
-        final num fundsDifference = paymentAmount -
-            (hasher.isMember == 1
-                ? event['eventPriceForMembers']
-                : event['eventPriceForNonMembers']);
+    //   widget.packList[index].paymentType = paymentType;
+    //   if ((paymentType == paymentCashOtherAmount.value) ||
+    //       (paymentType == paymentBankTransferOtherAmount.value)) {
+    //     final num fundsDifference = paymentAmount -
+    //         (hasher.isMember == 1
+    //             ? event['eventPriceForMembers']
+    //             : event['eventPriceForNonMembers']);
 
-        final String credit = Utilities.getFormattedMoney(fundsDifference,
-            event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
+    //     final String credit = Utilities.getFormattedMoney(fundsDifference,
+    //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
 
-        final double hashCashAmount = hasher.isMember == 1
-            ? event['eventPriceForMembers']
-            : event['eventPriceForNonMembers'];
+    //     final double hashCashAmount = hasher.isMember == 1
+    //         ? event['eventPriceForMembers']
+    //         : event['eventPriceForNonMembers'];
 
-        final String hashCash = Utilities.getFormattedMoney(hashCashAmount,
-            event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
+    //     final String hashCash = Utilities.getFormattedMoney(hashCashAmount,
+    //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
 
-        final String amountPaid = Utilities.getFormattedMoney(paymentAmount,
-            event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
+    //     final String amountPaid = Utilities.getFormattedMoney(paymentAmount,
+    //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
 
-        final String paymentMethod = paymentType == paymentCashOtherAmount.value
-            ? 'in cash'
-            : 'by bank transfer';
+    //     final String paymentMethod = paymentType == paymentCashOtherAmount.value
+    //         ? 'in cash'
+    //         : 'by bank transfer';
 
-        if (fundsDifference > 0.0) {
-          showDialog<void>(
-              context: context,
-              builder: (BuildContext context) {
-                // return object of type Dialog
-                return AlertDialog(
-                  title: const Text('Credit applied to account'),
-                  content: Text(
-                      '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${event['kennelShortName']}'),
-                  actions: <Widget>[
-                    // usually buttons at the bottom of the dialog
-                    FlatButton(
-                      color: Colors.blue,
-                      textColor: Colors.white,
-                      child: const Text('Close'),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
-                );
-              });
-        }
-      }
-    });
+    //     if (fundsDifference > 0.0) {
+    //       showDialog<void>(
+    //           context: context,
+    //           builder: (BuildContext context) {
+    //             // return object of type Dialog
+    //             return AlertDialog(
+    //               title: const Text('Credit applied to account'),
+    //               content: Text(
+    //                   '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${event['kennelShortName']}'),
+    //               actions: <Widget>[
+    //                 // usually buttons at the bottom of the dialog
+    //                 FlatButton(
+    //                   color: Colors.blue,
+    //                   textColor: Colors.white,
+    //                   child: const Text('Close'),
+    //                   onPressed: () {
+    //                     Navigator.of(context).pop();
+    //                   },
+    //                 ),
+    //               ],
+    //             );
+    //           });
+    //     }
+    //   }
+    // });
 
-    packList[index].isPaid = -1;
+    widget.packList[index].isPaid = -1;
 
     Scaffold.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
+
+    setState(() {
+      
+    });
   }
 }
 

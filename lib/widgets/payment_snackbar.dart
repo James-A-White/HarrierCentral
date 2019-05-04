@@ -6,31 +6,31 @@ import 'package:flutter/material.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data/models/user_model.dart';
 import 'package:harrier_central/data/services/pack_scoped_model.dart';
-import 'package:harrier_central/data/services/pay_scoped_model.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/pages/run_admin/other_payment_popup.dart';
-import 'package:harrier_central/data/models/pay_for_event_model.dart';
+//import 'package:harrier_central/data/models/pay_for_event_model.dart';
+import 'package:harrier_central/data/hc3_services/payments_service.dart';
 
-import 'package:scoped_model/scoped_model.dart';
+//import 'package:scoped_model/scoped_model.dart';
 
 class PaymentSnackBar extends SnackBar {
   const PaymentSnackBar({
     @required this.index,
     @required this.packScopedModel,
-    @required this.payScopedModel,
     @required this.context,
     @required this.packList,
-    @required this.event
+    @required this.event,
+    @required this.onCompletedCallback
 
   }) : super(content: const Text('test'));
 
   final int index;
   final PackScopedModel packScopedModel;
-  final PayScopedModel payScopedModel;
   final BuildContext context;
   final List<UserModel> packList;
   final Map<String, dynamic> event;
+  final Function onCompletedCallback;
 
 
   @override
@@ -395,11 +395,7 @@ class PaymentSnackBar extends SnackBar {
                   padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
                   child: Container(color: Colors.white, height: 3.0),
                 ),
-          !(((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowHashCashFlag) != 0) ? Container() :
-          ScopedModelDescendant<PayScopedModel>(
-            builder:
-                (BuildContext context, Widget child, PayScopedModel model) {
-              return Column(children: <Widget>[
+          !(((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowHashCashFlag) != 0) ? Container() : Column(children: <Widget>[
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -427,7 +423,6 @@ class PaymentSnackBar extends SnackBar {
                               processPayment(
                                   index,
                                   packScopedModel,
-                                  payScopedModel,
                                   context,
                                   paymentNotPaid.value,
                                   0.0);
@@ -467,7 +462,6 @@ class PaymentSnackBar extends SnackBar {
                               processPayment(
                                   index,
                                   packScopedModel,
-                                  payScopedModel,
                                   context,
                                   paymentFreeRun.value,
                                   0.0);
@@ -550,7 +544,6 @@ class PaymentSnackBar extends SnackBar {
                               processPayment(
                                   index,
                                   packScopedModel,
-                                  payScopedModel,
                                   context,
                                   paymentCash.value,
                                   packList[index].isMember != 1
@@ -592,7 +585,6 @@ class PaymentSnackBar extends SnackBar {
                               processPayment(
                                   index,
                                   packScopedModel,
-                                  payScopedModel,
                                   context,
                                   paymentBankTransfer.value,
                                   packList[index].isMember != 1
@@ -634,7 +626,6 @@ class PaymentSnackBar extends SnackBar {
                               processPayment(
                                   index,
                                   packScopedModel,
-                                  payScopedModel,
                                   context,
                                   paymentHashCredit.value,
                                   packList[index].isMember != 1
@@ -657,9 +648,8 @@ class PaymentSnackBar extends SnackBar {
                     ),
                   ],
                 ),
-              ]);
-            },
-          ),
+              ],),
+
         ],
       );
 
@@ -694,19 +684,18 @@ class PaymentSnackBar extends SnackBar {
 
         if ((v != null) && (t != null)) {
           processPayment(
-              index, _packScopedModel, payScopedModel, context, t, v);
+              index, _packScopedModel, context, t, v);
         }
       }
     });
   }
 
-  void processPayment(
+  Future<bool> processPayment(
       int index,
       PackScopedModel _packScopedModel,
-      PayScopedModel _payScopedModel,
       BuildContext context,
       int paymentType,
-      num paymentAmount) {
+      num paymentAmount) async {
     final UserModel hasher = packList[index];
 
     if (hasher.rsvpState < rsvpYes.value) {
@@ -718,87 +707,93 @@ class PaymentSnackBar extends SnackBar {
 
     _packScopedModel.forceRefresh();
 
-    _payScopedModel
-        .payForEvent(
-            packList, index, paymentType, paymentAmount, attendenceAtHash.value)
-        .then((List<PayForEventModel> result) {
-      if (paymentType == paymentNotPaid.value) {
-        hasher.isPaid = 0;
-      } else {
-        hasher.isPaid = 1;
-      }
+    final PaymentsService pSrv =PaymentsService();
 
-      if (hasher.hasherEventMapId != result[0].hasherEventMapId) {
-        hasher.hasherEventMapId = result[0].hasherEventMapId;
-      }
+    await pSrv.payForEvent(event['eventId'], hasher.hasherId, hasher.hasherEventMapId ?? GUID_EMPTY, paymentType, paymentAmount, attendenceAtHash.value);
 
-      if (hasher.userRunCount != result[0].totalRunsThisKennel) {
-        hasher.userRunCount = result[0].totalRunsThisKennel;
-      }
+    // _payScopedModel
+    //     .payForEvent(
+    //         packList, index, paymentType, paymentAmount, attendenceAtHash.value)
+    //     .then((List<PayForEventModel> result) {
+    //   if (paymentType == paymentNotPaid.value) {
+    //     hasher.isPaid = 0;
+    //   } else {
+    //     hasher.isPaid = 1;
+    //   }
 
-      hasher.rsvpState = rsvpYes.value;
-      hasher.requestedRsvpState = -1;
+    //   if (hasher.hasherEventMapId != result[0].hasherEventMapId) {
+    //     hasher.hasherEventMapId = result[0].hasherEventMapId;
+    //   }
 
-      if (hasher.attendenceState < attendenceAtHash.value) {
-        hasher.attendenceState = attendenceAtHash.value;
-        hasher.requestedAttendenceState = -1;
-      }
+    //   if (hasher.userRunCount != result[0].totalRunsThisKennel) {
+    //     hasher.userRunCount = result[0].totalRunsThisKennel;
+    //   }
 
-      _packScopedModel.forceRefresh();
+    //   hasher.rsvpState = rsvpYes.value;
+    //   hasher.requestedRsvpState = -1;
 
-      packList[index].paymentType = paymentType;
-      if ((paymentType == paymentCashOtherAmount.value) ||
-          (paymentType == paymentBankTransferOtherAmount.value)) {
-        final num fundsDifference = paymentAmount -
-            (hasher.isMember == 1
-                ? event['eventPriceForMembers']
-                : event['eventPriceForNonMembers']);
+    //   if (hasher.attendenceState < attendenceAtHash.value) {
+    //     hasher.attendenceState = attendenceAtHash.value;
+    //     hasher.requestedAttendenceState = -1;
+    //   }
 
-        final String credit = Utilities.getFormattedMoney(fundsDifference,
-            event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
+    //   _packScopedModel.forceRefresh();
 
-        final double hashCashAmount = hasher.isMember == 1
-            ? event['eventPriceForMembers']
-            : event['eventPriceForNonMembers'];
+    //   packList[index].paymentType = paymentType;
+    //   if ((paymentType == paymentCashOtherAmount.value) ||
+    //       (paymentType == paymentBankTransferOtherAmount.value)) {
+    //     final num fundsDifference = paymentAmount -
+    //         (hasher.isMember == 1
+    //             ? event['eventPriceForMembers']
+    //             : event['eventPriceForNonMembers']);
 
-        final String hashCash = Utilities.getFormattedMoney(hashCashAmount,
-            event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
+    //     final String credit = Utilities.getFormattedMoney(fundsDifference,
+    //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
 
-        final String amountPaid = Utilities.getFormattedMoney(paymentAmount,
-            event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
+    //     final double hashCashAmount = hasher.isMember == 1
+    //         ? event['eventPriceForMembers']
+    //         : event['eventPriceForNonMembers'];
 
-        final String paymentMethod = paymentType == paymentCashOtherAmount.value
-            ? 'in cash'
-            : 'by bank transfer';
+    //     final String hashCash = Utilities.getFormattedMoney(hashCashAmount,
+    //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
 
-        if (fundsDifference > 0.0) {
-          showDialog<void>(
-              context: context,
-              builder: (BuildContext context) {
-                // return object of type Dialog
-                return AlertDialog(
-                  title: const Text('Credit applied to account'),
-                  content: Text(
-                      '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${event['kennelShortName']}'),
-                  actions: <Widget>[
-                    // usually buttons at the bottom of the dialog
-                    FlatButton(
-                      color: Colors.blue,
-                      textColor: Colors.white,
-                      child: const Text('Close'),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
-                );
-              });
-        }
-      }
-    });
+    //     final String amountPaid = Utilities.getFormattedMoney(paymentAmount,
+    //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
 
-    packList[index].isPaid = -1;
+    //     final String paymentMethod = paymentType == paymentCashOtherAmount.value
+    //         ? 'in cash'
+    //         : 'by bank transfer';
+
+    //     if (fundsDifference > 0.0) {
+    //       showDialog<void>(
+    //           context: context,
+    //           builder: (BuildContext context) {
+    //             // return object of type Dialog
+    //             return AlertDialog(
+    //               title: const Text('Credit applied to account'),
+    //               content: Text(
+    //                   '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${event['kennelShortName']}'),
+    //               actions: <Widget>[
+    //                 // usually buttons at the bottom of the dialog
+    //                 FlatButton(
+    //                   color: Colors.blue,
+    //                   textColor: Colors.white,
+    //                   child: const Text('Close'),
+    //                   onPressed: () {
+    //                     Navigator.of(context).pop();
+    //                   },
+    //                 ),
+    //               ],
+    //             );
+    //           });
+    //     }
+    //   }
+    // });
+
+    // packList[index].isPaid = -1;
 
     Scaffold.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
+
+    return true;
   }
 }
