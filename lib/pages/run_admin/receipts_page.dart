@@ -37,11 +37,11 @@ class ReceiptsListState extends State<ReceiptsList> {
   @override
   void initState() {
     refreshFromTable();
-    DBProvider.db.database.then((Database db) {
-      db.rawQuery('SELECT * FROM receipts ORDER BY id').then((List<Map<String, dynamic>> result) {
-        print(result);
-      });
-    });
+    // DBProvider.db.database.then((Database db) {
+    //   db.rawQuery('SELECT * FROM receipts ORDER BY id').then((List<Map<String, dynamic>> result) {
+    //     print(result);
+    //   });
+    // });
 
     super.initState();
   }
@@ -108,16 +108,6 @@ class ReceiptsListState extends State<ReceiptsList> {
                     ).then<dynamic>((void receipt) {
                       refreshFromTable();
                     })
-                // if (user != null) {
-                //   _packScopedModel.addEditUser(user);
-                //   searchController.text =
-                //       user.firstName + ' ' + user.lastName;
-                //   _packScopedModel.filterPackList(
-                //       user.firstName + ' ' + user.lastName);
-                //   packList = _packScopedModel.filteredPackList;
-                //   _packScopedModel.forceRefresh();
-                // }
-                //}),
 
                 ),
           ],
@@ -129,11 +119,6 @@ class ReceiptsListState extends State<ReceiptsList> {
             _buildListView());
   }
 
-  // Widget _buildCircularProgressIndicator() {
-  //   return const Center(
-  //     child: HcCircularProgressIndicator(),
-  //   );
-  // }
 
   Future<void> _handleRefresh() async {
     final Database db = await DBProvider.db.database;

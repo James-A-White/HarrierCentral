@@ -59,16 +59,23 @@ class HasherKennelMapModel {
   }
 }
 
+enum HasherKennelMapTableType {
+  user,
+  admin,
+}
+
+const String hkmTableName = 'hasherKennelMap';
+const String hkmAdminTableName = 'hasherKennelMapForRunAdmin';
+
 class HasherKennelMapTableHelper {
   HasherKennelMapTableHelper._privateConstructor();
 
-  static const String tableName = 'hasherKennelMap';
+
   //static const num forceRequeryInterval = 1 * 86400000;
   static const num forceRequeryInterval = 1 * 1000;
   static const num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
 
-  static const IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateHasherKennelMaplData;
-  static const IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearHasherKennelMapData;
+
 
   static const String colId = 'id';
   static const String remoteDbId = 'hkmId';
@@ -91,10 +98,31 @@ class HasherKennelMapTableHelper {
 
   static final HasherKennelMapTableHelper instance = HasherKennelMapTableHelper._privateConstructor();
 
+  static String getTableName(HasherKennelMapTableType tblType) {
+    if (tblType == HasherKennelMapTableType.admin) {
+      return hkmAdminTableName;
+    }
+    return hkmTableName;
+  }
+
+  static IntPrefsEnum getLastUpdatedKey(HasherKennelMapTableType tblType) {
+    if (tblType == HasherKennelMapTableType.admin) {
+      return IntPrefsEnum.lastUpdateAdminHasherKennelMaplData;
+    }
+    return IntPrefsEnum.lastUpdateHasherKennelMaplData;
+  }
+
+  static IntPrefsEnum getLastCacheClearKey(HasherKennelMapTableType tblType) {
+    if (tblType == HasherKennelMapTableType.admin) {
+      return IntPrefsEnum.lastCacheClearAdminHasherKennelMapData;
+    }
+    return IntPrefsEnum.lastCacheClearHasherKennelMapData;
+  }
+
   // SQL code to create the database table
-  static Future<dynamic> createTable(Database db, int version) async {
+  static Future<dynamic> createTable(Database db, int version, HasherKennelMapTableType tblType) async {
     await db.execute('''
-          CREATE TABLE $tableName (
+          CREATE TABLE ${getTableName(tblType)} (
             $colId INTEGER PRIMARY KEY,
 
             $colHkmId TEXT NOT NULL,
@@ -114,8 +142,10 @@ class HasherKennelMapTableHelper {
           )
           ''');
 
-    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
+    String sql = 'CREATE INDEX idx_${getTableName(tblType)}_id ON ${getTableName(tblType)}($remoteDbId);';
+    await db.execute(sql);
+    sql = 'CREATE INDEX idx_${getTableName(tblType)}_update_at_value ON ${getTableName(tblType)}($colUpdatedAtValue);';
+    await db.execute(sql);
   }
 
   static Map<String, dynamic> toMap(HasherKennelMapModel item) {
@@ -159,14 +189,14 @@ class HasherKennelMapTableHelper {
 class HasherKennelMapService {
   static final HasherKennelMapTableHelper instance = HasherKennelMapTableHelper._privateConstructor();
 
-  Future<void> clearTable() async {
+  Future<void> clearTable(HasherKennelMapTableType tblType) async {
     final Database db = await DBProvider.db.database;
-    await db.rawDelete('DELETE FROM ${HasherKennelMapTableHelper.tableName}').then((void dummy) {
-      setIntPref(HasherKennelMapTableHelper.lastCacheClearKey, DateTime.now().millisecondsSinceEpoch);
+    await db.rawDelete('DELETE FROM ${HasherKennelMapTableHelper.getTableName(tblType)}').then((void dummy) {
+      setIntPref(HasherKennelMapTableHelper.getLastCacheClearKey(tblType), DateTime.now().millisecondsSinceEpoch);
     });
   }
 
-  Future<void> toggleFollowing(Map<String, dynamic> kennel) async {
+  Future<void> toggleFollowing(Map<String, dynamic> kennel,HasherKennelMapTableType tblType) async {
 
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
@@ -180,7 +210,7 @@ class HasherKennelMapService {
     );
 
     final Database db = await DBProvider.db.database;
-    bulkUpdateDatabase(response.body, db, null);
+    bulkUpdateDatabase(response.body, db, null, tblType);
 
     final dynamic result = json.decode(response.body);
     kennel['following'] = result[0][0]['following'];
@@ -189,30 +219,30 @@ class HasherKennelMapService {
     //print(response.body);
   }
 
-  Future<void> updateDatabase(List<HasherKennelMapModel> items) async {
+  Future<void> updateDatabase(List<HasherKennelMapModel> items, HasherKennelMapTableType tblType) async {
     final Database db = await DBProvider.db.database;
 
     for (int i = 0; i < items?.length ?? 0; i++) {
       final Map<String, dynamic> row = HasherKennelMapTableHelper.toMap(items[i]);
 
-      final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${HasherKennelMapTableHelper.tableName} WHERE ${HasherKennelMapTableHelper.remoteDbId} = "${items[i].hkmId}"');
+      final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${HasherKennelMapTableHelper.getTableName(tblType)} WHERE ${HasherKennelMapTableHelper.remoteDbId} = "${items[i].hkmId}"');
       if ((table == null) || (table.isEmpty)) {
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.insert(HasherKennelMapTableHelper.tableName, row);
-          print(result.toString() + ' inserted into to the ${HasherKennelMapTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          final int result = await txn.insert(HasherKennelMapTableHelper.getTableName(tblType), row);
+          print(result.toString() + ' inserted into to the ${HasherKennelMapTableHelper.getTableName(tblType)} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
         });
       } else {
         final String rowId = table.first['id'].toString();
 
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.update(HasherKennelMapTableHelper.tableName, row, where: 'id = $rowId');
-          print(result.toString() + ' update to the ${HasherKennelMapTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          final int result = await txn.update(HasherKennelMapTableHelper.getTableName(tblType), row, where: 'id = $rowId');
+          print(result.toString() + ' update to the ${HasherKennelMapTableHelper.getTableName(tblType)} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
         });
       }
     }
   }
 
-  Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser) async {
+  Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser, HasherKennelMapTableType tblType) async {
     int updateCounter = 0;
     int insertCounter = 0;
 
@@ -239,14 +269,14 @@ class HasherKennelMapService {
           'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch,
         });
 
-        final String query = 'SELECT * FROM ${HasherKennelMapTableHelper.tableName} WHERE ${HasherKennelMapTableHelper.remoteDbId} = "${jsonItem['hkmId']}"';
+        final String query = 'SELECT * FROM ${HasherKennelMapTableHelper.getTableName(tblType)} WHERE ${HasherKennelMapTableHelper.remoteDbId} = "${jsonItem['hkmId']}"';
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
 
         if ((table == null) || (table.isEmpty)) {
           //print(table.length.toString());
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.insert(HasherKennelMapTableHelper.tableName, jsonItem);
+            await txn.insert(HasherKennelMapTableHelper.getTableName(tblType), jsonItem);
             insertCounter++;
             // print(result.toString() +
             //     ' inserted into to the ${UserKennelsTdTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -256,7 +286,7 @@ class HasherKennelMapService {
 
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.update(HasherKennelMapTableHelper.tableName, jsonItem, where: 'id = $rowId');
+            await txn.update(HasherKennelMapTableHelper.getTableName(tblType), jsonItem, where: 'id = $rowId');
             updateCounter++;
             // print(result.toString() +
             //     ' update to the ${UserKennelsTdTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');

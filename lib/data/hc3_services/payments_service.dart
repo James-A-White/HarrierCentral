@@ -26,6 +26,13 @@ this.paymentReference,
 this.notes,
 this.removed,
 this.updatedAt,
+
+// these fields are joined from HC.Hasher
+this.paidByName,
+this.paidToName,
+this.isMember,
+this.eventPriceForMembers,
+this.eventPriceForNonMembers
       
       });
 
@@ -45,6 +52,13 @@ final String paymentReference;
 final String notes;
 final int removed;
 final DateTime updatedAt;
+
+// these fields are joined from HC.Hasher
+final String paidToName;
+final String paidByName;
+final int isMember;
+final num eventPriceForMembers;
+final num eventPriceForNonMembers;
 
   static List<PaymentsModel> itemsFromJson(String jsonResult) {
     final List<PaymentsModel> items = <PaymentsModel>[];
@@ -188,6 +202,16 @@ static const String colNotes= 'notes';
     return map;
   }
 
+  static List<PaymentsModel> listFromMap(List<Map<String,dynamic>> mapList)
+  {
+      final List<PaymentsModel> paymentList = <PaymentsModel>[];
+      for (int i = 0; i < mapList.length; i++)
+      {
+        paymentList.add(fromMap(mapList[i]));
+      }
+      return paymentList;
+  }
+
   static PaymentsModel fromMap(Map<String, dynamic> map) {
     final PaymentsModel item = PaymentsModel(
 
@@ -199,18 +223,26 @@ static const String colNotes= 'notes';
       paidTo: map[PaymentsTableHelper.colPaidTo],
       creditAmount: map[PaymentsTableHelper.colCreditAmount],
       debitAmount: map[PaymentsTableHelper.colDebitAmount],
-      paidDate: DateTime.parse(
+      paidDate: (map[PaymentsTableHelper.colPaidDate] == null) ? null : DateTime.parse(
           map[PaymentsTableHelper.colPaidDate].toString().substring(0, 19)),
       paymentType: map[PaymentsTableHelper.colPaymentType],
-      cancelledDate: DateTime.parse(
+      cancelledDate: (map[PaymentsTableHelper.colCancelledDate] == null) ? null : DateTime.parse(
           map[PaymentsTableHelper.colCancelledDate].toString().substring(0, 19)),
       cancelledBy: map[PaymentsTableHelper.colCancelledBy],
       paymentReference: map[PaymentsTableHelper.colPaymentReference],
       notes: map[PaymentsTableHelper.colNotes],
 
-      updatedAt: DateTime.parse(
+      updatedAt: (map[PaymentsTableHelper.colUpdatedAt] == null) ? null : DateTime.parse(
           map[PaymentsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[PaymentsTableHelper.colRemoved],
+
+      // joined from HC.Hasher
+      paidByName: map.containsKey('paidByName') ? map['paidByName'] : '',
+      paidToName: map.containsKey('paidToName') ? map['paidToName'] : '',
+      isMember: map.containsKey('isMember') ? map['isMember'] : -1,
+      eventPriceForMembers: map.containsKey('eventPriceForMembers') ? map['eventPriceForMembers'] : 0,
+      eventPriceForNonMembers: map.containsKey('eventPriceForNonMembers') ? map['eventPriceForNonMembers'] : 0,
+
     );
 
     return item;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/data/models/payment_report_model.dart';
+import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/styles.dart';
 
@@ -13,7 +13,7 @@ class PaymentReportListItem extends StatelessWidget {
       @required this.digitsAfterDecimal,
       @required this.onTap});
 
-  final PaymentReportModel paymentReportItem;
+  final PaymentsModel paymentReportItem;
   final String currencySymbol;
   final int digitsAfterDecimal;
   final Function onTap;
@@ -21,7 +21,7 @@ class PaymentReportListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String amountPaid = Utilities.getFormattedMoney(
-        paymentReportItem.creditAmount, digitsAfterDecimal, currencySymbol);
+        paymentReportItem.creditAmount ?? 0, digitsAfterDecimal, currencySymbol); 
 
     return InkWell(
       onTap: onTap,
@@ -37,13 +37,13 @@ class PaymentReportListItem extends StatelessWidget {
                 Positioned(
                   right: 10.0,
                   top: 7.0,
-                  child: paymentReportItem.isTransactionInProgress
+                  child: false
                       ? Icon(delayIcon, color: Colors.blue[800])
                       : Image.asset(
-                          'images/icons/payment_type_${paymentReportItem.paymentType.value}.png',
+                          'images/icons/payment_type_${paymentReportItem.paymentType ?? paymentNotPaid.value}.png',
                           height: 30.0,
                           width: 30.0,
-                          color: paymentReportItem.paymentType.value <=
+                          color: (paymentReportItem.paymentType ?? paymentNotPaid.value) <=
                                   paymentNotPaid.value
                               ? Colors.red
                               : Colors.green[700]),
@@ -52,9 +52,9 @@ class PaymentReportListItem extends StatelessWidget {
                   left: 10.0,
                   top: 7.0,
                   child: Text(
-                    '${paymentReportItem.paidBy}',
-                    style: const TextStyle(
-                        fontFamily: 'AvenirNextCondensedDemiBold',
+                    '${paymentReportItem.paidByName}',
+                    style: TextStyle(
+                        fontFamily: (paymentReportItem.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium',
                         fontStyle: FontStyle.normal,
                         fontSize: 22.0,
                         height: 1.0),
@@ -86,7 +86,9 @@ class PaymentReportListItem extends StatelessWidget {
 
 class TotalsCell extends StatelessWidget {
   const TotalsCell(
-    this.data, {
+     {
+    @required this.creditAmount,
+    @required this.counter,
     @required this.color,
     @required this.paymentRecordType,
     @required this.currencySymbol,
@@ -94,24 +96,23 @@ class TotalsCell extends StatelessWidget {
     @required this.onTap,
   });
 
-  final List<PaymentReportModel> data;
+
   final EnumPaymentType<int> paymentRecordType;
   final Color color;
   final String currencySymbol;
   final int digitsAfterDecimal;
   final Function onTap;
+  final num creditAmount;
+  final num counter;
 
   @override
   Widget build(BuildContext context) {
-    final PaymentReportModel item = data.firstWhere(
-        (PaymentReportModel report) =>
-            report.paymentType.value == paymentRecordType.value + 100,
-        orElse: () => null);
 
-    final String total = (item?.creditAmount ?? 0) <= 0
+
+    final String total = (creditAmount ?? 0) <= 0
         ? ''
         : Utilities.getFormattedMoney(
-            item?.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
+            creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
     const TextStyle textStyle = TextStyle(
         color: Colors.black,
@@ -124,7 +125,7 @@ class TotalsCell extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 0.0),
             child: Text(
-              item?.paymentReference ?? '0',
+              (counter ?? 0).toString(),
               style: textStyle,
             ),
           ),

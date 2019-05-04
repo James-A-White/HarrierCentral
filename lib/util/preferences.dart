@@ -48,10 +48,11 @@ enum IntPrefsEnum {
 
   lastUpdateHasherKennelMaplData,
   lastCacheClearHasherKennelMapData,
+  lastUpdateAdminHasherKennelMaplData,
+  lastCacheClearAdminHasherKennelMapData,
 
   lastUpdateHasherEventMapData,
   lastCacheClearHasherEventMapData,
-
   lastUpdateAdminHasherEventMapData,
   lastCacheClearAdminHasherEventMapData,
 

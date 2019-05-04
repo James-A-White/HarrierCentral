@@ -156,16 +156,22 @@ flutter:
         - asset: fonts/AvenirNextCondensed-Heavy.ttf
         - asset: fonts/AvenirNextCondensed-HeavyItalic.ttf
         - asset: fonts/AvenirNextCondensed-Italic.ttf
-        - asset: fonts/AvenirNextCondensed-Medium.ttf
-        - asset: fonts/AvenirNextCondensed-MediumItalic.ttf
         - asset: fonts/AvenirNextCondensed-Regular.ttf
         - asset: fonts/AvenirNextCondensed-UltraLight.ttf
         - asset: fonts/AvenirNextCondensed-UltraLightItalic.ttf
+
+    - family: AvenirNextCondensedMedium
+      fonts:
+        - asset: fonts/AvenirNextCondensed-Medium.ttf
+        - asset: fonts/AvenirNextCondensed-MediumItalic.ttf
+          style: italic
+          
     - family: AvenirNextCondensedDemiBold
       fonts:
         - asset: fonts/AvenirNextCondensedDemiBold.ttf
         - asset: fonts/AvenirNextCondensedDemiBoldItalic.ttf
           style: italic
+
     - family: AvenirNextDemiBold
       fonts:
         - asset: fonts/AvenirNextDemiBold.ttf

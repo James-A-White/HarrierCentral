@@ -7,7 +7,7 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
 
 class HasherEventMapModel {
-  HasherEventMapModel({this.hemId, this.userId, this.eventId, this.userStartEvent, this.userEndEvent, this.rsvpState, this.attendenceState, this.isHare, this.eventCountOverride, this.removed, this.updatedAt});
+  HasherEventMapModel({this.hemId, this.userId, this.eventId, this.userStartEvent, this.userEndEvent, this.rsvpState, this.attendenceState, this.isHare, this.eventCountOverride, this.virginVisitorType, this.displayName, this.email, this.phoneNumber, this.removed, this.updatedAt});
 
   final String hemId;
   final String userId;
@@ -18,6 +18,10 @@ class HasherEventMapModel {
   final int attendenceState;
   final int isHare;
   final num eventCountOverride;
+  final num virginVisitorType;
+  final String displayName;
+  final String email;
+  final String phoneNumber;
 
   final int removed;
   final DateTime updatedAt;
@@ -39,6 +43,10 @@ class HasherEventMapModel {
             attendenceState: jsonItem['attendenceState'],
             isHare: jsonItem['isHare'],
             eventCountOverride: jsonItem['eventCountOverride'],
+            virginVisitorType: jsonItem['virginVisitorType'],
+            displayName: jsonItem['displayName'],
+            email: jsonItem['email'],
+            phoneNumber: jsonItem['phoneNumber'],
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
 
@@ -84,6 +92,10 @@ class HasherEventMapTableHelper {
   static const String colAttendenceState = 'attendenceState';
   static const String colIsHare = 'isHare';
   static const String colEventCountOverride = 'eventCountOverride';
+  static const String colVirginVisitorType = 'virginVisitorType';
+  static const String colDisplayName = 'displayName';
+  static const String colEmail = 'email';
+  static const String colPhoneNumber = 'phoneNumber';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -129,6 +141,10 @@ class HasherEventMapTableHelper {
             $colAttendenceState INT,
             $colIsHare INT,
             $colEventCountOverride NUM,
+            $colVirginVisitorType NUM,
+            $colDisplayName TEXT,
+            $colEmail TEXT,
+            $colPhoneNumber TEXT,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
@@ -151,6 +167,10 @@ class HasherEventMapTableHelper {
       HasherEventMapTableHelper.colAttendenceState: item.attendenceState,
       HasherEventMapTableHelper.colIsHare: item.isHare,
       HasherEventMapTableHelper.colEventCountOverride: item.eventCountOverride,
+      HasherEventMapTableHelper.colVirginVisitorType: item.virginVisitorType,
+      HasherEventMapTableHelper.colDisplayName: item.displayName,
+      HasherEventMapTableHelper.colEmail: item.email,
+      HasherEventMapTableHelper.colPhoneNumber: item.phoneNumber,
       HasherEventMapTableHelper.colUpdatedAt: item.updatedAt.toString(),
       HasherEventMapTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       HasherEventMapTableHelper.colRemoved: item.removed
@@ -170,6 +190,10 @@ class HasherEventMapTableHelper {
       attendenceState: map[HasherEventMapTableHelper.colAttendenceState],
       isHare: map[HasherEventMapTableHelper.colIsHare],
       eventCountOverride: map[HasherEventMapTableHelper.colEventCountOverride],
+      virginVisitorType: map[HasherEventMapTableHelper.colVirginVisitorType],
+      displayName: map[HasherEventMapTableHelper.colDisplayName],
+      email: map[HasherEventMapTableHelper.colEmail],
+      phoneNumber: map[HasherEventMapTableHelper.colPhoneNumber],
       updatedAt: DateTime.parse(map[HasherEventMapTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[HasherEventMapTableHelper.colRemoved],
     );

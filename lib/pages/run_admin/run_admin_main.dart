@@ -64,7 +64,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
           SELECT e.*,hkm.mismanagementRoleFlags,k.kennelShortName,coalesce(c.digitsAfterDecimal,2) as digitsAfterDecimal, coalesce(c.currencySymbol,"$dollarSign") as currencySymbol from ${NarrowEventsTableHelper.tableName} e
           INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
           LEFT OUTER JOIN ${CountriesTableHelper.tableName} c on c.countryId = k.countryId
-          LEFT OUTER JOIN ${HasherKennelMapTableHelper.tableName} hkm on e.kennelId = hkm.kennelId
+          LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId
           WHERE e.eventId = "${widget.eventId}"
           AND hkm.userId = "$userId"
           
@@ -161,10 +161,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                       context,
                       MaterialPageRoute<dynamic>(
                         builder: (BuildContext context) => PaymentReportPage(
-                              eventId: event['eventId'],
-                              currencySymbol: event['currencySymbol'],
-                              digitsAfterDecimal: event['digitsAfterDecimal'],
-                              eventName: event['eventName'],
+                          event: event,
                             ),
                       ),
                     );

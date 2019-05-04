@@ -29,8 +29,8 @@ const String GUID_MAX =   'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 const String DB_NAME = 'HcDb.db';
 
 
-const int mmAuthIsGm = 0x80000000;                // TODO(James): Needs implementation
-const int mmAuthCanGrantPermissions = 0x40000000; // TODO(James): Needs implementation
+const int mmAuthIsGm = 0x40000000;                // TODO(James): Needs implementation
+const int mmAuthCanGrantPermissions = 0x20000000; // TODO(James): Needs implementation
 
 const int mmAuthAllowEditRsvpFlag = 0x00000001;
 const int mmAuthAllowCheckInAndOutFlag = 0x00000002;
@@ -41,6 +41,7 @@ const int mmAuthEditRuns = 0x00000020; // TODO(James): Needs implementation
 const int mmAuthGenerateRunQrCodes = 0x00000040; // TODO(James): Needs implementation
 const int mmAuthManageMembers = 0x00000080; // TODO(James): Needs implementation
 const int mmAuthAccessKennelAdmin = 0x00000100; // TODO(James): Needs implementation
+const int mmAuthCanEditRunVisibility = 0x00000200; // TODO(James): Needs implementation
 
 const int cacheDurationAllHashers = 60 * 86400000; // 60 days cache duration
 

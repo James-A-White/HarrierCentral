@@ -54,7 +54,7 @@ class SyncUserDataService {
     _regionsLastUpdated = (flags & flagRegionsTable) == 0 ? 0 : await getLastUpdatedTime(db, RegionsTableHelper.colUpdatedAtValue, RegionsTableHelper.tableName);
     _countriesLastUpdated = (flags & flagCountriesTable) == 0 ? 0 : await getLastUpdatedTime(db, CountriesTableHelper.colUpdatedAtValue, CountriesTableHelper.tableName);
     _kennelsLastUpdated = (flags & flagKennelsTable) == 0 ? 0 : await getLastUpdatedTime(db, KennelsTableHelper.colUpdatedAtValue, KennelsTableHelper.tableName);
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? 0 : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.tableName);
+    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? 0 : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user));
     _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? 0 : await getLastUpdatedTime(db, HasherEventMapTableHelper.colUpdatedAtValue, HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user));
     _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? 0 : await getLastUpdatedTime(db, NarrowEventsTableHelper.colUpdatedAtValue, NarrowEventsTableHelper.tableName);
   }
@@ -65,7 +65,7 @@ class SyncUserDataService {
     final int regionsLastUpdate = (flags & flagRegionsTable) == 0 ? null : getIntPref(RegionsTableHelper.lastUpdatedKey) ?? 0;
     final int countriesLastUpdate = (flags & flagCountriesTable) == null ? 0 : getIntPref(CountriesTableHelper.lastUpdatedKey) ?? 0;
     final int kennelsLastUpdate = (flags & flagKennelsTable) == 0 ? null : getIntPref(KennelsTableHelper.lastUpdatedKey) ?? 0;
-    final int hasherKennelMapLastUpdate = (flags & flagHasherKennelMapTable) == 0 ? null : getIntPref(HasherKennelMapTableHelper.lastUpdatedKey) ?? 0;
+    final int hasherKennelMapLastUpdate = (flags & flagHasherKennelMapTable) == 0 ? null : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(HasherKennelMapTableType.user)) ?? 0;
     final int hasherEventMapLastUpdate = (flags & flagHasherEventMapTable) == 0 ? null : getIntPref(HasherEventMapTableHelper.getLastUpdatedKey(HasherEventMapTableType.user)) ?? 0;
     final int narrowEventsLastUpdate = (flags & flagNarrowEventsTable) == 0 ? null : getIntPref(NarrowEventsTableHelper.lastUpdatedKey) ?? 0;
 
@@ -188,7 +188,7 @@ class SyncUserDataService {
 
         if (ms.startsWith(r'[{"hkmId"')) {
           final HasherKennelMapService hkmSrv = HasherKennelMapService();
-          await hkmSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+          await hkmSrv.bulkUpdateDatabase('[$ms]', db, informUser,HasherKennelMapTableType.user);
           print('hasher kennel map updated');
         }
 

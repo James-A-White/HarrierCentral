@@ -55,12 +55,13 @@ class DBProvider {
       await RegionsTableHelper.createTable(db, version);
       await CountriesTableHelper.createTable(db, version);
       await KennelsTableHelper.createTable(db, version);
-      await HasherKennelMapTableHelper.createTable(db, version);
+      await HasherKennelMapTableHelper.createTable(db, version,HasherKennelMapTableType.user);
       await HasherEventMapTableHelper.createTable(db, version,HasherEventMapTableType.user);
       await NarrowEventsTableHelper.createTable(db, version);
 
       // create admin tables
       await HasherEventMapTableHelper.createTable(db, version,HasherEventMapTableType.admin);
+      await HasherKennelMapTableHelper.createTable(db, version,HasherKennelMapTableType.admin);
       await PaymentsTableHelper.createTable(db, version);
       await ReceiptsTableHelper.createTable(db, version);
       
