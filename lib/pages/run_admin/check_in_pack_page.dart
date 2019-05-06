@@ -15,6 +15,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/new_user.dart';
+import 'package:harrier_central/widgets/payment_snackbar.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
@@ -51,6 +52,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
   Map<String, String> indicatorRsvpUpdating = <String, String>{};
   Map<String, String> indicatorAttendenceUpdating = <String, String>{};
+  Map<String, String> indicatorPaidUpdating = <String, String>{};
 
   Map<String, dynamic> event;
 
@@ -75,10 +77,12 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
   String userId = getStringPref(StringPrefsEnum.userId);
 
-  Future<void> _refreshSqlTablesFromBackend() async {
-    setState(() {
-      _isLoading = true;
-    });
+  Future<void> _refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
+    if (showLoadingIndicator) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     DBProvider.db.database.then((Database db) async {
       final SyncEventAdminService cSrv = SyncEventAdminService();
@@ -168,7 +172,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             coalesce(hem.rsvpState,0) as rsvpState,
             coalesce(hem.attendenceState,0) as attendenceState,
             0 as userRunCount,
-            hem.updatedAt
+            hem.updatedAt as hemUpdatedAt,
+            pay.updatedAt as payUpdatedAt,
+            0 as credit
 
  
           FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.admin)} hkm
@@ -200,7 +206,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 final Map<String, dynamic> hasher = packList.firstWhere((Map<String, dynamic> k) => k['hasherId'].toString().toLowerCase() == hid, orElse: () => null);
 
                 if (hasher != null) {
-                  if (hasher['updatedAt'] != indicatorRsvpUpdating[hid]) {
+                  if (hasher['hemUpdatedAt'] != indicatorRsvpUpdating[hid]) {
                     removeList.add('hid:' + hid.toLowerCase());
                   }
                 }
@@ -220,7 +226,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 final Map<String, dynamic> hasher = packList.firstWhere((Map<String, dynamic> k) => k['hasherId'].toString().toLowerCase() == hid, orElse: () => null);
 
                 if (hasher != null) {
-                  if (hasher['updatedAt'] != indicatorAttendenceUpdating[hid]) {
+                  if (hasher['hemUpdatedAt'] != indicatorAttendenceUpdating[hid]) {
                     removeList.add('hid:' + hid.toLowerCase());
                   }
                 }
@@ -229,12 +235,31 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
             removeList.forEach(indicatorAttendenceUpdating.remove);
 
-            setState(() {
-                        if (forceRefresh) {
-              _isLoading = false;
+            removeList.clear();
+            for (String key in indicatorPaidUpdating.keys) {
+              if (key.startsWith('hem:')) {
+                // String hemId = key.substring(4);
+                // int i = 0;
+              } else {
+                final String hid = key.substring(4);
+
+                final Map<String, dynamic> hasher = packList.firstWhere((Map<String, dynamic> k) => k['hasherId'].toString().toLowerCase() == hid, orElse: () => null);
+
+                if (hasher != null) {
+                  if (hasher['hemUpdatedAt'] != indicatorPaidUpdating[hid]) {
+                    removeList.add('hid:' + hid.toLowerCase());
+                  }
+                }
+              }
             }
+
+            removeList.forEach(indicatorPaidUpdating.remove);
+
+            setState(() {
+              if (forceRefresh) {
+                _isLoading = false;
+              }
             });
-  
           }
         });
       });
@@ -245,7 +270,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
   @override
   void initState() {
-    _refreshSqlTablesFromBackend();
+    _refreshSqlTablesFromBackend(true);
     super.initState();
   }
 
@@ -527,8 +552,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                                   key: packListBox,
                                   height: constraints.maxHeight - searchBar(constraints.maxWidth).constraints.maxHeight,
                                   child: RefreshIndicator(
-                                      //onRefresh: () => _reloadPack(true),
-                                      onRefresh: () {},
+                                      onRefresh: () {
+                                        _refreshSqlTablesFromBackend(true);
+                                      },
                                       child: buildPackListView()),
                                 ),
                     ),
@@ -706,28 +732,36 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   //   return snackbar;
   // }
 
-  // SnackBar buildRsvpAndPaymentSnackbar(BuildContext context, int index) {
-  //   final SnackBar snackbar = PaymentSnackBar(
-  //     context: context,
-  //     index: index,
-  //     event: event,
-  //     packList: pack,
-  //     onCompletedCallback: () {},
-  //   );
+  SnackBar buildRsvpAndPaymentSnackbar(BuildContext context, int index) {
+    final SnackBar snackbar = PaymentSnackBar(
+      context: context,
+      event: event,
+      packMember: packList[index],
+      onRsvpCallback: (Map<String, dynamic> packMember, {int rsvpState = -1, int attendenceState = -1, int isHare = -1}) {
+        Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+        updateRsvpState(packMember,rsvpState,attendenceState,isHare);
+      },
+      onPaidCallback: (Map<String, dynamic> packMember, int paymentType) {
+        Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+        payForEvent(packMember, paymentType);
+      },
+    );
 
-  //   return snackbar;
-  // }
+    return snackbar;
+  }
+
+
 
   Widget listItem(BuildContext context, int index) {
     final Map<String, dynamic> packMember = packList[index];
     return GestureDetector(
       onTap: () {
-        // if (((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) {
-        //   final SnackBar snackBar = buildRsvpAndPaymentSnackbar(context, index);
+        if (((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) {
+          final SnackBar snackBar = buildRsvpAndPaymentSnackbar(context, index);
 
-        //   Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-        //   Scaffold.of(context).showSnackBar(snackBar);
-        // }
+          Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+          Scaffold.of(context).showSnackBar(snackBar);
+        }
       },
       child: Container(
         width: MediaQuery.of(context).size.width,
@@ -821,21 +855,51 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                               ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 27.0)
                               : packMember['isHare'] == 0 ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 27.0) : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 24.0, width: 24.0),
             ),
-
+            Positioned(
+              left: 115.0,
+              bottom: 3.0,
+              child: (indicatorAttendenceUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? '')) || indicatorAttendenceUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))
+                  ? Icon(delayIcon, color: Colors.blue[800])
+                  : (packMember['rsvpState'] != rsvpYes.value)
+                      ? CircleAvatar(
+                          backgroundColor: Colors.grey[350],
+                          radius: 14.0,
+                        )
+                      : CircleAvatar(
+                          backgroundColor: packMember['attendenceState'] == 0 ? Colors.grey[350] : Colors.white,
+                          radius: 14.0,
+                        ),
+            ),
+            Positioned(
+              left: 117.0,
+              bottom: packMember['attendenceState'] <= 0 ? 4.5 : 5.5,
+              child: (indicatorAttendenceUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? '')) || indicatorAttendenceUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))
+                  ? Container()
+                  : (packMember['rsvpState'] != rsvpYes.value)
+                  ? Container()
+                  : packMember['attendenceState'] == attendenceNo.value
+                      ? Image.asset('images/icons/not_at_hash_icon.png', height: 24.0, width: 24.0, color: Colors.red[700])
+                      : packMember['attendenceState'] == attendenceAtHash.value
+                          ? Image.asset('images/icons/runner_icon.png', height: 24.0, width: 24.0, color: Colors.orange)
+                          : packMember['attendenceState'] >= attendenceOnIn.value ? Image.asset('images/icons/beer_icon.png', height: 24.0, width: 24.0, color: Colors.green) : Container(),
+            ),
             packList.isEmpty
                 ? const Positioned(top: 0, bottom: 0, left: 0, right: 0, child: Text('No pack members loaded'))
                 : Positioned(
                     left: 155.0,
                     bottom: 3.0,
-                    child: (packMember['attendenceState'] < attendenceAtHash.value)
-                        ? CircleAvatar(
-                            backgroundColor: Colors.grey[350],
-                            radius: 14.0,
-                          )
-                        : (packMember['rsvpState'] != rsvpYes.value)
-                            ? Container()
-                            : packMember['isPaid'] == -1
-                                ? Icon(delayIcon, color: Colors.blue[800])
+                    child: (indicatorPaidUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? '')) || indicatorPaidUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))
+                        ? Icon(delayIcon, color: Colors.blue[800])
+                        : (packMember['attendenceState'] < attendenceAtHash.value)
+                            ? CircleAvatar(
+                                backgroundColor: Colors.grey[350],
+                                radius: 14.0,
+                              )
+                            : (packMember['rsvpState'] != rsvpYes.value)
+                                ? CircleAvatar(
+                                    backgroundColor: Colors.grey[350],
+                                    radius: 14.0,
+                                  )
                                 : CircleAvatar(
                                     backgroundColor: packMember['attendenceState'] == 0 ? Colors.transparent : Colors.white,
                                     radius: 14.0,
@@ -847,45 +911,19 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 : Positioned(
                     left: 157.0,
                     bottom: packMember['attendenceState'] < -1 ? 4.5 : 5.5,
-                    child: (packMember['attendenceState'] < attendenceAtHash.value)
+                    child: (indicatorPaidUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? '')) || indicatorPaidUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))
                         ? Container()
-                        : (packMember['rsvpState'] != rsvpYes.value)
+                        : (packMember['attendenceState'] < attendenceAtHash.value)
                             ? Container()
-                            : (packMember['attendenceState'] <= attendenceNo.value)
-                                ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.transparent)
-                                : packMember['isPaid'] == isPaidNo.value
-                                    ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.red)
-                                    : packMember['isPaid'] == isPaidYes.value ? Image.asset('images/icons/payment_type_${packMember['paymentType']}.png', height: 24.0, width: 24.0, color: Colors.green) : Container()),
+                            : (packMember['rsvpState'] != rsvpYes.value)
+                                ? Container()
+                                : (packMember['attendenceState'] <= attendenceNo.value)
+                                    ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.transparent)
+                                    : packMember['isPaid'] == isPaidNo.value
+                                        ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.red)
+                                        : packMember['isPaid'] == isPaidYes.value ? Image.asset('images/icons/payment_type_${packMember['paymentType']}.png', height: 24.0, width: 24.0, color: Colors.green) : Container()),
 
-            Positioned(
-              left: 115.0,
-              bottom: 3.0,
-              child: 
-                  (indicatorAttendenceUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? '')) || indicatorAttendenceUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))
-                      ? Icon(delayIcon, color: Colors.blue[800])
-                      : (packMember['rsvpState'] != rsvpYes.value)
-                  ? CircleAvatar(
-                      backgroundColor: Colors.grey[350],
-                      radius: 14.0,
-                    )
-                  : 
-                      
-                      CircleAvatar(
-                          backgroundColor: packMember['attendenceState'] == 0 ? Colors.transparent : Colors.white,
-                          radius: 14.0,
-                        ),
-            ),
-            Positioned(
-              left: 117.0,
-              bottom: packMember['attendenceState'] <= 0 ? 4.5 : 5.5,
-              child: (packMember['rsvpState'] != rsvpYes.value)
-                  ? Container()
-                  : packMember['attendenceState'] == attendenceNo.value
-                      ? Image.asset('images/icons/not_at_hash_icon.png', height: 24.0, width: 24.0, color: Colors.red[700])
-                      : packMember['attendenceState'] == attendenceAtHash.value
-                          ? Image.asset('images/icons/runner_icon.png', height: 24.0, width: 24.0, color: Colors.red)
-                          : packMember['attendenceState'] >= attendenceOnIn.value ? Image.asset('images/icons/beer_icon.png', height: 24.0, width: 24.0, color: Colors.green) : Container(),
-            ),
+
 
             // Payment icons
           ],
@@ -914,7 +952,52 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     return result;
   }
 
-  void payForEvent(Map<String, dynamic> packMember, int paymentType, Key key) {
+
+  void updateRsvpState(Map<String, dynamic> packMember, int rsvpState, int attendenceState, int isHare) {
+    final String hemId = packMember['hemId'];
+    final String hasherId = packMember['hasherId'];
+
+   setState(() {
+      // these are here to manage the loading indicator on the list items
+      // basically, we keep a list of the items that are loading
+      // and then remove them from the list once they are loaded
+      // there is probably a better way to do this, but this is all I could
+      // think of at the time.
+      if (rsvpState != -1) {
+        if (!indicatorRsvpUpdating.containsKey(packMember['hemId'].toString().toLowerCase())) {
+          if (!indicatorRsvpUpdating.containsKey(packMember['hasherId'].toString().toLowerCase())) {
+            indicatorRsvpUpdating.addAll(<String, String>{packMember['hemId'] != null ? 'hem:' + packMember['hemId'].toString().toLowerCase() : 'hid:' + packMember['hasherId'].toString().toLowerCase(): packMember['hemUpdatedAt'] ?? ''});
+          }
+        }
+      }
+
+      if (attendenceState != -1) {
+        if (!indicatorAttendenceUpdating.containsKey(packMember['hemId'].toString().toLowerCase())) {
+          if (!indicatorAttendenceUpdating.containsKey(packMember['hasherId'].toString().toLowerCase())) {
+            indicatorAttendenceUpdating.addAll(<String, String>{packMember['hemId'] != null ? 'hem:' + packMember['hemId'].toString().toLowerCase() : 'hid:' + packMember['hasherId'].toString().toLowerCase(): packMember['hemUpdatedAt'] ?? ''});
+          }
+        }
+      }
+    });
+
+    final HasherEventMapService hemSrv = HasherEventMapService();
+    final Future<void> retVal = hemSrv.joinEvent(
+      event,
+      HasherEventMapTableType.admin,
+      hasherId,
+      hemId,
+      rsvpState,
+      attendenceState,
+      isHare
+    );
+
+    retVal.then((void dummy) {
+      _refreshPackListFromTables(true);
+    });
+  }
+
+
+  void payForEvent(Map<String, dynamic> packMember, int paymentType) {
     final String hemId = packMember['hemId'];
     final String hasherId = packMember['hasherId'];
     final num amount = packMember['isMember'] != 0 ? event['eventPriceForMembers'] : event['eventPriceForNonMembers'];
@@ -928,7 +1011,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       if ((packMember['rsvpState'] ?? 0) < rsvpYes.value) {
         if (!indicatorRsvpUpdating.containsKey(packMember['hemId'].toString().toLowerCase())) {
           if (!indicatorRsvpUpdating.containsKey(packMember['hasherId'].toString().toLowerCase())) {
-            indicatorRsvpUpdating.addAll(<String,String>{packMember['hemId'] != null ? 'hem:' + packMember['hemId'].toString().toLowerCase() : 'hid:' + packMember['hasherId'].toString().toLowerCase(): packMember['updatedAt'] ?? ''});
+            indicatorRsvpUpdating.addAll(<String, String>{packMember['hemId'] != null ? 'hem:' + packMember['hemId'].toString().toLowerCase() : 'hid:' + packMember['hasherId'].toString().toLowerCase(): packMember['hemUpdatedAt'] ?? ''});
           }
         }
       }
@@ -936,26 +1019,13 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       if ((packMember['attendenceState'] ?? 0) < attendenceAtHash.value) {
         if (!indicatorAttendenceUpdating.containsKey(packMember['hemId'].toString().toLowerCase())) {
           if (!indicatorAttendenceUpdating.containsKey(packMember['hasherId'].toString().toLowerCase())) {
-            indicatorAttendenceUpdating.addAll(<String,String>{packMember['hemId'] != null ? 'hem:' + packMember['hemId'].toString().toLowerCase() : 'hid:' + packMember['hasherId'].toString().toLowerCase(): packMember['updatedAt'] ?? ''});
+            indicatorAttendenceUpdating.addAll(<String, String>{packMember['hemId'] != null ? 'hem:' + packMember['hemId'].toString().toLowerCase() : 'hid:' + packMember['hasherId'].toString().toLowerCase(): packMember['hemUpdatedAt'] ?? ''});
           }
         }
       }
     });
 
-    // if(!packMember.containsKey('requestedRsvpState'))
-    // {
-    //   packMember.addAll(<String,dynamic> {'requestedRsvpState':-1});
-    // }
-
-    // packMember['requestedRsvpState'] = 2;
-
-    // if (packMember['attendenceState'] < attendenceAtHash.value) {
-    //   packMember['attendenceState'] = -1;
-    //   packMember['attendenceState'] = attendenceAtHash.value;
-    // }
-
-    //packMember['isPaid'] = -1;
-    //packMember['isPaid'] = -1;
+    indicatorPaidUpdating.addAll(<String, String>{packMember['hemId'] != null ? 'hem:' + packMember['hemId'].toString().toLowerCase() : 'hid:' + packMember['hasherId'].toString().toLowerCase(): packMember['payUpdatedAt'] ?? ''});
 
     final PaymentsService paySrv = PaymentsService();
     final Future<void> retVal = paySrv.payForEvent(
@@ -983,34 +1053,12 @@ class CheckInPackPageState extends State<CheckInPackPage> {
         itemBuilder: (BuildContext context, int index) {
           final Map<String, dynamic> packMember = packList[index];
           final Key key = Key(index.toString());
-          return
-              // (packScopedModel.isLoading)
-              //               ? Center(
-              //                   child: Container(
-              //                     height: 50,
-              //                     width: 50,
-              //                     child: const HcCircularProgressIndicator(),
-              //                   ),
-              //                 ) :
-
-              // ((packList == null) || (packList.isEmpty))
-              //     ?  Container(
-              //                     // height: constraints.maxHeight -
-              //                     //       searchBar(_packScopedModel,
-              //                     //               constraints.maxWidth)
-              //                     //           .constraints
-              //                     //           .maxHeight,
-              //                       child: Center(
-              //                         child: Text(
-              //                             'There are no pack members associated with this run or Kennel'),
-              //                       ),
-              //                     ) :
-              Dismissible(
+          return Dismissible(
             key: key,
             confirmDismiss: (DismissDirection direction) {
               if (packMember['isPaid'] != 1) {
                 print(direction.toString() + ' ' + index.toString());
-                payForEvent(packMember, direction == DismissDirection.endToStart ? 3 : 4, key);
+                payForEvent(packMember, direction == DismissDirection.endToStart ? 3 : 4);
               } else {
                 if (direction == DismissDirection.endToStart) {
                   // _packScopedModel.setRsvpState(rsvpYes.value, -1,
@@ -1118,100 +1166,6 @@ class CheckInPackPageState extends State<CheckInPackPage> {
           );
         });
   }
-
-//   void processPayment(int index, BuildContext context, int paymentType, num paymentAmount) {
-//     final Map<String, dynamic> packMember = packList[index];
-
-//     if (packMember['rsvpState'] < rsvpYes.value) {
-
-//     }
-
-//     // packMember['isPaid'] = -1;
-
-//     //_packScopedModel.forceRefresh();
-
-//     // _payScopedModel
-//     //     .payForEvent(
-//     //         packList, index, paymentType, paymentAmount, attendenceAtHash.value)
-//     //     .then((List<PayForEventModel> result) {
-//     //   if (paymentType == paymentNotPaid.value) {
-//     //     hasher['isPaid = 0;
-//     //   } else {
-//     //     hasher['isPaid = 1;
-//     //   }
-
-//     //   if (hasher['hasherEventMapId != result[0].hasherEventMapId) {
-//     //     hasher['hasherEventMapId = result[0].hasherEventMapId;
-//     //   }
-
-//     //   if (hasher['userRunCount != result[0].totalRunsThisKennel) {
-//     //     hasher['userRunCount = result[0].totalRunsThisKennel;
-//     //   }
-
-//     //   hasher['rsvpState = rsvpYes.value;
-//     //   hasher['requestedRsvpState = -1;
-
-//     //   if (hasher['attendenceState < attendenceAtHash.value) {
-//     //     hasher['attendenceState = attendenceAtHash.value;
-//     //   }
-
-//     //   _packScopedModel.forceRefresh();
-
-//     //   packMember['paymentType = paymentType;
-//     //   if ((paymentType == paymentCashOtherAmount.value) ||
-//     //       (paymentType == paymentBankTransferOtherAmount.value)) {
-//     //     final num fundsDifference = paymentAmount -
-//     //         (hasher['isMember == 1
-//     //             ? event['eventPriceForMembers']
-//     //             : event['eventPriceForNonMembers']);
-
-//     //     final String credit = Utilities.getFormattedMoney(fundsDifference,
-//     //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
-
-//     //     final double hashCashAmount = hasher['isMember == 1
-//     //         ? event['eventPriceForMembers']
-//     //         : event['eventPriceForNonMembers'];
-
-//     //     final String hashCash = Utilities.getFormattedMoney(hashCashAmount,
-//     //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
-
-//     //     final String amountPaid = Utilities.getFormattedMoney(paymentAmount,
-//     //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
-
-//     //     final String paymentMethod = paymentType == paymentCashOtherAmount.value
-//     //         ? 'in cash'
-//     //         : 'by bank transfer';
-
-//     //     if (fundsDifference > 0.0) {
-//     //       showDialog<void>(
-//     //           context: context,
-//     //           builder: (BuildContext context) {
-//     //             // return object of type Dialog
-//     //             return AlertDialog(
-//     //               title: const Text('Credit applied to account'),
-//     //               content: Text(
-//     //                   '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${event['kennelShortName']}'),
-//     //               actions: <Widget>[
-//     //                 // usually buttons at the bottom of the dialog
-//     //                 FlatButton(
-//     //                   color: Colors.blue,
-//     //                   textColor: Colors.white,
-//     //                   child: const Text('Close'),
-//     //                   onPressed: () {
-//     //                     Navigator.of(context).pop();
-//     //                   },
-//     //                 ),
-//     //               ],
-//     //             );
-//     //           });
-//     //     }
-//     //   }
-//     // });
-
-//     Scaffold.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
-
-//     setState(() {});
-//   }
 }
 
 class AddVisitorVirginPopup extends StatefulWidget {

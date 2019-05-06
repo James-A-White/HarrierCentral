@@ -154,7 +154,7 @@ class ReceiptsTableHelper {
     return map;
   }
 
-  static String toQueryBody(String userId, String accessToken, ReceiptsModel item) {
+  static String toQueryBody(String userId, String accessToken, ReceiptsModel item, String receiptsUploadedAfter) {
     final String map = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
@@ -168,6 +168,7 @@ class ReceiptsTableHelper {
       ReceiptsTableHelper.colReimbursedAmount: item.reimbursedAmount,
       ReceiptsTableHelper.colReimbursedNotes: item.reimbursedNotes,
       ReceiptsTableHelper.colImageUrl: item.imageUrl,
+      'receiptsUpdatedAfter' : receiptsUploadedAfter,
 
       ReceiptsTableHelper.colRemoved: item.removed
     });
@@ -198,6 +199,14 @@ class ReceiptsTableHelper {
 }
 
 class ReceiptsService {
+
+  static Future<num> getLastUpdatedTime() async {
+    final Database db = await DBProvider.db.database;
+    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${ReceiptsTableHelper.colUpdatedAtValue}) AS maxDate FROM ${ReceiptsTableHelper.tableName}');
+    final num timeValue = table.first['maxDate'];
+    return timeValue;
+  }
+
   Future<void> clearTable() async {
     final Database db = await DBProvider.db.database;
     await db.rawDelete('DELETE FROM ${ReceiptsTableHelper.tableName}').then((void dummy) {
@@ -289,10 +298,14 @@ class ReceiptsService {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
 
-    final String body = ReceiptsTableHelper.toQueryBody(userId, accessToken, item);
+    final num _receiptsLastUpdated = await ReceiptsService.getLastUpdatedTime();
+    final DateTime receiptsUpdatedAfter = _receiptsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_receiptsLastUpdated + 1000);
+
+    final String body = ReceiptsTableHelper.toQueryBody(userId, accessToken, item, receiptsUpdatedAfter.toString());
 
     final String responseBody = await ServiceCommon.sendRequest(context, 'hc3_add_edit_receipt', body);
 
     return responseBody;
   }
+
 }

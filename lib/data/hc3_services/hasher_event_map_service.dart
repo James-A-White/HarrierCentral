@@ -1,10 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/data/hc3_services/payments_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 
 class HasherEventMapModel {
   HasherEventMapModel({this.hemId, this.userId, this.eventId, this.userStartEvent, this.userEndEvent, this.rsvpState, this.attendenceState, this.isHare, this.eventCountOverride, this.virginVisitorType, this.displayName, this.email, this.phoneNumber, this.removed, this.updatedAt});
@@ -299,5 +304,41 @@ class HasherEventMapService {
 
     print('$insertCounter hasher event map records inserted, $updateCounter hasher event map records updated');
     return insertCounter;
+  }
+
+  //==============  Domain specific functions ===========
+
+    Future<void> joinEvent(Map<String, dynamic> event,HasherEventMapTableType tblType,String hasherId,String hasherEventMapId,int rsvpState, int attendenceState, int isHare) async {
+
+    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEvent');
+
+    final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.admin);
+    final num _paymentsLastUpdated = await PaymentsService.getLastUpdatedTime();
+
+    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+
+
+    final String body = jsonEncode(<String, Object>{
+      'userId': userId, 
+      'accessToken': accessToken, 
+      'eventId': event['eventId'], 
+      'hasherId': hasherId, 
+      'hasherEventMapId': hasherEventMapId,
+      'isHare': isHare,
+      'rsvpState': rsvpState,
+      'attendenceState': attendenceState,
+      'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
+      'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
+    });
+
+    final http.Response response = await http.post(BASE_API_URL + 'hc3_join_event', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
+      (dynamic error) {
+        return false;
+      },
+    );
+
+    await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
   }
 }

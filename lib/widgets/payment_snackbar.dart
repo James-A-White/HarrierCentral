@@ -16,19 +16,19 @@ import 'package:harrier_central/data/hc3_services/payments_service.dart';
 
 class PaymentSnackBar extends SnackBar {
   const PaymentSnackBar({
-    @required this.index,
     @required this.context,
-    @required this.packList,
+    @required this.packMember,
     @required this.event,
-    @required this.onCompletedCallback
+    @required this.onRsvpCallback,
+    @required this.onPaidCallback
 
   }) : super(content: const Text('test'));
 
-  final int index;
   final BuildContext context;
-  final List<UserModel> packList;
+  final Map<String,dynamic> packMember;
   final Map<String, dynamic> event;
-  final Function onCompletedCallback;
+  final Function onRsvpCallback;
+  final Function onPaidCallback;
 
 
   @override
@@ -47,7 +47,7 @@ class PaymentSnackBar extends SnackBar {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Text(
-            packList[index].displayName,
+            packMember['nameForDisplay'],
             style: const TextStyle(
                 fontFamily: 'AvenirNextCondensedDemiBold',
                 fontStyle: FontStyle.normal,
@@ -70,9 +70,7 @@ class PaymentSnackBar extends SnackBar {
                               'images/icons/x_icon.png',
                               height: 30.0,
                               width: 30.0,
-                              color: packList[index].requestedRsvpState != -1
-                                  ? Colors.blue
-                                  : packList[index].rsvpState == rsvpNo.value
+                              color: ((packMember['rsvpState'] != null) && (packMember['rsvpState'] == rsvpNo.value))
                                       ? Colors.yellow
                                       : Colors.white,
                             ),
@@ -82,11 +80,12 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
+                              onRsvpCallback(packMember, rsvpState: rsvpNo.value);
                               // packScopedModel.setRsvpState(
                               //     rsvpNo.value,
                               //     isHareNo.value,
                               //     attendenceNo.value,
-                              //     packList[index]);
+                              //     packMember['']);
                               Scaffold.of(context).hideCurrentSnackBar(
                                   reason: SnackBarClosedReason.hide);
                             },
@@ -114,9 +113,7 @@ class PaymentSnackBar extends SnackBar {
                               'images/icons/question_icon.png',
                               height: 30.0,
                               width: 30.0,
-                              color: packList[index].requestedRsvpState != -1
-                                  ? Colors.blue
-                                  : packList[index].rsvpState == rsvpMaybe.value
+                              color: ((packMember['rsvpState'] != null) && (packMember['rsvpState'] == rsvpMaybe.value))
                                       ? Colors.yellow
                                       : Colors.white,
                             ),
@@ -126,11 +123,12 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
+                              onRsvpCallback(packMember, rsvpState: rsvpMaybe.value);
                               // packScopedModel.setRsvpState(
                               //     rsvpMaybe.value,
                               //     isHareNo.value,
                               //     attendenceNo.value,
-                              //     packList[index]);
+                              //     packMember['']);
                               Scaffold.of(context).hideCurrentSnackBar(
                                   reason: SnackBarClosedReason.hide);
                             },
@@ -158,12 +156,9 @@ class PaymentSnackBar extends SnackBar {
                               'images/icons/check_icon.png',
                               height: 30.0,
                               width: 30.0,
-                              color: packList[index].requestedRsvpState != -1
-                                  ? Colors.blue
-                                  : ((packList[index].rsvpState ==
-                                              rsvpYes.value) &&
-                                          (packList[index].isHare ==
-                                              isHareNo.value))
+                              color: (((packMember['rsvpState'] != null) && (packMember['rsvpState'] == rsvpYes.value))
+                                              &&
+                                         ((packMember['isHare'] == null) || (packMember['isHare'] == isHareNo.value)))
                                       ? Colors.yellow
                                       : Colors.white,
                             ),
@@ -173,10 +168,7 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              // packScopedModel.setRsvpState(rsvpYes.value,
-                              //     isHareNo.value, -1, packList[index]);
-                              // Scaffold.of(context).hideCurrentSnackBar(
-                              //     reason: SnackBarClosedReason.hide);
+                             onRsvpCallback(packMember, rsvpState: rsvpYes.value, isHare:isHareNo.value);
                             },
                           ),
                           const Text(
@@ -202,12 +194,9 @@ class PaymentSnackBar extends SnackBar {
                               'images/icons/hare_icon.png',
                               height: 30.0,
                               width: 30.0,
-                              color: packList[index].requestedRsvpState != -1
-                                  ? Colors.blue
-                                  : ((packList[index].rsvpState ==
-                                              rsvpYes.value) &&
-                                          (packList[index].isHare ==
-                                              isHareYes.value))
+                              color: (((packMember['rsvpState'] != null) && (packMember['rsvpState'] == rsvpYes.value)) &&
+                                          ((packMember['isHare'] != null) && (packMember['isHare'] ==
+                                              isHareYes.value)))
                                       ? Colors.yellow
                                       : Colors.white,
                             ),
@@ -217,8 +206,9 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
+                              onRsvpCallback(packMember, rsvpState: rsvpYes.value, isHare: isHareYes.value);
                               // packScopedModel.setRsvpState(rsvpYes.value,
-                              //     isHareYes.value, -1, packList[index]);
+                              //     isHareYes.value, -1, packMember['']);
                               // Scaffold.of(context).hideCurrentSnackBar(
                               //     reason: SnackBarClosedReason.hide);
                             },
@@ -260,13 +250,9 @@ class PaymentSnackBar extends SnackBar {
                               'images/icons/not_at_hash_icon.png',
                               height: 30.0,
                               width: 30.0,
-                              color:
-                                  packList[index].requestedAttendenceState != -1
-                                      ? Colors.blue
-                                      : ((packList[index].attendenceState ==
+                              color: ((packMember['attendenceState'] ==
                                                   attendenceNo.value) &&
-                                              (packList[index].rsvpState ==
-                                                  rsvpYes.value))
+                                             ((packMember['rsvpState'] != null) && (packMember['rsvpState'] == rsvpYes.value)))
                                           ? Colors.yellow
                                           : Colors.white,
                             ),
@@ -276,8 +262,9 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
+                              onRsvpCallback(packMember, attendenceState: attendenceNo.value);
                               // packScopedModel.setRsvpState(
-                              //     -1, -1, attendenceNo.value, packList[index]);
+                              //     -1, -1, attendenceNo.value, packMember['']);
                               // Scaffold.of(context).hideCurrentSnackBar(
                               //     reason: SnackBarClosedReason.hide);
                             },
@@ -305,13 +292,9 @@ class PaymentSnackBar extends SnackBar {
                               'images/icons/runner_icon.png',
                               height: 30.0,
                               width: 30.0,
-                              color:
-                                  packList[index].requestedAttendenceState != -1
-                                      ? Colors.blue
-                                      : ((packList[index].attendenceState ==
+                              color: ((packMember['attendenceState'] ==
                                                   attendenceAtHash.value) &&
-                                              (packList[index].rsvpState ==
-                                                  rsvpYes.value))
+                                              ((packMember['rsvpState'] != null) && (packMember['rsvpState'] == rsvpYes.value)))
                                           ? Colors.yellow
                                           : Colors.white,
                             ),
@@ -321,8 +304,9 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
+                              onRsvpCallback(packMember, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value);
                               // packScopedModel.setRsvpState(rsvpYes.value, -1,
-                              //     attendenceAtHash.value, packList[index]);
+                              //     attendenceAtHash.value, packMember['']);
                               // Scaffold.of(context).hideCurrentSnackBar(
                               //     reason: SnackBarClosedReason.hide);
                             },
@@ -350,13 +334,9 @@ class PaymentSnackBar extends SnackBar {
                               'images/icons/beer_icon.png',
                               height: 30.0,
                               width: 30.0,
-                              color:
-                                  packList[index].requestedAttendenceState != -1
-                                      ? Colors.blue
-                                      : ((packList[index].attendenceState ==
+                              color: ((packMember['attendenceState'] ==
                                                   attendenceOnIn.value) &&
-                                              (packList[index].rsvpState ==
-                                                  rsvpYes.value))
+                                              ((packMember['rsvpState'] != null) && (packMember['rsvpState'] == rsvpYes.value)))
                                           ? Colors.yellow
                                           : Colors.white,
                             ),
@@ -366,8 +346,9 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
+                              onRsvpCallback(packMember, rsvpState: rsvpYes.value, attendenceState: attendenceOnIn.value);
                               // packScopedModel.setRsvpState(rsvpYes.value, -1,
-                              //     attendenceOnIn.value, packList[index]);
+                              //     attendenceOnIn.value, packMember['']);
                               // Scaffold.of(context).hideCurrentSnackBar(
                               //     reason: SnackBarClosedReason.hide);
                             },
@@ -407,8 +388,8 @@ class PaymentSnackBar extends SnackBar {
                             icon: Image.asset('images/icons/payment_type_1.png',
                                 height: 30.0,
                                 width: 30.0,
-                                color: ((packList[index].isPaid == 0) ||
-                                        (packList[index].paymentType ==
+                                color: ((packMember['isPaid'] == 0) ||
+                                        (packMember['paymentType'] ==
                                             paymentNotPaid.value))
                                     ? Colors.yellow
                                     : Colors.white),
@@ -418,12 +399,7 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              // processPayment(
-                              //     index,
-                              //     packScopedModel,
-                              //     context,
-                              //     paymentNotPaid.value,
-                              //     0.0);
+                              onPaidCallback(packMember,paymentNotPaid.value);
                             },
                           ),
                           const Text(
@@ -448,7 +424,7 @@ class PaymentSnackBar extends SnackBar {
                             icon: Image.asset('images/icons/payment_type_2.png',
                                 height: 30.0,
                                 width: 30.0,
-                                color: packList[index].paymentType ==
+                                color: packMember['paymentType'] ==
                                         paymentFreeRun.value
                                     ? Colors.yellow
                                     : Colors.white),
@@ -457,12 +433,7 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              // processPayment(
-                              //     index,
-                              //     packScopedModel,
-                              //     context,
-                              //     paymentFreeRun.value,
-                              //     0.0);
+                              onPaidCallback(packMember,paymentFreeRun.value);
                             },
                           ),
                           const Text(
@@ -487,9 +458,9 @@ class PaymentSnackBar extends SnackBar {
                             icon: Image.asset('images/icons/payment_type_5.png',
                                 height: 30.0,
                                 width: 30.0,
-                                color: ((packList[index].paymentType ==
+                                color: ((packMember['paymentType'] ==
                                             paymentCashOtherAmount.value) ||
-                                        (packList[index].paymentType ==
+                                        (packMember['paymentType'] ==
                                             paymentBankTransferOtherAmount
                                                 .value))
                                     ? Colors.yellow
@@ -499,7 +470,7 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              //payOther(index, packScopedModel, context);
+                              //payOther('', packScopedModel, context);
                             },
                           ),
                           const Text(
@@ -530,7 +501,7 @@ class PaymentSnackBar extends SnackBar {
                             icon: Image.asset('images/icons/payment_type_3.png',
                                 height: 30.0,
                                 width: 30.0,
-                                color: packList[index].paymentType ==
+                                color: packMember['paymentType'] ==
                                         paymentCash.value
                                     ? Colors.yellow
                                     : Colors.white),
@@ -539,20 +510,11 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              // processPayment(
-                              //     index,
-                              //     packScopedModel,
-                              //     context,
-                              //     paymentCash.value,
-                              //     packList[index].isMember != 1
-                              //         ? event['eventPriceForNonMembers']
-                              //         : event['eventPriceForNonMembers']
-                                      
-                              //         );
+                              onPaidCallback(packMember,paymentCash.value);
                             },
                           ),
                           Text(
-                            'Paid ${formatMoney(packList[index].isMember != 1 ? event['eventPriceForNonMembers'] : event['eventPriceForMembers'])}\r\ncash',
+                            'Paid ${formatMoney(packMember['isMember'] != 1 ? event['eventPriceForNonMembers'] : event['eventPriceForMembers'])}\r\ncash',
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontFamily: 'AvenirNextCondensedDemiBold',
@@ -573,7 +535,7 @@ class PaymentSnackBar extends SnackBar {
                             icon: Image.asset('images/icons/payment_type_4.png',
                                 height: 30.0,
                                 width: 30.0,
-                                color: packList[index].paymentType ==
+                                color: packMember['paymentType'] ==
                                         paymentBankTransfer.value
                                     ? Colors.yellow
                                     : Colors.white),
@@ -582,18 +544,11 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              // processPayment(
-                              //     index,
-                              //     packScopedModel,
-                              //     context,
-                              //     paymentBankTransfer.value,
-                              //     packList[index].isMember != 1
-                              //         ? event['eventPriceForNonMembers']
-                              //         : event['eventPriceForMembers']);
+                              onPaidCallback(packMember,paymentBankTransfer.value);
                             },
                           ),
                           Text(
-                            'Paid ${formatMoney(packList[index].isMember != 1 ? event['eventPriceForNonMembers'] : event['eventPriceForMembers'])}\r\nbank transfer',
+                            'Paid ${formatMoney(packMember['isMember'] != 1 ? event['eventPriceForNonMembers'] : event['eventPriceForMembers'])}\r\nbank transfer',
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontFamily: 'AvenirNextCondensedDemiBold',
@@ -614,7 +569,7 @@ class PaymentSnackBar extends SnackBar {
                             icon: Image.asset('images/icons/payment_type_6.png',
                                 height: 30.0,
                                 width: 30.0,
-                                color: packList[index].paymentType ==
+                                color: packMember['paymentType'] ==
                                         paymentHashCredit.value
                                     ? Colors.yellow
                                     : Colors.white),
@@ -623,18 +578,11 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              // processPayment(
-                              //     index,
-                              //     packScopedModel,
-                              //     context,
-                              //     paymentHashCredit.value,
-                              //     packList[index].isMember != 1
-                              //         ? event['eventPriceForNonMembers']
-                              //         : event['eventPriceForMembers']);
+                              onPaidCallback(packMember,paymentHashCredit.value);
                             },
                           ),
                           Text(
-                            'Credit ${formatMoney(packList[index].isMember != 1 ? event['eventPriceForNonMembers'] : event['eventPriceForMembers'])}\r\n(${packList[index].credit < 0 ? 'Owes' : 'Credit'} ${Utilities.getFormattedMoney(packList[index].credit.abs(), event['digitsAfterDecimal'] ?? 2, event['currencySymbol'])})',
+                            'Credit ${formatMoney(packMember['isMember'] != 1 ? event['eventPriceForNonMembers'] : event['eventPriceForMembers'])}\r\n(${packMember['credit'] < 0 ? 'Owes' : 'Credit'} ${Utilities.getFormattedMoney(packMember['credit'].abs(), event['digitsAfterDecimal'] ?? 2, event['currencySymbol'])})',
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontFamily: 'AvenirNextCondensedDemiBold',
@@ -662,138 +610,33 @@ class PaymentSnackBar extends SnackBar {
   //       futureRun.currencySymbol);
   // }
 
-  void payOther(
-      int index, PackScopedModel _packScopedModel, BuildContext context) {
-    final OtherPaymentPopup otherPaymentPopup =
-        OtherPaymentPopup(currencySymbol: event['currencySymbol']);
+  // void payOther(
+  //     int index, PackScopedModel _packScopedModel, BuildContext context) {
+  //   final OtherPaymentPopup otherPaymentPopup =
+  //       OtherPaymentPopup(currencySymbol: event['currencySymbol']);
 
-    final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return otherPaymentPopup;
-        });
+  //   final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
+  //       context: context,
+  //       barrierDismissible: false, // user must tap button!
+  //       builder: (BuildContext context) {
+  //         return otherPaymentPopup;
+  //       });
 
-    dlg.then((Map<String, String> x) {
-      final String amount = x['amount'];
-      final String type = x['type'];
+  //   dlg.then((Map<String, String> x) {
+  //     final String amount = x['amount'];
+  //     final String type = x['type'];
 
-      if (type != 'cancel') {
-        final num v = num.tryParse(amount);
-        final int t = int.tryParse(type);
+  //     if (type != 'cancel') {
+  //       final num v = num.tryParse(amount);
+  //       final int t = int.tryParse(type);
 
-        if ((v != null) && (t != null)) {
-          processPayment(
-              index, _packScopedModel, context, t, v);
-        }
-      }
-    });
-  }
+  //       // if ((v != null) && (t != null)) {
+  //       //   processPayment(
+  //       //       '', _packScopedModel, context, t, v);
+  //       // }
+  //     }
+  //   });
+  // }
 
-  Future<bool> processPayment(
-      int index,
-      PackScopedModel _packScopedModel,
-      BuildContext context,
-      int paymentType,
-      num paymentAmount) async {
-    final UserModel hasher = packList[index];
-
-    if (hasher.rsvpState < rsvpYes.value) {
-      hasher.rsvpState = -1;
-      hasher.requestedRsvpState = rsvpYes.value;
-      hasher.attendenceState = -1;
-      hasher.requestedAttendenceState = attendenceAtHash.value;
-    }
-
-    _packScopedModel.forceRefresh();
-
-    final PaymentsService pSrv =PaymentsService();
-
-    await pSrv.payForEvent(event['eventId'], hasher.hasherId, hasher.hasherEventMapId ?? GUID_EMPTY, paymentType, paymentAmount, attendenceAtHash.value);
-
-    // _payScopedModel
-    //     .payForEvent(
-    //         packList, index, paymentType, paymentAmount, attendenceAtHash.value)
-    //     .then((List<PayForEventModel> result) {
-    //   if (paymentType == paymentNotPaid.value) {
-    //     hasher.isPaid = 0;
-    //   } else {
-    //     hasher.isPaid = 1;
-    //   }
-
-    //   if (hasher.hasherEventMapId != result[0].hasherEventMapId) {
-    //     hasher.hasherEventMapId = result[0].hasherEventMapId;
-    //   }
-
-    //   if (hasher.userRunCount != result[0].totalRunsThisKennel) {
-    //     hasher.userRunCount = result[0].totalRunsThisKennel;
-    //   }
-
-    //   hasher.rsvpState = rsvpYes.value;
-    //   hasher.requestedRsvpState = -1;
-
-    //   if (hasher.attendenceState < attendenceAtHash.value) {
-    //     hasher.attendenceState = attendenceAtHash.value;
-    //     hasher.requestedAttendenceState = -1;
-    //   }
-
-    //   _packScopedModel.forceRefresh();
-
-    //   packList[index].paymentType = paymentType;
-    //   if ((paymentType == paymentCashOtherAmount.value) ||
-    //       (paymentType == paymentBankTransferOtherAmount.value)) {
-    //     final num fundsDifference = paymentAmount -
-    //         (hasher.isMember == 1
-    //             ? event['eventPriceForMembers']
-    //             : event['eventPriceForNonMembers']);
-
-    //     final String credit = Utilities.getFormattedMoney(fundsDifference,
-    //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
-
-    //     final double hashCashAmount = hasher.isMember == 1
-    //         ? event['eventPriceForMembers']
-    //         : event['eventPriceForNonMembers'];
-
-    //     final String hashCash = Utilities.getFormattedMoney(hashCashAmount,
-    //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
-
-    //     final String amountPaid = Utilities.getFormattedMoney(paymentAmount,
-    //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
-
-    //     final String paymentMethod = paymentType == paymentCashOtherAmount.value
-    //         ? 'in cash'
-    //         : 'by bank transfer';
-
-    //     if (fundsDifference > 0.0) {
-    //       showDialog<void>(
-    //           context: context,
-    //           builder: (BuildContext context) {
-    //             // return object of type Dialog
-    //             return AlertDialog(
-    //               title: const Text('Credit applied to account'),
-    //               content: Text(
-    //                   '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${event['kennelShortName']}'),
-    //               actions: <Widget>[
-    //                 // usually buttons at the bottom of the dialog
-    //                 FlatButton(
-    //                   color: Colors.blue,
-    //                   textColor: Colors.white,
-    //                   child: const Text('Close'),
-    //                   onPressed: () {
-    //                     Navigator.of(context).pop();
-    //                   },
-    //                 ),
-    //               ],
-    //             );
-    //           });
-    //     }
-    //   }
-    // });
-
-    // packList[index].isPaid = -1;
-
-    Scaffold.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
-
-    return true;
-  }
+  
 }

@@ -196,29 +196,6 @@ class HasherKennelMapService {
     });
   }
 
-  Future<void> toggleFollowing(Map<String, dynamic> kennel,HasherKennelMapTableType tblType) async {
-
-    final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
-
-    final String body = jsonEncode(<String, Object>{'userId': userId, 'accessToken': accessToken, 'kennelId': kennel['kennelId'], 'targetUserId': userId, 'isFollowing': kennel['followingRequested']});
-
-    final http.Response response = await http.post(BASE_API_URL + 'hc3_join_kennel', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
-      (dynamic error) {
-        return false;
-      },
-    );
-
-    final Database db = await DBProvider.db.database;
-    bulkUpdateDatabase(response.body, db, null, tblType);
-
-    final dynamic result = json.decode(response.body);
-    kennel['following'] = result[0][0]['following'];
-    kennel['followingRequested'] = -1;
-
-    //print(response.body);
-  }
-
   Future<void> updateDatabase(List<HasherKennelMapModel> items, HasherKennelMapTableType tblType) async {
     final Database db = await DBProvider.db.database;
 
@@ -298,4 +275,30 @@ class HasherKennelMapService {
     print('$insertCounter hasher kennel map records inserted, $updateCounter hasher kennel map records updated');
     return insertCounter;
   }
+
+  //=================  Domain specific functions ================
+
+    Future<void> toggleFollowing(Map<String, dynamic> kennel,HasherKennelMapTableType tblType) async {
+
+    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
+
+    final String body = jsonEncode(<String, Object>{'userId': userId, 'accessToken': accessToken, 'kennelId': kennel['kennelId'], 'targetUserId': userId, 'isFollowing': kennel['followingRequested']});
+
+    final http.Response response = await http.post(BASE_API_URL + 'hc3_join_kennel', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
+      (dynamic error) {
+        return false;
+      },
+    );
+
+    final Database db = await DBProvider.db.database;
+    bulkUpdateDatabase(response.body, db, null, tblType);
+
+    final dynamic result = json.decode(response.body);
+    kennel['following'] = result[0][0]['following'];
+    kennel['followingRequested'] = -1;
+
+    //print(response.body);
+  }
+  
 }
