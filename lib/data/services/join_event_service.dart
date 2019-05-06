@@ -17,25 +17,19 @@ import 'package:harrier_central/util/utilities.dart';
 class JoinEventService {
 
     Future<UserModel> joinEventAsVisitor(
-      String eventId, EnumVirginVisitor virginVisitor, EnumAttendenceState<int> attendenceState, String name, String email, String phoneNumber) async {
+      String eventId, EnumVirginVisitor<int> virginVisitor, EnumAttendenceState<int> attendenceState, String name, String email, String phoneNumber) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken =
         Utilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor');
-
-    int virginVisitorType = 1;
-    if (virginVisitor == EnumVirginVisitor.visitor) 
-    {
-      virginVisitorType = 2;
-    }
 
     final String body = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
       'eventId': eventId,
       'displayName': name,
-      'virginVisitorType': virginVisitorType,
-      'attendenceState' :attendenceState.value,
+      'virginVisitorType': virginVisitor.value.toString(),
+      'attendenceState' :attendenceState.value.toString(),
       'email' : email,
       'phoneNumber':phoneNumber
     });

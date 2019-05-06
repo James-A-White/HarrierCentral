@@ -1,12 +1,23 @@
 import 'dart:core';
 
-enum EnumVirginVisitor { virgin, visitor }
+
 
 abstract class Enum<T> {
   const Enum(this._value);
   final T _value;
   T get value => _value;
 }
+
+
+class EnumVirginVisitor<int> extends Enum<int> {
+  const EnumVirginVisitor(int val) : super(val);
+}
+
+const EnumVirginVisitor<int> enumVirgin = EnumVirginVisitor<int>(1);
+const EnumVirginVisitor<int> enumVisitor = EnumVirginVisitor<int>(2);
+
+//////////////////////////
+
 
 class EnumRsvpState<int> extends Enum<int> {
   const EnumRsvpState(int val) : super(val);

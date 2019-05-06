@@ -8,6 +8,7 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 
@@ -180,7 +181,6 @@ class HasherEventMapTableHelper {
       HasherEventMapTableHelper.colUpdatedAt: item.updatedAt.toString(),
       HasherEventMapTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       HasherEventMapTableHelper.colRemoved: item.removed
-
     };
 
     return map;
@@ -218,7 +218,7 @@ class HasherEventMapService {
     final num timeValue = table.first['maxDate'];
     return timeValue;
   }
-  
+
   Future<void> clearTable(HasherEventMapTableType tblType) async {
     final Database db = await DBProvider.db.database;
     await db.rawDelete('DELETE FROM ${HasherEventMapTableHelper.getTableName(tblType)}').then((void dummy) {
@@ -272,9 +272,7 @@ class HasherEventMapService {
           informUser('Loading hasher data \r\n$percentage% complete');
         }
 
-        jsonItem.addAll(<String, dynamic>{
-          'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch
-        });
+        jsonItem.addAll(<String, dynamic>{'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch});
 
         final String query = 'SELECT * FROM ${HasherEventMapTableHelper.getTableName(tblType)} WHERE ${HasherEventMapTableHelper.remoteDbId} = "${jsonItem['hemId']}"';
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
@@ -308,8 +306,7 @@ class HasherEventMapService {
 
   //==============  Domain specific functions ===========
 
-    Future<void> joinEvent(Map<String, dynamic> event,HasherEventMapTableType tblType,String hasherId,String hasherEventMapId,int rsvpState, int attendenceState, int isHare) async {
-
+  Future<void> joinEvent(Map<String, dynamic> event, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, int rsvpState, int attendenceState, int isHare) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEvent');
 
@@ -319,12 +316,11 @@ class HasherEventMapService {
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
     final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
 
-
     final String body = jsonEncode(<String, Object>{
-      'userId': userId, 
-      'accessToken': accessToken, 
-      'eventId': event['eventId'], 
-      'hasherId': hasherId, 
+      'userId': userId,
+      'accessToken': accessToken,
+      'eventId': event['eventId'],
+      'hasherId': hasherId,
       'hasherEventMapId': hasherEventMapId,
       'isHare': isHare,
       'rsvpState': rsvpState,
@@ -334,6 +330,38 @@ class HasherEventMapService {
     });
 
     final http.Response response = await http.post(BASE_API_URL + 'hc3_join_event', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
+      (dynamic error) {
+        return false;
+      },
+    );
+
+    await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+  }
+
+  Future<void> joinEventAsVisitor(Map<String, dynamic> event, HasherEventMapTableType tblType, String displayName, int virginVisitorType, int attendenceState, String email, String phoneNumber) async {
+    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor');
+
+    final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.admin);
+    final num _paymentsLastUpdated = await PaymentsService.getLastUpdatedTime();
+
+    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+
+    final String body = jsonEncode(<String, Object>{
+      'userId': userId,
+      'accessToken': accessToken,
+      'eventId': event['eventId'],
+      'displayName': displayName ?? '<no name>',
+      'virginVisitorType': virginVisitorType.toString(),
+      'attendenceState': attendenceAtHash.value.toString(),
+      'email': email,
+      'phoneNumber': phoneNumber,
+      'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
+      'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
+    });
+
+    final http.Response response = await http.post(BASE_API_URL + 'hc3_join_event_as_visitor', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
       (dynamic error) {
         return false;
       },

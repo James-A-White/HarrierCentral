@@ -141,6 +141,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   }
 
   Future<void> _refreshPackListFromTables(bool forceRefresh) async {
+
+
     final Database db = await DBProvider.db.database;
     try {
       // final String sql = '''
@@ -160,27 +162,52 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
       //     ''';
 
+
       final String sql = ''' 
 
-          SELECT h.hasherId,
+          SELECT 
+            h.hasherId,
+            hem.hemId,
             coalesce(hkm.isMember,0) as isMember,
             coalesce(hem.isHare,0) as isHare,
             CASE WHEN pay.hemId IS NULL THEN 0 ELSE 1 END as isPaid, 
             h.dispName as nameForDisplay,
             coalesce(pay.paymentType,0) as paymentType,
             h.photo,
+            0 as virginVisitorType,
             coalesce(hem.rsvpState,0) as rsvpState,
             coalesce(hem.attendenceState,0) as attendenceState,
             0 as userRunCount,
             hem.updatedAt as hemUpdatedAt,
             pay.updatedAt as payUpdatedAt,
             0 as credit
-
- 
           FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.admin)} hkm
           INNER JOIN ${HashersTableHelper.tableName} h on h.hasherId = hkm.userId
           LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventId}"
           LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
+          WHERE hkm.kennelId = "${widget.kennelId}" AND hkm.isMember = 1
+          UNION
+          SELECT 
+            null as hasherId,
+            coalesce(hem2.hemId,"00000000-0000-0000-0000-000000000000") as hemId,
+            0 as isMember,
+            0 as isHare,
+            CASE WHEN pay2.hemId IS NULL THEN 0 ELSE 1 END as isPaid, 
+            coalesce(hem2.displayName,"<no name>") || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END as nameForDisplay,
+            coalesce(pay2.paymentType,0) as paymentType,
+            CASE WHEN hem2.virginVisitorType = 1 THEN "https://harriercentral.blob.core.windows.net/harrier/Virgin.png" ELSE "https://harriercentral.blob.core.windows.net/harrier/Visitor.png" END as photo,
+            coalesce(hem2.virginVisitorType,1) as virginVisitorType,
+            coalesce(hem2.rsvpState,0) as rsvpState,
+            coalesce(hem2.attendenceState,0) as attendenceState,
+            0 as userRunCount,
+            hem2.updatedAt as hemUpdatedAt,
+            pay2.updatedAt as payUpdatedAt,
+            0 as credit
+
+            FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin)} hem2 
+            LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay2 on pay2.hemId = hem2.hemId and pay2.cancelledBy IS NULL
+            WHERE hem2.eventId = "${widget.eventId}" and hem2.virginVisitorType != 0
+            ORDER BY nameForDisplay
           
           ''';
 
@@ -199,7 +226,15 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
             for (String key in indicatorRsvpUpdating.keys) {
               if (key.startsWith('hem:')) {
-                //final String hemId = key.substring(4);
+                final String hem = key.substring(4);
+
+                final Map<String, dynamic> hasher = packList.firstWhere((Map<String, dynamic> k) => k['hemId'].toString().toLowerCase() == hem, orElse: () => null);
+
+                if (hasher != null) {
+                  if (hasher['hemUpdatedAt'] != indicatorRsvpUpdating[hem]) {
+                    removeList.add('hem:' + hem.toLowerCase());
+                  }
+                }
               } else {
                 final String hid = key.substring(4);
 
@@ -218,8 +253,15 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
             for (String key in indicatorAttendenceUpdating.keys) {
               if (key.startsWith('hem:')) {
-                // String hemId = key.substring(4);
-                // int i = 0;
+                final String hem = key.substring(4);
+
+                final Map<String, dynamic> hasher = packList.firstWhere((Map<String, dynamic> k) => k['hemId'].toString().toLowerCase() == hem, orElse: () => null);
+
+                if (hasher != null) {
+                  if (hasher['hemUpdatedAt'] != indicatorAttendenceUpdating[hem]) {
+                    removeList.add('hem:' + hem.toLowerCase());
+                  }
+                }
               } else {
                 final String hid = key.substring(4);
 
@@ -238,8 +280,15 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             removeList.clear();
             for (String key in indicatorPaidUpdating.keys) {
               if (key.startsWith('hem:')) {
-                // String hemId = key.substring(4);
-                // int i = 0;
+                final String hem = key.substring(4);
+
+                final Map<String, dynamic> hasher = packList.firstWhere((Map<String, dynamic> k) => k['hemId'].toString().toLowerCase() == hem, orElse: () => null);
+
+                if (hasher != null) {
+                  if (hasher['hemUpdatedAt'] != indicatorPaidUpdating[hem]) {
+                    removeList.add('hem:' + hem.toLowerCase());
+                  }
+                }
               } else {
                 final String hid = key.substring(4);
 
@@ -266,6 +315,10 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     } catch (e) {
       print(e);
     }
+
+    print("Pack records retreived @ ${DateTime.now().millisecondsSinceEpoch}");
+    packList.sort((Map<String, dynamic> a, Map<String, dynamic> b) => (a['nameForDisplay']).compareTo(b['nameForDisplay']));
+
   }
 
   @override
@@ -304,51 +357,48 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   //   });
   // }
 
-  // void showVirginVisitorPopup() {
-  //   // _packScopedModel
-  //   //     .joinEventAsVisitor(
-  //   //         'Amy', EnumVirginVisitor.virgin, widget.futureRun.eventId)
-  //   //     .then((JoinEventModel result) {
-  //   //   _reloadPack(false);
-  //   // });
+  void showVirginVisitorPopup() {
 
-  //   const AddVisitorVirginPopup addVirginVisitorPopup = AddVisitorVirginPopup();
+    const AddVisitorVirginPopup addVirginVisitorPopup = AddVisitorVirginPopup();
 
-  //   final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
-  //       context: context,
-  //       barrierDismissible: false, // user must tap button!
-  //       builder: (BuildContext context) {
-  //         return addVirginVisitorPopup;
-  //       });
+    final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return addVirginVisitorPopup;
+        });
 
-  //   dlg.then((Map<String, String> x) {
-  //     final String name = x['name'];
-  //     final String type = x['type'];
-  //     final String email = x['email'] ?? '';
-  //     final String phoneNumber = x['phone'] ?? '';
+    dlg.then((Map<String, String> x) {
+      final String name = x['name'];
+      final String type = x['type'];
+      final String email = x['email'] ?? '';
+      final String phoneNumber = x['phone'] ?? '';
 
-  //     EnumVirginVisitor evv = EnumVirginVisitor.virgin;
-  //     if (type == EnumVirginVisitor.visitor.toString()) {
-  //       evv = EnumVirginVisitor.visitor;
-  //     }
+      EnumVirginVisitor<int> evv = enumVirgin;
+      if (type == enumVisitor.value.toString()) {
+        evv = enumVisitor; 
+      }
 
-  //     if (type != 'cancel') {
-  //       _packScopedModel
-  //           .joinEventAsVisitor(
-  //               name, email, phoneNumber, evv, widget.eventId)
-  //           .then((UserModel result) {
-  //         _packScopedModel.addEditUser(result);
-  //         _packScopedModel.sortPackList();
-  //         packList = _packScopedModel.filteredPackList;
+      if (type != 'cancel') {
+          final HasherEventMapService hemSrv = HasherEventMapService();
+          final Future<void> retVal = hemSrv.joinEventAsVisitor(
+            event,
+            HasherEventMapTableType.admin,
+            name,
+            evv.value,
+            attendenceAtHash.value,
+            email,
+            phoneNumber 
+          );
 
-  //         _packScopedModel.forceRefresh();
-  //         //_reloadPack(false);
-  //       });
-  //     }
-  //   });
+    retVal.then((void dummy) {
+      _refreshPackListFromTables(true);
+    });
+      }
+    });
 
-  //   // dlg.whenComplete(action)
-  // }
+    // dlg.whenComplete(action)
+  }
 
   GlobalKey<ScaffoldState> scaffoldKey;
 
@@ -506,7 +556,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             backgroundColor: Colors.blue,
             label: 'Add Virgin / Visitor',
             labelStyle: const TextStyle(fontSize: 18.0),
-            //onTap: () => showVirginVisitorPopup(),
+            onTap: () => showVirginVisitorPopup(),
           ),
           SpeedDialChild(
             child: const Icon(MaterialCommunityIcons.account_search),
@@ -552,8 +602,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                                   key: packListBox,
                                   height: constraints.maxHeight - searchBar(constraints.maxWidth).constraints.maxHeight,
                                   child: RefreshIndicator(
-                                      onRefresh: () {
+                                      onRefresh: () async {
                                         _refreshSqlTablesFromBackend(true);
+
                                       },
                                       child: buildPackListView()),
                                 ),
@@ -845,7 +896,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             Positioned(
               left: 76.0,
               bottom: packMember['rsvpState'] <= 0 ? 2.0 : packMember['isHare'] == 1 ? 5.0 : 3.5,
-              child: (indicatorRsvpUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? '')) || indicatorRsvpUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))
+              child: ((packMember['hemId'] != null) && (indicatorRsvpUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? ''))) || ((packMember['hasherId'] != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))))
                   ? Icon(delayIcon, color: Colors.blue[800])
                   : packMember['rsvpState'] == 0
                       ? Container()
@@ -858,8 +909,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             Positioned(
               left: 115.0,
               bottom: 3.0,
-              child: (indicatorAttendenceUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? '')) || indicatorAttendenceUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))
-                  ? Icon(delayIcon, color: Colors.blue[800])
+               child: ((packMember['hemId'] != null) && (indicatorRsvpUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? ''))) || ((packMember['hasherId'] != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))))
+                 ? Icon(delayIcon, color: Colors.blue[800])
                   : (packMember['rsvpState'] != rsvpYes.value)
                       ? CircleAvatar(
                           backgroundColor: Colors.grey[350],
@@ -873,8 +924,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             Positioned(
               left: 117.0,
               bottom: packMember['attendenceState'] <= 0 ? 4.5 : 5.5,
-              child: (indicatorAttendenceUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? '')) || indicatorAttendenceUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))
-                  ? Container()
+                child: ((packMember['hemId'] != null) && (indicatorRsvpUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? ''))) || ((packMember['hasherId'] != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))))
+                 ? Container()
                   : (packMember['rsvpState'] != rsvpYes.value)
                   ? Container()
                   : packMember['attendenceState'] == attendenceNo.value
@@ -888,8 +939,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 : Positioned(
                     left: 155.0,
                     bottom: 3.0,
-                    child: (indicatorPaidUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? '')) || indicatorPaidUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))
-                        ? Icon(delayIcon, color: Colors.blue[800])
+                 child: ((packMember['hemId'] != null) && (indicatorRsvpUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? ''))) || ((packMember['hasherId'] != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))))
+                       ? Icon(delayIcon, color: Colors.blue[800])
                         : (packMember['attendenceState'] < attendenceAtHash.value)
                             ? CircleAvatar(
                                 backgroundColor: Colors.grey[350],
@@ -911,8 +962,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 : Positioned(
                     left: 157.0,
                     bottom: packMember['attendenceState'] < -1 ? 4.5 : 5.5,
-                    child: (indicatorPaidUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? '')) || indicatorPaidUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))
-                        ? Container()
+                 child: ((packMember['hemId'] != null) && (indicatorRsvpUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? ''))) || ((packMember['hasherId'] != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))))
+                      ? Container()
                         : (packMember['attendenceState'] < attendenceAtHash.value)
                             ? Container()
                             : (packMember['rsvpState'] != rsvpYes.value)
@@ -1252,7 +1303,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
             textColor: Colors.white,
             onPressed: () {
               Navigator.of(context).pop(<String, String>{
-                'type': EnumVirginVisitor.visitor.toString(),
+                'type': enumVisitor.value.toString(),
                 'name': nameTextController.text,
                 'email': emailTextController.text,
                 'phone': phoneTextController.text,
@@ -1265,7 +1316,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
             textColor: Colors.white,
             onPressed: () {
               Navigator.of(context).pop(<String, String>{
-                'type': EnumVirginVisitor.virgin.toString(),
+                'type': enumVirgin.value.toString(),
                 'name': nameTextController.text,
                 'email': emailTextController.text,
                 'phone': phoneTextController.text,
