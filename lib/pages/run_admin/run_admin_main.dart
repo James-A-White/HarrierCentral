@@ -139,7 +139,9 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                     Navigator.push<dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => CheckInPackPage(eventId: event['eventId']),
+                        builder: (BuildContext context) => CheckInPackPage(
+                          eventId: widget.eventId,
+                          kennelId: event['kennelId']),
                       ),
                     );
                   },

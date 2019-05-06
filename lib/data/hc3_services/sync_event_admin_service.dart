@@ -130,12 +130,12 @@ class SyncEventAdminService {
         },
       );
 
-      await processReturnRecords(response.body, db: db, informUser: informUser);
+      await updateSqlTablesWithResultsFromBackendApiCall(response.body, db: db, informUser: informUser);
     }
     return true;
   }
 
-  static Future<void> processReturnRecords(String jsonResults, {Database db,Function informUser}) async {
+  static Future<void> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Database db,Function informUser}) async {
     
     db ??= await DBProvider.db.database;
     

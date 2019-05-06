@@ -149,6 +149,7 @@ class HasherEventMapTableHelper {
             $colRemoved NUM,
             $colUpdatedAt TEXT,
             $colUpdatedAtValue NUM NULL
+
           )
           ''');
 
@@ -174,6 +175,7 @@ class HasherEventMapTableHelper {
       HasherEventMapTableHelper.colUpdatedAt: item.updatedAt.toString(),
       HasherEventMapTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       HasherEventMapTableHelper.colRemoved: item.removed
+
     };
 
     return map;
@@ -266,7 +268,7 @@ class HasherEventMapService {
         }
 
         jsonItem.addAll(<String, dynamic>{
-          'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch,
+          'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch
         });
 
         final String query = 'SELECT * FROM ${HasherEventMapTableHelper.getTableName(tblType)} WHERE ${HasherEventMapTableHelper.remoteDbId} = "${jsonItem['hemId']}"';

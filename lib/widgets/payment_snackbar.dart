@@ -17,7 +17,6 @@ import 'package:harrier_central/data/hc3_services/payments_service.dart';
 class PaymentSnackBar extends SnackBar {
   const PaymentSnackBar({
     @required this.index,
-    @required this.packScopedModel,
     @required this.context,
     @required this.packList,
     @required this.event,
@@ -26,7 +25,6 @@ class PaymentSnackBar extends SnackBar {
   }) : super(content: const Text('test'));
 
   final int index;
-  final PackScopedModel packScopedModel;
   final BuildContext context;
   final List<UserModel> packList;
   final Map<String, dynamic> event;
@@ -84,11 +82,11 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              packScopedModel.setRsvpState(
-                                  rsvpNo.value,
-                                  isHareNo.value,
-                                  attendenceNo.value,
-                                  packList[index]);
+                              // packScopedModel.setRsvpState(
+                              //     rsvpNo.value,
+                              //     isHareNo.value,
+                              //     attendenceNo.value,
+                              //     packList[index]);
                               Scaffold.of(context).hideCurrentSnackBar(
                                   reason: SnackBarClosedReason.hide);
                             },
@@ -128,11 +126,11 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              packScopedModel.setRsvpState(
-                                  rsvpMaybe.value,
-                                  isHareNo.value,
-                                  attendenceNo.value,
-                                  packList[index]);
+                              // packScopedModel.setRsvpState(
+                              //     rsvpMaybe.value,
+                              //     isHareNo.value,
+                              //     attendenceNo.value,
+                              //     packList[index]);
                               Scaffold.of(context).hideCurrentSnackBar(
                                   reason: SnackBarClosedReason.hide);
                             },
@@ -175,10 +173,10 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              packScopedModel.setRsvpState(rsvpYes.value,
-                                  isHareNo.value, -1, packList[index]);
-                              Scaffold.of(context).hideCurrentSnackBar(
-                                  reason: SnackBarClosedReason.hide);
+                              // packScopedModel.setRsvpState(rsvpYes.value,
+                              //     isHareNo.value, -1, packList[index]);
+                              // Scaffold.of(context).hideCurrentSnackBar(
+                              //     reason: SnackBarClosedReason.hide);
                             },
                           ),
                           const Text(
@@ -219,10 +217,10 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              packScopedModel.setRsvpState(rsvpYes.value,
-                                  isHareYes.value, -1, packList[index]);
-                              Scaffold.of(context).hideCurrentSnackBar(
-                                  reason: SnackBarClosedReason.hide);
+                              // packScopedModel.setRsvpState(rsvpYes.value,
+                              //     isHareYes.value, -1, packList[index]);
+                              // Scaffold.of(context).hideCurrentSnackBar(
+                              //     reason: SnackBarClosedReason.hide);
                             },
                           ),
                           const Text(
@@ -278,10 +276,10 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              packScopedModel.setRsvpState(
-                                  -1, -1, attendenceNo.value, packList[index]);
-                              Scaffold.of(context).hideCurrentSnackBar(
-                                  reason: SnackBarClosedReason.hide);
+                              // packScopedModel.setRsvpState(
+                              //     -1, -1, attendenceNo.value, packList[index]);
+                              // Scaffold.of(context).hideCurrentSnackBar(
+                              //     reason: SnackBarClosedReason.hide);
                             },
                           ),
                           const Text(
@@ -323,10 +321,10 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              packScopedModel.setRsvpState(rsvpYes.value, -1,
-                                  attendenceAtHash.value, packList[index]);
-                              Scaffold.of(context).hideCurrentSnackBar(
-                                  reason: SnackBarClosedReason.hide);
+                              // packScopedModel.setRsvpState(rsvpYes.value, -1,
+                              //     attendenceAtHash.value, packList[index]);
+                              // Scaffold.of(context).hideCurrentSnackBar(
+                              //     reason: SnackBarClosedReason.hide);
                             },
                           ),
                           const Text(
@@ -368,10 +366,10 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              packScopedModel.setRsvpState(rsvpYes.value, -1,
-                                  attendenceOnIn.value, packList[index]);
-                              Scaffold.of(context).hideCurrentSnackBar(
-                                  reason: SnackBarClosedReason.hide);
+                              // packScopedModel.setRsvpState(rsvpYes.value, -1,
+                              //     attendenceOnIn.value, packList[index]);
+                              // Scaffold.of(context).hideCurrentSnackBar(
+                              //     reason: SnackBarClosedReason.hide);
                             },
                           ),
                           const Text(
@@ -420,12 +418,12 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              processPayment(
-                                  index,
-                                  packScopedModel,
-                                  context,
-                                  paymentNotPaid.value,
-                                  0.0);
+                              // processPayment(
+                              //     index,
+                              //     packScopedModel,
+                              //     context,
+                              //     paymentNotPaid.value,
+                              //     0.0);
                             },
                           ),
                           const Text(
@@ -459,12 +457,12 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              processPayment(
-                                  index,
-                                  packScopedModel,
-                                  context,
-                                  paymentFreeRun.value,
-                                  0.0);
+                              // processPayment(
+                              //     index,
+                              //     packScopedModel,
+                              //     context,
+                              //     paymentFreeRun.value,
+                              //     0.0);
                             },
                           ),
                           const Text(
@@ -501,7 +499,7 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              payOther(index, packScopedModel, context);
+                              //payOther(index, packScopedModel, context);
                             },
                           ),
                           const Text(
@@ -541,14 +539,16 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              processPayment(
-                                  index,
-                                  packScopedModel,
-                                  context,
-                                  paymentCash.value,
-                                  packList[index].isMember != 1
-                                      ? event['eventPriceForNonMembers']
-                                      : event['eventPriceForNonMembers']);
+                              // processPayment(
+                              //     index,
+                              //     packScopedModel,
+                              //     context,
+                              //     paymentCash.value,
+                              //     packList[index].isMember != 1
+                              //         ? event['eventPriceForNonMembers']
+                              //         : event['eventPriceForNonMembers']
+                                      
+                              //         );
                             },
                           ),
                           Text(
@@ -582,14 +582,14 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              processPayment(
-                                  index,
-                                  packScopedModel,
-                                  context,
-                                  paymentBankTransfer.value,
-                                  packList[index].isMember != 1
-                                      ? event['eventPriceForNonMembers']
-                                      : event['eventPriceForMembers']);
+                              // processPayment(
+                              //     index,
+                              //     packScopedModel,
+                              //     context,
+                              //     paymentBankTransfer.value,
+                              //     packList[index].isMember != 1
+                              //         ? event['eventPriceForNonMembers']
+                              //         : event['eventPriceForMembers']);
                             },
                           ),
                           Text(
@@ -623,14 +623,14 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              processPayment(
-                                  index,
-                                  packScopedModel,
-                                  context,
-                                  paymentHashCredit.value,
-                                  packList[index].isMember != 1
-                                      ? event['eventPriceForNonMembers']
-                                      : event['eventPriceForMembers']);
+                              // processPayment(
+                              //     index,
+                              //     packScopedModel,
+                              //     context,
+                              //     paymentHashCredit.value,
+                              //     packList[index].isMember != 1
+                              //         ? event['eventPriceForNonMembers']
+                              //         : event['eventPriceForMembers']);
                             },
                           ),
                           Text(

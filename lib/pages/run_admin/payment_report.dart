@@ -43,12 +43,12 @@ class PaymentReportState extends State<PaymentReportPage> {
 
   @override
   void initState() {
-    _handleRefresh();
+    _refreshSqlTablesFromBackend();
 
     super.initState();
   }
 
-  Future<void> _handleRefresh() async {
+  Future<void> _refreshSqlTablesFromBackend() async {
     setState(() {
       _isLoading = true;
     });
@@ -59,7 +59,7 @@ class PaymentReportState extends State<PaymentReportPage> {
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Payments data synchronized $resultStr');
 
-      refreshFromTable().then((void dummy) {
+      _refreshListsFromTable().then((void dummy) {
         setState(() {
           _isLoading = false;
           refreshTotals();
@@ -68,7 +68,7 @@ class PaymentReportState extends State<PaymentReportPage> {
     });
   }
 
-  Future<void> refreshFromTable() async {
+  Future<void> _refreshListsFromTable() async {
     final Database db = await DBProvider.db.database;
 
     final String sql = '''
@@ -141,7 +141,7 @@ class PaymentReportState extends State<PaymentReportPage> {
     );
     retVal.then(
       (void paymentResult) {
-        refreshFromTable().then((void dummy) {
+        _refreshListsFromTable().then((void dummy) {
           setState(() {
             refreshTotals();
           });
@@ -334,7 +334,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                       child: filteredList.isEmpty
                           ? const Center(child: Text('No transactions available.'))
                           : RefreshIndicator(
-                              onRefresh: () => _handleRefresh(),
+                              onRefresh: () => _refreshSqlTablesFromBackend(),
                               displacement: 40.0,
                               child: ListView.separated(
                                 separatorBuilder: (BuildContext context, int index) => const Divider(

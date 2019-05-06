@@ -385,7 +385,7 @@ class PaymentsService {
       },
     );
 
-    await SyncEventAdminService.processReturnRecords(response.body);
+    await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
 
     return;
   }

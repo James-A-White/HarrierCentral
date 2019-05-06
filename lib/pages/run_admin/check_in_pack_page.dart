@@ -6,22 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:scoped_model/scoped_model.dart';
 import 'package:sqflite/sqflite.dart';
 
-//import 'package:harrier_central/data/models/pay_for_event_model.dart';
-import 'package:harrier_central/data/models/process_qr_scan_for_checkin_model.dart';
 import 'package:harrier_central/data/models/user_model.dart';
-import 'package:harrier_central/data/services/pack_scoped_model.dart';
-// import 'package:harrier_central/data/services/pay_scoped_model.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/new_user.dart';
-import 'package:harrier_central/widgets/payment_snackbar.dart';
-import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
@@ -31,14 +24,14 @@ import 'package:harrier_central/data/hc3_services/countries_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 
-
+import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
+import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 
 class CheckInPackPage extends StatefulWidget {
-  const CheckInPackPage({
-    @required this.eventId,
-  });
+  const CheckInPackPage({@required this.eventId, @required this.kennelId});
 
   final String eventId;
+  final String kennelId;
 
   @override
   State<CheckInPackPage> createState() {
@@ -47,44 +40,69 @@ class CheckInPackPage extends StatefulWidget {
 }
 
 class CheckInPackPageState extends State<CheckInPackPage> {
-  final PackScopedModel _packScopedModel = PackScopedModel();
+  //final PackScopedModel _packScopedModel = PackScopedModel();
   //final PayScopedModel _payScopedModel = PayScopedModel();
 
   GlobalKey packListBox = GlobalKey();
 
   bool _isLoading = true;
 
-  List<UserModel> packList;
+  List<Map<String, dynamic>> packList;
 
-    Map<String, dynamic> event;
+  Map<String, String> indicatorRsvpUpdating = <String, String>{};
+  Map<String, String> indicatorAttendenceUpdating = <String, String>{};
+
+  Map<String, dynamic> event;
 
   num snackBarButtonSize = 35.0;
 
-  Future<void> _reloadPack(bool showReloadingIndicator) async {
-    _packScopedModel
-        .getpackFromBackend(
-            widget.eventId, showReloadingIndicator, true)
-        .then((List<UserModel> _thePack) {
-      packList = _thePack;
+  // Future<void> _reloadPack(bool showReloadingIndicator) async {
+  //   _packScopedModel
+  //       .getpackFromBackend(
+  //           widget.eventId, showReloadingIndicator, true)
+  //       .then((List<UserModel> _thePack) {
+  //     packList = _thePack;
 
-      setState(() {
-        print('_reloadPack() -  = ${DateTime.now().millisecondsSinceEpoch}');
-      });
+  //     setState(() {
+  //       print('_reloadPack() -  = ${DateTime.now().millisecondsSinceEpoch}');
+  //     });
+  //   });
+
+  //   if (showReloadingIndicator) {
+  //     setState(() {});
+  //   }
+  // }
+
+  String userId = getStringPref(StringPrefsEnum.userId);
+
+  Future<void> _refreshSqlTablesFromBackend() async {
+    setState(() {
+      _isLoading = true;
     });
 
-    if (showReloadingIndicator) {
-      setState(() {});
-    }
+    DBProvider.db.database.then((Database db) async {
+      final SyncEventAdminService cSrv = SyncEventAdminService();
+      final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable, true, widget.eventId);
+      final String resultStr = result ? 'successfully' : 'unsuccessfully';
+      print('Payments data synchronized $resultStr');
+
+      _refreshEventFromTables(false).then((void dummy) {
+        _refreshPackListFromTables(false).then((void dummy) {
+          setState(() {
+            _isLoading = false;
+          });
+        });
+      });
+    });
   }
 
-String userId = getStringPref(StringPrefsEnum.userId);
+  Future<void> _refreshEventFromTables(bool forceRefresh) async {
+    final Database db = await DBProvider.db.database;
 
- void refreshFromTables() {
-    DBProvider.db.database.then((Database db) {
-      try {
-        const String dollarSign = r'$^';
+    try {
+      const String dollarSign = r'$^';
 
-        final String sql = ''' 
+      final String sql = ''' 
 
           SELECT e.*,hkm.mismanagementRoleFlags,
           k.kennelShortName,k.kennelName,
@@ -101,105 +119,211 @@ String userId = getStringPref(StringPrefsEnum.userId);
           
           ''';
 
-        db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
-          setState(() {
-            if (results.isNotEmpty) {
-              event = results[0];
-              getPack(false);
+      db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
+        setState(() {
+          if (results.isNotEmpty) {
+            event = results[0];
+            if (forceRefresh) {
               setState(() {
                 _isLoading = false;
               });
-              
             }
-          });
+          }
         });
-      } catch (e) {
-        print(e);
-      }
-    });
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> _refreshPackListFromTables(bool forceRefresh) async {
+    final Database db = await DBProvider.db.database;
+    try {
+      // final String sql = '''
+
+      //     SELECT e.*,hkm.mismanagementRoleFlags,
+      //     k.kennelShortName,k.kennelName,
+      //     coalesce(c.digitsAfterDecimal,2) as digitsAfterDecimal,
+      //     coalesce(c.currencySymbol,"$dollarSign") as currencySymbol,
+      //     coalesce(e.eventPriceForMembers,k.defaultPriceForMembers) as eventPriceForMembers,
+      //     coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers) as eventPriceForNonMembers
+      //     FROM ${NarrowEventsTableHelper.tableName} e
+      //     INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
+      //     LEFT OUTER JOIN ${CountriesTableHelper.tableName} c on c.countryId = k.countryId
+      //     LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId
+      //     WHERE e.eventId = "${widget.eventId}"
+      //     AND hkm.userId = "$userId"
+
+      //     ''';
+
+      final String sql = ''' 
+
+          SELECT h.hasherId,
+            coalesce(hkm.isMember,0) as isMember,
+            coalesce(hem.isHare,0) as isHare,
+            CASE WHEN pay.hemId IS NULL THEN 0 ELSE 1 END as isPaid, 
+            h.dispName as nameForDisplay,
+            coalesce(pay.paymentType,0) as paymentType,
+            h.photo,
+            coalesce(hem.rsvpState,0) as rsvpState,
+            coalesce(hem.attendenceState,0) as attendenceState,
+            0 as userRunCount,
+            hem.updatedAt
+
+ 
+          FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.admin)} hkm
+          INNER JOIN ${HashersTableHelper.tableName} h on h.hasherId = hkm.userId
+          LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventId}"
+          LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
+          
+          ''';
+
+      //  -1 as requestedAttendenceState,
+      //   -1 as requestedRsvpState
+
+      db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
+        setState(() {
+          if (results.isNotEmpty) {
+            packList = results.toList();
+
+            // this code is here to manage the "loading indicator" for RSVPs.
+            // There's got to be a better way to do this, I just can't figure
+            // it out!
+            final List<String> removeList = <String>[];
+
+            for (String key in indicatorRsvpUpdating.keys) {
+              if (key.startsWith('hem:')) {
+                //final String hemId = key.substring(4);
+              } else {
+                final String hid = key.substring(4);
+
+                final Map<String, dynamic> hasher = packList.firstWhere((Map<String, dynamic> k) => k['hasherId'].toString().toLowerCase() == hid, orElse: () => null);
+
+                if (hasher != null) {
+                  if (hasher['updatedAt'] != indicatorRsvpUpdating[hid]) {
+                    removeList.add('hid:' + hid.toLowerCase());
+                  }
+                }
+              }
+            }
+
+            removeList.forEach(indicatorRsvpUpdating.remove);
+            removeList.clear();
+
+            for (String key in indicatorAttendenceUpdating.keys) {
+              if (key.startsWith('hem:')) {
+                // String hemId = key.substring(4);
+                // int i = 0;
+              } else {
+                final String hid = key.substring(4);
+
+                final Map<String, dynamic> hasher = packList.firstWhere((Map<String, dynamic> k) => k['hasherId'].toString().toLowerCase() == hid, orElse: () => null);
+
+                if (hasher != null) {
+                  if (hasher['updatedAt'] != indicatorAttendenceUpdating[hid]) {
+                    removeList.add('hid:' + hid.toLowerCase());
+                  }
+                }
+              }
+            }
+
+            removeList.forEach(indicatorAttendenceUpdating.remove);
+
+            setState(() {
+                        if (forceRefresh) {
+              _isLoading = false;
+            }
+            });
+  
+          }
+        });
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
   void initState() {
-    refreshFromTables();
+    _refreshSqlTablesFromBackend();
     super.initState();
   }
 
-  void getPack(bool forceRefresh) {
-    if ((packList == null) || forceRefresh) {
-      _packScopedModel
-          .getpackFromBackend(widget.eventId, true, false)
-          .then((List<UserModel> _thePack) {
-        packList = _thePack;
-        setState(() {
-          print('getPack() = ${DateTime.now().millisecondsSinceEpoch}');
-        });
-      });
-    }
-  }
+  // void getPack(bool forceRefresh) {
+  //   if ((packList == null) || forceRefresh) {
+  //     _packScopedModel
+  //         .getpackFromBackend(widget.eventId, true, false)
+  //         .then((List<UserModel> _thePack) {
+  //       packList = _thePack;
+  //       setState(() {
+  //         print('getPack() = ${DateTime.now().millisecondsSinceEpoch}');
+  //       });
+  //     });
+  //   }
+  // }
 
-  void findHasher(PackScopedModel packScopedModel) {
-    Navigator.push<HashersModel>(
-      context,
-      MaterialPageRoute<HashersModel>(
-        settings: const RouteSettings(),
-        builder: (BuildContext context) {
-          return const FindHasherPage();
-        },
-      ),
-    ).then((HashersModel hasher) {
-      if ((hasher != null) && (hasher.hasherId != null)) {
-        packScopedModel.joinEvent(widget.eventId, rsvpYes.value,
-            isHareNo.value, attendenceAtHash.value, hasher.hasherId);
-      }
-    });
-  }
+  // void findHasher(PackScopedModel packScopedModel) {
+  //   Navigator.push<HashersModel>(
+  //     context,
+  //     MaterialPageRoute<HashersModel>(
+  //       settings: const RouteSettings(),
+  //       builder: (BuildContext context) {
+  //         return const FindHasherPage();
+  //       },
+  //     ),
+  //   ).then((HashersModel hasher) {
+  //     if ((hasher != null) && (hasher['hasherId != null)) {
+  //       packScopedModel.joinEvent(widget.eventId, rsvpYes.value,
+  //           isHareNo.value, attendenceAtHash.value, hasher['hasherId);
+  //     }
+  //   });
+  // }
 
-  void showVirginVisitorPopup() {
-    // _packScopedModel
-    //     .joinEventAsVisitor(
-    //         'Amy', EnumVirginVisitor.virgin, widget.futureRun.eventId)
-    //     .then((JoinEventModel result) {
-    //   _reloadPack(false);
-    // });
+  // void showVirginVisitorPopup() {
+  //   // _packScopedModel
+  //   //     .joinEventAsVisitor(
+  //   //         'Amy', EnumVirginVisitor.virgin, widget.futureRun.eventId)
+  //   //     .then((JoinEventModel result) {
+  //   //   _reloadPack(false);
+  //   // });
 
-    const AddVisitorVirginPopup addVirginVisitorPopup = AddVisitorVirginPopup();
+  //   const AddVisitorVirginPopup addVirginVisitorPopup = AddVisitorVirginPopup();
 
-    final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return addVirginVisitorPopup;
-        });
+  //   final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
+  //       context: context,
+  //       barrierDismissible: false, // user must tap button!
+  //       builder: (BuildContext context) {
+  //         return addVirginVisitorPopup;
+  //       });
 
-    dlg.then((Map<String, String> x) {
-      final String name = x['name'];
-      final String type = x['type'];
-      final String email = x['email'] ?? '';
-      final String phoneNumber = x['phone'] ?? '';
+  //   dlg.then((Map<String, String> x) {
+  //     final String name = x['name'];
+  //     final String type = x['type'];
+  //     final String email = x['email'] ?? '';
+  //     final String phoneNumber = x['phone'] ?? '';
 
-      EnumVirginVisitor evv = EnumVirginVisitor.virgin;
-      if (type == EnumVirginVisitor.visitor.toString()) {
-        evv = EnumVirginVisitor.visitor;
-      }
+  //     EnumVirginVisitor evv = EnumVirginVisitor.virgin;
+  //     if (type == EnumVirginVisitor.visitor.toString()) {
+  //       evv = EnumVirginVisitor.visitor;
+  //     }
 
-      if (type != 'cancel') {
-        _packScopedModel
-            .joinEventAsVisitor(
-                name, email, phoneNumber, evv, widget.eventId)
-            .then((UserModel result) {
-          _packScopedModel.addEditUser(result);
-          _packScopedModel.sortPackList();
-          packList = _packScopedModel.filteredPackList;
+  //     if (type != 'cancel') {
+  //       _packScopedModel
+  //           .joinEventAsVisitor(
+  //               name, email, phoneNumber, evv, widget.eventId)
+  //           .then((UserModel result) {
+  //         _packScopedModel.addEditUser(result);
+  //         _packScopedModel.sortPackList();
+  //         packList = _packScopedModel.filteredPackList;
 
-          _packScopedModel.forceRefresh();
-          //_reloadPack(false);
-        });
-      }
-    });
+  //         _packScopedModel.forceRefresh();
+  //         //_reloadPack(false);
+  //       });
+  //     }
+  //   });
 
-    // dlg.whenComplete(action)
-  }
+  //   // dlg.whenComplete(action)
+  // }
 
   GlobalKey<ScaffoldState> scaffoldKey;
 
@@ -225,7 +349,7 @@ String userId = getStringPref(StringPrefsEnum.userId);
   //   });
   // }
 
-  Container searchBar(PackScopedModel model, num width) {
+  Container searchBar(num width) {
     return Container(
       // color: Colors.red,
       padding: const EdgeInsets.only(left: 10, top: 10),
@@ -240,18 +364,15 @@ String userId = getStringPref(StringPrefsEnum.userId);
             child: TextField(
               onChanged: (String text) {
                 //setState(() {
-                model.filterPackList(text);
-                model.forceRefresh();
-                packList = model.filteredPackList;
+                // model.filterPackList(text);
+                // model.forceRefresh();
+                // packList = model.filteredPackList;
                 // });
               },
               focusNode: searchFocusNode,
               controller: searchController,
               keyboardType: TextInputType.text,
-              style: const TextStyle(
-                  fontFamily: 'WorkSansSemiBold',
-                  fontSize: 16.0,
-                  color: Colors.black),
+              style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 icon: Icon(
@@ -259,8 +380,7 @@ String userId = getStringPref(StringPrefsEnum.userId);
                   color: Colors.black,
                 ),
                 hintText: 'Hash or mortal name',
-                hintStyle:
-                    TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
               ),
             ),
           ),
@@ -272,9 +392,9 @@ String userId = getStringPref(StringPrefsEnum.userId);
               textColor: Colors.grey[700],
               onPressed: () {
                 searchController.text = '';
-                model.filterPackList('');
-                model.forceRefresh();
-                packList = model.filteredPackList;
+                // model.filterPackList('');
+                // model.forceRefresh();
+                // packList = model.filteredPackList;
               },
             ),
           ),
@@ -285,191 +405,136 @@ String userId = getStringPref(StringPrefsEnum.userId);
 
   @override
   Widget build(BuildContext context) {
-    
-    return ScopedModel<PackScopedModel>(
-      model: _packScopedModel,
-      child:  Scaffold(
-          key: scaffoldKey,
-          floatingActionButton: SpeedDial(
-            // both default to 16
-            marginRight: 18,
-            marginBottom: 30,
-            animatedIcon: AnimatedIcons.menu_close,
-            animatedIconTheme: const IconThemeData(size: 22.0),
-            // this is ignored if animatedIcon is non null
-            // child:const  Icon(Icons.add),
-            visible: true,
-            curve: Curves.bounceIn,
-            overlayColor: Colors.black,
-            overlayOpacity: 0.5,
-            onOpen: () => print('OPENING DIAL'),
-            onClose: () => print('DIAL CLOSED'),
-            tooltip: 'Speed Dial',
-            heroTag: 'speed-dial-hero-tag',
-            backgroundColor: Theme.of(context).accentColor,
-            foregroundColor: Colors.white,
-            elevation: 8.0,
-            shape: CircleBorder(),
-            children: <SpeedDialChild>[
-              SpeedDialChild(
-                child: const Icon(Icons.filter_list),
-                backgroundColor: Colors.green,
-                label: 'Filter List',
-                labelStyle: const TextStyle(fontSize: 18.0),
-                onTap: () => print('THIRD CHILD'),
-              ),
-              SpeedDialChild(
-                child: const Icon(Ionicons.ios_beer),
-                backgroundColor: Colors.green,
-                label: 'Scan: On In',
-                labelStyle: const TextStyle(fontSize: 18.0),
-                onTap: () => print('FIRST CHILD'),
-              ),
-              SpeedDialChild(
-                child: const Icon(Icons.directions_run),
-                backgroundColor: Colors.red,
-                label: 'Scan: At Hash',
-                labelStyle: const TextStyle(fontSize: 18.0),
-                onTap: () => print('SECOND CHILD'),
-              ),
-              SpeedDialChild(
-                child: const Icon(Icons.person_add),
-                backgroundColor: Colors.blue,
-                label: 'Add Member',
-                labelStyle: const TextStyle(fontSize: 18.0),
-                onTap: () => Navigator.push<UserModel>(
-                      context,
-                      MaterialPageRoute<UserModel>(
-                          builder: (BuildContext context) => NewUserWidget(
-                                scaffoldKey: scaffoldKey,
-                                isForThisDevice: false,
-                                eventId: widget.eventId,
-                                kennelId: event['kennelId'],
-                                attendenceState: attendenceAtHash,
-                              )),
-                    ).then<dynamic>((UserModel user) {
-                      if (user != null) {
-                        _packScopedModel.addEditUser(user);
-                        searchController.text =
-                            user.firstName + ' ' + user.lastName;
-                        _packScopedModel.filterPackList(
-                            user.firstName + ' ' + user.lastName);
-                        packList = _packScopedModel.filteredPackList;
-                        _packScopedModel.forceRefresh();
-                      }
-                    }),
-
-                //     ChooseProfileImage(
-                //           false,
-                //           // kennelId: widget.futureRun.kennelId,
-                //           // eventId: widget.futureRun.eventId,
-                //           // attendenceState: attendenceAtHash,
-                //         ),
-                //   ),
-                // ).then<dynamic>((String profileImageUrl) {
-                //   if (profileImageUrl.isEmpty) {
-                //   } else {
-                //     Navigator.push<UserModel>(
-                //       context,
-                //       MaterialPageRoute<UserModel>(
-                //         builder: (BuildContext context) => AddMemberPage(
-                //             kennelId: widget.futureRun.kennelId,
-                //             eventId: widget.futureRun.eventId,
-                //             attendenceState: attendenceAtHash,
-                //             profileImageUrl: profileImageUrl),
-                //       ),
-                //     ).then<dynamic>((UserModel user) {
-                //       _packScopedModel.addEditUser(user);
-                //       _packScopedModel.sortPackList();
-                //       _packScopedModel.forceRefresh();
-                //     });
-                //   }
-                // }),
-              ),
-              SpeedDialChild(
-                child: const Icon(FontAwesome.heart),
-                backgroundColor: Colors.blue,
-                label: 'Add Virgin / Visitor',
-                labelStyle: const TextStyle(fontSize: 18.0),
-                onTap: () => showVirginVisitorPopup(),
-              ),
-              SpeedDialChild(
-                child: const Icon(MaterialCommunityIcons.account_search),
-                backgroundColor: Colors.blue,
-                label: 'Find Hasher',
-                labelStyle: const TextStyle(fontSize: 18.0),
-                onTap: () => findHasher(_packScopedModel),
-              )
-            ],
+    return Scaffold(
+      key: scaffoldKey,
+      floatingActionButton: SpeedDial(
+        // both default to 16
+        marginRight: 18,
+        marginBottom: 30,
+        animatedIcon: AnimatedIcons.menu_close,
+        animatedIconTheme: const IconThemeData(size: 22.0),
+        // this is ignored if animatedIcon is non null
+        // child:const  Icon(Icons.add),
+        visible: true,
+        curve: Curves.bounceIn,
+        overlayColor: Colors.black,
+        overlayOpacity: 0.5,
+        onOpen: () => print('OPENING DIAL'),
+        onClose: () => print('DIAL CLOSED'),
+        tooltip: 'Speed Dial',
+        heroTag: 'speed-dial-hero-tag',
+        backgroundColor: Theme.of(context).accentColor,
+        foregroundColor: Colors.white,
+        elevation: 8.0,
+        shape: CircleBorder(),
+        children: <SpeedDialChild>[
+          SpeedDialChild(
+            child: const Icon(Icons.filter_list),
+            backgroundColor: Colors.green,
+            label: 'Filter List',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () => print('THIRD CHILD'),
           ),
-          appBar: getAppBar(_isLoading ? '... Loading' : event['kennelName']),
-          body: _isLoading ? const HcCircularProgressIndicator() :
-          
-          LayoutBuilder(
-            builder: (BuildContext scaffoldContext,
-                    BoxConstraints constraints) =>
-                Stack(children: <Widget>[
-                  Positioned(
-                      top: 0,
-                      child: searchBar(_packScopedModel, constraints.maxWidth)),
-                  Positioned(
-                    top: searchBar(_packScopedModel, constraints.maxWidth)
-                        .constraints
-                        .maxHeight,
-                    right: 0.0,
-                    left: 0.0,
-                    child: (_packScopedModel.isLoading)
-                        ? Container(
-                          height:MediaQuery.of(context).size.height-180,
-                        child:Center(
-                            child: Container(
-                              child: const HcCircularProgressIndicator(),
-                            ),
-                          ),)
-                        : (packList == null || packList.isEmpty)
-                            ? Container(
-                              padding: const EdgeInsets.only(left:30,right:30, bottom:60),
-                              height: constraints.maxHeight -
-                                    searchBar(_packScopedModel,
-                                            constraints.maxWidth)
-                                        .constraints
-                                        .maxHeight,
-                                child: Center(
-                                  child: Text(
-                                      'There are no pack members associated with this run or Kennel', style: headingStyleOnLightBg, textAlign: TextAlign.center,),
-                                ),
-                              )
-                            : Container(
-                                key: packListBox,
-                                height: constraints.maxHeight -
-                                    searchBar(_packScopedModel,
-                                            constraints.maxWidth)
-                                        .constraints
-                                        .maxHeight,
-                                child: RefreshIndicator(
-                                  onRefresh: () => _reloadPack(true),
-                                  child: ScopedModelDescendant<PackScopedModel>(
-                                    builder: (BuildContext context,
-                                        Widget child, PackScopedModel model) {
-                                      print(DateTime.now()
-                                              .millisecondsSinceEpoch
-                                              .toString() +
-                                          ' pack list update, #items = ' +
-                                          packList.length.toString());
-                                      return PackListView(
-                                          packList: packList,
-                                          packScopedModel: _packScopedModel,
-                                        
-                                          event: event);
-                                    },
-                                  ),
+          SpeedDialChild(
+            child: const Icon(Ionicons.ios_beer),
+            backgroundColor: Colors.green,
+            label: 'Scan: On In',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () => print('FIRST CHILD'),
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.directions_run),
+            backgroundColor: Colors.red,
+            label: 'Scan: At Hash',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () => print('SECOND CHILD'),
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.person_add),
+            backgroundColor: Colors.blue,
+            label: 'Add Member',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () => Navigator.push<UserModel>(
+                  context,
+                  MaterialPageRoute<UserModel>(
+                      builder: (BuildContext context) => NewUserWidget(
+                            scaffoldKey: scaffoldKey,
+                            isForThisDevice: false,
+                            eventId: widget.eventId,
+                            kennelId: event['kennelId'],
+                            attendenceState: attendenceAtHash,
+                          )),
+                ).then<dynamic>((UserModel user) {
+                  // if (user != null) {
+                  //   _packScopedModel.addEditUser(user);
+                  //   searchController.text =
+                  //       user.firstName + ' ' + user.lastName;
+                  //   _packScopedModel.filterPackList(
+                  //       user.firstName + ' ' + user.lastName);
+                  //   packList = _packScopedModel.filteredPackList;
+                  //   _packScopedModel.forceRefresh();
+                  // }
+                }),
+          ),
+          SpeedDialChild(
+            child: const Icon(FontAwesome.heart),
+            backgroundColor: Colors.blue,
+            label: 'Add Virgin / Visitor',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            //onTap: () => showVirginVisitorPopup(),
+          ),
+          SpeedDialChild(
+            child: const Icon(MaterialCommunityIcons.account_search),
+            backgroundColor: Colors.blue,
+            label: 'Find Hasher',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            //onTap: () => findHasher(_packScopedModel),
+          )
+        ],
+      ),
+      appBar: getAppBar((_isLoading || (event == null)) ? '... Loading' : event['kennelName']),
+      body: _isLoading
+          ? const HcCircularProgressIndicator()
+          : LayoutBuilder(
+              builder: (BuildContext scaffoldContext, BoxConstraints constraints) => Stack(children: <Widget>[
+                    Positioned(top: 0, child: searchBar(constraints.maxWidth)),
+                    Positioned(
+                      top: searchBar(constraints.maxWidth).constraints.maxHeight,
+                      right: 0.0,
+                      left: 0.0,
+                      child: false
+                          ? Container(
+                              height: MediaQuery.of(context).size.height - 180,
+                              child: Center(
+                                child: Container(
+                                  child: const HcCircularProgressIndicator(),
                                 ),
                               ),
-                  ),
-                ]),
-          ),
-        ),
-      );
+                            )
+                          : (packList == null || packList.isEmpty)
+                              ? Container(
+                                  padding: const EdgeInsets.only(left: 30, right: 30, bottom: 60),
+                                  height: constraints.maxHeight - searchBar(constraints.maxWidth).constraints.maxHeight,
+                                  child: Center(
+                                    child: Text(
+                                      'There are no pack members associated with this run or Kennel',
+                                      style: headingStyleOnLightBg,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  key: packListBox,
+                                  height: constraints.maxHeight - searchBar(constraints.maxWidth).constraints.maxHeight,
+                                  child: RefreshIndicator(
+                                      //onRefresh: () => _reloadPack(true),
+                                      onRefresh: () {},
+                                      child: buildPackListView()),
+                                ),
+                    ),
+                  ]),
+            ),
+    );
   }
 
 //
@@ -549,78 +614,63 @@ String userId = getStringPref(StringPrefsEnum.userId);
     // });
   }
 
-  Widget showScanResults(
-      Widget snackBar,
-      BuildContext scanContext,
-      ProcessQrScanForCheckinModel result,
-      num checkinType,
-      num isPaid,
-      String userMessage,
-      int paymentType) {
-    snackBar =
-        buildScanResultSnackbar(scanContext, _packScopedModel, userMessage);
+//   Widget showScanResults(Widget snackBar, BuildContext scanContext, ProcessQrScanForCheckinModel result, num checkinType, num isPaid, String userMessage, int paymentType) {
+//     snackBar = buildScanResultSnackbar(scanContext, userMessage);
 
-    Scaffold.of(scanContext)
-        .removeCurrentSnackBar(reason: SnackBarClosedReason.remove);
-    Scaffold.of(scanContext).showSnackBar(snackBar);
+//     Scaffold.of(scanContext).removeCurrentSnackBar(reason: SnackBarClosedReason.remove);
+//     Scaffold.of(scanContext).showSnackBar(snackBar);
 
-    UserModel packItem = packList.firstWhere(
-        (UserModel packMember) =>
-            packMember.hasherId.toUpperCase() ==
-            result.targetUserId.toUpperCase(),
-        orElse: () => null);
+//     UserModel packItem = pack.firstWhere((UserModel packMember) => packMember.hasherId.toUpperCase() == result.targetUserId.toUpperCase(), orElse: () => null);
 
-    if (packItem == null) {
-      packItem = UserModel(
-          hasherId: result.targetUserId,
-          photo: result.photo,
-          rsvpState: result.rsvpState,
-          attendenceState: result.attendenceState,
-          displayName: result.scannedUserName,
-          eventId: widget.eventId,
-          isMember: result.isMember,
-          isHare: result.isHare,
-          hasherEventMapId: result.hasherEventMapId,
-          isFollowing: result.isFollowing,
-          currencySymbol: event['currencySymbol'],
-          eventPrice: result.runPriceThisUser,
-          digitsAfterDecimal: event['digitsAfterDecimal'] ?? 2,
-          virginVisitorType: result.virginVisitorType,
-          userStartEvent: result.userStartEvent,
-          userEndEvent: result.userEndEvent,
-          userRunCount: result.userRunCountThisKennel,
-          credit: result.remainingCredit,
-          allowNegativeCredit: result.allowNegativeCredit,
-          isPaid: result.isPaid,
-          paymentType: paymentType);
+//     if (packItem == null) {
+//       packItem = UserModel(
+//           hasherId: result.targetUserId,
+//           photo: result.photo,
+//           rsvpState: result.rsvpState,
+//           attendenceState: result.attendenceState,
+//           displayName: result.scannedUserName,
+//           eventId: widget.eventId,
+//           isMember: result.isMember,
+//           isHare: result.isHare,
+//           hasherEventMapId: result.hasherEventMapId,
+//           isFollowing: result.isFollowing,
+//           currencySymbol: event['currencySymbol'],
+//           eventPrice: result.runPriceThisUser,
+//           digitsAfterDecimal: event['digitsAfterDecimal'] ?? 2,
+//           virginVisitorType: result.virginVisitorType,
+//           userStartEvent: result.userStartEvent,
+//           userEndEvent: result.userEndEvent,
+//           userRunCount: result.userRunCountThisKennel,
+//           credit: result.remainingCredit,
+//           allowNegativeCredit: result.allowNegativeCredit,
+//           isPaid: result.isPaid,
+//           paymentType: paymentType);
 
-      packList.add(packItem);
-    }
+//       pack.add(packItem);
+//     }
 
-    packItem.paymentType = paymentType;
-    packItem.rsvpState = rsvpYes.value;
+//     packItem.paymentType = paymentType;
+//     packItem.rsvpState = rsvpYes.value;
 
-    if (isPaid >= 0) {
-      packItem.isPaid = isPaid;
-    }
+//     if (isPaid >= 0) {
+//       packItem.isPaid = isPaid;
+//     }
 
-    if (checkinType == 0) {
-      packItem.attendenceState = attendenceAtHash.value;
-    } else {
-      packItem.attendenceState = attendenceOnIn.value;
-    }
-    _packScopedModel.forceRefresh();
+//     if (checkinType == 0) {
+//       packItem.attendenceState = attendenceAtHash.value;
+//     } else {
+//       packItem.attendenceState = attendenceOnIn.value;
+//     }
 
-    return snackBar;
-  }
+//     return snackBar;
+//   }
 
-//
-//
+// //
+// //
 //
 //
 
-  Widget buildScanResultSnackbar(BuildContext context,
-      PackScopedModel _packScopedModel, String resultStr) {
+  Widget buildScanResultSnackbar(BuildContext contextl, String resultStr) {
     final SnackBar snackbar = SnackBar(
       duration: const Duration(seconds: 4),
       content: Column(
@@ -628,11 +678,7 @@ String userId = getStringPref(StringPrefsEnum.userId);
         children: <Widget>[
           Text(
             resultStr,
-            style: const TextStyle(
-                fontFamily: 'AvenirNextCondensedDemiBold',
-                fontStyle: FontStyle.normal,
-                fontSize: 20.0,
-                height: 1.0),
+            style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0),
           ),
         ],
       ),
@@ -659,63 +705,37 @@ String userId = getStringPref(StringPrefsEnum.userId);
 
   //   return snackbar;
   // }
-}
 
-class PackListView extends StatefulWidget {
-  const PackListView({
-    Key key,
-    @required this.packList,
-    @required this.packScopedModel,
-    @required this.event
-  }) : super(key: key);
+  // SnackBar buildRsvpAndPaymentSnackbar(BuildContext context, int index) {
+  //   final SnackBar snackbar = PaymentSnackBar(
+  //     context: context,
+  //     index: index,
+  //     event: event,
+  //     packList: pack,
+  //     onCompletedCallback: () {},
+  //   );
 
-  final List<UserModel> packList;
-  final PackScopedModel packScopedModel;
-  final Map<String,dynamic> event;
-
-  @override
-  State<PackListView> createState() {
-    return PackListViewState();
-  }
-
-}
-
-class PackListViewState extends State<PackListView> {
-
-  SnackBar buildRsvpAndPaymentSnackbar(
-      BuildContext context, int index, PackScopedModel _packScopedModel) {
-    final SnackBar snackbar = PaymentSnackBar(
-        context: context,
-        index: index,
-        event: widget.event,
-        packScopedModel: widget.packScopedModel,
-        packList: widget.packList,
-        onCompletedCallback: () {
-
-        },);
-
-    return snackbar;
-  }
+  //   return snackbar;
+  // }
 
   Widget listItem(BuildContext context, int index) {
+    final Map<String, dynamic> packMember = packList[index];
     return GestureDetector(
       onTap: () {
-        if (((widget.event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) {
-          final SnackBar snackBar =
-              buildRsvpAndPaymentSnackbar(context, index, widget.packScopedModel);
+        // if (((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) {
+        //   final SnackBar snackBar = buildRsvpAndPaymentSnackbar(context, index);
 
-          Scaffold.of(context)
-              .removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-          Scaffold.of(context).showSnackBar(snackBar);
-        }
+        //   Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+        //   Scaffold.of(context).showSnackBar(snackBar);
+        // }
       },
       child: Container(
         width: MediaQuery.of(context).size.width,
         child: Stack(
           children: <Widget>[
-            widget.packList[index].photo.startsWith('http')
+            packMember['photo'].startsWith('http')
                 ? CachedNetworkImage(
-                    imageUrl: widget.packList[index].photo,
+                    imageUrl: packMember['photo'],
                     // placeholder: (context, url) => Container(
                     //     child: Center(
                     //       child: Container(
@@ -728,26 +748,18 @@ class PackListViewState extends State<PackListView> {
                     //     ),
                     //     height: 70.0,
                     //    width: 70.0),
-                    errorWidget:
-                        (BuildContext context, String url, Object error) =>
-                            const Icon(Icons.error),
+                    errorWidget: (BuildContext context, String url, Object error) => const Icon(Icons.error),
                     //fadeOutDuration:  Duration(seconds: 1),
                     fadeInDuration: const Duration(milliseconds: 0),
                     width: 70.0,
                     height: 70.0,
                     fit: BoxFit.fill)
-                : widget.packList[index].photo.startsWith('bundle')
+                : packMember['photo'].startsWith('bundle')
                     ? Image(
                         width: 70.0,
                         height: 70.0,
                         fit: BoxFit.fill,
-                        image: AssetImage(('images/avatars/' +
-                                widget.packList[index]
-                                    .photo
-                                    .toLowerCase()
-                                    .replaceFirst('bundle://', '') +
-                                '.png')
-                            .toLowerCase()),
+                        image: AssetImage(('images/avatars/' + packMember['photo'].toLowerCase().replaceFirst('bundle://', '') + '.png').toLowerCase()),
                       )
                     : Image(
                         width: 70.0,
@@ -759,195 +771,120 @@ class PackListViewState extends State<PackListView> {
             Positioned(
               left: 77.0,
               top: 3.0,
-              child: Text(widget.packList[index].displayName,
-                  style: const TextStyle(
-                      fontFamily: 'AvenirNextCondensedMedium',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 25.0,
-                      height: 1.0)),
+              child: Text(packMember['nameForDisplay'], style: TextStyle(fontFamily: (packMember['isMember'] != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0)),
             ),
             // this widget is here to grow the contents of the cell to a size that fills nearly the whole cell
             // in order to give plenty of room for the tap gesture.
             Positioned(
               left: 75,
               top: 0,
-              child: Container(
-                  width: MediaQuery.of(context).size.width - 80,
-                  height: 65,
-                  color: Colors.transparent),
+              child: Container(width: MediaQuery.of(context).size.width - 80, height: 65, color: Colors.transparent),
             ),
-            Positioned(
-              right: 3.0,
-              bottom: 0.0,
-              child: widget.packList[index].userRunCount < 1
-                  ? const Text('')
-                  : Text(
-                      widget.packList[index].userRunCount.toString() +
-                          (widget.packList[index].userRunCount == 1
-                              ? ' Run'
-                              : ' Runs'),
-                      style: TextStyle(
-                        fontFamily:
-                            checkSpecialRun(widget.packList[index].userRunCount) ==
-                                    true
-                                ? 'AvenirNextDemiBold'
-                                : 'AvenirNext',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 25.0,
-                        height: 1.0,
-                        color: checkSpecialRun(widget.packList[index].userRunCount) ==
-                                true
-                            ? Colors.red[700]
-                            : Colors.black,
-                      )),
-            ),
+            // Positioned(
+            //   right: 3.0,
+            //   bottom: 0.0,
+            //   child: packMember['userRunCount'] < 1
+            //       ? const Text('')
+            //       : Text(packMember['userRunCount'].toString() + (packMember['userRunCount'] == 1 ? ' Run' : ' Runs'),
+            //           style: TextStyle(
+            //             fontFamily: checkSpecialRun(packMember['userRunCount']) == true ? 'AvenirNextDemiBold' : 'AvenirNext',
+            //             fontStyle: FontStyle.normal,
+            //             fontSize: 25.0,
+            //             height: 1.0,
+            //             color: checkSpecialRun(packMember['userRunCount']) == true ? Colors.red[700] : Colors.black,
+            //           )),
+            // ),
 
             Positioned(
               left: 75.0,
               bottom: 3.0,
-              child: widget.packList[index].rsvpState == -1
+              child: packMember['rsvpState'] == -1
                   ? CircleAvatar(
                       backgroundColor: Colors.grey[350],
                       radius: 14.0,
                     )
                   : CircleAvatar(
-                      backgroundColor: widget.packList[index].rsvpState == 0
-                          ? Colors.grey[350]
-                          : Colors.white,
+                      backgroundColor: packMember['rsvpState'] == 0 ? Colors.grey[350] : Colors.white,
                       radius: 14.0,
                     ),
             ),
             Positioned(
               left: 76.0,
-              bottom: widget.packList[index].rsvpState <= 0
-                  ? 2.0
-                  : widget.packList[index].isHare == 1 ? 5.0 : 3.5,
-              child: (widget.packList[index].rsvpState < 0) ||
-                      (widget.packList[index].isHare < 0)
+              bottom: packMember['rsvpState'] <= 0 ? 2.0 : packMember['isHare'] == 1 ? 5.0 : 3.5,
+              child: (indicatorRsvpUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? '')) || indicatorRsvpUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))
                   ? Icon(delayIcon, color: Colors.blue[800])
-                  : widget.packList[index].rsvpState == 0
+                  : packMember['rsvpState'] == 0
                       ? Container()
-                      : widget.packList[index].rsvpState == rsvpNo.value
-                          ? const Icon(FontAwesome.times_circle,
-                              color: Colors.red, size: 27.0)
-                          : widget.packList[index].rsvpState == rsvpMaybe.value
-                              ? const Icon(FontAwesome.question_circle,
-                                  color: Colors.orange, size: 27.0)
-                              : widget.packList[index].isHare == 0
-                                  ? const Icon(FontAwesome.check_circle,
-                                      color: Colors.green, size: 27.0)
-                                  : Image.asset('images/icons/hare_icon.png',
-                                      color: Colors.deepPurple,
-                                      height: 24.0,
-                                      width: 24.0),
+                      : packMember['rsvpState'] == rsvpNo.value
+                          ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 27.0)
+                          : packMember['rsvpState'] == rsvpMaybe.value
+                              ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 27.0)
+                              : packMember['isHare'] == 0 ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 27.0) : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 24.0, width: 24.0),
             ),
 
-              widget.packList.isEmpty
-                  ? const Positioned(
-                      top: 0,
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Text('No pack members loaded'))
-                  : Positioned(
-                      left: 155.0,
-                      bottom: 3.0,
-                      child: (widget.packList[index].attendenceState <
-                                  attendenceAtHash.value) &&
-                              (widget.packList[index].requestedAttendenceState <
-                                  attendenceAtHash.value)
-                          ? CircleAvatar(
-                              backgroundColor: Colors.grey[350],
-                              radius: 14.0,
-                            )
-                          : (widget.packList[index].rsvpState != rsvpYes.value) &&
-                                  (widget.packList[index].requestedRsvpState !=
-                                      rsvpYes.value)
-                              ? Container()
-                              : widget.packList[index].isPaid == -1
-                                  ? Icon(delayIcon, color: Colors.blue[800])
-                                  : CircleAvatar(
-                                      backgroundColor:
-                                          widget.packList[index].attendenceState == 0
-                                              ? Colors.transparent
-                                              : Colors.white,
-                                      radius: 14.0,
-                                    ),
-                    ),
-
-                widget.packList.isEmpty
-                    ? const Positioned(
-                        top: 0,
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        child: Text('No pack members loaded'))
-                    : Positioned(
-                        left: 157.0,
-                        bottom:
-                            widget.packList[index].attendenceState < -1 ? 4.5 : 5.5,
-                        child: (widget.packList[index].attendenceState < attendenceAtHash.value) &&
-                                (widget.packList[index].requestedAttendenceState <
-                                    attendenceAtHash.value)
+            packList.isEmpty
+                ? const Positioned(top: 0, bottom: 0, left: 0, right: 0, child: Text('No pack members loaded'))
+                : Positioned(
+                    left: 155.0,
+                    bottom: 3.0,
+                    child: (packMember['attendenceState'] < attendenceAtHash.value)
+                        ? CircleAvatar(
+                            backgroundColor: Colors.grey[350],
+                            radius: 14.0,
+                          )
+                        : (packMember['rsvpState'] != rsvpYes.value)
                             ? Container()
-                            : (widget.packList[index].rsvpState != rsvpYes.value) && (widget.packList[index].requestedRsvpState != rsvpYes.value)
-                                ? Container()
-                                : ((widget.packList[index].attendenceState <= attendenceNo.value) &&
-                                        (widget.packList[index].requestedAttendenceState <=
-                                            attendenceNo.value))
-                                    ? Image.asset(
-                                        'images/icons/dollar_sign_icon.png',
-                                        height: 24.0,
-                                        width: 24.0,
-                                        color: Colors.transparent)
-                                    : widget.packList[index].isPaid == isPaidNo.value
-                                        ? Image.asset(
-                                            'images/icons/dollar_sign_icon.png',
-                                            height: 24.0,
-                                            width: 24.0,
-                                            color: Colors.red)
-                                        : widget.packList[index].isPaid == isPaidYes.value
-                                            ? Image.asset('images/icons/payment_type_${widget.packList[index].paymentType}.png', height: 24.0, width: 24.0, color: Colors.green)
-                                            : Container()),
+                            : packMember['isPaid'] == -1
+                                ? Icon(delayIcon, color: Colors.blue[800])
+                                : CircleAvatar(
+                                    backgroundColor: packMember['attendenceState'] == 0 ? Colors.transparent : Colors.white,
+                                    radius: 14.0,
+                                  ),
+                  ),
+
+            packList.isEmpty
+                ? const Positioned(top: 0, bottom: 0, left: 0, right: 0, child: Text('No pack members loaded'))
+                : Positioned(
+                    left: 157.0,
+                    bottom: packMember['attendenceState'] < -1 ? 4.5 : 5.5,
+                    child: (packMember['attendenceState'] < attendenceAtHash.value)
+                        ? Container()
+                        : (packMember['rsvpState'] != rsvpYes.value)
+                            ? Container()
+                            : (packMember['attendenceState'] <= attendenceNo.value)
+                                ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.transparent)
+                                : packMember['isPaid'] == isPaidNo.value
+                                    ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.red)
+                                    : packMember['isPaid'] == isPaidYes.value ? Image.asset('images/icons/payment_type_${packMember['paymentType']}.png', height: 24.0, width: 24.0, color: Colors.green) : Container()),
 
             Positioned(
               left: 115.0,
               bottom: 3.0,
-              child: (widget.packList[index].rsvpState != rsvpYes.value) &&
-                      (widget.packList[index].requestedRsvpState != rsvpYes.value)
+              child: 
+                  (indicatorAttendenceUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? '')) || indicatorAttendenceUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))
+                      ? Icon(delayIcon, color: Colors.blue[800])
+                      : (packMember['rsvpState'] != rsvpYes.value)
                   ? CircleAvatar(
                       backgroundColor: Colors.grey[350],
                       radius: 14.0,
                     )
-                  : widget.packList[index].attendenceState < 0
-                      ? Icon(delayIcon, color: Colors.blue[800])
-                      : CircleAvatar(
-                          backgroundColor: widget.packList[index].attendenceState == 0
-                              ? Colors.transparent
-                              : Colors.white,
+                  : 
+                      
+                      CircleAvatar(
+                          backgroundColor: packMember['attendenceState'] == 0 ? Colors.transparent : Colors.white,
                           radius: 14.0,
                         ),
             ),
             Positioned(
               left: 117.0,
-              bottom: widget.packList[index].attendenceState <= 0 ? 4.5 : 5.5,
-              child: (widget.packList[index].rsvpState != rsvpYes.value) &&
-                      (widget.packList[index].requestedRsvpState != rsvpYes.value)
+              bottom: packMember['attendenceState'] <= 0 ? 4.5 : 5.5,
+              child: (packMember['rsvpState'] != rsvpYes.value)
                   ? Container()
-                  : widget.packList[index].attendenceState == attendenceNo.value
-                      ? Image.asset('images/icons/not_at_hash_icon.png',
-                          height: 24.0, width: 24.0, color: Colors.red[700])
-                      : widget.packList[index].attendenceState ==
-                              attendenceAtHash.value
-                          ? Image.asset('images/icons/runner_icon.png',
-                              height: 24.0, width: 24.0, color: Colors.red)
-                          : widget.packList[index].attendenceState >=
-                                  attendenceOnIn.value
-                              ? Image.asset('images/icons/beer_icon.png',
-                                  height: 24.0,
-                                  width: 24.0,
-                                  color: Colors.green)
-                              : Container(),
+                  : packMember['attendenceState'] == attendenceNo.value
+                      ? Image.asset('images/icons/not_at_hash_icon.png', height: 24.0, width: 24.0, color: Colors.red[700])
+                      : packMember['attendenceState'] == attendenceAtHash.value
+                          ? Image.asset('images/icons/runner_icon.png', height: 24.0, width: 24.0, color: Colors.red)
+                          : packMember['attendenceState'] >= attendenceOnIn.value ? Image.asset('images/icons/beer_icon.png', height: 24.0, width: 24.0, color: Colors.green) : Container(),
             ),
 
             // Payment icons
@@ -977,8 +914,64 @@ class PackListViewState extends State<PackListView> {
     return result;
   }
 
-  @override
-  Widget build(BuildContext context) {
+  void payForEvent(Map<String, dynamic> packMember, int paymentType, Key key) {
+    final String hemId = packMember['hemId'];
+    final String hasherId = packMember['hasherId'];
+    final num amount = packMember['isMember'] != 0 ? event['eventPriceForMembers'] : event['eventPriceForNonMembers'];
+
+    setState(() {
+      // these are here to manage the loading indicator on the list items
+      // basically, we keep a list of the items that are loading
+      // and then remove them from the list once they are loaded
+      // there is probably a better way to do this, but this is all I could
+      // think of at the time.
+      if ((packMember['rsvpState'] ?? 0) < rsvpYes.value) {
+        if (!indicatorRsvpUpdating.containsKey(packMember['hemId'].toString().toLowerCase())) {
+          if (!indicatorRsvpUpdating.containsKey(packMember['hasherId'].toString().toLowerCase())) {
+            indicatorRsvpUpdating.addAll(<String,String>{packMember['hemId'] != null ? 'hem:' + packMember['hemId'].toString().toLowerCase() : 'hid:' + packMember['hasherId'].toString().toLowerCase(): packMember['updatedAt'] ?? ''});
+          }
+        }
+      }
+
+      if ((packMember['attendenceState'] ?? 0) < attendenceAtHash.value) {
+        if (!indicatorAttendenceUpdating.containsKey(packMember['hemId'].toString().toLowerCase())) {
+          if (!indicatorAttendenceUpdating.containsKey(packMember['hasherId'].toString().toLowerCase())) {
+            indicatorAttendenceUpdating.addAll(<String,String>{packMember['hemId'] != null ? 'hem:' + packMember['hemId'].toString().toLowerCase() : 'hid:' + packMember['hasherId'].toString().toLowerCase(): packMember['updatedAt'] ?? ''});
+          }
+        }
+      }
+    });
+
+    // if(!packMember.containsKey('requestedRsvpState'))
+    // {
+    //   packMember.addAll(<String,dynamic> {'requestedRsvpState':-1});
+    // }
+
+    // packMember['requestedRsvpState'] = 2;
+
+    // if (packMember['attendenceState'] < attendenceAtHash.value) {
+    //   packMember['attendenceState'] = -1;
+    //   packMember['attendenceState'] = attendenceAtHash.value;
+    // }
+
+    //packMember['isPaid'] = -1;
+    //packMember['isPaid'] = -1;
+
+    final PaymentsService paySrv = PaymentsService();
+    final Future<void> retVal = paySrv.payForEvent(
+      widget.eventId,
+      ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId,
+      ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId,
+      paymentType,
+      amount,
+      attendenceAtHash.value,
+    );
+    retVal.then((void dummy) {
+      _refreshPackListFromTables(true);
+    });
+  }
+
+  Widget buildPackListView() {
     print(DateTime.now().millisecondsSinceEpoch.toString());
     return ListView.separated(
         separatorBuilder: (BuildContext context, int index) => const Divider(
@@ -986,323 +979,240 @@ class PackListViewState extends State<PackListView> {
               color: Colors.black45,
             ),
         physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: widget.packList?.length ?? 0,
+        itemCount: packList?.length ?? 0,
         itemBuilder: (BuildContext context, int index) {
-          return 
-          // (packScopedModel.isLoading) 
-          //               ? Center(
-          //                   child: Container(
-          //                     height: 50,
-          //                     width: 50,
-          //                     child: const HcCircularProgressIndicator(),
-          //                   ),
-          //                 ) :
-          
+          final Map<String, dynamic> packMember = packList[index];
+          final Key key = Key(index.toString());
+          return
+              // (packScopedModel.isLoading)
+              //               ? Center(
+              //                   child: Container(
+              //                     height: 50,
+              //                     width: 50,
+              //                     child: const HcCircularProgressIndicator(),
+              //                   ),
+              //                 ) :
 
-
-
-
-
-
-
-
-
-
-          
-          // ((widget.packList == null) || (widget.packList.isEmpty)) 
-          //     ?  Container(
-          //                     // height: constraints.maxHeight -
-          //                     //       searchBar(_packScopedModel,
-          //                     //               constraints.maxWidth)
-          //                     //           .constraints
-          //                     //           .maxHeight,
-          //                       child: Center(
-          //                         child: Text(
-          //                             'There are no pack members associated with this run or Kennel'),
-          //                       ),
-          //                     ) :
+              // ((packList == null) || (packList.isEmpty))
+              //     ?  Container(
+              //                     // height: constraints.maxHeight -
+              //                     //       searchBar(_packScopedModel,
+              //                     //               constraints.maxWidth)
+              //                     //           .constraints
+              //                     //           .maxHeight,
+              //                       child: Center(
+              //                         child: Text(
+              //                             'There are no pack members associated with this run or Kennel'),
+              //                       ),
+              //                     ) :
               Dismissible(
-                  key: Key(index.toString()),
-                  confirmDismiss: (DismissDirection direction) {
-                    if (widget.packList[index].isPaid != 1) {
-                      widget.packScopedModel.forceRefresh();
-                      print(direction.toString() + ' ' + index.toString());
-                      processPayment(
-                          index,
-                          widget.packScopedModel,
-                          context,
-                          direction == DismissDirection.endToStart ? 3 : 4,
-                          widget.packList[index].eventPrice);
-                    } else {
-                      if (direction == DismissDirection.endToStart) {
-                        widget.packScopedModel.setRsvpState(rsvpYes.value, -1,
-                            attendenceOnIn.value, widget.packList[index]);
-                      }
-                    }
-                    return Future<bool>.value(false);
-                  },
-                  background: widget.packList[index].isPaid == 1
-                      ? Container(
-                          color: Colors.grey,
-                          child: Row(
-                            children: const <Widget>[
-                              Padding(
-                                padding: EdgeInsets.only(left: 15.0),
-                                child: Icon(FontAwesome.check_circle,
-                                    size: 35.0, color: Colors.white),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(left: 15.0),
-                                child: Text(
-                                  'Already paid',
-                                  style: TextStyle(
-                                      fontFamily: 'AvenirNextDemiBold',
-                                      fontStyle: FontStyle.normal,
-                                      color: Colors.white,
-                                      fontSize: 20.0,
-                                      height: 1.0),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : Container(
-                          color: Colors.blue,
-                          child: Row(
-                            children: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.only(left: 15.0),
-                                child: Image.asset(
-                                    'images/icons/payment_type_4.png',
-                                    height: 30.0,
-                                    width: 30.0,
-                                    color: Colors.white),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 15.0),
-                                child: Text(
-                                    '${Utilities.getFormattedMoney(widget.packList[index].eventPrice, widget.packList[index].digitsAfterDecimal, widget.packList[index].currencySymbol)} Bank Transfer',
-                                    style: const TextStyle(
-                                        fontFamily: 'AvenirNextDemiBold',
-                                        fontStyle: FontStyle.normal,
-                                        color: Colors.white,
-                                        fontSize: 20.0,
-                                        height: 1.0)),
-                              ),
-                            ],
+            key: key,
+            confirmDismiss: (DismissDirection direction) {
+              if (packMember['isPaid'] != 1) {
+                print(direction.toString() + ' ' + index.toString());
+                payForEvent(packMember, direction == DismissDirection.endToStart ? 3 : 4, key);
+              } else {
+                if (direction == DismissDirection.endToStart) {
+                  // _packScopedModel.setRsvpState(rsvpYes.value, -1,
+                  //     attendenceOnIn.value, packList[index]);
+                }
+              }
+              return Future<bool>.value(false);
+            },
+            background: packMember['isPaid'] == 1
+                ? Container(
+                    color: Colors.grey,
+                    child: Row(
+                      children: const <Widget>[
+                        Padding(
+                          padding: EdgeInsets.only(left: 15.0),
+                          child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(left: 15.0),
+                          child: Text(
+                            'Already paid',
+                            style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
                           ),
                         ),
-                  secondaryBackground: widget.packList[index].isPaid == 1
-                      ? widget.packList[index].attendenceState >= attendenceOnIn.value
-                          ? Container(
-                              color: Colors.grey,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: const <Widget>[
-                                  Padding(
-                                    padding: EdgeInsets.only(right: 15.0),
-                                    child: Icon(FontAwesome.check_circle,
-                                        size: 35.0, color: Colors.white),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(right: 15.0),
-                                    child: Text(
-                                      'Already marked On-In',
-                                      style: TextStyle(
-                                          fontFamily: 'AvenirNextDemiBold',
-                                          fontStyle: FontStyle.normal,
-                                          color: Colors.white,
-                                          fontSize: 20.0,
-                                          height: 1.0),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : Container(
-                              color: Colors.amber[800],
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: const <Widget>[
-                                  Padding(
-                                    padding: EdgeInsets.only(right: 15.0),
-                                    child: Icon(Ionicons.ios_beer,
-                                        size: 35.0, color: Colors.white),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(right: 15.0),
-                                    child: Text(
-                                      'Record as On-In',
-                                      style: TextStyle(
-                                          fontFamily: 'AvenirNextDemiBold',
-                                          fontStyle: FontStyle.normal,
-                                          color: Colors.white,
-                                          fontSize: 20.0,
-                                          height: 1.0),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                      : Container(
-                          color: Colors.green,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.only(right: 15.0),
-                                child: Image.asset(
-                                    'images/icons/payment_type_3.png',
-                                    height: 30.0,
-                                    width: 30.0,
-                                    color: Colors.white),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 15.0),
-                                child: Text(
-                                    '${Utilities.getFormattedMoney(widget.packList[index].eventPrice, widget.packList[index].digitsAfterDecimal, widget.packList[index].currencySymbol)} Cash',
-                                    style: const TextStyle(
-                                        fontFamily: 'AvenirNextDemiBold',
-                                        fontStyle: FontStyle.normal,
-                                        color: Colors.white,
-                                        fontSize: 20.0,
-                                        height: 1.0)),
-                              ),
-                            ],
-                          ),
+                      ],
+                    ),
+                  )
+                : Container(
+                    color: Colors.blue,
+                    child: Row(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(left: 15.0),
+                          child: Image.asset('images/icons/payment_type_4.png', height: 30.0, width: 30.0, color: Colors.white),
                         ),
-                  onDismissed: (DismissDirection direction) {
-                    print(direction.toString() +
-                        ' NOTE: We should never reach this point');
-                  },
-                  child: listItem(context, index),
-                );
+                        Padding(
+                          padding: const EdgeInsets.only(left: 15.0),
+                          child: Text('${Utilities.getFormattedMoney(packMember['isMember'] != 0 ? event['eventPriceForMembers'] : event['eventPriceForNonMembers'], event['digitsAfterDecimal'], event['currencySymbol'])} Bank Transfer',
+                              style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+                        ),
+                      ],
+                    ),
+                  ),
+            secondaryBackground: packMember['isPaid'] == 1
+                ? packMember['attendenceState'] >= attendenceOnIn.value
+                    ? Container(
+                        color: Colors.grey,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: const <Widget>[
+                            Padding(
+                              padding: EdgeInsets.only(right: 15.0),
+                              child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(right: 15.0),
+                              child: Text(
+                                'Already marked On-In',
+                                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Container(
+                        color: Colors.amber[800],
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: const <Widget>[
+                            Padding(
+                              padding: EdgeInsets.only(right: 15.0),
+                              child: Icon(Ionicons.ios_beer, size: 35.0, color: Colors.white),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(right: 15.0),
+                              child: Text(
+                                'Record as On-In',
+                                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                : Container(
+                    color: Colors.green,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(right: 15.0),
+                          child: Image.asset('images/icons/payment_type_3.png', height: 30.0, width: 30.0, color: Colors.white),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 15.0),
+                          child: Text('${Utilities.getFormattedMoney(packMember['isMember'] != 0 ? event['eventPriceForMembers'] : event['eventPriceForNonMembers'], event['digitsAfterDecimal'], event['currencySymbol'])} Cash',
+                              style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+                        ),
+                      ],
+                    ),
+                  ),
+            onDismissed: (DismissDirection direction) {
+              print(direction.toString() + ' NOTE: We should never reach this point');
+            },
+            child: listItem(context, index),
+          );
         });
   }
 
-  void processPayment(
-      int index,
-      PackScopedModel _packScopedModel,
-      BuildContext context,
-      int paymentType,
-      num paymentAmount) {
-    final UserModel hasher = widget.packList[index];
+//   void processPayment(int index, BuildContext context, int paymentType, num paymentAmount) {
+//     final Map<String, dynamic> packMember = packList[index];
 
-    if (hasher.rsvpState < rsvpYes.value) {
-      hasher.rsvpState = -1;
-      hasher.requestedRsvpState = rsvpYes.value;
-    }
+//     if (packMember['rsvpState'] < rsvpYes.value) {
 
-    _packScopedModel.forceRefresh();
+//     }
 
-    // _payScopedModel
-    //     .payForEvent(
-    //         widget.packList, index, paymentType, paymentAmount, attendenceAtHash.value)
-    //     .then((List<PayForEventModel> result) {
-    //   if (paymentType == paymentNotPaid.value) {
-    //     hasher.isPaid = 0;
-    //   } else {
-    //     hasher.isPaid = 1;
-    //   }
+//     // packMember['isPaid'] = -1;
 
-    //   if (hasher.hasherEventMapId != result[0].hasherEventMapId) {
-    //     hasher.hasherEventMapId = result[0].hasherEventMapId;
-    //   }
+//     //_packScopedModel.forceRefresh();
 
-    //   if (hasher.userRunCount != result[0].totalRunsThisKennel) {
-    //     hasher.userRunCount = result[0].totalRunsThisKennel;
-    //   }
+//     // _payScopedModel
+//     //     .payForEvent(
+//     //         packList, index, paymentType, paymentAmount, attendenceAtHash.value)
+//     //     .then((List<PayForEventModel> result) {
+//     //   if (paymentType == paymentNotPaid.value) {
+//     //     hasher['isPaid = 0;
+//     //   } else {
+//     //     hasher['isPaid = 1;
+//     //   }
 
-    //   hasher.rsvpState = rsvpYes.value;
-    //   hasher.requestedRsvpState = -1;
+//     //   if (hasher['hasherEventMapId != result[0].hasherEventMapId) {
+//     //     hasher['hasherEventMapId = result[0].hasherEventMapId;
+//     //   }
 
-    //   if (hasher.attendenceState < attendenceAtHash.value) {
-    //     hasher.attendenceState = attendenceAtHash.value;
-    //   }
+//     //   if (hasher['userRunCount != result[0].totalRunsThisKennel) {
+//     //     hasher['userRunCount = result[0].totalRunsThisKennel;
+//     //   }
 
-    //   _packScopedModel.forceRefresh();
+//     //   hasher['rsvpState = rsvpYes.value;
+//     //   hasher['requestedRsvpState = -1;
 
-    //   widget.packList[index].paymentType = paymentType;
-    //   if ((paymentType == paymentCashOtherAmount.value) ||
-    //       (paymentType == paymentBankTransferOtherAmount.value)) {
-    //     final num fundsDifference = paymentAmount -
-    //         (hasher.isMember == 1
-    //             ? event['eventPriceForMembers']
-    //             : event['eventPriceForNonMembers']);
+//     //   if (hasher['attendenceState < attendenceAtHash.value) {
+//     //     hasher['attendenceState = attendenceAtHash.value;
+//     //   }
 
-    //     final String credit = Utilities.getFormattedMoney(fundsDifference,
-    //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
+//     //   _packScopedModel.forceRefresh();
 
-    //     final double hashCashAmount = hasher.isMember == 1
-    //         ? event['eventPriceForMembers']
-    //         : event['eventPriceForNonMembers'];
+//     //   packMember['paymentType = paymentType;
+//     //   if ((paymentType == paymentCashOtherAmount.value) ||
+//     //       (paymentType == paymentBankTransferOtherAmount.value)) {
+//     //     final num fundsDifference = paymentAmount -
+//     //         (hasher['isMember == 1
+//     //             ? event['eventPriceForMembers']
+//     //             : event['eventPriceForNonMembers']);
 
-    //     final String hashCash = Utilities.getFormattedMoney(hashCashAmount,
-    //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
+//     //     final String credit = Utilities.getFormattedMoney(fundsDifference,
+//     //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
 
-    //     final String amountPaid = Utilities.getFormattedMoney(paymentAmount,
-    //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
+//     //     final double hashCashAmount = hasher['isMember == 1
+//     //         ? event['eventPriceForMembers']
+//     //         : event['eventPriceForNonMembers'];
 
-    //     final String paymentMethod = paymentType == paymentCashOtherAmount.value
-    //         ? 'in cash'
-    //         : 'by bank transfer';
+//     //     final String hashCash = Utilities.getFormattedMoney(hashCashAmount,
+//     //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
 
-    //     if (fundsDifference > 0.0) {
-    //       showDialog<void>(
-    //           context: context,
-    //           builder: (BuildContext context) {
-    //             // return object of type Dialog
-    //             return AlertDialog(
-    //               title: const Text('Credit applied to account'),
-    //               content: Text(
-    //                   '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${event['kennelShortName']}'),
-    //               actions: <Widget>[
-    //                 // usually buttons at the bottom of the dialog
-    //                 FlatButton(
-    //                   color: Colors.blue,
-    //                   textColor: Colors.white,
-    //                   child: const Text('Close'),
-    //                   onPressed: () {
-    //                     Navigator.of(context).pop();
-    //                   },
-    //                 ),
-    //               ],
-    //             );
-    //           });
-    //     }
-    //   }
-    // });
+//     //     final String amountPaid = Utilities.getFormattedMoney(paymentAmount,
+//     //         event['digitsAfterDecimal'] ?? 2, event['currencySymbol']);
 
-    widget.packList[index].isPaid = -1;
+//     //     final String paymentMethod = paymentType == paymentCashOtherAmount.value
+//     //         ? 'in cash'
+//     //         : 'by bank transfer';
 
-    Scaffold.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
+//     //     if (fundsDifference > 0.0) {
+//     //       showDialog<void>(
+//     //           context: context,
+//     //           builder: (BuildContext context) {
+//     //             // return object of type Dialog
+//     //             return AlertDialog(
+//     //               title: const Text('Credit applied to account'),
+//     //               content: Text(
+//     //                   '$amountPaid was paid $paymentMethod. $hashCash was used to pay for the run and $credit has been credited to your Hash account for ${event['kennelShortName']}'),
+//     //               actions: <Widget>[
+//     //                 // usually buttons at the bottom of the dialog
+//     //                 FlatButton(
+//     //                   color: Colors.blue,
+//     //                   textColor: Colors.white,
+//     //                   child: const Text('Close'),
+//     //                   onPressed: () {
+//     //                     Navigator.of(context).pop();
+//     //                   },
+//     //                 ),
+//     //               ],
+//     //             );
+//     //           });
+//     //     }
+//     //   }
+//     // });
 
-    setState(() {
-      
-    });
-  }
+//     Scaffold.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.hide);
+
+//     setState(() {});
+//   }
 }
-
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 class AddVisitorVirginPopup extends StatefulWidget {
   const AddVisitorVirginPopup();
@@ -1328,10 +1238,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
           focusNode: myFocusNodeFirstName,
           controller: nameTextController,
           keyboardType: TextInputType.text,
-          style: const TextStyle(
-              fontFamily: 'WorkSansSemiBold',
-              fontSize: 16.0,
-              color: Colors.black),
+          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
           decoration: const InputDecoration(
             //border: InputBorder.none,
             icon: Icon(
@@ -1339,8 +1246,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               color: Colors.white,
             ),
             hintText: 'Just Julie',
-            hintStyle:
-                TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+            hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
           ),
         ),
         TextField(
@@ -1348,10 +1254,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
           //focusNode: myFocusNodeFirstName,
           controller: emailTextController,
           keyboardType: TextInputType.emailAddress,
-          style: const TextStyle(
-              fontFamily: 'WorkSansSemiBold',
-              fontSize: 16.0,
-              color: Colors.black),
+          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
           decoration: const InputDecoration(
             //border: InputBorder.none,
             icon: Icon(
@@ -1359,8 +1262,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               color: Colors.white,
             ),
             hintText: '(email - optional)',
-            hintStyle:
-                TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+            hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
           ),
         ),
         TextField(
@@ -1368,10 +1270,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
           //focusNode: myFocusNodeFirstName,
           controller: phoneTextController,
           keyboardType: TextInputType.phone,
-          style: const TextStyle(
-              fontFamily: 'WorkSansSemiBold',
-              fontSize: 16.0,
-              color: Colors.black),
+          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
           decoration: const InputDecoration(
             //border: InputBorder.none,
             icon: Icon(
@@ -1379,8 +1278,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               color: Colors.white,
             ),
             hintText: '(phone # - optional)',
-            hintStyle:
-                TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+            hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
           ),
         ),
       ]),
@@ -1390,8 +1288,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
           child: const Text('Cancel'),
           textColor: Colors.white,
           onPressed: () {
-            Navigator.of(context)
-                .pop(<String, String>{'type': 'cancel', 'amount': ''});
+            Navigator.of(context).pop(<String, String>{'type': 'cancel', 'amount': ''});
           },
         ),
 
