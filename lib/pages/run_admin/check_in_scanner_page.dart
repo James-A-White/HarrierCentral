@@ -14,22 +14,18 @@ import 'package:harrier_central/data/models/pay_for_event_model.dart';
 import 'package:harrier_central/util/enums.dart';
 
 class CheckInScannerPage extends StatefulWidget {
-  const CheckInScannerPage(
-      {@required this.kennelShortName,
-      @required this.eventId,
-      @required this.eventName,
-      @required this.eventNumber,
-      @required this.isRunStart});
+  const CheckInScannerPage({@required this.kennelShortName, @required this.eventId, @required this.eventName, @required this.eventNumber});
 
   final String kennelShortName;
   final String eventId;
   final String eventName;
   final int eventNumber;
-  final int isRunStart;
 
   @override
   _CheckInScannerPageState createState() => _CheckInScannerPageState();
 }
+
+bool isScanningAtRunStart = true;
 
 class _CheckInScannerPageState extends State<CheckInScannerPage> {
   @override
@@ -39,9 +35,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
         title: Text(
-          widget.isRunStart == 1
-              ? 'Scan at start of Hash'
-              : 'Scan at end of Hash',
+          'Scan at start & end of Hash',
           style: const TextStyle(
             color: Colors.white,
           ),
@@ -61,21 +55,38 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                       top: 30,
                       width: MediaQuery.of(context).size.width * 0.86,
                       child: AutoSizeText(
-                        widget.isRunStart == 1
-                            ? 'Use this scanner to scan Hasher barcodes at the beginning of the run so that their run will count and they can be marked as paid.'
-                            : 'Use this scanner to scan Hasher barcodes at the end of the run so you can ensure that no one is lost on trail and to identify people who still need to pay.',
+                            'Use this scanner to scan Hasher barcodes at the start of the run so you know who is at the Hash and at the end of the run so you can ensure that no one is lost on trail.',
                         textAlign: TextAlign.justify,
                         maxLines: 4,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'AvenirNextDemiBold',
-                            fontStyle: FontStyle.normal,
-                            fontSize: 16.0,
-                            height: 0.8),
+                        style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 0.8),
                       ),
                     ),
+                                        Positioned(
+                      top: 120.0,
+                      child: Container(
+                        //margin: const EdgeInsets.all(20.0),
+                        width: 280.0,
+                        child: RaisedButton(
+                            child: Text(
+                              ((controller != null) && isScanningAtRunStart) ? 'Stop Scanning' : 'Scan at start of run',
+                              style: const TextStyle(fontFamily: 'AvenirNextDemiBold', 
+                              //color: Colors.white, 
+                              fontStyle: FontStyle.normal, 
+                              fontSize: 22.0, 
+                              height: 1.0),
+                            ),
+                            disabledColor: Colors.grey[700],
+                            disabledTextColor: Colors.grey[200],
+                            textColor: Colors.white,
+                            onPressed: ((controller != null) && !isScanningAtRunStart) ? null : () {
+                              isScanningAtRunStart = true;
+                              scanUserBarcode();
+                            }),
+                      ),
+                    ),
+                    
                     Positioned(
-                        top: 125,
+                        top: 190,
                         bottom: 215,
                         //width:150,
                         //height:150,
@@ -90,17 +101,18 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                         width: 280.0,
                         child: RaisedButton(
                             child: Text(
-                              controller == null
-                                  ? 'Start Scanning'
-                                  : 'Stop Scanning',
-                              style: const TextStyle(
-                                  fontFamily: 'AvenirNextDemiBold',
-                                  color: Colors.white,
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 22.0,
-                                  height: 1.0),
+                              ((controller != null) && !isScanningAtRunStart) ? 'Stop Scanning' : 'Scan at end of run',
+                              style: const TextStyle(fontFamily: 'AvenirNextDemiBold', 
+                              //color: Colors.white, 
+                              fontStyle: FontStyle.normal, 
+                              fontSize: 22.0, 
+                              height: 1.0),
                             ),
-                            onPressed: () {
+                            disabledColor: Colors.grey[700],
+                            disabledTextColor: Colors.grey[200],
+                            textColor: Colors.white,
+                            onPressed: ((controller != null) && isScanningAtRunStart) ? null : () {
+                              isScanningAtRunStart = false;
                               scanUserBarcode();
                             }),
                       ),
@@ -119,12 +131,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                             //'this is a test of how 3 lines will fit Ill need a lot more text than that to make it work',
                             textAlign: TextAlign.center,
                             maxLines: 3,
-                            style: const TextStyle(
-                                fontFamily: 'AvenirNextDemiBold',
-                                fontStyle: FontStyle.normal,
-                                color: Colors.yellow,
-                                fontSize: 26.0,
-                                height: 0.9),
+                            style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 26.0, height: 0.9),
                           ),
                         ),
                       ),
@@ -232,54 +239,6 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
     );
   }
 
-  // Future<void> scanUserBarcode(bool isRunStart, String eventId) async {
-  //   final String context2 = isRunStart ? '0' : '1';
-  //   Future<String> scanAction = BarcodeScanner.scan();
-  //   scanAction.then((String s) {
-  //     ProcessQrScanService srv = ProcessQrScanService();
-  //     Future<ProcessQrScanModel> apiCall =
-  //         srv.processQrScan(eventId, s, 'CheckInOut', context2, 'user', '');
-  //     apiCall.then((ProcessQrScanModel result) {
-  //       setState(() => barcode = result.resultStr2);
-  //       if (result.resultInt2 == 0) {
-  //         PaymentPopup pp = PaymentPopup(
-  //           amount: result.resultDecimal1,
-  //           creditAllowed: result.resultInt3,
-  //           creditRemaining: result.resultDecimal2,
-  //           currencySymbol: result.resultStr1,
-  //           hemId: result.resultGuid2,
-  //           decimalDigits: result.resultInt4,
-  //         );
-
-  //         Future<bool> dlg = showDialog<bool>(
-  //             context: context,
-  //             barrierDismissible: false, // user must tap button!
-  //             builder: (BuildContext context) {
-  //               return pp;
-  //             });
-
-  //         dlg.then((bool x) {
-  //           PayForEventService paySrv = PayForEventService();
-  //           Future<List<PayForEventModel>> retVal = paySrv.payForEvent(
-  //               result.resultGuid1,
-  //               eventId,
-  //               result.resultGuid2,
-  //               pp.selectedValue,
-  //               pp.amount,
-  //               isRunStart == 1 ? attendenceAtHash.value : attendenceOnIn.value);
-  //           retVal.then((List<PayForEventModel> paymentResult) {
-  //             if (paymentResult.isNotEmpty) {
-  //               setState(() => barcode = paymentResult[0].result);
-  //             } else {
-  //               setState(() => barcode = 'Error processing payment');
-  //             }
-  //           });
-  //         });
-  //       }
-  //     });
-  //     setState(() => barcode = 'Processing QR Scan');
-  //   });
-  // }
 
   String barcode = 'Waiting for Scan';
 
@@ -315,8 +274,6 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
       await stopScanning();
       setState(() => barcode = 'Waiting for scan');
     }
-
-    // return Future<void>(() {});(() {});
   }
 
   Future<void> onCodeRead(dynamic scanResult) async {
@@ -325,21 +282,14 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
 
     stopScanning();
 
-    // setState(() {
-    //   barcode = 'Processing QR Scan';
-    //   //await stopScanning();
-    // });
-
-    final String context2 = widget.isRunStart == 1 ? '0' : '1';
+    final String context2 = isScanningAtRunStart ? '0' : '1';
 
     final ProcessQrScanService srv = ProcessQrScanService();
-    final Future<ProcessQrScanModel> apiCall = srv.processQrScan(
-        widget.eventId, scanResult, 'CheckInOut', context2, 'admin', '');
+    final Future<ProcessQrScanModel> apiCall = srv.processQrScan(widget.eventId, scanResult, 'CheckInOut', context2, 'admin', '');
     apiCall.then((ProcessQrScanModel result) {
       setState(() => barcode = result.resultStr2);
       if (result.resultInt2 != 0) {
-        Future<dynamic>.delayed(const Duration(seconds: 2))
-            .then<dynamic>((dynamic unused) {
+        Future<dynamic>.delayed(const Duration(seconds: 2)).then<dynamic>((dynamic unused) {
           scanUserBarcode();
         });
       } else {
@@ -365,23 +315,15 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
         dlg.then((int selectedTransactionType) {
           if (selectedTransactionType != -1) {
             final PayForEventService paySrv = PayForEventService();
-            final Future<List<PayForEventModel>> retVal = paySrv.payForEvent(
-                result.resultGuid1,
-                widget.eventId,
-                result.resultGuid2,
-                selectedTransactionType,
-                pp.amount,
-                widget.isRunStart == 1
-                    ? attendenceAtHash.value
-                    : attendenceOnIn.value);
+            //final Future<List<PayForEventModel>> retVal = paySrv.payForEvent(result.resultGuid1, widget.eventId, result.resultGuid2, selectedTransactionType, pp.amount, widget.isRunStart == 1 ? attendenceAtHash.value : attendenceOnIn.value);
+            final Future<List<PayForEventModel>> retVal = paySrv.payForEvent(result.resultGuid1, widget.eventId, result.resultGuid2, selectedTransactionType, pp.amount, attendenceAtHash.value);
             retVal.then((List<PayForEventModel> paymentResult) {
               if (paymentResult.isNotEmpty) {
                 setState(() => barcode = paymentResult[0].result);
               } else {
                 setState(() => barcode = 'Error processing payment');
               }
-              Future<dynamic>.delayed(const Duration(seconds: 2))
-                  .then<dynamic>((dynamic unused) {
+              Future<dynamic>.delayed(const Duration(seconds: 2)).then<dynamic>((dynamic unused) {
                 scanUserBarcode();
               });
             });
@@ -399,8 +341,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
   }
 
   Widget _cameraPreviewWidget() {
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraint) {
+    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraint) {
       return Stack(children: <Widget>[
         Image.asset(
           'images/other/qr_scanner.png',
@@ -409,8 +350,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
           padding: const EdgeInsets.all(9.0),
           height: constraint.biggest.height,
           width: constraint.biggest.height,
-          child:
-              (controller == null) ? Container() : QRReaderPreview(controller),
+          child: (controller == null) ? Container() : QRReaderPreview(controller),
         )
       ]);
     });
@@ -422,8 +362,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
     if (controller != null) {
       await controller.dispose();
     }
-    controller = QRReaderController(cameraDescription, ResolutionPreset.high,
-        <CodeFormat>[CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
+    controller = QRReaderController(cameraDescription, ResolutionPreset.high, <CodeFormat>[CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
 
     // If the controller is updated then update the UI.
     controller.addListener(() {
@@ -468,11 +407,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                 Text(
                   'Harrier Central admins can use this page to scan in Hashers both at the beginning of runs (to record who is at the run) and the end of runs (to make sure everone is back safely).\r\n\r\nThis screen also makes it possible to record who has paid and who has not.',
                   textAlign: TextAlign.justify,
-                  style: TextStyle(
-                      fontFamily: 'AvenirNextRegular',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 16.0,
-                      height: 1.0),
+                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                 )
               ],
             ),

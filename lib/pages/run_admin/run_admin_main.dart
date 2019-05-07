@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/pages/run_admin/run_start_end_qr_codes_page.dart';
+import 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
 import 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
 import 'package:harrier_central/pages/run_admin/payment_report.dart';
 import 'package:harrier_central/pages/run_admin/receipts_page.dart';
@@ -96,214 +96,201 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
           ),
         ),
       ),
-      body: Container(decoration: Backgrounds.defaultHcBackground(), height: MediaQuery.of(context).size.height, child: _isLoading ? const HcCircularProgressIndicator() : Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: kiddies())),
+      body: Container(
+          decoration: Backgrounds.defaultHcBackground(),
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: _isLoading ? const HcCircularProgressIndicator() : Column(mainAxisAlignment: MainAxisAlignment.start, mainAxisSize: MainAxisSize.max, children: <Widget>[]..addAll(kiddies()))),
     );
   }
+
+  final num buttonWidth = 315.0;
 
   List<Widget> kiddies() {
     final List<Widget> kiddies = <Widget>[];
 
-    if (event != null) {
-      if ((((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) || (((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowHashCashFlag) != 0)) {
-        kiddies.add(rsvpRow());
-      }
+    kiddies.add(Padding(
+      padding: const EdgeInsets.only(top: 15, bottom: 15),
+      child: Container(
+        width: 315,
+        height: 65,
+        child: RaisedButton(
+          padding: const EdgeInsets.only(top: 2.0, left: 8.0, bottom: 8.0),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+            Padding(
+              padding: EdgeInsets.only(left: 3, top: 5),
+              child: Image.asset('images/icons/check_in_pack_icon.png', height: 40.0, width: 40.0),
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: 10, top: 8),
+              child: Text(
+                'Manually check in pack',
+                style: buttonLabelStyleMedium,
+              ),
+            ),
+          ]),
+          textColor: Colors.white,
+          onPressed: () {
+            Navigator.push<dynamic>(
+              context,
+              MaterialPageRoute<dynamic>(
+                builder: (BuildContext context) => CheckInPackPage(eventId: widget.eventId, kennelId: event['kennelId']),
+              ),
+            );
+          },
+        ),
+      ),
+    ));
 
-      if (((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) {
-        kiddies.add(startAndEndScannerRow());
-      }
+    kiddies.add(Padding(
+      padding: const EdgeInsets.only(top: 15, bottom: 15),
+      child: Container(
+        width: 315,
+        height: 65,
+        child: RaisedButton(
+          padding: const EdgeInsets.only(top: 2.0, left: 8.0, bottom: 8.0),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+            Padding(
+              padding: EdgeInsets.only(left: 0, top: 5),
+              child: Image.asset('images/icons/qr_scanner_phone_icon.png', height: 40.0, width: 40.0),
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: 13, top: 8),
+              child: Text(
+                'Scan to check in pack',
+                style: buttonLabelStyleMedium,
+              ),
+            ),
+          ]),
+          textColor: Colors.white,
+          onPressed: () {
+              Navigator.push<dynamic>(
+                context,
+                MaterialPageRoute<dynamic>(
+                  builder: (BuildContext context) => CheckInScannerPage(
+                        kennelShortName: event['kennelShortName'],
+                        eventId: event['eventId'],
+                        eventName: event['eventName'],
+                        eventNumber: event['eventNumber']
+                      ),
+                ),
+              );
+          },
+        ),
+      ),
+    ));
 
-      kiddies.add(startAndEndQrRow());
+    kiddies.add(Padding(
+      padding: const EdgeInsets.only(top: 15, bottom: 15),
+      child: Container(
+        width: 315,
+        height: 65,
+        child: RaisedButton(
+          padding: const EdgeInsets.only(top: 2.0, left: 8.0, bottom: 8.0),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+            Padding(
+              padding: EdgeInsets.only(left: 3, top: 5),
+              child: Image.asset('images/icons/hash_cash_icon.png', height: 40.0, width: 40.0),
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: 10, top: 8),
+              child: Text(
+                'Hash cash',
+                style: buttonLabelStyleMedium,
+              ),
+            ),
+          ]),
+          textColor: Colors.white,
+          onPressed: () {
+            Navigator.push<dynamic>(
+              context,
+              MaterialPageRoute<dynamic>(
+                builder: (BuildContext context) => PaymentReportPage(
+                      event: event,
+                    ),
+              ),
+            );
+          },
+        ),
+      ),
+    ));
 
-      kiddies.add(receiptsRow());
-    }
+    kiddies.add(Padding(
+      padding: const EdgeInsets.only(top: 15, bottom: 15),
+      child: Container(
+        width: 315,
+        height: 65,
+        child: RaisedButton(
+          padding: const EdgeInsets.only(top: 2.0, left: 8.0, bottom: 8.0),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+            Padding(
+              padding: EdgeInsets.only(left: 3, top: 5),
+              child: Image.asset('images/icons/receipt_icon.png', height: 40.0, width: 40.0),
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: 10, top: 8),
+              child: Text(
+                'Manage receipts',
+                style: buttonLabelStyleMedium,
+              ),
+            ),
+          ]),
+          textColor: Colors.white,
+          onPressed: () {
+            Navigator.push<dynamic>(
+              context,
+              MaterialPageRoute<dynamic>(
+                builder: (BuildContext context) => ReceiptsList(
+                      eventName: event['eventName'],
+                      eventId: event['eventId'],
+                      digitsAfterDecimal: event['digitsAfterDecimal'],
+                      currencySymbol: event['currencySymbol'],
+                    ),
+              ),
+            );
+          },
+        ),
+      ),
+    ));
+
+    kiddies.add(Padding(
+      padding: const EdgeInsets.only(top: 15, bottom: 15),
+      child: Container(
+        width: 315,
+        height: 65,
+        child: RaisedButton(
+          padding: const EdgeInsets.only(top: 2.0, left: 8.0, bottom: 8.0),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+            Padding(
+              padding: EdgeInsets.only(left: 3, top: 5),
+              child: Image.asset('images/icons/print_qr_icon.png', height: 40.0, width: 40.0),
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: 10, top: 8),
+              child: Text(
+                'Print run QR codes',
+                style: buttonLabelStyleMedium,
+              ),
+            ),
+          ]),
+          textColor: Colors.white,
+          onPressed: () {
+                Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => EventQrCodePage(
+                              kennelShortName: event['kennelShortName'],
+                              eventId: event['eventId'],
+                              eventName: event['eventName'],
+                              eventNumber: event['eventNumber'],
+                              eventStartDatetime: DateTime.parse(event['eventStartDatetime'])
+                            )));
+          },
+        ),
+      ),
+    ));
 
     return kiddies;
   }
 
-  Row rsvpRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        !(((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowEditRsvpFlag) != 0)
-            ? Container()
-            : Container(
-                margin: const EdgeInsets.only(left: 10, right: 10),
-                width: 150.0,
-                height: 100.0,
-                child: RaisedButton(
-                  child: const Text(
-                    'Check in Pack',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  onPressed: () {
-                    Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => CheckInPackPage(
-                          eventId: widget.eventId,
-                          kennelId: event['kennelId']),
-                      ),
-                    );
-                  },
-                ),
-              ),
-        !(((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowHashCashFlag) != 0)
-            ? Container()
-            : Container(
-                margin: const EdgeInsets.only(left: 10, right: 10),
-                width: 150.0,
-                height: 100.0,
-                child: RaisedButton(
-                  child: const Text(
-                    'Hash Cash',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  onPressed: () {
-                    Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => PaymentReportPage(
-                          event: event,
-                            ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-      ],
-    );
-  }
-
-  Row startAndEndScannerRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Container(
-          margin: const EdgeInsets.only(left: 10, right: 10),
-          width: 150.0,
-          height: 100.0,
-          child: RaisedButton(
-            child: const Text(
-              'Scan at Run Start',
-              style: TextStyle(color: Colors.white),
-            ),
-            onPressed: () {
-              Navigator.push<dynamic>(
-                context,
-                MaterialPageRoute<dynamic>(
-                  builder: (BuildContext context) => CheckInScannerPage(
-                        kennelShortName: event['kennelShortName'],
-                        eventId: event['eventId'],
-                        eventName: event['eventName'],
-                        eventNumber: event['eventNumber'],
-                        isRunStart: 1,
-                      ),
-                ),
-              );
-            },
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.only(left: 10, right: 10),
-          width: 150.0,
-          height: 100.0,
-          child: RaisedButton(
-            child: const Text(
-              'Scan at Run End',
-              style: TextStyle(color: Colors.white),
-            ),
-            onPressed: () {
-              Navigator.push<dynamic>(
-                context,
-                MaterialPageRoute<dynamic>(
-                  builder: (BuildContext context) => CheckInScannerPage(
-                        kennelShortName: event['kennelShortName'],
-                        eventId: event['eventId'],
-                        eventName: event['eventName'],
-                        eventNumber: event['eventNumber'],
-                        isRunStart: 0,
-                      ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Row startAndEndQrRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Container(
-          margin: const EdgeInsets.only(left: 10, right: 10),
-          width: 150.0,
-          height: 100.0,
-          child: RaisedButton(
-              child: const Text(
-                'Run Start QR',
-                style: TextStyle(color: Colors.white),
-              ),
-              onPressed: () {
-                Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => RunStartEndQrCodes(
-                              kennelShortName: event['kennelShortName'],
-                              eventId: event['eventId'],
-                              eventName: event['eventName'],
-                              eventNumber: event['eventNumber'],
-                              eventStartDatetime: DateTime.parse(event['eventStartDatetime']),
-                              isStart: true,
-                            )));
-              }),
-        ),
-        Container(
-          margin: const EdgeInsets.only(left: 10, right: 10),
-          width: 150.0,
-          height: 100.0,
-          child: RaisedButton(
-              child: const Text(
-                'Run End QR',
-                style: TextStyle(color: Colors.white),
-              ),
-              onPressed: () {
-                Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => RunStartEndQrCodes(
-                              kennelShortName: event['kennelShortName'],
-                              eventId: event['eventId'],
-                              eventName: event['eventName'],
-                              eventNumber: event['eventNumber'],
-                              eventStartDatetime: DateTime.parse(event['eventStartDatetime']),
-                              isStart: false,
-                            )));
-              }),
-        ),
-      ],
-    );
-  }
-
-  Row receiptsRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Container(
-          margin: const EdgeInsets.only(left: 10, right: 10),
-          width: 150.0,
-          height: 100.0,
-          child: RaisedButton(
-              child: const Text(
-                'Manage receipts',
-                style: TextStyle(color: Colors.white),
-              ),
-              onPressed: () {
-                Navigator.push<dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => ReceiptsList(eventName: event['eventName'], eventId: event['eventId'], digitsAfterDecimal: event['digitsAfterDecimal'], currencySymbol: event['currencySymbol'])));
-              }),
-        ),
-      ],
-    );
-  }
 }

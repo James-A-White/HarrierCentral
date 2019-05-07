@@ -1,0 +1,408 @@
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
+import 'package:audioplayers/audio_cache.dart';
+
+import 'package:harrier_central/data/models/process_qr_scan_model.dart';
+import 'package:harrier_central/data/services/process_qr_scan_service.dart';
+import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
+
+class EventQrCodePage extends StatefulWidget {
+  const EventQrCodePage({Key key, this.kennelShortName, this.eventId, this.eventName, this.eventNumber, this.eventStartDatetime}) : super(key: key);
+
+  final String kennelShortName;
+  final String eventId;
+  final String eventName;
+  final int eventNumber;
+  final DateTime eventStartDatetime;
+
+  @override
+  _EventQrCodePageState createState() => _EventQrCodePageState();
+}
+
+class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProviderStateMixin {
+  List<Tab> tabs = <Tab>[];
+
+  String barcode = '';
+  bool isAdmin = true;
+
+  PageController _pageController;
+  TabController _tabController;
+
+  final String userId = getStringPref(StringPrefsEnum.userId);
+
+  GlobalKey tabKey;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: themeAppBarBackground,
+        title: Text(
+          'QRs for start & end of Hash',
+          style: const TextStyle(
+            color: Colors.white,
+          ),
+        ),
+      ),
+      body: Container(
+        decoration: Backgrounds.defaultHcBackground(),
+        child: Stack(
+          alignment: AlignmentDirectional.center,
+          children: <Widget>[
+            // Positioned(
+            //     top: 30,
+            //     left: 0,
+            //     right: 0,
+            //     child: Text(
+            //       'QR Code Scanner',
+            //       textAlign: TextAlign.center,
+            //       style: const TextStyle(
+            //           fontFamily: 'AvenirNextRegular',
+            //           fontStyle: FontStyle.normal,
+            //           color: Colors.white,
+            //           fontSize: 24.0,
+            //           height: 1.0),
+            //     )),
+            Positioned(
+              top: 20,
+              left: 20,
+              right: 20,
+              child: Container(
+                width: 340.0,
+                height: 45.0,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColorLight,
+                  borderRadius: const BorderRadius.all(Radius.circular(35.0)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 1.0, right: 1.0),
+                  child: TabBar(
+                    labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                    unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                    isScrollable: false,
+                    unselectedLabelColor: Colors.black,
+                    labelColor: Colors.white,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicator: BubbleTabIndicator(
+                      indicatorHeight: 35.0,
+                      indicatorColor: Theme.of(context).buttonColor,
+                      tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                    ),
+                    tabs: tabs,
+                    controller: _tabController,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+                top: 80,
+                bottom: 0,
+                child: Container(
+                  key: tabKey,
+                  width: MediaQuery.of(context).size.width,
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: <Widget>[
+                      QrTab(
+                        isRunStart: true,
+                        eventId: widget.eventId,
+                        eventName: widget.eventName,
+                        eventStartDatetime: widget.eventStartDatetime,
+                      ),
+                      QrTab(
+                        isRunStart: false,
+                        eventId: widget.eventId,
+                        eventName: widget.eventName,
+                        eventStartDatetime: widget.eventStartDatetime,
+                      )
+                    ],
+                  ),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pageController?.dispose();
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initTabs();
+
+    _pageController = PageController(initialPage: 0, keepPage: true);
+    _tabController = TabController(vsync: this, length: tabs.length);
+  }
+
+  Color left = Colors.white;
+  Color right = Colors.white;
+
+  Future<bool> _displayInstructions(BuildContext context) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('About your QR Scanner'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text(
+                  'You can print out these codes and place them somewhere convenient for Hashers to scan at the beginning and end of the runs. This is especially good for large Hash groups.',
+                  textAlign: TextAlign.justify,
+                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                )
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('OK, Got it!'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _initTabs() {
+    if (tabs.isEmpty) {
+      tabs.add(const Tab(text: 'Code for Run Start'));
+      tabs.add(const Tab(text: 'Code for Run End'));
+    }
+  }
+}
+
+class TabIndicationPainter extends CustomPainter {
+  TabIndicationPainter({this.context, this.dxTarget = 125.0, this.dxEntry = 25.0, this.radius = 21.0, this.dy = 25.0, this.pageController}) : super(repaint: pageController) {
+    painter = Paint()
+      ..color = Theme.of(context).accentColor
+      ..style = PaintingStyle.fill;
+  }
+
+  Paint painter;
+  final double dxTarget;
+  final double dxEntry;
+  final double radius;
+  final double dy;
+  BuildContext context;
+
+  final PageController pageController;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final ScrollPosition pos = pageController.position;
+    final double fullExtent = pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
+
+    final double pageOffset = pos.extentBefore / fullExtent;
+
+    final bool left2right = dxEntry < dxTarget;
+    final Offset entry = Offset(left2right ? dxEntry : dxTarget, dy);
+    final Offset target = Offset(left2right ? dxTarget : dxEntry, dy);
+
+    final Path path = Path();
+    path.addArc(Rect.fromCircle(center: entry, radius: radius), 0.5 * math.pi, 1 * math.pi);
+    path.addRect(Rect.fromLTRB(entry.dx, dy - radius, target.dx, dy + radius));
+    path.addArc(Rect.fromCircle(center: target, radius: radius), 1.5 * math.pi, 1 * math.pi);
+
+    canvas.translate(size.width * pageOffset, 0.0);
+    canvas.drawShadow(path, const Color(0xFFfbab66), 3.0, true);
+    canvas.drawPath(path, painter);
+  }
+
+  @override
+  bool shouldRepaint(TabIndicationPainter oldDelegate) => true;
+}
+
+class QrTab extends StatefulWidget {
+  const QrTab({Key key, @required this.isRunStart, @required this.eventId, @required this.eventName, @required this.eventStartDatetime}) : super(key: key);
+
+  final bool isRunStart;
+  final String eventId;
+  final String eventName;
+  final DateTime eventStartDatetime;
+
+  @override
+  _QrTabState createState() => _QrTabState();
+}
+
+class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  Future<bool> _displayInstructions(BuildContext context) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Your QR Code'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text(
+                  'This QR code allows other Hashers to quickly scan you using their Harrier Central apps.\r\n\r\nAny Hasher can scan this code to easily add you as their friend.\r\n\r\nHares and mis-management can use this code to scan you in at the beginning and end of runs in order to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.',
+                  textAlign: TextAlign.justify,
+                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                )
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('OK, Got it!'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Key tabKey;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final String userName = getStringPref(StringPrefsEnum.displayName);
+    final String userQrCode = getStringPref(StringPrefsEnum.qrCode);
+
+    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
+      print('Height = ${constraints.maxHeight}');
+      print('Width = ${constraints.maxWidth}');
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Expanded(
+              child: Stack(
+                alignment: AlignmentDirectional.center,
+                children: <Widget>[
+                  Positioned(
+                    top: 0,
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    child: const Text(
+                      'Print this code and make it available for Hashers to scan at the beginning and end of runs',
+                      textAlign: TextAlign.justify,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'AvenirNextDemiBold',
+                        fontStyle: FontStyle.normal,
+                        fontSize: 16.0,
+                        height: 0.8,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 75,
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    child: AutoSizeText(
+                      //widget.eventName,
+                      widget.isRunStart ? 'Run start for:' : 'Run end for:',
+                      maxLines: 1,
+                      minFontSize: 22.0,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 24.0, height: 0.8),
+                    ),
+                  ),
+                  Positioned(
+                    top: 110,
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    child: AutoSizeText(
+                      widget.eventName,
+                     // 'This is a fake hash run name that needs to be very long so we can see how it fits on the page when it overflows three lines',
+                      maxLines: 3,
+                      minFontSize: 22.0,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 24.0, height: 0.8),
+                    ),
+                  ),
+
+                  //               Text(
+//                 eventName,
+//                 textAlign: TextAlign.center,
+//                 style: const TextStyle(
+//                   color: Colors.white,
+//                     fontFamily: 'AvenirNextRegular',
+//                     fontStyle: FontStyle.normal,
+//                     fontSize: 28.0,
+//                     height: 1.0),
+//               ),
+//               Text(
+//                 DateFormat('E, MMM d \'at\' h:mm a').format(eventStartDatetime),
+//                 textAlign: TextAlign.center,
+//                 style: const TextStyle(
+//                   color: Colors.white,
+//                     fontFamily: 'AvenirNextRegular',
+//                     fontStyle: FontStyle.normal,
+//                     fontSize: 20.0,
+//                     height: 1.0),
+//               ),
+                  // Positioned(
+                  //   top: 127,
+
+                  //   child: Container(
+                  //                       color: Colors.white,
+                  //     height: MediaQuery.of(context).size.width * 0.8,
+                  //     width: MediaQuery.of(context).size.width * 0.8,
+                  //   ),
+                  // ),
+                  Positioned(
+
+                    bottom: 70,
+                    child: Container(
+                      height: math.min(constraints.maxHeight, constraints.maxWidth) * 0.65,
+                      child: QrImage(
+                          backgroundColor: Colors.white,
+                          padding: const EdgeInsets.all(10.0),
+                          data: (widget.isRunStart ? 'EVTSTART:' : 'EVTEND:') + widget.eventId.toUpperCase(),
+                          //data: 'testing123',
+                          version: 4,
+                          //size: 200.0,
+                          errorCorrectionLevel: 3),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 20,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 0.0, right: 0.0),
+                      child: FlatButton(
+                        textColor: Colors.white,
+                        child: const Text('Learn more about this feature'),
+                        onPressed: () {
+                          _displayInstructions(context);
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
