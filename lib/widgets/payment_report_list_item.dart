@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:auto_size_text/auto_size_text.dart';
 
 import 'package:harrier_central/util/enums.dart';
@@ -64,8 +65,8 @@ class PaymentReportListItem extends StatelessWidget {
   }
 }
 
-class TotalsCell extends StatelessWidget {
-  const TotalsCell({
+class PaymentTotalsCell extends StatelessWidget {
+  const PaymentTotalsCell({
     @required this.creditAmount,
     @required this.counter,
     @required this.color,

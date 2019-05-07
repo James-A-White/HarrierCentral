@@ -50,7 +50,7 @@ class PackScopedModel extends Model {
   }
 
   Future<UserModel> joinEventAsVisitor(String displayName, String email,
-      String phoneNumber, EnumVirginVisitor virginVisitor, String eventId) {
+      String phoneNumber, EnumVirginVisitor<int> virginVisitor, String eventId) {
     notifyListeners();
     final JoinEventService srv = JoinEventService();
     return srv.joinEventAsVisitor(eventId, virginVisitor, attendenceAtHash,

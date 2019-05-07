@@ -246,7 +246,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
-                            TotalsCell(
+                            PaymentTotalsCell(
                               creditAmount: 0,
                               counter: paymentTotals[0]['count'] + paymentTotals[paymentNotPaid.value]['count'],
                               color: (filterValue & 1) != 0 ? Colors.red : Colors.black26,
@@ -257,7 +257,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                 filterTapped(1);
                               },
                             ),
-                            TotalsCell(
+                            PaymentTotalsCell(
                               creditAmount: paymentTotals[paymentCash.value]['totalCollected'],
                               counter: paymentTotals[paymentCash.value]['count'],
                               color: (filterValue & 2) != 0 ? Colors.green : Colors.black26,
@@ -268,7 +268,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                 filterTapped(2);
                               },
                             ),
-                            TotalsCell(
+                            PaymentTotalsCell(
                               creditAmount: paymentTotals[paymentCashOtherAmount.value]['totalCollected'],
                               counter: paymentTotals[paymentCashOtherAmount.value]['count'],
                               color: (filterValue & 4) != 0 ? Colors.green : Colors.black26,
@@ -279,7 +279,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                 filterTapped(4);
                               },
                             ),
-                            TotalsCell(
+                            PaymentTotalsCell(
                               creditAmount: paymentTotals[paymentFreeRun.value]['totalCollected'],
                               counter: paymentTotals[paymentFreeRun.value]['count'],
                               color: (filterValue & 8) != 0 ? Colors.green : Colors.black26,
@@ -290,7 +290,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                 filterTapped(8);
                               },
                             ),
-                            TotalsCell(
+                            PaymentTotalsCell(
                               creditAmount: paymentTotals[paymentBankTransfer.value]['totalCollected'],
                               counter: paymentTotals[paymentBankTransfer.value]['count'],
                               color: (filterValue & 16) != 0 ? Colors.green : Colors.black26,
@@ -301,7 +301,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                 filterTapped(16);
                               },
                             ),
-                            TotalsCell(
+                            PaymentTotalsCell(
                               creditAmount: paymentTotals[paymentBankTransferOtherAmount.value]['totalCollected'],
                               counter: paymentTotals[paymentBankTransferOtherAmount.value]['count'],
                               color: (filterValue & 32) != 0 ? Colors.green : Colors.black26,
@@ -312,7 +312,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                 filterTapped(32);
                               },
                             ),
-                            TotalsCell(
+                            PaymentTotalsCell(
                               creditAmount: paymentTotals[paymentHashCredit.value]['totalCollected'],
                               counter: paymentTotals[paymentHashCredit.value]['count'],
                               color: (filterValue & 64) != 0 ? Colors.green : Colors.black26,
