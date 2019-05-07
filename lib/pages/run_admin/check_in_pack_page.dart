@@ -457,7 +457,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   bool showFilter = false;
 
   Container searchBar(num width) {
-    return Container(
+    return 
+    
+    Container(
       decoration: const BoxDecoration(
         // border: new Border.all(width: 1.0, color: Colors.black),
         //shape: BoxShape.circle,

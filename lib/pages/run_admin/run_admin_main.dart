@@ -267,7 +267,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
             Padding(
               padding: const EdgeInsets.only(left: 10, top: 8),
               child: Text(
-                'Print run QR codes',
+                'Print QR codes for run',
                 style: buttonLabelStyleMedium,
               ),
             ),

@@ -57,8 +57,8 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
     if (widget.receiptItem != null) {
       _imageFromCamera = null;
       receiptImageFromWeb = CachedNetworkImage(imageUrl: widget.receiptItem['imageUrl'], fadeInDuration: const Duration(milliseconds: 0));
-      DefaultCacheManager().getSingleFile(widget.receiptItem['imageUrl']).then((platform.File file){
-          _imageFromCache = file;
+      DefaultCacheManager().getSingleFile(widget.receiptItem['imageUrl']).then((platform.File file) {
+        _imageFromCache = file;
       });
       _shortDescription = widget.receiptItem['receiptShortDesc'];
       _receiptAmount = widget.receiptItem['receiptAmount'].toString();
@@ -129,20 +129,20 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
       if (_imageFromCamera != null) {
         receiptImageUrl = _upload(_imageFromCamera, widget.eventId.toUpperCase() + '_' + DateTime.now().millisecondsSinceEpoch.toString() + '.jpg');
-      } 
+      }
 
       final ReceiptsModel item = ReceiptsModel(
-        receiptId: widget.receiptItem == null ? GUID_EMPTY : widget.receiptItem['receiptId'], 
-        eventId: widget.eventId, 
-        receiptShortDescription: _shortDescription, 
-        receiptAmount: num.parse(_receiptAmount),
-        notes: '',
-        reimbursedBy: GUID_EMPTY,
-        reimbursedAmount: -1,
-        reimbursedOn: '1999/1/1' ,
-        reimbursedNotes: '',
-        imageUrl: receiptImageUrl, 
-        removed: 0);
+          receiptId: widget.receiptItem == null ? GUID_EMPTY : widget.receiptItem['receiptId'],
+          eventId: widget.eventId,
+          receiptShortDescription: _shortDescription,
+          receiptAmount: num.parse(_receiptAmount),
+          notes: '',
+          reimbursedBy: GUID_EMPTY,
+          reimbursedAmount: -1,
+          reimbursedOn: '1999/1/1',
+          reimbursedNotes: '',
+          imageUrl: receiptImageUrl,
+          removed: 0);
 
       setState(() {
         _isLoading = true;
@@ -232,110 +232,143 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
       appBar: appBar,
       body: _isLoading
           ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
-          : Container(
-              decoration: Backgrounds.defaultHcBackground(),
-              height: MediaQuery.of(context).size.height - appBar.preferredSize.height,
-              child: SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                      //minHeight: viewportConstraints.maxHeight,
-                      ),
-                  child: IntrinsicHeight(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            'Receipt details',
-                            style: headingStyle,
-                            textAlign: TextAlign.center,
-                          ),
-                          //),
-                          // Positioned(
-                          //   top: 40,
-                          //   //bottom: 20,
-                          //   width: MediaQuery.of(context).size.width,
-                          //   child:
-                          Container(
-                            padding: const EdgeInsets.all(30.0),
-                            child: Container(
-                              child: Center(
-                                child: Column(
-                                  children: <Widget>[
-                                    Container(
-                                      padding: const EdgeInsets.all(10.0),
-                                      margin: const EdgeInsets.only(bottom: 45),
-                                      decoration: BoxDecoration(
-                                        color: Colors.yellow[100],
-                                        borderRadius: BorderRadius.circular(5.0),
-                                      ),
-                                      child: Form(
-                                        key: _formKey,
-                                        autovalidate: _autoValidate,
-                                        child: formUi(),
+          : Stack(
+              fit: StackFit.expand,
+              alignment: AlignmentDirectional.topStart,
+              children: <Widget>[
+                Container(height: MediaQuery.of(context).size.height, width: 10),
+                Positioned(
+                  top: 60,
+                  child: Container(
+                    decoration: Backgrounds.defaultHcBackground(),
+                    height: MediaQuery.of(context).size.height - appBar.preferredSize.height - 70,
+                    width: MediaQuery.of(context).size.width,
+                    child: SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                            //minHeight: viewportConstraints.maxHeight,
+                            ),
+                        child: IntrinsicHeight(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  'Receipt details',
+                                  style: headingStyle,
+                                  textAlign: TextAlign.center,
+                                ),
+                                //),
+                                // Positioned(
+                                //   top: 40,
+                                //   //bottom: 20,
+                                //   width: MediaQuery.of(context).size.width,
+                                //   child:
+                                Container(
+                                  padding: const EdgeInsets.all(30.0),
+                                  child: Container(
+                                    child: Center(
+                                      child: Column(
+                                        children: <Widget>[
+                                          Container(
+                                            padding: const EdgeInsets.all(10.0),
+                                            margin: const EdgeInsets.only(bottom: 45),
+                                            decoration: BoxDecoration(
+                                              color: Colors.yellow[100],
+                                              borderRadius: BorderRadius.circular(5.0),
+                                            ),
+                                            child: Form(
+                                              key: _formKey,
+                                              autovalidate: _autoValidate,
+                                              child: formUi(),
+                                            ),
+                                          ),
+                                          const FancyDivider(innerColor: Colors.white),
+                                          const SizedBox(height: 20),
+                                          RaisedButton(
+                                            onPressed: () {
+                                              onImageButtonPressed().then((platform.File imageFile) {
+                                                setState(() {
+                                                  _imageFromCamera = imageFile;
+                                                });
+                                              });
+                                            },
+                                            child: Text('Scan Receipt', style: buttonTextStyle),
+                                          )
+                                        ],
                                       ),
                                     ),
-                                    const FancyDivider(innerColor: Colors.white),
-                                    const SizedBox(height: 20),
-                                    RaisedButton(
-                                      onPressed: () {
-                                        onImageButtonPressed().then((platform.File imageFile) {
-                                          setState(() {
-                                            _imageFromCamera = imageFile;
-                                          });
-                                        });
-                                      },
-                                      child: Text('Scan Receipt', style: buttonTextStyle),
-                                    )
-                                  ],
+                                  ),
                                 ),
-                              ),
+                                //),
+                                //       ],
+                                //     ),
+                                //   ),
+                                // ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push<void>(
+                                      context,
+                                      MaterialPageRoute<void>(
+                                        builder: (BuildContext context) => ZoomableImagePage(image: _imageFromCamera != null ? _imageFromCamera : _imageFromCache),
+                                      ),
+                                    );
+                                  },
+                                  child: _imageFromCamera != null
+                                      ? Container(
+                                          //height: 220,
+                                          color: Colors.white,
+                                          padding: const EdgeInsets.all(10.0),
+                                          margin: const EdgeInsets.only(top: 20, bottom: 30),
+                                          child: Image.file(_imageFromCamera, width: MediaQuery.of(context).size.width))
+                                      : receiptImageFromWeb != null
+                                          ? Container(
+                                              //height: 220,
+                                              color: Colors.white,
+                                              padding: const EdgeInsets.all(10.0),
+                                              margin: const EdgeInsets.only(top: 20, bottom: 30),
+                                              child: receiptImageFromWeb)
+                                          : Container(),
+                                ),
+                                Container(width: 40, height: 40),
+                              ],
                             ),
                           ),
-                          //),
-                          //       ],
-                          //     ),
-                          //   ),
-                          // ),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push<void>(
-                                context,
-                                MaterialPageRoute<void>(
-                                  builder: (BuildContext context) => ZoomableImagePage(image: _imageFromCamera != null ? _imageFromCamera : _imageFromCache),
-                                ),
-                              );
-                            },
-                            child: _imageFromCamera != null
-                                ? Container(
-                                    //height: 220,
-                                    color: Colors.white,
-                                    padding: const EdgeInsets.all(10.0),
-                                    margin: const EdgeInsets.only(top: 20, bottom: 30),
-                                    child: Image.file(_imageFromCamera, width: MediaQuery.of(context).size.width))
-                                : receiptImageFromWeb != null
-                                    ? Container(
-                                        //height: 220,
-                                        color: Colors.white,
-                                        padding: const EdgeInsets.all(10.0),
-                                        margin: const EdgeInsets.only(top: 20, bottom: 30),
-                                        child: receiptImageFromWeb)
-                                    : Container(),
-                          ),
-
-                          RaisedButton(
-                            onPressed: _uploadReceipt,
-                            child: Text('Save receipt', style: buttonTextStyle),
-                          ),
-                          Container(width: 40, height: 40),
-                        ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
+                Positioned(
+                  top: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(12.0),
+                    decoration: BoxDecoration(
+                      // border: new Border.all(width: 1.0, color: Colors.black),
+                      //shape: BoxShape.circle,
+                      color: Colors.yellow[100],
+                      boxShadow: const <BoxShadow>[
+                        BoxShadow(
+                          color: Color.fromARGB(70, 0, 0, 0),
+                          offset: Offset(0.0, 6.0),
+                          blurRadius: 10.0,
+                        ),
+                      ],
+                    ),
+                    width: MediaQuery.of(context).size.width,
+                    height: 60,
+                    child: Container(
+                      padding: const EdgeInsets.only(left: 220),
+                      child: RaisedButton(
+                        onPressed: _uploadReceipt,
+                        child: Text('Save receipt', style: buttonTextStyle),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
     );
   }
