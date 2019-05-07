@@ -297,7 +297,7 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              onRsvpCallback(packMember, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value);
+                              onRsvpCallback(packMember, rsvpState: packMember['rsvpState'] < rsvpYes.value ? rsvpYes.value : -1, attendenceState: attendenceAtHash.value);
                               // packScopedModel.setRsvpState(rsvpYes.value, -1,
                               //     attendenceAtHash.value, packMember['']);
                               // Scaffold.of(context).hideCurrentSnackBar(

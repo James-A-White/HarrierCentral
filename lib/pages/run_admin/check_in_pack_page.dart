@@ -16,6 +16,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/new_user.dart';
+import 'package:harrier_central/widgets/filter_options_popup.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/database/database.dart';
@@ -302,52 +303,17 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             packList = packList.where((Map<String, dynamic> a) => a['nameForSort'].toString().toLowerCase().contains(filterText.toLowerCase())).toList();
           }
 
-          packList = packList.where((Map<String, dynamic> a) => 
-          
-          
-              (
-                (filterValues[0] == 0)
-                || (filterValues[0] == -1 && ((a['rsvpState'] ?? 0) <= 1))
-                || (filterValues[0] == 1 && (a['rsvpState'] ?? 0) >= 2)
-              ) 
-
-              && 
-
-              (
-                (filterValues[1] == 0)
-                //|| (filterValues[1] == -1 && ((a['attendenceState'] ?? 0) < 20))
-                || (filterValues[1] == 1 && (a['attendenceState'] ?? 0) < 20 && (a['rsvpState'] ?? 0) >= 2)
-              ) 
-
-              && 
-
-              (
-                (filterValues[2] == 0)
-                || (filterValues[2] == -1 && ((a['attendenceState'] ?? 0) < 20))
-                || (filterValues[2] == 1 && (a['attendenceState'] ?? 0) >= 20)
-              ) 
-
-              && 
-
-              (
-                (filterValues[3] == 0)
-                || (filterValues[3] == -1 && ((a['isPaid'] ?? 0) == 0))
-                || (filterValues[3] == 1 && (a['isPaid'] ?? 0) == 1)
-              ) 
-
-              && 
-
-              (
-                (filterValues[4] == 0)
-                || (filterValues[4] == -1 && ((a['attendenceState'] ?? 0) < 30))
-                || (filterValues[4] == 1 && (a['attendenceState'] ?? 0) >= 30)
-              ) 
-          
-
-
-          
-          ).toList();
-
+          packList = packList
+              .where((Map<String, dynamic> a) =>
+                  ((filterValues[0] == 0) || (filterValues[0] == -1 && ((a['rsvpState'] ?? 0) <= 1)) || (filterValues[0] == 1 && (a['rsvpState'] ?? 0) >= 2)) &&
+                  ((filterValues[1] == 0)
+                      //|| (filterValues[1] == -1 && ((a['attendenceState'] ?? 0) < 20))
+                      ||
+                      (filterValues[1] == 1 && (a['attendenceState'] ?? 0) < 20 && (a['rsvpState'] ?? 0) >= 2)) &&
+                  ((filterValues[2] == 0) || (filterValues[2] == -1 && ((a['attendenceState'] ?? 0) < 20)) || (filterValues[2] == 1 && (a['attendenceState'] ?? 0) >= 20)) &&
+                  ((filterValues[3] == 0) || (filterValues[3] == -1 && ((a['isPaid'] ?? 0) == 0)) || (filterValues[3] == 1 && (a['isPaid'] ?? 0) == 1)) &&
+                  ((filterValues[4] == 0) || (filterValues[4] == -1 && ((a['attendenceState'] ?? 0) < 30)) || (filterValues[4] == 1 && (a['attendenceState'] ?? 0) >= 30)))
+              .toList();
 
           //packList.sort((Map<String, dynamic> a, Map<String, dynamic> b) => (a['nameForDisplay']).compareTo(b['nameForDisplay']));
         });
@@ -356,22 +322,6 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       print(e);
     }
   }
-
-
-  //   void applyFilter() {
-  //   filteredList = paymentsList
-  //       .where((PaymentsModel evt) =>
-  //           ((filterValue & 1) != 0 && ((evt.paymentType ?? paymentNotPaid.value) == paymentNotPaid.value)) ||
-  //           ((filterValue & 2) != 0 && (evt.paymentType == paymentCash.value)) ||
-  //           ((filterValue & 4) != 0 && (evt.paymentType == paymentCashOtherAmount.value)) ||
-  //           ((filterValue & 8) != 0 && (evt.paymentType == paymentFreeRun.value)) ||
-  //           ((filterValue & 16) != 0 && (evt.paymentType == paymentBankTransfer.value)) ||
-  //           ((filterValue & 32) != 0 && (evt.paymentType == paymentBankTransferOtherAmount.value)) ||
-  //           ((filterValue & 64) != 0 && (evt.paymentType == paymentHashCredit.value)))
-  //       .toList();
-
-  //   filteredList.sort((PaymentsModel a, PaymentsModel b) => a.paidByName.compareTo(b.paidByName));
-  // }
 
   Future<void> _refreshCounters(bool forceRefresh) async {
     final Database db = await DBProvider.db.database;
@@ -538,7 +488,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                   setState(() {
                     showFilter = !showFilter;
                   });
-                  
+
                   //filterTapped(4);
                 },
               ),
@@ -572,7 +522,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 index: 3,
                 label: 'Paid',
                 onTap: () {
-                   _refreshPackListFromTables(true);
+                  _refreshPackListFromTables(true);
                 },
               ),
               CheckinFiltersCell(
@@ -667,24 +617,58 @@ class CheckInPackPageState extends State<CheckInPackPage> {
           SpeedDialChild(
             child: const Icon(Icons.filter_list),
             backgroundColor: Colors.green,
-            label: 'Filter List',
+            label: 'Set Common Filters',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () => print('THIRD CHILD'),
+            onTap: () {
+              const FilterOptionsPopup popup = FilterOptionsPopup();
+
+              final Future<FilterOptions> dlg = showDialog<FilterOptions>(
+                  context: context,
+                  barrierDismissible: false, // user must tap button!
+                  builder: (BuildContext context) {
+                    return popup;
+                  });
+
+              dlg.then(
+                (FilterOptions x) {
+                  switch (x) {
+                    case FilterOptions.hashersNotHereYet:
+                      filterValues = <int>[0, 1, 0, 0, 0, 0, 0];
+                      break;
+                    case FilterOptions.hashersNotPaid:
+                      filterValues = <int>[0, 0, 1, -1, 0, 0, 0];
+                      break;
+                    case FilterOptions.hashersStillOnTrail:
+                      filterValues = <int>[0, 0, 1, 0, -1, 0, 0];
+                      break;
+                    case FilterOptions.cancel:
+                      break;
+                    default:
+                      filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
+                      break;
+                  }
+
+                  if (x != FilterOptions.cancel) {
+                    _refreshPackListFromTables(true);
+                  }
+                },
+              );
+            },
           ),
-          SpeedDialChild(
-            child: const Icon(Ionicons.ios_beer),
-            backgroundColor: Colors.green,
-            label: 'Scan: On In',
-            labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () => print('FIRST CHILD'),
-          ),
-          SpeedDialChild(
-            child: const Icon(Icons.directions_run),
-            backgroundColor: Colors.red,
-            label: 'Scan: At Hash',
-            labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () => print('SECOND CHILD'),
-          ),
+          // SpeedDialChild(
+          //   child: const Icon(Ionicons.ios_beer),
+          //   backgroundColor: Colors.green,
+          //   label: 'Scan: On In',
+          //   labelStyle: const TextStyle(fontSize: 18.0),
+          //   onTap: () => print('FIRST CHILD'),
+          // ),
+          // SpeedDialChild(
+          //   child: const Icon(Icons.directions_run),
+          //   backgroundColor: Colors.red,
+          //   label: 'Scan: At Hash',
+          //   labelStyle: const TextStyle(fontSize: 18.0),
+          //   onTap: () => print('SECOND CHILD'),
+          // ),
           SpeedDialChild(
             child: const Icon(Icons.person_add),
             backgroundColor: Colors.blue,
@@ -739,26 +723,26 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                       right: 0.0,
                       left: 0.0,
                       child: (packList == null || packList.isEmpty)
-                              ? Container(
-                                  padding: const EdgeInsets.only(left: 30, right: 30, bottom: 60),
-                                  height: constraints.maxHeight - searchBar(constraints.maxWidth).constraints.maxHeight,
-                                  child: Center(
-                                    child: Text(
-                                      'There are no pack members to display',
-                                      style: headingStyleOnLightBg,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                )
-                              : Container(
-                                  key: packListBox,
-                                  height: constraints.maxHeight - searchBar(constraints.maxWidth).constraints.maxHeight,
-                                  child: RefreshIndicator(
-                                      onRefresh: () async {
-                                        _refreshSqlTablesFromBackend(true);
-                                      },
-                                      child: buildPackListView()),
+                          ? Container(
+                              padding: const EdgeInsets.only(left: 30, right: 30, bottom: 60),
+                              height: constraints.maxHeight - searchBar(constraints.maxWidth).constraints.maxHeight,
+                              child: Center(
+                                child: Text(
+                                  'There are no pack members to display',
+                                  style: headingStyleOnLightBg,
+                                  textAlign: TextAlign.center,
                                 ),
+                              ),
+                            )
+                          : Container(
+                              key: packListBox,
+                              height: constraints.maxHeight - searchBar(constraints.maxWidth).constraints.maxHeight,
+                              child: RefreshIndicator(
+                                  onRefresh: () async {
+                                    _refreshSqlTablesFromBackend(true);
+                                  },
+                                  child: buildPackListView()),
+                            ),
                     ),
                   ]),
             ),
@@ -1058,30 +1042,32 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             Positioned(
               left: 115.0,
               bottom: 3.0,
-              child: ((packMember['hemId'] != null) && (indicatorRsvpUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? ''))) || ((packMember['hasherId'] != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))))
-                  ? Icon(delayIcon, color: Colors.blue[800])
-                  : (packMember['rsvpState'] != rsvpYes.value)
-                      ? CircleAvatar(
-                          backgroundColor: Colors.grey[350],
-                          radius: 14.0,
-                        )
-                      : CircleAvatar(
-                          backgroundColor: packMember['attendenceState'] == 0 ? Colors.grey[350] : Colors.white,
-                          radius: 14.0,
-                        ),
+              child:
+                  ((packMember['hemId'] != null) && (indicatorAttendenceUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? ''))) || ((packMember['hasherId'] != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))))
+                      ? Icon(delayIcon, color: Colors.blue[800])
+                      : (packMember['rsvpState'] != rsvpYes.value)
+                          ? CircleAvatar(
+                              backgroundColor: Colors.grey[350],
+                              radius: 14.0,
+                            )
+                          : CircleAvatar(
+                              backgroundColor: packMember['attendenceState'] == 0 ? Colors.grey[350] : Colors.white,
+                              radius: 14.0,
+                            ),
             ),
             Positioned(
               left: 117.0,
               bottom: packMember['attendenceState'] <= 0 ? 4.5 : 5.5,
-              child: ((packMember['hemId'] != null) && (indicatorRsvpUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? ''))) || ((packMember['hasherId'] != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))))
-                  ? Container()
-                  : (packMember['rsvpState'] != rsvpYes.value)
+              child:
+                  ((packMember['hemId'] != null) && (indicatorAttendenceUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? ''))) || ((packMember['hasherId'] != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))))
                       ? Container()
-                      : packMember['attendenceState'] == attendenceNo.value
-                          ? Image.asset('images/icons/not_at_hash_icon.png', height: 24.0, width: 24.0, color: Colors.red[700])
-                          : packMember['attendenceState'] == attendenceAtHash.value
-                              ? Image.asset('images/icons/runner_icon.png', height: 24.0, width: 24.0, color: Colors.orange)
-                              : packMember['attendenceState'] >= attendenceOnIn.value ? Image.asset('images/icons/beer_icon.png', height: 24.0, width: 24.0, color: Colors.green) : Container(),
+                      : (packMember['rsvpState'] != rsvpYes.value)
+                          ? Container()
+                          : packMember['attendenceState'] == attendenceNo.value
+                              ? Image.asset('images/icons/not_at_hash_icon.png', height: 24.0, width: 24.0, color: Colors.red[700])
+                              : packMember['attendenceState'] == attendenceAtHash.value
+                                  ? Image.asset('images/icons/runner_icon.png', height: 24.0, width: 24.0, color: Colors.orange)
+                                  : packMember['attendenceState'] >= attendenceOnIn.value ? Image.asset('images/icons/beer_icon.png', height: 24.0, width: 24.0, color: Colors.green) : Container(),
             ),
             packList.isEmpty
                 ? const Positioned(top: 0, bottom: 0, left: 0, right: 0, child: Text('No pack members loaded'))
@@ -1089,7 +1075,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                     left: 155.0,
                     bottom: 3.0,
                     child:
-                        ((packMember['hemId'] != null) && (indicatorRsvpUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? ''))) || ((packMember['hasherId'] != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))))
+                        ((packMember['hemId'] != null) && (indicatorPaidUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? ''))) || ((packMember['hasherId'] != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))))
                             ? Icon(delayIcon, color: Colors.blue[800])
                             : (packMember['attendenceState'] < attendenceAtHash.value)
                                 ? CircleAvatar(
@@ -1113,7 +1099,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                     left: 157.0,
                     bottom: packMember['attendenceState'] < -1 ? 4.5 : 5.5,
                     child:
-                        ((packMember['hemId'] != null) && (indicatorRsvpUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? ''))) || ((packMember['hasherId'] != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))))
+                        ((packMember['hemId'] != null) && (indicatorPaidUpdating.containsKey('hem:' + (packMember['hemId'].toString().toLowerCase() ?? ''))) || ((packMember['hasherId'] != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember['hasherId'].toString().toLowerCase() ?? '')))))
                             ? Container()
                             : (packMember['attendenceState'] < attendenceAtHash.value)
                                 ? Container()
@@ -1174,6 +1160,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
         if (!indicatorAttendenceUpdating.containsKey(packMember['hemId'].toString().toLowerCase())) {
           if (!indicatorAttendenceUpdating.containsKey(packMember['hasherId'].toString().toLowerCase())) {
             indicatorAttendenceUpdating.addAll(<String, String>{packMember['hemId'] != null ? 'hem:' + packMember['hemId'].toString().toLowerCase() : 'hid:' + packMember['hasherId'].toString().toLowerCase(): packMember['hemUpdatedAt'] ?? ''});
+            print('updating attendence indicator @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           }
         }
       }
@@ -1471,18 +1458,10 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
   }
 }
 
-List<int> filterValues = <int>[0,0,0,0,0,0,0];
+List<int> filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
 
 class CheckinFiltersCell extends StatelessWidget {
-  const CheckinFiltersCell({
-    @required this.counter,
-    @required this.index,
-    @required this.label,
-    @required this.onTap,
-    this.color,
-    this.icon,
-    this.useTriState = true
-  });
+  const CheckinFiltersCell({@required this.counter, @required this.index, @required this.label, @required this.onTap, this.color, this.icon, this.useTriState = true});
 
   final IconData icon;
   final Color color;
@@ -1510,26 +1489,17 @@ class CheckinFiltersCell extends StatelessWidget {
           ),
           IconButton(
             padding: const EdgeInsets.all(0),
-            onPressed: (){
-              if (index >= 0)
-              {
-                 filterValues[index]++;
-                 if (filterValues[index] > 1) 
-                 {
-                   filterValues[index] = useTriState ? -1 : 0;
-                 }
+            onPressed: () {
+              if (index >= 0) {
+                filterValues[index]++;
+                if (filterValues[index] > 1) {
+                  filterValues[index] = useTriState ? -1 : 0;
+                }
               }
               onTap();
             },
-            icon: Icon(
-              icon != null ? icon :
-              filterValues[index] == -1 ? FontAwesome.times_circle :
-              filterValues[index] == 0 ? FontAwesome.circle_thin:
-              FontAwesome.check_circle, 
-              size:35, color: color != null ? color:
-              filterValues[index] == -1 ? Colors.red :
-              filterValues[index] == 0 ? Colors.grey[350]:
-              Colors.green),
+            icon: Icon(icon != null ? icon : filterValues[index] == -1 ? FontAwesome.times_circle : filterValues[index] == 0 ? FontAwesome.circle_thin : FontAwesome.check_circle,
+                size: 35, color: color != null ? color : filterValues[index] == -1 ? Colors.red : filterValues[index] == 0 ? Colors.grey[350] : Colors.green),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 1.0),
