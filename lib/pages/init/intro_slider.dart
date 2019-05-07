@@ -211,9 +211,6 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
       colorActiveDot: themeAppBarBackground,
       sizeDot: 9.0,
 
-      // Locale
-      locale: 'en',
-
       // Show or hide status bar
       shouldHideStatusBar: true,
     );

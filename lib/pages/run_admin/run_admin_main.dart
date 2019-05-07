@@ -15,7 +15,6 @@ import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/countries_service.dart';
 import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/util/preferences.dart';
 
@@ -118,11 +117,11 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
           padding: const EdgeInsets.only(top: 2.0, left: 8.0, bottom: 8.0),
           child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
             Padding(
-              padding: EdgeInsets.only(left: 3, top: 5),
+              padding: const EdgeInsets.only(left: 3, top: 5),
               child: Image.asset('images/icons/check_in_pack_icon.png', height: 40.0, width: 40.0),
             ),
             Padding(
-              padding: EdgeInsets.only(left: 10, top: 8),
+              padding: const EdgeInsets.only(left: 10, top: 8),
               child: Text(
                 'Manually check in pack',
                 style: buttonLabelStyleMedium,
@@ -151,11 +150,11 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
           padding: const EdgeInsets.only(top: 2.0, left: 8.0, bottom: 8.0),
           child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
             Padding(
-              padding: EdgeInsets.only(left: 0, top: 5),
+              padding: const EdgeInsets.only(left: 0, top: 5),
               child: Image.asset('images/icons/qr_scanner_phone_icon.png', height: 40.0, width: 40.0),
             ),
             Padding(
-              padding: EdgeInsets.only(left: 13, top: 8),
+              padding: const EdgeInsets.only(left: 13, top: 8),
               child: Text(
                 'Scan to check in pack',
                 style: buttonLabelStyleMedium,
@@ -189,11 +188,11 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
           padding: const EdgeInsets.only(top: 2.0, left: 8.0, bottom: 8.0),
           child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
             Padding(
-              padding: EdgeInsets.only(left: 3, top: 5),
+              padding: const EdgeInsets.only(left: 3, top: 5),
               child: Image.asset('images/icons/hash_cash_icon.png', height: 40.0, width: 40.0),
             ),
             Padding(
-              padding: EdgeInsets.only(left: 10, top: 8),
+              padding: const EdgeInsets.only(left: 10, top: 8),
               child: Text(
                 'Hash cash',
                 style: buttonLabelStyleMedium,
@@ -224,11 +223,11 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
           padding: const EdgeInsets.only(top: 2.0, left: 8.0, bottom: 8.0),
           child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
             Padding(
-              padding: EdgeInsets.only(left: 3, top: 5),
+              padding: const EdgeInsets.only(left: 3, top: 5),
               child: Image.asset('images/icons/receipt_icon.png', height: 40.0, width: 40.0),
             ),
             Padding(
-              padding: EdgeInsets.only(left: 10, top: 8),
+              padding: const EdgeInsets.only(left: 10, top: 8),
               child: Text(
                 'Manage receipts',
                 style: buttonLabelStyleMedium,
@@ -262,11 +261,11 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
           padding: const EdgeInsets.only(top: 2.0, left: 8.0, bottom: 8.0),
           child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
             Padding(
-              padding: EdgeInsets.only(left: 3, top: 5),
+              padding: const EdgeInsets.only(left: 3, top: 5),
               child: Image.asset('images/icons/print_qr_icon.png', height: 40.0, width: 40.0),
             ),
             Padding(
-              padding: EdgeInsets.only(left: 10, top: 8),
+              padding: const EdgeInsets.only(left: 10, top: 8),
               child: Text(
                 'Print run QR codes',
                 style: buttonLabelStyleMedium,

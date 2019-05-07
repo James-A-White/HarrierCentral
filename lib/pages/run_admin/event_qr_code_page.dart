@@ -4,11 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
-import 'package:audioplayers/audio_cache.dart';
 
-import 'package:harrier_central/data/models/process_qr_scan_model.dart';
-import 'package:harrier_central/data/services/process_qr_scan_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
@@ -45,9 +41,9 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
-        title: Text(
+        title: const Text(
           'QRs for start & end of Hash',
-          style: const TextStyle(
+          style:  TextStyle(
             color: Colors.white,
           ),
         ),
@@ -283,8 +279,6 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final String userName = getStringPref(StringPrefsEnum.displayName);
-    final String userQrCode = getStringPref(StringPrefsEnum.qrCode);
 
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
       print('Height = ${constraints.maxHeight}');

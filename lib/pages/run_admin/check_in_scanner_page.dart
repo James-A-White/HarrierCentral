@@ -34,9 +34,9 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
-        title: Text(
+        title: const Text(
           'Scan at start & end of Hash',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
           ),
         ),
