@@ -6,29 +6,28 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/data/models/user_model.dart';
+import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/data/hc3_services/countries_service.dart';
+import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
+import 'package:harrier_central/data/hc3_services/kennels_service.dart';
+import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
+import 'package:harrier_central/data/hc3_services/payments_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
+import 'package:harrier_central/data/models/user_model.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/widgets/new_user.dart';
-import 'package:harrier_central/widgets/filter_options_popup.dart';
-import 'package:harrier_central/widgets/payment_snackbar.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
-import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
-import 'package:harrier_central/data/hc3_services/countries_service.dart';
-import 'package:harrier_central/data/hc3_services/payments_service.dart';
-import 'package:harrier_central/util/preferences.dart';
-
-import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/widgets/filter_options_popup.dart';
+import 'package:harrier_central/widgets/new_user.dart';
+import 'package:harrier_central/widgets/payment_snackbar.dart';
 
 class CheckInPackPage extends StatefulWidget {
   const CheckInPackPage({@required this.eventId, @required this.kennelId});
@@ -64,6 +63,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   int countComing = 0;
   int countPaid = 0;
   int countOnIn = 0;
+  int memberCount = 0;
 
   num snackBarButtonSize = 35.0;
 
@@ -179,7 +179,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             null as hasherId,
             coalesce(hem2.hemId,"00000000-0000-0000-0000-000000000000") as hemId,
             0 as isMember,
-            0 as isHare,
+            hem2.isHare as isHare,
             CASE WHEN pay2.hemId IS NULL THEN 0 ELSE 1 END as isPaid, 
             coalesce(hem2.displayName,"<no name>") || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END as nameForDisplay,
             coalesce(hem2.displayName,"<no name>") as nameForSort,
@@ -192,11 +192,33 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             hem2.updatedAt as hemUpdatedAt,
             pay2.updatedAt as payUpdatedAt,
             0 as credit
-
             FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin)} hem2 
             LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay2 on pay2.hemId = hem2.hemId and pay2.cancelledBy IS NULL
             WHERE hem2.eventId = "${widget.eventId}" and hem2.virginVisitorType != 0
-            ORDER BY nameForDisplay
+          UNION
+          SELECT 
+            hem3.userId as hasherId,
+            hem3.hemId as hemId,
+            0 as isMember,
+            hem3.isHare as isHare,
+            CASE WHEN pay3.hemId IS NULL THEN 0 ELSE 1 END as isPaid, 
+            coalesce(h3.dispName,"<no name>") as nameForDisplay,
+            h3.firstName || " " || h3.lastName || " " || h3.dispName as nameForSort,
+            coalesce(pay3.paymentType,0) as paymentType,
+            h3.photo as photo,
+            hem3.virginVisitorType as virginVisitorType,
+            coalesce(hem3.rsvpState,0) as rsvpState,
+            coalesce(hem3.attendenceState,0) as attendenceState,
+            0 as userRunCount,
+            hem3.updatedAt as hemUpdatedAt,
+            pay3.updatedAt as payUpdatedAt,
+            0 as credit
+            FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin)} hem3
+            INNER JOIN ${HashersTableHelper.tableName} h3 on h3.hasherId = hem3.userId
+            LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay3 on pay3.hemId = hem3.hemId and pay3.cancelledBy IS NULL
+            LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.admin)} hkm3 on hkm3.userId = h3.hasherId and hkm3.kennelId = "${widget.kennelId}" AND hkm3.isMember = 1
+            WHERE hem3.eventId = "${widget.eventId}" AND hem3.virginVisitorType == 0 AND hkm3.hkmId IS NULL
+          ORDER BY nameForDisplay
             
           
           ''';
@@ -312,7 +334,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                       (filterValues[1] == 1 && (a['attendenceState'] ?? 0) < 20 && (a['rsvpState'] ?? 0) >= 2)) &&
                   ((filterValues[2] == 0) || (filterValues[2] == -1 && ((a['attendenceState'] ?? 0) < 20)) || (filterValues[2] == 1 && (a['attendenceState'] ?? 0) >= 20)) &&
                   ((filterValues[3] == 0) || (filterValues[3] == -1 && ((a['isPaid'] ?? 0) == 0)) || (filterValues[3] == 1 && (a['isPaid'] ?? 0) == 1)) &&
-                  ((filterValues[4] == 0) || (filterValues[4] == -1 && ((a['attendenceState'] ?? 0) < 30)) || (filterValues[4] == 1 && (a['attendenceState'] ?? 0) >= 30)))
+                  ((filterValues[4] == 0) || (filterValues[4] == -1 && ((a['attendenceState'] ?? 0) < 30)) || (filterValues[4] == 1 && (a['attendenceState'] ?? 0) >= 30)) &&
+                  ((filterValues[5] == 0) || (filterValues[5] == -1 && ((a['isMember'] ?? 0) == 0)) || (filterValues[5] == 1 && (a['isMember'] ?? 0) == 1))) 
               .toList();
 
           //packList.sort((Map<String, dynamic> a, Map<String, dynamic> b) => (a['nameForDisplay']).compareTo(b['nameForDisplay']));
@@ -333,7 +356,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
               COUNT(CASE WHEN attendenceState >= 20 THEN 1 ELSE NULL END) as atHash,
               COUNT(CASE WHEN pay.paymentType >= 2 THEN 1 ELSE NULL END) as paid,
               COUNT(CASE WHEN rsvpState >= 2 AND attendenceState < 20 THEN 1 ELSE NULL END) as coming,
-              COUNT(CASE WHEN attendenceState >= 30 THEN 1 ELSE NULL END) as onIn
+              COUNT(CASE WHEN attendenceState >= 30 THEN 1 ELSE NULL END) as onIn,
+              (SELECT COUNT(*) FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.admin)} hkm WHERE hkm.kennelId = "${widget.kennelId}" and hkm.isMember = 1) as memberCount
           FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin)} hem
           LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
   
@@ -346,6 +370,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
           countComing = results[0]['coming'];
           countOnIn = results[0]['onIn'];
           countPaid = results[0]['paid'];
+          memberCount = results[0]['memberCount'];
         }
         if (forceRefresh) {
           setState(() {
@@ -495,8 +520,16 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 },
               ),
               CheckinFiltersCell(
+                counter: memberCount,
+                label: 'Member',
+                index: 5,
+                onTap: () {
+                  _refreshPackListFromTables(true);
+                },
+              ),
+              CheckinFiltersCell(
                 counter: countRsvps,
-                label: 'RSVP\'ed',
+                label: 'RSVP',
                 index: 0,
                 onTap: () {
                   _refreshPackListFromTables(true);
@@ -1479,7 +1512,7 @@ class CheckinFiltersCell extends StatelessWidget {
 
     const TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 24.0, fontFamily: 'AvenirNextCondensedDemiBold');
     return Container(
-      width: 60,
+      width: 50,
       child: Column(
         children: <Widget>[
           Padding(

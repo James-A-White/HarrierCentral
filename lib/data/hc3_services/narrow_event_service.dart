@@ -1,17 +1,33 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 
 class NarrowEventsModel {
-  NarrowEventsModel({this.eventId, this.eventStartDatetime, this.kennelId, this.isVisible, this.isCountedRun, this.eventNumber, this.eventName, this.latitude, this.longitude, 
-  
-  this.eventPriceForMembers,
-this.eventPriceForNonMembers,
-this.removed, this.updatedAt});
+  NarrowEventsModel(
+      {this.eventId,
+      this.eventStartDatetime,
+      this.kennelId,
+      this.isVisible,
+      this.isCountedRun,
+      this.eventNumber,
+      this.eventName,
+      this.latitude,
+      this.longitude,
+      this.eventPriceForMembers,
+      this.eventPriceForNonMembers,
+      this.eventFacebookId,
+      this.absoluteEventNumber,
+      this.canEditRunAttendence,
+      this.removed,
+      this.updatedAt});
 
   final String eventId;
   final DateTime eventStartDatetime;
@@ -23,7 +39,10 @@ this.removed, this.updatedAt});
   final num latitude;
   final num longitude;
   final num eventPriceForMembers;
-final num eventPriceForNonMembers;
+  final num eventPriceForNonMembers;
+  final String eventFacebookId;
+  final num absoluteEventNumber;
+  final num canEditRunAttendence;
   final int removed;
   final DateTime updatedAt;
 
@@ -45,7 +64,10 @@ final num eventPriceForNonMembers;
             latitude: jsonItem['latitude'],
             longitude: jsonItem['longitude'],
             eventPriceForMembers: jsonItem['eventPriceForMembers'],
-eventPriceForNonMembers: jsonItem['eventPriceForNonMembers'],
+            eventPriceForNonMembers: jsonItem['eventPriceForNonMembers'],
+            eventFacebookId: jsonItem['eventFacebookId'],
+            absoluteEventNumber: jsonItem['absoluteEventNumber'],
+            canEditRunAttendence: jsonItem['canEditRunAttendence'],
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
 
@@ -84,8 +106,11 @@ class NarrowEventsTableHelper {
   static const String colEventName = 'eventName';
   static const String colLatitude = 'latitude';
   static const String colLongitude = 'longitude';
-  static const String colEventPriceForMembers= 'eventPriceForMembers';
-static const String colEventPriceForNonMembers= 'eventPriceForNonMembers';
+  static const String colEventPriceForMembers = 'eventPriceForMembers';
+  static const String colEventPriceForNonMembers = 'eventPriceForNonMembers';
+  static const String colEventFacebookId = 'eventFacebookId';
+  static const String colAbsoluteEventNumber = 'absoluteEventNumber';
+  static const String colCanEditRunAttendence = 'canEditRunAttendence';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -112,6 +137,9 @@ static const String colEventPriceForNonMembers= 'eventPriceForNonMembers';
             $colLongitude NUM,
             $colEventPriceForMembers NUM,
             $colEventPriceForNonMembers NUM,
+            $colEventFacebookId TEXT,
+            $colAbsoluteEventNumber NUM,
+            $colCanEditRunAttendence NUM,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
@@ -136,7 +164,9 @@ static const String colEventPriceForNonMembers= 'eventPriceForNonMembers';
       NarrowEventsTableHelper.colLongitude: item.longitude,
       NarrowEventsTableHelper.colEventPriceForMembers: item.eventPriceForMembers,
       NarrowEventsTableHelper.colEventPriceForNonMembers: item.eventPriceForNonMembers,
-
+      NarrowEventsTableHelper.colEventFacebookId: item.eventFacebookId,
+      NarrowEventsTableHelper.colAbsoluteEventNumber: item.absoluteEventNumber,
+      NarrowEventsTableHelper.colCanEditRunAttendence: item.canEditRunAttendence,
       NarrowEventsTableHelper.colUpdatedAt: item.updatedAt.toString(),
       NarrowEventsTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       NarrowEventsTableHelper.colRemoved: item.removed
@@ -158,6 +188,9 @@ static const String colEventPriceForNonMembers= 'eventPriceForNonMembers';
       longitude: map[NarrowEventsTableHelper.colLongitude],
       eventPriceForMembers: map[NarrowEventsTableHelper.colEventPriceForMembers],
       eventPriceForNonMembers: map[NarrowEventsTableHelper.colEventPriceForNonMembers],
+      eventFacebookId: map[NarrowEventsTableHelper.colEventFacebookId],
+      absoluteEventNumber: map[NarrowEventsTableHelper.colAbsoluteEventNumber],
+      canEditRunAttendence: map[NarrowEventsTableHelper.colCanEditRunAttendence],
       updatedAt: DateTime.parse(map[NarrowEventsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[NarrowEventsTableHelper.colRemoved],
     );
@@ -168,6 +201,13 @@ static const String colEventPriceForNonMembers= 'eventPriceForNonMembers';
 
 class NarrowEventsService {
   static final NarrowEventsTableHelper instance = NarrowEventsTableHelper._privateConstructor();
+
+  static Future<num> getLastUpdatedTime() async {
+    final Database db = await DBProvider.db.database;
+    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${NarrowEventsTableHelper.colUpdatedAtValue}) AS maxDate FROM ${NarrowEventsTableHelper.tableName}');
+    final num timeValue = table.first['maxDate'];
+    return timeValue;
+  }
 
   Future<void> clearTable() async {
     final Database db = await DBProvider.db.database;
@@ -254,5 +294,33 @@ class NarrowEventsService {
 
     print('$insertCounter event records inserted, $updateCounter event records updated');
     return insertCounter;
+  }
+
+  // ============ Functions go here =============
+
+  Future<void> updateEventDetails(String eventId, int isVisible, int absoluteEventNumber) async {
+    final String userId = getStringPref(StringPrefsEnum.userId);
+
+    final String accessToken = Utilities.generateToken(userId, 'addEditEvent');
+
+    final num _eventsLastUpdated = await NarrowEventsService.getLastUpdatedTime();
+    final DateTime hasherEventMapUpdatedAfter = _eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_eventsLastUpdated + 1000);
+
+    final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'narrowEventsUpdatedAfter': hasherEventMapUpdatedAfter.toString(), 'eventId': eventId, 'isVisible': isVisible.toString(), 'absoluteEventNumber': absoluteEventNumber.toString()});
+
+    final http.Response response = await http
+        .post(BASE_API_URL + 'hc3_add_edit_event', headers: <String, String>{'content-type': 'application/json'}, body: body
+            // Send authorization headers to your backend
+            //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+            )
+        .catchError(
+      (dynamic error) {
+        return false;
+      },
+    );
+
+    await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+
+    return;
   }
 }

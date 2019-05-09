@@ -4,11 +4,14 @@ import 'package:flutter/material.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:scoped_model/scoped_model.dart';
+import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/data/models/lite_event_model.dart';
-import 'package:harrier_central/data/services/event_scoped_model.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
+import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/filter_event_list_item.dart';
@@ -17,7 +20,7 @@ import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 class FilterEventsPage extends StatefulWidget {
   const FilterEventsPage({Key key, @required this.kennel}) : super(key: key);
 
-  final Map<String,dynamic> kennel;
+  final Map<String, dynamic> kennel;
 
   @override
   FilterEventsPageState createState() => FilterEventsPageState();
@@ -26,31 +29,88 @@ class FilterEventsPage extends StatefulWidget {
 class FilterEventsPageState extends State<FilterEventsPage> {
   FilterEventsPageState();
 
-  EventsScopedModel model;
-
   @override
   void initState() {
+    _refreshSqlTablesFromBackend(true);
     super.initState();
-    model = EventsScopedModel(kennelId: widget.kennel['kennelId']);
+  }
+
+  bool _isLoading = true;
+
+  Future<void> _refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
+    if (showLoadingIndicator) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
+
+    DBProvider.db.database.then((Database db) async {
+      final SyncUserDataService cSrv = SyncUserDataService();
+      final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagNarrowEventsTable, true);
+      final String resultStr = result ? 'successfully' : 'unsuccessfully';
+      print('Events data synchronized $resultStr');
+
+      _refreshEventFromTables(true).then((void dummy) {});
+    });
+  }
+
+  List<Map<String, dynamic>> events = <Map<String, dynamic>>[];
+
+  Future<void> _refreshEventFromTables(bool forceRefresh) async {
+    final String userId = getStringPref(StringPrefsEnum.userId);
+    final Database db = await DBProvider.db.database;
+    try {
+      final String sql = ''' 
+
+          SELECT 
+            evt.eventId,
+            evt.isVisible,
+            evt.eventFacebookId,
+            evt.eventName,
+            evt.eventNumber,
+            evt.eventStartDatetime,
+            hkm.mismanagementRoleFlags,
+            evt.canEditRunAttendence,
+            (SELECT COUNT(*) FROM ${NarrowEventsTableHelper.tableName} evt2 where kennelId = "${widget.kennel['kennelId']}" AND isVisible = 1) as publishedRunCount
+          FROM ${NarrowEventsTableHelper.tableName} evt
+          INNER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on hkm.kennelId = "${widget.kennel['kennelId']}" and hkm.userId = "$userId"
+          WHERE evt.kennelId = "${widget.kennel['kennelId']}"
+          ORDER BY evt.eventStartDatetime desc
+        
+          ''';
+
+      db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
+        setState(() {
+          if (results.isNotEmpty) {
+            events = results;
+            setState(() {
+              if (forceRefresh) {
+                _isLoading = false;
+              }
+            });
+          }
+        });
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   int pageIndex = 1;
 
-  void refreshListFromDb(bool showLoadingIndicator) {
-    model.getUserEventsFromBackend(showLoadingIndicator, 0, 1,1).then((void dummy) {
-      myRunCount = model.userEventList
-          .where(
-              (Event ueh) => ueh.attendenceState >= attendenceAtHash.value)
-          .length;
-      updateRunCounts();
-    });
-  }
+  // void refreshListFromDb(bool showLoadingIndicator) {
+  //   model.getUserEventsFromBackend(showLoadingIndicator, 0, 1,1).then((void dummy) {
+  //     myRunCount = model.userEventList
+  //         .where(
+  //             (Event ueh) => ueh.attendenceState >= attendenceAtHash.value)
+  //         .length;
+  //     updateRunCounts();
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
-    return ScopedModel<EventsScopedModel>(
-      model: model,
-      child: Scaffold(
+    return Scaffold(
         // floatingActionButton: SpeedDial(
         //   // both default to 16
         //   marginRight: 18,
@@ -130,40 +190,24 @@ class FilterEventsPageState extends State<FilterEventsPage> {
             ),
           ),
         ),
-        body: ScopedModelDescendant<EventsScopedModel>(
-          builder:
-              (BuildContext context, Widget child, EventsScopedModel model) {
-            if ((model.userEventList.isEmpty) && (!model.isLoading)) {
-              // TODO(James): Check this statement and make sure the cast to FALSE is correct
-              refreshListFromDb(true);
-            }
-
-            return model.isLoading
-                ? _buildCircularProgressIndicator()
-                : _buildListView();
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCircularProgressIndicator() {
-    return const Center(
-      child: HcCircularProgressIndicator(),
-    );
+        body: _isLoading ? const HcCircularProgressIndicator() : _buildListView());
   }
 
   Future<void> _handleRefresh() async {
-    model.clearKennelList();
-    model.getUserEventsFromBackend(false, 0, 1,1);
-    //model.notifyListeners();
+    final Database db = await DBProvider.db.database;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final SyncUserDataService cSrv = SyncUserDataService();
+    final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagNarrowEventsTable, true);
+    final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    print('Receipts data synchronized $resultStr');
+    _refreshEventFromTables(true);
   }
 
-  static const TextStyle headingStyle = TextStyle(
-      fontFamily: 'AvenirNextCondensedDemiBold',
-      fontStyle: FontStyle.normal,
-      fontSize: 22.0,
-      height: 0.6);
+  static const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
 
   static const TextStyle numberStyle = TextStyle(
     fontFamily: 'AvenirNextCondensedDemiBold',
@@ -171,18 +215,17 @@ class FilterEventsPageState extends State<FilterEventsPage> {
     fontSize: 22.0,
   );
 
-  int myRunCount = 0;
-
-  void updateRunCounts() {
-    myRunCount =
-        model.userEventList.where((Event ueh) => ueh.isVisible == 1).length;
-  }
-
   Widget _buildListView() {
+    int publishedRunCount = 0;
+    if (events.isNotEmpty)
+    {
+      publishedRunCount = events[0]['publishedRunCount'];
+    }
+
     return Container(
       decoration: Backgrounds.defaultHcBackgroundLight(),
       padding: const EdgeInsets.only(top: 0.0),
-      child: model.getKennelsCount() == 0
+      child: events.isEmpty
           ? const Center(child: Text('No Kennels available.'))
           : RefreshIndicator(
               onRefresh: () => _handleRefresh(),
@@ -205,193 +248,152 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                       ],
                     ),
                     //color:Color.fromARGB(30, 0, 0, 0),
-                    padding: const EdgeInsets.only(
-                        left: 5, top: 5, right: 20, bottom: 5),
-                    child: 
-                    
-                    
-                    Row(
+                    padding: const EdgeInsets.only(left: 5, top: 5, right: 20, bottom: 5),
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget> [
-                                                  Container(
-                            height: 75,
-                            child: KennelLogo(
-                              kennelLogoUrl: widget.kennel['kennelLogo'],
-                              kennelShortName: widget.kennel['kennelShortName'],
-                              logoHeight: 75.0,
-                              rightPadding: 15.0,
-                            ),
+                      children: <Widget>[
+                        Container(
+                          height: 75,
+                          child: KennelLogo(
+                            kennelLogoUrl: widget.kennel['kennelLogo'],
+                            kennelShortName: widget.kennel['kennelShortName'],
+                            logoHeight: 75.0,
+                            rightPadding: 15.0,
                           ),
+                        ),
                         Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Container(
-                            child: AutoSizeText(
-                              '${widget.kennel['kennelName']}',
-                              //'Super fucking long text thats sure to overflow and more',
-                              //'999',
-                              overflow: TextOverflow.ellipsis,
-                              minFontSize: 18.0,
-                              maxLines: 1,
-                              style: numberStyle,
-                              textAlign: TextAlign.left,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Container(
+                              child: AutoSizeText(
+                                '${widget.kennel['kennelName']}',
+                                //'Super fucking long text thats sure to overflow and more',
+                                //'999',
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 18.0,
+                                maxLines: 1,
+                                style: numberStyle,
+                                textAlign: TextAlign.left,
+                              ),
+                              //color: Colors.green,
                             ),
-                            //color: Colors.green,
-                          ),
-
-                          Container(
-                            child: AutoSizeText(
-                              'Published run count: ${myRunCount.toString()}',
-                              //'Super fucking long text thats sure to overflow and more',
-                              //'999',
-                              overflow: TextOverflow.ellipsis,
-                              minFontSize: 18.0,
-                              maxLines: 1,
-                              style: numberStyle,
-                              textAlign: TextAlign.left,
+                            Container(
+                              child: AutoSizeText(
+                                'Published run count: ${publishedRunCount.toString()}',
+                                //'Super fucking long text thats sure to overflow and more',
+                                //'999',
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 18.0,
+                                maxLines: 1,
+                                style: numberStyle,
+                                textAlign: TextAlign.left,
+                              ),
+                              //color: Colors.green,
                             ),
-                            //color: Colors.green,
-                          ),
-                        ],
-                      ),],
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                   Expanded(
                     child: ListView.separated(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: model.getKennelsCount(),
+                      itemCount: events.length,
                       padding: const EdgeInsets.only(top: 5),
-                      separatorBuilder: (BuildContext context, int index) =>
-                          const Divider(
+                      separatorBuilder: (BuildContext context, int index) => const Divider(
                             height: 1.0,
                             color: Colors.black45,
                           ),
                       //itemExtent: 58.0,
                       //shrinkWrap: true,
                       itemBuilder: (BuildContext context, int index) {
-                        final Event eventModel = model.userEventList[index];
+                        final Map<String, dynamic> event = events[index];
                         return Dismissible(
-                          key: Key(eventModel.eventId),
+                          key: Key(event['eventId']),
                           confirmDismiss: (DismissDirection direction) {
-                            if (eventModel.canEditRunAttendence != 0) {
+                            if ((event['mismanagementRoleFlags'] & mmAuthCanEditRunVisibility) != 0) {
                               setState(() {
                                 // swipe from right to left to indicate that
                                 // the hasher either attended the run as a pack
                                 // member or as a hare
-                                if (direction == DismissDirection.endToStart) {
-                                  eventModel.isLoading = true;
-                                  model
-                                      .updateEvent(
-                                          eventId: eventModel.eventId,
-                                          isCountedRun: 1,
-                                          isVisible: 1)
-                                      .then((dynamic notUsed) {
-                                    setState(() {
-                                      eventModel.isCountedRun = 1;
-                                      eventModel.isVisible = 1;
-                                      eventModel.isLoading = false;
-                                    });
 
-                                    updateRunCounts();
+                                DBProvider.db.database.then((Database db) async {
+                                  await db.transaction<dynamic>((Transaction txn) async {
+                                    final int guidFlag = (direction == DismissDirection.startToEnd) ? -2 : -3;
+                                    final String sql = 'UPDATE ${NarrowEventsTableHelper.tableName} SET canEditRunAttendence = "$guidFlag" where eventId = "${event['eventId']}"';
+                                    final int result = await txn.rawUpdate(sql);
+                                    print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+                                    _refreshEventFromTables(true);
                                   });
-                                } else {
-                                  // swipe from left to right to
-                                  // indicate that the hasher did
-                                  // not participate in this event
-                                  // if (eventModel.attendenceState !=
-                                  //     attendenceNo.value) {
+                                });
 
-                                  eventModel.isLoading = true;
-                                  model
-                                      .updateEvent(
-                                          eventId: eventModel.eventId,
-                                          isCountedRun: 0,
-                                          isVisible: 0)
-                                      .then((dynamic notUsed) {
-                                    setState(() {
-                                      eventModel.isCountedRun = 0;
-                                      eventModel.isVisible = 0;
-                                      eventModel.isLoading = false;
-                                    });
-
-                                    updateRunCounts();
+                                final NarrowEventsService nSvc = NarrowEventsService();
+                                nSvc.updateEventDetails(event['eventId'], (direction == DismissDirection.startToEnd) ? 0 : 1, -1).then((void dummy) {
+                                  _refreshEventFromTables(true).then((void dummy) {
+                                    setState(() {});
                                   });
-                                  // eventModel.attendenceState =
-                                  //     attendenceNo.value;
-                                }
+                                });
+
                                 //}
                               });
                             }
                             return Future<bool>.value(false);
                           },
                           background: Container(
-                              color: Colors.red,
+                              color: ((event['mismanagementRoleFlags'] & mmAuthCanEditRunVisibility) == 0) ? Colors.grey[350] : Colors.red,
                               child: Row(children: const <Widget>[
                                 Padding(
                                   padding: EdgeInsets.only(left: 10.0),
-                                  child: Icon(Ionicons.ios_eye_off,
-                                      color: Colors.white, size: 35.0),
+                                  child: Icon(Ionicons.ios_eye_off, color: Colors.white, size: 35.0),
                                 ),
                                 Padding(
                                   padding: EdgeInsets.only(left: 15.0),
                                   child: Text(
                                       // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                       'Hide this event',
-                                      style: TextStyle(
-                                          fontFamily: 'AvenirNextDemiBold',
-                                          fontStyle: FontStyle.normal,
-                                          color: Colors.white,
-                                          fontSize: 17.0,
-                                          height: 1.0)),
+                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                 )
                               ])),
                           secondaryBackground: Container(
-                            color: Colors.green,
+                            color: ((event['mismanagementRoleFlags'] & mmAuthCanEditRunVisibility) == 0) ? Colors.grey[350] : Colors.green,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: const <Widget>[
                                 Padding(
                                   padding: EdgeInsets.only(right: 15.0),
-                                  child: Icon(Ionicons.ios_eye,
-                                      color: Colors.white, size: 35.0),
+                                  child: Icon(Ionicons.ios_eye, color: Colors.white, size: 35.0),
                                 ),
                                 Padding(
                                   padding: EdgeInsets.only(right: 15.0),
                                   child: Text(
                                       //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                       'Show this event',
-                                      style: TextStyle(
-                                          fontFamily: 'AvenirNextDemiBold',
-                                          fontStyle: FontStyle.normal,
-                                          color: Colors.white,
-                                          fontSize: 17.0,
-                                          height: 1.0)),
+                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                 )
                               ],
                             ),
                           ),
                           onDismissed: (DismissDirection direction) {
-                            print(direction.toString() +
-                                ' NOTE: We should never reach this point');
+                            print(direction.toString() + ' NOTE: We should never reach this point');
                           },
                           child: FilterEventListItem(
-                            eventModel: model.userEventList[index],
+                            event: events[index],
                             kennelShortName: widget.kennel['kennelShortName'],
                             updateEvent: (num value) {
-                              value ??= 0;
-                              if (value != -1) {
-                                model
-                                    .updateEvent(
-                                        eventId: eventModel.eventId,
-                                        absoluteRunNumber: value)
-                                    .then((dynamic notUsed) {
-                                  setState(() {
-                                    refreshListFromDb(false);
-                                    
-                                  });
-                                });
-                              }
+                              // value ??= 0;
+                              // if (value != -1) {
+                              //   model
+                              //       .updateEvent(
+                              //           eventId: eventModel.eventId,
+                              //           absoluteRunNumber: value)
+                              //       .then((dynamic notUsed) {
+                              //     setState(() {
+                              //       refreshListFromDb(false);
+
+                              //     });
+                              //   });
+                              // }
                             },
                           ),
                         );
