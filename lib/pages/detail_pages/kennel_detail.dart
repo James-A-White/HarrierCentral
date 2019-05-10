@@ -421,7 +421,7 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                                   ),
                                    Padding(
                                     padding: EdgeInsets.only(left: 20, top: 8),
-                                    child: Text('Filter events'),
+                                    child: Text('Edit events'),
                                   ),
                                 ]),
                                 textColor: Colors.white,

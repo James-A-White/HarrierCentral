@@ -118,6 +118,18 @@ const EnumFollowType<int> followTypeIgnore = EnumFollowType<int>(2);
 
 //////////////////////////
 
+class EnumEventFilterType<int> extends Enum<int> {
+  const EnumEventFilterType(int val) : super(val);
+}
+
+const EnumEventFilterType<int> eventFilterType_hideEvent = EnumEventFilterType<int>(1);
+const EnumEventFilterType<int> eventFilterType_showEvent = EnumEventFilterType<int>(2);
+const EnumEventFilterType<int> eventFilterType_countEvent = EnumEventFilterType<int>(3);
+const EnumEventFilterType<int> eventFilterType_doNotCountEvent = EnumEventFilterType<int>(4);
+const EnumEventFilterType<int> eventFilterType_setRunNumber = EnumEventFilterType<int>(5);
+
+//////////////////////////
+///
 class EnumServerStatus<int> extends Enum<int> {
   const EnumServerStatus(int val) : super(val);
 }

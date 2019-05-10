@@ -9,7 +9,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/pages/detail_pages/kennel_detail.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
-import 'package:harrier_central/widgets/follow_kennel_popup.dart';
+import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/data/services/future_run_scoped_model.dart';
 
 class KennelsListItem extends StatefulWidget {
@@ -87,57 +87,57 @@ class KennelListItemState extends State<KennelsListItem> {
                       );
                     },
                     child: Stack(
-                  children: <Widget>[
-                    Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: 85,
-                    ),
-                    Positioned(
-                      left: 5,
-                      top: 0,
-                      child: KennelLogo(
-                        kennelLogoUrl: widget.kennel['kennelLogo'],
-                        kennelShortName: widget.kennel['kennelShortName'],
-                        logoHeight: 80.0,
-                        leftPadding: 0.0,
-                      ),
-                    ),
-                    Positioned(
-                      left: 100,
-                      child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: <Widget>[
-                            Container(width: 10.0, height: 10.0),
-                            Text(
-                              '${widget.kennel['location']}',
-                              style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
-                            ),
-                            Text(
-                              '${Utilities.getDistance(widget.kennel['distance'], context)}',
-                              style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
-                            ),
-                            // const Text(
-                            //   'xxxx Active Members',
-                            //                             style: const TextStyle(
-                            //             fontFamily: 'AvenirNextRegular',
-                            //             fontStyle: FontStyle.normal,
-                            //             fontSize: 16.0,
-                            //             height: 1.0),
-                            // ),
-                            // Text(
-                            //   DateFormat("E, MMM d 'at' h:mm a")
-                            //       .format(kennel.dateNextRun),
-                            //   style: const TextStyle(
-                            //       fontFamily: 'AvenirNextRegular',
-                            //       fontStyle: FontStyle.normal,
-                            //       fontSize: 16.0,
-                            //       height: 1.0),
-                            // ),
-                          ],
-                          crossAxisAlignment: CrossAxisAlignment.start),
-                    ),
-                  ],
-                )),
+                      children: <Widget>[
+                        Container(
+                          width: MediaQuery.of(context).size.width,
+                          height: 85,
+                        ),
+                        Positioned(
+                          left: 5,
+                          top: 0,
+                          child: KennelLogo(
+                            kennelLogoUrl: widget.kennel['kennelLogo'],
+                            kennelShortName: widget.kennel['kennelShortName'],
+                            logoHeight: 80.0,
+                            leftPadding: 0.0,
+                          ),
+                        ),
+                        Positioned(
+                          left: 100,
+                          child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              children: <Widget>[
+                                Container(width: 10.0, height: 10.0),
+                                Text(
+                                  '${widget.kennel['location']}',
+                                  style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                                ),
+                                Text(
+                                  '${Utilities.getDistance(widget.kennel['distance'], context)}',
+                                  style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                                ),
+                                // const Text(
+                                //   'xxxx Active Members',
+                                //                             style: const TextStyle(
+                                //             fontFamily: 'AvenirNextRegular',
+                                //             fontStyle: FontStyle.normal,
+                                //             fontSize: 16.0,
+                                //             height: 1.0),
+                                // ),
+                                // Text(
+                                //   DateFormat("E, MMM d 'at' h:mm a")
+                                //       .format(kennel.dateNextRun),
+                                //   style: const TextStyle(
+                                //       fontFamily: 'AvenirNextRegular',
+                                //       fontStyle: FontStyle.normal,
+                                //       fontSize: 16.0,
+                                //       height: 1.0),
+                                // ),
+                              ],
+                              crossAxisAlignment: CrossAxisAlignment.start),
+                        ),
+                      ],
+                    )),
                 // const Divider(
                 //   color: Colors.black,
                 //   height: 18.0,
@@ -152,25 +152,52 @@ class KennelListItemState extends State<KennelsListItem> {
                 color: Colors.black54,
                 splashColor: Theme.of(context).highlightColor,
                 onPressed: () {
-                  final FollowKennelPopup otherPaymentPopup = FollowKennelPopup(kennelName: widget.kennel['kennelName']);
+                  //
 
-                  final Future<EnumFollowType<int>> dlg = showDialog<EnumFollowType<int>>(
+                  final List<Map<String, dynamic>> buttons = <Map<String,dynamic>>[
+                    <String, dynamic>{
+                      'title': 'Always show runs',
+                      'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.check_circle, color: Colors.green)],
+                      'returnValue': followTypeFollow
+                    },
+                    <String, dynamic>{
+                      'title': 'Never show runs',
+                      'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.times_circle, color: Colors.red)],
+                      'returnValue': followTypeIgnore
+                    },
+                    <String, dynamic>{
+                      'title': 'Show when within 50km',
+                      'icon': <Widget>[
+                        const Icon(
+                          FontAwesome.star,
+                          color: Colors.yellow,
+                        ),
+                      ],
+                      'returnValue': followTypeAuto
+                    },
+                  ];
+
+                  final MultipleChoicePopup popup = MultipleChoicePopup(
+                      title: 'Follow ${widget.kennel['kennelName']}',
+                      buttons: buttons,
+                      cancelButtonTitle: 'Cancel',
+                      buttonPress: (dynamic retVal) {
+                        if (retVal.value != -1) {
+                          final HasherKennelMapService srv = HasherKennelMapService();
+                          widget.kennel['followingRequested'] = retVal.value;
+                          setState(() {});
+                          srv.toggleFollowing(widget.kennel, HasherKennelMapTableType.user).then((void dummy) {
+                            setState(() {});
+                          });
+                        }
+                      });
+
+                  showDialog<void>(
                       context: context,
                       barrierDismissible: false, // user must tap button!
                       builder: (BuildContext context) {
-                        return otherPaymentPopup;
+                        return popup;
                       });
-
-                  dlg.then((EnumFollowType<int> x) {
-                    if (x.value != -1) {
-                      final HasherKennelMapService srv = HasherKennelMapService();
-                      widget.kennel['followingRequested'] = x.value;
-                      setState(() {});
-                      srv.toggleFollowing(widget.kennel,HasherKennelMapTableType.user).then((void dummy) {
-                        setState(() {});
-                      });
-                    }
-                  });
                 },
               ),
             ),

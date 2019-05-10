@@ -9,6 +9,8 @@ import 'package:intl/intl.dart';
 
 import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 
 class FilterEventListItem extends StatelessWidget {
   const FilterEventListItem({@required this.event, @required this.kennelShortName, @required this.updateEvent});
@@ -37,6 +39,7 @@ class FilterEventListItem extends StatelessWidget {
   // ),
 
   Widget listItem(BuildContext context) {
+    const double iconSize = 45;
     return GestureDetector(
       onTap: () {
         Navigator.push<void>(
@@ -51,13 +54,14 @@ class FilterEventListItem extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(left: 5, top: 5, bottom: 5),
         width: MediaQuery.of(context).size.width,
+        height: 70,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             (event['eventFacebookId']?.length ?? 0) > 2
-                ? event['canEditRunAttendence'] == -2 || event['canEditRunAttendence'] == -3 ? Icon(delayIcon, size: 35.0, color: Colors.blue) : Icon(FontAwesome.facebook_square, color: event['isVisible'] == 1 ? const Color.fromARGB(255, 59, 89, 152) : Colors.grey, size: 35.0)
+                ? event['canEditRunAttendence'] == -2 || event['canEditRunAttendence'] == -3 ? Icon(delayIcon, size: iconSize, color: Colors.blue) : Icon(FontAwesome.facebook_square, color: event['isVisible'] == 1 ? const Color.fromARGB(255, 59, 89, 152) : Colors.grey, size: iconSize)
                 : event['canEditRunAttendence'] == -2 || event['canEditRunAttendence'] == -3
-                    ? Icon(delayIcon, size: 35.0, color: Colors.blue)
+                    ? Icon(delayIcon, size: iconSize, color: Colors.blue)
                     : Container(
                         foregroundDecoration: event['isVisible'] == 1
                             ? const BoxDecoration()
@@ -65,14 +69,14 @@ class FilterEventListItem extends StatelessWidget {
                                 color: Colors.grey,
                                 backgroundBlendMode: BlendMode.saturation,
                               ),
-                        child: Opacity(opacity: event['isVisible'] == 1 ? 1.0 : 0.5, child: Image.asset('images/other/hc_app_icon.png', height: 35, width: 35)),
+                        child: Opacity(opacity: event['isVisible'] == 1 ? 1.0 : 0.5, child: Image.asset('images/other/hc_app_icon.png', height: iconSize, width: iconSize)),
                       ),
 
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(top: 4.0, left: 8.0),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
@@ -83,16 +87,93 @@ class FilterEventListItem extends StatelessWidget {
                       textAlign: TextAlign.left,
                     ),
                     Text(
-                      DateTime.parse(event['eventStartDatetime']).year != DateTime.now().year
-                          ? 'Run #${event['eventNumber'].toString()} on ${DateFormat("E, MMM d, yyyy \'at\' h:mm a").format(DateTime.parse(event['eventStartDatetime']))}'
-                          : 'Run #${event['eventNumber'].toString()} on ${DateFormat("E, MMM d \'at\' h:mm a").format(DateTime.parse(event['eventStartDatetime']))}',
+                      '${DateTime.parse(event['eventStartDatetime']).year != DateTime.now().year ? DateFormat("E, MMM d, yyyy \'at\' h:mm a").format(DateTime.parse(event['eventStartDatetime'])) : DateFormat("E, MMM d \'at\' h:mm a").format(DateTime.parse(event['eventStartDatetime']))}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: event['isVisible'] == 1 ? Colors.black87 : Colors.grey, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85),
                       textAlign: TextAlign.left,
                     ),
+                    ((event['isVisible'] == 1) && (event['isCountedRun'] == 1))
+                        ? Text.rich(
+                            TextSpan(
+                              text: 'Run ',
+                              children: <TextSpan>[
+                                TextSpan(
+                                  text: '#${event['eventNumber'].toString()}', 
+                                  style:TextStyle(fontFamily: 'AvenirNextCondensedBold',
+                                    decoration: ((event['absoluteEventNumber'] ?? 0) >= 1) ? TextDecoration.underline :TextDecoration.none)
+                                ),
+                              ],
+                            ),
+                            style: TextStyle(color: event['isVisible'] == 1 ? Colors.black87 : Colors.grey, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85),
+                            textAlign: TextAlign.left,
+                          )
+                        : Container()
                   ],
                 ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                icon: const Icon(MaterialCommunityIcons.dots_vertical),
+                iconSize: Theme.of(context).iconTheme.size,
+                color: Colors.black54,
+                splashColor: Theme.of(context).highlightColor,
+                onPressed: () {
+                  //
+
+                  final List<Map<String, dynamic>> buttons = <Map<String,dynamic>>[
+                    <String, dynamic>{
+                      'title': event['isVisible'] == 0 ? 'Show Event' : 'Hide Event',
+                      'icon': <Widget>[
+                        Container(
+                          height: 30,
+                          width: 30,
+                          child: Icon(event['isVisible'] == 0 ? Ionicons.md_eye : Ionicons.md_eye_off, color: Colors.yellow),
+                        ),
+                      ],
+                      'returnValue': event['isVisible'] == 0 ? eventFilterType_showEvent : eventFilterType_hideEvent,
+                    },
+                    <String, dynamic>{
+                      'title': event['isCountedRun'] == 0 ? 'Count Run' : 'Don\'t Count Run',
+                      'icon': <Widget>[
+                        Container(
+                          height: 30,
+                          width: 30,
+                          child: Icon(event['isCountedRun'] == 0 ? MaterialCommunityIcons.pencil : MaterialCommunityIcons.pencil_off, color: Colors.blue[200]),
+                        ),
+                      ],
+                      'returnValue': event['isCountedRun'] == 0 ? eventFilterType_countEvent : eventFilterType_doNotCountEvent,
+                    },
+                    <String, dynamic>{
+                      'title': 'Set run number',
+                      'icon': <Widget>[
+                        Container(
+                          height: 30,
+                          width: 30,
+                          child: Icon(FontAwesome.hashtag, color: Colors.red[200]),
+                        ),
+                      ],
+                      'returnValue': eventFilterType_setRunNumber,
+                    },
+                  ];
+
+                  final MultipleChoicePopup popup = MultipleChoicePopup(
+                      title: 'Set event details',
+                      buttons: buttons,
+                      cancelButtonTitle: 'Cancel',
+                      buttonPress: (dynamic retVal) {
+                        updateEvent(retVal);
+                      });
+
+                  showDialog<void>(
+                      context: context,
+                      barrierDismissible: false, // user must tap button!
+                      builder: (BuildContext context) {
+                        return popup;
+                      });
+                },
               ),
             ),
             // Container(

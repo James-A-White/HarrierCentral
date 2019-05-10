@@ -13,6 +13,8 @@ import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/pages/kennel_admin/run_number_popup.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/filter_event_list_item.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
@@ -65,6 +67,8 @@ class FilterEventsPageState extends State<FilterEventsPage> {
           SELECT 
             evt.eventId,
             evt.isVisible,
+            evt.isCountedRun,
+            evt.absoluteEventNumber,
             evt.eventFacebookId,
             evt.eventName,
             evt.eventNumber,
@@ -317,25 +321,8 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                                 // swipe from right to left to indicate that
                                 // the hasher either attended the run as a pack
                                 // member or as a hare
-
-                                DBProvider.db.database.then((Database db) async {
-                                  await db.transaction<dynamic>((Transaction txn) async {
-                                    final int guidFlag = (direction == DismissDirection.startToEnd) ? -2 : -3;
-                                    final String sql = 'UPDATE ${NarrowEventsTableHelper.tableName} SET canEditRunAttendence = "$guidFlag" where eventId = "${event['eventId']}"';
-                                    final int result = await txn.rawUpdate(sql);
-                                    print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-                                    _refreshEventFromTables(true);
-                                  });
-                                });
-
-                                final NarrowEventsService nSvc = NarrowEventsService();
-                                nSvc.updateEventDetails(event['eventId'], (direction == DismissDirection.startToEnd) ? 0 : 1, -1).then((void dummy) {
-                                  _refreshEventFromTables(true).then((void dummy) {
-                                    setState(() {});
-                                  });
-                                });
-
-                                //}
+                                final bool isVisible = direction == DismissDirection.endToStart;
+                                updateEvent(event, isVisible: isVisible);
                               });
                             }
                             return Future<bool>.value(false);
@@ -351,7 +338,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                                   padding: EdgeInsets.only(left: 15.0),
                                   child: Text(
                                       // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                      'Hide this event',
+                                      'Hide event',
                                       style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                 )
                               ])),
@@ -368,7 +355,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                                   padding: EdgeInsets.only(right: 15.0),
                                   child: Text(
                                       //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                      'Show this event',
+                                      'Show event',
                                       style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                 )
                               ],
@@ -378,22 +365,27 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                             print(direction.toString() + ' NOTE: We should never reach this point');
                           },
                           child: FilterEventListItem(
-                            event: events[index],
+                            event: event,
                             kennelShortName: widget.kennel['kennelShortName'],
-                            updateEvent: (num value) {
-                              // value ??= 0;
-                              // if (value != -1) {
-                              //   model
-                              //       .updateEvent(
-                              //           eventId: eventModel.eventId,
-                              //           absoluteRunNumber: value)
-                              //       .then((dynamic notUsed) {
-                              //     setState(() {
-                              //       refreshListFromDb(false);
-
-                              //     });
-                              //   });
-                              // }
+                            updateEvent: (dynamic retVal) {
+                              final EnumEventFilterType<int> ft =  retVal;
+                              switch(ft) {
+                                case eventFilterType_showEvent:
+                                updateEvent(event,isVisible: true);
+                                break;
+                                case eventFilterType_hideEvent:
+                                updateEvent(event,isVisible: false);
+                                break;
+                                case eventFilterType_countEvent:
+                                updateEvent(event,isCountedRun: true);
+                                break;
+                                case eventFilterType_doNotCountEvent:
+                                updateEvent(event,isCountedRun: false);
+                                break;
+                                case eventFilterType_setRunNumber:
+                                setRunNumber(event,context);
+                                break;
+                              }
                             },
                           ),
                         );
@@ -414,5 +406,65 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                 ],
               )),
     );
+  }
+
+  void setRunNumber(
+      Map<String,dynamic> event, BuildContext context) {
+    final RunNumberPopup otherPaymentPopup = RunNumberPopup(runNumber:event['absoluteEventNumber']);
+
+    final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return otherPaymentPopup;
+        });
+
+    dlg.then((Map<String, String> x) {
+      final String runNumber = x['runNumber'];
+
+      if ((runNumber != null) && (runNumber != 'cancel'))
+      {
+         int rn = -1;
+         if (runNumber == 'auto')
+         {
+           rn = 0;
+         } else {
+           rn = int.parse(runNumber);
+         }
+
+         updateEvent(event,asboluteEventNumber: rn);
+
+      }
+      
+
+      // if (type != 'cancel') {
+      //   final num v = num.tryParse(amount);
+      //   final int t = int.tryParse(type);
+
+      //   // if ((v != null) && (t != null)) {
+      //   //   processPayment(
+      //   //       '', _packScopedModel, context, t, v);
+      //   // }
+      // }
+    });
+  }
+
+  Future<void> updateEvent(Map<String, dynamic> event,{bool isVisible,bool isCountedRun,int asboluteEventNumber}) async {
+    DBProvider.db.database.then((Database db) async {
+      await db.transaction<dynamic>((Transaction txn) async {
+        final int guidFlag = isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
+        final String sql = 'UPDATE ${NarrowEventsTableHelper.tableName} SET canEditRunAttendence = "$guidFlag" where eventId = "${event['eventId']}"';
+        final int result = await txn.rawUpdate(sql);
+        print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+        _refreshEventFromTables(true);
+      });
+    });
+    
+    final NarrowEventsService nSvc = NarrowEventsService();
+    nSvc.updateEventDetails(event['eventId'], isVisible: isVisible, isCountedRun: isCountedRun, absoluteEventNumber: asboluteEventNumber).then((void dummy) {
+      _refreshEventFromTables(true).then((void dummy) {
+        setState(() {});
+      });
+    });
   }
 }

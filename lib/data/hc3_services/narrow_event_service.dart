@@ -298,7 +298,7 @@ class NarrowEventsService {
 
   // ============ Functions go here =============
 
-  Future<void> updateEventDetails(String eventId, int isVisible, int absoluteEventNumber) async {
+  Future<void> updateEventDetails(String eventId, {bool isVisible, bool isCountedRun, int absoluteEventNumber}) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken = Utilities.generateToken(userId, 'addEditEvent');
@@ -306,7 +306,22 @@ class NarrowEventsService {
     final num _eventsLastUpdated = await NarrowEventsService.getLastUpdatedTime();
     final DateTime hasherEventMapUpdatedAfter = _eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_eventsLastUpdated + 1000);
 
-    final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'narrowEventsUpdatedAfter': hasherEventMapUpdatedAfter.toString(), 'eventId': eventId, 'isVisible': isVisible.toString(), 'absoluteEventNumber': absoluteEventNumber.toString()});
+    final Map<String, String> bodyMap = <String, String>{'userId': userId, 'accessToken': accessToken, 'narrowEventsUpdatedAfter': hasherEventMapUpdatedAfter.toString(), 'eventId': eventId};
+    if (isVisible != null) {
+      bodyMap.addAll(<String, String>{'isVisible': isVisible ? '1' : '0'});
+    }
+
+    if (isCountedRun != null)
+    {
+      bodyMap.addAll(<String, String>{'isCountedRun': isCountedRun ? '1' : '0'});
+    }
+
+    if (absoluteEventNumber != null)
+    {
+      bodyMap.addAll(<String, String>{'absoluteEventNumber': absoluteEventNumber.toString()});
+    }
+
+    final String body = jsonEncode(bodyMap);
 
     final http.Response response = await http
         .post(BASE_API_URL + 'hc3_add_edit_event', headers: <String, String>{'content-type': 'application/json'}, body: body
