@@ -828,7 +828,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             onTap: () => Navigator.push<UserModel>(
                   context,
                   MaterialPageRoute<UserModel>(
-                      builder: (BuildContext context) => const VideoTutorialPage(title:'How to use Check In Page',videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/Superb_sunset.mp4',)),
+                      builder: (BuildContext context) => const VideoTutorialPage(title:'How to use Check In Page',videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',)),
                 )
           ),
         ],

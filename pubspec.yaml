@@ -17,6 +17,7 @@ dependencies:
   audioplayers: ^0.10.0
   auto_size_text: ^1.1.2
   cached_network_image: ^0.8.0
+  chewie: ^0.9.7
   crypto: ^2.0.6
   cupertino_icons: ^0.1.2
   fancy_bottom_navigation: ^0.3.2

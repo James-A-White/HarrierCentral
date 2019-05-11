@@ -71,6 +71,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.2"
+  chewie:
+    dependency: "direct main"
+    description:
+      name: chewie
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.9.7"
   collection:
     dependency: transitive
     description:
@@ -363,6 +370,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.6"
+  open_iconic_flutter:
+    dependency: transitive
+    description:
+      name: open_iconic_flutter
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.3.0"
   package_config:
     dependency: transitive
     description:
@@ -461,6 +475,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.1"
+  screen:
+    dependency: transitive
+    description:
+      name: screen
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.5"
   shared_preferences:
     dependency: "direct main"
     description:

@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:video_player/video_player.dart';
 
 import 'package:harrier_central/util/styles.dart';
+import 'package:chewie/chewie.dart';
 
 class VideoTutorialPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -19,6 +20,7 @@ class VideoTutorialPage extends StatefulWidget {
 
 class VideoTutorialPageState extends State<VideoTutorialPage> {
   VideoPlayerController _controller;
+  ChewieController _chewieController;
   VoidCallback listener;
 
   @override
@@ -26,12 +28,19 @@ class VideoTutorialPageState extends State<VideoTutorialPage> {
     _controller = VideoPlayerController.network(widget.videoUrl)
       ..addListener(listener)
       ..initialize().then((_) {
-        _controller.play().then((void dummy){
 
+        setState(() {
+                  _chewieController = ChewieController(
+          videoPlayerController: _controller,
+          aspectRatio: 1080/1920,
+          autoPlay: true,
+          looping: false,
+        );
         });
-        // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
-        setState(() {});
       });
+    // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+    setState(() {});
+
     super.initState();
     listener = () {
       setState(() {});
@@ -40,19 +49,14 @@ class VideoTutorialPageState extends State<VideoTutorialPage> {
 
   @override
   void dispose() {
-    super.dispose();
     _controller.dispose();
+    _chewieController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return 
-    
-
-
-
-    
-    Scaffold(
+    return Scaffold(
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
@@ -63,35 +67,105 @@ class VideoTutorialPageState extends State<VideoTutorialPage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            setState(() {
-              _controller.value.isPlaying
-                  ? _controller.pause()
-                  : _controller.play().then((void dummy){
-
-                  });
-            });
-          },
-          child: Icon(
-            _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-          ),
-        ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     setState(() {
+      //       _controller.value.isPlaying ? _controller.pause() : _controller.play().then((void dummy) {});
+      //     });
+      //   },
+      //   child: Icon(
+      //     _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+      //   ),
+      // ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         height: MediaQuery.of(context).size.height,
         child: Center(
           child: Container(
             margin: const EdgeInsets.all(20.0),
-            child: _controller.value.initialized
-                ? AspectRatio(
-                    aspectRatio: _controller.value.aspectRatio,
-                    child: VideoPlayer(_controller),
-                  )
-                : Container(),
+            child: _chewieController == null ? Container():
+            Chewie(
+                      controller: _chewieController,
+                    )
+                
           ),
         ),
       ),
     );
   }
 }
+
+// class VideoTutorialPageState extends State<VideoTutorialPage> {
+//   VideoPlayerController _controller;
+//   VoidCallback listener;
+
+//   @override
+//   void initState() {
+//     _controller = VideoPlayerController.network(widget.videoUrl)
+//       ..addListener(listener)
+//       ..initialize().then((_) {
+//         _controller.play().then((void dummy){
+
+//         });
+//         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+//         setState(() {});
+//       });
+//     super.initState();
+//     listener = () {
+//       setState(() {});
+//     };
+//   }
+
+//   @override
+//   void dispose() {
+//     super.dispose();
+//     _controller.dispose();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return
+
+//     Scaffold(
+//       appBar: AppBar(
+//         centerTitle: true,
+//         backgroundColor: themeAppBarBackground,
+//         title: Text(
+//           widget.title,
+//           style: TextStyle(
+//             color: Colors.white,
+//           ),
+//         ),
+//       ),
+//       floatingActionButton: FloatingActionButton(
+//           onPressed: () {
+//             setState(() {
+//               _controller.value.isPlaying
+//                   ? _controller.pause()
+//                   : _controller.play().then((void dummy){
+
+//                   });
+//             });
+//           },
+//           child: Icon(
+//             _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+//           ),
+//         ),
+//       body: Container(
+//         decoration: Backgrounds.defaultHcBackground(),
+//         height: MediaQuery.of(context).size.height,
+//         child: Center(
+//           child: Container(
+//             margin: const EdgeInsets.all(20.0),
+//             child: _controller.value.initialized
+//                 ? AspectRatio(
+//                     aspectRatio: _controller.value.aspectRatio,
+//                     child: VideoPlayer(_controller),
+//                   )
+//                 : Container(),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
