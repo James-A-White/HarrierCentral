@@ -17,6 +17,8 @@ const String EMAIL_PAYMENT_API_URL = 'https://hcazurefunctions7.azurewebsites.ne
 const String EMAIL_RUN_REPORT_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendRunCountsReport';
 const String EMAIL_KENNEL_RUN_STATS_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendKennelRunStatsReport';
 
+const String GOOGLE_API_KEY = 'AIzaSyAiJXV8P99FwXq2FtYby7To80e9SBTrV2c';
+
 
 
 const String ERROR_KEY = 'HC_ERROR';

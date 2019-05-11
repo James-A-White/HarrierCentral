@@ -19,6 +19,8 @@ import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/models/user_model.dart';
+import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
+import 'package:harrier_central/pages/menu_pages/video_tutorial_page.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -175,7 +177,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
           INNER JOIN ${HashersTableHelper.tableName} h on h.hasherId = hkm.userId
           LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventId}"
           LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
-          WHERE hkm.kennelId = "${widget.kennelId}" AND hkm.isMember = 1
+          WHERE hkm.kennelId = "${widget.kennelId}" AND hkm.isMember = 1 AND coalesce(hem.virginVisitorType,0) = 0
           UNION
           SELECT 
             null as hasherId,
@@ -183,8 +185,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             0 as isMember,
             hem2.isHare as isHare,
             CASE WHEN pay2.hemId IS NULL THEN 0 ELSE 1 END as isPaid, 
-            coalesce(hem2.displayName,"<no name>") || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END as nameForDisplay,
-            coalesce(hem2.displayName,"<no name>") || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END as nameForSort,
+            coalesce(hem2.displayName,CASE WHEN hem2.virginVisitorType = 3 THEN h2.dispName ELSE "<no name>" END) || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END as nameForDisplay,
+            coalesce(hem2.displayName,CASE WHEN hem2.virginVisitorType = 3 THEN h2.dispName ELSE "<no name>" END) || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END as nameForSort,
             coalesce(pay2.paymentType,0) as paymentType,
             CASE WHEN hem2.virginVisitorType = 1 THEN "https://harriercentral.blob.core.windows.net/harrier/Virgin.png" ELSE "https://harriercentral.blob.core.windows.net/harrier/Visitor.png" END as photo,
             coalesce(hem2.virginVisitorType,1) as virginVisitorType,
@@ -195,6 +197,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             pay2.updatedAt as payUpdatedAt,
             0 as credit
             FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin)} hem2 
+            INNER JOIN ${HashersTableHelper.tableName} h2 on h2.hasherId = hem2.userId
             LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay2 on pay2.hemId = hem2.hemId and pay2.cancelledBy IS NULL
             WHERE hem2.eventId = "${widget.eventId}" and hem2.virginVisitorType != 0
           UNION
@@ -404,22 +407,28 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   //   }
   // }
 
-  // void findHasher(PackScopedModel packScopedModel) {
-  //   Navigator.push<HashersModel>(
-  //     context,
-  //     MaterialPageRoute<HashersModel>(
-  //       settings: const RouteSettings(),
-  //       builder: (BuildContext context) {
-  //         return const FindHasherPage();
-  //       },
-  //     ),
-  //   ).then((HashersModel hasher) {
-  //     if ((hasher != null) && (hasher['hasherId != null)) {
-  //       packScopedModel.joinEvent(widget.eventId, rsvpYes.value,
-  //           isHareNo.value, attendenceAtHash.value, hasher['hasherId);
-  //     }
-  //   });
-  // }
+  void findHasher() {
+    Navigator.push<Map<String,dynamic>>(
+      context,
+      MaterialPageRoute<Map<String,dynamic>>(
+        settings: const RouteSettings(),
+        builder: (BuildContext context) {
+          return const FindHasherPage();
+        },
+      ),
+    ).then((Map<String,dynamic> result) {
+      if ((result != null) && (result['hasher']?.hasherId != null)) {
+        final HasherEventMapService hemSrv = HasherEventMapService();
+        final Future<void> retVal = hemSrv.joinEvent(event, HasherEventMapTableType.admin, result['hasher'].hasherId, null, rsvpYes.value, attendenceAtHash.value, isHareNo.value,result['virginVisitorType']);
+
+        retVal.then((void dummy) {
+          _refreshPackListFromTables(false).then((void dummy) {
+            _refreshCounters(true);
+          });
+        });
+      }
+    });
+  }
 
   void showVirginVisitorPopup() {
     const AddVisitorVirginPopup addVirginVisitorPopup = AddVisitorVirginPopup();
@@ -438,8 +447,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       final String phoneNumber = x['phone'] ?? '';
 
       EnumVirginVisitor<int> evv = enumVirgin;
-      if (type == enumVisitor.value.toString()) {
-        evv = enumVisitor;
+      if (type == enumAnonymousVisitor.value.toString()) {
+        evv = enumAnonymousVisitor;
       }
 
       if (type != 'cancel') {
@@ -754,39 +763,6 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
               filterOptionsPopup();
-              // const FilterOptionsPopup popup = FilterOptionsPopup();
-
-              // final Future<FilterOptions> dlg = showDialog<FilterOptions>(
-              //     context: context,
-              //     barrierDismissible: false, // user must tap button!
-              //     builder: (BuildContext context) {
-              //       return popup;
-              //     });
-
-              // dlg.then(
-              //   (FilterOptions x) {
-              //     switch (x) {
-              //       case FilterOptions.hashersNotHereYet:
-              //         filterValues = <int>[0, 1, 0, 0, 0, 0, 0];
-              //         break;
-              //       case FilterOptions.hashersNotPaid:
-              //         filterValues = <int>[0, 0, 1, -1, 0, 0, 0];
-              //         break;
-              //       case FilterOptions.hashersStillOnTrail:
-              //         filterValues = <int>[0, 0, 1, 0, -1, 0, 0];
-              //         break;
-              //       case FilterOptions.cancel:
-              //         break;
-              //       default:
-              //         filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
-              //         break;
-              //     }
-
-              //     if (x != FilterOptions.cancel) {
-              //       _refreshPackListFromTables(true);
-              //     }
-              //   },
-              // );
             },
           ),
           // SpeedDialChild(
@@ -842,8 +818,19 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             backgroundColor: Colors.blue,
             label: 'Find Hasher',
             labelStyle: const TextStyle(fontSize: 18.0),
-            //onTap: () => findHasher(_packScopedModel),
-          )
+            onTap: () => findHasher(),
+          ),
+          SpeedDialChild(
+            child: const Icon(MaterialCommunityIcons.message_video),
+            backgroundColor: Colors.deepOrange,
+            label: 'View video tutorial',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () => Navigator.push<UserModel>(
+                  context,
+                  MaterialPageRoute<UserModel>(
+                      builder: (BuildContext context) => const VideoTutorialPage(title:'How to use Check In Page',videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/Superb_sunset.mp4',)),
+                )
+          ),
         ],
       ),
       appBar: getAppBar((_isLoading || (event == null)) ? '... Loading' : event['kennelName']),
@@ -1301,7 +1288,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     });
 
     final HasherEventMapService hemSrv = HasherEventMapService();
-    final Future<void> retVal = hemSrv.joinEvent(event, HasherEventMapTableType.admin, hasherId, hemId, rsvpState, attendenceState, isHare);
+    final Future<void> retVal = hemSrv.joinEvent(event, HasherEventMapTableType.admin, hasherId, hemId, rsvpState, attendenceState, isHare,-1);
 
     retVal.then((void dummy) {
       _refreshPackListFromTables(false).then((void dummy) {
@@ -1567,7 +1554,7 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
             textColor: Colors.white,
             onPressed: () {
               Navigator.of(context).pop(<String, String>{
-                'type': enumVisitor.value.toString(),
+                'type': enumAnonymousVisitor.value.toString(),
                 'name': nameTextController.text,
                 'email': emailTextController.text,
                 'phone': phoneTextController.text,

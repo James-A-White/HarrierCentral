@@ -73,6 +73,11 @@
 	<string>This app accesses your photo library to allow you to select a profile photo.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>This app does not currently use speech recognition. Please contact us at connect@harriercentral.com if you see this message.</string>
+	<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSAllowsArbitraryLoads</key>
+			<true/>
+		</dict>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

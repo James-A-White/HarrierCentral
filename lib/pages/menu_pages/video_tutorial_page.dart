@@ -1,0 +1,97 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+
+import 'package:video_player/video_player.dart';
+
+import 'package:harrier_central/util/styles.dart';
+
+class VideoTutorialPage extends StatefulWidget {
+  //final FutureRunScopedModel futureRunsModel;
+
+  const VideoTutorialPage({Key key, this.title, this.videoUrl}) : super(key: key);
+
+  final String title;
+  final String videoUrl;
+
+  @override
+  VideoTutorialPageState createState() => VideoTutorialPageState();
+}
+
+class VideoTutorialPageState extends State<VideoTutorialPage> {
+  VideoPlayerController _controller;
+  VoidCallback listener;
+
+  @override
+  void initState() {
+    _controller = VideoPlayerController.network(widget.videoUrl)
+      ..addListener(listener)
+      ..initialize().then((_) {
+        _controller.play().then((void dummy){
+
+        });
+        // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+        setState(() {});
+      });
+    super.initState();
+    listener = () {
+      setState(() {});
+    };
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return 
+    
+
+
+
+    
+    Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: themeAppBarBackground,
+        title: Text(
+          widget.title,
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            setState(() {
+              _controller.value.isPlaying
+                  ? _controller.pause()
+                  : _controller.play().then((void dummy){
+
+                  });
+            });
+          },
+          child: Icon(
+            _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+          ),
+        ),
+      body: Container(
+        decoration: Backgrounds.defaultHcBackground(),
+        height: MediaQuery.of(context).size.height,
+        child: Center(
+          child: Container(
+            margin: const EdgeInsets.all(20.0),
+            child: _controller.value.initialized
+                ? AspectRatio(
+                    aspectRatio: _controller.value.aspectRatio,
+                    child: VideoPlayer(_controller),
+                  )
+                : Container(),
+          ),
+        ),
+      ),
+    );
+  }
+}

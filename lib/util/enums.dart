@@ -13,8 +13,10 @@ class EnumVirginVisitor<int> extends Enum<int> {
   const EnumVirginVisitor(int val) : super(val);
 }
 
+const EnumVirginVisitor<int> enumHasher = EnumVirginVisitor<int>(0);
 const EnumVirginVisitor<int> enumVirgin = EnumVirginVisitor<int>(1);
-const EnumVirginVisitor<int> enumVisitor = EnumVirginVisitor<int>(2);
+const EnumVirginVisitor<int> enumAnonymousVisitor = EnumVirginVisitor<int>(2);
+const EnumVirginVisitor<int> enumKnownVisitor = EnumVirginVisitor<int>(3);
 
 //////////////////////////
 

@@ -9,6 +9,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 
 class FindHasherPage extends StatefulWidget {
@@ -32,10 +33,7 @@ class FindHasherPageState extends State<FindHasherPage> {
       hasherList = list;
       setState(() {
         if (hasherList != null) {
-          hasherList.sort((HashersModel a, HashersModel b) =>
-              (a.dispName ?? '')
-                  .toLowerCase()
-                  .compareTo((b.dispName ?? '').toLowerCase()));
+          hasherList.sort((HashersModel a, HashersModel b) => (a.dispName ?? '').toLowerCase().compareTo((b.dispName ?? '').toLowerCase()));
           filteredList = hasherList;
         } else {
           filteredList = null;
@@ -50,15 +48,7 @@ class FindHasherPageState extends State<FindHasherPage> {
         if (filterText.isEmpty) {
           filteredList = hasherList;
         } else {
-          filteredList = hasherList
-              .where((HashersModel user) => ((user.firstName ?? '') +
-                      ' ' +
-                      (user.lastName ?? '') +
-                      ' ' +
-                      (user.dispName ?? ''))
-                  .toLowerCase()
-                  .contains(filterText.toLowerCase()))
-              .toList();
+          filteredList = hasherList.where((HashersModel user) => ((user.firstName ?? '') + ' ' + (user.lastName ?? '') + ' ' + (user.dispName ?? '')).toLowerCase().contains(filterText.toLowerCase())).toList();
         }
       }
     });
@@ -115,10 +105,7 @@ class FindHasherPageState extends State<FindHasherPage> {
               focusNode: searchFocusNode,
               controller: searchController,
               keyboardType: TextInputType.text,
-              style: const TextStyle(
-                  fontFamily: 'WorkSansSemiBold',
-                  fontSize: 16.0,
-                  color: Colors.black),
+              style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 icon: Icon(
@@ -126,8 +113,7 @@ class FindHasherPageState extends State<FindHasherPage> {
                   color: Colors.black,
                 ),
                 hintText: 'Hash or mortal name',
-                hintStyle:
-                    TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
               ),
             ),
           ),
@@ -187,25 +173,17 @@ class FindHasherPageState extends State<FindHasherPage> {
       ),
       appBar: getAppBar(),
       body: LayoutBuilder(
-        builder: (BuildContext scaffoldContext, BoxConstraints constraints) =>
-            Stack(children: <Widget>[
+        builder: (BuildContext scaffoldContext, BoxConstraints constraints) => Stack(children: <Widget>[
               Positioned(top: 0, child: searchBar(constraints.maxWidth)),
               Positioned(
                 top: searchBar(constraints.maxWidth).constraints.maxHeight,
                 right: 0.0,
                 left: 0.0,
                 child: (filteredList == null || filteredList.isEmpty)
-                    ? Center(
-                        child: Container(
-                            height: 50,
-                            width: 50,
-                            child: const HcCircularProgressIndicator()))
+                    ? Center(child: Container(height: 50, width: 50, child: const HcCircularProgressIndicator()))
                     : Container(
                         key: hasherListBox,
-                        height: constraints.maxHeight -
-                            searchBar(constraints.maxWidth)
-                                .constraints
-                                .maxHeight,
+                        height: constraints.maxHeight - searchBar(constraints.maxWidth).constraints.maxHeight,
                         child: HasherListView(
                           hasherList: filteredList,
                         ),
@@ -230,57 +208,73 @@ class HasherListView extends StatelessWidget {
       //splashColor: Colors.red,
       highlightColor: Colors.red,
       onTap: () {
-        return showDialog<bool>(
+        return showDialog<int>(
             context: context,
             barrierDismissible: false, // user must tap button!
             builder: (BuildContext context) {
               return AlertDialog(
-                title: const Text('Add Hasher to Run?'),
+                title: Text('Add ${hasherList[index].dispName}?'),
                 content: SingleChildScrollView(
                   child: ListBody(
                     children: <Widget>[
                       Text(
                         'Do you want to add ${hasherList[index].dispName} to your run?',
                         textAlign: TextAlign.justify,
-                        style: const TextStyle(
-                            fontFamily: 'AvenirNextRegular',
-                            fontStyle: FontStyle.normal,
-                            fontSize: 16.0,
-                            height: 1.0),
+                        style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                       )
                     ],
                   ),
                 ),
                 actions: <Widget>[
                   Padding(
-                    padding: const EdgeInsets.only(right: 60.0),
+                    padding: const EdgeInsets.only(right: 15.0),
                     child: Container(
-                      width: 100.0,
+                      width: 80.0,
+                      height:50.0,
                       child: RaisedButton(
                         color: Colors.red,
                         child: const Text('Cancel'),
                         textColor: Colors.white,
                         onPressed: () {
-                          Navigator.of(context).pop(false);
+                          Navigator.of(context).pop(-1);
                         },
                       ),
                     ),
                   ),
                   Container(
-                    width: 100.0,
+                    width: 80.0,
+                    height:50.0,
                     child: RaisedButton(
-                      child: const Text('Add Hasher'),
+                      child: const Text(
+                        'Add\r\nVisitor',
+                        textAlign: TextAlign.center,
+                      ),
                       textColor: Colors.white,
                       onPressed: () {
-                        Navigator.of(context).pop(true);
+                        Navigator.of(context).pop(enumKnownVisitor.value);
+                      },
+                    ),
+                  ),
+                  Container(
+                    width: 80.0,
+                    height:50.0,
+                    child: RaisedButton(
+                      child: const Text(
+                        'Add\r\nHasher',
+                        textAlign: TextAlign.center,
+                      ),
+                      textColor: Colors.white,
+                      onPressed: () {
+                        Navigator.of(context).pop(enumHasher.value);
                       },
                     ),
                   ),
                 ],
               );
-            }).then((bool doAddHasher) {
-          if (doAddHasher) {
-            Navigator.of(context).pop(hasherList[index]);
+            }).then((int doAddHasher) {
+          if (doAddHasher != -1) {
+            final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index], 'virginVisitorType': doAddHasher};
+            Navigator.of(context).pop(result);
           }
         });
       },
@@ -303,9 +297,7 @@ class HasherListView extends StatelessWidget {
                     //     ),
                     //     height: 70.0,
                     //    width: 70.0),
-                    errorWidget:
-                        (BuildContext context, String url, Object error) =>
-                            const Icon(Icons.error),
+                    errorWidget: (BuildContext context, String url, Object error) => const Icon(Icons.error),
                     //fadeOutDuration:  Duration(seconds: 1),
                     fadeInDuration: const Duration(milliseconds: 0),
                     width: 70.0,
@@ -316,13 +308,7 @@ class HasherListView extends StatelessWidget {
                         width: 70.0,
                         height: 70.0,
                         fit: BoxFit.fill,
-                        image: AssetImage(('images/avatars/' +
-                                hasherList[index]
-                                    .photo
-                                    .toLowerCase()
-                                    .replaceFirst('bundle://', '') +
-                                '.png')
-                            .toLowerCase()),
+                        image: AssetImage(('images/avatars/' + hasherList[index].photo.toLowerCase().replaceFirst('bundle://', '') + '.png').toLowerCase()),
                       )
                     : Image(
                         width: 70.0,
@@ -334,22 +320,14 @@ class HasherListView extends StatelessWidget {
             Positioned(
               left: 77.0,
               top: 19.0,
-              child: Text(hasherList[index].dispName,
-                  style: const TextStyle(
-                      fontFamily: 'AvenirNextCondensedMedium',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 25.0,
-                      height: 1.0)),
+              child: Text(hasherList[index].dispName, style: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0)),
             ),
             // this widget is here to grow the contents of the cell to a size that fills nearly the whole cell
             // in order to give plenty of room for the tap gesture.
             Positioned(
               left: 75,
               top: 0,
-              child: Container(
-                  width: MediaQuery.of(context).size.width - 80,
-                  height: 65,
-                  color: Colors.transparent),
+              child: Container(width: MediaQuery.of(context).size.width - 80, height: 65, color: Colors.transparent),
             )
             // Payment icons
           ],
@@ -374,14 +352,13 @@ class HasherListView extends StatelessWidget {
                   color: Colors.grey[300],
                   width: 70.0,
                   height: 70.0,
-                  child: const Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: Center(child: HcCircularProgressIndicator())),
+                  child: const Padding(padding: EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator())),
                 )
               : Dismissible(
                   key: Key(index.toString()),
                   confirmDismiss: (DismissDirection direction) {
-                    Navigator.of(context).pop(hasherList[index]);
+                    final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index], 'virginVisitorType': direction == DismissDirection.startToEnd ? enumHasher.value : enumKnownVisitor.value};
+                    Navigator.of(context).pop(result);
                     return Future<bool>.value(false);
                   },
                   background: Container(
@@ -396,44 +373,29 @@ class HasherListView extends StatelessWidget {
                           ),
                         ),
                         Padding(
-                          padding:  EdgeInsets.only(left: 15.0),
-                          child: Text('Add to run',
-                              style:  TextStyle(
-                                  fontFamily: 'AvenirNextDemiBold',
-                                  fontStyle: FontStyle.normal,
-                                  color: Colors.white,
-                                  fontSize: 17.0,
-                                  height: 1.0)),
+                          padding: EdgeInsets.only(left: 15.0),
+                          child: Text('Add to run', style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                         ),
                       ],
                     ),
                   ),
                   secondaryBackground: Container(
-                      color: Colors.green,
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: const <Widget>[
-                            Padding(
-                              padding: EdgeInsets.only(right: 15.0),
-                              child: Icon(
-                                FontAwesome.plus_circle,
-                                color: Colors.white,
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(right: 15.0),
-                              child: Text(' Add to run',
-                                  style: TextStyle(
-                                      fontFamily: 'AvenirNextDemiBold',
-                                      fontStyle: FontStyle.normal,
-                                      color: Colors.white,
-                                      fontSize: 17.0,
-                                      height: 1.0)),
-                            )
-                          ])),
+                      color: Colors.purple,
+                      child: Row(mainAxisAlignment: MainAxisAlignment.end, children: const <Widget>[
+                        Padding(
+                          padding: EdgeInsets.only(right: 15.0),
+                          child: Icon(
+                            MaterialCommunityIcons.alpha_v_circle,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(right: 15.0),
+                          child: Text(' Add as visitor', style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                        )
+                      ])),
                   onDismissed: (DismissDirection direction) {
-                    print(direction.toString() +
-                        ' NOTE: We should never reach this point');
+                    print(direction.toString() + ' NOTE: We should never reach this point');
                   },
                   child: listItem(context, index),
                 );

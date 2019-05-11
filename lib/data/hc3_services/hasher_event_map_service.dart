@@ -306,7 +306,7 @@ class HasherEventMapService {
 
   //==============  Domain specific functions ===========
 
-  Future<void> joinEvent(Map<String, dynamic> event, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, int rsvpState, int attendenceState, int isHare) async {
+  Future<void> joinEvent(Map<String, dynamic> event, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, int rsvpState, int attendenceState, int isHare, int virginVisitorType) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEvent');
 
@@ -325,8 +325,9 @@ class HasherEventMapService {
       'isHare': isHare,
       'rsvpState': rsvpState,
       'attendenceState': attendenceState,
+      'virginVisitorType':virginVisitorType,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
-      'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
+      'paymentsUpdatedAfter': paymentsUpdatedAfter.toString()
     });
 
     final http.Response response = await http.post(BASE_API_URL + 'hc3_join_event', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
