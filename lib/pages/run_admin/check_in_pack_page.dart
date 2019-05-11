@@ -25,7 +25,7 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
-import 'package:harrier_central/widgets/filter_options_popup.dart';
+import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/widgets/new_user.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
 
@@ -40,6 +40,8 @@ class CheckInPackPage extends StatefulWidget {
     return CheckInPackPageState();
   }
 }
+
+enum FilterOptions { hashersNotHereYet, hashersStillOnTrail, hashersNotPaid, visitors, virgins, clearAllFilters, cancel }
 
 class CheckInPackPageState extends State<CheckInPackPage> {
   //final PackScopedModel _packScopedModel = PackScopedModel();
@@ -182,7 +184,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             hem2.isHare as isHare,
             CASE WHEN pay2.hemId IS NULL THEN 0 ELSE 1 END as isPaid, 
             coalesce(hem2.displayName,"<no name>") || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END as nameForDisplay,
-            coalesce(hem2.displayName,"<no name>") as nameForSort,
+            coalesce(hem2.displayName,"<no name>") || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END as nameForSort,
             coalesce(pay2.paymentType,0) as paymentType,
             CASE WHEN hem2.virginVisitorType = 1 THEN "https://harriercentral.blob.core.windows.net/harrier/Virgin.png" ELSE "https://harriercentral.blob.core.windows.net/harrier/Visitor.png" END as photo,
             coalesce(hem2.virginVisitorType,1) as virginVisitorType,
@@ -335,7 +337,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                   ((filterValues[2] == 0) || (filterValues[2] == -1 && ((a['attendenceState'] ?? 0) < 20)) || (filterValues[2] == 1 && (a['attendenceState'] ?? 0) >= 20)) &&
                   ((filterValues[3] == 0) || (filterValues[3] == -1 && ((a['isPaid'] ?? 0) == 0)) || (filterValues[3] == 1 && (a['isPaid'] ?? 0) == 1)) &&
                   ((filterValues[4] == 0) || (filterValues[4] == -1 && ((a['attendenceState'] ?? 0) < 30)) || (filterValues[4] == 1 && (a['attendenceState'] ?? 0) >= 30)) &&
-                  ((filterValues[5] == 0) || (filterValues[5] == -1 && ((a['isMember'] ?? 0) == 0)) || (filterValues[5] == 1 && (a['isMember'] ?? 0) == 1))) 
+                  ((filterValues[5] == 0) || (filterValues[5] == -1 && ((a['isMember'] ?? 0) == 0)) || (filterValues[5] == 1 && (a['isMember'] ?? 0) == 1)))
               .toList();
 
           //packList.sort((Map<String, dynamic> a, Map<String, dynamic> b) => (a['nameForDisplay']).compareTo(b['nameForDisplay']));
@@ -482,9 +484,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   bool showFilter = false;
 
   Container searchBar(num width) {
-    return 
-    
-    Container(
+    return Container(
       decoration: const BoxDecoration(
         // border: new Border.all(width: 1.0, color: Colors.black),
         //shape: BoxShape.circle,
@@ -512,9 +512,12 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 icon: FontAwesome.chevron_circle_down,
                 label: 'Find',
                 onTap: () {
-                  setState(() {
-                    showFilter = !showFilter;
-                  });
+                  // setState(() {
+                  showFilter = !showFilter;
+                  searchController.text = '';
+                  filterText = '';
+                  _refreshPackListFromTables(true);
+                  // });
 
                   //filterTapped(4);
                 },
@@ -624,6 +627,101 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     );
   }
 
+  void filterOptionsPopup() {
+    final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+      <String, dynamic>{
+        'title': 'Hashers not here yet',
+        'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.check_circle, color: Colors.green)],
+        'returnValue': FilterOptions.hashersNotHereYet
+      },
+      <String, dynamic>{
+        'title': 'Hashers still on trail',
+        'icon': <Widget>[
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Image.asset('images/icons/runner_icon.png', height: 25, width: 25, color: Colors.orange),
+        ],
+        'returnValue': FilterOptions.hashersStillOnTrail
+      },
+      <String, dynamic>{
+        'title': 'Hashers who have not paid',
+        'icon': <Widget>[
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Image.asset('images/icons/dollar_sign_icon.png', height: 25, width: 25, color: Colors.red),
+        ],
+        'returnValue': FilterOptions.hashersNotPaid
+      },
+      <String, dynamic>{
+        'title': 'Visitors',
+        'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Positioned(bottom: 2, child: Icon(MaterialCommunityIcons.alpha_v_circle, size: 30, color: Colors.purple))],
+        'returnValue': FilterOptions.visitors
+      },
+      <String, dynamic>{
+        'title': 'Virgins',
+        'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(bottom: 2, child: Icon(MaterialCommunityIcons.alpha_v_circle, size: 30, color: Colors.pink[300]))],
+        'returnValue': FilterOptions.virgins
+      },
+      <String, dynamic>{
+        'title': 'Clear all filters',
+        'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Positioned(bottom: 2, child: Icon(Ionicons.md_remove_circle, size: 30, color: Colors.teal))],
+        'returnValue': FilterOptions.clearAllFilters
+      },
+    ];
+
+    final MultipleChoicePopup popup = MultipleChoicePopup(
+        title: 'Common filter options',
+        buttons: buttons,
+        cancelButtonTitle: 'Cancel',
+        buttonPress: (dynamic retVal) {
+          switch (retVal) {
+            case FilterOptions.hashersNotHereYet:
+              filterValues = <int>[0, 1, 0, 0, 0, 0, 0];
+              break;
+            case FilterOptions.hashersNotPaid:
+              filterValues = <int>[0, 0, 1, -1, 0, 0, 0];
+              break;
+            case FilterOptions.hashersStillOnTrail:
+              filterValues = <int>[0, 0, 1, 0, -1, 0, 0];
+              break;
+            case FilterOptions.clearAllFilters:
+              filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
+              showFilter = false;
+              filterText = '';
+              searchController.text = '';
+              break;
+            case FilterOptions.visitors:
+              filterValues = <int>[0, 0, 1, 0, 0, 0, 0];
+              showFilter = true;
+              filterText = '(visitor)';
+              searchController.text = '(visitor)';
+              break;
+            case FilterOptions.virgins:
+              filterValues = <int>[0, 0, 1, 0, 0, 0, 0];
+              showFilter = true;
+              filterText = '(virgin)';
+              searchController.text = '(virgin)';
+              break;
+            case FilterOptions.cancel:
+              break;
+            default:
+              filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
+              break;
+          }
+
+          if (retVal != FilterOptions.cancel) {
+            _refreshPackListFromTables(true);
+          }
+
+          // );
+        });
+
+    showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return popup;
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -655,39 +753,40 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             label: 'Set Common Filters',
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
-              const FilterOptionsPopup popup = FilterOptionsPopup();
+              filterOptionsPopup();
+              // const FilterOptionsPopup popup = FilterOptionsPopup();
 
-              final Future<FilterOptions> dlg = showDialog<FilterOptions>(
-                  context: context,
-                  barrierDismissible: false, // user must tap button!
-                  builder: (BuildContext context) {
-                    return popup;
-                  });
+              // final Future<FilterOptions> dlg = showDialog<FilterOptions>(
+              //     context: context,
+              //     barrierDismissible: false, // user must tap button!
+              //     builder: (BuildContext context) {
+              //       return popup;
+              //     });
 
-              dlg.then(
-                (FilterOptions x) {
-                  switch (x) {
-                    case FilterOptions.hashersNotHereYet:
-                      filterValues = <int>[0, 1, 0, 0, 0, 0, 0];
-                      break;
-                    case FilterOptions.hashersNotPaid:
-                      filterValues = <int>[0, 0, 1, -1, 0, 0, 0];
-                      break;
-                    case FilterOptions.hashersStillOnTrail:
-                      filterValues = <int>[0, 0, 1, 0, -1, 0, 0];
-                      break;
-                    case FilterOptions.cancel:
-                      break;
-                    default:
-                      filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
-                      break;
-                  }
+              // dlg.then(
+              //   (FilterOptions x) {
+              //     switch (x) {
+              //       case FilterOptions.hashersNotHereYet:
+              //         filterValues = <int>[0, 1, 0, 0, 0, 0, 0];
+              //         break;
+              //       case FilterOptions.hashersNotPaid:
+              //         filterValues = <int>[0, 0, 1, -1, 0, 0, 0];
+              //         break;
+              //       case FilterOptions.hashersStillOnTrail:
+              //         filterValues = <int>[0, 0, 1, 0, -1, 0, 0];
+              //         break;
+              //       case FilterOptions.cancel:
+              //         break;
+              //       default:
+              //         filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
+              //         break;
+              //     }
 
-                  if (x != FilterOptions.cancel) {
-                    _refreshPackListFromTables(true);
-                  }
-                },
-              );
+              //     if (x != FilterOptions.cancel) {
+              //       _refreshPackListFromTables(true);
+              //     }
+              //   },
+              // );
             },
           ),
           // SpeedDialChild(
