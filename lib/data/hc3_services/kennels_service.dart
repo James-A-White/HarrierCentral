@@ -25,6 +25,7 @@ class KennelsModel {
       this.longitude,
       this.defaultPriceForMembers,
       this.defaultPriceForNonMembers,
+      this.membershipDurationInMonths,
       this.defaultRunStartTime,
       this.updatedAt,
       this.removed});
@@ -46,6 +47,7 @@ class KennelsModel {
   final num longitude;
   final num defaultPriceForMembers;
   final num defaultPriceForNonMembers;
+  final int membershipDurationInMonths;
   final DateTime defaultRunStartTime;
   final DateTime updatedAt;
   final int removed;
@@ -75,6 +77,7 @@ class KennelsModel {
           longitude: jsonItem['longitude'],
           defaultPriceForMembers: jsonItem['defaultPriceForMembers'],
           defaultPriceForNonMembers: jsonItem['defaultPriceForNonMembers'],
+          membershipDurationInMonths: jsonItem['membershipDurationInMonths'],
           defaultRunStartTime: DateTime.parse(
               jsonItem['defaultRunStartTime'].toString().substring(0, 19)),
           updatedAt:
@@ -128,8 +131,8 @@ class KennelsTableHelper {
   static const String colLatitude = 'latitude';
   static const String colLongitude = 'longitude';
   static const String colDefaultPriceForMembers = 'defaultPriceForMembers';
-  static const String colDefaultPriceForNonMembers =
-      'defaultPriceForNonMembers';
+  static const String colDefaultPriceForNonMembers = 'defaultPriceForNonMembers';
+  static const String colMembershipDurationInMonths= 'membershipDurationInMonths';
   static const String colDefaultRunStartTime = 'defaultRunStartTime';
   static const String colUpdatedAt = 'updatedAt';
   static const String colRemoved = 'removed';
@@ -164,6 +167,7 @@ class KennelsTableHelper {
             $colLongitude NUM,
             $colDefaultPriceForMembers NUM,
             $colDefaultPriceForNonMembers NUM,
+            $colMembershipDurationInMonths INT,
             $colDefaultRunStartTime TEXT,
             $colUpdatedAt TEXT,
             $colRemoved INT,
@@ -199,6 +203,7 @@ class KennelsTableHelper {
       KennelsTableHelper.colDefaultPriceForMembers: item.defaultPriceForMembers,
       KennelsTableHelper.colDefaultPriceForNonMembers:
           item.defaultPriceForNonMembers,
+      KennelsTableHelper.colMembershipDurationInMonths: item.membershipDurationInMonths,
       KennelsTableHelper.colDefaultRunStartTime: item.defaultRunStartTime,
       KennelsTableHelper.colUpdatedAt: item.updatedAt,
       KennelsTableHelper.colRemoved: item.removed,
@@ -226,8 +231,8 @@ class KennelsTableHelper {
       latitude: map[KennelsTableHelper.colLatitude],
       longitude: map[KennelsTableHelper.colLongitude],
       defaultPriceForMembers: map[KennelsTableHelper.colDefaultPriceForMembers],
-      defaultPriceForNonMembers:
-          map[KennelsTableHelper.colDefaultPriceForNonMembers],
+      defaultPriceForNonMembers: map[KennelsTableHelper.colDefaultPriceForNonMembers],
+      membershipDurationInMonths: map[KennelsTableHelper.colMembershipDurationInMonths],
       defaultRunStartTime: DateTime.parse(
           map[KennelsTableHelper.colDefaultRunStartTime]
               .toString()
@@ -244,6 +249,13 @@ class KennelsTableHelper {
 class KennelsService {
   static final KennelsTableHelper instance =
       KennelsTableHelper._privateConstructor();
+
+  static Future<num> getLastUpdatedTime() async {
+    final Database db = await DBProvider.db.database;
+    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${KennelsTableHelper.colUpdatedAtValue}) AS maxDate FROM ${KennelsTableHelper.tableName}');
+    final num timeValue = table.first['maxDate'];
+    return timeValue;
+  }
 
   Future<void> clearTable() async {
     final Database db = await DBProvider.db.database;

@@ -8,20 +8,26 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/data/hc3_services/kennels_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 
 class HasherKennelMapModel {
-  HasherKennelMapModel({this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.removed, this.updatedAt});
+  HasherKennelMapModel(
+      {this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.isHomeKennel, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.membershipExpirationDate, this.removed, this.updatedAt});
 
   final String hkmId;
   final String userId;
   final String kennelId;
   final int following;
   final int isMember;
+  final int isHomeKennel;
   final int mismanagementRoleFlags;
   final int userRoleFlags;
   final int appAccessFlags;
   final num historicalPackRunCount;
   final num historicalHaringCount;
+  final DateTime membershipExpirationDate;
   final DateTime updatedAt;
   final int removed;
 
@@ -38,11 +44,13 @@ class HasherKennelMapModel {
           kennelId: jsonItem['kennelId'],
           following: jsonItem['following'],
           isMember: jsonItem['isMember'],
+          isHomeKennel: jsonItem['isHomeKennel'],
           mismanagementRoleFlags: jsonItem['mismanagementRoleFlags'] ?? 0,
           userRoleFlags: jsonItem['userRoleFlags'],
           appAccessFlags: jsonItem['appAccessFlags'],
           historicalPackRunCount: jsonItem['historicalPackRunCount'],
           historicalHaringCount: jsonItem['historicalHaringCount'],
+          membershipExpirationDate: jsonItem['membershipExpirationDate'] == null ? null : DateTime.parse(jsonItem['membershipExpirationDate'].toString().substring(0, 19)),
           updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
           removed: jsonItem['removed'],
         );
@@ -70,12 +78,9 @@ const String hkmAdminTableName = 'hasherKennelMapForRunAdmin';
 class HasherKennelMapTableHelper {
   HasherKennelMapTableHelper._privateConstructor();
 
-
   //static const num forceRequeryInterval = 1 * 86400000;
   static const num forceRequeryInterval = 1 * 1000;
   static const num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
-
-
 
   static const String colId = 'id';
   static const String remoteDbId = 'hkmId';
@@ -84,11 +89,13 @@ class HasherKennelMapTableHelper {
   static const String colKennelId = 'kennelId';
   static const String colFollowing = 'following';
   static const String colIsMember = 'isMember';
+  static const String colIsHomeKennel = 'isHomeKennel';
   static const String colMismanagementRoleFlags = 'mismanagementRoleFlags';
   static const String colUserRoleFlags = 'userRoleFlags';
   static const String colAppAccessFlags = 'appAccessFlags';
   static const String colHistoricalPackRunCount = 'historicalPackRunCount';
   static const String colHistoricalHaringCount = 'historicalHaringCount';
+  static const String colMembershipExpirationDate = 'membershipExpirationDate';
   static const String colUpdatedAt = 'updatedAt';
   static const String colRemoved = 'removed';
 
@@ -130,11 +137,13 @@ class HasherKennelMapTableHelper {
             $colKennelId TEXT NOT NULL,
             $colFollowing INT,
             $colIsMember INT,
+            $colIsHomeKennel INT,
             $colMismanagementRoleFlags INT,
             $colUserRoleFlags INT,
             $colAppAccessFlags INT,
             $colHistoricalPackRunCount NUM,
             $colHistoricalHaringCount NUM,
+            $colMembershipExpirationDate TEXT,
             $colRemoved INT,
             $colUpdatedAt TEXT,
 
@@ -154,11 +163,13 @@ class HasherKennelMapTableHelper {
       HasherKennelMapTableHelper.colKennelId: item.kennelId,
       HasherKennelMapTableHelper.colFollowing: item.following,
       HasherKennelMapTableHelper.colIsMember: item.isMember,
+      HasherKennelMapTableHelper.colIsHomeKennel: item.isHomeKennel,
       HasherKennelMapTableHelper.colMismanagementRoleFlags: item.mismanagementRoleFlags,
       HasherKennelMapTableHelper.colUserRoleFlags: item.userRoleFlags,
       HasherKennelMapTableHelper.colAppAccessFlags: item.appAccessFlags,
       HasherKennelMapTableHelper.colHistoricalPackRunCount: item.historicalPackRunCount,
       HasherKennelMapTableHelper.colHistoricalHaringCount: item.historicalHaringCount,
+      HasherKennelMapTableHelper.colMembershipExpirationDate: item.membershipExpirationDate,
       HasherKennelMapTableHelper.colUpdatedAt: item.updatedAt,
       HasherKennelMapTableHelper.colRemoved: item.removed,
     };
@@ -173,11 +184,13 @@ class HasherKennelMapTableHelper {
       kennelId: map[HasherKennelMapTableHelper.colKennelId],
       following: map[HasherKennelMapTableHelper.colFollowing],
       isMember: map[HasherKennelMapTableHelper.colIsMember],
+      isHomeKennel: map[HasherKennelMapTableHelper.colIsHomeKennel],
       mismanagementRoleFlags: map[HasherKennelMapTableHelper.colMismanagementRoleFlags],
       userRoleFlags: map[HasherKennelMapTableHelper.colUserRoleFlags],
       appAccessFlags: map[HasherKennelMapTableHelper.colAppAccessFlags],
       historicalPackRunCount: map[HasherKennelMapTableHelper.colHistoricalPackRunCount],
       historicalHaringCount: map[HasherKennelMapTableHelper.colHistoricalHaringCount],
+      membershipExpirationDate: DateTime.parse(map[HasherKennelMapTableHelper.colMembershipExpirationDate].toString().substring(0, 19)),
       updatedAt: DateTime.parse(map[HasherKennelMapTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[HasherKennelMapTableHelper.colRemoved],
     );
@@ -188,6 +201,13 @@ class HasherKennelMapTableHelper {
 
 class HasherKennelMapService {
   static final HasherKennelMapTableHelper instance = HasherKennelMapTableHelper._privateConstructor();
+
+  static Future<num> getLastUpdatedTime(HasherKennelMapTableType tblType) async {
+    final Database db = await DBProvider.db.database;
+    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${HasherKennelMapTableHelper.colUpdatedAtValue}) AS maxDate FROM ${HasherKennelMapTableHelper.getTableName(tblType)}');
+    final num timeValue = table.first['maxDate'];
+    return timeValue;
+  }
 
   Future<void> clearTable(HasherKennelMapTableType tblType) async {
     final Database db = await DBProvider.db.database;
@@ -263,7 +283,9 @@ class HasherKennelMapService {
 
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.update(HasherKennelMapTableHelper.getTableName(tblType), jsonItem, where: 'id = $rowId');
+            await txn.update(HasherKennelMapTableHelper.getTableName(tblType), jsonItem, where: 'id = $rowId').then((int result){
+              print(result.toString());
+            });
             updateCounter++;
             // print(result.toString() +
             //     ' update to the ${UserKennelsTdTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -278,12 +300,27 @@ class HasherKennelMapService {
 
   //=================  Domain specific functions ================
 
-    Future<void> toggleFollowing(Map<String, dynamic> kennel,HasherKennelMapTableType tblType) async {
-
+  Future<void> toggleFollowing(Map<String, dynamic> kennel, HasherKennelMapTableType tblType) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
 
-    final String body = jsonEncode(<String, Object>{'userId': userId, 'accessToken': accessToken, 'kennelId': kennel['kennelId'], 'targetUserId': userId, 'isFollowing': kennel['followingRequested']});
+    final num _hasherKennelMapLastUpdated = await HasherKennelMapService.getLastUpdatedTime(tblType);
+    final num _kennelsLastUpdated = await KennelsService.getLastUpdatedTime();
+
+    final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+    final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
+
+    final String body = jsonEncode(<String, Object>{
+      'userId': userId,
+      'accessToken': accessToken,
+      'kennelId': kennel['kennelId'],
+      'targetUserId': userId,
+      'isFollowing': kennel['followingRequested'],
+      'isMember': -1,
+      'isHomeKennel' : -1,
+      'hasherKennelMapUpdatedAfter' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
+      'kennelsUpdatedAfter' : kennelsUpdatedAfter.toString().substring(0, 19)
+    });
 
     final http.Response response = await http.post(BASE_API_URL + 'hc3_join_kennel', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
       (dynamic error) {
@@ -291,14 +328,15 @@ class HasherKennelMapService {
       },
     );
 
-    final Database db = await DBProvider.db.database;
-    bulkUpdateDatabase(response.body, db, null, tblType);
+    if (tblType == HasherKennelMapTableType.admin)
+    { 
+        await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);  
+    } else {
+        await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body); 
+    }
 
     final dynamic result = json.decode(response.body);
-    kennel['following'] = result[0][0]['following'];
+    kennel['following'] = result[1][0]['following'];  // HACK!!! Fix this so that results can be returned in any order and not specifically [1][0]
     kennel['followingRequested'] = -1;
-
-    //print(response.body);
   }
-  
 }

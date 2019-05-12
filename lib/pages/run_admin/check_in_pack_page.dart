@@ -408,18 +408,18 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   // }
 
   void findHasher() {
-    Navigator.push<Map<String,dynamic>>(
+    Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute<Map<String,dynamic>>(
+      MaterialPageRoute<Map<String, dynamic>>(
         settings: const RouteSettings(),
         builder: (BuildContext context) {
           return const FindHasherPage();
         },
       ),
-    ).then((Map<String,dynamic> result) {
+    ).then((Map<String, dynamic> result) {
       if ((result != null) && (result['hasher']?.hasherId != null)) {
         final HasherEventMapService hemSrv = HasherEventMapService();
-        final Future<void> retVal = hemSrv.joinEvent(event, HasherEventMapTableType.admin, result['hasher'].hasherId, null, rsvpYes.value, attendenceAtHash.value, isHareNo.value,result['virginVisitorType']);
+        final Future<void> retVal = hemSrv.joinEvent(event, HasherEventMapTableType.admin, result['hasher'].hasherId, null, rsvpYes.value, attendenceAtHash.value, isHareNo.value, result['virginVisitorType']);
 
         retVal.then((void dummy) {
           _refreshPackListFromTables(false).then((void dummy) {
@@ -684,12 +684,21 @@ class CheckInPackPageState extends State<CheckInPackPage> {
           switch (retVal) {
             case FilterOptions.hashersNotHereYet:
               filterValues = <int>[0, 1, 0, 0, 0, 0, 0];
+              showFilter = false;
+              filterText = '';
+              searchController.text = '';
               break;
             case FilterOptions.hashersNotPaid:
               filterValues = <int>[0, 0, 1, -1, 0, 0, 0];
+              showFilter = false;
+              filterText = '';
+              searchController.text = '';
               break;
             case FilterOptions.hashersStillOnTrail:
               filterValues = <int>[0, 0, 1, 0, -1, 0, 0];
+              showFilter = false;
+              filterText = '';
+              searchController.text = '';
               break;
             case FilterOptions.clearAllFilters:
               filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
@@ -713,6 +722,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
               break;
             default:
               filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
+              showFilter = false;
+              filterText = '';
+              searchController.text = '';
               break;
           }
 
@@ -821,16 +833,18 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             onTap: () => findHasher(),
           ),
           SpeedDialChild(
-            child: const Icon(MaterialCommunityIcons.message_video),
-            backgroundColor: Colors.deepOrange,
-            label: 'View video tutorial',
-            labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () => Navigator.push<UserModel>(
-                  context,
-                  MaterialPageRoute<UserModel>(
-                      builder: (BuildContext context) => const VideoTutorialPage(title:'How to use Check In Page',videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',)),
-                )
-          ),
+              child: const Icon(MaterialCommunityIcons.message_video),
+              backgroundColor: Colors.deepOrange,
+              label: 'View video tutorial',
+              labelStyle: const TextStyle(fontSize: 18.0),
+              onTap: () => Navigator.push<UserModel>(
+                    context,
+                    MaterialPageRoute<UserModel>(
+                        builder: (BuildContext context) => const VideoTutorialPage(
+                              title: 'How to use Check In Page',
+                              videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',
+                            )),
+                  )),
         ],
       ),
       appBar: getAppBar((_isLoading || (event == null)) ? '... Loading' : event['kennelName']),
@@ -1288,7 +1302,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     });
 
     final HasherEventMapService hemSrv = HasherEventMapService();
-    final Future<void> retVal = hemSrv.joinEvent(event, HasherEventMapTableType.admin, hasherId, hemId, rsvpState, attendenceState, isHare,-1);
+    final Future<void> retVal = hemSrv.joinEvent(event, HasherEventMapTableType.admin, hasherId, hemId, rsvpState, attendenceState, isHare, -1);
 
     retVal.then((void dummy) {
       _refreshPackListFromTables(false).then((void dummy) {
