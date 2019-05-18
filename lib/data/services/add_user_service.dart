@@ -23,7 +23,7 @@ class AddUserService {
       String memberKennelId,
       String eventId,
       EnumHasherType<int> hasherType,
-      {EnumAttendenceState<int> attendenceState = attndenceUnknown}) async {
+      {EnumAttendenceState<int> attendenceState = attendenceUnknown}) async {
     final String accessToken = Utilities.generateToken(GUID_EMPTY, 'addUser');
 
     if ((eventId ?? '').isEmpty) {

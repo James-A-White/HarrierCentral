@@ -21,9 +21,9 @@ class HasherEventMapModel {
   final String eventId;
   final String userStartEvent;
   final String userEndEvent;
-  final int rsvpState;
+  int rsvpState;
   final int attendenceState;
-  final int isHare;
+  int isHare;
   final num eventCountOverride;
   final num virginVisitorType;
   final String displayName;
@@ -71,7 +71,7 @@ class HasherEventMapModel {
 
 enum HasherEventMapTableType {
   user,
-  admin,
+  admin
 }
 
 const String hemTableName = 'hasherEventMap';
@@ -115,7 +115,7 @@ class HasherEventMapTableHelper {
   static String getTableName(HasherEventMapTableType tblType) {
     if (tblType == HasherEventMapTableType.admin) {
       return hemAdminTableName;
-    }
+    } 
     return hemTableName;
   }
 
@@ -307,7 +307,7 @@ class HasherEventMapService {
 
   //==============  Domain specific functions ===========
 
-  Future<void> joinEvent(Map<String, dynamic> event, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, int rsvpState, int attendenceState, int isHare, int virginVisitorType) async {
+  Future<void> joinEvent(String eventId, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, int rsvpState, int attendenceState, int isHare, int virginVisitorType) async {
     
     if (globalConnectionStatus == connectionStatus_notConnected)
     {
@@ -328,7 +328,7 @@ class HasherEventMapService {
     final String body = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
-      'eventId': event['eventId'],
+      'eventId': eventId,
       'hasherId': hasherId,
       'hasherEventMapId': hasherEventMapId,
       'isHare': isHare,

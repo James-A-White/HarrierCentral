@@ -56,7 +56,8 @@ class EnumAttendenceState<int> extends Enum<int> {
   const EnumAttendenceState(int val) : super(val);
 }
 
-const EnumAttendenceState<int> attndenceUnknown = EnumAttendenceState<int>(0);
+const EnumAttendenceState<int> attendenceNoChange = EnumAttendenceState<int>(-1);
+const EnumAttendenceState<int> attendenceUnknown = EnumAttendenceState<int>(0);
 const EnumAttendenceState<int> attendenceNo = EnumAttendenceState<int>(10);
 const EnumAttendenceState<int> attendenceAtHash = EnumAttendenceState<int>(20);
 const EnumAttendenceState<int> attendenceOnIn = EnumAttendenceState<int>(30);

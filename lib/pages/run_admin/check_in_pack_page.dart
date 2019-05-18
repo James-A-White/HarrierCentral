@@ -419,7 +419,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     ).then((Map<String, dynamic> result) {
       if ((result != null) && (result['hasher']?.hasherId != null)) {
         final HasherEventMapService hemSrv = HasherEventMapService();
-        final Future<void> retVal = hemSrv.joinEvent(event, HasherEventMapTableType.admin, result['hasher'].hasherId, null, rsvpYes.value, attendenceAtHash.value, isHareNo.value, result['virginVisitorType']);
+        final Future<void> retVal = hemSrv.joinEvent(event['eventId'], HasherEventMapTableType.admin, result['hasher'].hasherId, null, rsvpYes.value, attendenceAtHash.value, isHareNo.value, result['virginVisitorType']);
 
         retVal.then((void dummy) {
           _refreshPackListFromTables(false).then((void dummy) {
@@ -1302,7 +1302,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     });
 
     final HasherEventMapService hemSrv = HasherEventMapService();
-    final Future<void> retVal = hemSrv.joinEvent(event, HasherEventMapTableType.admin, hasherId, hemId, rsvpState, attendenceState, isHare, -1);
+    final Future<void> retVal = hemSrv.joinEvent(event['eventId'], HasherEventMapTableType.admin, hasherId, hemId, rsvpState, attendenceState, isHare, -1);
 
     retVal.then((void dummy) {
       _refreshPackListFromTables(false).then((void dummy) {

@@ -5,17 +5,13 @@ import 'package:flutter/services.dart';
 
 import 'package:harrier_central/localization.dart';
 import 'package:harrier_central/pages/init/app_entry_page.dart';
-import 'package:harrier_central/data/services/future_run_scoped_model.dart';
 import 'package:harrier_central/util/routes.dart';
 
-import 'package:scoped_model/scoped_model.dart';
 //import 'package:flutter/scheduler.dart' show timeDilation;
 
 
 void main() {
   //debugPaintSizeEnabled=true;
-
-  final FutureRunScopedModel _futureRunScopedModel = FutureRunScopedModel();
 
   //timeDilation = 4.0;
 
@@ -27,10 +23,7 @@ void main() {
 
 
   runApp(
-       
-    ScopedModel<FutureRunScopedModel>(
-      model: _futureRunScopedModel,
-      child: 
+      
 
     MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -60,7 +53,7 @@ void main() {
             buttonColor: Colors.red[900],
             iconTheme: const IconThemeData(color: Colors.white, size: 30.0),
             scaffoldBackgroundColor: Colors.brown[50])),
-   ), );
+  );
   
 }
 

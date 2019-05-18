@@ -21,13 +21,19 @@ class NarrowEventsModel {
       this.isCountedRun,
       this.eventNumber,
       this.eventName,
-      this.latitude,
-      this.longitude,
+      this.narrowEventLatitude,
+      this.narrowEventLongitude,
       this.eventPriceForMembers,
       this.eventPriceForNonMembers,
       this.eventFacebookId,
       this.absoluteEventNumber,
       this.canEditRunAttendence,
+      this.eventImage,
+      this.eventDescription,
+      this.locationOneLineDesc,
+      this.locationPostCode,
+      this.locationCity,
+      this.locationStreet,
       this.removed,
       this.updatedAt});
 
@@ -38,13 +44,19 @@ class NarrowEventsModel {
   final int isCountedRun;
   final int eventNumber;
   final String eventName;
-  final num latitude;
-  final num longitude;
+  final num narrowEventLatitude;
+  final num narrowEventLongitude;
   final num eventPriceForMembers;
   final num eventPriceForNonMembers;
   final String eventFacebookId;
   final num absoluteEventNumber;
   final num canEditRunAttendence;
+  final String eventImage;
+  final String eventDescription;
+  final String locationOneLineDesc;
+  final String locationPostCode;
+  final String locationCity;
+  final String locationStreet;
   final int removed;
   final DateTime updatedAt;
 
@@ -63,13 +75,19 @@ class NarrowEventsModel {
             isCountedRun: jsonItem['isCountedRun'],
             eventNumber: jsonItem['eventNumber'],
             eventName: jsonItem['eventName'],
-            latitude: jsonItem['latitude'],
-            longitude: jsonItem['longitude'],
+            narrowEventLatitude: jsonItem['narrowEventLatitude'],
+            narrowEventLongitude: jsonItem['narrowEventLongitude'],
             eventPriceForMembers: jsonItem['eventPriceForMembers'],
             eventPriceForNonMembers: jsonItem['eventPriceForNonMembers'],
             eventFacebookId: jsonItem['eventFacebookId'],
             absoluteEventNumber: jsonItem['absoluteEventNumber'],
             canEditRunAttendence: jsonItem['canEditRunAttendence'],
+            eventImage: jsonItem['eventImage'],
+            eventDescription: jsonItem['eventDescription'],
+            locationOneLineDesc: jsonItem['locationOneLineDesc'],
+            locationPostCode: jsonItem['locationPostCode'],
+            locationCity: jsonItem['locationCity'],
+            locationStreet: jsonItem['locationStreet'],
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
 
@@ -106,13 +124,19 @@ class NarrowEventsTableHelper {
   static const String colIsCountedRun = 'isCountedRun';
   static const String colEventNumber = 'eventNumber';
   static const String colEventName = 'eventName';
-  static const String colLatitude = 'latitude';
-  static const String colLongitude = 'longitude';
+  static const String colNarrowEventLatitude = 'narrowEventLatitude';
+  static const String colNarrowEventLongitude = 'narrowEventLongitude';
   static const String colEventPriceForMembers = 'eventPriceForMembers';
   static const String colEventPriceForNonMembers = 'eventPriceForNonMembers';
   static const String colEventFacebookId = 'eventFacebookId';
   static const String colAbsoluteEventNumber = 'absoluteEventNumber';
   static const String colCanEditRunAttendence = 'canEditRunAttendence';
+  static const String colEventImage = 'eventImage';
+  static const String colEventDescription = 'eventDescription';
+  static const String colLocationOneLineDesc = 'locationOneLineDesc';
+  static const String colLocationPostCode = 'locationPostCode';
+  static const String colLocationCity = 'locationCity';
+  static const String colLocationStreet = 'locationStreet';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -135,13 +159,19 @@ class NarrowEventsTableHelper {
             $colIsCountedRun INT,
             $colEventNumber INT,
             $colEventName TEXT,
-            $colLatitude NUM,
-            $colLongitude NUM,
+            $colNarrowEventLatitude NUM,
+            $colNarrowEventLongitude NUM,
             $colEventPriceForMembers NUM,
             $colEventPriceForNonMembers NUM,
             $colEventFacebookId TEXT,
             $colAbsoluteEventNumber NUM,
             $colCanEditRunAttendence NUM,
+            $colEventImage TEXT,
+            $colEventDescription TEXT,
+            $colLocationOneLineDesc TEXT,
+            $colLocationPostCode TEXT,
+            $colLocationCity TEXT,
+            $colLocationStreet TEXT,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
@@ -162,13 +192,19 @@ class NarrowEventsTableHelper {
       NarrowEventsTableHelper.colIsCountedRun: item.isCountedRun,
       NarrowEventsTableHelper.colEventNumber: item.eventNumber,
       NarrowEventsTableHelper.colEventName: item.eventName,
-      NarrowEventsTableHelper.colLatitude: item.latitude,
-      NarrowEventsTableHelper.colLongitude: item.longitude,
+      NarrowEventsTableHelper.colNarrowEventLatitude: item.narrowEventLatitude,
+      NarrowEventsTableHelper.colNarrowEventLongitude: item.narrowEventLongitude,
       NarrowEventsTableHelper.colEventPriceForMembers: item.eventPriceForMembers,
       NarrowEventsTableHelper.colEventPriceForNonMembers: item.eventPriceForNonMembers,
       NarrowEventsTableHelper.colEventFacebookId: item.eventFacebookId,
       NarrowEventsTableHelper.colAbsoluteEventNumber: item.absoluteEventNumber,
       NarrowEventsTableHelper.colCanEditRunAttendence: item.canEditRunAttendence,
+      NarrowEventsTableHelper.colEventImage: item.eventImage,
+      NarrowEventsTableHelper.colEventDescription: item.eventDescription,
+      NarrowEventsTableHelper.colLocationOneLineDesc: item.locationOneLineDesc,
+      NarrowEventsTableHelper.colLocationPostCode: item.locationPostCode,
+      NarrowEventsTableHelper.colLocationCity: item.locationCity,
+      NarrowEventsTableHelper.colLocationStreet: item.locationStreet,
       NarrowEventsTableHelper.colUpdatedAt: item.updatedAt.toString(),
       NarrowEventsTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       NarrowEventsTableHelper.colRemoved: item.removed
@@ -186,13 +222,19 @@ class NarrowEventsTableHelper {
       isCountedRun: map[NarrowEventsTableHelper.colIsCountedRun],
       eventNumber: map[NarrowEventsTableHelper.colEventNumber],
       eventName: map[NarrowEventsTableHelper.colEventName],
-      latitude: map[NarrowEventsTableHelper.colLatitude],
-      longitude: map[NarrowEventsTableHelper.colLongitude],
+      narrowEventLatitude: map[NarrowEventsTableHelper.colNarrowEventLatitude],
+      narrowEventLongitude: map[NarrowEventsTableHelper.colNarrowEventLongitude],
       eventPriceForMembers: map[NarrowEventsTableHelper.colEventPriceForMembers],
       eventPriceForNonMembers: map[NarrowEventsTableHelper.colEventPriceForNonMembers],
       eventFacebookId: map[NarrowEventsTableHelper.colEventFacebookId],
       absoluteEventNumber: map[NarrowEventsTableHelper.colAbsoluteEventNumber],
       canEditRunAttendence: map[NarrowEventsTableHelper.colCanEditRunAttendence],
+      eventImage: map[NarrowEventsTableHelper.colEventImage],
+      eventDescription: map[NarrowEventsTableHelper.colEventDescription],
+      locationOneLineDesc: map[NarrowEventsTableHelper.colLocationOneLineDesc],
+      locationPostCode: map[NarrowEventsTableHelper.colLocationPostCode],
+      locationCity: map[NarrowEventsTableHelper.colLocationCity],
+      locationStreet: map[NarrowEventsTableHelper.colLocationStreet],
       updatedAt: DateTime.parse(map[NarrowEventsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[NarrowEventsTableHelper.colRemoved],
     );
@@ -301,14 +343,12 @@ class NarrowEventsService {
   // ============ Functions go here =============
 
   Future<void> updateEventDetails(String eventId, {bool isVisible, bool isCountedRun, int absoluteEventNumber}) async {
-    
-    if (globalConnectionStatus == connectionStatus_notConnected)
-    {
+    if (globalConnectionStatus == connectionStatus_notConnected) {
       return;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
-    
+
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken = Utilities.generateToken(userId, 'addEditEvent');
@@ -321,13 +361,11 @@ class NarrowEventsService {
       bodyMap.addAll(<String, String>{'isVisible': isVisible ? '1' : '0'});
     }
 
-    if (isCountedRun != null)
-    {
+    if (isCountedRun != null) {
       bodyMap.addAll(<String, String>{'isCountedRun': isCountedRun ? '1' : '0'});
     }
 
-    if (absoluteEventNumber != null)
-    {
+    if (absoluteEventNumber != null) {
       bodyMap.addAll(<String, String>{'absoluteEventNumber': absoluteEventNumber.toString()});
     }
 

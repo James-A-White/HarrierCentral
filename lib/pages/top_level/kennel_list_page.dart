@@ -76,7 +76,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           try {
             db.rawQuery(query).then((List<Map<String, dynamic>> results) {
               for (int i = 0; i < results.length; i++) {
-                locator.distanceBetween(ll.latitude, ll.longitude, results[i]['latitude'], results[i]['longitude']).then((double dist) {
+                locator.distanceBetween(ll.latitude, ll.longitude, results[i]['kennelLatitude'], results[i]['kennelLongitude']).then((num dist) {
                   final Map<String, dynamic> item = <String, dynamic>{};
                   item.addAll(<String, dynamic>{'distance': dist.round()});
                   item.addAll(<String, dynamic>{'followingRequested': -1});

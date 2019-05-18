@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:scoped_model/scoped_model.dart';
 
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/util/utilities.dart';
@@ -10,7 +9,6 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/pages/detail_pages/kennel_detail.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
-import 'package:harrier_central/data/services/future_run_scoped_model.dart';
 
 class KennelsListItem extends StatefulWidget {
   const KennelsListItem({Key key, @required this.kennel}) : super(key: key);
@@ -41,8 +39,7 @@ class KennelListItemState extends State<KennelsListItem> {
                 Row(
                   children: <Widget>[
                     Container(
-                      child: ScopedModelDescendant<FutureRunScopedModel>(
-                        builder: (BuildContext runContext, Widget runChild, FutureRunScopedModel runModel) => IconButton(
+                      child:  IconButton(
                               icon: Utilities.styleForConnected(Icon(widget.kennel['followingRequested'] != -1 ? delayIcon : widget.kennel['following'] == 1 ? const Icon(FontAwesome.check_circle).icon : widget.kennel['following'] == 2 ? const Icon(FontAwesome.times_circle).icon : const Icon(FontAwesome.star).icon,
                                   color: widget.kennel['followingRequested'] != -1 ? Colors.blue : widget.kennel['following'] == 1 ? Colors.green : widget.kennel['following'] == 2 ? Colors.red : Colors.yellow[800])),
                               tooltip: 'Select to follow a Kennel',
@@ -65,7 +62,7 @@ class KennelListItemState extends State<KennelsListItem> {
                                 }
                               },
                             ),
-                      ),
+                      
                       alignment: Alignment.topCenter,
                     ),
                     Container(

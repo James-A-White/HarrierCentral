@@ -16,7 +16,7 @@ class AddMemberPage extends StatefulWidget {
       {Key key,
       this.kennelId,
       this.eventId,
-      this.attendenceState = attndenceUnknown,
+      this.attendenceState = attendenceUnknown,
       this.profileImageUrl = ''})
       : super(key: key);
 

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
 import 'package:intl/intl.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
+//import 'package:permission_handler/permission_handler.dart';
 
 import 'package:harrier_central/localization.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -15,19 +15,17 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/enums.dart';
 
 class LatLon {
-  double latitude;
-  double longitude;
+  num latitude;
+  num longitude;
 }
 
 class Utilities {
   static Future<LatLon> getLatLong() async {
     Position position;
 
-    PermissionStatus _locationPermission;
+    final GeolocationStatus status = await Geolocator().checkGeolocationPermissionStatus(locationPermission: GeolocationPermission.location);
 
-    _locationPermission ??= await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
-
-    if (_locationPermission == PermissionStatus.granted) {
+    if (status == GeolocationStatus.granted) {
       position = await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
     }
 
@@ -42,8 +40,8 @@ class Utilities {
       setDoublePref(DoublePrefsEnum.latitude, latLon.latitude);
       setDoublePref(DoublePrefsEnum.longitude, latLon.longitude);
     } else {
-      latLon.latitude = getDoublePref(DoublePrefsEnum.latitude);
-      latLon.longitude = getDoublePref(DoublePrefsEnum.longitude);
+      latLon.latitude = getDoublePref(DoublePrefsEnum.latitude) ?? DEFAULT_LATITUDE;
+      latLon.longitude = getDoublePref(DoublePrefsEnum.longitude) ?? DEFAULT_LONGITUDE;
     }
 
     return latLon;
@@ -95,7 +93,7 @@ class Utilities {
     return finalStr;
   }
 
-  static String getDistance(int meters, BuildContext context) {
+  static String getDistance(num meters, BuildContext context) {
     const bool isMetric = true;
     String result = '';
 

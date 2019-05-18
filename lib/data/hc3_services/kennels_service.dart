@@ -21,8 +21,8 @@ class KennelsModel {
       this.defaultEventCurrencyType,
       this.kennelStatus,
       this.allowNegativeCredit,
-      this.latitude,
-      this.longitude,
+      this.kennelLatitude,
+      this.kennelLongitude,
       this.defaultPriceForMembers,
       this.defaultPriceForNonMembers,
       this.membershipDurationInMonths,
@@ -43,8 +43,8 @@ class KennelsModel {
   final String defaultEventCurrencyType;
   final int kennelStatus;
   final int allowNegativeCredit;
-  final num latitude;
-  final num longitude;
+  final num kennelLatitude;
+  final num kennelLongitude;
   final num defaultPriceForMembers;
   final num defaultPriceForNonMembers;
   final int membershipDurationInMonths;
@@ -73,8 +73,8 @@ class KennelsModel {
           defaultEventCurrencyType: jsonItem['defaultEventCurrencyType'],
           kennelStatus: jsonItem['kennelStatus'],
           allowNegativeCredit: jsonItem['allowNegativeCredit'],
-          latitude: jsonItem['latitude'],
-          longitude: jsonItem['longitude'],
+          kennelLatitude: jsonItem['kennelLatitude'],
+          kennelLongitude: jsonItem['kennelLongitude'],
           defaultPriceForMembers: jsonItem['defaultPriceForMembers'],
           defaultPriceForNonMembers: jsonItem['defaultPriceForNonMembers'],
           membershipDurationInMonths: jsonItem['membershipDurationInMonths'],
@@ -128,8 +128,8 @@ class KennelsTableHelper {
   static const String colDefaultEventCurrencyType = 'defaultEventCurrencyType';
   static const String colKennelStatus = 'kennelStatus';
   static const String colAllowNegativeCredit = 'allowNegativeCredit';
-  static const String colLatitude = 'latitude';
-  static const String colLongitude = 'longitude';
+  static const String colKennelLatitude = 'kennelLatitude';
+  static const String colKennelLongitude = 'kennelLongitude';
   static const String colDefaultPriceForMembers = 'defaultPriceForMembers';
   static const String colDefaultPriceForNonMembers = 'defaultPriceForNonMembers';
   static const String colMembershipDurationInMonths= 'membershipDurationInMonths';
@@ -163,8 +163,8 @@ class KennelsTableHelper {
             $colDefaultEventCurrencyType TEXT,
             $colKennelStatus INT,
             $colAllowNegativeCredit INT,
-            $colLatitude NUM,
-            $colLongitude NUM,
+            $colKennelLatitude NUM,
+            $colKennelLongitude NUM,
             $colDefaultPriceForMembers NUM,
             $colDefaultPriceForNonMembers NUM,
             $colMembershipDurationInMonths INT,
@@ -198,8 +198,8 @@ class KennelsTableHelper {
           item.defaultEventCurrencyType,
       KennelsTableHelper.colKennelStatus: item.kennelStatus,
       KennelsTableHelper.colAllowNegativeCredit: item.allowNegativeCredit,
-      KennelsTableHelper.colLatitude: item.latitude,
-      KennelsTableHelper.colLongitude: item.longitude,
+      KennelsTableHelper.colKennelLatitude: item.kennelLatitude,
+      KennelsTableHelper.colKennelLongitude: item.kennelLongitude,
       KennelsTableHelper.colDefaultPriceForMembers: item.defaultPriceForMembers,
       KennelsTableHelper.colDefaultPriceForNonMembers:
           item.defaultPriceForNonMembers,
@@ -228,15 +228,16 @@ class KennelsTableHelper {
           map[KennelsTableHelper.colDefaultEventCurrencyType],
       kennelStatus: map[KennelsTableHelper.colKennelStatus],
       allowNegativeCredit: map[KennelsTableHelper.colAllowNegativeCredit],
-      latitude: map[KennelsTableHelper.colLatitude],
-      longitude: map[KennelsTableHelper.colLongitude],
+      kennelLatitude: map[KennelsTableHelper.colKennelLatitude],
+      kennelLongitude: map[KennelsTableHelper.colKennelLongitude],
       defaultPriceForMembers: map[KennelsTableHelper.colDefaultPriceForMembers],
       defaultPriceForNonMembers: map[KennelsTableHelper.colDefaultPriceForNonMembers],
       membershipDurationInMonths: map[KennelsTableHelper.colMembershipDurationInMonths],
-      defaultRunStartTime: DateTime.parse(
-          map[KennelsTableHelper.colDefaultRunStartTime]
-              .toString()
-              .substring(0, 19)),
+      defaultRunStartTime: DateTime.now(),
+      // DateTime.parse(
+      //     map[KennelsTableHelper.colDefaultRunStartTime]
+      //         .toString()
+      //         .substring(0, 19)),
       updatedAt: DateTime.parse(
           map[KennelsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[KennelsTableHelper.colRemoved],

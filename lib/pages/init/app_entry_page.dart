@@ -32,7 +32,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
     await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
 
-    await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.camera]);
+    await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
