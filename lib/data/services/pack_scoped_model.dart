@@ -11,6 +11,7 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/globals.dart';
 
 class PackScopedModel extends Model {
   List<UserModel> _packList;
@@ -49,16 +50,13 @@ class PackScopedModel extends Model {
     notifyListeners();
   }
 
-  Future<UserModel> joinEventAsVisitor(String displayName, String email,
-      String phoneNumber, EnumVirginVisitor<int> virginVisitor, String eventId) {
+  Future<UserModel> joinEventAsVisitor(String displayName, String email, String phoneNumber, EnumVirginVisitor<int> virginVisitor, String eventId) {
     notifyListeners();
     final JoinEventService srv = JoinEventService();
-    return srv.joinEventAsVisitor(eventId, virginVisitor, attendenceAtHash,
-        displayName, email, phoneNumber);
+    return srv.joinEventAsVisitor(eventId, virginVisitor, attendenceAtHash, displayName, email, phoneNumber);
   }
 
-  void setRsvpState(
-      int rsvpState, int isHare, int attendenceState, UserModel user) {
+  void setRsvpState(int rsvpState, int isHare, int attendenceState, UserModel user) {
     bool isDirty = false;
 
     if ((rsvpState != -1) && (rsvpState != user.rsvpState)) {
@@ -83,10 +81,7 @@ class PackScopedModel extends Model {
       notifyListeners();
       final JoinEventService srv = JoinEventService();
 
-      srv
-          .joinEvent(user.eventId, rsvpState, isHare, attendenceState,
-              user.hasherId, user.hasherEventMapId)
-          .then<dynamic>((JoinEventModel result) {
+      srv.joinEvent(user.eventId, rsvpState, isHare, attendenceState, user.hasherId, user.hasherEventMapId).then<dynamic>((JoinEventModel result) {
         if ((rsvpState != -1) && (rsvpState != user.rsvpState)) {
           user.rsvpState = rsvpState;
           user.requestedRsvpState = -1;
@@ -97,8 +92,7 @@ class PackScopedModel extends Model {
           user.requestedHaringState = -1;
         }
 
-        if ((attendenceState != -1) &&
-            (user.attendenceState != attendenceState)) {
+        if ((attendenceState != -1) && (user.attendenceState != attendenceState)) {
           user.attendenceState = attendenceState;
           user.requestedAttendenceState = -1;
         }
@@ -115,25 +109,17 @@ class PackScopedModel extends Model {
     }
   }
 
-  void joinEvent(String eventId, int rsvpState, int isHare, int attendenceState,
-      String hasherId) {
+  void joinEvent(String eventId, int rsvpState, int isHare, int attendenceState, String hasherId) {
     final JoinEventService srv = JoinEventService();
 
-    srv
-        .joinEvent(eventId, rsvpState, isHare, attendenceState, hasherId, '00000000-0000-0000-0000-000000000000')
-        .then<dynamic>((JoinEventModel result) {
-
-          notifyListeners();
-        });
+    srv.joinEvent(eventId, rsvpState, isHare, attendenceState, hasherId, '00000000-0000-0000-0000-000000000000').then<dynamic>((JoinEventModel result) {
+      notifyListeners();
+    });
   }
 
   void sortPackList() {
-    _packList.sort((UserModel a, UserModel b) => (a.displayName ?? '')
-        .toLowerCase()
-        .compareTo((b.displayName ?? '').toLowerCase()));
-    _filteredPackList.sort((UserModel a, UserModel b) => (a.displayName ?? '')
-        .toLowerCase()
-        .compareTo((b.displayName ?? '').toLowerCase()));
+    _packList.sort((UserModel a, UserModel b) => (a.displayName ?? '').toLowerCase().compareTo((b.displayName ?? '').toLowerCase()));
+    _filteredPackList.sort((UserModel a, UserModel b) => (a.displayName ?? '').toLowerCase().compareTo((b.displayName ?? '').toLowerCase()));
   }
 
   String packListFilter = '';
@@ -144,27 +130,16 @@ class PackScopedModel extends Model {
   }
 
   void _filterPackList() {
-    _filteredPackList = _packList
-        .where((UserModel user) => ((user.firstName ?? '') +
-                ' ' +
-                (user.lastName ?? '') +
-                ' ' +
-                (user.displayName ?? ''))
-            .toLowerCase()
-            .contains(packListFilter.toLowerCase()))
-        .toList();
+    _filteredPackList = _packList.where((UserModel user) => ((user.firstName ?? '') + ' ' + (user.lastName ?? '') + ' ' + (user.displayName ?? '')).toLowerCase().contains(packListFilter.toLowerCase())).toList();
   }
 
   void addEditUser(UserModel packModel) {
     if (_packList.isNotEmpty) {
       final UserModel packItem = _packList.firstWhere(
           (UserModel pi) =>
-              packModel.hasherEventMapId == pi.hasherEventMapId &&
-                  (packModel.hasherId ==
-                      null) // this covers people who are visitors and virgins
+              packModel.hasherEventMapId == pi.hasherEventMapId && (packModel.hasherId == null) // this covers people who are visitors and virgins
               ||
-              (packModel.hasherEventMapId == null) &&
-                  (packModel.hasherId == pi.hasherId), // this covers members
+              (packModel.hasherEventMapId == null) && (packModel.hasherId == pi.hasherId), // this covers members
           orElse: () => null);
 
       if (packItem != null) {
@@ -243,22 +218,20 @@ class PackScopedModel extends Model {
   // }
 
   Future<List<UserModel>> _getPack(String eventId, String targetUserId) async {
+    
+    if (globalConnectionStatus == connectionStatus_notConnected) {
+      return null;
+      // TODO(James): fix this so we can return a bool
+      //return false;
+    }
     final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final String accessToken =
-        Utilities.generateToken(userId, 'getUsersByEventForAdmin');
+    final String accessToken = Utilities.generateToken(userId, 'getUsersByEventForAdmin');
 
-    final String body = jsonEncode(<String, String>{
-      'userId': userId,
-      'accessToken': accessToken,
-      'eventId': eventId,
-      'targetUserId': targetUserId
-    });
+    final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'eventId': eventId, 'targetUserId': targetUserId});
 
     final http.Response response = await http
-        .post(BASE_API_URL + 'get_users_by_event_for_admin',
-            headers: <String, String>{'content-type': 'application/json'},
-            body: body
+        .post(BASE_API_URL + 'get_users_by_event_for_admin', headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -271,10 +244,8 @@ class PackScopedModel extends Model {
     return UserModel.listFromJson(response.body);
   }
 
-  Future<List<UserModel>> getpackFromBackend(
-      String eventId, bool showLoadingIndicator, bool forceEntireReload) async {
-    print('Get pack from backend: ' +
-        DateTime.now().millisecondsSinceEpoch.toString());
+  Future<List<UserModel>> getpackFromBackend(String eventId, bool showLoadingIndicator, bool forceEntireReload) async {
+    print('Get pack from backend: ' + DateTime.now().millisecondsSinceEpoch.toString());
     // if (!showLoadingIndicator && (_packList != null)) {
     //   return null;
     // }
@@ -290,8 +261,7 @@ class PackScopedModel extends Model {
       _packList.clear();
     }
 
-    final List<UserModel> dataFromResponse =
-        await _getPack(eventId, GUID_EMPTY);
+    final List<UserModel> dataFromResponse = await _getPack(eventId, GUID_EMPTY);
 
     // TODO(James): Investigate why foreach loop was causing a LINT error
     for (int i = 0; i < dataFromResponse.length; i++) {
@@ -304,8 +274,7 @@ class PackScopedModel extends Model {
     //     addEditUser(item);}
     // );
 
-    if (_packList.isNotEmpty)
-    {
+    if (_packList.isNotEmpty) {
       sortPackList();
       _filterPackList();
     }

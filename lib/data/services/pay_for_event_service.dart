@@ -5,18 +5,27 @@ import 'dart:convert';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/globals.dart';
 
 import 'package:http/http.dart' as http;
 
 class PayForEventService {
   Future<void> payForEvent(
-      String userIdWhoPaid,
-      String eventId,
-      String hasherEventMapId,
-      int paymentType,
-      num paymentAmount,
-      int minimumAttendenceValue,
-      ) async {
+    String userIdWhoPaid,
+    String eventId,
+    String hasherEventMapId,
+    int paymentType,
+    num paymentAmount,
+    int minimumAttendenceValue,
+  ) async {
+    
+    if (globalConnectionStatus == connectionStatus_notConnected) {
+      return;
+      // TODO(James): fix this so we can return a bool
+      //return false;
+    }
+
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     if ((userIdWhoPaid ?? '').isEmpty) {
@@ -27,16 +36,9 @@ class PayForEventService {
       hasherEventMapId = GUID_EMPTY;
     }
 
-    final String tokenParameterString = hasherEventMapId.toUpperCase() +
-        '#' +
-        userIdWhoPaid.toUpperCase() +
-        '#' +
-        paymentAmount.toInt().toString() +
-        '#' +
-        eventId.toUpperCase();
+    final String tokenParameterString = hasherEventMapId.toUpperCase() + '#' + userIdWhoPaid.toUpperCase() + '#' + paymentAmount.toInt().toString() + '#' + eventId.toUpperCase();
 
-    final String accessToken = Utilities.generateToken(userId, 'payForEvent',
-        paramString: tokenParameterString);
+    final String accessToken = Utilities.generateToken(userId, 'payForEvent', paramString: tokenParameterString);
 
     final String body = jsonEncode(<String, String>{
       'userId': userId,
@@ -47,14 +49,10 @@ class PayForEventService {
       'paymentType': paymentType.toString(),
       'paymentAmount': paymentAmount.toString(),
       'minimumAttendenceValue': minimumAttendenceValue.toString(),
-
-
     });
 
     final http.Response response = await http
-        .post(BASE_API_URL + 'hc3_pay_for_event',
-            headers: <String, String>{'content-type': 'application/json'},
-            body: body
+        .post(BASE_API_URL + 'hc3_pay_for_event', headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )

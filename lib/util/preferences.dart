@@ -18,7 +18,7 @@ enum StringPrefsEnum {
   facebookId,
   facebookAccessToken,
   facebookProfilePhoto,
-  adminEventId,
+  adminEventId
 }
 
 enum DoublePrefsEnum { latitude, longitude }
@@ -57,6 +57,7 @@ enum IntPrefsEnum {
   lastCacheClearAdminHasherEventMapData,
 
   dbCreated,
+
 }
 
 SharedPreferences _sharedPreferences;

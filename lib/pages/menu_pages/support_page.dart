@@ -12,6 +12,8 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/globals.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/data/services/authorize_device_service.dart';
 import 'package:harrier_central/database/database.dart';
@@ -97,274 +99,303 @@ class SupportPageState extends State<SupportPage> {
         ),
       ),
     );
-    return Scaffold(
-      appBar: appBar,
-      body: isLoading
-          ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
-          : Container(
-              decoration: Backgrounds.defaultHcBackground(),
-              height: MediaQuery.of(context).size.height - appBar.preferredSize.height,
-              child: SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                      //minHeight: viewportConstraints.maxHeight,
-                      ),
-                  child: IntrinsicHeight(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          // TODO(James): Bring this back eventually
-                          // UserDetailsUi(firstName: firstName, lastName: lastName, email: email, hashName: hashName,),
-                          // const FancyDivider(innerColor: Colors.white),
-                          Container(
-                            //height:500,
-                            width: MediaQuery.of(context).size.width,
+    return Stack(
+      children: <Widget>[
+        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        Positioned(
+          top: 0,
+          left: 0,
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          child: Scaffold(
+            appBar: appBar,
+            body: isLoading
+                ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
+                : Container(
+                    decoration: Backgrounds.defaultHcBackground(),
+                    height: MediaQuery.of(context).size.height - appBar.preferredSize.height,
+                    child: SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                            //minHeight: viewportConstraints.maxHeight,
+                            ),
+                        child: IntrinsicHeight(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                // TODO(James): Bring this back eventually
+                                // UserDetailsUi(firstName: firstName, lastName: lastName, email: email, hashName: hashName,),
+                                // const FancyDivider(innerColor: Colors.white),
+                                Container(
+                                  //height:500,
+                                  width: MediaQuery.of(context).size.width,
 
-                            child: IntrinsicHeight(
-                              child: Stack(
-                                fit: StackFit.expand,
-                                alignment: AlignmentDirectional.center,
-                                children: <Widget>[
-                                  Container(height: 900),
-                                  Positioned(
-                                    top: 10,
-                                    bottom: 20,
-                                    width: MediaQuery.of(context).size.width,
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                                        children: <Widget>[
-                                          Expanded(
-                                            child: Stack(
-                                              alignment: AlignmentDirectional.center,
-                                              children: <Widget>[
-                                                Positioned(
-                                                  top: 50,
-                                                  child: AutoSizeText('Secret QR code for:',
-                                                      //'QR Code for xxx',
-                                                      textAlign: TextAlign.center,
-                                                      maxLines: 1,
-                                                      style: headingStyle),
-                                                ),
-                                                Positioned(
-                                                  top: 75,
-                                                  child: AutoSizeText('$userName',
-                                                      //'QR Code for xxx',
-                                                      textAlign: TextAlign.center,
-                                                      maxLines: 1,
-                                                      style: largeText),
-                                                ),
-                                                Positioned(
-                                                  top: 145,
-                                                  //bottom: 50,
-                                                  child: Container(
-                                                    height: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
-                                                    width: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
-                                                    child: QrImage(
-                                                        backgroundColor: Colors.white,
-                                                        padding: const EdgeInsets.all(10.0),
-                                                        data: 'USC:${userQrCode.toUpperCase()}',
-                                                        //data: 'testing123',
-                                                        version: 4,
-                                                        //size: 200.0,
-                                                        errorCorrectionLevel: 3),
-                                                  ),
-                                                ),
-                                                Positioned(
-                                                  top: 420,
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.only(left: 32.0, right: 32.0),
-                                                    child: FlatButton(
-                                                      textColor: Colors.white,
-                                                      child: const Text('Learn more about this feature'),
-                                                      onPressed: () {
-                                                        _displayInstructions(context);
-                                                      },
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  const Positioned(top: 513, left: 0, right: 0, child: FancyDivider(innerColor: Colors.white)),
-                                  Positioned(
-                                    top: 535,
-                                    left: 0,
-                                    right: 0,
-                                    child: Text(
-                                      'Support Code:',
-                                      style: headingStyle,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 565,
-                                    left: 0,
-                                    right: 0,
-                                    child: Text(
-                                      supportCode ?? '<no code>',
-                                      style: largeText,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  const Positioned(top: 650, left: 0, right: 0, child: FancyDivider(innerColor: Colors.white)),
-                                  Positioned(
-                                    top: 670,
-                                    left: 0,
-                                    right: 0,
-                                    child: Text(
-                                      'Reset Code:',
-                                      style: headingStyle,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  Positioned(
-                                      top: 690,
-                                      //bottom: 20,
-                                      width: MediaQuery.of(context).size.width,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(30.0),
-
-                                        //color: const Color.fromARGB(255, 255, 255, 255),
-                                        child: Container(
+                                  child: IntrinsicHeight(
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      alignment: AlignmentDirectional.center,
+                                      children: <Widget>[
+                                        Container(height: 950),
+                                        Positioned(
+                                          top: 10,
+                                          bottom: 20,
+                                          width: MediaQuery.of(context).size.width,
                                           child: Center(
                                             child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                              crossAxisAlignment: CrossAxisAlignment.stretch,
                                               children: <Widget>[
-                                                Container(
-                                                  //color: Colors.white,
-                                                  padding: const EdgeInsets.all(10.0),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.yellow[100],
-                                                    borderRadius: BorderRadius.circular(5.0),
-                                                  ),
-                                                  // padding: const EdgeInsets.only(
-                                                  //     top: 0.0, bottom: 8.0),
-                                                  child: TextFormField(
-                                                    autocorrect: false,
-                                                    controller: resetCodeTextController,
-                                                    focusNode: resetCodeFocusNode,
-                                                    decoration: resetCodeDecoration,
-                                                    // validator: (val) {
-                                                    //   if (val.length == 0) {
-                                                    //     return "Email cannot be empty";
-                                                    //   } else {
-                                                    //     return null;
-                                                    //   }
-                                                    // },
-                                                    keyboardType: TextInputType.text,
-                                                    style: const TextStyle(
-                                                      fontFamily: 'Poppins',
-                                                    ),
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top: 25),
-                                                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                                                    RaisedButton(
-                                                      padding: const EdgeInsets.only(top: 15, bottom: 15, left: 50, right: 50),
-                                                      onPressed: () async {
-                                                        final Database db = await DBProvider.db.database;
-
-                                                        final SyncUserDataService cSrv = SyncUserDataService();
-                                                        final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagAllMasterData, false);
-                                                        final String resultStr = result ? 'successfully' : 'unsuccessfully';
-                                                        print('Master data synchronized $resultStr');
-
-                                                        if (resetCodeTextController.text.length == 6) {
-                                                          setState(() {
-                                                            isLoading = true;
-
-                                                            final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                                                            final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, 'RC:' + resetCodeTextController.text.toUpperCase());
-                                                            apiCall.then((Map<String, String> result) {
-                                                              setState(() {
-                                                                isLoading = false;
-                                                              });
-
-                                                              if (result['result'] != 'failed') {
-                                                                userName = getStringPref(StringPrefsEnum.displayName);
-                                                                userQrCode = getStringPref(StringPrefsEnum.qrSecretCode);
-
-                                                                Utilities.showAlert(context, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
-                                                              }
-                                                            });
-                                                          });
-                                                        }
-                                                      },
-                                                      child: const Text(
-                                                        'Reset App',
-                                                        style: TextStyle(color: Colors.white),
+                                                Expanded(
+                                                  child: Stack(
+                                                    alignment: AlignmentDirectional.center,
+                                                    children: <Widget>[
+                                                      Positioned(
+                                                        top: 50,
+                                                        child: AutoSizeText('Secret QR code for:',
+                                                            //'QR Code for xxx',
+                                                            textAlign: TextAlign.center,
+                                                            maxLines: 1,
+                                                            style: headingStyle),
                                                       ),
-                                                    ),
-                                                  ]),
-                                                ),
-                                                 Padding(
-                                                  padding: const EdgeInsets.only(top: 25),
-                                                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                                                    RaisedButton(
-                                                      padding: const EdgeInsets.only(top: 15, bottom: 15, left: 50, right: 50),
-                                                      onPressed: () async {
-                                                        final Database db = await DBProvider.db.database;
-
-                                                        final SyncUserDataService cSrv = SyncUserDataService();
-                                                        final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagAllMasterData, false);
-                                                        final String resultStr = result ? 'successfully' : 'unsuccessfully';
-                                                        print('Master data synchronized $resultStr');
-
-                                                        if (resetCodeTextController.text.length == 6) {
-                                                          setState(() {
-                                                            isLoading = true;
-
-                                                            final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                                                            final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, 'RC:' + resetCodeTextController.text.toUpperCase());
-                                                            apiCall.then((Map<String, String> result) {
-                                                              setState(() {
-                                                                isLoading = false;
-                                                              });
-
-                                                              if (result['result'] != 'failed') {
-                                                                userName = getStringPref(StringPrefsEnum.displayName);
-                                                                userQrCode = getStringPref(StringPrefsEnum.qrSecretCode);
-
-                                                                Utilities.showAlert(context, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
-                                                              }
-                                                            });
-                                                          });
-                                                        }
-                                                      },
-                                                      child: const Text(
-                                                        'Reload Database',
-                                                        style: TextStyle(color: Colors.white),
+                                                      Positioned(
+                                                        top: 75,
+                                                        child: AutoSizeText('$userName',
+                                                            //'QR Code for xxx',
+                                                            textAlign: TextAlign.center,
+                                                            maxLines: 1,
+                                                            style: largeText),
                                                       ),
-                                                    ),
-                                                  ]),
+                                                      Positioned(
+                                                        top: 145,
+                                                        //bottom: 50,
+                                                        child: Container(
+                                                          height: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
+                                                          width: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
+                                                          child: QrImage(
+                                                              backgroundColor: Colors.white,
+                                                              padding: const EdgeInsets.all(10.0),
+                                                              data: 'USC:${userQrCode.toUpperCase()}',
+                                                              //data: 'testing123',
+                                                              version: 4,
+                                                              //size: 200.0,
+                                                              errorCorrectionLevel: 3),
+                                                        ),
+                                                      ),
+                                                      Positioned(
+                                                        top: 420,
+                                                        child: Padding(
+                                                          padding: const EdgeInsets.only(left: 32.0, right: 32.0),
+                                                          child: FlatButton(
+                                                            textColor: Colors.white,
+                                                            child: const Text('Learn more about this feature'),
+                                                            onPressed: () {
+                                                              _displayInstructions(context);
+                                                            },
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
-                                            
                                               ],
                                             ),
                                           ),
                                         ),
-                                      )),
-                                ],
-                              ),
+                                        const Positioned(top: 513, left: 0, right: 0, child: FancyDivider(innerColor: Colors.white)),
+                                        Positioned(
+                                          top: 535,
+                                          left: 0,
+                                          right: 0,
+                                          child: Text(
+                                            'Support Code:',
+                                            style: headingStyle,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Positioned(
+                                          top: 565,
+                                          left: 0,
+                                          right: 0,
+                                          child: Text(
+                                            supportCode ?? '<no code>',
+                                            style: largeText,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        const Positioned(top: 650, left: 0, right: 0, child: FancyDivider(innerColor: Colors.white)),
+                                        Positioned(
+                                          top: 670,
+                                          left: 0,
+                                          right: 0,
+                                          child: Text(
+                                            'Reset Code:',
+                                            style: headingStyle,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Positioned(
+                                            top: 690,
+                                            //bottom: 20,
+                                            width: MediaQuery.of(context).size.width,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(30.0),
+
+                                              //color: const Color.fromARGB(255, 255, 255, 255),
+                                              child: Container(
+                                                child: Center(
+                                                  child: Column(
+                                                    children: <Widget>[
+                                                      Container(
+                                                        //color: Colors.white,
+                                                        padding: const EdgeInsets.all(10.0),
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.yellow[100],
+                                                          borderRadius: BorderRadius.circular(5.0),
+                                                        ),
+                                                        // padding: const EdgeInsets.only(
+                                                        //     top: 0.0, bottom: 8.0),
+                                                        child: TextFormField(
+                                                          autocorrect: false,
+                                                          controller: resetCodeTextController,
+                                                          focusNode: resetCodeFocusNode,
+                                                          decoration: resetCodeDecoration,
+                                                          // validator: (val) {
+                                                          //   if (val.length == 0) {
+                                                          //     return "Email cannot be empty";
+                                                          //   } else {
+                                                          //     return null;
+                                                          //   }
+                                                          // },
+                                                          keyboardType: TextInputType.text,
+                                                          style: const TextStyle(
+                                                            fontFamily: 'Poppins',
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding: const EdgeInsets.only(top: 25),
+                                                        child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+                                                          Utilities.styleForConnected(
+                                                            RaisedButton(
+                                                              padding: const EdgeInsets.only(top: 15, bottom: 15, left: 50, right: 50),
+                                                              onPressed: () async {
+                                                                if (Utilities.checkForConnection(context)) {
+                                                                  final Database db = await DBProvider.db.database;
+
+                                                                  final SyncUserDataService cSrv = SyncUserDataService();
+                                                                  final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagAllMasterData, false);
+                                                                  final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                                                                  print('Master data synchronized $resultStr');
+
+                                                                  if (resetCodeTextController.text.length == 6) {
+                                                                    setState(() {
+                                                                      isLoading = true;
+
+                                                                      final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                                                                      final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, 'RC:' + resetCodeTextController.text.toUpperCase());
+                                                                      apiCall.then((Map<String, String> result) {
+                                                                        setState(() {
+                                                                          isLoading = false;
+                                                                        });
+
+                                                                        if (result['result'] != 'failed') {
+                                                                          userName = getStringPref(StringPrefsEnum.displayName);
+                                                                          userQrCode = getStringPref(StringPrefsEnum.qrSecretCode);
+
+                                                                          Utilities.showAlert(context, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
+                                                                        }
+                                                                      });
+                                                                    });
+                                                                  }
+                                                                }
+                                                              },
+                                                              child: const Text(
+                                                                'Reset App',
+                                                                style: TextStyle(color: Colors.white),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ]),
+                                                      ),
+                                                      Padding(
+                                                        padding: const EdgeInsets.only(top: 25),
+                                                        child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+                                                          Utilities.styleForConnected(
+                                                            RaisedButton(
+                                                              padding: const EdgeInsets.only(top: 15, bottom: 15, left: 50, right: 50),
+                                                              onPressed: () async {
+                                                                if (Utilities.checkForConnection(context)) {
+                                                                  final Database db = await DBProvider.db.database;
+
+                                                                  final SyncUserDataService cSrv = SyncUserDataService();
+                                                                  final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagAllMasterData, false);
+                                                                  final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                                                                  print('Master data synchronized $resultStr');
+
+                                                                  if (resetCodeTextController.text.length == 6) {
+                                                                    setState(() {
+                                                                      isLoading = true;
+
+                                                                      final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                                                                      final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, 'RC:' + resetCodeTextController.text.toUpperCase());
+                                                                      apiCall.then((Map<String, String> result) {
+                                                                        setState(() {
+                                                                          isLoading = false;
+                                                                        });
+
+                                                                        if (result['result'] != 'failed') {
+                                                                          userName = getStringPref(StringPrefsEnum.displayName);
+                                                                          userQrCode = getStringPref(StringPrefsEnum.qrSecretCode);
+
+                                                                          Utilities.showAlert(context, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
+                                                                        }
+                                                                      });
+                                                                    });
+                                                                  }
+                                                                }
+                                                              },
+                                                              child: const Text(
+                                                                'Reload Database',
+                                                                style: TextStyle(color: Colors.white),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ]),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            )),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Container(width: 40, height: 40),
+                              ],
                             ),
                           ),
-                          Container(width: 40, height: 40),
-                        ],
+                        ),
                       ),
                     ),
                   ),
+          ),
+        ),
+        globalConnectionStatus == connectionStatus_notConnected
+            ? Positioned(
+                right: 0,
+                top: 0,
+                child: Image.asset(
+                  'images/icons/offline_mode.png',
+                  height: 120,
+                  width: 120,
                 ),
-              ),
-            ),
+              )
+            : Container(),
+      ],
     );
   }
 

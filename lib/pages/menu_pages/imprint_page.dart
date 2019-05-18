@@ -1,9 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:package_info/package_info.dart';
 
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/globals.dart';
+import 'package:harrier_central/util/enums.dart';
 
 class ImprintPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -17,22 +18,43 @@ class ImprintPage extends StatefulWidget {
 class ImprintPageState extends State<ImprintPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: themeAppBarBackground,
-        title: const Text(
-          'Imprint',
-          style: TextStyle(
-            color: Colors.white,
+    return Stack(
+      children: <Widget>[
+        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        Positioned(
+          top: 0,
+          left: 0,
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          child: Scaffold(
+            appBar: AppBar(
+              centerTitle: true,
+              backgroundColor: themeAppBarBackground,
+              title: const Text(
+                'Imprint',
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            body: Container(
+              decoration: Backgrounds.defaultHcBackground(),
+              height: MediaQuery.of(context).size.height,
+              child: const ImprintPageContent(),
+            ),
           ),
-        ),
-      ),
-      body: Container(
-        decoration: Backgrounds.defaultHcBackground(),
-        height: MediaQuery.of(context).size.height,
-        child: const ImprintPageContent(),
-      ),
+        ),globalConnectionStatus == connectionStatus_notConnected
+            ? Positioned(
+                right: 0,
+                top: 0,
+                child: Image.asset(
+                  'images/icons/offline_mode.png',
+                  height: 120,
+                  width: 120,
+                ),
+              )
+            : Container(),
+      ],
     );
   }
 }
@@ -45,19 +67,9 @@ class ImprintPageContent extends StatefulWidget {
 }
 
 class _ImprintPageContentState extends State<ImprintPageContent> {
-  TextStyle headingStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.yellow,
-      fontSize: 24.0,
-      height: 1.0);
+  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 24.0, height: 1.0);
 
-  TextStyle bodyStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.white,
-      fontSize: 20.0,
-      height: 1.0);
+  TextStyle bodyStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0);
 
   String appName;
   String packageName;
@@ -75,8 +87,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
       });
     });
 
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints viewportConstraints) {
+    return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
       return SingleChildScrollView(
         child: ConstrainedBox(
           constraints: const BoxConstraints(
@@ -98,9 +109,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text(
-                          'Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nStatus: Private Beta',
-                          style: bodyStyle),
+                      Text('Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nStatus: Private Beta', style: bodyStyle),
                     ],
                   ),
                   Row(
@@ -112,9 +121,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text(
-                          'Harrier Central\r\n\r\nInnoVet Europe\r\nFluwelen Burgwal 58\r\n2511 CJ, Den Haag\r\nNetherlands\r\n\r\nKvK number: 68759207\r\nVAT #: 261107574.01',
-                          style: bodyStyle),
+                      Text('Harrier Central\r\n\r\nInnoVet Europe\r\nFluwelen Burgwal 58\r\n2511 CJ, Den Haag\r\nNetherlands\r\n\r\nKvK number: 68759207\r\nVAT #: 261107574.01', style: bodyStyle),
                     ],
                   ),
                   Expanded(
@@ -140,8 +147,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('© 2019, InnoVet Europe\r\nAll rights reserved',
-                          style: bodyStyle),
+                      Text('© 2019, InnoVet Europe\r\nAll rights reserved', style: bodyStyle),
                     ],
                   ),
                   Row(
@@ -150,9 +156,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                       Text('\r\nTechnical data:', style: headingStyle),
                     ],
                   ),
-                  Text(
-                      'The Harrier Central service is hosted in Microsoft Azure data centers in The Netherlands and Ireland. The mobile app for iOS and Android is written in Google Flutter and the back-end services are composed in Microsoft SQL Azure and Microsoft ASP.NET.',
-                      style: bodyStyle),
+                  Text('The Harrier Central service is hosted in Microsoft Azure data centers in The Netherlands and Ireland. The mobile app for iOS and Android is written in Google Flutter and the back-end services are composed in Microsoft SQL Azure and Microsoft ASP.NET.', style: bodyStyle),
                   Container(width: 40, height: 40),
                 ],
               ),

@@ -7,6 +7,7 @@ import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 
 import 'package:harrier_central/data/models/main_navigation_model.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/pages/top_level/history_list_page.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
@@ -14,6 +15,7 @@ import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/data/services/kennel_run_history_totals_scoped_model.dart';
 
 class MainNavigationPage extends StatefulWidget {
@@ -72,9 +74,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     //setIntPref(IntPrefsEnum.mainViewCurrentTab, index);
   }
 
-
-  final KennelRunHistoryTotalsScopedModel kennelRunHistoryTotalsScopedModel =
-      KennelRunHistoryTotalsScopedModel();
+  final KennelRunHistoryTotalsScopedModel kennelRunHistoryTotalsScopedModel = KennelRunHistoryTotalsScopedModel();
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
@@ -97,8 +97,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           w = const KennelsListPage();
           break;
         case 2:
-          w = HistoryListPage(
-              kennelRunCountHistoryModel: kennelRunHistoryTotalsScopedModel);
+          w = HistoryListPage(kennelRunCountHistoryModel: kennelRunHistoryTotalsScopedModel);
           break;
         case 3:
           w = const UserQrCodePage();
@@ -107,90 +106,112 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       return w;
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: themeAppBarBackground,
-        title: Text(appBarText),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(color: Colors.white),
-        child: dbCreated == 0
-            ? Container(
-                decoration: Backgrounds.defaultHcBackground(),
-                height: MediaQuery.of(context).size.height,
-                width: MediaQuery.of(context).size.width,
-                child: Center(
-                    child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Image.asset(
-                      'images/other/creating_database.png',
-                      height: 250,
-                      width: 250,
+    return Stack(
+      children: <Widget>[
+        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        Positioned(
+          top: 0,
+          left: 0,
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          child: Scaffold(
+            appBar: AppBar(
+              backgroundColor: themeAppBarBackground,
+              title: Text(appBarText),
+            ),
+            body: Container(
+              decoration: const BoxDecoration(color: Colors.white),
+              child: dbCreated == 0
+                  ? Container(
+                      decoration: Backgrounds.defaultHcBackground(),
+                      height: MediaQuery.of(context).size.height,
+                      width: MediaQuery.of(context).size.width,
+                      child: Center(
+                          child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Image.asset(
+                            'images/other/creating_database.png',
+                            height: 250,
+                            width: 250,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Text(
+                              initializationMessage,
+                              style: headingStyle,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      )),
+                    )
+                  : Center(
+                      child: _getPage(currentPage),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Text(
-                        initializationMessage,
-                        style: headingStyle,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
-                )),
+            ),
+            bottomNavigationBar: FancyBottomNavigation(
+              circleColor: themeButtonColors,
+              inactiveIconColor: themeBackgroundColor,
+              barBackgroundColor: themeNavBarBackground,
+              tabs: <TabData>[
+                TabData(
+                  iconData: MaterialCommunityIcons.run_fast,
+                  title: 'Runs',
+                  // onclick: () {
+                  //   final FancyBottomNavigationState fState =
+                  //       bottomNavigationKey.currentState;
+                  //   fState.setPage(2);
+                  // },
+                ),
+                TabData(
+                  iconData: FontAwesome.home,
+                  title: 'Kennels',
+                  // onclick: () => Navigator.of(context).push<dynamic>(
+                  //       MaterialPageRoute<dynamic>(
+                  //         builder: (BuildContext context) => UserQrCodePage(),
+                  //       ),
+                  //     ),
+                ),
+                TabData(
+                  iconData: FontAwesome.list_ul,
+                  title: 'History',
+                  // onclick: () => Navigator.of(context).push<dynamic>(
+                  //       MaterialPageRoute<dynamic>(
+                  //         builder: (BuildContext context) => UserQrCodePage(),
+                  //       ),
+                  //     ),
+                ),
+                TabData(
+                  iconData: MaterialCommunityIcons.qrcode_scan,
+                  title: 'Scanner',
+                )
+              ],
+              initialSelection: 0,
+              key: bottomNavigationKey,
+              onTabChangedListener: (int position) {
+                setState(() {
+                  appBarText = tabTitles[position];
+                  currentPage = position;
+                });
+              },
+            ),
+            drawer: DrawerMenu(scaffoldKey: _scaffoldKey),
+          ),
+        ),
+        globalConnectionStatus == connectionStatus_notConnected
+            ? Positioned(
+                right: 0,
+                top: 0,
+                child: Image.asset(
+                  'images/icons/offline_mode.png',
+                  height: 120,
+                  width: 120,
+                ),
               )
-            : Center(
-                child: _getPage(currentPage),
-              ),
-      ),
-      bottomNavigationBar: FancyBottomNavigation(
-        circleColor: themeButtonColors,
-        inactiveIconColor: themeBackgroundColor,
-        barBackgroundColor: themeNavBarBackground,
-        tabs: <TabData>[
-          TabData(
-            iconData: MaterialCommunityIcons.run_fast,
-            title: 'Runs',
-            // onclick: () {
-            //   final FancyBottomNavigationState fState =
-            //       bottomNavigationKey.currentState;
-            //   fState.setPage(2);
-            // },
-          ),
-          TabData(
-            iconData: FontAwesome.home,
-            title: 'Kennels',
-            // onclick: () => Navigator.of(context).push<dynamic>(
-            //       MaterialPageRoute<dynamic>(
-            //         builder: (BuildContext context) => UserQrCodePage(),
-            //       ),
-            //     ),
-          ),
-          TabData(
-            iconData: FontAwesome.list_ul,
-            title: 'History',
-            // onclick: () => Navigator.of(context).push<dynamic>(
-            //       MaterialPageRoute<dynamic>(
-            //         builder: (BuildContext context) => UserQrCodePage(),
-            //       ),
-            //     ),
-          ),
-          TabData(
-            iconData: MaterialCommunityIcons.qrcode_scan,
-            title: 'Scanner',
-          )
-        ],
-        initialSelection: 0,
-        key: bottomNavigationKey,
-        onTabChangedListener: (int position) {
-          setState(() {
-            appBarText = tabTitles[position];
-            currentPage = position;
-          });
-        },
-      ),
-      drawer: DrawerMenu(scaffoldKey: _scaffoldKey),
+            : Container(),
+      ],
     );
 
     // return Scaffold(

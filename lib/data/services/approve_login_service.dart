@@ -70,8 +70,10 @@ class ApproveLoginService {
       'longitude': (latLon?.longitude ?? DEFAULT_LONGITUDE).toString(),
       'hcVersion': hcVersion,
     });
+    
+    Future<http.Response> response;
 
-    final Future<http.Response> response = http
+    response = http
         .post(BASE_API_URL + 'approve_login',
             headers: <String, String>{'content-type': 'application/json'},
             body: body
@@ -80,13 +82,25 @@ class ApproveLoginService {
             )
         .catchError(
       (dynamic error) {
-        return false;
+        // TODO(James): Handle socketException
+        response = null;
       },
     );
 
+    if (response == null)
+    {
+        return null;
+    }
+
+    // if the response times out, show an error
     response.timeout(const Duration(seconds: LOGIN_TIMEOUT), onTimeout: () => _onTimeout(context));
 
     final http.Response resp = await response;
+
+    if (resp == null)
+    {
+      return null;
+    }
 
     final ApproveLoginModel loginResult =
         ApproveLoginModel.itemFromJson(resp.body);

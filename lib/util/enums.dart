@@ -21,6 +21,17 @@ const EnumVirginVisitor<int> enumKnownVisitor = EnumVirginVisitor<int>(3);
 //////////////////////////
 
 
+class EnumConnectionStatus<int> extends Enum<int> {
+  const EnumConnectionStatus(int val) : super(val);
+}
+
+const EnumConnectionStatus<int> connectionStatus_notConnected = EnumConnectionStatus<int>(0);
+const EnumConnectionStatus<int> connectionStatus_connected = EnumConnectionStatus<int>(1);
+
+
+//////////////////////////
+
+
 class EnumRsvpState<int> extends Enum<int> {
   const EnumRsvpState(int val) : super(val);
 }

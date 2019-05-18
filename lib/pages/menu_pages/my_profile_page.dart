@@ -7,6 +7,9 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/profile_photo.dart';
 import 'package:harrier_central/data/models/user_model.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
@@ -44,44 +47,30 @@ class MyProfilePageState extends State<MyProfilePage> {
 
   Widget _buildCircularProgressIndicator() {
     return Center(
-      child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Updating User Profile',
-              style: headingStyle,
-              textAlign: TextAlign.center,
-            ),
-            Container(height: 30),
-            SpinKitCircle(
-              size: 75.0,
-              itemBuilder: (_, int index) {
-                return DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: index.isEven
-                        ? Colors.grey[50]
-                        : Theme.of(context).accentColor,
-                  ),
-                );
-              },
-            ),
-          ]),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        Text(
+          'Updating User Profile',
+          style: headingStyle,
+          textAlign: TextAlign.center,
+        ),
+        Container(height: 30),
+        SpinKitCircle(
+          size: 75.0,
+          itemBuilder: (_, int index) {
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                color: index.isEven ? Colors.grey[50] : Theme.of(context).accentColor,
+              ),
+            );
+          },
+        ),
+      ]),
     );
   }
 
-  TextStyle headingStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.yellow,
-      fontSize: 22.0,
-      height: 1.0);
+  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 22.0, height: 1.0);
 
-  TextStyle buttonTextStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.white,
-      fontSize: 16.0,
-      height: 1.0);
+  TextStyle buttonTextStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 16.0, height: 1.0);
 
   GlobalKey<ScaffoldState> scaffoldKey;
 
@@ -95,14 +84,7 @@ class MyProfilePageState extends State<MyProfilePage> {
         final String userId = getStringPref(StringPrefsEnum.userId);
 
         final EditUserService srv = EditUserService();
-        final Future<dynamic> apiCall = srv.editUser(
-            context: context,
-            targetUserId: userId,
-            firstName: _firstName,
-            lastName: _lastName,
-            email: _email,
-            hashName: _hashName,
-            photo: '');
+        final Future<dynamic> apiCall = srv.editUser(context: context, targetUserId: userId, firstName: _firstName, lastName: _lastName, email: _email, hashName: _hashName, photo: '');
 
         apiCall.then((dynamic result) {
           setState(() {
@@ -199,17 +181,22 @@ class MyProfilePageState extends State<MyProfilePage> {
         const SizedBox(
           height: 10.0,
         ),
-        RaisedButton(
-          onPressed: _updateProfile,
-          child: Text('Save Changes', style: buttonTextStyle),
-        )
+        Utilities.styleForConnected(
+          RaisedButton(
+            onPressed: () {
+              if (Utilities.checkForConnection(context)) {
+                _updateProfile();
+              }
+            },
+            child: Text('Save Changes', style: buttonTextStyle),
+          ),
+        ),
       ],
     );
   }
 
   String validateEmail(String value) {
-    const Pattern pattern =
-        r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
+    const Pattern pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
     final RegExp regex = RegExp(pattern, caseSensitive: false);
     if (!regex.hasMatch(value))
       return 'Enter Valid Email';
@@ -229,137 +216,149 @@ class MyProfilePageState extends State<MyProfilePage> {
         ),
       ),
     );
-    return Scaffold(
-      key: scaffoldKey,
-      appBar: appBar,
-      body: _isLoading
-          ? Container(
-              height: MediaQuery.of(context).size.height -
-                  appBar.preferredSize.height,
-              decoration: Backgrounds.defaultHcBackground(),
-              child: _buildCircularProgressIndicator())
-          : Container(
-              decoration: Backgrounds.defaultHcBackground(),
-              height: MediaQuery.of(context).size.height -
-                  appBar.preferredSize.height,
-              child: SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                      //minHeight: viewportConstraints.maxHeight,
-                      ),
-                  child: IntrinsicHeight(
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.only(top: 30, left: 20, right: 20),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          // TODO(James): Bring this back eventually
-                          // UserDetailsUi(firstName: firstName, lastName: lastName, email: email, hashName: hashName,),
-                          // const FancyDivider(innerColor: Colors.white),
-                          Container(
-                            width: MediaQuery.of(context).size.width,
-                            child: IntrinsicHeight(
-                              child: Stack(
-                                fit: StackFit.expand,
-                                alignment: AlignmentDirectional.center,
-                                children: <Widget>[
-                                  Container(height: 800),
-                                  Positioned(
-                                    top: 25,
-                                    left: 0,
-                                    right: 0,
-                                    child: Text(
-                                      'My Profile Information',
-                                      style: headingStyle,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  Positioned(
-                                      top: 40,
-                                      //bottom: 20,
-                                      width: MediaQuery.of(context).size.width,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(30.0),
-                                        child: Container(
-                                          child: Center(
-                                            child: Column(
-                                              children: <Widget>[
-                                                Container(
-                                                  padding: const EdgeInsets.all(
-                                                      10.0),
-                                                  margin:  const EdgeInsets.only(bottom:45),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.yellow[100],
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5.0),
-                                                  ),
-                                                  child: Form(
-                                                    key: _formKey,
-                                                    autovalidate: _autoValidate,
-                                                    child: formUi(),
-                                                  ),
-                                                ),
-                                                
-                                                const FancyDivider(
-                                                      innerColor: Colors.white),
-                                                
-                                                //SizedBox(height: 30),
-                                                Container(
-                                                  height: 220,
-                                                  color: Colors.white,
-                                                  padding:const EdgeInsets.all(10.0),
-                                                  margin: const EdgeInsets.only(
-                                                      top: 20, bottom: 30),
-                                                  child: ProfilePhoto(
-                                                    profilePhotoUrl: _photo,
-                                                    photoHeight: 200.0,
-                                                    leftPadding: 0.0,
-                                                  ),
-                                                ),
-                                                RaisedButton(
-                                                  onPressed: () {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute<
-                                                          UserModel>(
-                                                        builder: (BuildContext
-                                                                context) =>
-                                                            const ChooseProfileImage(
-                                                              isForThisDevice:
-                                                                  true,
-                                                              doAddUser: false,
-                                                            ),
-                                                      ),
-                                                    ).then((dynamic result){
-                                                      setState(() {
-                                                           _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
-                                                      });
-                                                    });
-                                                  },
-                                                  child: Text(
-                                                      'Update Profile Image',
-                                                      style: buttonTextStyle),
-                                                )
-                                              ],
-                                            ),
+    return Stack(
+      children: <Widget>[
+        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        Positioned(
+          top: 0,
+          left: 0,
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          child: Scaffold(
+            key: scaffoldKey,
+            appBar: appBar,
+            body: _isLoading
+                ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
+                : Container(
+                    decoration: Backgrounds.defaultHcBackground(),
+                    height: MediaQuery.of(context).size.height - appBar.preferredSize.height,
+                    child: SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                            //minHeight: viewportConstraints.maxHeight,
+                            ),
+                        child: IntrinsicHeight(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                // TODO(James): Bring this back eventually
+                                // UserDetailsUi(firstName: firstName, lastName: lastName, email: email, hashName: hashName,),
+                                // const FancyDivider(innerColor: Colors.white),
+                                Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  child: IntrinsicHeight(
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      alignment: AlignmentDirectional.center,
+                                      children: <Widget>[
+                                        Container(height: 800),
+                                        Positioned(
+                                          top: 25,
+                                          left: 0,
+                                          right: 0,
+                                          child: Text(
+                                            'My Profile Information',
+                                            style: headingStyle,
+                                            textAlign: TextAlign.center,
                                           ),
                                         ),
-                                      )),
-                                ],
-                              ),
+                                        Positioned(
+                                            top: 40,
+                                            //bottom: 20,
+                                            width: MediaQuery.of(context).size.width,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(30.0),
+                                              child: Container(
+                                                child: Center(
+                                                  child: Column(
+                                                    children: <Widget>[
+                                                      Container(
+                                                        padding: const EdgeInsets.all(10.0),
+                                                        margin: const EdgeInsets.only(bottom: 45),
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.yellow[100],
+                                                          borderRadius: BorderRadius.circular(5.0),
+                                                        ),
+                                                        child: Form(
+                                                          key: _formKey,
+                                                          autovalidate: _autoValidate,
+                                                          child: formUi(),
+                                                        ),
+                                                      ),
+
+                                                      const FancyDivider(innerColor: Colors.white),
+
+                                                      //SizedBox(height: 30),
+                                                      Container(
+                                                        height: 220,
+                                                        color: Colors.white,
+                                                        padding: const EdgeInsets.all(10.0),
+                                                        margin: const EdgeInsets.only(top: 20, bottom: 30),
+                                                        child: ProfilePhoto(
+                                                          profilePhotoUrl: _photo,
+                                                          photoHeight: 200.0,
+                                                          leftPadding: 0.0,
+                                                        ),
+                                                      ),
+
+                                                      Utilities.styleForConnected(
+                                                        RaisedButton(
+                                                          onPressed: () {
+                                                            if (Utilities.checkForConnection(context)) {
+                                                              Navigator.push(
+                                                                context,
+                                                                MaterialPageRoute<UserModel>(
+                                                                  builder: (BuildContext context) => const ChooseProfileImage(
+                                                                        isForThisDevice: true,
+                                                                        doAddUser: false,
+                                                                      ),
+                                                                ),
+                                                              ).then((dynamic result) {
+                                                                setState(() {
+                                                                  _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
+                                                                });
+                                                              });
+                                                            }
+                                                          },
+                                                          child: Text('Update Profile Image', style: buttonTextStyle),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            )),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Container(width: 40, height: 40),
+                              ],
                             ),
                           ),
-                          Container(width: 40, height: 40),
-                        ],
+                        ),
                       ),
                     ),
                   ),
+          ),
+        ),
+        
+        globalConnectionStatus == connectionStatus_notConnected
+            ? Positioned(
+                right: 0,
+                top: 0,
+                child: Image.asset(
+                  'images/icons/offline_mode.png',
+                  height: 120,
+                  width: 120,
                 ),
-              ),
-            ),
+              )
+            : Container(),
+      
+      ],
     );
   }
 }

@@ -13,6 +13,7 @@ import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
 import 'package:harrier_central/data/services/approve_login_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
 
@@ -21,70 +22,68 @@ class AppEntryPage extends StatefulWidget {
   _AppEntryPageState createState() => _AppEntryPageState();
 }
 
-class _AppEntryPageState extends State<AppEntryPage>
-    with SingleTickerProviderStateMixin {
+class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderStateMixin {
   AnimationController _iconAnimationController;
   CurvedAnimation _iconAnimation;
 
-  Future<void> handleTimeout(BuildContext context) async {
+  Future<void> handleStartup(BuildContext context) async {
     final PackageInfo p = await PackageInfo.fromPlatform();
-    final String hcVersion =
-        'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
+    final String hcVersion = 'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
 
-    setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
+    await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
 
-    await PermissionHandler().requestPermissions(
-        <PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);
+    await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.camera]);
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     final ApproveLoginService svc = ApproveLoginService();
-    await svc.approveLogin(context).then((ApproveLoginModel loginResult) async {
-      const bool allowContinueFromMessage = true;
+    final ApproveLoginModel loginResult = await svc.approveLogin(context);
 
-      if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
-        if (loginResult.messageDisplayType == loginMessageTypeAlert.value) {
-          await _displayAlert(
-              context, loginResult.loginMessage, loginResult.loginMessageTitle);
+      if (loginResult == null) {
+        
+        globalConnectionStatus =connectionStatus_notConnected;
+        Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+        return;
+      } else {
+        const bool allowContinueFromMessage = true;
+
+        if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
+          if (loginResult.messageDisplayType == loginMessageTypeAlert.value) {
+            await _displayAlert(context, loginResult.loginMessage, loginResult.loginMessageTitle);
+          }
         }
-      }
 
-      if (allowContinueFromMessage) {
-        if (loginResult.serverStatusCode == serverStatusUp.value) {
-          if (loginResult.approvalCode == loginApprovalApproved.value) {
-            if (userId == null) {
-              Navigator.of(context)
-                  .pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+        if (allowContinueFromMessage) {
+          if (loginResult.serverStatusCode == serverStatusUp.value) {
+            if (loginResult.approvalCode == loginApprovalApproved.value) {
+               globalConnectionStatus =connectionStatus_connected;
+              if (userId == null) {
+                Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+              } else {
+                final Database db = await DBProvider.db.database;
+
+                final SyncUserDataService cSrv = SyncUserDataService();
+                final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagAllMasterData, false);
+                final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                print('Master data synchronized $resultStr');
+
+                Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+              }
             } else {
-              final Database db = await DBProvider.db.database;
-
-              final SyncUserDataService cSrv = SyncUserDataService();
-              final bool result = await cSrv.updateFromBackend(db,SyncUserDataService.flagAllMasterData,false);
-              final String resultStr = result ? 'successfully' : 'unsuccessfully';
-              print('Master data synchronized $resultStr');
-
-              Navigator.pushReplacement<dynamic, dynamic>(
-                  context,
-                  MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) =>
-                          const MainNavigationPage()));
+              // TODO(James): Handle cases where login is disapproved
             }
           } else {
-            // TODO(James): Handle cases where login is disapproved
+            // TODO(James): Handle cases where server is down
           }
         } else {
-          // TODO(James): Handle cases where server is down
+          // TODO(James): Handle case where not allowed to continue after a message
         }
-      } else {
-        // TODO(James): Handle case where not allowed to continue after a message
       }
-    });
 
     //// return Future<void>(() {});((){});
   }
 
-  Future<bool> _displayAlert(
-      BuildContext context, String alertText, String alertTitle) async {
+  Future<bool> _displayAlert(BuildContext context, String alertText, String alertTitle) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -97,11 +96,7 @@ class _AppEntryPageState extends State<AppEntryPage>
                 Text(
                   alertText,
                   textAlign: TextAlign.justify,
-                  style: const TextStyle(
-                      fontFamily: 'AvenirNextRegular',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 16.0,
-                      height: 1.0),
+                  style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                 )
               ],
             ),
@@ -125,11 +120,11 @@ class _AppEntryPageState extends State<AppEntryPage>
     super.dispose();
   }
 
-  dynamic startTimeout() async {
-    initPrefs().then((void dummy) {});
-
-    return Timer(
-        const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME), () => handleTimeout(context));
+  Future<void> startTimeout() async {
+    await initPrefs();
+    await Future<dynamic>.delayed(const Duration(seconds:SPLASH_SCREEN_DISPLAY_TIME));
+    await handleStartup(context);
+    return;
   }
 
   //bool _visible = true;
@@ -137,16 +132,15 @@ class _AppEntryPageState extends State<AppEntryPage>
   void initState() {
     super.initState();
 
-    _iconAnimationController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 3000));
+    _iconAnimationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 3000));
 
-    _iconAnimation =
-        CurvedAnimation(parent: _iconAnimationController, curve: Curves.easeIn);
+    _iconAnimation = CurvedAnimation(parent: _iconAnimationController, curve: Curves.easeIn);
     _iconAnimation.addListener(() => setState(() {}));
 
     _iconAnimationController.forward();
 
     startTimeout();
+
   }
 
   @override

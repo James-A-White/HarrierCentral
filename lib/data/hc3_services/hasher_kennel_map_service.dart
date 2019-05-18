@@ -8,9 +8,11 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
+import 'package:harrier_central/util/enums.dart';
 
 class HasherKennelMapModel {
   HasherKennelMapModel(
@@ -301,6 +303,15 @@ class HasherKennelMapService {
   //=================  Domain specific functions ================
 
   Future<void> toggleFollowing(Map<String, dynamic> kennel, HasherKennelMapTableType tblType) async {
+
+    
+    if (globalConnectionStatus == connectionStatus_notConnected)
+    {
+      return;
+      // TODO(James): fix this so we can return a bool
+      //return false;
+    }
+
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
 

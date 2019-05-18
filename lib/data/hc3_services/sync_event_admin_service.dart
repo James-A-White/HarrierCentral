@@ -7,6 +7,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
@@ -45,6 +47,12 @@ class SyncEventAdminService {
   }
 
   Future<bool> updateFromBackend(Database db, int flags, bool forceRefresh, String eventId, {Function informUser}) async {
+    
+    if (globalConnectionStatus == connectionStatus_notConnected)
+    {
+      return false;
+    }
+  
     if (getStringPref(StringPrefsEnum.adminEventId) != eventId) {
       final PaymentsService paySrv = PaymentsService();
       final HasherEventMapService hem2srv = HasherEventMapService();

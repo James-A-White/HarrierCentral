@@ -10,6 +10,8 @@ import 'package:harrier_central/data/models/join_event_model.dart';
 import 'package:harrier_central/data/models/lite_event_model.dart';
 import 'package:harrier_central/data/services/join_event_service.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 
@@ -77,6 +79,15 @@ class EventsScopedModel extends Model {
 
   Future<void> getUserEventsFromBackend(bool showLoadingIndicator,
       int filterByUser, int includeHidden, int includeFuture) async {
+
+    
+    if (globalConnectionStatus == connectionStatus_notConnected)
+    {
+      return;
+      // TODO(James): fix this so we can return a bool
+      //return false;
+    }
+
     if (showLoadingIndicator) {
       _isLoading = true;
       //notifyListeners();
@@ -220,6 +231,15 @@ class EventsScopedModel extends Model {
       int isVisible,
       int isCountedRun,
       int absoluteRunNumber}) async {
+
+    
+    if (globalConnectionStatus == connectionStatus_notConnected)
+    {
+      return null;
+      // TODO(James): fix this so we can return a bool
+      //return false;
+    }
+
     isVisible ??= -1;
     isCountedRun ??= -1;
     absoluteRunNumber ??= -1;

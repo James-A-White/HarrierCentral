@@ -7,6 +7,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/cities_service.dart';
 import 'package:harrier_central/data/hc3_services/regions_service.dart';
@@ -61,6 +63,13 @@ class SyncUserDataService {
   }
 
   Future<bool> updateFromBackend(Database db, int tablesToSync, bool forceRefresh, {Function informUser}) async {
+
+    
+    if (globalConnectionStatus == connectionStatus_notConnected)
+    {
+      return false;
+    }
+
     final int hashersLastUpdate = (tablesToSync & flagHashersTable) == 0 ? null : getIntPref(HashersTableHelper.lastUpdatedKey) ?? 0;
     final int citiesLastUpdate = (tablesToSync & flagCitiesTable) == 0 ? null : getIntPref(CitiesTableHelper.lastUpdatedKey) ?? 0;
     final int regionsLastUpdate = (tablesToSync & flagRegionsTable) == 0 ? null : getIntPref(RegionsTableHelper.lastUpdatedKey) ?? 0;

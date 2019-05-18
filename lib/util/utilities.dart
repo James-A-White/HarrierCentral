@@ -11,6 +11,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:harrier_central/localization.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/globals.dart';
+import 'package:harrier_central/util/enums.dart';
 
 class LatLon {
   double latitude;
@@ -182,6 +184,27 @@ class Utilities {
       duration: Duration(seconds: durationInSeconds),
     ));
   }
+
+  static Widget styleForConnected(Widget w) {
+  return Container(
+    foregroundDecoration: globalConnectionStatus == connectionStatus_connected
+        ? const BoxDecoration()
+        : const BoxDecoration(
+            color: Colors.grey,
+            backgroundBlendMode: BlendMode.saturation,
+          ),
+    child: Opacity(opacity: globalConnectionStatus == connectionStatus_connected ? 1.0 : 0.5, child: w),
+  );
+}
+
+static bool checkForConnection(BuildContext context,{String title, String message})
+{
+  if (globalConnectionStatus ==connectionStatus_notConnected)
+  {
+     Utilities.showAlert(context, title ?? 'Offline mode', message ?? 'This feature is not available in offline mode. Please connect to the internet to use this feature' , 'OK');
+  }
+  return globalConnectionStatus == connectionStatus_connected;
+}
 
   static Future<bool> showAlert(BuildContext context, String title, String body, String buttonText) async {
     return showDialog<bool>(

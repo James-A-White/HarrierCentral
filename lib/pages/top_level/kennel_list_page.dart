@@ -10,7 +10,7 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/widgets/kennel_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/singletons.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 
@@ -44,10 +44,10 @@ class KennelsListPageState extends State<KennelsListPage> {
   }
 
   void refreshFromTable(bool forceRefresh) {
-    if (forceRefresh || (singletonKennelMainPageList == null)) {
+    if (forceRefresh || (globalKennelMainPageList == null)) {
       final Geolocator locator = Geolocator();
-      if (singletonKennelMainPageList != null) {
-        singletonKennelMainPageList.clear();
+      if (globalKennelMainPageList != null) {
+        globalKennelMainPageList.clear();
       }
 
       Utilities.getLatLong().then((LatLon ll) {
@@ -72,7 +72,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           
           ''';
 
-          singletonKennelMainPageList = <Map<String, dynamic>>[]; 
+          globalKennelMainPageList = <Map<String, dynamic>>[]; 
           try {
             db.rawQuery(query).then((List<Map<String, dynamic>> results) {
               for (int i = 0; i < results.length; i++) {
@@ -81,7 +81,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                   item.addAll(<String, dynamic>{'distance': dist.round()});
                   item.addAll(<String, dynamic>{'followingRequested': -1});
                   item.addAll(results[i]);
-                  singletonKennelMainPageList.add(item);
+                  globalKennelMainPageList.add(item);
                   if (i == results.length - 1) {
                     setState(() {});
                   }
@@ -100,7 +100,7 @@ class KennelsListPageState extends State<KennelsListPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      body: singletonKennelMainPageList == null ? _buildCircularProgressIndicator() : _buildListView());
+      body: globalKennelMainPageList == null ? _buildCircularProgressIndicator() : _buildListView());
   }
 
   Widget _buildCircularProgressIndicator() {
@@ -121,25 +121,25 @@ class KennelsListPageState extends State<KennelsListPage> {
   }
 
   Widget _buildListView() {
-    singletonKennelMainPageList.sort((Map<String, dynamic> a, Map<String, dynamic> b) => (a['distance']).compareTo(b['distance']));
-    singletonKennelMainPageList.sort((Map<String, dynamic> a, Map<String, dynamic> b) => (a['following']==1?0:a['following']==2?1:2).compareTo(b['following']==1?0:b['following']==2?1:2));
+    globalKennelMainPageList.sort((Map<String, dynamic> a, Map<String, dynamic> b) => (a['distance']).compareTo(b['distance']));
+    globalKennelMainPageList.sort((Map<String, dynamic> a, Map<String, dynamic> b) => (a['following']==1?0:a['following']==2?1:2).compareTo(b['following']==1?0:b['following']==2?1:2));
     return Container(
       decoration: Backgrounds.defaultHcBackground(),
       padding: const EdgeInsets.only(top: 0.0),
-      child: singletonKennelMainPageList.isEmpty
+      child: globalKennelMainPageList.isEmpty
           ? const Center(child: Text('No Kennels available.'))
           : RefreshIndicator(
               onRefresh: () => _handleRefresh(),
               displacement: 40.0,
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: singletonKennelMainPageList.length,
+                itemCount: globalKennelMainPageList.length,
                 itemBuilder: (BuildContext context, int index) {
                   return Container(
                     height: 150.0,
                     padding: const EdgeInsets.all(0.0),
                     child: ListView(scrollDirection: Axis.horizontal, children: <Widget>[
-                      KennelsListItem(kennel: singletonKennelMainPageList[index]),
+                      KennelsListItem(kennel: globalKennelMainPageList[index]),
                     ]),
                   );
                 },

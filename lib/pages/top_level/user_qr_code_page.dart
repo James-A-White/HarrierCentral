@@ -11,6 +11,7 @@ import 'package:harrier_central/data/models/process_qr_scan_model.dart';
 import 'package:harrier_central/data/services/process_qr_scan_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 
 class UserQrCodePage extends StatefulWidget {
@@ -659,7 +660,10 @@ class _QrScannerTabState extends State<QrScannerTab>
                 child: Container(
                   //margin: const EdgeInsets.all(20.0),
                   width: 280.0,
-                  child: RaisedButton(
+                  child: 
+                  
+                  Utilities.styleForConnected(
+                  RaisedButton(
                       child: Text(
                         controller == null ? 'Start Scanning' : 'Stop Scanning',
                         style: const TextStyle(
@@ -670,8 +674,14 @@ class _QrScannerTabState extends State<QrScannerTab>
                             height: 1.0),
                       ),
                       onPressed: () {
+                        if (Utilities.checkForConnection(context))
+                        {
                         scanUserBarcode();
+                        }
                       }),
+                  ),
+             
+             
                 ),
               ),
               Positioned(

@@ -21,6 +21,8 @@ class KennelsListItem extends StatefulWidget {
   KennelListItemState createState() => KennelListItemState();
 }
 
+
+
 class KennelListItemState extends State<KennelsListItem> {
   @override
   Widget build(BuildContext context) {
@@ -41,13 +43,15 @@ class KennelListItemState extends State<KennelsListItem> {
                     Container(
                       child: ScopedModelDescendant<FutureRunScopedModel>(
                         builder: (BuildContext runContext, Widget runChild, FutureRunScopedModel runModel) => IconButton(
-                              icon: Icon(widget.kennel['followingRequested'] != -1 ? delayIcon : widget.kennel['following'] == 1 ? const Icon(FontAwesome.check_circle).icon : widget.kennel['following'] == 2 ? const Icon(FontAwesome.times_circle).icon : const Icon(FontAwesome.star).icon,
-                                  color: widget.kennel['followingRequested'] != -1 ? Colors.blue : widget.kennel['following'] == 1 ? Colors.green : widget.kennel['following'] == 2 ? Colors.red : Colors.yellow[800]),
+                              icon: Utilities.styleForConnected(Icon(widget.kennel['followingRequested'] != -1 ? delayIcon : widget.kennel['following'] == 1 ? const Icon(FontAwesome.check_circle).icon : widget.kennel['following'] == 2 ? const Icon(FontAwesome.times_circle).icon : const Icon(FontAwesome.star).icon,
+                                  color: widget.kennel['followingRequested'] != -1 ? Colors.blue : widget.kennel['following'] == 1 ? Colors.green : widget.kennel['following'] == 2 ? Colors.red : Colors.yellow[800])),
                               tooltip: 'Select to follow a Kennel',
                               iconSize: 35.0,
                               alignment: Alignment.topCenter,
                               splashColor: Colors.greenAccent,
                               onPressed: () {
+                                if (Utilities.checkForConnection(context, message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.'))
+                                {
                                 final HasherKennelMapService srv = HasherKennelMapService();
                                 int followingRequested = widget.kennel['following'] + 1;
                                 if (followingRequested > 2) {
@@ -58,6 +62,7 @@ class KennelListItemState extends State<KennelsListItem> {
                                 srv.toggleFollowing(widget.kennel, HasherKennelMapTableType.user).then((void dummy) {
                                   setState(() {});
                                 });
+                                }
                               },
                             ),
                       ),
@@ -147,14 +152,15 @@ class KennelListItemState extends State<KennelsListItem> {
             Align(
               alignment: Alignment.centerRight,
               child: IconButton(
-                icon: const Icon(MaterialCommunityIcons.dots_vertical),
+                icon: Utilities.styleForConnected(const Icon(MaterialCommunityIcons.dots_vertical)),
                 iconSize: Theme.of(context).iconTheme.size,
                 color: Colors.black54,
                 splashColor: Theme.of(context).highlightColor,
                 onPressed: () {
-                  //
+                  if (Utilities.checkForConnection(context,message:'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.'))
+                  {
 
-                  final List<Map<String, dynamic>> buttons = <Map<String,dynamic>>[
+                  final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
                     <String, dynamic>{
                       'title': 'Always show runs',
                       'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.check_circle, color: Colors.green)],
@@ -197,7 +203,7 @@ class KennelListItemState extends State<KennelsListItem> {
                       barrierDismissible: false, // user must tap button!
                       builder: (BuildContext context) {
                         return popup;
-                      });
+                      });}
                 },
               ),
             ),
