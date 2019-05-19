@@ -62,7 +62,7 @@ class VideoTutorialPageState extends State<VideoTutorialPage> {
         backgroundColor: themeAppBarBackground,
         title: Text(
           widget.title,
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
           ),
         ),

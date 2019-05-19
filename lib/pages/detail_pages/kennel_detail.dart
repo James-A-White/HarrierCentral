@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/widgets/kennel_logo.dart';
+import 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
 import 'package:harrier_central/data/services/email_reports_service.dart';
 import 'package:harrier_central/pages/kennel_admin/filter_events_page.dart';
 import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
@@ -141,7 +142,7 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                               mapController: mapController,
                               options: MapOptions(
                                 interactive: false,
-                                center: LatLng(widget.kennel['latitude'], widget.kennel['longitude']),
+                                center: LatLng(widget.kennel['kennelLatitude'], widget.kennel['kennelLongitude']),
                                 zoom: sliderValue,
                               ),
                               layers: <LayerOptions>[
@@ -156,9 +157,9 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                                     Marker(
                                       width: 240.0,
                                       height: 240.0,
-                                      point: LatLng(widget.kennel['latitude'], widget.kennel['longitude']),
+                                      point: LatLng(widget.kennel['kennelLatitude'], widget.kennel['kennelLongitude']),
                                       builder: (BuildContext ctx) => GestureDetector(
-                                            onTap: () => _launchMaps(widget.kennel['latitude'], widget.kennel['longitude']),
+                                            onTap: () => _launchMaps(widget.kennel['kennelLatitude'], widget.kennel['kennelLongitude']),
                                             child: Container(
                                               margin: const EdgeInsets.only(bottom: 110.0),
                                               child: Stack(alignment: AlignmentDirectional.topCenter, children: <Widget>[
@@ -195,7 +196,7 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                               onChanged: (double val) {
                                 // setState(() {
                                 if (mapController != null) {
-                                  mapController.move(LatLng(widget.kennel['latitude'], widget.kennel['longitude']), val);
+                                  mapController.move(LatLng(widget.kennel['kennelLatitude'], widget.kennel['kennelLongitude']), val);
                                 }
                                 setState(() {
                                   sliderValue = val;
@@ -460,6 +461,41 @@ class KennelDetailPageState extends State<KennelDetailPage> {
                                   ),
                                 ),
                               ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                child: Container(
+                                  width: 220,
+                                  height: 50,
+                                  child: Utilities.styleForConnected(
+                                    RaisedButton(
+                                      padding: const EdgeInsets.only(top: 2.0, left: 8.0, bottom: 8.0),
+                                      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: const <Widget>[
+                                        Padding(
+                                          padding: EdgeInsets.only(left: 10),
+                                          child: Icon(MaterialCommunityIcons.qrcode, color: Colors.white),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.only(left: 20, top: 8),
+                                          child: Text('Print QR codes'),
+                                        ),
+                                      ]),
+                                      textColor: Colors.white,
+                                      onPressed: () {
+                                        Navigator.push<dynamic>(
+                                            context,
+                                            MaterialPageRoute<dynamic>(
+                                                builder: (BuildContext context) => EventQrCodePage(
+                                                      kennelShortName: widget.kennel['kennelShortName'],
+                                                      qrContent: widget.kennel['kennelId'],
+                                                      runEndPrefix: KENNEL_GENERIC_END_QR_PREFIX,
+                                                      runStartPrefix: KENNEL_GENERIC_START_QR_PREFIX,
+                                                      title: 'Any ' + widget.kennel['kennelShortName'] + ' run'
+                                                    )));
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                   ],
@@ -469,18 +505,17 @@ class KennelDetailPageState extends State<KennelDetailPage> {
           ),
         ),
       ),
-      
-        globalConnectionStatus == connectionStatus_notConnected
-            ? Positioned(
-                right: 0,
-                top: 0,
-                child: Image.asset(
-                  'images/icons/offline_mode.png',
-                  height: 120,
-                  width: 120,
-                ),
-              )
-            : Container(),
+      globalConnectionStatus == connectionStatus_notConnected
+          ? Positioned(
+              right: 0,
+              top: 0,
+              child: Image.asset(
+                'images/icons/offline_mode.png',
+                height: 120,
+                width: 120,
+              ),
+            )
+          : Container(),
     ]);
   }
 

@@ -10,12 +10,13 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 
 class EventQrCodePage extends StatefulWidget {
-  const EventQrCodePage({Key key, this.kennelShortName, this.eventId, this.eventName, this.eventNumber, this.eventStartDatetime}) : super(key: key);
+  const EventQrCodePage({Key key, @required this.kennelShortName, @required this.qrContent, @required this.title, @required this.runStartPrefix, @required this.runEndPrefix, this.eventStartDatetime}) : super(key: key);
 
   final String kennelShortName;
-  final String eventId;
-  final String eventName;
-  final int eventNumber;
+  final String qrContent;
+  final String title;
+  final String runStartPrefix;
+  final String runEndPrefix;
   final DateTime eventStartDatetime;
 
   @override
@@ -109,14 +110,16 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
                     children: <Widget>[
                       QrTab(
                         isRunStart: true,
-                        eventId: widget.eventId,
-                        eventName: widget.eventName,
+                        qrPrefix: widget.runStartPrefix,
+                        qrContent: widget.qrContent,
+                        title: widget.title,
                         eventStartDatetime: widget.eventStartDatetime,
                       ),
                       QrTab(
                         isRunStart: false,
-                        eventId: widget.eventId,
-                        eventName: widget.eventName,
+                        qrPrefix: widget.runEndPrefix,
+                        qrContent: widget.qrContent,
+                        title: widget.title,
                         eventStartDatetime: widget.eventStartDatetime,
                       )
                     ],
@@ -228,11 +231,12 @@ class TabIndicationPainter extends CustomPainter {
 }
 
 class QrTab extends StatefulWidget {
-  const QrTab({Key key, @required this.isRunStart, @required this.eventId, @required this.eventName, @required this.eventStartDatetime}) : super(key: key);
+  const QrTab({Key key, @required this.isRunStart, @required this.qrContent, @required this.title, @required this.qrPrefix, this.eventStartDatetime}) : super(key: key);
 
   final bool isRunStart;
-  final String eventId;
-  final String eventName;
+  final String qrPrefix;
+  final String qrContent;
+  final String title;
   final DateTime eventStartDatetime;
 
   @override
@@ -312,7 +316,7 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
                     width: MediaQuery.of(context).size.width * 0.8,
                     child: AutoSizeText(
                       //widget.eventName,
-                      widget.isRunStart ? 'Run start for:' : 'Run end for:',
+                      widget.isRunStart ? 'QR code for run start at:' : 'QR code for run end at:',
                       maxLines: 1,
                       minFontSize: 22.0,
                       overflow: TextOverflow.ellipsis,
@@ -324,7 +328,7 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
                     top: 110,
                     width: MediaQuery.of(context).size.width * 0.8,
                     child: AutoSizeText(
-                      widget.eventName,
+                      widget.title,
                      // 'This is a fake hash run name that needs to be very long so we can see how it fits on the page when it overflows three lines',
                       maxLines: 3,
                       minFontSize: 22.0,
@@ -371,7 +375,8 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
                       child: QrImage(
                           backgroundColor: Colors.white,
                           padding: const EdgeInsets.all(10.0),
-                          data: (widget.isRunStart ? 'EVTSTART:' : 'EVTEND:') + widget.eventId.toUpperCase(),
+                          data: widget.qrPrefix + widget.qrContent.toUpperCase(),
+                          // data: (widget.isRunStart ? 'EVTSTART:' : 'EVTEND:') + widget.qrContent.toUpperCase(),
                           //data: 'testing123',
                           version: 4,
                           //size: 200.0,

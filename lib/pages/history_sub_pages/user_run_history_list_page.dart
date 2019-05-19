@@ -76,12 +76,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
               backgroundColor: Colors.teal[800],
               label: 'Email this kennel\'s run history',
               labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () => {
+              onTap: () {
                     model.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelName).then((Map<String, String> result) {
                       if (result['result'].toLowerCase().startsWith('success')) {
                         Utilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
                       }
-                    })
+                    });
                   },
             ),
             SpeedDialChild(
@@ -89,12 +89,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
               backgroundColor: Colors.blue[900],
               label: 'Email all kennels run history',
               labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () => {
+              onTap: ()  {
                     model.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
                       if (result['result'].toLowerCase().startsWith('success')) {
                         Utilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
                       }
-                    })
+                    });
                   },
             ),
           ],

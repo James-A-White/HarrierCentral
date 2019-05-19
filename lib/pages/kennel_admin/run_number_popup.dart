@@ -34,14 +34,14 @@ class _RunNumberPopupState extends State<RunNumberPopup> {
         controller: runNumberAmountTextController,
         keyboardType: TextInputType.number,
         style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           border: InputBorder.none,
-          icon: const Icon(
+          icon: Icon(
             FontAwesome.money,
             color: Colors.white,
           ),
           hintText: 'Enter run number',
-          hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+          hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
         ),
       ),
       actions: <Widget>[

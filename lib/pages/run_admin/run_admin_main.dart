@@ -15,6 +15,7 @@ import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/countries_service.dart';
 import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/util/preferences.dart';
 
@@ -279,9 +280,10 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                     MaterialPageRoute<dynamic>(
                         builder: (BuildContext context) => EventQrCodePage(
                               kennelShortName: event['kennelShortName'],
-                              eventId: event['eventId'],
-                              eventName: event['eventName'],
-                              eventNumber: event['eventNumber'],
+                              qrContent: event['eventId'],
+                              title: event['eventName'],
+                              runStartPrefix: EVENT_SPECIFIC_START_QR_PREFIX,
+                              runEndPrefix: EVENT_SPECIFIC_END_QR_PREFIX,
                               eventStartDatetime: DateTime.parse(event['eventStartDatetime'])
                             )));
           },

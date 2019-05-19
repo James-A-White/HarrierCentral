@@ -30,6 +30,10 @@ const String GUID_MAX =   'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
 
+const String EVENT_SPECIFIC_START_QR_PREFIX = 'EVTSTART';
+const String EVENT_SPECIFIC_END_QR_PREFIX = 'EVTEND';
+const String KENNEL_GENERIC_START_QR_PREFIX = 'KENSTART';
+const String KENNEL_GENERIC_END_QR_PREFIX = 'KENEND';
 
 const int mmAuthIsGm = 0x40000000;                // TODO(James): Needs implementation
 const int mmAuthCanGrantPermissions = 0x20000000; // TODO(James): Needs implementation
