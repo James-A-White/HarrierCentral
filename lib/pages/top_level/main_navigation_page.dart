@@ -16,7 +16,6 @@ import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/data/services/kennel_run_history_totals_scoped_model.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);
@@ -74,8 +73,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     //setIntPref(IntPrefsEnum.mainViewCurrentTab, index);
   }
 
-  final KennelRunHistoryTotalsScopedModel kennelRunHistoryTotalsScopedModel = KennelRunHistoryTotalsScopedModel();
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   int currentPage = 0;
@@ -97,7 +94,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           w = const KennelsListPage();
           break;
         case 2:
-          w = HistoryListPage(kennelRunCountHistoryModel: kennelRunHistoryTotalsScopedModel);
+          w = HistoryListPage();
           break;
         case 3:
           w = const UserQrCodePage();

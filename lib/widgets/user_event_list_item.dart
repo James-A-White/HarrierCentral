@@ -7,15 +7,15 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:intl/intl.dart';
 
-import 'package:harrier_central/data/models/lite_event_model.dart';
+import 'package:harrier_central/pages/history_sub_pages/user_run_history_list_page.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class UserEventListItem extends StatelessWidget {
   const UserEventListItem(
-      {@required this.userEventHistoryModel, @required this.kennelShortName});
+      {@required this.item, @required this.kennelShortName});
 
-  final Event userEventHistoryModel;
+  final UserRunHistoryResults item;
   final String kennelShortName;
 
   @override
@@ -38,13 +38,13 @@ class UserEventListItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          userEventHistoryModel.isLoading
+          item.isLoading
               ? Icon(delayIcon,
                   color: Colors.blue[800], size: 35.0)
-              : userEventHistoryModel.attendenceState < attendenceAtHash.value
+              : item.attendenceState < attendenceAtHash.value
                   ? const Icon(FontAwesome.times_circle,
                       color: Colors.red, size: 35.0)
-                  : userEventHistoryModel.isHare == isHareNo.value
+                  : item.isHare == isHareNo.value
                       ? const Icon(FontAwesome.check_circle,
                           color: Colors.green, size: 35.0)
                       : const Padding(
@@ -63,7 +63,7 @@ class UserEventListItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    '${userEventHistoryModel.eventName}',
+                    '${item.eventName}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -75,10 +75,10 @@ class UserEventListItem extends StatelessWidget {
                     textAlign: TextAlign.left,
                   ),
                   Text(
-                    userEventHistoryModel.eventStartDatetime.year !=
+                    item.eventStartDatetime.year !=
                             DateTime.now().year
-                        ? 'Run #${userEventHistoryModel.eventNumber.toString()} on ${DateFormat("E, MMM d, yyyy \'at\' h:mm a").format(userEventHistoryModel.eventStartDatetime)}'
-                        : 'Run #${userEventHistoryModel.eventNumber.toString()} on ${DateFormat("E, MMM d \'at\' h:mm a").format(userEventHistoryModel.eventStartDatetime)}',
+                        ? 'Run #${item.eventNumber.toString()} on ${DateFormat("E, MMM d, yyyy \'at\' h:mm a").format(item.eventStartDatetime)}'
+                        : 'Run #${item.eventNumber.toString()} on ${DateFormat("E, MMM d \'at\' h:mm a").format(item.eventStartDatetime)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -89,12 +89,12 @@ class UserEventListItem extends StatelessWidget {
                         height: 0.85),
                     textAlign: TextAlign.left,
                   ),
-                  userEventHistoryModel.attendenceState < attendenceAtHash.value
+                  item.attendenceState < attendenceAtHash.value
                       ? Container()
                       : Row(
                           children: <Widget>[
                             Text(
-                              'My $kennelShortName run #${userEventHistoryModel.totalRunsThisKennel}',
+                              'My $kennelShortName run #${item.totalRunsThisKennel}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -105,9 +105,9 @@ class UserEventListItem extends StatelessWidget {
                                   height: 0.85),
                               textAlign: TextAlign.left,
                             ),
-                            userEventHistoryModel.isHare ==isHareNo.value ? Container() :
+                            item.isHare ==isHareNo.value ? Container() :
                               Text(
-                              ' and #${userEventHistoryModel.totalHaringThisKennel} time haring',
+                              ' and #${item.totalHaringThisKennel} time haring',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(

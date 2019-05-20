@@ -121,12 +121,17 @@ flutter:
     - images/other/
 
   fonts:
-    - family: AvenirNext
+    - family: AvenirNextHeavy
+      fonts:
+        - asset: fonts/AvenirNext-Heavy.ttf
+        - asset: fonts/AvenirNext-HeavyItalic.ttf
+          style: italic
+
+    - family: AvenirNextBold
       fonts:
         - asset: fonts/AvenirNext-Bold.ttf
         - asset: fonts/AvenirNext-BoldItalic.ttf
-        - asset: fonts/AvenirNext-Heavy.ttf
-        - asset: fonts/AvenirNext-HeavyItalic.ttf
+          style: italic
 
     - family: AvenirNext
       fonts:

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/data/models/kennel_run_history_totals_model.dart';
+
+import 'package:harrier_central/pages/top_level/history_list_page.dart';
 import 'package:harrier_central/pages/history_sub_pages/user_run_history_list_page.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
+
 
 import 'package:auto_size_text/auto_size_text.dart';
 
 class KennelRunHistoryCountListItem extends StatelessWidget {
-  const KennelRunHistoryCountListItem({@required this.kennelRunHistoryCount});
+  const KennelRunHistoryCountListItem({@required this.kennelRunHistoryCount,@required this.refreshCounters});
 
-  final KennelRunHistoryTotals kennelRunHistoryCount;
+  final HistoryListResults kennelRunHistoryCount;
+  final Function refreshCounters;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +67,9 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                   );
                 },
               ),
-            );
+            ).then((void dummy) {
+                refreshCounters();
+            });
           },
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -72,7 +77,8 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(left: 20.0),
-                child: KennelLogo(
+                child: (kennelRunHistoryCount.kennelLogo == null || kennelRunHistoryCount.kennelLogo.length < 5) ? Container(height:80, width:80):
+                KennelLogo(
                   kennelLogoUrl: kennelRunHistoryCount.kennelLogo,
                   kennelShortName: kennelRunHistoryCount.kennelShortName,
                   logoHeight: 80.0,

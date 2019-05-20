@@ -12,6 +12,7 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 
 class HasherEventMapModel {
   HasherEventMapModel({this.hemId, this.userId, this.eventId, this.userStartEvent, this.userEndEvent, this.rsvpState, this.attendenceState, this.isHare, this.eventCountOverride, this.virginVisitorType, this.displayName, this.email, this.phoneNumber, this.removed, this.updatedAt});
@@ -69,10 +70,7 @@ class HasherEventMapModel {
   }
 }
 
-enum HasherEventMapTableType {
-  user,
-  admin
-}
+enum HasherEventMapTableType { user, admin }
 
 const String hemTableName = 'hasherEventMap';
 const String hemAdminTableName = 'hasherEventMapForRunAdmin';
@@ -115,7 +113,7 @@ class HasherEventMapTableHelper {
   static String getTableName(HasherEventMapTableType tblType) {
     if (tblType == HasherEventMapTableType.admin) {
       return hemAdminTableName;
-    } 
+    }
     return hemTableName;
   }
 
@@ -308,14 +306,12 @@ class HasherEventMapService {
   //==============  Domain specific functions ===========
 
   Future<void> joinEvent(String eventId, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, int rsvpState, int attendenceState, int isHare, int virginVisitorType) async {
-    
-    if (globalConnectionStatus == connectionStatus_notConnected)
-    {
+    if (globalConnectionStatus == connectionStatus_notConnected) {
       return;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
-    
+
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEvent');
 
@@ -334,7 +330,7 @@ class HasherEventMapService {
       'isHare': isHare,
       'rsvpState': rsvpState,
       'attendenceState': attendenceState,
-      'virginVisitorType':virginVisitorType,
+      'virginVisitorType': virginVisitorType,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString()
     });
@@ -345,18 +341,20 @@ class HasherEventMapService {
       },
     );
 
-    await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    if (tblType == HasherEventMapTableType.admin) {
+      await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    } else {
+      await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    }
   }
 
   Future<void> joinEventAsVisitor(Map<String, dynamic> event, HasherEventMapTableType tblType, String displayName, int virginVisitorType, int attendenceState, String email, String phoneNumber) async {
-    
-    if (globalConnectionStatus == connectionStatus_notConnected)
-    {
+    if (globalConnectionStatus == connectionStatus_notConnected) {
       return;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
-    
+
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor');
 
