@@ -11,7 +11,9 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/user_event_list_item.dart';
@@ -30,20 +32,7 @@ class UserRunHistoryListPage extends StatefulWidget {
 }
 
 class UserRunHistoryResults {
-  UserRunHistoryResults(
-      {
-          this.eventId,
-          this.eventName, 
-          this.eventNumber, 
-          this.eventStartDatetime, 
-          this.canEditRunAttendence,
-          this.hemId,
-          this.attendenceState, 
-          this.isHare,
-          this.totalHaringThisKennel,
-          this.totalRunsThisKennel,
-          this.isLoading
-      });
+  UserRunHistoryResults({this.eventId, this.eventName, this.eventNumber, this.eventStartDatetime, this.canEditRunAttendence, this.hemId, this.attendenceState, this.isHare, this.totalHaringThisKennel, this.totalRunsThisKennel, this.isLoading});
 
   final String eventId;
   final String eventName;
@@ -59,15 +48,15 @@ class UserRunHistoryResults {
 
   static UserRunHistoryResults fromMap(Map<String, dynamic> map) {
     final UserRunHistoryResults item = UserRunHistoryResults(
-      eventName: map['eventName'], 
-      eventId: map['eventId'], 
-      eventNumber: map['eventNumber'], 
+      eventName: map['eventName'],
+      eventId: map['eventId'],
+      eventNumber: map['eventNumber'],
       eventStartDatetime: DateTime.parse(map['eventStartDatetime'].toString().substring(0, 19)),
-      canEditRunAttendence: map['canEditRunAttendence'], 
+      canEditRunAttendence: map['canEditRunAttendence'],
       hemId: map['hemId'],
       attendenceState: map['attendenceState'],
       isHare: map['isHare'],
-      );
+    );
     return item;
   }
 }
@@ -77,7 +66,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
   String kennelId;
 
-   bool _isLoading = false;
+  bool _isLoading = false;
 
   List<UserRunHistoryResults> runCountsList = <UserRunHistoryResults>[];
   final String userId = getStringPref(StringPrefsEnum.userId);
@@ -132,10 +121,13 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
     }
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-               appBar: AppBar(
+        key: _scaffoldKey,
+        appBar: AppBar(
           centerTitle: true,
           backgroundColor: themeAppBarBackground,
           title: Text(
@@ -145,7 +137,65 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
             ),
           ),
         ),
-      body: _isLoading ? _buildCircularProgressIndicator() : _buildListView());
+
+        floatingActionButton: SpeedDial(
+          // both default to 16
+          marginRight: 18,
+          marginBottom: 30,
+          animatedIcon: AnimatedIcons.menu_close,
+          animatedIconTheme: const IconThemeData(size: 22.0),
+          // this is ignored if animatedIcon is non null
+          // child:const  Icon(Icons.add),
+          visible: true,
+          curve: Curves.bounceIn,
+          overlayColor: Colors.black,
+          overlayOpacity: 0.5,
+          onOpen: () => print('OPENING DIAL'),
+          onClose: () => print('DIAL CLOSED'),
+          tooltip: 'Speed Dial',
+          heroTag: 'speed-dial-hero-tag',
+          backgroundColor: Theme.of(context).accentColor,
+          foregroundColor: Colors.white,
+          elevation: 8.0,
+          shape: CircleBorder(),
+          children: <SpeedDialChild>[
+            SpeedDialChild(
+              child: const Icon(MaterialCommunityIcons.email),
+              backgroundColor: Colors.teal[800],
+              label: 'Email run counts (this kennel)',
+              labelStyle: const TextStyle(fontSize: 18.0),
+              onTap: () {
+                    HasherEventMapService.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelName).then((Map<String, String> result) {
+                      _scaffoldKey.currentState?.hideCurrentSnackBar();
+                      if (result['result'].toLowerCase().startsWith('success')) {
+                        Utilities.showAlert(context, 'E-mail successfully sent', 'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+                      }
+                    });
+                    Utilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
+                  },
+            ),
+            SpeedDialChild(
+              child: const Icon(MaterialCommunityIcons.email_plus),
+              backgroundColor: Colors.blue[900],
+              label: 'Email run counts (all kennels)',
+              labelStyle: const TextStyle(fontSize: 18.0),
+              onTap: ()  {
+                    HasherEventMapService.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
+                      _scaffoldKey.currentState?.hideCurrentSnackBar();
+                      if (result['result'].toLowerCase().startsWith('success')) {
+                        Utilities.showAlert(context, 'E-mail successfully sent', 'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+                      }
+                    });
+                    Utilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
+                  },
+            ),
+          ],
+        ),
+
+
+
+
+        body: _isLoading ? _buildCircularProgressIndicator() : _buildListView());
   }
 
   Widget _buildCircularProgressIndicator() {
@@ -170,11 +220,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
   // bool _isLoading = true;
 
-
   // @override
   // void initState() {
   //   super.initState();
-   
+
   // }
 
   // int pageIndex = 1;
@@ -241,12 +290,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //           ),
   //         ),
   //       ),
-  //       body: 
+  //       body:
 
   //         _isLoading ? _buildCircularProgressIndicator() : _buildListView()
 
   //     );
-    
+
   // }
 
   // Widget _buildCircularProgressIndicator() {
@@ -265,29 +314,29 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
   static const TextStyle numberStyle = const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85);
 
-
-
-    static const TextStyle boldTitleStyle = const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85);
+  static const TextStyle boldTitleStyle = const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85);
 
   int myRunCount = 0;
   int myHaringCount = 0;
 
   void updateMyRunCounts() {
-
     int haringCount = 0;
     int runCount = 0;
 
-    for (int i = runCountsList.length -1; i >= 0; i--) {
-      if (runCountsList[i].isHare == 1) 
-      {haringCount++;}
-      if (runCountsList[i].attendenceState >= 20) {runCount++;}
-      runCountsList[i].totalHaringThisKennel =haringCount;
-      runCountsList[i].totalRunsThisKennel =runCount;
+    for (int i = runCountsList.length - 1; i >= 0; i--) {
+      if (runCountsList[i].isHare == 1) {
+        haringCount++;
       }
-
-      myRunCount =runCount;
-      myHaringCount =haringCount;
+      if (runCountsList[i].attendenceState >= 20) {
+        runCount++;
+      }
+      runCountsList[i].totalHaringThisKennel = haringCount;
+      runCountsList[i].totalRunsThisKennel = runCount;
     }
+
+    myRunCount = runCount;
+    myHaringCount = haringCount;
+  }
 
   Widget _buildListView() {
     return Container(
@@ -318,62 +367,63 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                     //color:Color.fromARGB(30, 0, 0, 0),
                     padding: const EdgeInsets.only(left: 5, top: 5, right: 20, bottom: 5),
 
-                    child: Row(children:<Widget>[
-                    Container(
-                          margin: EdgeInsets.only(right:20.0),
-                          height: 90,
-                          child: KennelLogo(
-                            kennelLogoUrl: widget.kennelLogo,
-                            kennelShortName: widget.kennelShortName,
-                            logoHeight: 80.0,
-                            leftPadding: 10.0,
-                          ),
+                    child: Row(children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.only(right: 20.0),
+                        height: 90,
+                        child: KennelLogo(
+                          kennelLogoUrl: widget.kennelLogo,
+                          kennelShortName: widget.kennelShortName,
+                          logoHeight: 80.0,
+                          leftPadding: 10.0,
                         ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Container(
-                          child: AutoSizeText(
-                            '${widget.kennelName}',
-                            //'Super fucking long text thats sure to overflow and more',
-                            //'999',
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 18.0,
-                            maxLines: 1,
-                            style: boldTitleStyle,
-                            textAlign: TextAlign.center,
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Container(
+                            child: AutoSizeText(
+                              '${widget.kennelName}',
+                              //'Super fucking long text thats sure to overflow and more',
+                              //'999',
+                              overflow: TextOverflow.ellipsis,
+                              minFontSize: 18.0,
+                              maxLines: 1,
+                              style: boldTitleStyle,
+                              textAlign: TextAlign.center,
+                            ),
+                            //color: Colors.green,
                           ),
-                          //color: Colors.green,
-                        ),
-                        Container(
-                          child: AutoSizeText(
-                            'My run count: ${myRunCount.toString()}',
-                            //'Super fucking long text thats sure to overflow and more',
-                            //'999',
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 18.0,
-                            maxLines: 1,
-                            style: numberStyle,
-                            textAlign: TextAlign.center,
+                          Container(
+                            child: AutoSizeText(
+                              'My run count: ${myRunCount.toString()}',
+                              //'Super fucking long text thats sure to overflow and more',
+                              //'999',
+                              overflow: TextOverflow.ellipsis,
+                              minFontSize: 18.0,
+                              maxLines: 1,
+                              style: numberStyle,
+                              textAlign: TextAlign.center,
+                            ),
+                            //color: Colors.green,
                           ),
-                          //color: Colors.green,
-                        ),
-                        Container(
-                          child: AutoSizeText(
-                            'Times I\'ve hared: ${myHaringCount.toString()}',
-                            //'Super fucking long text thats sure to overflow and more',
-                            //'999',
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 18.0,
-                            maxLines: 1,
-                            style: numberStyle,
-                            textAlign: TextAlign.center,
+                          Container(
+                            child: AutoSizeText(
+                              'Times I\'ve hared: ${myHaringCount.toString()}',
+                              //'Super fucking long text thats sure to overflow and more',
+                              //'999',
+                              overflow: TextOverflow.ellipsis,
+                              minFontSize: 18.0,
+                              maxLines: 1,
+                              style: numberStyle,
+                              textAlign: TextAlign.center,
+                            ),
+                            //color: Colors.green,
                           ),
-                          //color: Colors.green,
-                        ),
-                      ],
-                    ),]),
+                        ],
+                      ),
+                    ]),
                   ),
                   Expanded(
                     child: ListView.separated(
@@ -387,11 +437,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                       //itemExtent: 58.0,
                       //shrinkWrap: true,
                       itemBuilder: (BuildContext context, int index) {
-                        UserRunHistoryResults item =runCountsList[index];
+                        UserRunHistoryResults item = runCountsList[index];
 
-                        return 
-                        
-                        Dismissible(
+                        return Dismissible(
                           key: Key(item.eventId),
                           confirmDismiss: (DismissDirection direction) {
                             if (item.canEditRunAttendence != 0) {
@@ -405,39 +453,31 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   // so assume that the person was not a hare
                                   if (item.attendenceState < attendenceAtHash.value) {
                                     item.isLoading = true;
-                                      final HasherEventMapService hemSrv = HasherEventMapService();
-                                      final Future<void> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpYes.value, attendenceAtHash.value, isHareNo.value, enumHasher.value);
+                                    final HasherEventMapService hemSrv = HasherEventMapService();
+                                    final Future<void> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpYes.value, attendenceAtHash.value, isHareNo.value, enumHasher.value);
 
-                                      retVal.then((void dummy) {
-                                        refreshRunHistoryFromTable(true).then((void dummy) {
-                                          
-                                        });
-                                      });
-
+                                    retVal.then((void dummy) {
+                                      refreshRunHistoryFromTable(true).then((void dummy) {});
+                                    });
                                   } else {
-                                      item.isLoading = true;
-                                      final HasherEventMapService hemSrv = HasherEventMapService();
-                                      final Future<void> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpYes.value, attendenceAtHash.value, item.isHare == 1 ? isHareNo.value :isHareYes.value, enumHasher.value);
+                                    item.isLoading = true;
+                                    final HasherEventMapService hemSrv = HasherEventMapService();
+                                    final Future<void> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpYes.value, attendenceAtHash.value, item.isHare == 1 ? isHareNo.value : isHareYes.value, enumHasher.value);
 
-                                      retVal.then((void dummy) {
-                                        refreshRunHistoryFromTable(true).then((void dummy) {
-                                          
-                                        });
-                                      });
-
+                                    retVal.then((void dummy) {
+                                      refreshRunHistoryFromTable(true).then((void dummy) {});
+                                    });
                                   }
                                 } else {
                                   // swipe from left to right to
                                   // indicate that the hasher did
                                   // not participate in this event
-                                      final HasherEventMapService hemSrv = HasherEventMapService();
-                                      final Future<void> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpNo.value, attendenceNo.value, isHareNo.value, enumHasher.value);
+                                  final HasherEventMapService hemSrv = HasherEventMapService();
+                                  final Future<void> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpNo.value, attendenceNo.value, isHareNo.value, enumHasher.value);
 
-                                      retVal.then((void dummy) {
-                                        refreshRunHistoryFromTable(true).then((void dummy) {
-                                          
-                                        });
-                                      });
+                                  retVal.then((void dummy) {
+                                    refreshRunHistoryFromTable(true).then((void dummy) {});
+                                  });
                                 }
                               });
                             }

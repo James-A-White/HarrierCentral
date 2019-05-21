@@ -81,10 +81,10 @@ class PaymentReportState extends State<PaymentReportPage> {
           pay.*,
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as eventPriceForMembers,
           coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as eventPriceForNonMembers
-          FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin)} hem
+          FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem
           INNER JOIN ${NarrowEventsTableHelper.tableName} e on e.eventId = hem.eventId
           INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
-          LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.admin)} hkm on hkm.userId = hem.userId and hkm.kennelId = "${widget.event['kennelId']}"
+          LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm on hkm.userId = hem.userId and hkm.kennelId = "${widget.event['kennelId']}"
           LEFT OUTER JOIN ${HashersTableHelper.tableName} h on h.hasherId = hem.userId
           LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.CancelledBy IS NULL
           LEFT OUTER JOIN ${HashersTableHelper.tableName} paidTo on paidTo.hasherId = pay.paidTo
@@ -104,7 +104,7 @@ class PaymentReportState extends State<PaymentReportPage> {
       try {
         final String sql = '''
 
-          select 0 as paymentType, (SELECT COUNT(*) from ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin)} hem 
+          select 0 as paymentType, (SELECT COUNT(*) from ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem 
           WHERE  hem.attendenceState >= 20
           AND hem.hemId not in (SELECT hemId from ${PaymentsTableHelper.tableName} pay3 where pay3.cancelledBy IS NULL) ) as count, 5.55 as totalCollected
             

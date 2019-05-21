@@ -2,27 +2,27 @@ import 'package:flutter/material.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 
-import 'package:harrier_central/data/models/kennel_member_model.dart';
-import 'package:harrier_central/pages/kennel_admin/user_secret_qr_page.dart';
+import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
+
 
 class KennelMemberListItem extends StatelessWidget {
   const KennelMemberListItem({
     @required this.kennelMember,
   });
 
-  final KennelMemberModel kennelMember;
+  final KennelMembersResults kennelMember;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.push<dynamic>(
-          context,
-          MaterialPageRoute<dynamic>(
-            builder: (BuildContext context) =>
-                UserSecretQrPage(kennelMemberModel: kennelMember),
-          ),
-        );
+        // Navigator.push<dynamic>(
+        //   context,
+        //   MaterialPageRoute<dynamic>(
+        //     builder: (BuildContext context) =>
+        //         UserSecretQrPage(kennelMemberModel: kennelMember),
+        //   ),
+        // );
       },
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -64,7 +64,7 @@ class KennelMemberListItem extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 10.0, bottom: 2.0),
             child: Text(
-              '${kennelMember.displayName}',
+              '${kennelMember.dispName}',
               style: const TextStyle(
                   fontFamily: 'AvenirNextCondensedDemiBold',
                   fontStyle: FontStyle.normal,

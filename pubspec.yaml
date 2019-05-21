@@ -38,7 +38,6 @@ dependencies:
   package_info: ^0.4.0+3
   permission_handler: ^2.2.0
   qr_flutter: ^2.0.0
-  scoped_model: ^1.0.1 
   shared_preferences: ^0.5.2
   sqflite: ^1.1.5
   tinycolor: ^1.0.2

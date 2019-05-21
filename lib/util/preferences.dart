@@ -18,7 +18,8 @@ enum StringPrefsEnum {
   facebookId,
   facebookAccessToken,
   facebookProfilePhoto,
-  adminEventId
+  adminEventId,
+  adminKennelId
 }
 
 enum DoublePrefsEnum { latitude, longitude }

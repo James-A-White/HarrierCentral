@@ -118,7 +118,8 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            'Run #${widget.futureRun.event.eventNumber}, ' +
+                            (widget.futureRun.event.isCountedRun == 1 ? 
+                            'Run #${widget.futureRun.event.eventNumber}, ' : 'Run / Event ') +
                                 (widget.futureRun.extensions.daysUntilEvent <= 14
                                     ? widget.futureRun.extensions.daysUntilEvent.toInt() == 0 ? 'TODAY' : widget.futureRun.extensions.daysUntilEvent.toInt() == 1 ? 'Tomorrow' : 'in ${widget.futureRun.extensions.daysUntilEvent.toInt().toString()} days'
                                     : (widget.futureRun.extensions.daysUntilEvent <= 30)

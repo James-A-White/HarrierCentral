@@ -6,7 +6,7 @@ import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/pages/detail_pages/kennel_detail.dart';
+import 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 
@@ -83,7 +83,7 @@ class KennelListItemState extends State<KennelsListItem> {
                       Navigator.of(context).push<dynamic>(
                         MaterialPageRoute<dynamic>(
                           builder: (BuildContext context) {
-                            return KennelDetailPage(kennel: widget.kennel);
+                            return KennelAdminMainPage(kennel: widget.kennel);
                           },
                         ),
                       );

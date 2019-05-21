@@ -70,7 +70,7 @@ class HasherEventMapModel {
   }
 }
 
-enum HasherEventMapTableType { user, admin }
+enum HasherEventMapTableType { user, eventAdmin }
 
 const String hemTableName = 'hasherEventMap';
 const String hemAdminTableName = 'hasherEventMapForRunAdmin';
@@ -111,21 +111,21 @@ class HasherEventMapTableHelper {
   static final HasherEventMapTableHelper instance = HasherEventMapTableHelper._privateConstructor();
 
   static String getTableName(HasherEventMapTableType tblType) {
-    if (tblType == HasherEventMapTableType.admin) {
+    if (tblType == HasherEventMapTableType.eventAdmin) {
       return hemAdminTableName;
     }
     return hemTableName;
   }
 
   static IntPrefsEnum getLastUpdatedKey(HasherEventMapTableType tblType) {
-    if (tblType == HasherEventMapTableType.admin) {
+    if (tblType == HasherEventMapTableType.eventAdmin) {
       return IntPrefsEnum.lastUpdateAdminHasherEventMapData;
     }
     return IntPrefsEnum.lastUpdateHasherEventMapData;
   }
 
   static IntPrefsEnum getLastCacheClearKey(HasherEventMapTableType tblType) {
-    if (tblType == HasherEventMapTableType.admin) {
+    if (tblType == HasherEventMapTableType.eventAdmin) {
       return IntPrefsEnum.lastCacheClearAdminHasherEventMapData;
     }
     return IntPrefsEnum.lastCacheClearHasherEventMapData;
@@ -305,6 +305,47 @@ class HasherEventMapService {
 
   //==============  Domain specific functions ===========
 
+  static Future<Map<String, String>> sendRunCountReportByEmail(
+      {String kennelId, String kennelName}) async {
+    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userName = getStringPref(StringPrefsEnum.displayName);
+    final String emailAddress = getStringPref(StringPrefsEnum.email);
+
+    final String accessToken1 =
+        Utilities.generateToken(userId.toUpperCase(), 'getRuns');
+
+    final String accessToken2 =
+        Utilities.generateToken(userId, 'getMyKennelRunTotals');
+
+    if ((emailAddress ?? '').isNotEmpty) {
+      final String body = jsonEncode(<String, String>{
+        'userId': userId,
+        'accessToken1': accessToken1,
+        'accessToken2': accessToken2,
+        'kennelId': kennelId,
+        'kennelName': kennelName,
+        'userName': userName,
+        'emailAddress': emailAddress
+      });
+
+      final http.Response response = await http
+          .post(EMAIL_RUN_REPORT_API_URL,
+              headers: <String, String>{'content-type': 'application/json'},
+              body: body)
+          .catchError(
+        (dynamic error) {
+          return <String, String>{'result': 'error', 'email': ''};
+        },
+      );
+
+      return <String, String>{'result': response.body, 'email': emailAddress};
+    }
+    return <String, String>{
+      'result': 'No valid email address found',
+      'email': ''
+    };
+  }
+
   Future<void> joinEvent(String eventId, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, int rsvpState, int attendenceState, int isHare, int virginVisitorType) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return;
@@ -315,7 +356,7 @@ class HasherEventMapService {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEvent');
 
-    final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.admin);
+    final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.eventAdmin);
     final num _paymentsLastUpdated = await PaymentsService.getLastUpdatedTime();
 
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
@@ -341,7 +382,7 @@ class HasherEventMapService {
       },
     );
 
-    if (tblType == HasherEventMapTableType.admin) {
+    if (tblType == HasherEventMapTableType.eventAdmin) {
       await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else {
       await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
@@ -358,7 +399,7 @@ class HasherEventMapService {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor');
 
-    final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.admin);
+    final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.eventAdmin);
     final num _paymentsLastUpdated = await PaymentsService.getLastUpdatedTime();
 
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);

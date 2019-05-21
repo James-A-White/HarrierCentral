@@ -592,7 +592,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                     });
                                     //final String userId = getStringPref(StringPrefsEnum.userId);
                                     final HasherEventMapService hemSrv = HasherEventMapService();
-                                    final Future<void> retVal = hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.admin, userId, null, rsvpYes.value, attendenceNoChange.value, isHareYes.value, enumHasher.value);
+                                    final Future<void> retVal = hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.eventAdmin, userId, null, rsvpYes.value, attendenceNoChange.value, isHareYes.value, enumHasher.value);
 
                                     retVal.then((void dummy) async {
                                       await refreshPackListFromTable(true);
@@ -798,7 +798,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     });
     //final String userId = getStringPref(StringPrefsEnum.userId);
     final HasherEventMapService hemSrv = HasherEventMapService();
-    final Future<void> retVal = hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.admin, userId, null, rsvpState.value, attendenceNoChange.value, isHareNo.value, enumHasher.value);
+    final Future<void> retVal = hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.eventAdmin, userId, null, rsvpState.value, attendenceNoChange.value, isHareNo.value, enumHasher.value);
 
     retVal.then((void dummy) async {
       await refreshPackListFromTable(false);
@@ -922,7 +922,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     });
                     //final String userId = getStringPref(StringPrefsEnum.userId);
                     final HasherEventMapService hemSrv = HasherEventMapService();
-                    final Future<void> retVal = hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.admin, userId, null, rsvpYes.value, attendenceNoChange.value, isHareYes.value, enumHasher.value);
+                    final Future<void> retVal = hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.eventAdmin, userId, null, rsvpYes.value, attendenceNoChange.value, isHareYes.value, enumHasher.value);
 
                     retVal.then((void dummy) async {
                                       await refreshPackListFromTable(true);

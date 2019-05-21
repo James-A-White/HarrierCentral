@@ -59,11 +59,14 @@ class DBProvider {
       await HasherEventMapTableHelper.createTable(db, version,HasherEventMapTableType.user);
       await NarrowEventsTableHelper.createTable(db, version);
 
-      // create admin tables
-      await HasherEventMapTableHelper.createTable(db, version,HasherEventMapTableType.admin);
-      await HasherKennelMapTableHelper.createTable(db, version,HasherKennelMapTableType.admin);
+      // create event admin tables
+      await HasherEventMapTableHelper.createTable(db, version,HasherEventMapTableType.eventAdmin);
+      await HasherKennelMapTableHelper.createTable(db, version,HasherKennelMapTableType.eventAdmin);
       await PaymentsTableHelper.createTable(db, version);
       await ReceiptsTableHelper.createTable(db, version);
+
+      // create kennel admin tables
+      await HasherKennelMapTableHelper.createTable(db, version,HasherKennelMapTableType.kennelAdmin);
       
       if (informUser != null) {
         informUser('Loading city data\r\n0% complete');

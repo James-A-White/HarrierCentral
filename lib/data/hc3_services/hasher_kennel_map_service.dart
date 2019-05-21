@@ -71,11 +71,13 @@ class HasherKennelMapModel {
 
 enum HasherKennelMapTableType {
   user,
-  admin,
+  eventAdmin,
+  kennelAdmin
 }
 
 const String hkmTableName = 'hasherKennelMap';
-const String hkmAdminTableName = 'hasherKennelMapForRunAdmin';
+const String hkmEventAdminTableName = 'hasherKennelMapForRunAdmin';
+const String hkmKennelAdminTableName = 'hasherKennelMapForKennelAdmin';
 
 class HasherKennelMapTableHelper {
   HasherKennelMapTableHelper._privateConstructor();
@@ -108,21 +110,23 @@ class HasherKennelMapTableHelper {
   static final HasherKennelMapTableHelper instance = HasherKennelMapTableHelper._privateConstructor();
 
   static String getTableName(HasherKennelMapTableType tblType) {
-    if (tblType == HasherKennelMapTableType.admin) {
-      return hkmAdminTableName;
+    if (tblType == HasherKennelMapTableType.eventAdmin) {
+      return hkmEventAdminTableName;
+    } else if (tblType ==HasherKennelMapTableType.kennelAdmin) {
+      return hkmKennelAdminTableName;
     }
     return hkmTableName;
   }
 
   static IntPrefsEnum getLastUpdatedKey(HasherKennelMapTableType tblType) {
-    if (tblType == HasherKennelMapTableType.admin) {
+    if (tblType == HasherKennelMapTableType.eventAdmin) {
       return IntPrefsEnum.lastUpdateAdminHasherKennelMaplData;
     }
     return IntPrefsEnum.lastUpdateHasherKennelMaplData;
   }
 
   static IntPrefsEnum getLastCacheClearKey(HasherKennelMapTableType tblType) {
-    if (tblType == HasherKennelMapTableType.admin) {
+    if (tblType == HasherKennelMapTableType.eventAdmin) {
       return IntPrefsEnum.lastCacheClearAdminHasherKennelMapData;
     }
     return IntPrefsEnum.lastCacheClearHasherKennelMapData;
@@ -339,7 +343,7 @@ class HasherKennelMapService {
       },
     );
 
-    if (tblType == HasherKennelMapTableType.admin)
+    if (tblType == HasherKennelMapTableType.eventAdmin)
     { 
         await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);  
     } else {

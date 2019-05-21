@@ -39,8 +39,8 @@ class SyncEventAdminService {
   }
 
   Future<void> getLastUpdatedTimes(Database db, int flags) async {
-    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? 0 : await getLastUpdatedTime(db, HasherEventMapTableHelper.colUpdatedAtValue, HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin));
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? 0 : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.admin));
+    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? 0 : await getLastUpdatedTime(db, HasherEventMapTableHelper.colUpdatedAtValue, HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin));
+    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? 0 : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin));
     _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? 0 : await getLastUpdatedTime(db, NarrowEventsTableHelper.colUpdatedAtValue, NarrowEventsTableHelper.tableName);
     _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? 0 : await getLastUpdatedTime(db, PaymentsTableHelper.colUpdatedAtValue, PaymentsTableHelper.tableName);
     _receiptsLastUpdated = (flags & flagReceiptsTable) == 0 ? 0 : await getLastUpdatedTime(db, ReceiptsTableHelper.colUpdatedAtValue, ReceiptsTableHelper.tableName);
@@ -58,17 +58,19 @@ class SyncEventAdminService {
       final HasherEventMapService hem2srv = HasherEventMapService();
       final HasherKennelMapService hkm2srv = HasherKennelMapService();
       final ReceiptsService recSrv = ReceiptsService();
+      // narrowEvents is not included here because all events are loaded all the time for all hashers.
+      // TODO(James): create separate events table for event management
 
       paySrv.clearTable();
-      hem2srv.clearTable(HasherEventMapTableType.admin);
-      hkm2srv.clearTable(HasherKennelMapTableType.admin);
+      hem2srv.clearTable(HasherEventMapTableType.eventAdmin);
+      hkm2srv.clearTable(HasherKennelMapTableType.eventAdmin);
       recSrv.clearTable();
 
       await setStringPref(StringPrefsEnum.adminEventId, eventId);
     }
 
-    final int hasherEventMapLastUpdate = (flags & flagHasherEventMapTable) == 0 ? null : getIntPref(HasherEventMapTableHelper.getLastUpdatedKey(HasherEventMapTableType.admin)) ?? 0;
-    final int hasherKennelMapLastUpdate = (flags & flagHasherKennelMapTable) == 0 ? null : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(HasherKennelMapTableType.admin)) ?? 0;
+    final int hasherEventMapLastUpdate = (flags & flagHasherEventMapTable) == 0 ? null : getIntPref(HasherEventMapTableHelper.getLastUpdatedKey(HasherEventMapTableType.eventAdmin)) ?? 0;
+    final int hasherKennelMapLastUpdate = (flags & flagHasherKennelMapTable) == 0 ? null : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(HasherKennelMapTableType.eventAdmin)) ?? 0;
     final int narrowEventsLastUpdate = (flags & flagNarrowEventsTable) == 0 ? null : getIntPref(NarrowEventsTableHelper.lastUpdatedKey) ?? 0;
     final int paymentsLastUpdate = (flags & flagReceiptsTable) == 0 ? null : getIntPref(PaymentsTableHelper.lastUpdatedKey) ?? 0;
     final int receiptsLastUpdate = (flags & flagReceiptsTable) == 0 ? null : getIntPref(ReceiptsTableHelper.lastUpdatedKey) ?? 0;
@@ -176,13 +178,13 @@ class SyncEventAdminService {
 
       if (ms.startsWith(r'[{"hemId"')) {
         final HasherEventMapService hemSrv = HasherEventMapService();
-        await hemSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherEventMapTableType.admin);
+        await hemSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherEventMapTableType.eventAdmin);
         print('hasher event map for admin updated');
       }
 
       if (ms.startsWith(r'[{"hkmId"')) {
         final HasherKennelMapService hkmSrv = HasherKennelMapService();
-        await hkmSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherKennelMapTableType.admin);
+        await hkmSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherKennelMapTableType.eventAdmin);
         print('hasher event map for admin updated');
       }
     }

@@ -366,7 +366,7 @@ class PaymentsService {
 
     final String accessToken = Utilities.generateToken(userId, 'payForEvent', paramString: tokenParameterString);
 
-    final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.admin);
+    final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.eventAdmin);
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
     
     final num _paymentsLastUpdated = await PaymentsService.getLastUpdatedTime();

@@ -6,7 +6,10 @@ import 'package:latlong/latlong.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:sqflite/sqflite.dart';
 
+import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
 import 'package:harrier_central/data/services/email_reports_service.dart';
@@ -19,19 +22,34 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 
-class KennelDetailPage extends StatefulWidget {
-  const KennelDetailPage({@required this.kennel});
+class KennelAdminMainPage extends StatefulWidget {
+  const KennelAdminMainPage({@required this.kennel});
   final Map<String, dynamic> kennel;
 
   @override
-  KennelDetailPageState createState() => KennelDetailPageState();
+  KennelAdminMainPageState createState() => KennelAdminMainPageState();
 }
 
-class KennelDetailPageState extends State<KennelDetailPage> {
+class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   num sliderValue;
 
   @override
   void initState() {
+
+    DBProvider.db.database.then((Database db) async {
+      final SyncKennelAdminService cSrv = SyncKennelAdminService();
+      cSrv.updateFromBackend(db, SyncKennelAdminService.flagsAllData, false, widget.kennel['kennelId']).then((bool result) {
+        //refreshFromTables();
+        setState(() {
+          final String resultStr = result ? 'successfully' : 'unsuccessfully';
+          print('Event admin data synchronized $resultStr');
+          //_isLoading = false;
+        });
+      });
+    });
+
+
+
     sliderValue = 5.0;
     isAdmin = (widget.kennel['mismanagementRoleFlags'] & mmAuthAccessKennelAdmin) != 0;
     super.initState();

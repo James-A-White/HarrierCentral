@@ -117,7 +117,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           INNER JOIN kennels k on k.kennelId = evt.kennelId
           LEFT OUTER JOIN hasherKennelMap hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
           LEFT OUTER JOIN hasherEventMapForRunAdmin hem on hem.eventId = evt.eventId and hem.userId = "$userId"
-          WHERE evt.eventStartDatetime > date('now','-1 day')
+          WHERE evt.eventStartDatetime > date('now','-3 hour') and evt.isVisible = 1
           ORDER BY evt.eventStartDatetime
           ''';
 

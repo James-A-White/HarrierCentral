@@ -173,9 +173,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             hem.updatedAt as hemUpdatedAt,
             pay.updatedAt as payUpdatedAt,
             0 as credit
-          FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.admin)} hkm
+          FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm
           INNER JOIN ${HashersTableHelper.tableName} h on h.hasherId = hkm.userId
-          LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventId}"
+          LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventId}"
           LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
           WHERE hkm.kennelId = "${widget.kennelId}" AND hkm.isMember = 1 AND coalesce(hem.virginVisitorType,0) = 0
           UNION
@@ -196,7 +196,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             hem2.updatedAt as hemUpdatedAt,
             pay2.updatedAt as payUpdatedAt,
             0 as credit
-            FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin)} hem2 
+            FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem2 
             INNER JOIN ${HashersTableHelper.tableName} h2 on h2.hasherId = hem2.userId
             LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay2 on pay2.hemId = hem2.hemId and pay2.cancelledBy IS NULL
             WHERE hem2.eventId = "${widget.eventId}" and hem2.virginVisitorType != 0
@@ -218,12 +218,12 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             hem3.updatedAt as hemUpdatedAt,
             pay3.updatedAt as payUpdatedAt,
             0 as credit
-            FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin)} hem3
+            FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem3
             INNER JOIN ${HashersTableHelper.tableName} h3 on h3.hasherId = hem3.userId
             LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay3 on pay3.hemId = hem3.hemId and pay3.cancelledBy IS NULL
-            LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.admin)} hkm3 on hkm3.userId = h3.hasherId and hkm3.kennelId = "${widget.kennelId}" AND hkm3.isMember = 1
+            LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm3 on hkm3.userId = h3.hasherId and hkm3.kennelId = "${widget.kennelId}" AND hkm3.isMember = 1
             WHERE hem3.eventId = "${widget.eventId}" AND hem3.virginVisitorType == 0 AND hkm3.hkmId IS NULL
-          ORDER BY nameForDisplay
+          ORDER BY lower(nameForDisplay)
             
           
           ''';
@@ -362,8 +362,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
               COUNT(CASE WHEN pay.paymentType >= 2 THEN 1 ELSE NULL END) as paid,
               COUNT(CASE WHEN rsvpState >= 2 AND attendenceState < 20 THEN 1 ELSE NULL END) as coming,
               COUNT(CASE WHEN attendenceState >= 30 THEN 1 ELSE NULL END) as onIn,
-              (SELECT COUNT(*) FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.admin)} hkm WHERE hkm.kennelId = "${widget.kennelId}" and hkm.isMember = 1) as memberCount
-          FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.admin)} hem
+              (SELECT COUNT(*) FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm WHERE hkm.kennelId = "${widget.kennelId}" and hkm.isMember = 1) as memberCount
+          FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem
           LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
   
           ''';
@@ -419,7 +419,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     ).then((Map<String, dynamic> result) {
       if ((result != null) && (result['hasher']?.hasherId != null)) {
         final HasherEventMapService hemSrv = HasherEventMapService();
-        final Future<void> retVal = hemSrv.joinEvent(event['eventId'], HasherEventMapTableType.admin, result['hasher'].hasherId, null, rsvpYes.value, attendenceAtHash.value, isHareNo.value, result['virginVisitorType']);
+        final Future<void> retVal = hemSrv.joinEvent(event['eventId'], HasherEventMapTableType.eventAdmin, result['hasher'].hasherId, null, rsvpYes.value, attendenceAtHash.value, isHareNo.value, result['virginVisitorType']);
 
         retVal.then((void dummy) {
           _refreshPackListFromTables(false).then((void dummy) {
@@ -453,7 +453,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
       if (type != 'cancel') {
         final HasherEventMapService hemSrv = HasherEventMapService();
-        final Future<void> retVal = hemSrv.joinEventAsVisitor(event, HasherEventMapTableType.admin, name, evv.value, attendenceAtHash.value, email, phoneNumber);
+        final Future<void> retVal = hemSrv.joinEventAsVisitor(event, HasherEventMapTableType.eventAdmin, name, evv.value, attendenceAtHash.value, email, phoneNumber);
 
         retVal.then((void dummy) {
           _refreshPackListFromTables(false).then((void dummy) {
@@ -1302,7 +1302,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     });
 
     final HasherEventMapService hemSrv = HasherEventMapService();
-    final Future<void> retVal = hemSrv.joinEvent(event['eventId'], HasherEventMapTableType.admin, hasherId, hemId, rsvpState, attendenceState, isHare, -1);
+    final Future<void> retVal = hemSrv.joinEvent(event['eventId'], HasherEventMapTableType.eventAdmin, hasherId, hemId, rsvpState, attendenceState, isHare, -1);
 
     retVal.then((void dummy) {
       _refreshPackListFromTables(false).then((void dummy) {
