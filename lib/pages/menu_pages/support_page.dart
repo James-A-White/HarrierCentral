@@ -12,8 +12,7 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/data/services/authorize_device_service.dart';
 import 'package:harrier_central/database/database.dart';
@@ -384,17 +383,7 @@ class SupportPageState extends State<SupportPage> {
                   ),
           ),
         ),
-        globalConnectionStatus == connectionStatus_notConnected
-            ? Positioned(
-                right: 0,
-                top: 0,
-                child: Image.asset(
-                  'images/icons/offline_mode.png',
-                  height: 120,
-                  width: 120,
-                ),
-              )
-            : Container(),
+        const OfflineModeRibbon(),
       ],
     );
   }

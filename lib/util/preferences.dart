@@ -57,6 +57,8 @@ enum IntPrefsEnum {
   lastUpdateAdminHasherEventMapData,
   lastCacheClearAdminHasherEventMapData,
 
+  lastSuccessfulUserDataSync,
+
   dbCreated,
 
 }

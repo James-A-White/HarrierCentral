@@ -16,8 +16,7 @@ import 'package:harrier_central/data/services/email_reports_service.dart';
 import 'package:harrier_central/pages/kennel_admin/filter_events_page.dart';
 import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
@@ -523,17 +522,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           ),
         ),
       ),
-      globalConnectionStatus == connectionStatus_notConnected
-          ? Positioned(
-              right: 0,
-              top: 0,
-              child: Image.asset(
-                'images/icons/offline_mode.png',
-                height: 120,
-                width: 120,
-              ),
-            )
-          : Container(),
+      const OfflineModeRibbon(),
+      
     ]);
   }
 

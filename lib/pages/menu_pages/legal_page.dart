@@ -3,8 +3,7 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/pages/menu_pages/get_reset_code_popup.dart';
-import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 
 class LegalPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -44,17 +43,7 @@ class LegalPageState extends State<LegalPage> {
             ),
           ),
         ),
-         globalConnectionStatus == connectionStatus_notConnected
-            ? Positioned(
-                right: 0,
-                top: 0,
-                child: Image.asset(
-                  'images/icons/offline_mode.png',
-                  height: 120,
-                  width: 120,
-                ),
-              )
-            : Container(),
+         const OfflineModeRibbon(),
       ],
     );
   }

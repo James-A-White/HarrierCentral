@@ -7,9 +7,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/profile_photo.dart';
 import 'package:harrier_central/data/models/user_model.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
@@ -346,17 +345,7 @@ class MyProfilePageState extends State<MyProfilePage> {
           ),
         ),
         
-        globalConnectionStatus == connectionStatus_notConnected
-            ? Positioned(
-                right: 0,
-                top: 0,
-                child: Image.asset(
-                  'images/icons/offline_mode.png',
-                  height: 120,
-                  width: 120,
-                ),
-              )
-            : Container(),
+        const OfflineModeRibbon(),
       
       ],
     );

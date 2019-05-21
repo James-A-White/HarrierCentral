@@ -14,6 +14,7 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/user_event_list_item.dart';
@@ -125,46 +126,53 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        key: _scaffoldKey,
-        appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: themeAppBarBackground,
-          title: Text(
-            'My runs for ${widget.kennelShortName}',
-            style: const TextStyle(
-              color: Colors.white,
+    return Stack(
+      children: <Widget>[
+        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        Positioned(
+          top: 0,
+          left: 0,
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          child: Scaffold(
+            key: _scaffoldKey,
+            appBar: AppBar(
+              centerTitle: true,
+              backgroundColor: themeAppBarBackground,
+              title: Text(
+                'My runs for ${widget.kennelShortName}',
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+              ),
             ),
-          ),
-        ),
-
-        floatingActionButton: SpeedDial(
-          // both default to 16
-          marginRight: 18,
-          marginBottom: 30,
-          animatedIcon: AnimatedIcons.menu_close,
-          animatedIconTheme: const IconThemeData(size: 22.0),
-          // this is ignored if animatedIcon is non null
-          // child:const  Icon(Icons.add),
-          visible: true,
-          curve: Curves.bounceIn,
-          overlayColor: Colors.black,
-          overlayOpacity: 0.5,
-          onOpen: () => print('OPENING DIAL'),
-          onClose: () => print('DIAL CLOSED'),
-          tooltip: 'Speed Dial',
-          heroTag: 'speed-dial-hero-tag',
-          backgroundColor: Theme.of(context).accentColor,
-          foregroundColor: Colors.white,
-          elevation: 8.0,
-          shape: CircleBorder(),
-          children: <SpeedDialChild>[
-            SpeedDialChild(
-              child: const Icon(MaterialCommunityIcons.email),
-              backgroundColor: Colors.teal[800],
-              label: 'Email run counts (this kennel)',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
+            floatingActionButton: SpeedDial(
+              // both default to 16
+              marginRight: 18,
+              marginBottom: 30,
+              animatedIcon: AnimatedIcons.menu_close,
+              animatedIconTheme: const IconThemeData(size: 22.0),
+              // this is ignored if animatedIcon is non null
+              // child:const  Icon(Icons.add),
+              visible: true,
+              curve: Curves.bounceIn,
+              overlayColor: Colors.black,
+              overlayOpacity: 0.5,
+              onOpen: () => print('OPENING DIAL'),
+              onClose: () => print('DIAL CLOSED'),
+              tooltip: 'Speed Dial',
+              heroTag: 'speed-dial-hero-tag',
+              backgroundColor: Theme.of(context).accentColor,
+              foregroundColor: Colors.white,
+              elevation: 8.0,
+              shape: CircleBorder(),
+              children: <SpeedDialChild>[
+                SpeedDialChild(
+                  child: const Icon(MaterialCommunityIcons.email),
+                  backgroundColor: Colors.teal[800],
+                  label: 'Email run counts (this kennel)',
+                  labelStyle: const TextStyle(fontSize: 18.0),
+                  onTap: () {
                     HasherEventMapService.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelName).then((Map<String, String> result) {
                       _scaffoldKey.currentState?.hideCurrentSnackBar();
                       if (result['result'].toLowerCase().startsWith('success')) {
@@ -173,13 +181,13 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                     });
                     Utilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
                   },
-            ),
-            SpeedDialChild(
-              child: const Icon(MaterialCommunityIcons.email_plus),
-              backgroundColor: Colors.blue[900],
-              label: 'Email run counts (all kennels)',
-              labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: ()  {
+                ),
+                SpeedDialChild(
+                  child: const Icon(MaterialCommunityIcons.email_plus),
+                  backgroundColor: Colors.blue[900],
+                  label: 'Email run counts (all kennels)',
+                  labelStyle: const TextStyle(fontSize: 18.0),
+                  onTap: () {
                     HasherEventMapService.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
                       _scaffoldKey.currentState?.hideCurrentSnackBar();
                       if (result['result'].toLowerCase().startsWith('success')) {
@@ -188,14 +196,15 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                     });
                     Utilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
                   },
+                ),
+              ],
             ),
-          ],
+            body: _isLoading ? _buildCircularProgressIndicator() : _buildListView(),
+          ),
         ),
-
-
-
-
-        body: _isLoading ? _buildCircularProgressIndicator() : _buildListView());
+        const OfflineModeRibbon(),
+      ],
+    );
   }
 
   Widget _buildCircularProgressIndicator() {
@@ -312,9 +321,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
   static const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
 
-  static const TextStyle numberStyle = const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85);
+  static const TextStyle numberStyle =  TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85);
 
-  static const TextStyle boldTitleStyle = const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85);
+  static const TextStyle boldTitleStyle =  TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85);
 
   int myRunCount = 0;
   int myHaringCount = 0;
@@ -369,7 +378,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
                     child: Row(children: <Widget>[
                       Container(
-                        margin: EdgeInsets.only(right: 20.0),
+                        margin: const EdgeInsets.only(right: 20.0),
                         height: 90,
                         child: KennelLogo(
                           kennelLogoUrl: widget.kennelLogo,
@@ -437,7 +446,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                       //itemExtent: 58.0,
                       //shrinkWrap: true,
                       itemBuilder: (BuildContext context, int index) {
-                        UserRunHistoryResults item = runCountsList[index];
+                        final UserRunHistoryResults item = runCountsList[index];
 
                         return Dismissible(
                           key: Key(item.eventId),

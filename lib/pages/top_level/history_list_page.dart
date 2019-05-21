@@ -126,11 +126,11 @@ class HistoryListPageState extends State<HistoryListPage> {
   TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
 
   Widget _buildListView() {
-    String _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
+    final String _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
     return Stack(
       children: <Widget>[
         Container(
-          margin: EdgeInsets.only(top: 100),
+          margin: const EdgeInsets.only(top: 100),
           decoration: Backgrounds.defaultHcBackgroundLight(),
           padding: const EdgeInsets.only(top: 0.0),
           child: runCountsList.isEmpty
@@ -179,12 +179,12 @@ class HistoryListPageState extends State<HistoryListPage> {
                 child: Row(
                   children: <Widget>[
                     ProfilePhoto(leftPadding: 20, photoHeight: 80, profilePhotoUrl: _photo),
-                    SizedBox(width: 20),
+                    const SizedBox(width: 20),
                     (runCountsList == null || runCountsList.isEmpty) ? Container() :
                     Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                      Text(
+                      const Text(
                         'My total run counts',
-                        style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85),
+                        style: TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85),
                         textAlign: TextAlign.center,
                       ),
                       Text(

@@ -3,8 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:package_info/package_info.dart';
 
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 
 class ImprintPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -43,17 +42,8 @@ class ImprintPageState extends State<ImprintPage> {
               child: const ImprintPageContent(),
             ),
           ),
-        ),globalConnectionStatus == connectionStatus_notConnected
-            ? Positioned(
-                right: 0,
-                top: 0,
-                child: Image.asset(
-                  'images/icons/offline_mode.png',
-                  height: 120,
-                  width: 120,
-                ),
-              )
-            : Container(),
+        ),
+        const OfflineModeRibbon(),
       ],
     );
   }

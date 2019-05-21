@@ -153,6 +153,7 @@ class SyncUserDataService {
       );
 
       await updateSqlTablesWithResultsFromBackendApiCall(response.body, db: db, informUser: informUser);
+      await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSync, DateTime.now().millisecondsSinceEpoch);
     }
     return true;
   }

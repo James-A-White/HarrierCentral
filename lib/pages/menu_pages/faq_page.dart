@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 
 class FaqPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -20,39 +19,29 @@ class FaqPageState extends State<FaqPage> {
     return Stack(children: <Widget>[
       Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
       Positioned(
-          top: 0,
-          left: 0,
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          child: Scaffold(
-            appBar: AppBar(
-              centerTitle: true,
-              backgroundColor: themeAppBarBackground,
-              title: const Text(
-                'FAQs',
-                style: TextStyle(
-                  color: Colors.white,
-                ),
+        top: 0,
+        left: 0,
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        child: Scaffold(
+          appBar: AppBar(
+            centerTitle: true,
+            backgroundColor: themeAppBarBackground,
+            title: const Text(
+              'FAQs',
+              style: TextStyle(
+                color: Colors.white,
               ),
             ),
-            body: Container(
-              decoration: Backgrounds.defaultHcBackground(),
-              height: MediaQuery.of(context).size.height,
-              child: const FaqPageContent(),
-            ),
-          )),
-          globalConnectionStatus == connectionStatus_notConnected
-            ? Positioned(
-                right: 0,
-                top: 0,
-                child: Image.asset(
-                  'images/icons/offline_mode.png',
-                  height: 120,
-                  width: 120,
-                ),
-              )
-            : Container(),
-      
+          ),
+          body: Container(
+            decoration: Backgrounds.defaultHcBackground(),
+            height: MediaQuery.of(context).size.height,
+            child: const FaqPageContent(),
+          ),
+        ),
+      ),
+      const OfflineModeRibbon(),
     ]);
   }
 }

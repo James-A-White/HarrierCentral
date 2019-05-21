@@ -1,3 +1,5 @@
+
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -7,7 +9,7 @@ import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 
 import 'package:harrier_central/data/models/main_navigation_model.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/pages/top_level/history_list_page.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
@@ -15,7 +17,7 @@ import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/util/globals.dart';
+
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);
@@ -94,7 +96,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           w = const KennelsListPage();
           break;
         case 2:
-          w = HistoryListPage();
+          w = const HistoryListPage();
           break;
         case 3:
           w = const UserQrCodePage();
@@ -197,17 +199,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             drawer: DrawerMenu(scaffoldKey: _scaffoldKey),
           ),
         ),
-        globalConnectionStatus == connectionStatus_notConnected
-            ? Positioned(
-                right: 0,
-                top: 0,
-                child: Image.asset(
-                  'images/icons/offline_mode.png',
-                  height: 120,
-                  width: 120,
-                ),
-              )
-            : Container(),
+        const OfflineModeRibbon(),
       ],
     );
 
