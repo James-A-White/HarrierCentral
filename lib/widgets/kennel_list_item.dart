@@ -56,7 +56,7 @@ class KennelListItemState extends State<KennelsListItem> {
                                 }
                                 widget.kennel['followingRequested'] = followingRequested;
                                 setState(() {});
-                                srv.toggleFollowing(widget.kennel, HasherKennelMapTableType.user).then((void dummy) {
+                                srv.updateHasherKennelStatus(widget.kennel, HasherKennelMapTableType.user).then((void dummy) {
                                   setState(() {});
                                 });
                                 }
@@ -189,7 +189,7 @@ class KennelListItemState extends State<KennelsListItem> {
                           final HasherKennelMapService srv = HasherKennelMapService();
                           widget.kennel['followingRequested'] = retVal.value;
                           setState(() {});
-                          srv.toggleFollowing(widget.kennel, HasherKennelMapTableType.user).then((void dummy) {
+                          srv.updateHasherKennelStatus(widget.kennel, HasherKennelMapTableType.user).then((void dummy) {
                             setState(() {});
                           });
                         }

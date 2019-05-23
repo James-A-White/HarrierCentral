@@ -11,12 +11,13 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/util/enums.dart';
 
 class HasherKennelMapModel {
   HasherKennelMapModel(
-      {this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.isHomeKennel, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.membershipExpirationDate, this.removed, this.updatedAt});
+      {this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.isHomeKennel, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.membershipExpirationDate, this.memberSince, this.removed, this.updatedAt});
 
   final String hkmId;
   final String userId;
@@ -30,6 +31,7 @@ class HasherKennelMapModel {
   final num historicalPackRunCount;
   final num historicalHaringCount;
   final DateTime membershipExpirationDate;
+  final DateTime memberSince;
   final DateTime updatedAt;
   final int removed;
 
@@ -53,6 +55,7 @@ class HasherKennelMapModel {
           historicalPackRunCount: jsonItem['historicalPackRunCount'],
           historicalHaringCount: jsonItem['historicalHaringCount'],
           membershipExpirationDate: jsonItem['membershipExpirationDate'] == null ? null : DateTime.parse(jsonItem['membershipExpirationDate'].toString().substring(0, 19)),
+          memberSince: jsonItem['memberSince'] == null ? null : DateTime.parse(jsonItem['memberSince'].toString().substring(0, 19)),
           updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
           removed: jsonItem['removed'],
         );
@@ -100,6 +103,7 @@ class HasherKennelMapTableHelper {
   static const String colHistoricalPackRunCount = 'historicalPackRunCount';
   static const String colHistoricalHaringCount = 'historicalHaringCount';
   static const String colMembershipExpirationDate = 'membershipExpirationDate';
+  static const String colMemberSince = 'memberSince';
   static const String colUpdatedAt = 'updatedAt';
   static const String colRemoved = 'removed';
 
@@ -150,6 +154,7 @@ class HasherKennelMapTableHelper {
             $colHistoricalPackRunCount NUM,
             $colHistoricalHaringCount NUM,
             $colMembershipExpirationDate TEXT,
+            $colMemberSince TEXT,
             $colRemoved INT,
             $colUpdatedAt TEXT,
 
@@ -176,6 +181,7 @@ class HasherKennelMapTableHelper {
       HasherKennelMapTableHelper.colHistoricalPackRunCount: item.historicalPackRunCount,
       HasherKennelMapTableHelper.colHistoricalHaringCount: item.historicalHaringCount,
       HasherKennelMapTableHelper.colMembershipExpirationDate: item.membershipExpirationDate,
+      HasherKennelMapTableHelper.colMemberSince: item.memberSince,
       HasherKennelMapTableHelper.colUpdatedAt: item.updatedAt,
       HasherKennelMapTableHelper.colRemoved: item.removed,
     };
@@ -196,7 +202,8 @@ class HasherKennelMapTableHelper {
       appAccessFlags: map[HasherKennelMapTableHelper.colAppAccessFlags],
       historicalPackRunCount: map[HasherKennelMapTableHelper.colHistoricalPackRunCount],
       historicalHaringCount: map[HasherKennelMapTableHelper.colHistoricalHaringCount],
-      membershipExpirationDate: DateTime.parse(map[HasherKennelMapTableHelper.colMembershipExpirationDate].toString().substring(0, 19)),
+      membershipExpirationDate: (map[HasherKennelMapTableHelper.colMembershipExpirationDate] == null) ? null : DateTime.parse(map[HasherKennelMapTableHelper.colMembershipExpirationDate].toString().substring(0, 19)),
+      memberSince: (map[HasherKennelMapTableHelper.colMemberSince] == null) ? null : DateTime.parse(map[HasherKennelMapTableHelper.colMemberSince].toString().substring(0, 19)),
       updatedAt: DateTime.parse(map[HasherKennelMapTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[HasherKennelMapTableHelper.colRemoved],
     );
@@ -306,9 +313,8 @@ class HasherKennelMapService {
 
   //=================  Domain specific functions ================
 
-  Future<void> toggleFollowing(Map<String, dynamic> kennel, HasherKennelMapTableType tblType) async {
+  Future<void> updateHasherKennelStatus(Map<String, dynamic> kennel, HasherKennelMapTableType tblType, {int monthsToAddToMembership, String targetUserId}) async {
 
-    
     if (globalConnectionStatus == connectionStatus_notConnected)
     {
       return;
@@ -325,14 +331,17 @@ class HasherKennelMapService {
     final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
     final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
 
+    monthsToAddToMembership ??= -1;
+
     final String body = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
       'kennelId': kennel['kennelId'],
-      'targetUserId': userId,
+      'targetUserId': targetUserId ?? userId,
       'isFollowing': kennel['followingRequested'],
-      'isMember': -1,
       'isHomeKennel' : -1,
+      'monthsToAddToMembership' : monthsToAddToMembership,
+      //'paymentAmount' : ,
       'hasherKennelMapUpdatedAfter' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
       'kennelsUpdatedAfter' : kennelsUpdatedAfter.toString().substring(0, 19)
     });
@@ -346,11 +355,14 @@ class HasherKennelMapService {
     if (tblType == HasherKennelMapTableType.eventAdmin)
     { 
         await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);  
+    } else if (tblType == HasherKennelMapTableType.kennelAdmin) {
+        await SyncKennelAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body); 
     } else {
         await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body); 
     }
 
     final dynamic result = json.decode(response.body);
+
     kennel['following'] = result[1][0]['following'];  // HACK!!! Fix this so that results can be returned in any order and not specifically [1][0]
     kennel['followingRequested'] = -1;
   }

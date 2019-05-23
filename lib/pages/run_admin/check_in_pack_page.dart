@@ -163,7 +163,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             coalesce(hem.isHare,0) as isHare,
             CASE WHEN pay.hemId IS NULL THEN 0 ELSE 1 END as isPaid, 
             h.dispName as nameForDisplay,
-            h.firstName || " " || h.lastName || " " || h.dispName as nameForSort,
+            lower(h.dispName || " " || h.firstName || " " || h.lastName) as nameForSort,
             coalesce(pay.paymentType,0) as paymentType,
             h.photo,
             0 as virginVisitorType,
@@ -186,7 +186,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             hem2.isHare as isHare,
             CASE WHEN pay2.hemId IS NULL THEN 0 ELSE 1 END as isPaid, 
             coalesce(hem2.displayName,CASE WHEN hem2.virginVisitorType = 3 THEN h2.dispName ELSE "<no name>" END) || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END as nameForDisplay,
-            coalesce(hem2.displayName,CASE WHEN hem2.virginVisitorType = 3 THEN h2.dispName ELSE "<no name>" END) || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END as nameForSort,
+            lower(coalesce(hem2.displayName,CASE WHEN hem2.virginVisitorType = 3 THEN h2.dispName ELSE "<no name>" END) || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END) as nameForSort,
             coalesce(pay2.paymentType,0) as paymentType,
             CASE WHEN hem2.virginVisitorType = 1 THEN "https://harriercentral.blob.core.windows.net/harrier/Virgin.png" ELSE "https://harriercentral.blob.core.windows.net/harrier/Visitor.png" END as photo,
             coalesce(hem2.virginVisitorType,1) as virginVisitorType,
@@ -208,7 +208,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             hem3.isHare as isHare,
             CASE WHEN pay3.hemId IS NULL THEN 0 ELSE 1 END as isPaid, 
             coalesce(h3.dispName,"<no name>") as nameForDisplay,
-            h3.firstName || " " || h3.lastName || " " || h3.dispName as nameForSort,
+            lower(h3.dispName || " " || h3.lastName || " " || h3.firstName) as nameForSort,
             coalesce(pay3.paymentType,0) as paymentType,
             h3.photo as photo,
             hem3.virginVisitorType as virginVisitorType,
@@ -223,7 +223,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay3 on pay3.hemId = hem3.hemId and pay3.cancelledBy IS NULL
             LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm3 on hkm3.userId = h3.hasherId and hkm3.kennelId = "${widget.kennelId}" AND hkm3.isMember = 1
             WHERE hem3.eventId = "${widget.eventId}" AND hem3.virginVisitorType == 0 AND hkm3.hkmId IS NULL
-          ORDER BY lower(nameForDisplay)
+          ORDER BY nameForSort
             
           
           ''';
@@ -1377,8 +1377,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 payForEvent(packMember, direction == DismissDirection.endToStart ? 3 : 4);
               } else {
                 if (direction == DismissDirection.endToStart) {
-                  // _packScopedModel.setRsvpState(rsvpYes.value, -1,
-                  //     attendenceOnIn.value, packList[index]);
+                  updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
                 }
               }
               return Future<bool>.value(false);

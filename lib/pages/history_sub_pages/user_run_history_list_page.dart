@@ -519,7 +519,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                       padding: EdgeInsets.only(left: 15.0),
                                       child: Text(
                                           // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                          'I was not there',
+                                          'I was not\r\nat the Hash',
+                                          maxLines: 2,
                                           style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                     )
                                   ])),
@@ -553,7 +554,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                             padding: EdgeInsets.only(right: 15.0),
                                             child: Text(
                                                 //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                                'I was at the Hash',
+                                                'I was at\r\nthe Hash',
+                                                maxLines: 2,
+                                                textAlign: TextAlign.right,
                                                 style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                           )
                                         ],
