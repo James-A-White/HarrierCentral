@@ -17,7 +17,7 @@ import 'package:harrier_central/util/enums.dart';
 
 class HasherKennelMapModel {
   HasherKennelMapModel(
-      {this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.isHomeKennel, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.membershipExpirationDate, this.memberSince, this.removed, this.updatedAt});
+      {this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.isHomeKennel, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.removed, this.updatedAt});
 
   final String hkmId;
   final String userId;
@@ -30,6 +30,7 @@ class HasherKennelMapModel {
   final int appAccessFlags;
   final num historicalPackRunCount;
   final num historicalHaringCount;
+  final DateTime dateOfLastRun;
   final DateTime membershipExpirationDate;
   final DateTime memberSince;
   final DateTime updatedAt;
@@ -54,6 +55,7 @@ class HasherKennelMapModel {
           appAccessFlags: jsonItem['appAccessFlags'],
           historicalPackRunCount: jsonItem['historicalPackRunCount'],
           historicalHaringCount: jsonItem['historicalHaringCount'],
+          dateOfLastRun: jsonItem['dateOfLastRun'] == null ? null : DateTime.parse(jsonItem['dateOfLastRun'].toString().substring(0, 19)),
           membershipExpirationDate: jsonItem['membershipExpirationDate'] == null ? null : DateTime.parse(jsonItem['membershipExpirationDate'].toString().substring(0, 19)),
           memberSince: jsonItem['memberSince'] == null ? null : DateTime.parse(jsonItem['memberSince'].toString().substring(0, 19)),
           updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
@@ -102,6 +104,7 @@ class HasherKennelMapTableHelper {
   static const String colAppAccessFlags = 'appAccessFlags';
   static const String colHistoricalPackRunCount = 'historicalPackRunCount';
   static const String colHistoricalHaringCount = 'historicalHaringCount';
+  static const String colDateOfLastRun = 'dateOfLastRun';
   static const String colMembershipExpirationDate = 'membershipExpirationDate';
   static const String colMemberSince = 'memberSince';
   static const String colUpdatedAt = 'updatedAt';
@@ -153,6 +156,7 @@ class HasherKennelMapTableHelper {
             $colAppAccessFlags INT,
             $colHistoricalPackRunCount NUM,
             $colHistoricalHaringCount NUM,
+            $colDateOfLastRun TEXT,
             $colMembershipExpirationDate TEXT,
             $colMemberSince TEXT,
             $colRemoved INT,
@@ -180,6 +184,7 @@ class HasherKennelMapTableHelper {
       HasherKennelMapTableHelper.colAppAccessFlags: item.appAccessFlags,
       HasherKennelMapTableHelper.colHistoricalPackRunCount: item.historicalPackRunCount,
       HasherKennelMapTableHelper.colHistoricalHaringCount: item.historicalHaringCount,
+      HasherKennelMapTableHelper.colDateOfLastRun: item.dateOfLastRun,
       HasherKennelMapTableHelper.colMembershipExpirationDate: item.membershipExpirationDate,
       HasherKennelMapTableHelper.colMemberSince: item.memberSince,
       HasherKennelMapTableHelper.colUpdatedAt: item.updatedAt,
@@ -202,6 +207,7 @@ class HasherKennelMapTableHelper {
       appAccessFlags: map[HasherKennelMapTableHelper.colAppAccessFlags],
       historicalPackRunCount: map[HasherKennelMapTableHelper.colHistoricalPackRunCount],
       historicalHaringCount: map[HasherKennelMapTableHelper.colHistoricalHaringCount],
+      dateOfLastRun: (map[HasherKennelMapTableHelper.colDateOfLastRun] == null) ? null : DateTime.parse(map[HasherKennelMapTableHelper.colDateOfLastRun].toString().substring(0, 19)),
       membershipExpirationDate: (map[HasherKennelMapTableHelper.colMembershipExpirationDate] == null) ? null : DateTime.parse(map[HasherKennelMapTableHelper.colMembershipExpirationDate].toString().substring(0, 19)),
       memberSince: (map[HasherKennelMapTableHelper.colMemberSince] == null) ? null : DateTime.parse(map[HasherKennelMapTableHelper.colMemberSince].toString().substring(0, 19)),
       updatedAt: DateTime.parse(map[HasherKennelMapTableHelper.colUpdatedAt].toString().substring(0, 19)),

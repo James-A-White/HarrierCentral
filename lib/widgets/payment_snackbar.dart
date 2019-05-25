@@ -73,7 +73,7 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              onRsvpCallback(packMember, rsvpState: rsvpNo.value);
+                              onRsvpCallback(packMember, rsvpState: rsvpNo.value, attendenceState: attendenceNo.value, isHare:isHareNo.value);
                               // packScopedModel.setRsvpState(
                               //     rsvpNo.value,
                               //     isHareNo.value,
@@ -116,7 +116,7 @@ class PaymentSnackBar extends SnackBar {
                             alignment: Alignment.topCenter,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              onRsvpCallback(packMember, rsvpState: rsvpMaybe.value);
+                              onRsvpCallback(packMember, rsvpState: rsvpMaybe.value, attendenceState: attendenceNo.value, isHare:isHareNo.value);
                               // packScopedModel.setRsvpState(
                               //     rsvpMaybe.value,
                               //     isHareNo.value,

@@ -76,10 +76,10 @@ class KennelMemberListItem extends StatelessWidget {
                     style: TextStyle(fontFamily: kennelMember.isMember == 1 ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensed', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
                     textAlign: TextAlign.left,
                   ),
-                  kennelMember.memberSince == null
+                  kennelMember.dateOfLastRun == null
                       ? Container()
                       : Text(
-                          'Member since: ${DateFormat('MMM dd, yyyy').format(kennelMember.memberSince)}',
+                          'Last run: ${DateFormat('MMM dd, yyyy').format(kennelMember.dateOfLastRun)}',
                           style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0),
                           textAlign: TextAlign.center,
                         ),

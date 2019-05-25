@@ -23,13 +23,14 @@ class KennelMembersList extends StatefulWidget {
 }
 
 class KennelMembersResults {
-  KennelMembersResults({this.hasherId, this.dispName, this.photo, this.isMember, this.following, this.membershipExpirationDate, this.memberSince, this.membershipDurationInMonths, this.isLoading = false, this.membershipDateBeingUpdated = false});
+  KennelMembersResults({this.hasherId, this.dispName, this.photo, this.isMember, this.following, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.membershipDurationInMonths, this.isLoading = false, this.membershipDateBeingUpdated = false});
 
   final String hasherId;
   final String dispName;
   final String photo;
   final int isMember;
   final int following;
+  final DateTime dateOfLastRun;
   final DateTime membershipExpirationDate;
   final DateTime memberSince;
   final int membershipDurationInMonths;
@@ -43,6 +44,7 @@ class KennelMembersResults {
       photo: map['photo'],
       isMember: map['isMember'],
       following: map['following'],
+      dateOfLastRun: (map['dateOfLastRun'] == null) ? null : DateTime.parse(map['dateOfLastRun'].toString().substring(0, 19)),
       membershipExpirationDate: (map['membershipExpirationDate'] == null) ? null : DateTime.parse(map['membershipExpirationDate'].toString().substring(0, 19)),
       memberSince: (map['memberSince'] == null) ? null : DateTime.parse(map['memberSince'].toString().substring(0, 19)),
       membershipDurationInMonths: map['membershipDurationInMonths'],
@@ -106,6 +108,7 @@ class KennelMemberListState extends State<KennelMembersList> {
           h.photo,
           hkm.isMember,
           hkm.following,
+          hkm.dateOfLastRun,
           hkm.membershipExpirationDate,
           hkm.memberSince,
           k.membershipDurationInMonths
