@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/pages/kennel_admin/add_member_page.dart';
+import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
 import 'package:harrier_central/widgets/kennel_member_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
@@ -53,41 +54,12 @@ class KennelMembersResults {
   }
 }
 
+enum EnumSortByType { sortByName, sortByLastRunDate, sortByMembershipExpirationDate }
+
 class KennelMemberListState extends State<KennelMembersList> {
   KennelMemberListState();
 
-  // @override
-  // Widget build(BuildContext context) {
-
-  //   return Scaffold(
-  //     appBar: AppBar(
-  //       centerTitle: true,
-  //       backgroundColor: themeAppBarBackground,
-  //       title: Text(
-  //         '${widget.kennel['kennelShortName']} Members',
-  //         style: const TextStyle(
-  //           color: Colors.white,
-  //         ),
-  //       ),
-  //     ),
-  //     body: false
-  //               ? _buildCircularProgressIndicator()
-  //               : _buildListView()
-
-  //   );
-  // }
-
-  // Widget _buildCircularProgressIndicator() {
-  //   return const Center(
-  //     child: HcCircularProgressIndicator(),
-  //   );
-  // }
-
-  // Future<void> _handleRefresh() async {
-  //   // model.getKennelMembersFromBackend(1, false, widget.kennel['kennelId']);
-  //   // //model.notifyListeners();
-  // }
-
+  EnumSortByType _sortBy = EnumSortByType.sortByName;
   bool _isLoading = false;
 
   List<KennelMembersResults> kennelMemberList = <KennelMembersResults>[];
@@ -101,7 +73,21 @@ class KennelMemberListState extends State<KennelMembersList> {
   Future<void> refreshRunHistoryFromTable(bool forceRefresh) async {
     final Database db = await DBProvider.db.database;
 
-    const String query = ''' 
+    String orderBy = 'lower(h.dispName)';
+
+    switch (_sortBy) {
+      case EnumSortByType.sortByName:
+        orderBy = 'lower(h.dispName)';
+        break;
+      case EnumSortByType.sortByLastRunDate:
+        orderBy = 'hkm.dateOfLastRun desc';
+        break;
+      case EnumSortByType.sortByMembershipExpirationDate:
+        orderBy = 'hkm.membershipExpirationDate asc';
+        break;
+    }
+
+    final String query = ''' 
         SELECT 
           h.hasherId,
           h.dispName,
@@ -115,7 +101,8 @@ class KennelMemberListState extends State<KennelMembersList> {
           FROM hasherKennelMapForKennelAdmin hkm
           INNER JOIN kennels k on k.kennelId = hkm.kennelId
           INNER JOIN hashers h on h.hasherId = hkm.userId
-          ORDER BY lower(h.dispName)
+          WHERE hkm.membershipExpirationDate >= date('now') OR hkm.following = 1
+          ORDER BY $orderBy
           
           ''';
 
@@ -140,6 +127,28 @@ class KennelMemberListState extends State<KennelMembersList> {
 
   @override
   Widget build(BuildContext context) {
+    String sortBySpeedDialLabel = '';
+    IconData sortBySpeedDialIcon;
+    EnumSortByType sortBySpeedDialType;
+
+    switch (_sortBy) {
+      case EnumSortByType.sortByName:
+        sortBySpeedDialLabel = 'Date of last run';
+        sortBySpeedDialType = EnumSortByType.sortByLastRunDate;
+        sortBySpeedDialIcon = FontAwesome.sort_numeric_desc;
+        break;
+      case EnumSortByType.sortByLastRunDate:
+        sortBySpeedDialLabel = 'Date membership expires';
+        sortBySpeedDialType = EnumSortByType.sortByMembershipExpirationDate;
+        sortBySpeedDialIcon = FontAwesome.sort_numeric_desc;
+        break;
+      case EnumSortByType.sortByMembershipExpirationDate:
+        sortBySpeedDialLabel = 'Name';
+        sortBySpeedDialType = EnumSortByType.sortByName;
+        sortBySpeedDialIcon = FontAwesome.sort_alpha_asc;
+        break;
+    }
+
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -150,6 +159,70 @@ class KennelMemberListState extends State<KennelMembersList> {
               color: Colors.white,
             ),
           ),
+        ),
+        floatingActionButton: SpeedDial(
+          // both default to 16
+          marginRight: 18,
+          marginBottom: 30,
+          animatedIcon: AnimatedIcons.menu_close,
+          animatedIconTheme: const IconThemeData(size: 22.0),
+          // this is ignored if animatedIcon is non null
+          // child:const  Icon(Icons.add),
+          visible: true,
+          curve: Curves.bounceIn,
+          overlayColor: Colors.black,
+          overlayOpacity: 0.5,
+          onOpen: () => print('OPENING DIAL'),
+          onClose: () => print('DIAL CLOSED'),
+          tooltip: 'Speed Dial',
+          heroTag: 'speed-dial-hero-tag',
+          backgroundColor: Theme.of(context).accentColor,
+          foregroundColor: Colors.white,
+          elevation: 8.0,
+          shape: CircleBorder(),
+          children: <SpeedDialChild>[
+            SpeedDialChild(
+                child: Icon(sortBySpeedDialIcon),
+                backgroundColor: Colors.deepOrange,
+                label: sortBySpeedDialLabel,
+                labelStyle: const TextStyle(fontSize: 18.0),
+                onTap: () {
+                  _sortBy = sortBySpeedDialType;
+                  refreshRunHistoryFromTable(true);
+                }),
+            SpeedDialChild(
+                child: const Icon(Icons.person_add),
+                backgroundColor: Colors.blue,
+                label: 'Find Hasher and add',
+                labelStyle: const TextStyle(fontSize: 18.0),
+                onTap: () {
+                  Navigator.push<Map<String, dynamic>>(
+                    context,
+                    MaterialPageRoute<Map<String, dynamic>>(
+                      settings: const RouteSettings(),
+                      builder: (BuildContext context) {
+                        return const FindHasherPage(FindHasherPageType.addMember);
+                      },
+                    ),
+                  ).then((Map<String, dynamic> result) {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    if ((result != null) && (result['hasher']?.hasherId != null)) {
+                      final HasherKennelMapService srv = HasherKennelMapService();
+                      widget.kennel['followingRequested'] = -1;
+                      setState(() {});
+                      srv.updateHasherKennelStatus(widget.kennel, HasherKennelMapTableType.kennelAdmin, monthsToAddToMembership: widget.kennel['membershipDurationInMonths'], targetUserId: result['hasher'].hasherId).then((void dummy) {
+                        refreshRunHistoryFromTable(true).then((void dummy) {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        });
+                      });
+                    }
+                  });
+                }),
+          ],
         ),
         body: _isLoading ? _buildCircularProgressIndicator() : _buildListView());
   }
@@ -180,7 +253,7 @@ class KennelMemberListState extends State<KennelMembersList> {
       children: <Widget>[
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(top: 10.0),
+            padding: const EdgeInsets.only(top: 0.0),
             child: kennelMemberList.isEmpty
                 ? const Center(child: Text('No members found.'))
                 : RefreshIndicator(
@@ -203,253 +276,94 @@ class KennelMemberListState extends State<KennelMembersList> {
                               // the hasher either attended the run as a pack
                               // member or as a hare
                               if (direction == DismissDirection.endToStart) {
-
-                                final HasherKennelMapService srv = HasherKennelMapService();
-                                widget.kennel['followingRequested'] = -1;
-                                item.membershipDateBeingUpdated = true;
-                                setState(() {});
-                                srv.updateHasherKennelStatus(widget.kennel, HasherKennelMapTableType.kennelAdmin, monthsToAddToMembership: item.membershipDurationInMonths, targetUserId: item.hasherId).then((void dummy) {
-                                  refreshRunHistoryFromTable(true).then((void dummy) {
-                                    item.membershipDateBeingUpdated = false;
-                                    setState(() {});
-                                  });
-                                });
+                                modifyMembership(item, item.membershipDurationInMonths);
                               } else {
-                                final HasherKennelMapService srv = HasherKennelMapService();
-                                widget.kennel['followingRequested'] = -1;
-                                item.membershipDateBeingUpdated = true;
-                                setState(() {});
-                                srv.updateHasherKennelStatus(widget.kennel, HasherKennelMapTableType.kennelAdmin, monthsToAddToMembership: -9999, targetUserId: item.hasherId).then((void dummy) {
-                                  refreshRunHistoryFromTable(true).then((void dummy) {
-                                    item.membershipDateBeingUpdated = false;
-                                    setState(() {});
-                                  });
-                                });
+                                modifyMembership(item, -9999);
                               }
                             });
 
                             return Future<bool>.value(false);
                           },
                           background: Container(
-                                  color: Colors.red,
-                                  child: Row(children: const <Widget>[
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 10.0),
-                                      child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 15.0),
-                                      child: Text(
-                                          // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                          'Cancel\r\nmembership',
-                                          maxLines: 2,
-                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                    )
-                                  ])),
-                          secondaryBackground: Container(
-                                  color: Colors.green,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: <Widget>[
-                                      const Padding(
-                                        padding: EdgeInsets.only(right: 15.0),
-                                        child: Icon(FontAwesome.plus_circle, color: Colors.white, size: 35.0),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(right: 15.0),
-                                        child: Text(
-                                            //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                            'Add ${item.membershipDurationInMonths} months\r\nto membership',
-                                            style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                      )
-                                    ],
-                                  ),
+                              color: Colors.red,
+                              child: Row(children: const <Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(left: 10.0),
+                                  child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
                                 ),
+                                Padding(
+                                  padding: EdgeInsets.only(left: 15.0),
+                                  child: Text(
+                                      // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                      'Cancel\r\nmembership',
+                                      maxLines: 2,
+                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                )
+                              ])),
+                          secondaryBackground: Container(
+                            color: Colors.green,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: <Widget>[
+                                const Padding(
+                                  padding: EdgeInsets.only(right: 15.0),
+                                  child: Icon(FontAwesome.plus_circle, color: Colors.white, size: 35.0),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 15.0),
+                                  child: Text(
+                                      //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                      'Add ${item.membershipDurationInMonths} months\r\nto membership',
+                                      style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                )
+                              ],
+                            ),
+                          ),
                           onDismissed: (DismissDirection direction) {
                             print(direction.toString() + ' NOTE: We should never reach this point');
                           },
-                          child: KennelMemberListItem(kennelMember: kennelMemberList[index]),
+                          child: KennelMemberListItem(
+                            kennelMember: kennelMemberList[index],
+                            modifyMembershipCallback: (EnumMemberPopupActions retVal) {
+                              switch (retVal) {
+                                case EnumMemberPopupActions.addOneMonth:
+                                  modifyMembership(kennelMemberList[index], 1);
+                                  break;
+                                case EnumMemberPopupActions.addSixMonths:
+                                  modifyMembership(kennelMemberList[index], 6);
+                                  break;
+                                case EnumMemberPopupActions.subtractOneMonth:
+                                  modifyMembership(kennelMemberList[index], -1);
+                                  break;
+                                case EnumMemberPopupActions.subtractSixMonths:
+                                  modifyMembership(kennelMemberList[index], -6);
+                                  break;
+                                case EnumMemberPopupActions.cancelMembership:
+                                  modifyMembership(kennelMemberList[index], -9999);
+                                  break;
+                              }
+                            },
+                          ),
                         );
                       },
                     ),
                   ),
           ),
         ),
-        Container(
-          width: 150.0,
-          child: RaisedButton(
-            child: const Text(
-              'Add Member',
-              style: TextStyle(color: Colors.white),
-            ),
-            onPressed: () {
-              Navigator.push<dynamic>(
-                context,
-                MaterialPageRoute<dynamic>(
-                  builder: (BuildContext context) => AddMemberPage(
-                        kennelId: widget.kennel['kennelId'],
-                      ),
-                ),
-              );
-            },
-          ),
-        ),
       ],
     );
   }
+
+  void modifyMembership(KennelMembersResults item, int monthsToAddToMembership) {
+    final HasherKennelMapService srv = HasherKennelMapService();
+    widget.kennel['followingRequested'] = -1;
+    item.membershipDateBeingUpdated = true;
+    setState(() {});
+    srv.updateHasherKennelStatus(widget.kennel, HasherKennelMapTableType.kennelAdmin, monthsToAddToMembership: monthsToAddToMembership, targetUserId: item.hasherId).then((void dummy) {
+      refreshRunHistoryFromTable(true).then((void dummy) {
+        item.membershipDateBeingUpdated = false;
+        setState(() {});
+      });
+    });
+  }
 }
-
-// import 'dart:async';
-
-// import 'package:flutter/material.dart';
-
-// import 'package:scoped_model/scoped_model.dart';
-
-// import 'package:harrier_central/data/services/kennel_member_scoped_model.dart';
-// import 'package:harrier_central/pages/kennel_admin/add_member_page.dart';
-// import 'package:harrier_central/widgets/kennel_member_list_item.dart';
-// import 'package:harrier_central/util/styles.dart';
-// import 'package:harrier_central/widgets/circular_progress_indicator.dart';
-
-// class KennelMembersList extends StatefulWidget {
-//   const KennelMembersList({Key key, @required this.kennel}) : super(key: key);
-
-//   final Map<String,dynamic> kennel;
-
-//   @override
-//   KennelMemberListState createState() => KennelMemberListState();
-
-//   // @override
-//   // Widget build(BuildContext context) {
-//   //   if ((kennelMemberModel?.kennelMembersList?.length ?? 0) == 0) {
-//   //     kennelMemberModel.getKennelMembersFromBackend(1, true, kennel.kennelId);
-//   //   }
-
-//   //   return Scaffold(
-//   //     appBar: AppBar(
-//   //       centerTitle: true,
-//   //       backgroundColor: themeAppBarBackground,
-//   //       title: Text(
-//   //         '${kennel.kennelShortName} Members',
-//   //         style: const TextStyle(
-//   //           color: Colors.white,
-//   //         ),
-//   //       ),
-//   //     ),
-//   //     body: ScopedModel<KennelMemberScopedModel>(
-//   //         model: kennelMemberModel,
-//   //         child: KennelMemberListState(
-//   //           kennelId: kennel.kennelId,
-//   //         )),
-//   //   );
-
-// }
-
-// class KennelMemberListState extends State<KennelMembersList> {
-//   KennelMemberListState();
-
-//   final KennelMemberScopedModel kennelMemberModel = KennelMemberScopedModel();
-
-//   KennelMemberScopedModel model;
-
-//   int pageIndex = 1;
-
-//   @override
-//   Widget build(BuildContext context) {
-
-//     if (kennelMemberModel.kennelMembersList.isEmpty) {
-//       kennelMemberModel.getKennelMembersFromBackend(1, true, widget.kennel['kennelId']);
-//     }
-
-//     return Scaffold(
-//       appBar: AppBar(
-//         centerTitle: true,
-//         backgroundColor: themeAppBarBackground,
-//         title: Text(
-//           '${widget.kennel['kennelShortName']} Members',
-//           style: const TextStyle(
-//             color: Colors.white,
-//           ),
-//         ),
-//       ),
-//       body: ScopedModel<KennelMemberScopedModel>(
-//         model: kennelMemberModel,
-//         child: ScopedModelDescendant<KennelMemberScopedModel>(
-//           builder: (BuildContext context, Widget child,
-//               KennelMemberScopedModel model) {
-//             this.model = model;
-//             return model.isLoading
-//                 ? _buildCircularProgressIndicator()
-//                 : _buildListView();
-//           },
-//         ),
-//       ),
-//     );
-//   }
-
-//   Widget _buildCircularProgressIndicator() {
-//     return const Center(
-//       child: HcCircularProgressIndicator(),
-//     );
-//   }
-
-//   Future<void> _handleRefresh() async {
-//     model.getKennelMembersFromBackend(1, false, widget.kennel['kennelId']);
-//     //model.notifyListeners();
-//   }
-
-//   Widget _buildListView() {
-//     return Column(
-//       mainAxisAlignment: MainAxisAlignment.start,
-//       children: <Widget>[
-//         Expanded(
-//           child: Padding(
-//             padding: const EdgeInsets.only(top: 10.0),
-//             child: model.getKennelMembersListCount() == 0
-//                 ? const Center(child: Text('No Kennels available.'))
-//                 : RefreshIndicator(
-//                     onRefresh: () => _handleRefresh(),
-//                     displacement: 40.0,
-//                     child: ListView.builder(
-//                       physics: const AlwaysScrollableScrollPhysics(),
-//                       itemCount: model.getKennelMembersListCount(),
-//                       itemBuilder: (BuildContext context, int index) {
-//                         return Container(
-//                           height: 85.0,
-//                           padding: const EdgeInsets.all(0.0),
-//                           child: ListView(
-//                               scrollDirection: Axis.horizontal,
-//                               children: <Widget>[
-//                                 KennelMemberListItem(
-//                                     kennelMember:
-//                                         model.kennelMembersList[index]),
-//                               ]),
-//                         );
-//                       },
-//                     ),
-//                   ),
-//           ),
-//         ),
-//         Container(
-//           width: 150.0,
-//           child: RaisedButton(
-//             child: const Text(
-//               'Add Member',
-//               style: TextStyle(color: Colors.white),
-//             ),
-//             onPressed: () {
-//               Navigator.push<dynamic>(
-//                 context,
-//                 MaterialPageRoute<dynamic>(
-//                   builder: (BuildContext context) => AddMemberPage(
-//                         kennelId: widget.kennel['kennelId'],
-//                       ),
-//                 ),
-//               );
-//             },
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }

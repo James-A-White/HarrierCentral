@@ -413,7 +413,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       MaterialPageRoute<Map<String, dynamic>>(
         settings: const RouteSettings(),
         builder: (BuildContext context) {
-          return const FindHasherPage();
+          return const FindHasherPage(FindHasherPageType.addHasherToRun);
         },
       ),
     ).then((Map<String, dynamic> result) {

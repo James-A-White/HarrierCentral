@@ -337,7 +337,7 @@ class HasherKennelMapService {
     final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
     final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
 
-    monthsToAddToMembership ??= -1;
+    monthsToAddToMembership ??= 0;
 
     final String body = jsonEncode(<String, Object>{
       'userId': userId,

@@ -12,8 +12,12 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 
+enum FindHasherPageType { addHasherToRun, addMember }
+
 class FindHasherPage extends StatefulWidget {
-  const FindHasherPage();
+  const FindHasherPage(this.pageType);
+
+  final FindHasherPageType pageType;
 
   @override
   State<FindHasherPage> createState() {
@@ -186,6 +190,7 @@ class FindHasherPageState extends State<FindHasherPage> {
                         height: constraints.maxHeight - searchBar(constraints.maxWidth).constraints.maxHeight,
                         child: HasherListView(
                           hasherList: filteredList,
+                          pageType: widget.pageType,
                         ),
                       ),
               ),
@@ -199,16 +204,23 @@ class FindHasherPageState extends State<FindHasherPage> {
 //
 
 class HasherListView extends StatelessWidget {
-  const HasherListView({Key key, this.hasherList}) : super(key: key);
+  const HasherListView({Key key, this.hasherList, this.pageType}) : super(key: key);
 
   final List<HashersModel> hasherList;
+  final FindHasherPageType pageType;
 
   Widget listItem(BuildContext context, int index) {
     return InkWell(
       //splashColor: Colors.red,
       highlightColor: Colors.red,
       onTap: () {
-        return showDialog<int>(
+
+
+        if (pageType ==FindHasherPageType.addHasherToRun)
+        {
+
+
+         return showDialog<int>(
             context: context,
             barrierDismissible: false, // user must tap button!
             builder: (BuildContext context) {
@@ -230,7 +242,7 @@ class HasherListView extends StatelessWidget {
                     padding: const EdgeInsets.only(right: 15.0),
                     child: Container(
                       width: 80.0,
-                      height:50.0,
+                      height: 50.0,
                       child: RaisedButton(
                         color: Colors.red,
                         child: const Text('Cancel'),
@@ -243,7 +255,7 @@ class HasherListView extends StatelessWidget {
                   ),
                   Container(
                     width: 80.0,
-                    height:50.0,
+                    height: 50.0,
                     child: RaisedButton(
                       child: const Text(
                         'Add\r\nVisitor',
@@ -257,7 +269,7 @@ class HasherListView extends StatelessWidget {
                   ),
                   Container(
                     width: 80.0,
-                    height:50.0,
+                    height: 50.0,
                     child: RaisedButton(
                       child: const Text(
                         'Add\r\nHasher',
@@ -277,6 +289,12 @@ class HasherListView extends StatelessWidget {
             Navigator.of(context).pop(result);
           }
         });
+
+        } else if (pageType ==FindHasherPageType.addMember)
+        {
+            final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index]};
+            Navigator.of(context).pop(result);
+        }
       },
       child: Container(
         width: MediaQuery.of(context).size.width,
@@ -338,6 +356,26 @@ class HasherListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String rightToLeftTitle;
+    String leftToRightTitle;
+    IconData rightToLeftIcon;
+    IconData leftToRightIcon;
+
+    switch (pageType) {
+      case FindHasherPageType.addHasherToRun:
+        rightToLeftTitle = ' Add as\r\nvisitor';
+        leftToRightTitle = 'Add\r\nto run';
+        rightToLeftIcon = MaterialCommunityIcons.alpha_v_circle;
+        leftToRightIcon = FontAwesome.plus_circle;
+        break;
+      case FindHasherPageType.addMember:
+        rightToLeftTitle = ' Add as\r\nmember';
+        leftToRightTitle = 'Add as\r\nmember';
+        rightToLeftIcon = Ionicons.md_person_add;
+        leftToRightIcon = Ionicons.md_person_add;
+        break;
+    }
+
     print(DateTime.now().millisecondsSinceEpoch.toString());
     return ListView.separated(
         separatorBuilder: (BuildContext context, int index) => const Divider(
@@ -364,34 +402,34 @@ class HasherListView extends StatelessWidget {
                   background: Container(
                     color: Colors.green,
                     child: Row(
-                      children: const <Widget>[
+                      children: <Widget>[
                         Padding(
-                          padding: EdgeInsets.only(left: 15.0),
+                          padding: const EdgeInsets.only(left: 15.0),
                           child: Icon(
-                            FontAwesome.plus_circle,
+                            leftToRightIcon,
                             color: Colors.white,
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.only(left: 15.0),
-                          child: Text('Add to run', style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                          padding: const EdgeInsets.only(left: 15.0),
+                          child: Text(leftToRightTitle, style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                         ),
                       ],
                     ),
                   ),
                   secondaryBackground: Container(
                       color: Colors.purple,
-                      child: Row(mainAxisAlignment: MainAxisAlignment.end, children: const <Widget>[
+                      child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
                         Padding(
-                          padding: EdgeInsets.only(right: 15.0),
+                          padding: const EdgeInsets.only(right: 15.0),
                           child: Icon(
-                            MaterialCommunityIcons.alpha_v_circle,
+                            rightToLeftIcon,
                             color: Colors.white,
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.only(right: 15.0),
-                          child: Text(' Add as visitor', style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                          padding: const EdgeInsets.only(right: 15.0),
+                          child: Text(rightToLeftTitle, style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                         )
                       ])),
                   onDismissed: (DismissDirection direction) {
