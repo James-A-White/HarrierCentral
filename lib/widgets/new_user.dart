@@ -616,13 +616,6 @@ class NewUserState extends State<NewUserWidget>
             builder: (BuildContext context) => ChooseProfileImage(
                   isForThisDevice: widget.isForThisDevice,
                   doAddUser: true,
-                  firstName: userDetailsUi.firstName,
-                  lastName: userDetailsUi.lastName,
-                  hashName: userDetailsUi.hashName,
-                  email: userDetailsUi.email,
-                  kennelId: widget.kennelId,
-                  eventId: widget.eventId,
-                  attendenceState: widget.attendenceState,
                 ),
           ),
         ).then<dynamic>((UserModel user) {

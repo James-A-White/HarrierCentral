@@ -6,14 +6,13 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
+import 'package:harrier_central/pages/menu_pages/my_profile_page.dart';
+import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 
 enum EnumMemberPopupActions { addOneMonth, addSixMonths, subtractOneMonth, subtractSixMonths, cancelMembership }
 
 class KennelMemberListItem extends StatelessWidget {
-  const KennelMemberListItem({
-    @required this.kennelMember,
-    @required this.modifyMembershipCallback
-  });
+  const KennelMemberListItem({@required this.kennelMember, @required this.modifyMembershipCallback});
 
   final KennelMembersResults kennelMember;
   final Function modifyMembershipCallback;
@@ -22,13 +21,21 @@ class KennelMemberListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        // Navigator.push<dynamic>(
-        //   context,
-        //   MaterialPageRoute<dynamic>(
-        //     builder: (BuildContext context) =>
-        //         UserSecretQrPage(kennelMemberModel: kennelMember),
-        //   ),
-        // );
+        Navigator.push<dynamic>(
+          context,
+          MaterialPageRoute<dynamic>(
+            builder: (BuildContext context) => MyProfilePage(
+                  pageType: EnumMyProfilePageType.anyHasherProfile,
+                  hasherId: kennelMember.hasherId,
+                ),
+          ),
+        ).then((dynamic result){
+          if (result is HashersModel)
+          {
+            kennelMember.dispName = result.dispName;
+            kennelMember.photo = result.photo;
+          }
+        });
       },
       child: Container(
         child: IntrinsicWidth(
@@ -163,7 +170,7 @@ class KennelMemberListItem extends StatelessWidget {
                         ],
                         'returnValue': EnumMemberPopupActions.subtractSixMonths,
                       },
-                                            <String, dynamic>{
+                      <String, dynamic>{
                         'title': 'Cancel membership',
                         'icon': <Widget>[
                           Container(

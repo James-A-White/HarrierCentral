@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
@@ -27,8 +27,8 @@ class KennelMembersResults {
   KennelMembersResults({this.hasherId, this.dispName, this.photo, this.isMember, this.following, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.membershipDurationInMonths, this.isLoading = false, this.membershipDateBeingUpdated = false});
 
   final String hasherId;
-  final String dispName;
-  final String photo;
+  String dispName;
+  String photo;
   final int isMember;
   final int following;
   final DateTime dateOfLastRun;

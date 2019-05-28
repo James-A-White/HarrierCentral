@@ -15,54 +15,24 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:tinycolor/tinycolor.dart';
 
-import 'package:harrier_central/data/models/single_result_model.dart';
 import 'package:harrier_central/pages/init/avatar_icons_page.dart';
-import 'package:harrier_central/data/services/update_avatar_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/routes.dart';
-import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/data/models/user_model.dart';
-import 'package:harrier_central/data/services/add_user_service.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 
 class ChooseProfileImage extends StatefulWidget {
-  const ChooseProfileImage(
-      {Key key,
-      this.doAddUser,
-      this.isForThisDevice,
-      this.firstName,
-      this.lastName,
-      this.email,
-      this.hashName,
-      this.eventId,
-      this.kennelId,
-      this.attendenceState})
-      : super(key: key);
+  const ChooseProfileImage({Key key, @required this.doAddUser, @required this.isForThisDevice, @required this.fileNamePrefix}) : super(key: key);
 
   final bool doAddUser;
   final bool isForThisDevice;
-  final String firstName;
-  final String lastName;
-  final String email;
-  final String hashName;
-  final String eventId;
-  final String kennelId;
-  final EnumAttendenceState<int> attendenceState;
+  final String fileNamePrefix;
 
   @override
   _ChooseProfileImageState createState() => _ChooseProfileImageState();
 }
 
-enum _SelectedImageTypeEnum {
-  none,
-  avatar,
-  fromCamera,
-  fromGallery,
-  facebookProfilePic
-}
+enum _SelectedImageTypeEnum { none, avatar, fromCamera, fromGallery, facebookProfilePic }
 
 class _ChooseProfileImageState extends State<ChooseProfileImage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -73,8 +43,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
   final num _previewImageSize = 145.0;
   final num _uploadingImageSize = 180.0;
 
-  String facebookProfileUrl =
-      getStringPref(StringPrefsEnum.facebookProfilePhoto);
+  String facebookProfileUrl = getStringPref(StringPrefsEnum.facebookProfilePhoto);
 
   int _selectedAvatarIcon = 1;
 
@@ -90,9 +59,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
   @override
   Widget build(BuildContext context) {
     _isIos = Theme.of(context).platform == TargetPlatform.iOS;
-    if ((facebookProfileImage == null) &&
-        widget.isForThisDevice &&
-        ((facebookProfileUrl ?? '').isNotEmpty)) {
+    if ((facebookProfileImage == null) && widget.isForThisDevice && ((facebookProfileUrl ?? '').isNotEmpty)) {
       facebookProfileImage = CachedNetworkImage(
           imageUrl: facebookProfileUrl,
           //placeholder: const HcCircularProgressIndicator(),
@@ -134,10 +101,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           child: SingleChildScrollView(
             child: Container(
               width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height >= 500.0
-                  ? MediaQuery.of(context).size.height -
-                      appBar.preferredSize.height
-                  : 500.0,
+              height: MediaQuery.of(context).size.height >= 500.0 ? MediaQuery.of(context).size.height - appBar.preferredSize.height : 500.0,
               child: _processingSelection
                   ? _buildProgressIndicator()
                   : Stack(
@@ -150,234 +114,161 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                           top: 0,
                           child: Container(
                             margin: const EdgeInsets.only(top: 20, bottom: 5),
-                            child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Container(
-                                    padding: const EdgeInsets.only(right: 5),
-                                    child: RaisedButton(
-                                      color: imageTypeSelection ==
-                                              _SelectedImageTypeEnum.fromCamera
-                                          ? TinyColor(
-                                                  Theme.of(context).accentColor)
-                                              .lighten(15)
-                                              .color
-                                          : Theme.of(context).accentColor,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: const BorderRadius.only(
-                                              topLeft: Radius.circular(30.0))),
-                                      child: Container(
-                                        padding: const EdgeInsets.only(
-                                            top: 10, bottom: 10),
-                                        width: 120,
-                                        height: 100,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: <Widget>[
-                                            Image.asset(
-                                              _isIos
-                                                  ? 'images/icons/ios_camera.png'
-                                                  : 'images/icons/android_camera.png',
-                                              width: _thumbnailSize,
-                                              height: _thumbnailSize,
-                                            ),
-                                            Container(
-                                              padding: const EdgeInsets.only(
-                                                  top: 8.0),
-                                              height: 30,
-                                              child: Text(
-                                                'Camera',
-                                                style: textStyleButton,
-                                              ),
-                                            ),
-                                          ],
+                            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+                              Container(
+                                padding: const EdgeInsets.only(right: 5),
+                                child: RaisedButton(
+                                  color: imageTypeSelection == _SelectedImageTypeEnum.fromCamera ? TinyColor(Theme.of(context).accentColor).lighten(15).color : Theme.of(context).accentColor,
+                                  shape: RoundedRectangleBorder(borderRadius: const BorderRadius.only(topLeft: Radius.circular(30.0))),
+                                  child: Container(
+                                    padding: const EdgeInsets.only(top: 10, bottom: 10),
+                                    width: 120,
+                                    height: 100,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Image.asset(
+                                          _isIos ? 'images/icons/ios_camera.png' : 'images/icons/android_camera.png',
+                                          width: _thumbnailSize,
+                                          height: _thumbnailSize,
                                         ),
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _handleRadioValueChange(
-                                              _SelectedImageTypeEnum.fromCamera,
-                                              forceOpen: true);
-                                        });
-                                      },
+                                        Container(
+                                          padding: const EdgeInsets.only(top: 8.0),
+                                          height: 30,
+                                          child: Text(
+                                            'Camera',
+                                            style: textStyleButton,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  Container(
-                                    padding: const EdgeInsets.only(left: 5),
-                                    child: RaisedButton(
-                                      color: imageTypeSelection ==
-                                              _SelectedImageTypeEnum.fromGallery
-                                          ? TinyColor(
-                                                  Theme.of(context).accentColor)
-                                              .lighten(15)
-                                              .color
-                                          : Theme.of(context).accentColor,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: const BorderRadius.only(
-                                              topRight: Radius.circular(30.0))),
-                                      child: Container(
-                                        padding: const EdgeInsets.only(
-                                            top: 10, bottom: 10),
-                                        width: 120,
-                                        height: 100,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: <Widget>[
-                                            Image.asset(
-                                              _isIos
-                                                  ? 'images/icons/ios_gallery.png'
-                                                  : 'images/icons/android_gallery.png',
-                                              width: _thumbnailSize,
-                                              height: _thumbnailSize,
-                                            ),
-                                            Container(
-                                              padding: const EdgeInsets.only(
-                                                  top: 8.0),
-                                              height: 30,
-                                              child: Text(
-                                                'Gallery',
-                                                style: textStyleButton,
-                                              ),
-                                            ),
-                                          ],
+                                  onPressed: () {
+                                    setState(() {
+                                      _handleRadioValueChange(_SelectedImageTypeEnum.fromCamera, forceOpen: true);
+                                    });
+                                  },
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.only(left: 5),
+                                child: RaisedButton(
+                                  color: imageTypeSelection == _SelectedImageTypeEnum.fromGallery ? TinyColor(Theme.of(context).accentColor).lighten(15).color : Theme.of(context).accentColor,
+                                  shape: RoundedRectangleBorder(borderRadius: const BorderRadius.only(topRight: Radius.circular(30.0))),
+                                  child: Container(
+                                    padding: const EdgeInsets.only(top: 10, bottom: 10),
+                                    width: 120,
+                                    height: 100,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Image.asset(
+                                          _isIos ? 'images/icons/ios_gallery.png' : 'images/icons/android_gallery.png',
+                                          width: _thumbnailSize,
+                                          height: _thumbnailSize,
                                         ),
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _handleRadioValueChange(
-                                              _SelectedImageTypeEnum
-                                                  .fromGallery,
-                                              forceOpen: true);
-                                        });
-                                      },
+                                        Container(
+                                          padding: const EdgeInsets.only(top: 8.0),
+                                          height: 30,
+                                          child: Text(
+                                            'Gallery',
+                                            style: textStyleButton,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ]),
+                                  onPressed: () {
+                                    setState(() {
+                                      _handleRadioValueChange(_SelectedImageTypeEnum.fromGallery, forceOpen: true);
+                                    });
+                                  },
+                                ),
+                              ),
+                            ]),
                           ),
                         ),
                         Positioned(
                           top: 125,
                           child: Container(
                             margin: const EdgeInsets.only(top: 5, bottom: 20),
-                            child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Container(
-                                    padding: const EdgeInsets.only(right: 5),
-                                    child: RaisedButton(
-                                      color: imageTypeSelection ==
-                                              _SelectedImageTypeEnum.avatar
-                                          ? TinyColor(
-                                                  Theme.of(context).accentColor)
-                                              .lighten(15)
-                                              .color
-                                          : Theme.of(context).accentColor,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: const BorderRadius.only(
-                                              bottomLeft:
-                                                  Radius.circular(30.0))),
-                                      child: Container(
-                                        padding: const EdgeInsets.only(
-                                            top: 10, bottom: 10),
-                                        width: 120,
-                                        height: 100,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: <Widget>[
-                                            Image.asset(
-                                              'images/icons/avatar.png',
-                                              width: _thumbnailSize,
-                                              height: _thumbnailSize,
-                                            ),
-                                            Container(
-                                              padding: const EdgeInsets.only(
-                                                  top: 8.0),
-                                              height: 30,
-                                              child: Text(
-                                                'Avatar',
-                                                style: textStyleButton,
-                                              ),
-                                            ),
-                                          ],
+                            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+                              Container(
+                                padding: const EdgeInsets.only(right: 5),
+                                child: RaisedButton(
+                                  color: imageTypeSelection == _SelectedImageTypeEnum.avatar ? TinyColor(Theme.of(context).accentColor).lighten(15).color : Theme.of(context).accentColor,
+                                  shape: RoundedRectangleBorder(borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(30.0))),
+                                  child: Container(
+                                    padding: const EdgeInsets.only(top: 10, bottom: 10),
+                                    width: 120,
+                                    height: 100,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Image.asset(
+                                          'images/icons/avatar.png',
+                                          width: _thumbnailSize,
+                                          height: _thumbnailSize,
                                         ),
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _handleRadioValueChange(
-                                              _SelectedImageTypeEnum.avatar,
-                                              forceOpen: true);
-                                        });
-                                      },
+                                        Container(
+                                          padding: const EdgeInsets.only(top: 8.0),
+                                          height: 30,
+                                          child: Text(
+                                            'Avatar',
+                                            style: textStyleButton,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  Container(
-                                    padding: const EdgeInsets.only(left: 5),
-                                    child: RaisedButton(
-                                      color: facebookProfileImage == null
-                                          ? Colors.grey
-                                          : imageTypeSelection ==
-                                                  _SelectedImageTypeEnum
-                                                      .facebookProfilePic
-                                              ? TinyColor(Theme.of(context)
-                                                      .accentColor)
-                                                  .lighten(15)
-                                                  .color
-                                              : Theme.of(context).accentColor,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: const BorderRadius.only(
-                                              bottomRight:
-                                                  Radius.circular(30.0))),
-                                      child: Container(
-                                        padding: const EdgeInsets.only(
-                                            top: 10, bottom: 10),
-                                        width: 120,
-                                        height: 100,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: <Widget>[
-                                            Opacity(
-                                              opacity:
-                                                  facebookProfileImage == null
-                                                      ? 0.5
-                                                      : 1.0,
-                                              child: Image.asset(
-                                                'images/icons/facebook.png',
-                                                width: _thumbnailSize,
-                                                height: _thumbnailSize,
-                                              ),
-                                            ),
-                                            Container(
-                                              padding: const EdgeInsets.only(
-                                                  top: 8.0),
-                                              height: 30,
-                                              child: Text(
-                                                'FB Photo',
-                                                style: facebookProfileImage ==
-                                                        null
-                                                    ? textStyleDisabledButton
-                                                    : textStyleButton,
-                                              ),
-                                            ),
-                                          ],
+                                  onPressed: () {
+                                    setState(() {
+                                      _handleRadioValueChange(_SelectedImageTypeEnum.avatar, forceOpen: true);
+                                    });
+                                  },
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.only(left: 5),
+                                child: RaisedButton(
+                                  color: facebookProfileImage == null ? Colors.grey : imageTypeSelection == _SelectedImageTypeEnum.facebookProfilePic ? TinyColor(Theme.of(context).accentColor).lighten(15).color : Theme.of(context).accentColor,
+                                  shape: RoundedRectangleBorder(borderRadius: const BorderRadius.only(bottomRight: Radius.circular(30.0))),
+                                  child: Container(
+                                    padding: const EdgeInsets.only(top: 10, bottom: 10),
+                                    width: 120,
+                                    height: 100,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Opacity(
+                                          opacity: facebookProfileImage == null ? 0.5 : 1.0,
+                                          child: Image.asset(
+                                            'images/icons/facebook.png',
+                                            width: _thumbnailSize,
+                                            height: _thumbnailSize,
+                                          ),
                                         ),
-                                      ),
-                                      onPressed: () {
-                                        if (facebookProfileImage != null) {
-                                          setState(() {
-                                            _handleRadioValueChange(
-                                                _SelectedImageTypeEnum
-                                                    .facebookProfilePic,
-                                                forceOpen: true);
-                                          });
-                                        }
-                                      },
+                                        Container(
+                                          padding: const EdgeInsets.only(top: 8.0),
+                                          height: 30,
+                                          child: Text(
+                                            'FB Photo',
+                                            style: facebookProfileImage == null ? textStyleDisabledButton : textStyleButton,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ]),
+                                  onPressed: () {
+                                    if (facebookProfileImage != null) {
+                                      setState(() {
+                                        _handleRadioValueChange(_SelectedImageTypeEnum.facebookProfilePic, forceOpen: true);
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
+                            ]),
                           ),
                         ),
                         Positioned(
@@ -385,31 +276,25 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                           child: Container(
                               width: MediaQuery.of(context).size.width,
                               padding: const EdgeInsets.only(top: 20),
-                              child:
-                                  const FancyDivider(innerColor: Colors.white,)),
+                              child: const FancyDivider(
+                                innerColor: Colors.white,
+                              )),
                         ),
 
                         Positioned(
                           top: 280,
                           child: Text(
-                            imageTypeSelection == _SelectedImageTypeEnum.avatar
-                                ? 'Selected Avatar'
-                                : 'Selected Image',
+                            imageTypeSelection == _SelectedImageTypeEnum.avatar ? 'Selected Avatar' : 'Selected Image',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20.0,
-                                fontFamily: 'WorkSansSemiBold'),
+                            style: const TextStyle(color: Colors.white, fontSize: 20.0, fontFamily: 'WorkSansSemiBold'),
                           ),
                         ),
 
                         Positioned(
                           top: 320,
                           bottom: 100,
-                          child: LayoutBuilder(builder: (BuildContext context,
-                              BoxConstraints viewportConstraints) {
-                            return imageTypeSelection ==
-                                    _SelectedImageTypeEnum.none
+                          child: LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
+                            return imageTypeSelection == _SelectedImageTypeEnum.none
                                 ? Container(
                                     child: Image.asset(
                                       'images/icons/create_profile_photo.png',
@@ -433,10 +318,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                         Positioned(
                           bottom: 30,
                           child: RaisedButton(
-                            color: imageTypeSelection ==
-                                    _SelectedImageTypeEnum.none
-                                ? Colors.grey
-                                : Theme.of(context).accentColor,
+                            color: imageTypeSelection == _SelectedImageTypeEnum.none ? Colors.grey : Theme.of(context).accentColor,
                             child: Container(
                               width: 150,
                               height: 50,
@@ -450,8 +332,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                               ),
                             ),
                             onPressed: () {
-                              if (imageTypeSelection !=
-                                  _SelectedImageTypeEnum.none) {
+                              if (imageTypeSelection != _SelectedImageTypeEnum.none) {
                                 _processAndContinue();
                               }
                             },
@@ -475,14 +356,9 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
             Padding(
               padding: const EdgeInsets.only(top: 0.0),
               child: Text(
-                widget.doAddUser
-                    ? 'Creating account\r\nand uploading\r\nprofile image'
-                    : 'Uploading\r\nProfile Image',
+                widget.doAddUser ? 'Creating account\r\nand uploading\r\nprofile image' : 'Uploading\r\nProfile Image',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 32.0,
-                    fontFamily: 'WorkSansSemiBold'),
+                style: const TextStyle(color: Colors.white, fontSize: 32.0, fontFamily: 'WorkSansSemiBold'),
               ),
             ),
             Padding(
@@ -507,8 +383,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                   ),
                   const Padding(
                     padding: EdgeInsets.only(left: 15.0, right: 15.0),
-                    child: Icon(FontAwesome.circle,
-                        color: Color(0xFFFFFFFF), size: 10.0),
+                    child: Icon(FontAwesome.circle, color: Color(0xFFFFFFFF), size: 10.0),
                   ),
                   Container(
                     decoration: const BoxDecoration(
@@ -543,9 +418,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
             itemBuilder: (_, int index) {
               return DecoratedBox(
                 decoration: BoxDecoration(
-                  color: index.isEven
-                      ? Colors.white
-                      : Theme.of(context).accentColor,
+                  color: index.isEven ? Colors.white : Theme.of(context).accentColor,
                 ),
               );
             },
@@ -563,85 +436,14 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     });
 
     final num startTime = DateTime.now().millisecondsSinceEpoch;
-
-    if (widget.doAddUser) {
-      if (widget.isForThisDevice) {
-        AddUserService()
-            .addUser(
-                _scaffoldKey.currentContext,
-                getStringPref(StringPrefsEnum.firstName),
-                getStringPref(StringPrefsEnum.lastName),
-                getStringPref(StringPrefsEnum.email),
-                getStringPref(StringPrefsEnum.hashName),
-                getStringPref(StringPrefsEnum.facebookId),
-                getStringPref(StringPrefsEnum.gender),
-                '',
-                GUID_EMPTY,
-                '',
-                hasherTypeMember)
-            .then((UserModel user) {
-          // if the call fails, user will be null
-          if (user != null) {
-            setStringPref(StringPrefsEnum.userId, user.hasherId);
-            setStringPref(StringPrefsEnum.displayName, user.displayName);
-            setStringPref(StringPrefsEnum.qrCode, user.qrCode);
-            setStringPref(StringPrefsEnum.supportCode, user.supportCode);
-            setStringPref(StringPrefsEnum.qrSecretCode, user.qrSecretCode);
-            // after this executes, we will push and replace this to the main screen
-            // the logic for this is in the underlying method
-            _prepareAndUploadImageThenContinue(startTime, user);
-          } else {
-            setState(() {
-              _processingSelection = false;
-              Navigator.of(context).pop(null);
-            });
-          }
-        });
-      } else {
-        // adding an "external" user who is not associated with this device
-        // typically these people are added while at a Hash so we have to
-        // push in an event ID
-        AddUserService()
-            .addUser(
-                _scaffoldKey.currentContext,
-                widget.firstName,
-                widget.lastName,
-                widget.email,
-                widget.hashName,
-                '', // facebook ID
-                '', // gender
-                '', // photo
-                widget.kennelId, // member kennel ID
-                widget.eventId, // event ID
-                hasherTypeMember,
-                attendenceState: widget.attendenceState)
-            .then((UserModel user) {
-          // if the call fails, user will be null
-          if (user != null) {
-            // after this executes, we will push and replace this to the main screen
-            // the logic for this is in the underlying method
-            _prepareAndUploadImageThenContinue(startTime, user);
-          } else {
-            setState(() {
-              _processingSelection = false;
-              // pop the user back to the page where they enter the details
-              Navigator.of(context).pop(null);
-            });
-          }
-        });
-      }
-    } else {
-      // after this executes, we will pop back to the originating screen that invoked this screen
-      _prepareAndUploadImageThenContinue(startTime, null);
-    }
+    _prepareAndUploadImageThenContinue(startTime);
   }
 
-  void _prepareAndUploadImageThenContinue(int startTime, UserModel user) {
+  Future<void> _prepareAndUploadImageThenContinue(int startTime) async {
     String profileImageUrl = '';
 
     String fileName;
 
-    String userId = getStringPref(StringPrefsEnum.userId);
     final String datetime = DateFormat('yyyyMMddkkmmss').format(DateTime.now());
 
     if (widget.doAddUser) {
@@ -649,16 +451,14 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       // a user has been added, either for this device
       // or the owner of this device adding other users. In both
       // cases, we should have a valid UserModel variable set
-      fileName = user.qrCode.replaceAll('UQR:', '') + '_${datetime}_thumb.jpg';
+      fileName = widget.fileNamePrefix.replaceAll('UQR:', '') + '_${datetime}_thumb.jpg';
       // in case we are creating users not for this device
       // make sure we have the correct hash userId
-      userId = user.hasherId;
     } else {
       // in the case where we are simply updating the existing
       // profile image of the account associated with this device,
       // use the existing QR code stored in preferences as the base name for the photo
-      fileName = getStringPref(StringPrefsEnum.qrCode).replaceAll('UQR:', '') +
-          '_${datetime}_thumb.jpg';
+      fileName = widget.fileNamePrefix.replaceAll('UQR:', '') + '_${datetime}_thumb.jpg';
     }
 
     switch (imageTypeSelection) {
@@ -676,117 +476,128 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         break;
     }
 
-    if ((widget.doAddUser) && (widget.isForThisDevice)) {
-      // this is the case where we are adding a new user for the user of
-      // this device. This typically happens when a user installs the app.
-      // When this code is finished, we want to redirect the user to the
-      // main screen
-      setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
-
-      final UpdateProfilePhotoService svc = UpdateProfilePhotoService();
-      svc
-          .updateProfilePhoto(profileImageUrl, userId)
-          .then((SingleResultModel result) {
-        if (imageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
-          _imageFromCamera.then((platform.File file) {
-            _upload(file, fileName);
-          });
-        } else if (imageTypeSelection == _SelectedImageTypeEnum.fromGallery) {
-          _imageFromGallery.then((platform.File file) {
-            _upload(file, fileName);
-          });
-        }
-
-        // how long has the
-        final num deltaTime = DateTime.now().millisecondsSinceEpoch - startTime;
-
-        if (deltaTime > 1000) {
-          print('Delay to show uploading screen = $deltaTime milliseconds');
-          Future<dynamic>.delayed(Duration(milliseconds: deltaTime))
-              .then((void dummy) {
-            Navigator.of(context)
-                .pushReplacementNamed(RouteNames.MAIN_LANDING_PAGE.toString());
-          });
-        } else {
-          Navigator.of(context)
-              .pushReplacementNamed(RouteNames.MAIN_LANDING_PAGE.toString());
-        }
+    if (imageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
+      _imageFromCamera.then((platform.File file) {
+        _upload(file, fileName);
       });
-    } else if ((widget.doAddUser) && (!widget.isForThisDevice)) {
-      // this is for a user being added from the device,
-      // but not a user that represents the owner of this device.
-      // This is usually called when an admin adds a new user from his / her device.
-      // When this code is done executing, we want to pop back
-      // to the caller.
-      final UpdateProfilePhotoService svc = UpdateProfilePhotoService();
-      svc
-          .updateProfilePhoto(profileImageUrl, userId)
-          .then((SingleResultModel result) {
-        if (imageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
-          _imageFromCamera.then((platform.File file) {
-            _upload(file, fileName);
-          });
-        } else if (imageTypeSelection == _SelectedImageTypeEnum.fromGallery) {
-          _imageFromGallery.then((platform.File file) {
-            _upload(file, fileName);
-          });
-        }
-
-        user.photo = profileImageUrl;
-
-        Future<dynamic>.delayed(const Duration(milliseconds: 3500))
-            .then((void dummy) {
-          Navigator.of(context).pop(user);
-        });
-      });
-    } else {
-      // this last case will be for updating the profile photo
-      // of the user of this device, but without creating a
-      // user
-      print('Uploading profile image');
-
-      final UpdateProfilePhotoService svc = UpdateProfilePhotoService();
-      svc
-          .updateProfilePhoto(profileImageUrl, userId)
-          .then((SingleResultModel result) {
-        if (result.result.toLowerCase() == 'success') {
-          setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
-
-          if (imageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
-            _imageFromCamera.then((platform.File file) {
-              _upload(file, fileName);
-            });
-          } else if (imageTypeSelection == _SelectedImageTypeEnum.fromGallery) {
-            _imageFromGallery.then((platform.File file) {
-              _upload(file, fileName);
-            });
-          }
-        } else {
-          Utilities.showAlert(
-              context,
-              'Error Uploading Image',
-              'There was an error uploading your new profile image. Please try again later. If you continue to have a problem please contact us at connect@harriercentral.com',
-              'OK');
-        }
-
-        Future<dynamic>.delayed(const Duration(milliseconds: 3500))
-            .then((void dummy) {
-          Navigator.of(context).pop(user);
-        });
+    } else if (imageTypeSelection == _SelectedImageTypeEnum.fromGallery) {
+      _imageFromGallery.then((platform.File file) {
+        _upload(file, fileName);
       });
     }
+
+    final num deltaTime = DateTime.now().millisecondsSinceEpoch - startTime;
+    if (deltaTime < 1250) {
+      await Future<dynamic>.delayed(Duration(milliseconds: 1500 - deltaTime));
+    }
+
+    Navigator.of(context).pop(profileImageUrl);
+
+    // if ((widget.doAddUser) && (widget.isForThisDevice)) {
+    //   // this is the case where we are adding a new user for the user of
+    //   // this device. This typically happens when a user installs the app.
+    //   // When this code is finished, we want to redirect the user to the
+    //   // main screen
+    //   setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
+
+    //   // final UpdateProfilePhotoService svc = UpdateProfilePhotoService();
+    //   // svc
+    //   //     .updateProfilePhoto(profileImageUrl, userId)
+    //   //     .then((SingleResultModel result) {
+    //   //   if (imageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
+    //   //     _imageFromCamera.then((platform.File file) {
+    //   //       _upload(file, fileName);
+    //   //     });
+    //   //   } else if (imageTypeSelection == _SelectedImageTypeEnum.fromGallery) {
+    //   //     _imageFromGallery.then((platform.File file) {
+    //   //       _upload(file, fileName);
+    //   //     });
+    //   //   }
+
+    //   //   // how long has the
+    //   //   final num deltaTime = DateTime.now().millisecondsSinceEpoch - startTime;
+
+    //   //   if (deltaTime > 1000) {
+    //   //     print('Delay to show uploading screen = $deltaTime milliseconds');
+    //   //     Future<dynamic>.delayed(Duration(milliseconds: deltaTime))
+    //   //         .then((void dummy) {
+    //   //       Navigator.of(context)
+    //   //           .pushReplacementNamed(RouteNames.MAIN_LANDING_PAGE.toString());
+    //   //     });
+    //   //   } else {
+    //   //     Navigator.of(context)
+    //   //         .pushReplacementNamed(RouteNames.MAIN_LANDING_PAGE.toString());
+    //   //   }
+    //   // });
+    // } else if ((widget.doAddUser) && (!widget.isForThisDevice)) {
+    //   // this is for a user being added from the device,
+    //   // but not a user that represents the owner of this device.
+    //   // This is usually called when an admin adds a new user from his / her device.
+    //   // When this code is done executing, we want to pop back
+    //   // to the caller.
+    //   final UpdateProfilePhotoService svc = UpdateProfilePhotoService();
+    //   svc
+    //       .updateProfilePhoto(profileImageUrl, userId)
+    //       .then((SingleResultModel result) {
+    //     if (imageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
+    //       _imageFromCamera.then((platform.File file) {
+    //         _upload(file, fileName);
+    //       });
+    //     } else if (imageTypeSelection == _SelectedImageTypeEnum.fromGallery) {
+    //       _imageFromGallery.then((platform.File file) {
+    //         _upload(file, fileName);
+    //       });
+    //     }
+
+    //     Future<dynamic>.delayed(const Duration(milliseconds: 3500))
+    //         .then((void dummy) {
+    //       Navigator.of(context).pop(profileImageUrl);
+    //     });
+    //   });
+    // } else {
+    //   // this last case will be for updating the profile photo
+    //   // of the user of this device, but without creating a
+    //   // user
+    //   print('Uploading profile image');
+
+    //   final UpdateProfilePhotoService svc = UpdateProfilePhotoService();
+    //   svc
+    //       .updateProfilePhoto(profileImageUrl, userId)
+    //       .then((SingleResultModel result) {
+    //     if (result.result.toLowerCase() == 'success') {
+    //       setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
+
+    //       if (imageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
+    //         _imageFromCamera.then((platform.File file) {
+    //           _upload(file, fileName);
+    //         });
+    //       } else if (imageTypeSelection == _SelectedImageTypeEnum.fromGallery) {
+    //         _imageFromGallery.then((platform.File file) {
+    //           _upload(file, fileName);
+    //         });
+    //       }
+    //     } else {
+    //       Utilities.showAlert(
+    //           context,
+    //           'Error Uploading Image',
+    //           'There was an error uploading your new profile image. Please try again later. If you continue to have a problem please contact us at connect@harriercentral.com',
+    //           'OK');
+    //     }
+
+    //     Future<dynamic>.delayed(const Duration(milliseconds: 3500))
+    //         .then((void dummy) {
+    //       Navigator.of(context).pop(profileImageUrl);
+    //     });
+    //   });
+    // }
   }
 
   String _upload(platform.File imageFile, String fileName) {
-    final Uri uri = Uri.parse(
-        'http://harriercentral.blob.core.windows.net/profile-photos/$fileName?st=2018-11-22T07%3A36%3A49Z&se=2028-11-23T07%3A36%3A00Z&sp=rwl&sv=2018-03-28&sr=c&sig=GdHEgSU7Qbp6nEMbOeuxnTjKVVIXw1AImXUff8GPq2U%3D');
+    final Uri uri = Uri.parse('http://harriercentral.blob.core.windows.net/profile-photos/$fileName?st=2018-11-22T07%3A36%3A49Z&se=2028-11-23T07%3A36%3A00Z&sp=rwl&sv=2018-03-28&sr=c&sig=GdHEgSU7Qbp6nEMbOeuxnTjKVVIXw1AImXUff8GPq2U%3D');
 
     final http.Request request = http.Request('PUT', uri);
 
-    final Map<String, String> headers = <String, String>{
-      'content-type': 'image/jpeg',
-      'x-ms-blob-type': 'BlockBlob'
-    };
+    final Map<String, String> headers = <String, String>{'content-type': 'image/jpeg', 'x-ms-blob-type': 'BlockBlob'};
 
     request.headers.addAll(headers);
 
@@ -828,16 +639,12 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         );
         break;
       default:
-        returnWidget = Container(
-            color: Colors.green,
-            height: _previewImageSize,
-            width: _previewImageSize);
+        returnWidget = Container(color: Colors.green, height: _previewImageSize, width: _previewImageSize);
     }
     return returnWidget;
   }
 
-  void _handleRadioValueChange(_SelectedImageTypeEnum value,
-      {bool forceOpen = false}) {
+  void _handleRadioValueChange(_SelectedImageTypeEnum value, {bool forceOpen = false}) {
     setState(() {
       imageTypeSelection = value;
       switch (imageTypeSelection) {
@@ -846,8 +653,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
             Navigator.push<dynamic>(
               context,
               MaterialPageRoute<dynamic>(
-                builder: (BuildContext context) =>
-                    AvatarIconsPage(selectedAvatarIcon: _selectedAvatarIcon),
+                builder: (BuildContext context) => AvatarIconsPage(selectedAvatarIcon: _selectedAvatarIcon),
               ),
             ).then((dynamic onValue) {
               if (onValue != null) {
@@ -899,12 +705,9 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
   Widget _previewImage() {
     return FutureBuilder<platform.File>(
-        future: (imageTypeSelection == _SelectedImageTypeEnum.fromCamera)
-            ? _imageFromCamera
-            : _imageFromGallery,
+        future: (imageTypeSelection == _SelectedImageTypeEnum.fromCamera) ? _imageFromCamera : _imageFromGallery,
         builder: (BuildContext context, AsyncSnapshot<platform.File> snapshot) {
-          if (snapshot.connectionState == ConnectionState.done &&
-              snapshot.data != null) {
+          if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
             return Image.file(snapshot.data);
           } else if (snapshot.error != null) {
             return const Text(

@@ -1,21 +1,28 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/globals.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 
 class HashersModel {
-  HashersModel({this.hasherId, this.firstName, this.lastName, this.dispName, this.hashName, this.photo, this.dispPref, this.removed, this.updatedAt});
+  HashersModel({this.hasherId, this.firstName, this.lastName, this.dispName, this.hashName, this.email, this.photo, this.dispPref, this.removed, this.updatedAt});
 
   final String hasherId;
-  final String firstName;
-  final String lastName;
-  final String dispName;
-  final String hashName;
-  final String photo;
-  final int dispPref;
+  String firstName;
+  String lastName;
+  String dispName;
+  String hashName;
+  String email;
+  String photo;
+  int dispPref;
   final int removed;
   final DateTime updatedAt;
 
@@ -32,6 +39,7 @@ class HashersModel {
             lastName: jsonItem['lastName'],
             dispName: jsonItem['dispName'],
             hashName: jsonItem['hashName'],
+            email: jsonItem['email'],
             photo: jsonItem['photo'],
             dispPref: jsonItem['dispPref'],
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
@@ -68,6 +76,7 @@ class HashersTableHelper {
   static const String colLastName = 'lastName';
   static const String colDispName = 'dispName';
   static const String colHashName = 'hashName';
+  static const String colEmail = 'email';
   static const String colPhoto = 'photo';
   static const String colDispPref = 'dispPref';
 
@@ -90,6 +99,7 @@ class HashersTableHelper {
             $colLastName TEXT,
             $colDispName TEXT,
             $colHashName TEXT,
+            $colEmail TEXT,
             $colPhoto TEXT,
             $colDispPref INT,
 
@@ -110,6 +120,7 @@ class HashersTableHelper {
       HashersTableHelper.colLastName: item.lastName,
       HashersTableHelper.colDispName: item.dispName,
       HashersTableHelper.colHashName: item.hashName,
+      HashersTableHelper.colEmail: item.email,
       HashersTableHelper.colPhoto: item.photo,
       HashersTableHelper.colDispPref: item.dispPref,
       HashersTableHelper.colUpdatedAt: item.updatedAt.toString(),
@@ -127,6 +138,7 @@ class HashersTableHelper {
       lastName: map[HashersTableHelper.colLastName],
       dispName: map[HashersTableHelper.colDispName],
       hashName: map[HashersTableHelper.colHashName],
+      email: map[HashersTableHelper.colEmail],
       photo: map[HashersTableHelper.colPhoto],
       dispPref: map[HashersTableHelper.colDispPref],
       updatedAt: DateTime.parse(map[HashersTableHelper.colUpdatedAt].toString().substring(0, 19)),
@@ -139,6 +151,13 @@ class HashersTableHelper {
 
 class HashersService {
   static final HashersTableHelper instance = HashersTableHelper._privateConstructor();
+
+  static Future<num> getLastUpdatedTime() async {
+    final Database db = await DBProvider.db.database;
+    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${HashersTableHelper.colUpdatedAtValue}) AS maxDate FROM ${HashersTableHelper.tableName}');
+    final num timeValue = table.first['maxDate'];
+    return timeValue;
+  }
 
   Future<List<HashersModel>> selectAllFromLocalDb() async {
     final Database db = await DBProvider.db.database;
@@ -243,5 +262,48 @@ class HashersService {
 
     print('$insertCounter hasher records inserted, $updateCounter hasher records updated');
     return insertCounter;
+  }
+
+  // ============ Functions go here =============
+
+  Future<void> editUser({
+    String targetUserId,
+    String firstName,
+    String lastName,
+    String email,
+    String hashName,
+    String photo,
+  }) async {
+    if (globalConnectionStatus == connectionStatus_notConnected) {
+      return;
+      // TODO(James): fix this so we can return a bool
+      //return false;
+    }
+
+    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
+    final String userId = getStringPref(StringPrefsEnum.userId);
+
+    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'editUser', paramString: targetUserId.toUpperCase());
+
+    final num _hashersLastUpdated = await HashersService.getLastUpdatedTime();
+    final DateTime hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
+
+    final String body =
+        jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'hcVersion': hcVersion, 'hashersUpdatedAfter': hashersUpdatedAfter.toString(), 'targetUserId': targetUserId, 'email': email, 'firstName': firstName, 'lastName': lastName, 'hashName': hashName, 'photo': photo});
+
+    final http.Response response = await http
+        .post(BASE_API_URL + 'hc3_edit_user', headers: <String, String>{'content-type': 'application/json'}, body: body
+            // Send authorization headers to your backend
+            //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+            )
+        .catchError(
+      (dynamic error) {
+        return false;
+      },
+    );
+
+    await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+
+    return;
   }
 }

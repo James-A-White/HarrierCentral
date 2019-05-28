@@ -4,24 +4,32 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:sqflite/sqflite.dart';
 
+import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/profile_photo.dart';
-import 'package:harrier_central/data/models/user_model.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
-import 'package:harrier_central/data/services/edit_user_service.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
+import 'package:harrier_central/data/hc3_services/hashers_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
+
 
 // import 'package:harrier_central/widgets/user_details_ui.dart';
 // import 'package:harrier_central/widgets/fancy_divider.dart';
 
+enum EnumMyProfilePageType { myProfile, anyHasherProfile }
+
 class MyProfilePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const MyProfilePage({Key key}) : super(key: key);
+  const MyProfilePage({Key key, @required this.pageType, @required this.hasherId}) : super(key: key);
+
+  final EnumMyProfilePageType pageType;
+  final String hasherId;
 
   @override
   MyProfilePageState createState() => MyProfilePageState();
@@ -36,19 +44,119 @@ class MyProfilePageState extends State<MyProfilePage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _autoValidate = false;
 
-  String _firstName = getStringPref(StringPrefsEnum.firstName);
-  String _lastName = getStringPref(StringPrefsEnum.lastName);
-  String _email = getStringPref(StringPrefsEnum.email);
-  String _hashName = getStringPref(StringPrefsEnum.displayName);
-  String _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
+  final String deviceUserId = getStringPref(StringPrefsEnum.userId);
 
-  bool _isLoading = false;
+  // String _firstName = getStringPref(StringPrefsEnum.firstName);
+  // String _lastName = getStringPref(StringPrefsEnum.lastName);
+  // String _email = getStringPref(StringPrefsEnum.email);
+  // String _hashName = getStringPref(StringPrefsEnum.displayName);
+  // String _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
+
+  bool _isLoading = true;
+  bool _isDirty = false;
+  String newPhoto = '';
+  HashersModel hasher;
+
+  Future<void> refreshUserDataFromTable(bool forceRefresh) async {
+    final Database db = await DBProvider.db.database;
+    if (forceRefresh) {
+      // always sync user data before editing
+      final SyncUserDataService cSrv = SyncUserDataService();
+      final bool res = await cSrv.updateFromBackend(db, SyncUserDataService.flagHashersTable, false);
+      final String resultStr = res ? 'successfully' : 'unsuccessfully';
+      print('Master data synchronized $resultStr');
+    }
+
+    final String query = ''' 
+        SELECT 
+          h.*
+          FROM hashers h
+          WHERE h.hasherId = "${widget.hasherId}"
+          
+          ''';
+
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+      final List<Map<String, dynamic>> results = await db.rawQuery(query);
+      if ((results != null) && (results.isNotEmpty)) {
+        hasher = HashersTableHelper.fromMap(results[0]);
+        if (widget.pageType == EnumMyProfilePageType.myProfile) {
+          hasher.email = getStringPref(StringPrefsEnum.email);
+        }
+
+        firstNameController.text = hasher.firstName;
+        lastNameController.text = hasher.lastName;
+        emailController.text = hasher.email;
+        hashNameController.text = hasher.hashName;
+        newPhoto = hasher.photo;
+      }
+
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  TextEditingController firstNameController = TextEditingController();
+  TextEditingController lastNameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController hashNameController = TextEditingController();
+
+  @override
+  void initState() {
+    refreshUserDataFromTable(true);
+    firstNameController.addListener(() {
+      checkDirty();
+    });
+    lastNameController.addListener(() {
+      checkDirty();
+    });
+    emailController.addListener(() {
+      checkDirty();
+    });
+    hashNameController.addListener(() {
+      checkDirty();
+    });
+    super.initState();
+  }
+
+  void checkDirty() {
+    if (_isLoading) {
+      return;
+    }
+    bool isDirty = false;
+    if (firstNameController.text != hasher.firstName) {
+      isDirty = true;
+    }
+    if (lastNameController.text != hasher.lastName) {
+      isDirty = true;
+    }
+    if ((emailController.text ?? '') != (hasher.email ?? '')) {
+      isDirty = true;
+    }
+    if (hashNameController.text != hasher.hashName) {
+      isDirty = true;
+    }
+    if (newPhoto != hasher.photo) {
+      isDirty = true;
+    }
+
+    if (isDirty != _isDirty) {
+      setState(() {
+        _isDirty = isDirty;
+      });
+    }
+  }
 
   Widget _buildCircularProgressIndicator() {
     return Center(
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
         Text(
-          'Updating User Profile',
+          'Loading / Updating User Profile',
           style: headingStyle,
           textAlign: TextAlign.center,
         ),
@@ -80,41 +188,30 @@ class MyProfilePageState extends State<MyProfilePage> {
 
       setState(() {
         _isLoading = true;
-        final String userId = getStringPref(StringPrefsEnum.userId);
 
-        final EditUserService srv = EditUserService();
-        final Future<dynamic> apiCall = srv.editUser(context: context, targetUserId: userId, firstName: _firstName, lastName: _lastName, email: _email, hashName: _hashName, photo: '');
+        final HashersService srv = HashersService();
+        final Future<dynamic> apiCall = srv.editUser(targetUserId: hasher.hasherId, firstName: firstNameController.text, lastName: lastNameController.text, email: emailController.text, hashName: hashNameController.text, photo: newPhoto);
 
-        apiCall.then((dynamic result) {
-          setState(() {
-            _isLoading = false;
-            if (result is UserModel) {
-              setStringPref(StringPrefsEnum.profilePhotoUrl, result.photo);
-              setStringPref(StringPrefsEnum.displayName, result.displayName);
-              setStringPref(StringPrefsEnum.email, result.email);
-              setStringPref(StringPrefsEnum.firstName, result.firstName);
-              setStringPref(StringPrefsEnum.hashName, result.hashName);
-              setStringPref(StringPrefsEnum.lastName, result.lastName);
-            }
+        apiCall.then((void dummy) async {
+          refreshUserDataFromTable(false).then((void dummy) {
+            setState(() {
+              if (widget.pageType == EnumMyProfilePageType.myProfile) {
+                setStringPref(StringPrefsEnum.profilePhotoUrl, hasher.photo);
+                setStringPref(StringPrefsEnum.displayName, hasher.dispName);
+                setStringPref(StringPrefsEnum.email, hasher.email);
+                setStringPref(StringPrefsEnum.firstName, hasher.firstName);
+                setStringPref(StringPrefsEnum.hashName, hasher.hashName);
+                setStringPref(StringPrefsEnum.lastName, hasher.lastName);
+              }
+              _isLoading = false;
+              checkDirty();
+              if (widget.pageType ==EnumMyProfilePageType.anyHasherProfile)
+              {
+                Navigator.of(context).pop(hasher);
+              }
+              
+            });
           });
-
-          // if (result[
-          //         'result'] !=
-          //     'failed') {
-          //   userName = getStringPref(
-          //       StringPrefsEnum
-          //           .displayName);
-          //   userQrCode =
-          //       getStringPref(
-          //           StringPrefsEnum
-          //               .qrSecretCode);
-
-          //   Utilities.showAlert(
-          //       context,
-          //       'App Reset Successful',
-          //       'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',
-          //       'OK');
-          // }
         });
       });
     } else {
@@ -130,7 +227,8 @@ class MyProfilePageState extends State<MyProfilePage> {
       children: <Widget>[
         TextFormField(
           autocorrect: false,
-          initialValue: _firstName,
+          controller: firstNameController,
+          //initialValue: hasher.firstName,
           decoration: const InputDecoration(labelText: 'First Name'),
           keyboardType: TextInputType.text,
           validator: (String arg) {
@@ -140,12 +238,13 @@ class MyProfilePageState extends State<MyProfilePage> {
               return null;
           },
           onSaved: (String val) {
-            _firstName = val;
+            hasher.firstName = val;
           },
         ),
         TextFormField(
           autocorrect: false,
-          initialValue: _lastName,
+          //initialValue: hasher.lastName,
+          controller: lastNameController,
           decoration: const InputDecoration(labelText: 'Last Name'),
           keyboardType: TextInputType.text,
           validator: (String arg) {
@@ -155,52 +254,47 @@ class MyProfilePageState extends State<MyProfilePage> {
               return null;
           },
           onSaved: (String val) {
-            _lastName = val;
+            hasher.lastName = val;
           },
         ),
         TextFormField(
           autocorrect: false,
-          initialValue: _email,
+          //initialValue: hasher.email,
+          controller: emailController,
           decoration: const InputDecoration(labelText: 'Email'),
           keyboardType: TextInputType.emailAddress,
           validator: validateEmail,
           onSaved: (String val) {
-            _email = val;
+            hasher.email = val;
           },
         ),
         TextFormField(
           autocorrect: false,
-          initialValue: _hashName,
+          //initialValue: hasher.hashName,
+          controller: hashNameController,
           decoration: const InputDecoration(labelText: 'Hash Name (optional)'),
           onSaved: (String val) {
-            _hashName = val;
+            hasher.hashName = val;
           },
           keyboardType: TextInputType.text,
         ),
         const SizedBox(
           height: 10.0,
         ),
-        Utilities.styleForConnected(
-          RaisedButton(
-            onPressed: () {
-              if (Utilities.checkForConnection(context)) {
-                _updateProfile();
-              }
-            },
-            child: Text('Save Changes', style: buttonTextStyle),
-          ),
-        ),
       ],
     );
   }
 
   String validateEmail(String value) {
-    const Pattern pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
-    final RegExp regex = RegExp(pattern, caseSensitive: false);
-    if (!regex.hasMatch(value))
-      return 'Enter Valid Email';
-    else
-      return null;
+    if (value.isNotEmpty) {
+      const Pattern pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
+      final RegExp regex = RegExp(pattern, caseSensitive: false);
+      if (!regex.hasMatch(value))
+        return 'Enter Valid Email';
+      else
+        return null;
+    }
+    return null;
   }
 
   @override
@@ -208,9 +302,9 @@ class MyProfilePageState extends State<MyProfilePage> {
     final AppBar appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      title: const Text(
-        'My Profile',
-        style: TextStyle(
+      title: Text(
+        widget.pageType == EnumMyProfilePageType.myProfile ? 'My Profile' : 'Hasher Profile',
+        style: const TextStyle(
           color: Colors.white,
         ),
       ),
@@ -259,7 +353,7 @@ class MyProfilePageState extends State<MyProfilePage> {
                                           left: 0,
                                           right: 0,
                                           child: Text(
-                                            'My Profile Information',
+                                            widget.pageType == EnumMyProfilePageType.myProfile ? 'My Profile Information' : 'Hasher Profile Information',
                                             style: headingStyle,
                                             textAlign: TextAlign.center,
                                           ),
@@ -297,7 +391,7 @@ class MyProfilePageState extends State<MyProfilePage> {
                                                         padding: const EdgeInsets.all(10.0),
                                                         margin: const EdgeInsets.only(top: 20, bottom: 30),
                                                         child: ProfilePhoto(
-                                                          profilePhotoUrl: _photo,
+                                                          profilePhotoUrl: newPhoto,
                                                           photoHeight: 200.0,
                                                           leftPadding: 0.0,
                                                         ),
@@ -309,15 +403,17 @@ class MyProfilePageState extends State<MyProfilePage> {
                                                             if (Utilities.checkForConnection(context)) {
                                                               Navigator.push(
                                                                 context,
-                                                                MaterialPageRoute<UserModel>(
-                                                                  builder: (BuildContext context) => const ChooseProfileImage(
-                                                                        isForThisDevice: true,
+                                                                MaterialPageRoute<String>(
+                                                                  builder: (BuildContext context) => ChooseProfileImage(
+                                                                        isForThisDevice: widget.pageType == EnumMyProfilePageType.myProfile,
                                                                         doAddUser: false,
+                                                                        fileNamePrefix: hasher.hasherId,
                                                                       ),
                                                                 ),
                                                               ).then((dynamic result) {
                                                                 setState(() {
-                                                                  _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
+                                                                  newPhoto = result;
+                                                                  checkDirty();
                                                                 });
                                                               });
                                                             }
@@ -344,9 +440,25 @@ class MyProfilePageState extends State<MyProfilePage> {
                   ),
           ),
         ),
-        
+        Positioned(
+            bottom: 0,
+            child: Container(
+                padding: const EdgeInsets.fromLTRB(220, 10, 10, 10),
+                child: Utilities.styleForConnected(
+                  RaisedButton(
+                    color: _isDirty ? Theme.of(context).accentColor : Colors.grey,
+                    onPressed: () {
+                      if (Utilities.checkForConnection(context)) {
+                        _updateProfile();
+                      }
+                    },
+                    child: Text('Save Changes', style: buttonTextStyle),
+                  ),
+                ),
+                height: 60,
+                width: MediaQuery.of(context).size.width,
+                color: Colors.yellow[100])),
         const OfflineModeRibbon(),
-      
       ],
     );
   }
