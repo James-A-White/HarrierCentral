@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 class ProfilePhoto extends StatelessWidget {
   const ProfilePhoto(
       {@required this.profilePhotoUrl,
-      @required this.photoHeight,
-      @required this.leftPadding});
+      this.photoHeight,
+      this.leftPadding});
 
   final String profilePhotoUrl;
   final double photoHeight;
@@ -19,7 +19,7 @@ class ProfilePhoto extends StatelessWidget {
     return Container(
         width: photoHeight,
         height: photoHeight,
-        margin: EdgeInsets.only(left: leftPadding),
+        margin: EdgeInsets.only(left: leftPadding ?? 0),
         child: profilePhotoUrl.contains('bundle://')
             ? Stack(alignment: Alignment.center, children: <Widget>[
                 Image.asset(('images/avatars/' +

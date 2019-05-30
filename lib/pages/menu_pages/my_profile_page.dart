@@ -17,7 +17,6 @@ import 'package:harrier_central/pages/init/choose_profile_image.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 
-
 // import 'package:harrier_central/widgets/user_details_ui.dart';
 // import 'package:harrier_central/widgets/fancy_divider.dart';
 
@@ -205,11 +204,9 @@ class MyProfilePageState extends State<MyProfilePage> {
               }
               _isLoading = false;
               checkDirty();
-              if (widget.pageType ==EnumMyProfilePageType.anyHasherProfile)
-              {
+              if (widget.pageType == EnumMyProfilePageType.anyHasherProfile) {
                 Navigator.of(context).pop(hasher);
               }
-              
             });
           });
         });
@@ -408,13 +405,16 @@ class MyProfilePageState extends State<MyProfilePage> {
                                                                         isForThisDevice: widget.pageType == EnumMyProfilePageType.myProfile,
                                                                         doAddUser: false,
                                                                         fileNamePrefix: hasher.hasherId,
+                                                                        currentProfileImage: hasher.photo,
                                                                       ),
                                                                 ),
-                                                              ).then((dynamic result) {
-                                                                setState(() {
-                                                                  newPhoto = result;
-                                                                  checkDirty();
-                                                                });
+                                                              ).then((String result) {
+                                                                if ((result != null) && (result.toString().isNotEmpty)) {
+                                                                  setState(() {
+                                                                    newPhoto = result;
+                                                                    checkDirty();
+                                                                  });
+                                                                }
                                                               });
                                                             }
                                                           },

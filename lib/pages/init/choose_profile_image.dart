@@ -20,13 +20,15 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
+import 'package:harrier_central/widgets/profile_photo.dart';
 
 class ChooseProfileImage extends StatefulWidget {
-  const ChooseProfileImage({Key key, @required this.doAddUser, @required this.isForThisDevice, @required this.fileNamePrefix}) : super(key: key);
+  const ChooseProfileImage({Key key, @required this.doAddUser, @required this.isForThisDevice, @required this.fileNamePrefix, @required this.currentProfileImage}) : super(key: key);
 
   final bool doAddUser;
   final bool isForThisDevice;
   final String fileNamePrefix;
+  final String currentProfileImage;
 
   @override
   _ChooseProfileImageState createState() => _ChooseProfileImageState();
@@ -294,7 +296,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                           top: 320,
                           bottom: 100,
                           child: LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
-                            return imageTypeSelection == _SelectedImageTypeEnum.none
+                            return ((imageTypeSelection == _SelectedImageTypeEnum.none) && (widget.currentProfileImage.isEmpty))
                                 ? Container(
                                     child: Image.asset(
                                       'images/icons/create_profile_photo.png',
@@ -449,8 +451,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     if (widget.doAddUser) {
       // this is for either of the two cases where
       // a user has been added, either for this device
-      // or the owner of this device adding other users. In both
-      // cases, we should have a valid UserModel variable set
+      // or the owner of this device adding other users.
       fileName = widget.fileNamePrefix.replaceAll('UQR:', '') + '_${datetime}_thumb.jpg';
       // in case we are creating users not for this device
       // make sure we have the correct hash userId
@@ -638,8 +639,17 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           height: _previewImageSize,
         );
         break;
+
       default:
-        returnWidget = Container(color: Colors.green, height: _previewImageSize, width: _previewImageSize);
+        if (widget.currentProfileImage.isNotEmpty) {
+          returnWidget = ProfilePhoto(profilePhotoUrl: widget.currentProfileImage);
+        } else {
+          returnWidget = Image.asset(
+              'images/icons/create_profile_photo.png',
+              // height: 100,
+              // width: 100,
+            );
+        }
     }
     return returnWidget;
   }
