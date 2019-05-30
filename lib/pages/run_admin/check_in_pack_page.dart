@@ -28,7 +28,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
-import 'package:harrier_central/widgets/new_user.dart';
+import 'package:harrier_central/pages/menu_pages/my_profile_page.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
 
 class CheckInPackPage extends StatefulWidget {
@@ -99,7 +99,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
     DBProvider.db.database.then((Database db) async {
       final SyncEventAdminService cSrv = SyncEventAdminService();
-      final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable, true, widget.eventId);
+      final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable, true, widget.eventId);
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Payments data synchronized $resultStr');
 
@@ -792,32 +792,48 @@ class CheckInPackPageState extends State<CheckInPackPage> {
           //   onTap: () => print('SECOND CHILD'),
           // ),
           SpeedDialChild(
-            child: const Icon(Icons.person_add),
-            backgroundColor: Colors.blue,
-            label: 'Add Member',
-            labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () => Navigator.push<UserModel>(
+              child: const Icon(Icons.person_add),
+              backgroundColor: Colors.blue,
+              label: 'Add Hasher to Harrier Central',
+              labelStyle: const TextStyle(fontSize: 18.0),
+              onTap: () {
+                Navigator.push<HashersModel>(
                   context,
-                  MaterialPageRoute<UserModel>(
-                      builder: (BuildContext context) => NewUserWidget(
-                            scaffoldKey: scaffoldKey,
-                            isForThisDevice: false,
-                            eventId: widget.eventId,
-                            kennelId: event['kennelId'],
-                            attendenceState: attendenceAtHash,
-                          )),
-                ).then<dynamic>((UserModel user) {
-                  // if (user != null) {
-                  //   _packScopedModel.addEditUser(user);
-                  //   searchController.text =
-                  //       user.firstName + ' ' + user.lastName;
-                  //   _packScopedModel.filterPackList(
-                  //       user.firstName + ' ' + user.lastName);
-                  //   packList = _packScopedModel.filteredPackList;
-                  //   _packScopedModel.forceRefresh();
-                  // }
-                }),
-          ),
+                  MaterialPageRoute<HashersModel>(
+                    builder: (BuildContext context) => MyProfilePage(
+                          pageType: EnumMyProfilePageType.newHasherProfile,
+                          eventId: event['eventId'],
+                        ),
+                  ),
+                ).then((HashersModel result) {
+                  _refreshPackListFromTables(true);
+                });
+              }
+
+              // Navigator.push<UserModel>(
+              //       context,
+              //       MaterialPageRoute<UserModel>(
+              //           builder: (BuildContext context) => NewUserWidget(
+              //                 scaffoldKey: scaffoldKey,
+              //                 isForThisDevice: false,
+              //                 eventId: widget.eventId,
+              //                 kennelId: event['kennelId'],
+              //                 attendenceState: attendenceAtHash,
+              //               )),
+              //     ).then<dynamic>((UserModel user) {
+              //       // if (user != null) {
+              //       //   _packScopedModel.addEditUser(user);
+              //       //   searchController.text =
+              //       //       user.firstName + ' ' + user.lastName;
+              //       //   _packScopedModel.filterPackList(
+              //       //       user.firstName + ' ' + user.lastName);
+              //       //   packList = _packScopedModel.filteredPackList;
+              //       //   _packScopedModel.forceRefresh();
+              //       // }
+              //     }
+
+              //     ),
+              ),
           SpeedDialChild(
             child: const Icon(FontAwesome.heart),
             backgroundColor: Colors.blue,

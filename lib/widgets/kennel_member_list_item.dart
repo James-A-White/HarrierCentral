@@ -21,16 +21,16 @@ class KennelMemberListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.push<dynamic>(
+        Navigator.push<HashersModel>(
           context,
-          MaterialPageRoute<dynamic>(
+          MaterialPageRoute<HashersModel>(
             builder: (BuildContext context) => MyProfilePage(
                   pageType: EnumMyProfilePageType.anyHasherProfile,
                   hasherId: kennelMember.hasherId,
                 ),
           ),
-        ).then((dynamic result){
-          if (result is HashersModel)
+        ).then((HashersModel result){
+          if (result != null)
           {
             kennelMember.dispName = result.dispName;
             kennelMember.photo = result.photo;

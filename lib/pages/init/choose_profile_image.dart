@@ -23,9 +23,8 @@ import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/widgets/profile_photo.dart';
 
 class ChooseProfileImage extends StatefulWidget {
-  const ChooseProfileImage({Key key, @required this.doAddUser, @required this.isForThisDevice, @required this.fileNamePrefix, @required this.currentProfileImage}) : super(key: key);
+  const ChooseProfileImage({Key key, @required this.isForThisDevice, @required this.fileNamePrefix, @required this.currentProfileImage}) : super(key: key);
 
-  final bool doAddUser;
   final bool isForThisDevice;
   final String fileNamePrefix;
   final String currentProfileImage;
@@ -355,12 +354,12 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       children: <Widget>[
         Column(
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(top: 0.0),
+            const Padding(
+              padding: EdgeInsets.only(top: 0.0),
               child: Text(
-                widget.doAddUser ? 'Creating account\r\nand uploading\r\nprofile image' : 'Uploading\r\nProfile Image',
+                'Uploading\r\nProfile Image',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 32.0, fontFamily: 'WorkSansSemiBold'),
+                style: TextStyle(color: Colors.white, fontSize: 32.0, fontFamily: 'WorkSansSemiBold'),
               ),
             ),
             Padding(
@@ -448,19 +447,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
     final String datetime = DateFormat('yyyyMMddkkmmss').format(DateTime.now());
 
-    if (widget.doAddUser) {
-      // this is for either of the two cases where
-      // a user has been added, either for this device
-      // or the owner of this device adding other users.
-      fileName = widget.fileNamePrefix.replaceAll('UQR:', '') + '_${datetime}_thumb.jpg';
-      // in case we are creating users not for this device
-      // make sure we have the correct hash userId
-    } else {
-      // in the case where we are simply updating the existing
-      // profile image of the account associated with this device,
-      // use the existing QR code stored in preferences as the base name for the photo
-      fileName = widget.fileNamePrefix.replaceAll('UQR:', '') + '_${datetime}_thumb.jpg';
-    }
+    fileName = widget.fileNamePrefix.replaceAll('UQR:', '') + '_${datetime}_thumb.jpg';
 
     switch (imageTypeSelection) {
       case _SelectedImageTypeEnum.none:
@@ -645,10 +632,10 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           returnWidget = ProfilePhoto(profilePhotoUrl: widget.currentProfileImage);
         } else {
           returnWidget = Image.asset(
-              'images/icons/create_profile_photo.png',
-              // height: 100,
-              // width: 100,
-            );
+            'images/icons/create_profile_photo.png',
+            // height: 100,
+            // width: 100,
+          );
         }
     }
     return returnWidget;

@@ -605,7 +605,6 @@ class NewUserState extends State<NewUserWidget>
           MaterialPageRoute<UserModel>(
             builder: (BuildContext context) => const ChooseProfileImage(
                   isForThisDevice: true,
-                  doAddUser: true,
                 ),
           ),
         );
@@ -615,7 +614,6 @@ class NewUserState extends State<NewUserWidget>
           MaterialPageRoute<UserModel>(
             builder: (BuildContext context) => ChooseProfileImage(
                   isForThisDevice: widget.isForThisDevice,
-                  doAddUser: true,
                 ),
           ),
         ).then<dynamic>((UserModel user) {

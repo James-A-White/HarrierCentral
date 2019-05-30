@@ -10,7 +10,9 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 
 class HashersModel {
   HashersModel({this.hasherId, this.firstName, this.lastName, this.dispName, this.hashName, this.email, this.photo, this.dispPref, this.removed, this.updatedAt});
@@ -273,6 +275,7 @@ class HashersService {
     String email,
     String hashName,
     String photo,
+    String eventId
   }) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return;
@@ -288,8 +291,24 @@ class HashersService {
     final num _hashersLastUpdated = await HashersService.getLastUpdatedTime();
     final DateTime hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
 
+    final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.eventAdmin);
+    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+
     final String body =
-        jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'hcVersion': hcVersion, 'hashersUpdatedAfter': hashersUpdatedAfter.toString(), 'targetUserId': targetUserId, 'email': email, 'firstName': firstName, 'lastName': lastName, 'hashName': hashName, 'photo': photo});
+        jsonEncode(<String, String>{
+              'userId': userId, 
+              'accessToken': accessToken, 
+              'hcVersion': hcVersion, 
+              'hashersUpdatedAfter': hashersUpdatedAfter.toString(), 
+              'hasherEventMapUpdatedAfter' : hasherEventMapUpdatedAfter.toString(),
+              'targetUserId': targetUserId, 
+              'email': email, 
+              'firstName': firstName, 
+              'lastName': lastName, 
+              'hashName': hashName, 
+              'photo': photo,
+              'eventId': eventId
+            });
 
     final http.Response response = await http
         .post(BASE_API_URL + 'hc3_edit_user', headers: <String, String>{'content-type': 'application/json'}, body: body
@@ -302,7 +321,12 @@ class HashersService {
       },
     );
 
-    await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    if ((eventId == null) || (eventId == GUID_EMPTY))
+    {
+      await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    } else {
+      await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    }
 
     return;
   }

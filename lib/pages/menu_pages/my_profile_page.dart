@@ -11,6 +11,7 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/profile_photo.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
@@ -20,15 +21,16 @@ import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 // import 'package:harrier_central/widgets/user_details_ui.dart';
 // import 'package:harrier_central/widgets/fancy_divider.dart';
 
-enum EnumMyProfilePageType { myProfile, anyHasherProfile }
+enum EnumMyProfilePageType { myProfile, anyHasherProfile, newHasherProfile }
 
 class MyProfilePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const MyProfilePage({Key key, @required this.pageType, @required this.hasherId}) : super(key: key);
+  const MyProfilePage({Key key, @required this.pageType, this.hasherId = GUID_EMPTY, this.eventId = GUID_EMPTY}) : super(key: key);
 
   final EnumMyProfilePageType pageType;
   final String hasherId;
+  final String eventId;
 
   @override
   MyProfilePageState createState() => MyProfilePageState();
@@ -53,6 +55,7 @@ class MyProfilePageState extends State<MyProfilePage> {
 
   bool _isLoading = true;
   bool _isDirty = false;
+  String photoPrefix = '';
   String newPhoto = '';
   HashersModel hasher;
 
@@ -107,7 +110,15 @@ class MyProfilePageState extends State<MyProfilePage> {
 
   @override
   void initState() {
-    refreshUserDataFromTable(true);
+    if (widget.pageType != EnumMyProfilePageType.newHasherProfile) {
+      refreshUserDataFromTable(true);
+      photoPrefix = widget.hasherId;
+    } else {
+      hasher = HashersModel(hasherId:GUID_EMPTY);
+      photoPrefix = 'newHcUser_' + DateTime.now().microsecondsSinceEpoch.toString();
+      _isLoading = false;
+    }
+
     firstNameController.addListener(() {
       checkDirty();
     });
@@ -128,19 +139,19 @@ class MyProfilePageState extends State<MyProfilePage> {
       return;
     }
     bool isDirty = false;
-    if (firstNameController.text != hasher.firstName) {
+    if (firstNameController.text != hasher?.firstName ?? '') {
       isDirty = true;
     }
-    if (lastNameController.text != hasher.lastName) {
+    if (lastNameController.text != hasher?.lastName ?? '') {
       isDirty = true;
     }
-    if ((emailController.text ?? '') != (hasher.email ?? '')) {
+    if ((emailController.text ?? '') != (hasher?.email ?? '')) {
       isDirty = true;
     }
-    if (hashNameController.text != hasher.hashName) {
+    if (hashNameController.text != hasher?.hashName ?? '') {
       isDirty = true;
     }
-    if (newPhoto != hasher.photo) {
+    if (newPhoto != hasher?.photo ?? '') {
       isDirty = true;
     }
 
@@ -189,7 +200,8 @@ class MyProfilePageState extends State<MyProfilePage> {
         _isLoading = true;
 
         final HashersService srv = HashersService();
-        final Future<dynamic> apiCall = srv.editUser(targetUserId: hasher.hasherId, firstName: firstNameController.text, lastName: lastNameController.text, email: emailController.text, hashName: hashNameController.text, photo: newPhoto);
+
+        final Future<dynamic> apiCall = srv.editUser(targetUserId: hasher.hasherId, firstName: firstNameController.text, lastName: lastNameController.text, email: emailController.text, hashName: hashNameController.text, photo: newPhoto, eventId: widget.eventId);
 
         apiCall.then((void dummy) async {
           refreshUserDataFromTable(false).then((void dummy) {
@@ -204,7 +216,7 @@ class MyProfilePageState extends State<MyProfilePage> {
               }
               _isLoading = false;
               checkDirty();
-              if (widget.pageType == EnumMyProfilePageType.anyHasherProfile) {
+              if (widget.pageType != EnumMyProfilePageType.myProfile) {
                 Navigator.of(context).pop(hasher);
               }
             });
@@ -387,11 +399,15 @@ class MyProfilePageState extends State<MyProfilePage> {
                                                         color: Colors.white,
                                                         padding: const EdgeInsets.all(10.0),
                                                         margin: const EdgeInsets.only(top: 20, bottom: 30),
-                                                        child: ProfilePhoto(
-                                                          profilePhotoUrl: newPhoto,
-                                                          photoHeight: 200.0,
-                                                          leftPadding: 0.0,
-                                                        ),
+                                                        child: newPhoto.isEmpty
+                                                            ? Image.asset(
+                                                                'images/icons/create_profile_photo.png',
+                                                              )
+                                                            : ProfilePhoto(
+                                                                profilePhotoUrl: newPhoto,
+                                                                photoHeight: 200.0,
+                                                                leftPadding: 0.0,
+                                                              ),
                                                       ),
 
                                                       Utilities.styleForConnected(
@@ -403,9 +419,8 @@ class MyProfilePageState extends State<MyProfilePage> {
                                                                 MaterialPageRoute<String>(
                                                                   builder: (BuildContext context) => ChooseProfileImage(
                                                                         isForThisDevice: widget.pageType == EnumMyProfilePageType.myProfile,
-                                                                        doAddUser: false,
-                                                                        fileNamePrefix: hasher.hasherId,
-                                                                        currentProfileImage: hasher.photo,
+                                                                        fileNamePrefix: photoPrefix,
+                                                                        currentProfileImage: hasher?.photo ?? '',
                                                                       ),
                                                                 ),
                                                               ).then((String result) {
@@ -452,7 +467,7 @@ class MyProfilePageState extends State<MyProfilePage> {
                         _updateProfile();
                       }
                     },
-                    child: Text('Save Changes', style: buttonTextStyle),
+                    child: Text(widget.pageType == EnumMyProfilePageType.newHasherProfile ? 'Add Hasher' : 'Save Changes', style: buttonTextStyle),
                   ),
                 ),
                 height: 60,
