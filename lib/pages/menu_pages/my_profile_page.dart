@@ -201,7 +201,7 @@ class MyProfilePageState extends State<MyProfilePage> {
 
         final HashersService srv = HashersService();
 
-        final Future<dynamic> apiCall = srv.editUser(targetUserId: hasher.hasherId, firstName: firstNameController.text, lastName: lastNameController.text, email: emailController.text, hashName: hashNameController.text, photo: newPhoto, eventId: widget.eventId);
+        final Future<dynamic> apiCall = srv.addEditUser(targetUserId: hasher.hasherId, firstName: firstNameController.text, lastName: lastNameController.text, email: emailController.text, hashName: hashNameController.text, photo: newPhoto, eventId: widget.eventId);
 
         apiCall.then((void dummy) async {
           refreshUserDataFromTable(false).then((void dummy) {

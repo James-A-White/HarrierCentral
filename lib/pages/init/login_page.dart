@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage>
         onNotification: (OverscrollIndicatorNotification overscroll) {
           overscroll.disallowGlow();
         },
-        child: NewUserWidget(isForThisDevice: true, scaffoldKey: _scaffoldKey),
+        child: NewUserWidget(scaffoldKey: _scaffoldKey),
       ),
     );
   }

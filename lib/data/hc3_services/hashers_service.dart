@@ -268,50 +268,56 @@ class HashersService {
 
   // ============ Functions go here =============
 
-  Future<void> editUser({
-    String targetUserId,
-    String firstName,
-    String lastName,
-    String email,
-    String hashName,
-    String photo,
-    String eventId
-  }) async {
+  Future<String> addEditUser({String targetUserId, String firstName, String lastName, String email, String hashName, String photo, String eventId}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
-      return;
+      return '';
       // TODO(James): fix this so we can return a bool
       //return false;
     }
 
+    bool newUserForThisDevice = false;
+
     final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    String userId = getStringPref(StringPrefsEnum.userId);
+    if ((userId == null) || (userId.isEmpty)) {
+      userId = GUID_EMPTY;
+      newUserForThisDevice = true;
+    }
 
-    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'editUser', paramString: targetUserId.toUpperCase());
+    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'addEditUser', paramString: targetUserId.toUpperCase());
 
-    final num _hashersLastUpdated = await HashersService.getLastUpdatedTime();
-    final DateTime hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
+    DateTime hashersUpdatedAfter;
+    DateTime hasherEventMapUpdatedAfter;
 
-    final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.eventAdmin);
-    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+    if (!newUserForThisDevice) {
+      final num _hashersLastUpdated = await HashersService.getLastUpdatedTime();
+      hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
 
-    final String body =
-        jsonEncode(<String, String>{
-              'userId': userId, 
-              'accessToken': accessToken, 
-              'hcVersion': hcVersion, 
-              'hashersUpdatedAfter': hashersUpdatedAfter.toString(), 
-              'hasherEventMapUpdatedAfter' : hasherEventMapUpdatedAfter.toString(),
-              'targetUserId': targetUserId, 
-              'email': email, 
-              'firstName': firstName, 
-              'lastName': lastName, 
-              'hashName': hashName, 
-              'photo': photo,
-              'eventId': eventId
-            });
+      final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.eventAdmin);
+      hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+    } else {
+      // do this to suppress any records being returned through the sync mechanism
+      hashersUpdatedAfter = DateTime(2050, 1, 1);
+      hasherEventMapUpdatedAfter = DateTime(2050, 1, 1);
+    }
+
+    final String body = jsonEncode(<String, String>{
+      'userId': userId,
+      'accessToken': accessToken,
+      'hcVersion': hcVersion,
+      'hashersUpdatedAfter': hashersUpdatedAfter.toString(),
+      'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
+      'targetUserId': targetUserId,
+      'email': email,
+      'firstName': firstName,
+      'lastName': lastName,
+      'hashName': hashName,
+      'photo': photo,
+      'eventId': eventId
+    });
 
     final http.Response response = await http
-        .post(BASE_API_URL + 'hc3_edit_user', headers: <String, String>{'content-type': 'application/json'}, body: body
+        .post(BASE_API_URL + 'hc3_add_edit_user', headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -321,13 +327,14 @@ class HashersService {
       },
     );
 
-    if ((eventId == null) || (eventId == GUID_EMPTY))
-    {
-      await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
-    } else {
-      await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    if (!newUserForThisDevice) {
+      if ((eventId == null) || (eventId == GUID_EMPTY)) {
+        await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      } else {
+        await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      }
     }
 
-    return;
+    return response.body;
   }
 }

@@ -853,9 +853,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
               backgroundColor: Colors.deepOrange,
               label: 'View video tutorial',
               labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () => Navigator.push<UserModel>(
+              onTap: () => Navigator.push<dynamic>(
                     context,
-                    MaterialPageRoute<UserModel>(
+                    MaterialPageRoute<dynamic>(
                         builder: (BuildContext context) => const VideoTutorialPage(
                               title: 'How to use Check In Page',
                               videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',

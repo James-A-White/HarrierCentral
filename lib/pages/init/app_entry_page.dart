@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:permission_handler/permission_handler.dart';
 import 'package:package_info/package_info.dart';
@@ -16,6 +17,7 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
+import 'package:harrier_central/util/utilities.dart';
 
 class AppEntryPage extends StatefulWidget {
   @override
@@ -39,46 +41,53 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     final ApproveLoginService svc = ApproveLoginService();
     final ApproveLoginModel loginResult = await svc.approveLogin(context);
 
-      if (loginResult == null) {
-        
-        globalConnectionStatus =connectionStatus_notConnected;
-        Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
-        return;
-      } else {
-        const bool allowContinueFromMessage = true;
+    if ((loginResult == null) && ((userId == null) || (userId.isEmpty))) {
+      // we get here if we are disconnected and the app has never been run before
+      // we can't operate in offline mode because there is no data in the cache
+      Utilities.showAlert(context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit').then((void dummy) async {
+        await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
+        return null;
+      });
+    } else if (loginResult == null) {
+      globalConnectionStatus = connectionStatus_notConnected;
+      Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+      return;
+    } else {
+      const bool allowContinueFromMessage = true;
 
-        if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
-          if (loginResult.messageDisplayType == loginMessageTypeAlert.value) {
-            await _displayAlert(context, loginResult.loginMessage, loginResult.loginMessageTitle);
-          }
-        }
-
-        if (allowContinueFromMessage) {
-          if (loginResult.serverStatusCode == serverStatusUp.value) {
-            if (loginResult.approvalCode == loginApprovalApproved.value) {
-               globalConnectionStatus =connectionStatus_connected;
-              if (userId == null) {
-                Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
-              } else {
-                final Database db = await DBProvider.db.database;
-
-                final SyncUserDataService cSrv = SyncUserDataService();
-                final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagAllMasterData, false);
-                final String resultStr = result ? 'successfully' : 'unsuccessfully';
-                print('Master data synchronized $resultStr');
-
-                Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
-              }
-            } else {
-              // TODO(James): Handle cases where login is disapproved
-            }
-          } else {
-            // TODO(James): Handle cases where server is down
-          }
-        } else {
-          // TODO(James): Handle case where not allowed to continue after a message
+      if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
+        if (loginResult.messageDisplayType == loginMessageTypeAlert.value) {
+          await _displayAlert(context, loginResult.loginMessage, loginResult.loginMessageTitle);
         }
       }
+
+      if (allowContinueFromMessage) {
+        if (loginResult.serverStatusCode == serverStatusUp.value) {
+          if (loginResult.approvalCode == loginApprovalApproved.value) {
+            globalConnectionStatus = connectionStatus_connected;
+            //if (true) {
+            if (userId == null) {
+              Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+            } else {
+              final Database db = await DBProvider.db.database;
+
+              final SyncUserDataService cSrv = SyncUserDataService();
+              final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagAllMasterData, false);
+              final String resultStr = result ? 'successfully' : 'unsuccessfully';
+              print('Master data synchronized $resultStr');
+
+              Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+            }
+          } else {
+            // TODO(James): Handle cases where login is disapproved
+          }
+        } else {
+          // TODO(James): Handle cases where server is down
+        }
+      } else {
+        // TODO(James): Handle case where not allowed to continue after a message
+      }
+    }
 
     //// return Future<void>(() {});((){});
   }
@@ -122,7 +131,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
   Future<void> startTimeout() async {
     await initPrefs();
-    await Future<dynamic>.delayed(const Duration(seconds:SPLASH_SCREEN_DISPLAY_TIME));
+    await Future<dynamic>.delayed(const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME));
     await handleStartup(context);
     return;
   }
@@ -140,7 +149,6 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     _iconAnimationController.forward();
 
     startTimeout();
-
   }
 
   @override

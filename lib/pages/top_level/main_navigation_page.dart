@@ -51,6 +51,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     appBarText = tabTitles[0];
 
+    super.initState();
+
     // this is here to force the database to be instnatiated upon startup.
     // the first time this is run, the database will be created. On subsequent
     // runs, the database will simply be opened.
@@ -60,8 +62,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         setIntPref(IntPrefsEnum.dbCreated, 1);
       });
     });
-
-    super.initState();
   }
 
   void informUser(String message) {
