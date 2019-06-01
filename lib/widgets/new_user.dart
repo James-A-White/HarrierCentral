@@ -21,7 +21,6 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/widgets/user_details_ui.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
@@ -72,7 +71,7 @@ class NewUserState extends State<NewUserWidget> with SingleTickerProviderStateMi
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         child: isLoading
-            ? HcCircularProgressIndicator()
+            ? const HcCircularProgressIndicator()
             : Stack(
                 alignment: AlignmentDirectional.center,
                 children: <Widget>[

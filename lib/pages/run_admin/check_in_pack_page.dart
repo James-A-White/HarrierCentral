@@ -18,7 +18,6 @@ import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
-import 'package:harrier_central/data/models/user_model.dart';
 import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
 import 'package:harrier_central/pages/menu_pages/video_tutorial_page.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -803,6 +802,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                     builder: (BuildContext context) => MyProfilePage(
                           pageType: EnumMyProfilePageType.newHasherProfile,
                           eventId: event['eventId'],
+                          kennelId: event['kennelId'],
                         ),
                   ),
                 ).then((HashersModel result) {

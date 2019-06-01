@@ -26,11 +26,12 @@ enum EnumMyProfilePageType { myProfile, anyHasherProfile, newHasherProfile }
 class MyProfilePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const MyProfilePage({Key key, @required this.pageType, this.hasherId = GUID_EMPTY, this.eventId = GUID_EMPTY}) : super(key: key);
+  const MyProfilePage({Key key, @required this.pageType, this.hasherId = GUID_EMPTY, this.eventId = GUID_EMPTY, this.kennelId = GUID_EMPTY}) : super(key: key);
 
   final EnumMyProfilePageType pageType;
   final String hasherId;
   final String eventId;
+  final String kennelId;
 
   @override
   MyProfilePageState createState() => MyProfilePageState();
@@ -55,6 +56,7 @@ class MyProfilePageState extends State<MyProfilePage> {
 
   bool _isLoading = true;
   bool _isDirty = false;
+  bool _addAsMember = false;
   String photoPrefix = '';
   String newPhoto = '';
   HashersModel hasher;
@@ -114,7 +116,11 @@ class MyProfilePageState extends State<MyProfilePage> {
       refreshUserDataFromTable(true);
       photoPrefix = widget.hasherId;
     } else {
-      hasher = HashersModel(hasherId:GUID_EMPTY);
+      if ((widget.kennelId != null) && (widget.kennelId.isNotEmpty) && (widget.kennelId !=GUID_EMPTY))
+      {
+        _addAsMember = true;
+      }
+      hasher = HashersModel(hasherId: GUID_EMPTY);
       photoPrefix = 'newHcUser_' + DateTime.now().microsecondsSinceEpoch.toString();
       _isLoading = false;
     }
@@ -201,7 +207,7 @@ class MyProfilePageState extends State<MyProfilePage> {
 
         final HashersService srv = HashersService();
 
-        final Future<dynamic> apiCall = srv.addEditUser(targetUserId: hasher.hasherId, firstName: firstNameController.text, lastName: lastNameController.text, email: emailController.text, hashName: hashNameController.text, photo: newPhoto, eventId: widget.eventId);
+        final Future<dynamic> apiCall = srv.addEditUser(targetUserId: hasher.hasherId, firstName: firstNameController.text, lastName: lastNameController.text, email: emailController.text, hashName: hashNameController.text, photo: newPhoto, eventId: widget.eventId, kennelId: _addAsMember ? widget.kennelId :GUID_EMPTY);
 
         apiCall.then((void dummy) async {
           refreshUserDataFromTable(false).then((void dummy) {
@@ -356,7 +362,7 @@ class MyProfilePageState extends State<MyProfilePage> {
                                       fit: StackFit.expand,
                                       alignment: AlignmentDirectional.center,
                                       children: <Widget>[
-                                        Container(height: 800),
+                                        Container(height: 860),
                                         Positioned(
                                           top: 25,
                                           left: 0,
@@ -441,6 +447,44 @@ class MyProfilePageState extends State<MyProfilePage> {
                                                 ),
                                               ),
                                             )),
+                                        Positioned(top: 740, left: 10, right: 10, child: 
+                                        ((widget.kennelId == null) || (widget.kennelId.isEmpty) || (widget.kennelId ==GUID_EMPTY)) ? Container():
+                                        const FancyDivider(innerColor: Colors.white)),
+                                        Positioned(
+                                          top: 760,
+                                          child: ((widget.kennelId == null) || (widget.kennelId.isEmpty) || (widget.kennelId ==GUID_EMPTY)) ? Container():
+                                          Container(
+                                                        padding: const EdgeInsets.all(10.0),
+                                                        margin: const EdgeInsets.only(bottom: 45),
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.yellow[100],
+                                                          borderRadius: BorderRadius.circular(5.0),
+                                                        ),
+                                                        child:
+                                          Row(
+                                            children: <Widget>[
+                                              Container(
+                                                margin: const EdgeInsets.only(right: 10),
+                                                height: 25,
+                                                width: 25,
+                                                color: Colors.yellow[100],
+                                                child: Checkbox(
+                                                  value: _addAsMember,
+                                                  onChanged: (bool value) {
+                                                    setState(() {
+                                                      _addAsMember = value;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                              const Text(
+                                                'Follow this Kennel',
+                                                //style: headingStyle,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ],
+                                          ),),
+                                        ),
                                       ],
                                     ),
                                   ),

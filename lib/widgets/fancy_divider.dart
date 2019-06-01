@@ -1,27 +1,33 @@
 import 'package:flutter/material.dart';
 
 class FancyDivider extends StatelessWidget {
-  const FancyDivider({@required this.innerColor, this.useTextOr = false});
+  const FancyDivider({@required this.innerColor, this.useTextOr = false, this.topMargin = 0.0, this.bottomMargin = 0.0});
 
   final Color innerColor;
   final bool useTextOr;
+  final num topMargin;
+  final num bottomMargin;
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: ShapePainter(color: innerColor, useTextOr: useTextOr),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          useTextOr
-              ? const Text('or',
-                  style: TextStyle(
-                      fontFamily: 'AvenirNextDemiBold',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 18.0,
-                      color: Colors.white))
-              : Container(),
-        ],
+    return 
+    Container(
+      margin: EdgeInsets.only(top:topMargin,bottom:bottomMargin),
+      child: CustomPaint(
+        painter: ShapePainter(color: innerColor, useTextOr: useTextOr),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            useTextOr
+                ? const Text('or',
+                    style: TextStyle(
+                        fontFamily: 'AvenirNextDemiBold',
+                        fontStyle: FontStyle.normal,
+                        fontSize: 18.0,
+                        color: Colors.white))
+                : Container(),
+          ],
+        ),
       ),
     );
   }

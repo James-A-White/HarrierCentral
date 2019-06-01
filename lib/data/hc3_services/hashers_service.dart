@@ -11,8 +11,10 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 
 class HashersModel {
   HashersModel({this.hasherId, this.firstName, this.lastName, this.dispName, this.hashName, this.email, this.photo, this.dispPref, this.removed, this.updatedAt});
@@ -268,7 +270,7 @@ class HashersService {
 
   // ============ Functions go here =============
 
-  Future<String> addEditUser({String targetUserId, String firstName, String lastName, String email, String hashName, String photo, String eventId}) async {
+  Future<String> addEditUser({String targetUserId, String firstName, String lastName, String email, String hashName, String photo, String eventId, String kennelId}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return '';
       // TODO(James): fix this so we can return a bool
@@ -288,6 +290,7 @@ class HashersService {
 
     DateTime hashersUpdatedAfter;
     DateTime hasherEventMapUpdatedAfter;
+    DateTime hasherKennelMapUpdatedAfter;
 
     if (!newUserForThisDevice) {
       final num _hashersLastUpdated = await HashersService.getLastUpdatedTime();
@@ -295,6 +298,9 @@ class HashersService {
 
       final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.eventAdmin);
       hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+
+      final num _hasherKennelMapLastUpdated = await HasherKennelMapService.getLastUpdatedTime(((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? HasherKennelMapTableType.eventAdmin : HasherKennelMapTableType.kennelAdmin);
+      hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
     } else {
       // do this to suppress any records being returned through the sync mechanism
       hashersUpdatedAfter = DateTime(2050, 1, 1);
@@ -306,14 +312,16 @@ class HashersService {
       'accessToken': accessToken,
       'hcVersion': hcVersion,
       'hashersUpdatedAfter': hashersUpdatedAfter.toString(),
-      'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
+      'hasherEventMapUpdatedAfter': ((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? hasherEventMapUpdatedAfter.toString() : 'ignore',
+      'hasherKennelMapUpdatedAfter': ((kennelId != null) && (kennelId.isNotEmpty) && (kennelId != GUID_EMPTY)) ? hasherKennelMapUpdatedAfter.toString() : 'ignore',
       'targetUserId': targetUserId,
       'email': email,
       'firstName': firstName,
       'lastName': lastName,
       'hashName': hashName,
       'photo': photo,
-      'eventId': eventId
+      'eventId': eventId,
+      'kennelId': kennelId
     });
 
     final http.Response response = await http
@@ -328,10 +336,19 @@ class HashersService {
     );
 
     if (!newUserForThisDevice) {
-      if ((eventId == null) || (eventId == GUID_EMPTY)) {
+      if (((eventId == null) || (eventId == GUID_EMPTY)) && ((kennelId == null) || (kennelId == GUID_EMPTY))) {
+        // we don't have either an eventId or a kennelId so all we need to do is update
+        // the Hasher table
         await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
-      } else {
+      } else if ((eventId != null) && (eventId != GUID_EMPTY)) {
+        // if we have an eventId we are definitely editing an event irrespective of whether or not
+        // there is also a kennelId
         await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      } else if ((kennelId != null) && (kennelId != GUID_EMPTY)) {
+        // if we get here, we have a kennelId but no eventId, which means we are editing kennel members
+        await SyncKennelAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      } else {
+        // TODO(James): handle this error, we should never arrive at this point in the code
       }
     }
 
