@@ -82,10 +82,6 @@ class SupportPageState extends State<SupportPage> {
     );
   }
 
-  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 22.0, height: 1.0);
-
-  TextStyle largeText = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 32.0, height: 1.0);
-
   @override
   Widget build(BuildContext context) {
     final AppBar appBar = AppBar(

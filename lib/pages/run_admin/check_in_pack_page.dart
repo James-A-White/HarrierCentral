@@ -27,7 +27,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
-import 'package:harrier_central/pages/menu_pages/my_profile_page.dart';
+import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
 
 class CheckInPackPage extends StatefulWidget {
@@ -799,10 +799,11 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                 Navigator.push<HashersModel>(
                   context,
                   MaterialPageRoute<HashersModel>(
-                    builder: (BuildContext context) => MyProfilePage(
+                    builder: (BuildContext context) => HasherProfilePage(
                           pageType: EnumMyProfilePageType.newHasherProfile,
                           eventId: event['eventId'],
                           kennelId: event['kennelId'],
+                          uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
                         ),
                   ),
                 ).then((HashersModel result) {

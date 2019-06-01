@@ -14,87 +14,38 @@ const double detailsFontSize = 16.0;
 const double detailLineSpace = 1.0;
 const double detailLineSpaceForBold = 1.0;
 
-  TextStyle listLabelStyle = const TextStyle(
-      color: Colors.yellow,
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      fontSize: detailsFontSize,
-      height: detailLineSpace);
+TextStyle listLabelStyle = const TextStyle(color: Colors.yellow, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: detailsFontSize, height: detailLineSpace);
 
-  TextStyle listValueStyle = const TextStyle(
-      color: Colors.white,
-      fontFamily: 'AvenirNextDemiBold',
-      fontStyle: FontStyle.normal,
-      fontSize: detailsFontSize,
-      height: detailLineSpaceForBold);
+TextStyle listValueStyle = const TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: detailsFontSize, height: detailLineSpaceForBold);
 
-  TextStyle bodyStyle = const TextStyle(
-      color: Colors.white,
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      fontSize: 20.0,
-      height: 1.0);
+TextStyle bodyStyle = const TextStyle(color: Colors.white, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0);
 
-  // TextStyle titleStyle = const TextStyle(
-  //     color: Colors.white,
-  //     fontFamily: 'AvenirNextRegular',
-  //     fontStyle: FontStyle.normal,
-  //     fontSize: 30.0,
-  //     height: 1.0);
+// TextStyle titleStyle = const TextStyle(
+//     color: Colors.white,
+//     fontFamily: 'AvenirNextRegular',
+//     fontStyle: FontStyle.normal,
+//     fontSize: 30.0,
+//     height: 1.0);
 
-TextStyle textStyleButton = const TextStyle(
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.normal,
-    fontSize: 22.0,
-    color: Colors.white);
+TextStyle textStyleButton = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, color: Colors.white);
 
-TextStyle textStyleDisabledButton = TextStyle(
-    fontFamily: 'AvenirNextDemiBold',
-    fontStyle: FontStyle.normal,
-    fontSize: 22.0,
-    color: Colors.grey[350]);
+TextStyle textStyleDisabledButton = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, color: Colors.grey[350]);
 
-TextStyle smallTitleStyle = const TextStyle(
-      fontFamily: 'AvenirNextDemiBold',
-      fontStyle: FontStyle.normal,
-      color: Colors.white,
-      fontSize: 20.0,
-      height: 1.0);
+TextStyle smallTitleStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0);
 
-TextStyle titleStyle = const TextStyle(
-      fontFamily: 'AvenirNextDemiBold',
-      fontStyle: FontStyle.normal,
-      color: Colors.white,
-      fontSize: 24.0,
-      height: 1.0);
+TextStyle titleStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 24.0, height: 1.0);
 
-TextStyle headingStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.yellow,
-      fontSize: 24.0,
-      height: 1.0);
+TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 24.0, height: 1.0);
 
-TextStyle headingStyleOnLightBg = TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.blue[800],
-      fontSize: 24.0,
-      height: 1.0);
+TextStyle headingStyleOnLightBg = TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.blue[800], fontSize: 24.0, height: 1.0);
 
-TextStyle smallHeadingStyle = const TextStyle(
-      fontFamily: 'AvenirNextDemiBold',
-      fontStyle: FontStyle.normal,
-      color: Colors.yellow,
-      fontSize: 20.0,
-      height: 1.0);
+TextStyle smallHeadingStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 20.0, height: 1.0);
 
-TextStyle buttonLabelStyleMedium = const TextStyle(
-      fontFamily: 'AvenirNextMedium',
-      fontStyle: FontStyle.normal,
-      color: Colors.white,
-      fontSize: 20.0,
-      height: 1.0);
+TextStyle buttonLabelStyleMedium = const TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0);
+
+TextStyle largeText = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 32.0, height: 1.0);
+
+TextStyle buttonTextStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 16.0, height: 1.0);
 
 // Color brown = const Color.fromARGB(255, 107, 87, 66);
 // Color purple = const Color.fromARGB(255, 61, 27, 142);
@@ -119,5 +70,3 @@ class Backgrounds {
     ));
   }
 }
-
-

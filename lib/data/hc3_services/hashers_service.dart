@@ -17,7 +17,7 @@ import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart'
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 
 class HashersModel {
-  HashersModel({this.hasherId, this.firstName, this.lastName, this.dispName, this.hashName, this.email, this.photo, this.dispPref, this.removed, this.updatedAt});
+  HashersModel({this.hasherId, this.firstName, this.lastName, this.dispName, this.hashName, this.email, this.photo, this.dispPref, this.resetCode, this.qrCode, this.removed, this.updatedAt});
 
   final String hasherId;
   String firstName;
@@ -27,6 +27,8 @@ class HashersModel {
   String email;
   String photo;
   int dispPref;
+  String resetCode;
+  String qrCode;
   final int removed;
   final DateTime updatedAt;
 
@@ -46,6 +48,8 @@ class HashersModel {
             email: jsonItem['email'],
             photo: jsonItem['photo'],
             dispPref: jsonItem['dispPref'],
+            resetCode: jsonItem['resetCode'],
+            qrCode: jsonItem['qrCode'],
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
 
@@ -83,6 +87,8 @@ class HashersTableHelper {
   static const String colEmail = 'email';
   static const String colPhoto = 'photo';
   static const String colDispPref = 'dispPref';
+  static const String colResetCode= 'resetCode';
+  static const String colQrCode= 'qrCode';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -106,6 +112,8 @@ class HashersTableHelper {
             $colEmail TEXT,
             $colPhoto TEXT,
             $colDispPref INT,
+            $colResetCode TEXT,
+            $colQrCode TEXT,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
@@ -127,6 +135,8 @@ class HashersTableHelper {
       HashersTableHelper.colEmail: item.email,
       HashersTableHelper.colPhoto: item.photo,
       HashersTableHelper.colDispPref: item.dispPref,
+      HashersTableHelper.colResetCode: item.resetCode,
+      HashersTableHelper.colQrCode: item.qrCode,
       HashersTableHelper.colUpdatedAt: item.updatedAt.toString(),
       HashersTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       HashersTableHelper.colRemoved: item.removed
@@ -145,6 +155,8 @@ class HashersTableHelper {
       email: map[HashersTableHelper.colEmail],
       photo: map[HashersTableHelper.colPhoto],
       dispPref: map[HashersTableHelper.colDispPref],
+      resetCode: map[HashersTableHelper.colResetCode],
+      qrCode: map[HashersTableHelper.colQrCode],
       updatedAt: DateTime.parse(map[HashersTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[HashersTableHelper.colRemoved],
     );

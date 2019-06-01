@@ -11,16 +11,19 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
+import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 
 class SyncKennelAdminService {
   static const int flagKennelTable = 0x00000001;
   static const int flagHasherKennelMapTable = 0x00000002;
+  static const int flagHashersTable = 0x00000004;
 
-  static const int flagsAllData = 0x00000003;
+  static const int flagsAllData = 0x00000007;
 
   num _kennelLastUpdated;
   num _hasherKennelMapLastUpdated;
+  num _hashersLastUpdated;
 
   Future<num> getLastUpdatedTime(Database db, String colName, String tableName) async {
     final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
@@ -31,6 +34,7 @@ class SyncKennelAdminService {
 
   Future<void> getLastUpdatedTimes(Database db, int flags) async {
     _kennelLastUpdated = (flags & flagKennelTable) == 0 ? 0 : await getLastUpdatedTime(db, KennelsTableHelper.colUpdatedAtValue, KennelsTableHelper.tableName);
+    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? 0 : await getLastUpdatedTime(db, HashersTableHelper.colUpdatedAtValue, HashersTableHelper.tableName);
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? 0 : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin));
   }
 
@@ -44,18 +48,21 @@ class SyncKennelAdminService {
     if (getStringPref(StringPrefsEnum.adminKennelId) != kennelId) {
       final HasherKennelMapService hkm2srv = HasherKennelMapService();
 
-      // NOTE: kennels are not cleared here because all kennels are loaded all the time for all users
+      // NOTE: kennels and hashers are not cleared here because all kennels and all hashers are loaded all the time for all users
       hkm2srv.clearTable(HasherKennelMapTableType.kennelAdmin);
 
       await setStringPref(StringPrefsEnum.adminKennelId, kennelId);
     }
 
     final int kennelsLastUpdate = (flags & flagKennelTable) == 0 ? null : getIntPref(KennelsTableHelper.lastUpdatedKey) ?? 0;
+    final int hashersLastUpdate = (flags & flagHashersTable) == 0 ? null : getIntPref(HashersTableHelper.lastUpdatedKey) ?? 0;
     final int hasherKennelMapLastUpdate = (flags & flagHasherKennelMapTable) == 0 ? null : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(HasherKennelMapTableType.kennelAdmin)) ?? 0;
 
     if (forceRefresh ||
         ((kennelsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - kennelsLastUpdate) > KennelsTableHelper.forceRequeryInterval) ||
-        ((hasherKennelMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherKennelMapLastUpdate) > HasherKennelMapTableHelper.forceRequeryInterval)) {
+        ((hashersLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hashersLastUpdate) > HashersTableHelper.forceRequeryInterval) ||
+        ((hasherKennelMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherKennelMapLastUpdate) > HasherKennelMapTableHelper.forceRequeryInterval)
+        ) {
       // check to see if we need to clear the cache
       //int lastCacheClear = getIntPref(CitiesTableHelper.lastCacheClearKey);
 
@@ -81,6 +88,7 @@ class SyncKennelAdminService {
       await getLastUpdatedTimes(db, flags);
 
       final DateTime kennelsUpdatedAfter = _kennelLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelLastUpdated + 1000);
+      final DateTime hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
       final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
@@ -94,6 +102,7 @@ class SyncKennelAdminService {
         'userId': userId,
         'accessToken': accessToken,
         'kennelId': kennelId,
+        'hashersUpdatedAfter': (flags & flagHashersTable) == 0 ? 'ignore' : hashersUpdatedAfter.toString().substring(0, 19),
         'kennelsUpdatedAfter': (flags & flagKennelTable) == 0 ? 'ignore' : kennelsUpdatedAfter.toString().substring(0, 19),
         'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
       });

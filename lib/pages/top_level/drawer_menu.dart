@@ -4,7 +4,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/data/models/main_navigation_model.dart';
 
-import 'package:harrier_central/pages/menu_pages/my_profile_page.dart';
+import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 import 'package:harrier_central/pages/menu_pages/imprint_page.dart';
 import 'package:harrier_central/pages/menu_pages/legal_page.dart';
 import 'package:harrier_central/pages/menu_pages/faq_page.dart';
@@ -104,7 +104,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                       settings: const RouteSettings(),
 
                       builder: (BuildContext context) {
-                        return MyProfilePage(pageType: EnumMyProfilePageType.myProfile, hasherId: userId);
+                        return HasherProfilePage(pageType: EnumMyProfilePageType.myProfile, hasherId: userId);
                       },
                     ),
                   );

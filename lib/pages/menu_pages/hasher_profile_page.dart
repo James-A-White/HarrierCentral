@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -23,21 +24,25 @@ import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 
 enum EnumMyProfilePageType { myProfile, anyHasherProfile, newHasherProfile }
 
-class MyProfilePage extends StatefulWidget {
+class HasherProfilePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const MyProfilePage({Key key, @required this.pageType, this.hasherId = GUID_EMPTY, this.eventId = GUID_EMPTY, this.kennelId = GUID_EMPTY}) : super(key: key);
+  const HasherProfilePage({Key key, @required this.pageType, this.hasherId = GUID_EMPTY, this.eventId = GUID_EMPTY, this.kennelId = GUID_EMPTY, this.uiElementsToDisplay = 0}) : super(key: key);
 
   final EnumMyProfilePageType pageType;
   final String hasherId;
   final String eventId;
   final String kennelId;
+  final int uiElementsToDisplay;
+
+  static const int flagUiElement_followKennel = 0x00000001;
+  static const int flagUiElement_inviteCode = 0x00000002;
 
   @override
-  MyProfilePageState createState() => MyProfilePageState();
+  HasherProfilePageState createState() => HasherProfilePageState();
 }
 
-class MyProfilePageState extends State<MyProfilePage> {
+class HasherProfilePageState extends State<HasherProfilePage> {
   // String firstName = getStringPref(StringPrefsEnum.firstName);
   // String lastName = getStringPref(StringPrefsEnum.lastName);
   // String email = getStringPref(StringPrefsEnum.email);
@@ -116,8 +121,7 @@ class MyProfilePageState extends State<MyProfilePage> {
       refreshUserDataFromTable(true);
       photoPrefix = widget.hasherId;
     } else {
-      if ((widget.kennelId != null) && (widget.kennelId.isNotEmpty) && (widget.kennelId !=GUID_EMPTY))
-      {
+      if ((widget.kennelId != null) && (widget.kennelId.isNotEmpty) && (widget.kennelId != GUID_EMPTY)) {
         _addAsMember = true;
       }
       hasher = HashersModel(hasherId: GUID_EMPTY);
@@ -191,10 +195,6 @@ class MyProfilePageState extends State<MyProfilePage> {
     );
   }
 
-  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 22.0, height: 1.0);
-
-  TextStyle buttonTextStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 16.0, height: 1.0);
-
   GlobalKey<ScaffoldState> scaffoldKey;
 
   void _updateProfile() {
@@ -207,7 +207,8 @@ class MyProfilePageState extends State<MyProfilePage> {
 
         final HashersService srv = HashersService();
 
-        final Future<dynamic> apiCall = srv.addEditUser(targetUserId: hasher.hasherId, firstName: firstNameController.text, lastName: lastNameController.text, email: emailController.text, hashName: hashNameController.text, photo: newPhoto, eventId: widget.eventId, kennelId: _addAsMember ? widget.kennelId :GUID_EMPTY);
+        final Future<dynamic> apiCall =
+            srv.addEditUser(targetUserId: hasher.hasherId, firstName: firstNameController.text, lastName: lastNameController.text, email: emailController.text, hashName: hashNameController.text, photo: newPhoto, eventId: widget.eventId, kennelId: _addAsMember ? widget.kennelId : GUID_EMPTY);
 
         apiCall.then((void dummy) async {
           refreshUserDataFromTable(false).then((void dummy) {
@@ -314,6 +315,15 @@ class MyProfilePageState extends State<MyProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    num scrollHeight = 740.0; 
+    if ((widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_inviteCode) != 0)
+    {
+      scrollHeight = 1200.0;
+    } else if (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_followKennel != 0)
+    {
+      scrollHeight = 860.0;
+    }
+
     final AppBar appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
@@ -362,9 +372,9 @@ class MyProfilePageState extends State<MyProfilePage> {
                                       fit: StackFit.expand,
                                       alignment: AlignmentDirectional.center,
                                       children: <Widget>[
-                                        Container(height: 860),
+                                        Container(height: scrollHeight),
                                         Positioned(
-                                          top: 25,
+                                          top: 10,
                                           left: 0,
                                           right: 0,
                                           child: Text(
@@ -447,43 +457,74 @@ class MyProfilePageState extends State<MyProfilePage> {
                                                 ),
                                               ),
                                             )),
-                                        Positioned(top: 740, left: 10, right: 10, child: 
-                                        ((widget.kennelId == null) || (widget.kennelId.isEmpty) || (widget.kennelId ==GUID_EMPTY)) ? Container():
-                                        const FancyDivider(innerColor: Colors.white)),
+                                        Positioned(top: 740, left: 10, right: 10, child: (widget.uiElementsToDisplay & (HasherProfilePage.flagUiElement_followKennel | HasherProfilePage.flagUiElement_inviteCode) == 0) ? Container() : const FancyDivider(innerColor: Colors.white)),
                                         Positioned(
                                           top: 760,
-                                          child: ((widget.kennelId == null) || (widget.kennelId.isEmpty) || (widget.kennelId ==GUID_EMPTY)) ? Container():
-                                          Container(
-                                                        padding: const EdgeInsets.all(10.0),
-                                                        margin: const EdgeInsets.only(bottom: 45),
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.yellow[100],
-                                                          borderRadius: BorderRadius.circular(5.0),
+                                          child: (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_followKennel == 0)
+                                              ? Container()
+                                              : Container(
+                                                  padding: const EdgeInsets.all(10.0),
+                                                  margin: const EdgeInsets.only(bottom: 45),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.yellow[100],
+                                                    borderRadius: BorderRadius.circular(5.0),
+                                                  ),
+                                                  child: Row(
+                                                    children: <Widget>[
+                                                      Container(
+                                                        margin: const EdgeInsets.only(right: 10),
+                                                        height: 25,
+                                                        width: 25,
+                                                        color: Colors.yellow[100],
+                                                        child: Checkbox(
+                                                          value: _addAsMember,
+                                                          onChanged: (bool value) {
+                                                            setState(() {
+                                                              _addAsMember = value;
+                                                            });
+                                                          },
                                                         ),
-                                                        child:
-                                          Row(
-                                            children: <Widget>[
-                                              Container(
-                                                margin: const EdgeInsets.only(right: 10),
-                                                height: 25,
-                                                width: 25,
-                                                color: Colors.yellow[100],
-                                                child: Checkbox(
-                                                  value: _addAsMember,
-                                                  onChanged: (bool value) {
-                                                    setState(() {
-                                                      _addAsMember = value;
-                                                    });
-                                                  },
+                                                      ),
+                                                      const Text(
+                                                        'Follow this Kennel',
+                                                        //style: headingStyle,
+                                                        textAlign: TextAlign.center,
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
-                                              const Text(
-                                                'Follow this Kennel',
-                                                //style: headingStyle,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ],
-                                          ),),
+                                        ),
+                                        Positioned(
+                                          top: 760,
+                                          child: (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_inviteCode == 0)
+                                              ? Container()
+                                              : Column(
+                                                  children: <Widget>[
+                                                    Text(
+                                                      'Invite code:',
+                                                      style: headingStyle,
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                    Text(
+                                                      (hasher?.resetCode ?? '').replaceAll('RC:', ''),
+                                                      style: largeText,
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                    Container(
+                                                      margin: const EdgeInsets.only(top:20),
+                                                      height: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
+                                                      width: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
+                                                      child: QrImage(
+                                                          backgroundColor: Colors.white,
+                                                          padding: const EdgeInsets.all(10.0),
+                                                          data: hasher?.resetCode ?? '',
+                                                          //data: 'testing123',
+                                                          version: 4,
+                                                          //size: 200.0,
+                                                          errorCorrectionLevel: 3),
+                                                    ),
+                                                  ],
+                                                ),
                                         ),
                                       ],
                                     ),
