@@ -23,17 +23,7 @@ class FutureRunsListPage extends StatefulWidget {
 }
 
 class FutureRunQueryExtenstions {
-  FutureRunQueryExtenstions(
-    {
-        this.daysUntilEvent, 
-        this.distToEvent, 
-        this.hareList, 
-        this.mismanagementRoleFlags, 
-        this.currencySymbol, 
-        this.digitsAfterDecimal,
-        this.rsvpState,
-        this.isHare
-    });
+  FutureRunQueryExtenstions({this.daysUntilEvent, this.distToEvent, this.hareList, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isHare, this.following});
 
   final num daysUntilEvent;
   num distToEvent;
@@ -43,9 +33,10 @@ class FutureRunQueryExtenstions {
   String currencySymbol;
   final int rsvpState;
   final int isHare;
+  final int following;
 
   static FutureRunQueryExtenstions fromMap(Map<String, dynamic> map) {
-    final FutureRunQueryExtenstions item = FutureRunQueryExtenstions(daysUntilEvent: map['daysUntilEvent'], hareList: map['hareList'], mismanagementRoleFlags: map['mismanagementRoleFlags']);
+    final FutureRunQueryExtenstions item = FutureRunQueryExtenstions(daysUntilEvent: map['daysUntilEvent'], hareList: map['hareList'], mismanagementRoleFlags: map['mismanagementRoleFlags'], following: map['following']);
     return item;
   }
 }
@@ -107,6 +98,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           evt.*,
           k.*,
           coalesce(hkm.mismanagementRoleFlags,0) as mismanagementRoleFlags,
+          coalesce(hkm.following,0) as following,
           coalesce(hem.rsvpState,0) as rsvpState,
           coalesce(hem.isHare,0) as isHare,
           julianday(evt.eventStartDatetime) - julianday('now') as daysUntilEvent,
@@ -118,6 +110,11 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           LEFT OUTER JOIN hasherKennelMap hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
           LEFT OUTER JOIN hasherEventMapForRunAdmin hem on hem.eventId = evt.eventId and hem.userId = "$userId"
           WHERE evt.eventStartDatetime > date('now','-3 hour') and evt.isVisible = 1
+          AND (
+                (coalesce(hkm.following,0) <= 1) 
+                OR 
+                (coalesce(hem.rsvpState,0) >= 2)
+              )
           ORDER BY evt.eventStartDatetime
           ''';
 
@@ -132,12 +129,11 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   extensionsItem.distToEvent = dist;
                   extensionsItem.currencySymbol = '€^';
                   extensionsItem.digitsAfterDecimal = 2;
-                  final FutureRunAggregate item = FutureRunAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem);
-                  futureRunsList.add(item);
-                  // item.addAll(<String, dynamic>{'distance': dist.round()});
-                  // //item.addAll(<String, dynamic>{'followingRequested': -1});
-                  // item.addAll(results[i]);
-                  // futureRunsList.add(item);
+
+                  if ((extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < 50000))) {
+                    final FutureRunAggregate item = FutureRunAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem);
+                    futureRunsList.add(item);
+                  }
                   if (i == results.length - 1) {
                     setState(() {});
                   }

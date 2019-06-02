@@ -175,6 +175,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       if (fabIsVisible != (tabs[_tabController.index].text.toLowerCase() == 'rsvp')) {
         setState(() {
           fabIsVisible = tabs[_tabController.index].text.toLowerCase() == 'rsvp';
+          if (tabs[_tabController.index].text.toLowerCase() == 'rsvp')
+          {
+            print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+            _refreshSqlTablesFromBackend(false);
+          }  
         });
       }
     });
@@ -262,7 +267,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                       textAlign: TextAlign.left,
                     ),
                     Text(
-                      'Distance:',
+                      'Run start:',
                       style: listLabelStyle,
                       textAlign: TextAlign.left,
                     ),
@@ -329,7 +334,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     widget.futureRun.extensions.distToEvent >= 0
                         ? Text(
-                            Utilities.getDistance(widget.futureRun.extensions.distToEvent, context),
+                            Utilities.getDistance(widget.futureRun.extensions.distToEvent, context) + ' from here',
                             style: listValueStyle,
                             textAlign: TextAlign.left,
                           )
