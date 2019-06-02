@@ -99,7 +99,7 @@ class Utilities {
 
     if (isMetric) {
       if (meters < 1000) {
-        result = '$meters ${AppLocalizations.of(context).meters}';
+        result = '${NumberFormat('####').format(meters)} ${AppLocalizations.of(context).meters}';
       } else if (meters < 10000) {
         result = '${NumberFormat('#####.0').format(meters / 1000.0)} ${AppLocalizations.of(context).kilometers}';
       } else {
