@@ -24,6 +24,7 @@ dependencies:
   flutter_facebook_login: ^2.0.0
   flutter_full_pdf_viewer: ^1.0.4
   flutter_image_compress: ^0.4.0 
+  flutter_linkify: ^2.1.0
   flutter_map: ^0.4.0   # latest version is 0.5.0, but it depends on cached_network_image 0.5.1 - 19 March 2019
   flutter_speed_dial: ^1.1.2
   flutter_spinkit: ^3.1.0 

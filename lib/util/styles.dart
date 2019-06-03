@@ -20,6 +20,8 @@ TextStyle listValueStyle = const TextStyle(color: Colors.white, fontFamily: 'Ave
 
 TextStyle bodyStyle = const TextStyle(color: Colors.white, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0);
 
+TextStyle bodyStyleYellow = const TextStyle(color: Colors.yellow, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0);
+
 // TextStyle titleStyle = const TextStyle(
 //     color: Colors.white,
 //     fontFamily: 'AvenirNextRegular',

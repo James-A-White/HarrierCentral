@@ -1,11 +1,13 @@
 import 'dart:core';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -85,10 +87,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   int _thisUserIndex = -1;
 
   Future<void> refreshPackListFromTable(bool forceRefresh) async {
+    final Database db = await DBProvider.db.database;
 
-      final Database db = await DBProvider.db.database;
-
-      final String query = ''' 
+    final String query = ''' 
         SELECT  
           hem.*,
           h.*
@@ -97,34 +98,32 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           WHERE hem.eventId = "${widget.futureRun.event.eventId}"
           ''';
 
-      thePackList = <PackListAggregate>[];
-      try {
-        final List<Map<String, dynamic>> results = await db.rawQuery(query);
+    thePackList = <PackListAggregate>[];
+    try {
+      final List<Map<String, dynamic>> results = await db.rawQuery(query);
 
-        for (int i = 0; i < results.length; i++) {
-          final HasherEventMapModel packItem = HasherEventMapTableHelper.fromMap(results[i]);
-          final HashersModel hasherItem = HashersTableHelper.fromMap(results[i]);
-          thePackList.add(PackListAggregate(hem: packItem, hasher: hasherItem));
-          if (packItem.userId == userId) {
-            _thisUserIndex = i;
-          }
-          if (forceRefresh && (i == results.length - 1)) {
-            setState(() {});
-          }
+      for (int i = 0; i < results.length; i++) {
+        final HasherEventMapModel packItem = HasherEventMapTableHelper.fromMap(results[i]);
+        final HashersModel hasherItem = HashersTableHelper.fromMap(results[i]);
+        thePackList.add(PackListAggregate(hem: packItem, hasher: hasherItem));
+        if (packItem.userId == userId) {
+          _thisUserIndex = i;
         }
-      } catch (e) {
-        print(e);
+        if (forceRefresh && (i == results.length - 1)) {
+          setState(() {});
+        }
       }
-    
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> refreshPackCountFromTable(bool forceRefresh) async {
+    packCount = <String, dynamic>{};
 
-      packCount = <String, dynamic>{};
+    final Database db = await DBProvider.db.database;
 
-      final Database db = await DBProvider.db.database;
-
-      final String query = ''' 
+    final String query = ''' 
         SELECT  
           count(case when hem.rsvpState = 3 then 1 else null end) as rsvpYesCount,
           count(case when hem.rsvpState = 2 then 1 else null end) as rsvpMaybeCount,
@@ -134,19 +133,18 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           WHERE hem.eventId = "${widget.futureRun.event.eventId}"
           ''';
 
-      try {
-        db.rawQuery(query).then((List<Map<String, dynamic>> results) {
-          if (results.isNotEmpty) {
-            packCount = results[0];
-          }
-          if (forceRefresh) {
-            setState(() {});
-          }
-        });
-      } catch (e) {
-        print(e);
-      }
-    
+    try {
+      db.rawQuery(query).then((List<Map<String, dynamic>> results) {
+        if (results.isNotEmpty) {
+          packCount = results[0];
+        }
+        if (forceRefresh) {
+          setState(() {});
+        }
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   void _initTabs() {
@@ -175,11 +173,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       if (fabIsVisible != (tabs[_tabController.index].text.toLowerCase() == 'rsvp')) {
         setState(() {
           fabIsVisible = tabs[_tabController.index].text.toLowerCase() == 'rsvp';
-          if (tabs[_tabController.index].text.toLowerCase() == 'rsvp')
-          {
+          if (tabs[_tabController.index].text.toLowerCase() == 'rsvp') {
             print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
             _refreshSqlTablesFromBackend(false);
-          }  
+          }
         });
       }
     });
@@ -374,7 +371,19 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
             ),
             Padding(
               padding: const EdgeInsets.only(top: 30.0, right: 20.0, left: 20.0, bottom: 20.0),
-              child: Text(widget.futureRun.event.eventDescription, style: bodyStyle),
+              child: Linkify(
+                text: widget.futureRun.event.eventDescription,
+                style: bodyStyle,
+                linkStyle: bodyStyleYellow,
+                humanize: true,
+                onOpen: (LinkableElement link) async {
+                  if (await canLaunch(link.url)) {
+                    await launch(link.url);
+                  } else {
+                    Utilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                  }
+                },
+              ),
             ),
           ],
         ),
@@ -930,8 +939,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     final Future<void> retVal = hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.eventAdmin, userId, null, rsvpYes.value, attendenceNoChange.value, isHareYes.value, enumHasher.value);
 
                     retVal.then((void dummy) async {
-                                      await refreshPackListFromTable(true);
-                                      await refreshPackCountFromTable(true);
+                      await refreshPackListFromTable(true);
+                      await refreshPackCountFromTable(true);
                     });
                   }
                 });
