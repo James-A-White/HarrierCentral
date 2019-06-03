@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:latlong/latlong.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
@@ -34,7 +38,6 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
 
   @override
   void initState() {
-
     DBProvider.db.database.then((Database db) async {
       final SyncKennelAdminService cSrv = SyncKennelAdminService();
       cSrv.updateFromBackend(db, SyncKennelAdminService.flagsAllData, false, widget.kennel['kennelId']).then((bool result) {
@@ -46,8 +49,6 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
         });
       });
     });
-
-
 
     sliderValue = 5.0;
     isAdmin = (widget.kennel['mismanagementRoleFlags'] & mmAuthAccessKennelAdmin) != 0;
@@ -139,7 +140,19 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                     (widget.kennel['kennelDescription'] ?? '').isNotEmpty
                         ? Column(
                             children: <Widget>[
-                              Text(widget.kennel['kennelDescription'].trim(), style: bodyStyle),
+                              Linkify(
+                                text: widget.kennel['kennelDescription'].toString().replaceAll('\r\n', '\n'),
+                                style: bodyStyle,
+                                linkStyle: bodyStyleYellow,
+                                humanize: true,
+                                onOpen: (LinkableElement link) async {
+                                  if (await canLaunch(link.url)) {
+                                    await launch(link.url);
+                                  } else {
+                                    Utilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                                  }
+                                },
+                              ),
                               const Padding(
                                 padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
                                 child: FancyDivider(innerColor: Colors.white),
@@ -502,12 +515,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             context,
                                             MaterialPageRoute<dynamic>(
                                                 builder: (BuildContext context) => EventQrCodePage(
-                                                      kennelShortName: widget.kennel['kennelShortName'],
-                                                      qrContent: widget.kennel['kennelId'],
-                                                      runEndPrefix: KENNEL_GENERIC_END_QR_PREFIX,
-                                                      runStartPrefix: KENNEL_GENERIC_START_QR_PREFIX,
-                                                      title: 'Any ' + widget.kennel['kennelShortName'] + ' run'
-                                                    )));
+                                                    kennelShortName: widget.kennel['kennelShortName'], qrContent: widget.kennel['kennelId'], runEndPrefix: KENNEL_GENERIC_END_QR_PREFIX, runStartPrefix: KENNEL_GENERIC_START_QR_PREFIX, title: 'Any ' + widget.kennel['kennelShortName'] + ' run')));
                                       },
                                     ),
                                   ),
@@ -523,7 +531,6 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
         ),
       ),
       const OfflineModeRibbon(),
-      
     ]);
   }
 

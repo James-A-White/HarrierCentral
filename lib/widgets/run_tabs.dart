@@ -372,7 +372,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
             Padding(
               padding: const EdgeInsets.only(top: 30.0, right: 20.0, left: 20.0, bottom: 20.0),
               child: Linkify(
-                text: widget.futureRun.event.eventDescription,
+                text: widget.futureRun.event.eventDescription.replaceAll('\r\n', '\n'),
                 style: bodyStyle,
                 linkStyle: bodyStyleYellow,
                 humanize: true,
