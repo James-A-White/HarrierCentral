@@ -36,7 +36,7 @@ class GetResetCodeService {
     });
 
     final http.Response response = await http
-        .post(BASE_API_URL + 'get_reset_code',
+        .post(BASE_API_URL + 'hc3_get_reset_code',
             headers: <String,String> {'content-type': 'application/json'}, body: body
             )
         .catchError(

@@ -74,7 +74,7 @@ class ApproveLoginService {
     Future<http.Response> response;
 
     response = http
-        .post(BASE_API_URL + 'approve_login',
+        .post(BASE_API_URL + 'hc3_approve_login',
             headers: <String, String>{'content-type': 'application/json'},
             body: body
             // Send authorization headers to your backend

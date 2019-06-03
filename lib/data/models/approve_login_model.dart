@@ -7,7 +7,6 @@ class ApproveLoginModel {
    ApproveLoginModel(
     {
       this.apiVersion,
-      this.lastGazetteerUpdate,
       this.approvalCode,
       this.loginMessage,
       this.loginMessageTitle,
@@ -17,7 +16,6 @@ class ApproveLoginModel {
     });
 
     String apiVersion;
-    DateTime lastGazetteerUpdate;
     int approvalCode;
     String loginMessage;
     String loginMessageTitle;
@@ -38,7 +36,6 @@ class ApproveLoginModel {
         item = ApproveLoginModel(
           // isRsvped: jsonItem['isRsvped'],
           apiVersion: jsonItem['apiVersion'],
-          lastGazetteerUpdate:DateTime.parse(jsonItem['lastGazetteerUpdate'] ?? '2000-01-01 19:00:00'),
           approvalCode: jsonItem['approvalCode'],
           serverStatusCode: jsonItem['serverStatusCode'],
           loginMessage: jsonItem['loginMessage'],
