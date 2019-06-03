@@ -41,7 +41,7 @@ class AuthorizeDeviceService {
 
     try {
       final String responseBody =
-          await ServiceCommon.sendRequest(context, 'authorize_device', body);
+          await ServiceCommon.sendRequest(context, 'hc3_authorize_device', body);
       if (responseBody == ERROR_KEY) {
          return <String, String>{
             'result': 'failed',
