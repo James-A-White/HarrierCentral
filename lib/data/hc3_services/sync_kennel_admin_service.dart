@@ -142,6 +142,13 @@ class SyncKennelAdminService {
         print('kennels updated');
       }
 
+
+      if (ms.startsWith(r'[{"hasherId"')) {
+        final HashersService hSrv = HashersService();
+        await hSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        print('hashers updated');
+      }
+
       if (ms.startsWith(r'[{"hkmId"')) {
         final HasherKennelMapService hkmSrv = HasherKennelMapService();
         await hkmSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherKennelMapTableType.kennelAdmin);

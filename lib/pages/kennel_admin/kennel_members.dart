@@ -13,6 +13,8 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
+import 'package:harrier_central/data/hc3_services/hashers_service.dart';
+import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 
 class KennelMembersList extends StatefulWidget {
   const KennelMembersList({Key key, @required this.kennel}) : super(key: key);
@@ -66,11 +68,11 @@ class KennelMemberListState extends State<KennelMembersList> {
 
   @override
   void initState() {
-    refreshRunHistoryFromTable(true);
+    refreshKennelMembersFromTable(true);
     super.initState();
   }
 
-  Future<void> refreshRunHistoryFromTable(bool forceRefresh) async {
+  Future<void> refreshKennelMembersFromTable(bool forceRefresh) async {
     final Database db = await DBProvider.db.database;
 
     String orderBy = 'lower(h.dispName)';
@@ -188,10 +190,10 @@ class KennelMemberListState extends State<KennelMembersList> {
                 labelStyle: const TextStyle(fontSize: 18.0),
                 onTap: () {
                   _sortBy = sortBySpeedDialType;
-                  refreshRunHistoryFromTable(true);
+                  refreshKennelMembersFromTable(true);
                 }),
             SpeedDialChild(
-                child: const Icon(Icons.person_add),
+                child: const Icon(MaterialCommunityIcons.account_search),
                 backgroundColor: Colors.blue,
                 label: 'Find Hasher and add',
                 labelStyle: const TextStyle(fontSize: 18.0),
@@ -213,13 +215,32 @@ class KennelMemberListState extends State<KennelMembersList> {
                       widget.kennel['followingRequested'] = -1;
                       setState(() {});
                       srv.updateHasherKennelStatus(widget.kennel, HasherKennelMapTableType.kennelAdmin, monthsToAddToMembership: widget.kennel['membershipDurationInMonths'], targetUserId: result['hasher'].hasherId).then((void dummy) {
-                        refreshRunHistoryFromTable(true).then((void dummy) {
+                        refreshKennelMembersFromTable(true).then((void dummy) {
                           setState(() {
                             _isLoading = false;
                           });
                         });
                       });
                     }
+                  });
+                }),
+            SpeedDialChild(
+                child: const Icon(Icons.person_add),
+                backgroundColor: Colors.green,
+                label: 'Add Hasher to Harrier Central',
+                labelStyle: const TextStyle(fontSize: 18.0),
+                onTap: () {
+                  Navigator.push<HashersModel>(
+                    context,
+                    MaterialPageRoute<HashersModel>(
+                      builder: (BuildContext context) => HasherProfilePage(
+                            pageType: EnumMyProfilePageType.newHasherProfile,
+                            kennelId: widget.kennel['kennelId'],
+                            uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
+                          ),
+                    ),
+                  ).then((HashersModel result) {
+                    refreshKennelMembersFromTable(true);
                   });
                 }),
           ],
@@ -241,10 +262,10 @@ class KennelMemberListState extends State<KennelMembersList> {
     });
 
     final SyncKennelAdminService cSrv = SyncKennelAdminService();
-    final bool result = await cSrv.updateFromBackend(db, SyncKennelAdminService.flagKennelTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennel['kennelId']);
+    final bool result = await cSrv.updateFromBackend(db, SyncKennelAdminService.flagKennelTable | SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennel['kennelId']);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Event map data synchronized $resultStr');
-    refreshRunHistoryFromTable(true);
+    refreshKennelMembersFromTable(true);
   }
 
   Widget _buildListView() {
@@ -360,7 +381,7 @@ class KennelMemberListState extends State<KennelMembersList> {
     item.membershipDateBeingUpdated = true;
     setState(() {});
     srv.updateHasherKennelStatus(widget.kennel, HasherKennelMapTableType.kennelAdmin, monthsToAddToMembership: monthsToAddToMembership, targetUserId: item.hasherId).then((void dummy) {
-      refreshRunHistoryFromTable(true).then((void dummy) {
+      refreshKennelMembersFromTable(true).then((void dummy) {
         item.membershipDateBeingUpdated = false;
         setState(() {});
       });

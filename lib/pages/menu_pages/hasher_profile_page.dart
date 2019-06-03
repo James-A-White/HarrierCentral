@@ -18,6 +18,8 @@ import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 
 // import 'package:harrier_central/widgets/user_details_ui.dart';
 // import 'package:harrier_central/widgets/fancy_divider.dart';
@@ -66,14 +68,41 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   String newPhoto = '';
   HashersModel hasher;
 
+  bool isEmptyGuid(String guid)
+  {
+    if ((guid == null) || (guid.isEmpty) || (guid ==GUID_EMPTY))
+    {
+      return true;
+    }
+    return false;
+  }
+
   Future<void> refreshUserDataFromTable(bool forceRefresh) async {
     final Database db = await DBProvider.db.database;
     if (forceRefresh) {
       // always sync user data before editing
-      final SyncUserDataService cSrv = SyncUserDataService();
-      final bool res = await cSrv.updateFromBackend(db, SyncUserDataService.flagHashersTable, false);
-      final String resultStr = res ? 'successfully' : 'unsuccessfully';
-      print('Master data synchronized $resultStr');
+
+      if (isEmptyGuid(widget.kennelId) && isEmptyGuid(widget.eventId))
+      {
+        final SyncUserDataService cSrv = SyncUserDataService();
+        final bool res = await cSrv.updateFromBackend(db, SyncUserDataService.flagHashersTable, true);
+        final String resultStr = res ? 'successfully' : 'unsuccessfully';
+        print('User master Hashers data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+      } else if (!isEmptyGuid(widget.eventId)) {
+
+        final SyncEventAdminService cSrv = SyncEventAdminService();
+        final bool res = await cSrv.updateFromBackend(db, SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagHasherKennelMapTable | SyncEventAdminService.flagHasherEventMapTable, true, widget.eventId);
+        final String resultStr = res ? 'successfully' : 'unsuccessfully';
+        print('Event data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+
+      } else if (!isEmptyGuid(widget.kennelId)) {
+
+        final SyncKennelAdminService cSrv = SyncKennelAdminService();
+        final bool res = await cSrv.updateFromBackend(db, SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennelId);
+        final String resultStr = res ? 'successfully' : 'unsuccessfully';
+        print('Kennel data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+
+      }
     }
 
     final String query = ''' 
@@ -436,7 +465,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   builder: (BuildContext context) => ChooseProfileImage(
                                                                         isForThisDevice: widget.pageType == EnumMyProfilePageType.myProfile,
                                                                         fileNamePrefix: photoPrefix,
-                                                                        currentProfileImage: hasher?.photo ?? '',
+                                                                        currentProfileImage: hasher?.photo ?? newPhoto,
                                                                       ),
                                                                 ),
                                                               ).then((String result) {
