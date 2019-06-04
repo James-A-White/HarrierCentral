@@ -1,6 +1,14 @@
 import 'dart:core';
 
-
+enum EnumAppPages {
+  settings,
+  futureRuns,
+  kennelList,
+  runCounts,
+  qrCodePage,
+  friends,
+  fab
+}
 
 abstract class Enum<T> {
   const Enum(this._value);

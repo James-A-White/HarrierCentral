@@ -2,16 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
-import 'package:harrier_central/data/models/main_navigation_model.dart';
-
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 import 'package:harrier_central/pages/menu_pages/imprint_page.dart';
 import 'package:harrier_central/pages/menu_pages/legal_page.dart';
 import 'package:harrier_central/pages/menu_pages/faq_page.dart';
 import 'package:harrier_central/pages/menu_pages/support_page.dart';
-//import 'package:harrier_central/pages/menu_pages/settings_page.dart';
-// import 'package:harrier_central/pages/menu_pages/in_app_purchase.dart';
-// import 'package:harrier_central/pages/menu_pages/user_feedback_page.dart';
 import 'package:harrier_central/pages/menu_pages/privacy_policy_page.dart';
 import 'package:harrier_central/util/preferences.dart';
 

@@ -7,7 +7,6 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 
-import 'package:harrier_central/data/models/main_navigation_model.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -70,10 +69,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     });
   }
 
-  void onTabTapped(EnumAppPages index) {
-    //homePageModel.currentMainView = index;
-    //setIntPref(IntPrefsEnum.mainViewCurrentTab, index);
-  }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
