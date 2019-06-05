@@ -6,6 +6,9 @@ const double DEFAULT_LONGITUDE = 0.1195;
 const int LOGIN_TIMEOUT = 10;
 const int DEFAULT_HTTP_TIMEOUT = 10;
 
+const num ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT = 3;
+const num ALLOW_CHECKIN_SCAN_HOURS_AFTER_EVENT = 6;
+
 const int SPLASH_SCREEN_DISPLAY_TIME = 1;
 
 const String BASE_API_URL = 'https://harrier.azurewebsites.net/api/';
@@ -30,10 +33,13 @@ const String GUID_MAX =   'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
 
-const String EVENT_SPECIFIC_START_QR_PREFIX = 'EVTSTART';
-const String EVENT_SPECIFIC_END_QR_PREFIX = 'EVTEND';
-const String KENNEL_GENERIC_START_QR_PREFIX = 'KENSTART';
-const String KENNEL_GENERIC_END_QR_PREFIX = 'KENEND';
+const String QR_PREFIX_SPECIFIC_RUN_START = 'SRS:';
+const String QR_PREFIX_SPECIFIC_RUN_END = 'SRE:';
+const String QR_PREFIX_KENNEL_GENERIC_RUN_START = 'KRS:';
+const String QR_PREFIX_KENNEL_GENERIC_RUN_END = 'KRE:';
+const String QR_PREFIX_USER_CODE = 'UQR:';
+const String QR_PREFIX_USER_SECRET_CODE = 'USC:';
+const String QR_PREFIX_USER_RESET_CODE = 'URC:';
 
 const int mmAuthIsGm = 0x40000000;                // TODO(James): Needs implementation
 const int mmAuthCanGrantPermissions = 0x20000000; // TODO(James): Needs implementation

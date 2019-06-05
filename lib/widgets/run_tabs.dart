@@ -812,7 +812,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     });
     //final String userId = getStringPref(StringPrefsEnum.userId);
     final HasherEventMapService hemSrv = HasherEventMapService();
-    final Future<void> retVal = hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.eventAdmin, userId, null, rsvpState.value, attendenceNoChange.value, isHareNo.value, enumHasher.value);
+    final int attendenceValue = rsvpState.value <= rsvpMaybe.value ? attendenceNo.value : attendenceNoChange.value;
+    final Future<void> retVal = hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.eventAdmin, userId, null, rsvpState.value, attendenceValue, isHareNo.value, enumHasher.value);
 
     retVal.then((void dummy) async {
       await refreshPackListFromTable(false);

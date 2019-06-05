@@ -17,6 +17,21 @@ abstract class Enum<T> {
 }
 
 
+// class EnumQrTypes<String> extends Enum<String> {
+//   const EnumQrTypes(String val) : super(val);
+// }
+
+// const EnumQrTypes<String> enumQrPrefix_userQrCode = EnumQrTypes<String>('UQR:');
+// const EnumQrTypes<String> enumQrPrefix_userSecretCode = EnumQrTypes<String>('USC:');
+// const EnumQrTypes<String> enumQrPrefix_userResetCode = EnumQrTypes<String>('URC:');
+// const EnumQrTypes<String> enumQrPrefix_specificRunStart = EnumQrTypes<String>('SRS:');
+// const EnumQrTypes<String> enumQrPrefix_specificRunEnd = EnumQrTypes<String>('SRE:');
+// const EnumQrTypes<String> enumQrPrefix_kennelGenericRunStart = EnumQrTypes<String>('KRS:');
+// const EnumQrTypes<String> enumQrPrefix_kennelGenericRunEnd = EnumQrTypes<String>('KRE:');
+
+//////////////////////////
+
+
 class EnumVirginVisitor<int> extends Enum<int> {
   const EnumVirginVisitor(int val) : super(val);
 }

@@ -11,6 +11,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
@@ -54,7 +55,7 @@ class SupportPageState extends State<SupportPage> {
   }
 
   String userName = getStringPref(StringPrefsEnum.displayName);
-  String userQrCode = getStringPref(StringPrefsEnum.qrSecretCode);
+  String userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
   String supportCode = getStringPref(StringPrefsEnum.supportCode);
 
   bool isLoading = false;
@@ -172,7 +173,7 @@ class SupportPageState extends State<SupportPage> {
                                                           child: QrImage(
                                                               backgroundColor: Colors.white,
                                                               padding: const EdgeInsets.all(10.0),
-                                                              data: 'USC:${userQrCode.toUpperCase()}',
+                                                              data: '$QR_PREFIX_USER_SECRET_CODE${userSecretCode.toUpperCase()}',
                                                               //data: 'testing123',
                                                               version: 4,
                                                               //size: 200.0,
@@ -290,7 +291,7 @@ class SupportPageState extends State<SupportPage> {
                                                                       isLoading = true;
 
                                                                       final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                                                                      final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, 'RC:' + resetCodeTextController.text.toUpperCase());
+                                                                      final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
                                                                       apiCall.then((Map<String, String> result) {
                                                                         setState(() {
                                                                           isLoading = false;
@@ -298,7 +299,7 @@ class SupportPageState extends State<SupportPage> {
 
                                                                         if (result['result'] != 'failed') {
                                                                           userName = getStringPref(StringPrefsEnum.displayName);
-                                                                          userQrCode = getStringPref(StringPrefsEnum.qrSecretCode);
+                                                                          userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
 
                                                                           Utilities.showAlert(context, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
                                                                         }
@@ -335,7 +336,7 @@ class SupportPageState extends State<SupportPage> {
                                                                       isLoading = true;
 
                                                                       final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                                                                      final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, 'RC:' + resetCodeTextController.text.toUpperCase());
+                                                                      final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
                                                                       apiCall.then((Map<String, String> result) {
                                                                         setState(() {
                                                                           isLoading = false;
@@ -343,7 +344,7 @@ class SupportPageState extends State<SupportPage> {
 
                                                                         if (result['result'] != 'failed') {
                                                                           userName = getStringPref(StringPrefsEnum.displayName);
-                                                                          userQrCode = getStringPref(StringPrefsEnum.qrSecretCode);
+                                                                          userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
 
                                                                           Utilities.showAlert(context, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
                                                                         }

@@ -18,6 +18,7 @@ import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/server_message_model.dart';
 
 class SyncUserDataService {
   static const int flagHashersTable = 0x00000001;
@@ -158,7 +159,8 @@ class SyncUserDataService {
     return true;
   }
 
-  static Future<void> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Database db, Function informUser}) async {
+  static Future<List<ServerMessageModel>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Database db, Function informUser}) async {
+    List<ServerMessageModel> messages;
     db ??= await DBProvider.db.database;
 
     if (jsonResults.startsWith('[[')) {
@@ -217,6 +219,16 @@ class SyncUserDataService {
         await hemSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherEventMapTableType.user);
         print('hasher event map updated');
       }
+
+      if (ms.startsWith(r'[{"messageId"')) {
+        final List<ServerMessageModel> messageModel = ServerMessageModel.itemsFromJson('$ms');
+        if ((messageModel != null) && (messageModel.isNotEmpty))
+        {
+           messages = messageModel;
+        }
+        print('server messages received');
+      }
     }
+    return messages;
   }
 }

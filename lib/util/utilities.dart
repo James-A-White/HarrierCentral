@@ -20,6 +20,67 @@ class LatLon {
 }
 
 class Utilities {
+
+
+  static const int qrScanTypeFlag_user = 0x00000001;
+  static const int qrScanTypeFlag_userSecretCode = 0x00000002;
+  static const int qrScanTypeFlag_runStart = 0x00000004;
+  static const int qrScanTypeFlag_runEnd = 0x00000008;
+  static const int qrScanTypeFlag_kennelRunStart = 0x00000010;
+  static const int qrScanTypeFlag_kennelRunEnd = 0x00000020;
+  static const int qrScanTypeFlag_resetCode = 0x00000040;
+
+  static Map<String,String> validateScan(String scanText, int allowedScanTypes) {
+
+    Map<String,String> result;
+
+    final int colonOffset = scanText.indexOf(':');
+    if (colonOffset != 3) {
+      result = <String,String>{'validScan':false.toString(), 'prefix':'','content':''};
+    } else {
+      final String prefix = scanText.substring(0, colonOffset+1);
+      final String content = scanText.substring(4);
+
+      int scanType = 0;
+      bool validHcQr = true;
+
+      switch (prefix.toUpperCase()) {
+        case QR_PREFIX_USER_CODE:
+          scanType = qrScanTypeFlag_user;
+          break;
+        case QR_PREFIX_USER_SECRET_CODE:
+          scanType = qrScanTypeFlag_userSecretCode;
+          break;
+        case QR_PREFIX_USER_RESET_CODE:
+          scanType = qrScanTypeFlag_resetCode;
+          break;
+        case QR_PREFIX_SPECIFIC_RUN_START:
+          scanType = qrScanTypeFlag_runStart;
+          break;
+        case QR_PREFIX_SPECIFIC_RUN_END:
+          scanType = qrScanTypeFlag_runEnd;
+          break;
+        case QR_PREFIX_KENNEL_GENERIC_RUN_START:
+          scanType = qrScanTypeFlag_kennelRunStart;
+          break;
+        case QR_PREFIX_KENNEL_GENERIC_RUN_END:
+          scanType = qrScanTypeFlag_kennelRunEnd;
+          break;
+        default:
+         validHcQr = false;
+         break;
+      }
+
+      final bool scanAllowed = (scanType & allowedScanTypes) != 0;
+
+      result = <String,String>{'validScan':scanAllowed.toString(), 'prefix':prefix,'content':content, 'validHcQr':validHcQr.toString()};
+    }
+
+   return result;
+  }
+
+
+
   static Future<LatLon> getLatLong() async {
     Position position;
 

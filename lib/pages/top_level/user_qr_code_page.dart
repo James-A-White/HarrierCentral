@@ -1,18 +1,24 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:fast_qr_reader_view/fast_qr_reader_view.dart'; 
+import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
 import 'package:audioplayers/audio_cache.dart';
+import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/data/models/process_qr_scan_model.dart';
-import 'package:harrier_central/data/services/process_qr_scan_service.dart';
+import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/server_message_model.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
+import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 
 class UserQrCodePage extends StatefulWidget {
   const UserQrCodePage({Key key}) : super(key: key);
@@ -21,8 +27,7 @@ class UserQrCodePage extends StatefulWidget {
   _UserQrCodePageState createState() => _UserQrCodePageState();
 }
 
-class _UserQrCodePageState extends State<UserQrCodePage>
-    with SingleTickerProviderStateMixin {
+class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProviderStateMixin {
   List<Tab> tabs = <Tab>[];
 
   String barcode = '';
@@ -71,16 +76,8 @@ class _UserQrCodePageState extends State<UserQrCodePage>
                 child: Padding(
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
                   child: TabBar(
-                    labelStyle: const TextStyle(
-                        fontFamily: 'AvenirNextCondensedMedium',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 18.0,
-                        height: 1.0),
-                    unselectedLabelStyle: const TextStyle(
-                        fontFamily: 'AvenirNextCondensedMedium',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 18.0,
-                        height: 1.0),
+                    labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                    unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
                     isScrollable: false,
                     unselectedLabelColor: Colors.black,
                     labelColor: Colors.white,
@@ -194,11 +191,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
                 Text(
                   'You can use your QR scanner to add friends to your Harrier Central friend list simply by scanning their personal QR code. You can also use your scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out.',
                   textAlign: TextAlign.justify,
-                  style: TextStyle(
-                      fontFamily: 'AvenirNextRegular',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 16.0,
-                      height: 1.0),
+                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                 )
               ],
             ),
@@ -235,14 +228,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
 }
 
 class TabIndicationPainter extends CustomPainter {
-  TabIndicationPainter(
-      {this.context,
-      this.dxTarget = 125.0,
-      this.dxEntry = 25.0,
-      this.radius = 21.0,
-      this.dy = 25.0,
-      this.pageController})
-      : super(repaint: pageController) {
+  TabIndicationPainter({this.context, this.dxTarget = 125.0, this.dxEntry = 25.0, this.radius = 21.0, this.dy = 25.0, this.pageController}) : super(repaint: pageController) {
     painter = Paint()
       ..color = Theme.of(context).accentColor
       ..style = PaintingStyle.fill;
@@ -260,8 +246,7 @@ class TabIndicationPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final ScrollPosition pos = pageController.position;
-    final double fullExtent =
-        pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
+    final double fullExtent = pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
 
     final double pageOffset = pos.extentBefore / fullExtent;
 
@@ -270,11 +255,9 @@ class TabIndicationPainter extends CustomPainter {
     final Offset target = Offset(left2right ? dxTarget : dxEntry, dy);
 
     final Path path = Path();
-    path.addArc(Rect.fromCircle(center: entry, radius: radius), 0.5 * math.pi,
-        1 * math.pi);
+    path.addArc(Rect.fromCircle(center: entry, radius: radius), 0.5 * math.pi, 1 * math.pi);
     path.addRect(Rect.fromLTRB(entry.dx, dy - radius, target.dx, dy + radius));
-    path.addArc(Rect.fromCircle(center: target, radius: radius), 1.5 * math.pi,
-        1 * math.pi);
+    path.addArc(Rect.fromCircle(center: target, radius: radius), 1.5 * math.pi, 1 * math.pi);
 
     canvas.translate(size.width * pageOffset, 0.0);
     canvas.drawShadow(path, const Color(0xFFfbab66), 3.0, true);
@@ -292,8 +275,7 @@ class QrCodeTab extends StatefulWidget {
   _QrCodeTabState createState() => _QrCodeTabState();
 }
 
-class _QrCodeTabState extends State<QrCodeTab>
-    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -310,11 +292,7 @@ class _QrCodeTabState extends State<QrCodeTab>
                 Text(
                   'This QR code allows other Hashers to quickly scan you using their Harrier Central apps.\r\n\r\nAny Hasher can scan this code to easily add you as their friend.\r\n\r\nHares and mis-management can use this code to scan you in at the beginning and end of runs in order to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.',
                   textAlign: TextAlign.justify,
-                  style: TextStyle(
-                      fontFamily: 'AvenirNextRegular',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 16.0,
-                      height: 1.0),
+                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                 )
               ],
             ),
@@ -337,12 +315,10 @@ class _QrCodeTabState extends State<QrCodeTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final String userName =
-        getStringPref(StringPrefsEnum.displayName);
+    final String userName = getStringPref(StringPrefsEnum.displayName);
     final String userQrCode = getStringPref(StringPrefsEnum.qrCode);
 
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
+    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
       print('Height = ${constraints.maxHeight}');
       print('Width = ${constraints.maxWidth}');
       return Center(
@@ -376,12 +352,7 @@ class _QrCodeTabState extends State<QrCodeTab>
                       //'QR Code for xxx',
                       textAlign: TextAlign.center,
                       maxLines: 1,
-                      style: const TextStyle(
-                          fontFamily: 'AvenirNextDemiBold',
-                          fontStyle: FontStyle.normal,
-                          color: Colors.white,
-                          fontSize: 24.0,
-                          height: 1.0),
+                      style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 24.0, height: 1.0),
                     ),
                   ),
                   // Positioned(
@@ -397,9 +368,7 @@ class _QrCodeTabState extends State<QrCodeTab>
                     top: 127,
                     //bottom: 50,
                     child: Container(
-                      height: math.min(
-                              constraints.maxHeight, constraints.maxWidth) *
-                          0.65,
+                      height: math.min(constraints.maxHeight, constraints.maxWidth) * 0.65,
                       child: QrImage(
                           backgroundColor: Colors.white,
                           padding: const EdgeInsets.all(10.0),
@@ -440,9 +409,8 @@ class QrScannerTab extends StatefulWidget {
   _QrScannerTabState createState() => _QrScannerTabState();
 }
 
-class _QrScannerTabState extends State<QrScannerTab>
-    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
-  String barcode = 'Waiting for Scan';
+class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+  String onScreenMessage = 'Waiting for Scan';
 
   QRReaderController controller;
 
@@ -468,13 +436,13 @@ class _QrScannerTabState extends State<QrScannerTab>
 
   Future<void> scanUserBarcode() async {
     if (controller == null) {
-      setState(() => barcode = 'Scanning');
+      setState(() => onScreenMessage = 'Scanning');
       cameras = await availableCameras();
 
       onNewCameraSelected(cameras[0]);
     } else {
       await stopScanning();
-      setState(() => barcode = 'Waiting for scan');
+      setState(() => onScreenMessage = 'Waiting for scan');
     }
 
     // return Future<void>(() {});(() {});
@@ -484,17 +452,125 @@ class _QrScannerTabState extends State<QrScannerTab>
     final AudioCache audioPlayer = AudioCache(prefix: 'sounds/');
     audioPlayer.play('camera.mp3');
 
-    setState(() => barcode = 'Processing QR Scan');
+    setState(() => onScreenMessage = 'Processing QR Scan');
     await stopScanning();
 
-    final ProcessQrScanService srv = ProcessQrScanService();
-    final Future<ProcessQrScanModel> apiCall =
-        srv.processQrScan('', scanResult, 'UserScan', '', '', '');
-    apiCall.then((ProcessQrScanModel result) {
-      setState(() => barcode = result.resultStr1);
-    });
+    //final Map<String,String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_user | Utilities.qrScanTypeFlag_kennelRunEnd| Utilities.qrScanTypeFlag_kennelRunStart| Utilities.qrScanTypeFlag_runStart| Utilities.qrScanTypeFlag_runEnd);
+    final Map<String, String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_user | Utilities.qrScanTypeFlag_runStart | Utilities.qrScanTypeFlag_runEnd | Utilities.qrScanTypeFlag_kennelRunEnd | Utilities.qrScanTypeFlag_kennelRunStart);
+
+    if (result['validScan'] == 'false') {
+      setState(() {
+        onScreenMessage = result['validHcQr'] == 'true' ? 'This QR code is not valid here' : 'QR code not recignized';
+      });
+    } else {
+      final String prefix = result['prefix'];
+      final String content = result['content'];
+
+      if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) || (prefix == QR_PREFIX_SPECIFIC_RUN_END)) {
+        final int attendenceState = prefix == QR_PREFIX_SPECIFIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
+        final HasherEventMapService hemSrv = HasherEventMapService();
+
+        final String userId = getStringPref(StringPrefsEnum.userId);
+
+        hemSrv.joinEvent(content, HasherEventMapTableType.user, userId, null, rsvpYes.value, attendenceState, isHareNo.value, enumHasher.value).then((List<ServerMessageModel> messages) {
+          setState(() {
+            if ((messages != null) && (messages.isNotEmpty)) {
+              onScreenMessage = messages[0].messageText;
+            } else {
+              onScreenMessage = 'Processing Complete';
+            }
+          });
+        });
+      }
+
+      if ((prefix == QR_PREFIX_KENNEL_GENERIC_RUN_END) || (prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START)) {
+        final int attendenceState = prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
+
+        final String eventId = await getClosestEventInTime(content);
+        if (num.tryParse(eventId) != null) {
+          final num hoursUntilNextEvent = num.tryParse(eventId);
+          setState(() {
+            if (hoursUntilNextEvent > 24) {
+              onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent/24)} days';
+            } else {
+              if (hoursUntilNextEvent >= 2)
+              {
+               onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('##').format(hoursUntilNextEvent)} hours';
+              } else {
+                onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent*60)} minute' + NumberFormat('###').format(hoursUntilNextEvent*60) != '1' ? 's':'' ;
+              }
+            }
+          });
+        } else {
+          if (eventId == 'none') {
+            setState(() {
+              onScreenMessage = 'There is no event for this Kennel at this time';
+            });
+          } else {
+            final HasherEventMapService hemSrv = HasherEventMapService();
+            final String userId = getStringPref(StringPrefsEnum.userId);
+
+            hemSrv.joinEvent(eventId, HasherEventMapTableType.user, userId, null, rsvpYes.value, attendenceState, isHareNo.value, enumHasher.value).then((List<ServerMessageModel> messages) {
+              setState(() {
+                if ((messages != null) && (messages.isNotEmpty)) {
+                  onScreenMessage = messages[0].messageText;
+                } else {
+                  onScreenMessage = 'Processing Complete';
+                }
+              });
+            });
+          }
+        }
+      }
+    }
+
+    // final ProcessQrScanService srv = ProcessQrScanService();
+    // final Future<ProcessQrScanModel> apiCall =
+    //     srv.processQrScan('', scanResult, 'UserScan', '', '', '');
+    // apiCall.then((ProcessQrScanModel result) {
+    //   setState(() => barcode = result.resultStr1);
+    // });
 
     // return Future<void>(() {});(() {});
+  }
+
+  Future<String> getClosestEventInTime(String kennelId) async {
+    String result = 'none';
+    try {
+      final Database db = await DBProvider.db.database;
+
+      final String sql = ''' 
+
+          SELECT e.eventId,
+          e.eventName,
+          (julianday(eventStartDatetime) - julianday('now','localtime')) * 24 as deltaHours
+          FROM ${NarrowEventsTableHelper.tableName} e
+          WHERE e.kennelId = "$kennelId"
+          ORDER BY abs(julianday('now') - julianday(eventStartDatetime)) ASC
+          
+          ''';
+
+      final List<Map<String, dynamic>> results = await db.rawQuery(sql);
+      
+        setState(() {
+          if (results.isNotEmpty) {
+            for (int i = 0; i < results.length; i++) {
+              if ((results[i]['deltaHours'] <= ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT) && (results[i]['deltaHours'] >= -ALLOW_CHECKIN_SCAN_HOURS_AFTER_EVENT)) {
+                result = results[i]['eventId'];
+                break;
+              } else if (results[i]['deltaHours'] > ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT) {
+                result = (results[i]['deltaHours']-ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT).toString();
+                break;
+              }
+            }
+          }
+        });
+      
+    } catch (e) {
+      print(e);
+    }
+
+    return result;
   }
 
   Future<dynamic> stopScanning() async {
@@ -504,8 +580,7 @@ class _QrScannerTabState extends State<QrScannerTab>
   }
 
   Widget _cameraPreviewWidget() {
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraint) {
+    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraint) {
       return Stack(children: <Widget>[
         Image.asset(
           'images/other/qr_scanner.png',
@@ -514,8 +589,7 @@ class _QrScannerTabState extends State<QrScannerTab>
           padding: const EdgeInsets.all(9.0),
           height: constraint.biggest.height,
           width: constraint.biggest.height,
-          child:
-              (controller == null) ? Container() : QRReaderPreview(controller),
+          child: (controller == null) ? Container() : QRReaderPreview(controller),
         )
       ]);
     });
@@ -527,8 +601,7 @@ class _QrScannerTabState extends State<QrScannerTab>
     if (controller != null) {
       await controller.dispose();
     }
-    controller = QRReaderController(cameraDescription, ResolutionPreset.high,
-        <CodeFormat>[CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
+    controller = QRReaderController(cameraDescription, ResolutionPreset.high, <CodeFormat>[CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
 
     // If the controller is updated then update the UI.
     controller.addListener(() {
@@ -573,11 +646,7 @@ class _QrScannerTabState extends State<QrScannerTab>
                 Text(
                   'You can use your QR scanner to add friends to your Harrier Central friend list simply by scanning their personal QR code.\r\n\r\nYou can also use your scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out.',
                   textAlign: TextAlign.justify,
-                  style: TextStyle(
-                      fontFamily: 'AvenirNextRegular',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 16.0,
-                      height: 1.0),
+                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                 )
               ],
             ),
@@ -638,12 +707,7 @@ class _QrScannerTabState extends State<QrScannerTab>
                   'Use this scanner to either scan in at the beginning or end of runs or to scan the QR codes of other Hashers who you want to add to your friend list.',
                   textAlign: TextAlign.justify,
                   maxLines: 4,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'AvenirNextDemiBold',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 16.0,
-                      height: 0.8),
+                  style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 0.8),
                 ),
               ),
               Positioned(
@@ -660,28 +724,18 @@ class _QrScannerTabState extends State<QrScannerTab>
                 child: Container(
                   //margin: const EdgeInsets.all(20.0),
                   width: 280.0,
-                  child: 
-                  
-                  Utilities.styleForConnected(
-                  RaisedButton(
-                      child: Text(
-                        controller == null ? 'Start Scanning' : 'Stop Scanning',
-                        style: const TextStyle(
-                            fontFamily: 'AvenirNextDemiBold',
-                            color: Colors.white,
-                            fontStyle: FontStyle.normal,
-                            fontSize: 22.0,
-                            height: 1.0),
-                      ),
-                      onPressed: () {
-                        if (Utilities.checkForConnection(context))
-                        {
-                        scanUserBarcode();
-                        }
-                      }),
+                  child: Utilities.styleForConnected(
+                    RaisedButton(
+                        child: Text(
+                          controller == null ? 'Start Scanning' : 'Stop Scanning',
+                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', color: Colors.white, fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
+                        ),
+                        onPressed: () {
+                          if (Utilities.checkForConnection(context)) {
+                            scanUserBarcode();
+                          }
+                        }),
                   ),
-             
-             
                 ),
               ),
               Positioned(
@@ -692,18 +746,13 @@ class _QrScannerTabState extends State<QrScannerTab>
                   height: 80,
                   child: Center(
                     child: AutoSizeText(
-                      barcode,
+                      onScreenMessage,
                       //'This is a test of how ',
                       //'This is a test of how this works with 2 lines ',
                       //'this is a test of how 3 lines will fit Ill need a lot more text than that to make it work',
                       textAlign: TextAlign.center,
                       maxLines: 3,
-                      style: const TextStyle(
-                          fontFamily: 'AvenirNextDemiBold',
-                          fontStyle: FontStyle.normal,
-                          color: Colors.yellow,
-                          fontSize: 26.0,
-                          height: 0.9),
+                      style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 26.0, height: 0.9),
                     ),
                   ),
                 ),

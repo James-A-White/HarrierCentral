@@ -16,6 +16,7 @@ import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/receipts_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
+import 'package:harrier_central/data/hc3_services/server_message_model.dart';
 
 class SyncEventAdminService {
   static const int flagHasherEventMapTable = 0x00000001;
@@ -24,7 +25,6 @@ class SyncEventAdminService {
   static const int flagPaymentsTable = 0x00000008;
   static const int flagReceiptsTable = 0x00000010;
   static const int flagHashersTable = 0x00000020;
-
 
   static const int flagsAllData = 0x0000003f;
 
@@ -52,12 +52,10 @@ class SyncEventAdminService {
   }
 
   Future<bool> updateFromBackend(Database db, int flags, bool forceRefresh, String eventId, {Function informUser}) async {
-    
-    if (globalConnectionStatus == connectionStatus_notConnected)
-    {
+    if (globalConnectionStatus == connectionStatus_notConnected) {
       return false;
     }
-  
+
     if (getStringPref(StringPrefsEnum.adminEventId) != eventId) {
       final PaymentsService paySrv = PaymentsService();
       final HasherEventMapService hem2srv = HasherEventMapService();
@@ -89,8 +87,7 @@ class SyncEventAdminService {
         ((hasherEventMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherEventMapLastUpdate) > HasherEventMapTableHelper.forceRequeryInterval) ||
         ((hasherKennelMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherKennelMapLastUpdate) > HasherKennelMapTableHelper.forceRequeryInterval) ||
         ((narrowEventsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - narrowEventsLastUpdate) > NarrowEventsTableHelper.forceRequeryInterval) ||
-        ((hashersLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hashersLastUpdate) > HasherEventMapTableHelper.forceRequeryInterval)
-        ) {
+        ((hashersLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hashersLastUpdate) > HasherEventMapTableHelper.forceRequeryInterval)) {
       // check to see if we need to clear the cache
       //int lastCacheClear = getIntPref(CitiesTableHelper.lastCacheClearKey);
 
@@ -157,10 +154,11 @@ class SyncEventAdminService {
     return true;
   }
 
-  static Future<void> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Database db,Function informUser}) async {
-    
+  static Future<List<ServerMessageModel>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Database db, Function informUser}) async {
+    List<ServerMessageModel> messages;
+
     db ??= await DBProvider.db.database;
-    
+
     if (jsonResults.startsWith('[[')) {
       jsonResults = jsonResults.substring(1, jsonResults.length - 1);
     }
@@ -205,6 +203,15 @@ class SyncEventAdminService {
         await hkmSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherKennelMapTableType.eventAdmin);
         print('hasher event map for admin updated');
       }
+
+      if (ms.startsWith(r'[{"messageId"')) {
+        final List<ServerMessageModel> messageModel = ServerMessageModel.itemsFromJson('$ms');
+        if ((messageModel != null) && (messageModel.isNotEmpty)) {
+          messages = messageModel;
+        }
+        print('server messages received');
+      }
     }
+    return messages;
   }
 }

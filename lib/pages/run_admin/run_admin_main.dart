@@ -282,8 +282,8 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                               kennelShortName: event['kennelShortName'],
                               qrContent: event['eventId'],
                               title: event['eventName'],
-                              runStartPrefix: EVENT_SPECIFIC_START_QR_PREFIX,
-                              runEndPrefix: EVENT_SPECIFIC_END_QR_PREFIX,
+                              runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
+                              runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
                               eventStartDatetime: DateTime.parse(event['eventStartDatetime'])
                             )));
           },

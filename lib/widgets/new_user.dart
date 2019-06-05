@@ -259,7 +259,7 @@ class NewUserState extends State<NewUserWidget> with SingleTickerProviderStateMi
                                   isLoading = true;
 
                                   final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                                  final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, 'RC:' + resetCodeTextController.text.toUpperCase());
+                                  final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + resetCodeTextController.text.toUpperCase());
                                   apiCall.then((Map<String, String> result) {
                                     setState(() {
                                       isLoading = false;
@@ -577,7 +577,7 @@ class NewUserState extends State<NewUserWidget> with SingleTickerProviderStateMi
     await stopScanning();
     setState(() => barcode = 'Processing QR Scan');
 
-    if (!scanResult.toUpperCase().startsWith('USC:')) {
+    if (!scanResult.toUpperCase().startsWith(QR_PREFIX_USER_SECRET_CODE)) {
       setState(() {
         // QR code not recognized
         _scanState = 3;

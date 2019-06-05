@@ -22,6 +22,7 @@ import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 
@@ -515,7 +516,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             context,
                                             MaterialPageRoute<dynamic>(
                                                 builder: (BuildContext context) => EventQrCodePage(
-                                                    kennelShortName: widget.kennel['kennelShortName'], qrContent: widget.kennel['kennelId'], runEndPrefix: KENNEL_GENERIC_END_QR_PREFIX, runStartPrefix: KENNEL_GENERIC_START_QR_PREFIX, title: 'Any ' + widget.kennel['kennelShortName'] + ' run')));
+                                                    kennelShortName: widget.kennel['kennelShortName'], qrContent: widget.kennel['kennelId'], runEndPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_END, runStartPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_START, title: 'Any ' + widget.kennel['kennelShortName'] + ' run')));
                                       },
                                     ),
                                   ),

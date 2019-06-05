@@ -13,6 +13,7 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
+import 'package:harrier_central/data/hc3_services/server_message_model.dart';
 
 class HasherEventMapModel {
   HasherEventMapModel({this.hemId, this.userId, this.eventId, this.userStartEvent, this.userEndEvent, this.rsvpState, this.attendenceState, this.isHare, this.eventCountOverride, this.virginVisitorType, this.displayName, this.email, this.phoneNumber, this.removed, this.updatedAt});
@@ -346,12 +347,14 @@ class HasherEventMapService {
     };
   }
 
-  Future<void> joinEvent(String eventId, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, int rsvpState, int attendenceState, int isHare, int virginVisitorType) async {
+  Future<List<ServerMessageModel>> joinEvent(String eventId, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, int rsvpState, int attendenceState, int isHare, int virginVisitorType) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
-      return;
+      return null;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
+
+    List<ServerMessageModel> messages;
 
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEvent');
@@ -383,10 +386,12 @@ class HasherEventMapService {
     );
 
     if (tblType == HasherEventMapTableType.eventAdmin) {
-      await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      messages = await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else {
-      await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      messages = await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     }
+
+    return messages;
   }
 
   Future<void> joinEventAsVisitor(Map<String, dynamic> event, HasherEventMapTableType tblType, String displayName, int virginVisitorType, int attendenceState, String email, String phoneNumber) async {
