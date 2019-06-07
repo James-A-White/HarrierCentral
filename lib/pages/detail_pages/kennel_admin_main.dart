@@ -22,7 +22,6 @@ import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 

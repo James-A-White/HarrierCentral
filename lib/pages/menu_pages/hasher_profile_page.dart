@@ -12,7 +12,6 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/profile_photo.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';

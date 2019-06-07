@@ -61,7 +61,14 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
 
         final String sql = '''
 
-          SELECT e.*,hkm.mismanagementRoleFlags,k.kennelShortName,coalesce(c.digitsAfterDecimal,2) as digitsAfterDecimal, coalesce(c.currencySymbol,"$dollarSign") as currencySymbol from ${NarrowEventsTableHelper.tableName} e
+          SELECT e.*,
+          hkm.mismanagementRoleFlags,
+          k.kennelShortName,
+          coalesce(c.digitsAfterDecimal,2) as digitsAfterDecimal, 
+          coalesce(c.currencySymbol,"$dollarSign") as currencySymbol,
+          coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as memberPrice,
+          coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as nonMemberPrice
+          FROM ${NarrowEventsTableHelper.tableName} e
           INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
           LEFT OUTER JOIN ${CountriesTableHelper.tableName} c on c.countryId = k.countryId
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId
@@ -171,7 +178,11 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                         kennelShortName: event['kennelShortName'],
                         eventId: event['eventId'],
                         eventName: event['eventName'],
-                        eventNumber: event['eventNumber']
+                        eventNumber: event['eventNumber'],
+                        currencySymbol: event['currencySymbol'],
+                        digitsAfterDecimal: event['digitsAfterDecimal'],
+                        memberPrice: event['memberPrice'],
+                        nonMemberPrice: event['nonMemberPrice'],
                       ),
                 ),
               );

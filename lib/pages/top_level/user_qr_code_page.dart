@@ -7,18 +7,16 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
 import 'package:audioplayers/audio_cache.dart';
-import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/database/common_queries.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
-import 'package:harrier_central/data/hc3_services/server_message_model.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
-import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
+
 
 class UserQrCodePage extends StatefulWidget {
   const UserQrCodePage({Key key}) : super(key: key);
@@ -472,10 +470,10 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
 
         final String userId = getStringPref(StringPrefsEnum.userId);
 
-        hemSrv.joinEvent(content, HasherEventMapTableType.user, userId, null, rsvpYes.value, attendenceState, isHareNo.value, enumHasher.value).then((List<ServerMessageModel> messages) {
+        hemSrv.joinEvent(content, HasherEventMapTableType.user, userId, null, rsvpYes.value, attendenceState, isHareNo.value, enumHasher.value).then((List<dynamic> adHocData) {
           setState(() {
-            if ((messages != null) && (messages.isNotEmpty)) {
-              onScreenMessage = messages[0].messageText;
+            if ((adHocData != null) && (adHocData.isNotEmpty)) {
+              onScreenMessage = adHocData[0]['userMessage'];
             } else {
               onScreenMessage = 'Processing Complete';
             }
@@ -486,7 +484,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
       if ((prefix == QR_PREFIX_KENNEL_GENERIC_RUN_END) || (prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START)) {
         final int attendenceState = prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
 
-        final String eventId = await getClosestEventInTime(content);
+        final String eventId = await CommonQueries.getClosestEventInTime(content);
         if (num.tryParse(eventId) != null) {
           final num hoursUntilNextEvent = num.tryParse(eventId);
           setState(() {
@@ -510,10 +508,10 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
             final HasherEventMapService hemSrv = HasherEventMapService();
             final String userId = getStringPref(StringPrefsEnum.userId);
 
-            hemSrv.joinEvent(eventId, HasherEventMapTableType.user, userId, null, rsvpYes.value, attendenceState, isHareNo.value, enumHasher.value).then((List<ServerMessageModel> messages) {
+            hemSrv.joinEvent(eventId, HasherEventMapTableType.user, userId, null, rsvpYes.value, attendenceState, isHareNo.value, enumHasher.value).then((List<dynamic> adHocData) {
               setState(() {
-                if ((messages != null) && (messages.isNotEmpty)) {
-                  onScreenMessage = messages[0].messageText;
+                if ((adHocData != null) && (adHocData.isNotEmpty)) {
+                  onScreenMessage = adHocData[0]['userMessage'];
                 } else {
                   onScreenMessage = 'Processing Complete';
                 }
@@ -534,44 +532,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
     // return Future<void>(() {});(() {});
   }
 
-  Future<String> getClosestEventInTime(String kennelId) async {
-    String result = 'none';
-    try {
-      final Database db = await DBProvider.db.database;
 
-      final String sql = ''' 
-
-          SELECT e.eventId,
-          e.eventName,
-          (julianday(eventStartDatetime) - julianday('now','localtime')) * 24 as deltaHours
-          FROM ${NarrowEventsTableHelper.tableName} e
-          WHERE e.kennelId = "$kennelId"
-          ORDER BY abs(julianday('now') - julianday(eventStartDatetime)) ASC
-          
-          ''';
-
-      final List<Map<String, dynamic>> results = await db.rawQuery(sql);
-      
-        setState(() {
-          if (results.isNotEmpty) {
-            for (int i = 0; i < results.length; i++) {
-              if ((results[i]['deltaHours'] <= ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT) && (results[i]['deltaHours'] >= -ALLOW_CHECKIN_SCAN_HOURS_AFTER_EVENT)) {
-                result = results[i]['eventId'];
-                break;
-              } else if (results[i]['deltaHours'] > ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT) {
-                result = (results[i]['deltaHours']-ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT).toString();
-                break;
-              }
-            }
-          }
-        });
-      
-    } catch (e) {
-      print(e);
-    }
-
-    return result;
-  }
 
   Future<dynamic> stopScanning() async {
     controller.stopScanning();

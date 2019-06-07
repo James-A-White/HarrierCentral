@@ -5,21 +5,26 @@ import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
 import 'package:audioplayers/audio_cache.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
+import 'package:harrier_central/database/common_queries.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/data/services/process_qr_scan_service.dart';
-import 'package:harrier_central/data/models/process_qr_scan_model.dart';
+import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/pages/run_admin/payment_popup.dart';
-import 'package:harrier_central/data/services/pay_for_event_service.dart';
-import 'package:harrier_central/data/models/pay_for_event_model.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/data/hc3_services/payments_service.dart';
 
 class CheckInScannerPage extends StatefulWidget {
-  const CheckInScannerPage({@required this.kennelShortName, @required this.eventId, @required this.eventName, @required this.eventNumber});
+  const CheckInScannerPage({@required this.kennelShortName, @required this.eventId, @required this.eventName, @required this.eventNumber, @required this.currencySymbol, @required this.digitsAfterDecimal, @required this.memberPrice, @required this.nonMemberPrice});
 
   final String kennelShortName;
   final String eventId;
   final String eventName;
   final int eventNumber;
+  final String currencySymbol;
+  final int digitsAfterDecimal;
+  final num memberPrice;
+  final num nonMemberPrice;
 
   @override
   _CheckInScannerPageState createState() => _CheckInScannerPageState();
@@ -55,13 +60,13 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                       top: 30,
                       width: MediaQuery.of(context).size.width * 0.86,
                       child: AutoSizeText(
-                            'Use this scanner to scan Hasher barcodes at the start of the run so you know who is at the Hash and at the end of the run so you can ensure that no one is lost on trail.',
+                        'Use this scanner to scan Hasher barcodes at the start of the run so you know who is at the Hash and at the end of the run so you can ensure that no one is lost on trail.',
                         textAlign: TextAlign.justify,
                         maxLines: 4,
                         style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 0.8),
                       ),
                     ),
-                                        Positioned(
+                    Positioned(
                       top: 120.0,
                       child: Container(
                         //margin: const EdgeInsets.all(20.0),
@@ -69,22 +74,24 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                         child: RaisedButton(
                             child: Text(
                               ((controller != null) && isScanningAtRunStart) ? 'Stop Scanning' : 'Scan at start of run',
-                              style: const TextStyle(fontFamily: 'AvenirNextDemiBold', 
-                              //color: Colors.white, 
-                              fontStyle: FontStyle.normal, 
-                              fontSize: 22.0, 
-                              height: 1.0),
+                              style: const TextStyle(
+                                  fontFamily: 'AvenirNextDemiBold',
+                                  //color: Colors.white,
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 22.0,
+                                  height: 1.0),
                             ),
                             disabledColor: Colors.grey[700],
                             disabledTextColor: Colors.grey[200],
                             textColor: Colors.white,
-                            onPressed: ((controller != null) && !isScanningAtRunStart) ? null : () {
-                              isScanningAtRunStart = true;
-                              scanUserBarcode();
-                            }),
+                            onPressed: ((controller != null) && !isScanningAtRunStart)
+                                ? null
+                                : () {
+                                    isScanningAtRunStart = true;
+                                    scanUserBarcode();
+                                  }),
                       ),
                     ),
-                    
                     Positioned(
                         top: 190,
                         bottom: 215,
@@ -102,19 +109,22 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                         child: RaisedButton(
                             child: Text(
                               ((controller != null) && !isScanningAtRunStart) ? 'Stop Scanning' : 'Scan at end of run',
-                              style: const TextStyle(fontFamily: 'AvenirNextDemiBold', 
-                              //color: Colors.white, 
-                              fontStyle: FontStyle.normal, 
-                              fontSize: 22.0, 
-                              height: 1.0),
+                              style: const TextStyle(
+                                  fontFamily: 'AvenirNextDemiBold',
+                                  //color: Colors.white,
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 22.0,
+                                  height: 1.0),
                             ),
                             disabledColor: Colors.grey[700],
                             disabledTextColor: Colors.grey[200],
                             textColor: Colors.white,
-                            onPressed: ((controller != null) && isScanningAtRunStart) ? null : () {
-                              isScanningAtRunStart = false;
-                              scanUserBarcode();
-                            }),
+                            onPressed: ((controller != null) && isScanningAtRunStart)
+                                ? null
+                                : () {
+                                    isScanningAtRunStart = false;
+                                    scanUserBarcode();
+                                  }),
                       ),
                     ),
                     Positioned(
@@ -125,7 +135,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                         height: 100,
                         child: Center(
                           child: AutoSizeText(
-                            barcode,
+                            onScreenMessage,
                             //'This is a test of how ',
                             //'This is a test of how this works with 2 lines ',
                             //'this is a test of how 3 lines will fit Ill need a lot more text than that to make it work',
@@ -239,8 +249,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
     );
   }
 
-
-  String barcode = 'Waiting for Scan';
+  String onScreenMessage = 'Waiting to start scanning';
 
   QRReaderController controller;
 
@@ -266,13 +275,13 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
 
   Future<void> scanUserBarcode() async {
     if (controller == null) {
-      setState(() => barcode = 'Scanning');
+      setState(() => onScreenMessage = 'Scanning');
       cameras = await availableCameras();
 
       onNewCameraSelected(cameras[0]);
     } else {
       await stopScanning();
-      setState(() => barcode = 'Waiting for scan');
+      setState(() => onScreenMessage = 'Waiting for scan');
     }
   }
 
@@ -280,58 +289,184 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
     final AudioCache audioPlayer = AudioCache(prefix: 'sounds/');
     audioPlayer.play('camera.mp3');
 
-    stopScanning();
+    await stopScanning();
 
-    final String context2 = isScanningAtRunStart ? '0' : '1';
+    final Map<String, String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_user);
 
-    final ProcessQrScanService srv = ProcessQrScanService();
-    final Future<ProcessQrScanModel> apiCall = srv.processQrScan(widget.eventId, scanResult, 'CheckInOut', context2, 'admin', '');
-    apiCall.then((ProcessQrScanModel result) {
-      setState(() => barcode = result.resultStr2);
-      if (result.resultInt2 != 0) {
-        Future<dynamic>.delayed(const Duration(seconds: 2)).then<dynamic>((dynamic unused) {
-          scanUserBarcode();
-        });
+    if (result['validScan'] == 'false') {
+      setState(() {
+        onScreenMessage = result['validHcQr'] == 'true' ? 'This QR code is not valid here' : 'QR code not recignized';
+      });
+    } else {
+      final String prefix = result['prefix'];
+      final String content = result['content'];
+
+      if (prefix != QR_PREFIX_USER_CODE) {
+        // NOTE: We should never get to this point in, but set
+        print('ERROR! The app should never reach this point.');
       } else {
-        final PaymentPopup pp = PaymentPopup(
-          amount: result.resultDecimal1,
-          creditAllowed: result.resultInt3,
-          creditRemaining: result.resultDecimal2,
-          currencySymbol: result.resultStr1,
-          hemId: result.resultGuid2,
-          decimalDigits: result.resultInt4,
-          // valueChanged: (num value) {
-          //   ppSelectedValue = value;
-          // },
-        );
+        setState(() {
+          onScreenMessage = 'Processing QR Scan';
+        });
+        final int attendenceState = isScanningAtRunStart ? attendenceAtHash.value : attendenceOnIn.value;
+        final HasherEventMapService hemSrv = HasherEventMapService();
 
-        final Future<int> dlg = showDialog<int>(
-            context: context,
-            barrierDismissible: false, // user must tap button!
-            builder: (BuildContext context) {
-              return pp;
-            });
+        CommonQueries.getUserIdFromUqr(prefix + content).then((String hasherId) {
+          hemSrv.joinEvent(widget.eventId, HasherEventMapTableType.eventAdmin, hasherId, null, rsvpYes.value, attendenceState, isHareNo.value, enumHasher.value).then((List<dynamic> adHocData) {
+            setState(() {
+              if ((adHocData != null) && (adHocData.isNotEmpty)) {
+                onScreenMessage = adHocData[0]['userMessage'];
+                if (adHocData[0]['isPaid'] != 0) {
+                  Future<void>.delayed(Duration(seconds: 4)).then((void dummy) {
+                    scanUserBarcode();
+                  });
+                } else {
+                  final PaymentPopup pp = PaymentPopup(
+                    amount: adHocData[0]['isMember'] == 1 ? widget.memberPrice : widget.nonMemberPrice,
+                    creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
+                    creditRemaining: 0,
+                    currencySymbol: widget.currencySymbol,
+                    hemId: adHocData[0]['hasherEventMapId'],
+                    decimalDigits: widget.digitsAfterDecimal,
+                    // valueChanged: (num value) {
+                    //   finalValue = value;
+                    // },
+                  );
 
-        dlg.then((int selectedTransactionType) {
-          if (selectedTransactionType != -1) {
-            final PayForEventService paySrv = PayForEventService();
-            //final Future<List<PayForEventModel>> retVal = paySrv.payForEvent(result.resultGuid1, widget.eventId, result.resultGuid2, selectedTransactionType, pp.amount, widget.isRunStart == 1 ? attendenceAtHash.value : attendenceOnIn.value);
-            final Future<List<PayForEventModel>> retVal = paySrv.payForEvent(result.resultGuid1, widget.eventId, result.resultGuid2, selectedTransactionType, pp.amount, attendenceAtHash.value);
-            retVal.then((List<PayForEventModel> paymentResult) {
-              if (paymentResult.isNotEmpty) {
-                setState(() => barcode = paymentResult[0].result);
+                  final Future<int> dlg = showDialog<int>(
+                      context: context,
+                      barrierDismissible: false, // user must tap button!
+                      builder: (BuildContext context) {
+                        return pp;
+                      });
+
+                  dlg.then(
+                    (int selectedTransactionType) {
+                      if (selectedTransactionType != -1) {
+                        setState(() {
+                          onScreenMessage = 'Please wait, processing payment';
+                        });
+
+                        payForEvent(adHocData[0]['hasherEventMapId'], selectedTransactionType, pp.amount);
+                      }
+                    },
+                  );
+                }
               } else {
-                setState(() => barcode = 'Error processing payment');
+                onScreenMessage = 'Processing Complete';
               }
-              Future<dynamic>.delayed(const Duration(seconds: 2)).then<dynamic>((dynamic unused) {
-                scanUserBarcode();
-              });
             });
-          }
+          });
         });
       }
-    });
-    setState(() => barcode = 'Processing QR Scan');
+    }
+
+    // final ProcessQrScanService srv = ProcessQrScanService();
+    // final Future<ProcessQrScanModel> apiCall = srv.processQrScan(widget.eventId, scanResult, 'CheckInOut', context2, 'admin', '');
+    // apiCall.then((ProcessQrScanModel result) {
+    //   setState(() => barcode = result.resultStr2);
+    //   if (result.resultInt2 != 0) {
+    //     Future<dynamic>.delayed(const Duration(seconds: 2)).then<dynamic>((dynamic unused) {
+    //       scanUserBarcode();
+    //     });
+    //   } else {
+    //     final PaymentPopup pp = PaymentPopup(
+    //       amount: result.resultDecimal1,
+    //       creditAllowed: result.resultInt3,
+    //       creditRemaining: result.resultDecimal2,
+    //       currencySymbol: result.resultStr1,
+    //       hemId: result.resultGuid2,
+    //       decimalDigits: result.resultInt4,
+    //       // valueChanged: (num value) {
+    //       //   ppSelectedValue = value;
+    //       // },
+    //     );
+
+    //     final Future<int> dlg = showDialog<int>(
+    //         context: context,
+    //         barrierDismissible: false, // user must tap button!
+    //         builder: (BuildContext context) {
+    //           return pp;
+    //         });
+
+    //     dlg.then((int selectedTransactionType) {
+    //       if (selectedTransactionType != -1) {
+    //         final PayForEventService paySrv = PayForEventService();
+    //         //final Future<List<PayForEventModel>> retVal = paySrv.payForEvent(result.resultGuid1, widget.eventId, result.resultGuid2, selectedTransactionType, pp.amount, widget.isRunStart == 1 ? attendenceAtHash.value : attendenceOnIn.value);
+    //         final Future<List<PayForEventModel>> retVal = paySrv.payForEvent(result.resultGuid1, widget.eventId, result.resultGuid2, selectedTransactionType, pp.amount, attendenceAtHash.value);
+    //         retVal.then((List<PayForEventModel> paymentResult) {
+    //           if (paymentResult.isNotEmpty) {
+    //             setState(() => barcode = paymentResult[0].result);
+    //           } else {
+    //             setState(() => barcode = 'Error processing payment');
+    //           }
+    //           Future<dynamic>.delayed(const Duration(seconds: 2)).then<dynamic>((dynamic unused) {
+    //             scanUserBarcode();
+    //           });
+    //         });
+    //       }
+    //     });
+    //   }
+    // });
+  }
+
+  void payForEvent(String hemId, int paymentType, num amount) {
+    final PaymentsService paySrv = PaymentsService();
+    final Future<List<dynamic>> retVal = paySrv.payForEvent(
+      widget.eventId,
+      GUID_EMPTY,
+      hemId,
+      paymentType,
+      amount,
+      attendenceAtHash.value,
+    );
+    retVal.then(
+      (List<dynamic> paymentResult) {
+        if ((paymentResult != null) && (paymentResult.isNotEmpty)) {
+          final int paymentType = paymentResult[0]['paymentType'];
+          final String amountPaid = Utilities.getFormattedMoney(paymentResult[0]['creditAmount'], widget.digitsAfterDecimal, widget.currencySymbol);
+
+          onScreenMessage = paymentResult[0]['hasherWhoPaid'];
+
+          if (paymentResult[0]['attendenceState'] == attendenceAtHash.value) {
+            onScreenMessage += ' is checked in and';
+          } else if (paymentResult[0]['attendenceState'] == attendenceOnIn.value) {
+            onScreenMessage += ' is On Inn and';
+          }
+
+          switch (paymentType) {
+            case 1:
+              onScreenMessage += ' has not paid and needs to pay for the Hash';
+              break;
+            case 2:
+              onScreenMessage += ' enjoyed a FREE Hash today';
+              break;
+            case 3:
+              onScreenMessage += ' has paid $amountPaid in cash';
+              break;
+            case 4:
+              onScreenMessage += ' has paid $amountPaid by bank transfer';
+              break;
+            case 5:
+              onScreenMessage += ' has paid $amountPaid in cash';
+              break;
+            case 6:
+              onScreenMessage += ' has paid $amountPaid using Hash credit';
+              break;
+            case 7:
+              onScreenMessage += ' has paid $amountPaid by bank transfer';
+              break;
+            default:
+              break;
+          }
+          setState(() {});
+
+          Future<void>.delayed(Duration(seconds: 4)).then((void dummy) {
+            scanUserBarcode();
+          });
+        }
+      },
+    );
   }
 
   Future<dynamic> stopScanning() async {

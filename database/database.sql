@@ -1,6 +1,6 @@
 USE [master]
 GO
-/****** Object:  Database [HarrierCentralWebDb]    Script Date: 6/1/19 5:19:36 AM ******/
+/****** Object:  Database [HarrierCentralWebDb]    Script Date: 6/7/19 8:39:35 AM ******/
 CREATE DATABASE [HarrierCentralWebDb]
 GO
 ALTER DATABASE [HarrierCentralWebDb] SET COMPATIBILITY_LEVEL = 120
@@ -60,40 +60,40 @@ ALTER DATABASE [HarrierCentralWebDb] SET QUERY_STORE (OPERATION_MODE = READ_WRIT
 GO
 USE [HarrierCentralWebDb]
 GO
-/****** Object:  Schema [Admin]    Script Date: 6/1/19 5:19:38 AM ******/
+/****** Object:  Schema [Admin]    Script Date: 6/7/19 8:39:37 AM ******/
 CREATE SCHEMA [Admin]
 GO
-/****** Object:  Schema [DEV]    Script Date: 6/1/19 5:19:38 AM ******/
+/****** Object:  Schema [DEV]    Script Date: 6/7/19 8:39:37 AM ******/
 CREATE SCHEMA [DEV]
 GO
-/****** Object:  Schema [DomainValues]    Script Date: 6/1/19 5:19:38 AM ******/
+/****** Object:  Schema [DomainValues]    Script Date: 6/7/19 8:39:37 AM ******/
 CREATE SCHEMA [DomainValues]
 GO
-/****** Object:  Schema [Events]    Script Date: 6/1/19 5:19:38 AM ******/
+/****** Object:  Schema [Events]    Script Date: 6/7/19 8:39:37 AM ******/
 CREATE SCHEMA [Events]
 GO
-/****** Object:  Schema [Geography]    Script Date: 6/1/19 5:19:39 AM ******/
+/****** Object:  Schema [Geography]    Script Date: 6/7/19 8:39:37 AM ******/
 CREATE SCHEMA [Geography]
 GO
-/****** Object:  Schema [Hashers]    Script Date: 6/1/19 5:19:39 AM ******/
+/****** Object:  Schema [Hashers]    Script Date: 6/7/19 8:39:37 AM ******/
 CREATE SCHEMA [Hashers]
 GO
-/****** Object:  Schema [HC]    Script Date: 6/1/19 5:19:39 AM ******/
+/****** Object:  Schema [HC]    Script Date: 6/7/19 8:39:37 AM ******/
 CREATE SCHEMA [HC]
 GO
-/****** Object:  Schema [HC2]    Script Date: 6/1/19 5:19:39 AM ******/
+/****** Object:  Schema [HC2]    Script Date: 6/7/19 8:39:38 AM ******/
 CREATE SCHEMA [HC2]
 GO
-/****** Object:  Schema [HC3]    Script Date: 6/1/19 5:19:39 AM ******/
+/****** Object:  Schema [HC3]    Script Date: 6/7/19 8:39:38 AM ******/
 CREATE SCHEMA [HC3]
 GO
-/****** Object:  Schema [Kennels]    Script Date: 6/1/19 5:19:39 AM ******/
+/****** Object:  Schema [Kennels]    Script Date: 6/7/19 8:39:38 AM ******/
 CREATE SCHEMA [Kennels]
 GO
-/****** Object:  Schema [Transactions]    Script Date: 6/1/19 5:19:39 AM ******/
+/****** Object:  Schema [Transactions]    Script Date: 6/7/19 8:39:38 AM ******/
 CREATE SCHEMA [Transactions]
 GO
-/****** Object:  UserDefinedFunction [dbo].[fn_diagramobjects]    Script Date: 6/1/19 5:19:39 AM ******/
+/****** Object:  UserDefinedFunction [dbo].[fn_diagramobjects]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -146,7 +146,7 @@ GO
 	END
 	
 GO
-/****** Object:  UserDefinedFunction [HC].[CHECK_ACCESS_TOKEN]    Script Date: 6/1/19 5:19:39 AM ******/
+/****** Object:  UserDefinedFunction [HC].[CHECK_ACCESS_TOKEN]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -175,7 +175,7 @@ BEGIN
 	RETURN 1
 END
 GO
-/****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN]    Script Date: 6/1/19 5:19:39 AM ******/
+/****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -197,7 +197,7 @@ BEGIN
 	return cast('' as xml).value('xs:hexBinary(sql:variable("@bin"))', 'varchar(max)')
 END
 GO
-/****** Object:  UserDefinedFunction [HC].[InlineMax]    Script Date: 6/1/19 5:19:39 AM ******/
+/****** Object:  UserDefinedFunction [HC].[InlineMax]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -211,7 +211,7 @@ begin
   return isnull(@val2,@val1)
 end
 GO
-/****** Object:  UserDefinedFunction [HC].[NUMBER_TO_STR_BASE]    Script Date: 6/1/19 5:19:39 AM ******/
+/****** Object:  UserDefinedFunction [HC].[NUMBER_TO_STR_BASE]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -236,7 +236,7 @@ BEGIN
      RETURN(@numberString);
 END
 GO
-/****** Object:  Table [HC].[Country]    Script Date: 6/1/19 5:19:39 AM ******/
+/****** Object:  Table [HC].[Country]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -263,7 +263,7 @@ CREATE TABLE [HC].[Country](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  View [dbo].[vw_deleteCurrencyTest]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  View [dbo].[vw_deleteCurrencyTest]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -271,7 +271,7 @@ GO
 create view [dbo].[vw_deleteCurrencyTest] as
 select c.CountryName, c.CurrencySymbol, c.DigitsAfterDecimal,c.id from HC.Country c
 GO
-/****** Object:  Table [HC].[Hasher]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  Table [HC].[Hasher]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -309,7 +309,7 @@ CREATE TABLE [HC].[Hasher](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  View [dbo].[vw_deleteHcPhotos]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  View [dbo].[vw_deleteHcPhotos]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -318,7 +318,7 @@ create view [dbo].[vw_deleteHcPhotos] as
 select Photo,id,DisplayName from HC.Hasher
 where createdAt > dateadd(day,-20,getdate())
 GO
-/****** Object:  Table [HC].[Event]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  Table [HC].[Event]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -385,7 +385,7 @@ CREATE TABLE [HC].[Event](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  View [dbo].[vw_deleteFilthRuns]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  View [dbo].[vw_deleteFilthRuns]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -393,7 +393,7 @@ GO
 create view [dbo].[vw_deleteFilthRuns] AS
 select * from HC.event  where KennelId = '5029DE3A-D231-47AA-BE72-ECE9BCCD55D1'
 GO
-/****** Object:  View [dbo].[vw_deleteAddHashers]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  View [dbo].[vw_deleteAddHashers]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -403,7 +403,7 @@ GO
 CREATE view [dbo].[vw_deleteAddHashers] as
 select FirstName,LastName,HashName,Email from HC.Hasher 
 GO
-/****** Object:  Table [HC].[HasherEventMap]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  Table [HC].[HasherEventMap]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -434,7 +434,7 @@ CREATE TABLE [HC].[HasherEventMap](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  View [dbo].[vw_deleteImportHemRecords]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  View [dbo].[vw_deleteImportHemRecords]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -442,7 +442,7 @@ GO
 create view [dbo].[vw_deleteImportHemRecords] as 
 select top 10 EventId,UserId,UserStartEvent,Rsvp,RsvpState,AttendenceState,IsHare,VirginVisitorType from HC.HasherEventMap
 GO
-/****** Object:  Table [HC].[Kennel]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  Table [HC].[Kennel]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -493,7 +493,7 @@ CREATE TABLE [HC].[Kennel](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  View [dbo].[vw_deleteMe_facebookIds]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  View [dbo].[vw_deleteMe_facebookIds]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -502,7 +502,7 @@ create view [dbo].[vw_deleteMe_facebookIds]
 as
 select top 20 * from HC.Kennel where KennelFacebookId is not null
 GO
-/****** Object:  View [dbo].[vw_deleteMe_importEvents]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  View [dbo].[vw_deleteMe_importEvents]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -510,7 +510,7 @@ GO
 create view [dbo].[vw_deleteMe_importEvents] as
 select top 1 id,EventStartDatetime,KennelId,EventName,EventDescription from HC.Event
 GO
-/****** Object:  View [dbo].[vw_deleteEditFacebookKennels]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  View [dbo].[vw_deleteEditFacebookKennels]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -518,7 +518,7 @@ GO
 create view [dbo].[vw_deleteEditFacebookKennels] as 
 select * from HC.Kennel where KennelFacebookId is not null
 GO
-/****** Object:  Table [HC].[City]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  Table [HC].[City]    Script Date: 6/7/19 8:39:38 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -540,7 +540,7 @@ CREATE TABLE [HC].[City](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  View [HC].[deleteTempCities]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  View [HC].[deleteTempCities]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -553,21 +553,21 @@ AS
 
 select * from HC.City where Latitude between 52 and 53 and Longitude  between 4 and  5
 GO
-/****** Object:  View [dbo].[vw_deleteEditFILTHhash]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  View [dbo].[vw_deleteEditFILTHhash]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 create view [dbo].[vw_deleteEditFILTHhash] as select * from HC.Kennel where KennelName like '%FILTH%'
 GO
-/****** Object:  View [dbo].[vw_deleteEditNetherlands]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  View [dbo].[vw_deleteEditNetherlands]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 create view [dbo].[vw_deleteEditNetherlands] as select * from HC.Country h where h.CountryName like '%nether%'
 GO
-/****** Object:  Table [HC].[Payment]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  Table [HC].[Payment]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -595,14 +595,14 @@ CREATE TABLE [HC].[Payment](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  View [dbo].[vw_deleteEditPayments]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  View [dbo].[vw_deleteEditPayments]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 create view [dbo].[vw_deleteEditPayments] as select * from HC.Payment
 GO
-/****** Object:  View [dbo].[vw_deleteOpeeRuns]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  View [dbo].[vw_deleteOpeeRuns]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -611,7 +611,7 @@ create view
 [dbo].[vw_deleteOpeeRuns] as 
 select * from HC.HasherEventMap where userId = '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC'
 GO
-/****** Object:  View [HC].[vwEventCommonFields]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  View [HC].[vwEventCommonFields]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -674,14 +674,14 @@ AS
 		inner join HC.City c on c.id = k.CityId
 		
 GO
-/****** Object:  View [dbo].[vw_deleteTempKennelList]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  View [dbo].[vw_deleteTempKennelList]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 create view [dbo].[vw_deleteTempKennelList] as select * from HC.Kennel where kennelLogo like 'http%'
 GO
-/****** Object:  UserDefinedFunction [HC].[DelimitedSplit8K]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  UserDefinedFunction [HC].[DelimitedSplit8K]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -720,7 +720,7 @@ cteLen(N1,L1) AS(--==== Return start and length (for use in substring)
    FROM cteLen l
 ;
 GO
-/****** Object:  Table [dbo].[BusinessUnits]    Script Date: 6/1/19 5:19:44 AM ******/
+/****** Object:  Table [dbo].[BusinessUnits]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -739,7 +739,7 @@ CREATE TABLE [dbo].[BusinessUnits](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Contacts]    Script Date: 6/1/19 5:19:45 AM ******/
+/****** Object:  Table [dbo].[Contacts]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -758,7 +758,7 @@ CREATE TABLE [dbo].[Contacts](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[currency]    Script Date: 6/1/19 5:19:45 AM ******/
+/****** Object:  Table [dbo].[currency]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -769,7 +769,7 @@ CREATE TABLE [dbo].[currency](
 	[symbol] [nvarchar](100) NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Exceptions]    Script Date: 6/1/19 5:19:45 AM ******/
+/****** Object:  Table [dbo].[Exceptions]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -801,7 +801,7 @@ CREATE TABLE [dbo].[Exceptions](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Hasher]    Script Date: 6/1/19 5:19:45 AM ******/
+/****** Object:  Table [dbo].[Hasher]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -818,7 +818,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Languages]    Script Date: 6/1/19 5:19:45 AM ******/
+/****** Object:  Table [dbo].[Languages]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -833,7 +833,7 @@ CREATE TABLE [dbo].[Languages](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[MeetingAgendaRelevant]    Script Date: 6/1/19 5:19:45 AM ******/
+/****** Object:  Table [dbo].[MeetingAgendaRelevant]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -848,7 +848,7 @@ CREATE TABLE [dbo].[MeetingAgendaRelevant](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[MeetingAgendas]    Script Date: 6/1/19 5:19:45 AM ******/
+/****** Object:  Table [dbo].[MeetingAgendas]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -869,7 +869,7 @@ CREATE TABLE [dbo].[MeetingAgendas](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[MeetingAgendaTypes]    Script Date: 6/1/19 5:19:45 AM ******/
+/****** Object:  Table [dbo].[MeetingAgendaTypes]    Script Date: 6/7/19 8:39:39 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -883,7 +883,7 @@ CREATE TABLE [dbo].[MeetingAgendaTypes](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[MeetingAttendees]    Script Date: 6/1/19 5:19:45 AM ******/
+/****** Object:  Table [dbo].[MeetingAttendees]    Script Date: 6/7/19 8:39:40 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -900,7 +900,7 @@ CREATE TABLE [dbo].[MeetingAttendees](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[MeetingDecisionRelevant]    Script Date: 6/1/19 5:19:46 AM ******/
+/****** Object:  Table [dbo].[MeetingDecisionRelevant]    Script Date: 6/7/19 8:39:40 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -915,7 +915,7 @@ CREATE TABLE [dbo].[MeetingDecisionRelevant](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[MeetingDecisions]    Script Date: 6/1/19 5:19:46 AM ******/
+/****** Object:  Table [dbo].[MeetingDecisions]    Script Date: 6/7/19 8:39:40 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -937,7 +937,7 @@ CREATE TABLE [dbo].[MeetingDecisions](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[MeetingLocations]    Script Date: 6/1/19 5:19:46 AM ******/
+/****** Object:  Table [dbo].[MeetingLocations]    Script Date: 6/7/19 8:39:40 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -954,7 +954,7 @@ CREATE TABLE [dbo].[MeetingLocations](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Meetings]    Script Date: 6/1/19 5:19:46 AM ******/
+/****** Object:  Table [dbo].[Meetings]    Script Date: 6/7/19 8:39:40 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -985,7 +985,7 @@ CREATE TABLE [dbo].[Meetings](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[MeetingTypes]    Script Date: 6/1/19 5:19:46 AM ******/
+/****** Object:  Table [dbo].[MeetingTypes]    Script Date: 6/7/19 8:39:40 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -999,7 +999,7 @@ CREATE TABLE [dbo].[MeetingTypes](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[RolePermissions]    Script Date: 6/1/19 5:19:46 AM ******/
+/****** Object:  Table [dbo].[RolePermissions]    Script Date: 6/7/19 8:39:40 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1014,7 +1014,7 @@ CREATE TABLE [dbo].[RolePermissions](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Roles]    Script Date: 6/1/19 5:19:46 AM ******/
+/****** Object:  Table [dbo].[Roles]    Script Date: 6/7/19 8:39:40 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1028,7 +1028,7 @@ CREATE TABLE [dbo].[Roles](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[SourceData]    Script Date: 6/1/19 5:19:46 AM ******/
+/****** Object:  Table [dbo].[SourceData]    Script Date: 6/7/19 8:39:40 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1064,7 +1064,7 @@ CREATE TABLE [dbo].[SourceData](
 	[is_draft] [nvarchar](25) NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[sysdiagrams]    Script Date: 6/1/19 5:19:46 AM ******/
+/****** Object:  Table [dbo].[sysdiagrams]    Script Date: 6/7/19 8:39:41 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1086,7 +1086,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[tempImport]    Script Date: 6/1/19 5:19:47 AM ******/
+/****** Object:  Table [dbo].[tempImport]    Script Date: 6/7/19 8:39:41 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1096,7 +1096,7 @@ CREATE TABLE [dbo].[tempImport](
 	[eventId] [uniqueidentifier] NOT NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[unused_FacebookEventImport]    Script Date: 6/1/19 5:19:47 AM ******/
+/****** Object:  Table [dbo].[unused_FacebookEventImport]    Script Date: 6/7/19 8:39:41 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1132,7 +1132,7 @@ CREATE TABLE [dbo].[unused_FacebookEventImport](
 	[is_draft] [nvarchar](25) NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserPermissions]    Script Date: 6/1/19 5:19:47 AM ******/
+/****** Object:  Table [dbo].[UserPermissions]    Script Date: 6/7/19 8:39:41 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1148,7 +1148,7 @@ CREATE TABLE [dbo].[UserPermissions](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserPreferences]    Script Date: 6/1/19 5:19:47 AM ******/
+/****** Object:  Table [dbo].[UserPreferences]    Script Date: 6/7/19 8:39:41 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1165,7 +1165,7 @@ CREATE TABLE [dbo].[UserPreferences](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserRoles]    Script Date: 6/1/19 5:19:47 AM ******/
+/****** Object:  Table [dbo].[UserRoles]    Script Date: 6/7/19 8:39:41 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1180,7 +1180,7 @@ CREATE TABLE [dbo].[UserRoles](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Users]    Script Date: 6/1/19 5:19:47 AM ******/
+/****** Object:  Table [dbo].[Users]    Script Date: 6/7/19 8:39:41 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1206,7 +1206,7 @@ CREATE TABLE [dbo].[Users](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[VersionInfo]    Script Date: 6/1/19 5:19:47 AM ******/
+/****** Object:  Table [dbo].[VersionInfo]    Script Date: 6/7/19 8:39:41 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1217,13 +1217,13 @@ CREATE TABLE [dbo].[VersionInfo](
 	[Description] [nvarchar](1024) NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Index [UC_Version]    Script Date: 6/1/19 5:19:47 AM ******/
+/****** Object:  Index [UC_Version]    Script Date: 6/7/19 8:39:41 AM ******/
 CREATE UNIQUE CLUSTERED INDEX [UC_Version] ON [dbo].[VersionInfo]
 (
 	[Version] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[world_cities_table]    Script Date: 6/1/19 5:19:47 AM ******/
+/****** Object:  Table [dbo].[world_cities_table]    Script Date: 6/7/19 8:39:41 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1240,7 +1240,7 @@ CREATE TABLE [dbo].[world_cities_table](
 	[province] [nvarchar](43) NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [DEV].[EnumPaymentTypes]    Script Date: 6/1/19 5:19:47 AM ******/
+/****** Object:  Table [DEV].[EnumPaymentTypes]    Script Date: 6/7/19 8:39:42 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1250,7 +1250,7 @@ CREATE TABLE [DEV].[EnumPaymentTypes](
 	[name] [nvarchar](50) NOT NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [DomainValues].[CurrencyCodes]    Script Date: 6/1/19 5:19:48 AM ******/
+/****** Object:  Table [DomainValues].[CurrencyCodes]    Script Date: 6/7/19 8:39:42 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1265,7 +1265,7 @@ CREATE TABLE [DomainValues].[CurrencyCodes](
 	[CultureCode] [nvarchar](50) NOT NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [DomainValues].[EventGeographicScope]    Script Date: 6/1/19 5:19:48 AM ******/
+/****** Object:  Table [DomainValues].[EventGeographicScope]    Script Date: 6/7/19 8:39:42 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1279,7 +1279,7 @@ CREATE TABLE [DomainValues].[EventGeographicScope](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [DomainValues].[EventRegistrationType]    Script Date: 6/1/19 5:19:48 AM ******/
+/****** Object:  Table [DomainValues].[EventRegistrationType]    Script Date: 6/7/19 8:39:42 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1293,7 +1293,7 @@ CREATE TABLE [DomainValues].[EventRegistrationType](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [DomainValues].[KennelStatusEnum]    Script Date: 6/1/19 5:19:48 AM ******/
+/****** Object:  Table [DomainValues].[KennelStatusEnum]    Script Date: 6/7/19 8:39:42 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1307,7 +1307,7 @@ CREATE TABLE [DomainValues].[KennelStatusEnum](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [DomainValues].[MismanagementEnum]    Script Date: 6/1/19 5:19:48 AM ******/
+/****** Object:  Table [DomainValues].[MismanagementEnum]    Script Date: 6/7/19 8:39:42 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1322,7 +1322,7 @@ CREATE TABLE [DomainValues].[MismanagementEnum](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [Hashers].[HasherEventMap]    Script Date: 6/1/19 5:19:48 AM ******/
+/****** Object:  Table [Hashers].[HasherEventMap]    Script Date: 6/7/19 8:39:42 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1339,7 +1339,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [Hashers].[HasherFriendMap]    Script Date: 6/1/19 5:19:48 AM ******/
+/****** Object:  Table [Hashers].[HasherFriendMap]    Script Date: 6/7/19 8:39:43 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1356,7 +1356,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[BusinessUnits]    Script Date: 6/1/19 5:19:48 AM ******/
+/****** Object:  Table [HC].[BusinessUnits]    Script Date: 6/7/19 8:39:43 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1373,7 +1373,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[ErrorLog]    Script Date: 6/1/19 5:19:48 AM ******/
+/****** Object:  Table [HC].[ErrorLog]    Script Date: 6/7/19 8:39:43 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1400,7 +1400,7 @@ CREATE TABLE [HC].[ErrorLog](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[FeaturedEvent]    Script Date: 6/1/19 5:19:49 AM ******/
+/****** Object:  Table [HC].[FeaturedEvent]    Script Date: 6/7/19 8:39:43 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1415,7 +1415,7 @@ CREATE TABLE [HC].[FeaturedEvent](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[FeaturedKennel]    Script Date: 6/1/19 5:19:49 AM ******/
+/****** Object:  Table [HC].[FeaturedKennel]    Script Date: 6/7/19 8:39:43 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1430,7 +1430,7 @@ CREATE TABLE [HC].[FeaturedKennel](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[FeaturedSong]    Script Date: 6/1/19 5:19:49 AM ******/
+/****** Object:  Table [HC].[FeaturedSong]    Script Date: 6/7/19 8:39:43 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1445,7 +1445,7 @@ CREATE TABLE [HC].[FeaturedSong](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[Haberdashery]    Script Date: 6/1/19 5:19:49 AM ******/
+/****** Object:  Table [HC].[Haberdashery]    Script Date: 6/7/19 8:39:43 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1469,7 +1469,7 @@ CREATE TABLE [HC].[Haberdashery](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[HasherFriendMap]    Script Date: 6/1/19 5:19:49 AM ******/
+/****** Object:  Table [HC].[HasherFriendMap]    Script Date: 6/7/19 8:39:43 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1486,7 +1486,7 @@ CREATE TABLE [HC].[HasherFriendMap](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[HasherKennelMap]    Script Date: 6/1/19 5:19:49 AM ******/
+/****** Object:  Table [HC].[HasherKennelMap]    Script Date: 6/7/19 8:39:43 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1517,7 +1517,7 @@ CREATE TABLE [HC].[HasherKennelMap](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[KennelAuthorization]    Script Date: 6/1/19 5:19:49 AM ******/
+/****** Object:  Table [HC].[KennelAuthorization]    Script Date: 6/7/19 8:39:44 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1546,7 +1546,7 @@ CREATE TABLE [HC].[KennelAuthorization](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[KennelSongMap]    Script Date: 6/1/19 5:19:49 AM ******/
+/****** Object:  Table [HC].[KennelSongMap]    Script Date: 6/7/19 8:39:44 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1562,7 +1562,7 @@ CREATE TABLE [HC].[KennelSongMap](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[LaunchAndLogin]    Script Date: 6/1/19 5:19:50 AM ******/
+/****** Object:  Table [HC].[LaunchAndLogin]    Script Date: 6/7/19 8:39:44 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1583,7 +1583,7 @@ CREATE TABLE [HC].[LaunchAndLogin](
 	[Longitude] [decimal](19, 15) NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[LoginNotifications]    Script Date: 6/1/19 5:19:50 AM ******/
+/****** Object:  Table [HC].[LoginNotifications]    Script Date: 6/7/19 8:39:44 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1604,7 +1604,7 @@ CREATE TABLE [HC].[LoginNotifications](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[Meetings]    Script Date: 6/1/19 5:19:50 AM ******/
+/****** Object:  Table [HC].[Meetings]    Script Date: 6/7/19 8:39:44 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1621,7 +1621,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[Receipt]    Script Date: 6/1/19 5:19:50 AM ******/
+/****** Object:  Table [HC].[Receipt]    Script Date: 6/7/19 8:39:44 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1648,7 +1648,7 @@ CREATE TABLE [HC].[Receipt](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[Region]    Script Date: 6/1/19 5:19:50 AM ******/
+/****** Object:  Table [HC].[Region]    Script Date: 6/7/19 8:39:44 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1666,7 +1666,7 @@ CREATE TABLE [HC].[Region](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[RunCounts]    Script Date: 6/1/19 5:19:50 AM ******/
+/****** Object:  Table [HC].[RunCounts]    Script Date: 6/7/19 8:39:44 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1684,7 +1684,7 @@ CREATE TABLE [HC].[RunCounts](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[ServerStatus]    Script Date: 6/1/19 5:19:50 AM ******/
+/****** Object:  Table [HC].[ServerStatus]    Script Date: 6/7/19 8:39:44 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1692,7 +1692,6 @@ GO
 CREATE TABLE [HC].[ServerStatus](
 	[id] [uniqueidentifier] NOT NULL,
 	[ApiVersion] [nvarchar](25) NOT NULL,
-	[LastGazetteerUpdate] [datetime] NOT NULL,
 	[CreatedDate] [datetime] NOT NULL,
  CONSTRAINT [PK_ServerStatus] PRIMARY KEY CLUSTERED 
 (
@@ -1700,7 +1699,7 @@ CREATE TABLE [HC].[ServerStatus](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [HC].[Song]    Script Date: 6/1/19 5:19:50 AM ******/
+/****** Object:  Table [HC].[Song]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1727,7 +1726,7 @@ CREATE TABLE [HC].[Song](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [Kennels].[Haberdashery]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Table [Kennels].[Haberdashery]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1747,7 +1746,7 @@ CREATE TABLE [Kennels].[Haberdashery](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [Kennels].[Mismanagement]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Table [Kennels].[Mismanagement]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1765,7 +1764,7 @@ CREATE TABLE [Kennels].[Mismanagement](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [Transactions].[EventRegistration]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Table [Transactions].[EventRegistration]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1783,7 +1782,7 @@ CREATE TABLE [Transactions].[EventRegistration](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [Transactions].[HaberdasherySale]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Table [Transactions].[HaberdasherySale]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1801,7 +1800,7 @@ CREATE TABLE [Transactions].[HaberdasherySale](
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Exceptions_App_Del_Cre]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [IX_Exceptions_App_Del_Cre]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Exceptions_App_Del_Cre] ON [dbo].[Exceptions]
 (
 	[ApplicationName] ASC,
@@ -1811,7 +1810,7 @@ CREATE NONCLUSTERED INDEX [IX_Exceptions_App_Del_Cre] ON [dbo].[Exceptions]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Exceptions_GUID_App_Del_Cre]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [IX_Exceptions_GUID_App_Del_Cre]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Exceptions_GUID_App_Del_Cre] ON [dbo].[Exceptions]
 (
 	[GUID] ASC,
@@ -1822,7 +1821,7 @@ CREATE NONCLUSTERED INDEX [IX_Exceptions_GUID_App_Del_Cre] ON [dbo].[Exceptions]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Exceptions_Hash_App_Cre_Del]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [IX_Exceptions_Hash_App_Cre_Del]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Exceptions_Hash_App_Cre_Del] ON [dbo].[Exceptions]
 (
 	[ErrorHash] ASC,
@@ -1833,7 +1832,7 @@ CREATE NONCLUSTERED INDEX [IX_Exceptions_Hash_App_Cre_Del] ON [dbo].[Exceptions]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UQ_RolePerm_RoleId_PermKey]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [UQ_RolePerm_RoleId_PermKey]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UQ_RolePerm_RoleId_PermKey] ON [dbo].[RolePermissions]
 (
 	[RoleId] ASC,
@@ -1842,7 +1841,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [UQ_RolePerm_RoleId_PermKey] ON [dbo].[RolePerm
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UQ_UserPerm_UserId_PermKey]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [UQ_UserPerm_UserId_PermKey]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UQ_UserPerm_UserId_PermKey] ON [dbo].[UserPermissions]
 (
 	[UserId] ASC,
@@ -1851,7 +1850,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [UQ_UserPerm_UserId_PermKey] ON [dbo].[UserPerm
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_UserPref_UID_PrefType_Name]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [IX_UserPref_UID_PrefType_Name]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_UserPref_UID_PrefType_Name] ON [dbo].[UserPreferences]
 (
 	[UserId] ASC,
@@ -1859,33 +1858,33 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_UserPref_UID_PrefType_Name] ON [dbo].[UserP
 	[Name] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_UserRoles_RoleId_UserId]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [IX_UserRoles_RoleId_UserId]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE NONCLUSTERED INDEX [IX_UserRoles_RoleId_UserId] ON [dbo].[UserRoles]
 (
 	[RoleId] ASC,
 	[UserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [UQ_UserRoles_UserId_RoleId]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [UQ_UserRoles_UserId_RoleId]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UQ_UserRoles_UserId_RoleId] ON [dbo].[UserRoles]
 (
 	[UserId] ASC,
 	[RoleId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_CityUpdated]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [IX_CityUpdated]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE NONCLUSTERED INDEX [IX_CityUpdated] ON [HC].[City]
 (
 	[updatedAt] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_CountryUpdated]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [IX_CountryUpdated]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE NONCLUSTERED INDEX [IX_CountryUpdated] ON [HC].[Country]
 (
 	[updatedAt] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Event_KidIsCountedDeleted2]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [IX_Event_KidIsCountedDeleted2]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Event_KidIsCountedDeleted2] ON [HC].[Event]
 (
 	[KennelId] ASC,
@@ -1894,7 +1893,7 @@ CREATE NONCLUSTERED INDEX [IX_Event_KidIsCountedDeleted2] ON [HC].[Event]
 )
 INCLUDE ( 	[AbsoluteEventNumber]) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_EventByKennelIsCountedStartDateAbsEvtNum]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [IX_EventByKennelIsCountedStartDateAbsEvtNum]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE NONCLUSTERED INDEX [IX_EventByKennelIsCountedStartDateAbsEvtNum] ON [HC].[Event]
 (
 	[KennelId] ASC,
@@ -1905,7 +1904,7 @@ CREATE NONCLUSTERED INDEX [IX_EventByKennelIsCountedStartDateAbsEvtNum] ON [HC].
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_HasherEventMap]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [IX_HasherEventMap]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE NONCLUSTERED INDEX [IX_HasherEventMap] ON [HC].[HasherEventMap]
 (
 	[EventId] ASC,
@@ -1913,28 +1912,28 @@ CREATE NONCLUSTERED INDEX [IX_HasherEventMap] ON [HC].[HasherEventMap]
 	[DisplayName] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_HasherFriendMap]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [IX_HasherFriendMap]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_HasherFriendMap] ON [HC].[HasherFriendMap]
 (
 	[UserId] ASC,
 	[Friend_UserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_HasherKennelMap]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [IX_HasherKennelMap]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_HasherKennelMap] ON [HC].[HasherKennelMap]
 (
 	[KennelId] ASC,
 	[UserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_KennelSongMap]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [IX_KennelSongMap]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_KennelSongMap] ON [HC].[KennelSongMap]
 (
 	[KennelId] ASC,
 	[SongId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_RegionUpdated]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Index [IX_RegionUpdated]    Script Date: 6/7/19 8:39:45 AM ******/
 CREATE NONCLUSTERED INDEX [IX_RegionUpdated] ON [HC].[Region]
 (
 	[updatedAt] ASC
@@ -2422,7 +2421,7 @@ REFERENCES [HC].[Hasher] ([id])
 GO
 ALTER TABLE [Transactions].[HaberdasherySale] CHECK CONSTRAINT [FK_HaberdasherySale_Hasher]
 GO
-/****** Object:  StoredProcedure [dbo].[sp_alterdiagram]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_alterdiagram]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2493,7 +2492,7 @@ GO
 	END
 	
 GO
-/****** Object:  StoredProcedure [dbo].[sp_creatediagram]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_creatediagram]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2557,7 +2556,7 @@ GO
 	END
 	
 GO
-/****** Object:  StoredProcedure [dbo].[sp_dropdiagram]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_dropdiagram]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2604,7 +2603,7 @@ GO
 	END
 	
 GO
-/****** Object:  StoredProcedure [dbo].[sp_helpdiagramdefinition]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_helpdiagramdefinition]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2650,7 +2649,7 @@ GO
 	END
 	
 GO
-/****** Object:  StoredProcedure [dbo].[sp_helpdiagrams]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_helpdiagrams]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2687,7 +2686,7 @@ GO
 	END
 	
 GO
-/****** Object:  StoredProcedure [dbo].[sp_renamediagram]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_renamediagram]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2755,7 +2754,7 @@ GO
 	END
 	
 GO
-/****** Object:  StoredProcedure [dbo].[sp_upgraddiagrams]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_upgraddiagrams]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2821,7 +2820,7 @@ GO
 	END
 	
 GO
-/****** Object:  StoredProcedure [DEV].[CleanDb]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [DEV].[CleanDb]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2833,7 +2832,7 @@ delete from HC.HasherKennelMap where UserId not in (select id from HC.Hasher)
 delete from HC.Payment where HasherEventMapId not in (select id from HC.HasherEventMap)
 delete from HC.RunCounts where id not in (select RunCountId from HC.HasherEventMap)
 GO
-/****** Object:  StoredProcedure [DEV].[RecompileHc2AndHc3]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [DEV].[RecompileHc2AndHc3]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2852,3063 +2851,7 @@ EXEC (@sql);
 
 
 GO
-/****** Object:  StoredProcedure [HC].[addEditEvent]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC].[addEditEvent]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @eventId uniqueidentifier = null,
- @kennelId uniqueidentifier = null,
- @startDatetime datetime = null,
- @endDatetime datetime = null,
- @isCountedRun smallint = null,
- @isVisible smallint = null,
- @isPromotedEvent smallint = null,
- @eventGeographicScope smallint = null,
- @ThemeRunType smallint = null,
- @eventName nvarchar(120) = null,
- @eventDescription nvarchar(4000) = null,
- @eventShortDescription nvarchar(250) = null,
- @locationCity nvarchar(250) = null,
- @locationStreet nvarchar(250) = null,
- @locationPostCode nvarchar(50) = null,
- @locationCountry nvarchar(250) = null,
- @locationOneLineDesc nvarchar(250) = null,
- @eventFacebookId nvarchar(250) = null,
- @coverPhotoUrl nvarchar(500) = null,
- @coverPhotoOffsetX int = null,
- @coverPhotoOffsetY int = null,
- @latitude decimal(18,15) = null,
- @longitude decimal(19,15) = null,
- @fbLatitude decimal(18,15) = null,
- @fbLongitude decimal(19,15) = null,
- @eventPriceForMembers float = null,
- @eventPriceForNonMembers float = null,
- @absoluteEventNumber smallint = null,
- @eventCurrencyType nvarchar(10) = null,
- @deleted smallint = null
-
-AS
-
-BEGIN
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-	
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-
-
-
--- EXEC HC.addEditEvent @userId = '83294c62-2ffe-4fcb-a2f5-52aadd6ceaa0',@accessToken='',@eventId='00000000-0000-0000-0000-000000000000',@kennelId='5029de3a-d231-47aa-be72-ece9bccd55d1',@startDatetime='4/13/2018 12:00:00 AM',@endDatetime='',@eventName='FILTH-xx',@eventFacebookId='1234567890'
-
-
-
-	DECLARE @resultStr nvarchar(250)
-	DECLARE @resultInt int
-
-	if (@eventId = '00000000-0000-0000-0000-000000000000') SET @eventId = NULL
-	if (@kennelId = '00000000-0000-0000-0000-000000000000') SET @kennelId = NULL
-	if ((@startDatetime IS NOT NULL) AND (@startDatetime <= '1/1/1901')) SET @startDatetime = NULL
-	if ((@endDatetime IS NOT NULL) AND (@endDatetime <= '1/1/1901')) SET @endDatetime = NULL
-	if (@isCountedRun = -1) SET @isCountedRun = NULL
-	if (@isVisible = -1) SET @isVisible = NULL
-	if (@isPromotedEvent = -1) SET @isPromotedEvent = NULL
-	if (@eventGeographicScope = -1) SET @eventGeographicScope = NULL
-	if (@ThemeRunType = -1) SET @ThemeRunType = NULL
-	if (DATALENGTH(@eventName) < 1) SET @eventName = NULL
-	if (DATALENGTH(@eventDescription) < 1) SET @eventDescription = NULL
-	if (DATALENGTH(@eventShortDescription) < 1) SET @eventShortDescription = NULL
-	if (DATALENGTH(@locationCity) < 1) SET @locationCity = NULL
-	if (DATALENGTH(@locationStreet) < 1) SET @locationStreet = NULL
-	if (DATALENGTH(@locationPostCode) < 1) SET @locationPostCode = NULL
-	if (DATALENGTH(@locationCountry) < 1) SET @locationCountry = NULL
-	if (DATALENGTH(@locationOneLineDesc) < 1) SET @locationOneLineDesc = NULL
-	if (DATALENGTH(@eventFacebookId) < 5) SET @eventFacebookId = NULL
-	if (DATALENGTH(@coverPhotoUrl) < 5) SET @coverPhotoUrl = NULL
-	if (@coverPhotoOffsetX = -1) SET @coverPhotoOffsetX = NULL
-	if (@coverPhotoOffsetY = -1) SET @coverPhotoOffsetY = NULL
-	if (@latitude = -1) SET @latitude = NULL
-	if (@longitude = -1) SET @longitude = NULL
-	if (@fbLatitude = -1) SET @fbLatitude = NULL
-	if (@fbLongitude = -1) SET @fbLongitude = NULL
-	if (@eventPriceForMembers = -1) SET @eventPriceForMembers = NULL
-	if (@eventPriceForNonMembers = -1) SET @eventPriceForNonMembers = NULL
-	if (@absoluteEventNumber = -1) SET @absoluteEventNumber = NULL -- if AbsoluteEventNumber is zero, that will cause the record to null out the value currently in AbsoluteEventNumber
-	if (DATALENGTH(@eventCurrencyType) < 4) SET @eventCurrencyType = NULL
-	if (@deleted = -1) SET @deleted = NULL
-
-	set @resultStr = '00000000-0000-0000-0000-000000000000'
-	set @resultInt = -1
-
-	if (@eventFacebookId like '%break%') SET @eventFacebookId = ''
-
-
-    if ((@deleted IS NOT NULL) AND (@deleted = 1))
-	BEGIN
-		-- use the kennel id and date if we don't have an eventId
-		if ((@eventId = '00000000-0000-0000-0000-000000000000') OR (@eventId is null))
-		BEGIN
-			select top 1 @eventId = id from HC.Event WHERE KennelId = @kennelId AND cast(EventStartDatetime as Date) = cast(@startDatetime as Date)
-		END
-
-		if ((@eventId is not null) AND (@eventId <> '00000000-0000-0000-0000-000000000000'))
-		BEGIN
-			UPDATE HC.Event SET 
-			deleted = 1
-			FROM HC.Event e where e.id = @eventId
-
-			set @resultStr = @eventId
-			set @resultInt = 2
-		END
-			
-	END
-	ELSE
-	BEGIN
-	-- does a record exist? If so, we are in "edit" mode
-	if ((@eventId is not null) AND ((SELECT count(*) from HC.Event e where e.id = @eventId) > 0))
-		BEGIN
-			UPDATE HC.Event SET 
-			--KennelId = coalesce(@kennelId,KennelId),
-			EventStartDatetime = coalesce(@startDatetime,EventStartDatetime),
-			EventEndDatetime = coalesce(@endDatetime,EventEndDatetime),
-			IsCountedRun = coalesce(@isCountedRun,IsCountedRun,0),
-			IsVisible = coalesce(@isVisible,IsVisible),
-			IsPromotedEvent = coalesce(@isPromotedEvent,IsPromotedEvent),
-			EventGeographicScope = coalesce(@eventGeographicScope,EventGeographicScope),
-			ThemeRunType = coalesce(@ThemeRunType,ThemeRunType,0),
-			EventName = coalesce(@eventName, EventName),
-			EventDescription = coalesce(@eventDescription, EventDescription),
-			EventShortDesc = coalesce(@eventShortDescription, EventShortDesc),
-			LocationCity = coalesce(@locationCity, LocationCity),
-			LocationStreet = coalesce(@locationStreet, LocationStreet),
-			LocationPostCode = coalesce(@locationPostCode,LocationPostCode),
-			LocationCountry = coalesce(@locationCountry,LocationCountry),
-			LocationOneLineDesc = coalesce(@locationOneLineDesc, LocationOneLineDesc),
-			EventFacebookId = coalesce(@eventFacebookId, EventFacebookId),
-			EventImage = coalesce(@coverPhotoUrl, EventImage),
-			EventImageOffsetX = coalesce(@coverPhotoOffsetX,EventImageOffsetX),
-			EventImageOffsetY = coalesce(@coverPhotoOffsetY,EventImageOffsetY),
-			Latitude = coalesce(cast(@latitude as decimal(18,15)),Latitude),
-			Longitude = coalesce(cast(@longitude as decimal(19,15)),Longitude),
-			FbLatitude = coalesce(cast(@fbLatitude as decimal(18,15)),FbLatitude),
-			FbLongitude = coalesce(cast(@fbLongitude as decimal(19,15)),FbLongitude),
-			EventPriceForMembers = coalesce(@eventPriceForMembers,EventPriceForMembers),
-			EventPriceForNonMembers = coalesce(@eventPriceForNonMembers,EventPriceForNonMembers),
-			AbsoluteEventNumber = case when @absoluteEventNumber = 0 then null else coalesce(@absoluteEventNumber, AbsoluteEventNumber) end,
-			EventCurrencyType = coalesce(@eventCurrencyType, EventCurrencyType),
-			deleted = coalesce(@deleted, deleted)
-			FROM HC.Event e where e.id = @eventId
-
-			set @resultStr = 'Updated record x ' + cast (@eventId as nvarchar(50)) + ' set name to: ' + coalesce(@eventName,'opps, it is null!')
-			set @resultInt = 1
-		END
-		ELSE
-		BEGIN
-			-- record does not exist, we're in insert mode
-			if ((datalength(Trim(@eventName)) > 0) AND (@startDatetime is not null) AND ((@kennelId is not null) AND (@kennelId <> '00000000-0000-0000-0000-000000000000')))
-			BEGIN
-
-				if (cast(@startDatetime as time) = '00:00:00.0000000')
-				BEGIN
-					DECLARE @time time(7)
-					SELECT @time = DefaultRunStartTime from HC.Kennel where id = @kennelId
-					if (@time is not null) SET @startDateTime = @startDatetime + cast(@time as datetime)
-				END
-
-				if (@eventId is null) SET @eventId = newid()
-
-				if ((@kennelId is not null) AND (@kennelId != '00000000-0000-0000-0000-000000000000'))
-				BEGIN
-					SELECT @eventPriceForMembers = coalesce(@eventPriceForMembers,k.DefaultEventPriceForMembers),
-							@eventPriceForNonMembers = coalesce(@eventPriceForNonMembers,k.DefaultEventPriceForNonMembers)
-					 from HC.Kennel k WHERE k.id = @kennelId
-				END
-
-				INSERT HC.Event 
-					(
-						id
-						,KennelId
-						,EventStartDatetime
-						,EventEndDatetime
-						,IsCountedRun
-						,IsVisible
-						,IsPromotedEvent
-						,EventGeographicScope
-						,ThemeRunType
-						,EventName
-						,EventDescription
-						,EventShortDesc
-						,LocationCity
-						,LocationStreet
-						,LocationPostCode
-						,LocationCountry
-						,LocationOneLineDesc
-						,EventFacebookId
-						,EventImage
-						,EventImageOffsetX
-						,EventImageOffsetY
-						,Latitude
-						,Longitude
-						,FbLatitude
-						,FbLongitude
-						,EventPriceForMembers
-						,EventPriceForNonMembers
-						,AbsoluteEventNumber
-						,EventCurrencyType,deleted
-					) VALUES 
-					(
-						@eventId
-						,@KennelId
-						,@startDatetime
-						,@endDatetime
-						,coalesce(@isCountedRun,0)
-						,coalesce(@isVisible,1)
-						,coalesce(@isPromotedEvent,0)
-						,coalesce(@eventGeographicScope,0)
-						,coalesce(@ThemeRunType,0)
-						,@eventName
-						,@eventDescription
-						,@eventShortDescription
-						,@locationCity
-						,@locationStreet
-						,@locationPostCode
-						,@locationCountry
-						,@locationOneLineDesc
-						,@eventFacebookId
-						,@coverPhotoUrl
-						,coalesce(@coverPhotoOffsetX,0)
-						,coalesce(@coverPhotoOffsetY,0)
-						,cast(@latitude as decimal(18,15))
-						,cast(@longitude as decimal(19,15))
-						,cast(@fbLatitude as decimal(18,15))
-						,cast(@fbLongitude as decimal(19,15))
-						,@eventPriceForMembers
-						,@eventPriceForNonMembers
-						,@absoluteEventNumber
-						,@eventCurrencyType,coalesce(@deleted,0)
-					)
-
-				SET @resultStr = 'Insert succeeded'
-				SET @resultInt = 1
-			END
-		END
-	END
-
-	EXEC HC.nonApi_updateRunNumbers @eventId = @eventId
-
-	UPDATE HC.Event SET lastModified = getdate() WHERE id = @eventId
-
-    IF ((@fbLatitude is not null and @fbLongitude is not null) OR (@latitude is not null AND @longitude is not null))
-	BEGIN
-		UPDATE HC.Event Set EventGeolocation = geography::Point(coalesce(@latitude,@fbLatitude), coalesce(@longitude,@fbLongitude), 4326) FROM HC.Event
-			WHERE id = @eventId
-	END
-	
-	DECLARE @resultInt2 int
-	SELECT @resultInt2 = e.EventNumber, @kennelId = e.KennelId from HC.Event e where e.id = @eventId
-
-	SELECT @resultStr as ResultStr, @resultInt as ResultInt, @resultInt2 as ResultInt2
-
-END
-
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC].[addEditKennel]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-CREATE PROCEDURE [HC].[addEditKennel]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @kennelId uniqueidentifier,
- @cityId uniqueidentifier = null,
- @status int = null,
- @kennelName nvarchar(500) = null,
- @kennelShortName nvarchar(50) = null,
- @kennelLogo nvarchar(500) = null,
- @webUrl nvarchar(500) = null,
- @latitude float = null,
- @longitude float = null,
- @description nvarchar(2500) = null,
- @facebookId nvarchar(100) = null,
- @facebookAccessToken nvarchar(1000) = null,
- @facebookAccessTokenUserId uniqueidentifier = null,
- @autoImportFacebookEvents smallint = null,
- @importOnlyTaggedFacebookEvents smallint = null,
- @tagForFacebookImport nvarchar(50) = null,
- @memberPrice float = null,
- @nonMemberPrice float = null,
- @defaultStartTime datetime = null,
- @defaultCurrencyType nvarchar(50) = null
-
-AS
-
-BEGIN
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-	
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-
-DECLARE @resultStr nvarchar(250)
-DECLARE @resultInt int
-
-if (@kennelId = '00000000-0000-0000-0000-000000000000') SET @kennelId = NULL
-if (@cityId = '00000000-0000-0000-0000-000000000000') SET @cityId = NULL
-if ((@defaultStartTime IS NOT NULL) AND (@defaultStartTime <= '1/1/1901')) SET @defaultStartTime = NULL
-if (@status = -1) SET @status = NULL
-if (DATALENGTH(@kennelName) < 1) SET @kennelName = NULL
-if (DATALENGTH(@kennelShortName) < 1) SET @kennelShortName = NULL
-if (DATALENGTH(@kennelLogo) < 1) SET @kennelLogo = NULL
-if (DATALENGTH(@webUrl) < 4) SET @webUrl = NULL
-if (DATALENGTH(@description) < 1) SET @description = NULL
-if (DATALENGTH(@facebookId) < 1) SET @facebookId = NULL
-if (@latitude = -1) SET @latitude = NULL
-if (@longitude = -1) SET @longitude = NULL
-if (@memberPrice = -1) SET @memberPrice = NULL
-if (@nonMemberPrice = -1) SET @nonMemberPrice = NULL
-if (DATALENGTH(@defaultCurrencyType) < 4) SET @defaultCurrencyType = NULL
-if (@facebookAccessTokenUserId = '00000000-0000-0000-0000-000000000000') SET @facebookAccessTokenUserId = null
-if (@autoImportFacebookEvents = -1) SET @autoImportFacebookEvents = NULL
-if (@importOnlyTaggedFacebookEvents = -1) SET @importOnlyTaggedFacebookEvents = NULL
-
-set @resultStr = '00000000-0000-0000-0000-000000000000'
-set @resultInt = -1
-
-	-- does a record exist? If so, we are in "edit" mode
-	if ((@kennelId is not null) AND ((SELECT count(*) from HC.Kennel k where k.id = @kennelId) > 0))
-		BEGIN
-			UPDATE HC.Kennel SET 
-			   [KennelStatus] = coalesce(@status,k.KennelStatus)
-			  ,[CityId] = coalesce(@cityId,k.cityId)
-			  ,[KennelName] = coalesce(@kennelName,k.KennelName)
-			  ,[KennelFacebookId] = case when @facebookId='<delete>' then null else coalesce(@facebookId,k.KennelFacebookId) end
-			  ,[KennelFacebookToken] = coalesce(@facebookAccessToken,k.KennelFacebookToken)
-			  ,[KennelFacebookTokenUserId] = coalesce(@facebookAccessTokenUserId,k.KennelFacebookTokenUserId)
-			  ,[AutoImportFacebookEvents] = coalesce(@autoImportFacebookEvents,k.[AutoImportFacebookEvents])
-			  ,[ImportOnlyTaggedEvents] = coalesce(@importOnlyTaggedFacebookEvents,k.[ImportOnlyTaggedEvents])
-			  ,[FacebookTagForImport] = coalesce(@tagForFacebookImport,k.[FacebookTagForImport])
-			  ,[KennelFacebookTokenLastUpdated] = case when @facebookAccessToken is not null then getdate() else k.[KennelFacebookTokenLastUpdated] end
-			  ,[KennelShortName] = coalesce(@kennelShortName,k.KennelShortName)
-			  ,[KennelLogo] = coalesce(@kennelLogo,k.KennelLogo)
-			  ,[KennelDescription] = coalesce(@description,k.KennelDescription)
-			  ,[KennelWebsiteUrl] = coalesce(@webUrl,KennelWebsiteUrl)
-			  ,[DefaultEventPriceForMembers] = coalesce(@memberPrice,cast(k.DefaultEventPriceForMembers as smallmoney))
-			  ,[DefaultEventPriceForNonMembers] = coalesce(@nonMemberPrice,cast(k.DefaultEventPriceForNonMembers as smallmoney))
-			  ,[DefaultEventCurrencyType] = coalesce(@defaultCurrencyType,k.DefaultEventCurrencyType)
-			  ,[DefaultRunStartTime] = coalesce(@defaultStartTime,DefaultRunStartTime)
-			  ,[Latitude] = coalesce(cast(@latitude as decimal(18,15)),Latitude)
-			  ,[Longitude] = coalesce(cast(@longitude as decimal(19,15)),Longitude)
-			FROM HC.Kennel k where k.id = @kennelId
-
-			set @resultStr = 'Updated record ' + cast (@kennelId as nvarchar(50)) + ' set name to: ' + coalesce(@kennelName,'oops, it is null!')
-			set @resultInt = 1
-		END
-		ELSE
-		BEGIN
-
-			if (datalength(Trim(@kennelName)) > 0)
-			BEGIN
-
-				if (@kennelId is null) SET @kennelId = newid()
-
-
-
-				DECLARE @regionId uniqueidentifier
-				DECLARE @countryId uniqueidentifier
-
-				if (@cityId is null)
-				BEGIN
-					DECLARE @g geography
-					SET @g = geography::Point(@latitude,@longitude,4326)
-					SELECT TOP 1 @cityId = id FROM HC.City c 
-					ORDER BY c.CityGeolocation.STDistance(@g) ASC
-				END
-
-				SELECT @regionId = c.RegionId from HC.City c where c.id = @cityId
-				SELECT @countryId = r.CountryId from HC.Region r where r.id = @regionId
-
-				INSERT INTO [HC].[Kennel]
-						   ([id]
-						   ,[KennelStatus]
-						   ,[KennelName]
-						   ,[KennelShortName]
-						   ,[KennelLogo]
-						   ,[KennelWebsiteUrl]
-						   ,[Latitude]
-						   ,[Longitude]
-						   ,[CityId]
-						   ,[ProvinceStateId]
-						   ,[CountryId]
-						   ,[KennelDescription]
-						   ,[KennelFacebookId]
-						   ,[KennelFacebookToken]
-						   ,[KennelFacebookTokenUserId]
-						   ,[KennelFacebookTokenLastUpdated]
-						   ,[AutoImportFacebookEvents] 
-						   ,[ImportOnlyTaggedEvents] 
-						   ,[FacebookTagForImport]
-						   ,[DefaultEventPriceForMembers]
-						   ,[DefaultEventPriceForNonMembers]
-						   ,[DefaultRunStartTime]
-						   ,[DefaultEventCurrencyType]
-						  )
-					 VALUES
-						   (
-						    @kennelId
-						   ,coalesce(@status,0)
-						   ,@kennelName
-						   ,@kennelShortName
-						   ,@kennelLogo
-						   ,@webUrl
-						   ,cast(@latitude as decimal(18,15))
-						   ,cast(@longitude as decimal(19,15))
-						   ,@cityId
-						   ,@regionId
-						   ,@countryId
-						   ,@description
-						   ,case when @facebookId = '<none>' then null else @facebookId end
-						   ,@facebookAccessToken
-						   ,@facebookAccessTokenUserId
-						   ,case when @facebookAccessToken is null then null else getdate() end
-						   ,@autoImportFacebookEvents
-						   ,@importOnlyTaggedFacebookEvents
-						   ,@tagForFacebookImport
-						   ,coalesce(cast(@memberPrice as smallmoney),0)
-						   ,coalesce(cast(@nonMemberPrice as smallmoney),0)
-						   ,coalesce(@defaultStartTime,'1/1/2000 12:00:00')
-						   ,coalesce(@defaultCurrencyType,'nl-NL')
-						   )
-
-				SET @resultStr = 'Insert succeeded'
-				SET @resultInt = 1
-			END
-		END
-	
-
-
-	SELECT @resultStr as ResultStr, @resultInt as ResultInt
-
-END
-
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC].[addRemoveSong]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-
-CREATE PROCEDURE [HC].[addRemoveSong]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @kennelId uniqueidentifier,
- @songId uniqueidentifier,
- @state smallint
-
-AS
-
-BEGIN
-
--- EXEC HC.addRemoveSong @kennelId = '5029DE3A-D231-47AA-BE72-ECE9BCCD55D1', @songId = '087DFB87-0701-4FC5-A8A6-009164F5038C', @userId = '624c51b3-2f64-4de5-9458-b506e75ac544', @state = '1'
-
-	SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),@accessToken) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	DECLARE @result nvarchar(120)
-	DECLARE @message nvarchar(120)
-	DECLARE @songName nvarchar(120)
-	DECLARE @kennelName nvarchar(120)
-
-	SELECT @songName = SongName from HC.Song s WHERE s.id = @songId
-	SELECT @kennelName = k.KennelName from HC.Kennel k where k.id = @kennelId
-
-	SET @result = '0'
-
-	IF @state = 1
-		BEGIN
-			IF NOT EXISTS(SELECT * FROM HC.KennelSongMap WHERE SongId = @songId AND KennelId = @kennelId)
-			BEGIN INSERT INTO HC.KennelSongMap(SongId,KennelId,[Following]) VALUES (@songId,@kennelId,1) END
-				ELSE
-			BEGIN UPDATE HC.KennelSongMap SET [Following] = 1 WHERE SongId=@songId AND KennelId = @kennelId END
-			SET @result = '1'
-			SET @message = 'You have added ' + @songName + ' to the songbook for ' + @kennelName
-		END
-	ELSE 
-		if @state = 0
-		BEGIN
-			IF EXISTS(SELECT * FROM HC.KennelSongMap WHERE SongId = @songId AND KennelId = @kennelId)
-			BEGIN UPDATE HC.KennelSongMap SET [Following] = 0 WHERE SongId=@songId AND KennelId = @kennelId END
-			SET @message = 'You have removed ' + @songName + ' from the songbook for ' + @kennelName
-		END
-
-		SELECT @result as [Result], @message as [Message]
-
-
-END
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC].[addUser]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC].[addUser]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @email nvarchar(250),
- @eventId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
- @isNewMember int = 1,
- @firstName nvarchar(100) = null,
- @lastName nvarchar(100) = null,
- @deviceId uniqueidentifier,
- @homeLatitude decimal(18,15) = null,
- @homeLongitude decimal (19,15) = null,
- @hashHandle nvarchar(100) = null,
- @facebookId nvarchar(250) = null,
- @gender nvarchar(50) = null,
- @locale nvarchar(50) = null,
- @photo nvarchar(500) = null
-
-AS
-
-BEGIN
-
-SET NOCOUNT ON
-
-
--- EXEC HC.addUser @userId = '00000000-0000-0000-0000-000000000000', @accessToken = '',@email = 'james@jamesawhite.com', @firstName = 'James', @lastName = 'White', @deviceId = '366bfe5f-9906-443d-86a4-b99c5d668db3',@hashHandle = 'Opee',@facebookId = '10214797082344406'
-
-
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),@accessToken) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	if (SELECT count(*) from HC.Hasher h where h.Email = trim(@email) and (h.Email <> 'james@jamesawhite.com' AND h.Email <> 'melissatunawhite@gmail.com') AND h.Email <> '') > 0
-	BEGIN
-			select 
-		5 as ErrorType 
-		,'User''s e-mail already exists in the system' as ErrorTitle
-		,'A user already exists with this e-mail address in the system. Please register with a different e-mail address. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	SELECT @homeLatitude = coalesce(@homeLatitude,52.1663), @homeLongitude = coalesce(@homeLongitude,4.4814) 
-	SET @userId = newid()
-	INSERT HC.Hasher 
-		(
-			Id,FirstName,LastName,Email,HashName,HomeLatitude,HomeLongitude,DisplayName,FacebookId,Gender,Locale,Photo
-		) VALUES 
-		(
-			@userId,@firstName,@lastName,@email,@hashHandle,@homeLatitude,@homeLongitude,@hashHandle,@facebookId,@gender,@locale,@photo
-		)
-
-DECLARE @hasherKennelMapId uniqueidentifier
-DECLARE @hasherEventMapId uniqueidentifier
-DECLARE @memberCounter int
-
-if @eventId <> '00000000-0000-0000-0000-000000000000'
-BEGIN
-	DECLARE @kennelId uniqueidentifier
-	SELECT @kennelId = evt.KennelId from HC.Event evt where evt.id = @eventId
-	SET @hasherKennelMapId = newid()
-	INSERT HC.HasherKennelMap (id,UserId,KennelId,[Following],isMember,MemberSince) VALUES (@hasherKennelMapId, @userId, @kennelId,1,@isNewMember,GETDATE())
-
-	SELECT @memberCounter = count(*) from HC.HasherKennelMap hkm WHERE hkm.KennelId = @kennelId AND hkm.IsMember = 1
-	SET @hasherEventMapId = newid()
-
-	INSERT HC.HasherEventMap (id,EventId,UserId,UserStartEvent,Rsvp,RsvpState) VALUES (@hasherEventMapId,@eventId,@userId,getdate(),GETDATE(),3)
-
-END
-
-SELECT top 1 
-	h.id as userId, 
-	h.qr_code, 
-	'USC:' + UPPER(cast(h.QR_secret_code as nvarchar(50))) as qr_secret_code,
-	coalesce(CASE 
-		WHEN h.NameDisplayPreference = 1
-			THEN h.HashName
-		WHEN h.NameDisplayPreference = 2
-			THEN h.FirstName + ' ' + h.LastName
-		ELSE h.HashName + ' (' + h.FirstName + ' ' + h.LastName + ')'
-		END,DisplayName,'<no name>')
-	AS displayName,
-	h.FirstName as firstName,
-	h.LastName as lastName,
-	h.HashName as hashName,
-	h.Email as email,
-	coalesce(@hasherKennelMapId,'00000000-0000-0000-0000-000000000000') as hasherKennelMapId,
-	coalesce(@hasherEventMapId,'00000000-0000-0000-0000-000000000000') as hasherEventMapId,
-	coalesce(@memberCounter,0) as memberCount
-FROM HC.Hasher h where h.id = @userId
-
-END
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC].[approveLogin]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-CREATE PROCEDURE [HC].[approveLogin]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@deviceId nvarchar(100),
-@deviceType nvarchar(100),
-@latitude decimal(18,15),
-@longitude decimal (19,15)
-
-AS
-
-BEGIN
-
-	SET NOCOUNT ON
-
--- EXEC HC.approveLaunch @userId = '00000000-0000-0000-0000-000000000000', @accessToken = '', @deviceId = 'TestDevice', @deviceType = 'iPhone 6s / iOS 11.4', @latitude = 52.4, @longitude = 4.4
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	INSERT HC.LaunchAndLogin 
-	(
-		UserId
-		,DeviceType
-		,MobileDeviceId
-		,Latitude
-		,Longitude
-	)
-	VALUES
-	(
-		@userId
-		,@deviceType
-		,@deviceId
-		,@latitude
-		,@longitude
-	)
-
-	SELECT TOP 1 svr.ApiVersion,svr.LastGazetteerUpdate,'1' AS ApprovalCode 
-	FROM HC.ServerStatus svr
-	ORDER BY svr.CreatedDate desc
-
-END
-GO
-/****** Object:  StoredProcedure [HC].[authorizeDevice]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC].[authorizeDevice]
-
- @accessToken nvarchar(1000),
- @scanText nvarchar(250),
- @deviceId uniqueidentifier
-
-AS
-
-BEGIN
-
-SET NOCOUNT ON
--- EXEC HC.authorizeDevice @scanText = 'USC:73b9e85c-b8e0-4edb-8a9e-ea55cdfa0de6 ', @deviceId = '0C2852D4-A60E-4BA9-8628-4B0F246034C4'
-
-	IF HC.CHECK_ACCESS_TOKEN('00000000-0000-0000-0000-000000000000',OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-if (@scanText like 'USC:%')
-BEGIN
-	DECLARE @secretCode uniqueidentifier
-	SET @secretCode = CAST(right(TRIM(@scanText),36) AS uniqueidentifier)
-
-	SELECT top 1 
-		h.id as userId, 
-		h.QR_code, 
-		'USC:' + UPPER(cast(h.QR_secret_code as nvarchar(50))) as QR_secret_code,
-		coalesce(CASE 
-			WHEN h.NameDisplayPreference = 1
-				THEN h.HashName
-			WHEN h.NameDisplayPreference = 2
-				THEN h.FirstName + ' ' + h.LastName
-			ELSE h.HashName + ' (' + h.FirstName + ' ' + h.LastName + ')'
-			END,DisplayName,'<no name>')
-		AS DisplayName,
-		h.FirstName,
-		h.LastName,
-		h.HashName,
-		h.Email
-
-	FROM HC.Hasher h where h.QR_secret_code = @secretCode
-END
-
-END
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC].[editUser]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC].[editUser]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @email nvarchar(250) = null,
- @firstName nvarchar(100) = null,
- @lastName nvarchar(100) = null,
- @deviceId uniqueidentifier = null,
- @homeKennelId uniqueidentifier = null,
- @homeLatitude decimal(18,14) = null,
- @homeLongitude decimal (19,15) = null,
- @hashHandle nvarchar(100) = null,
- @facebookId nvarchar(250) = null,
- @locale nvarchar(50) = null,
- @gender nvarchar(50) = null,
- @photo nvarchar(500) = null
-
-
-AS
-
-BEGIN
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),@accessToken) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	if (@email = '') SET @email = NULL
-	if (@firstName = '') SET @firstName = NULL
-	if (@lastName = '') SET @lastName = NULL
-	if (@deviceId = '00000000-0000-0000-0000-000000000000') SET @deviceId = NULL
-	if (@homeKennelId = '00000000-0000-0000-0000-000000000000') SET @homeKennelId = NULL
-	if (@homeLatitude = -1) SET @homeLatitude = NULL
-	if (@homeLongitude = -1) SET @homeLongitude = NULL
-	if (@hashHandle = '') SET @hashHandle = NULL
-	if (@facebookId = '') SET @facebookId = NULL
-	if (@locale = '') SET @locale = NULL
-	if (@gender = '') SET @gender = NULL
-	if (@photo = '') SET @photo = NULL
-
-
-	UPDATE HC.Hasher SET 
-		FirstName = coalesce(@firstName,h.FirstName), 
-		LastName = coalesce(@lastName,h.LastName), 
-		HashName = coalesce(@hashHandle,h.HashName), 
-		DisplayName = coalesce(@hashHandle,h.DisplayName), 
-		Home_KennelId = coalesce(@homeKennelId,h.Home_KennelId),
-		HomeLatitude = coalesce(@homeLatitude,h.HomeLatitude),
-		HomeLongitude = coalesce(@homeLongitude,h.HomeLongitude),
-		FacebookId = coalesce(@facebookId, h.FacebookId),
-		Gender = coalesce(@gender, h.gender),
-		Locale = coalesce(@locale, h.locale),
-		Photo = coalesce(@photo, h.Photo)
-	FROM HC.Hasher h where h.id = @userId
-
-SELECT top 1 
-	h.id as userId, 
-	h.QR_code, 
-	'USC:' + UPPER(cast(h.QR_secret_code as nvarchar(50))) as QR_secret_code,
-	coalesce(CASE 
-		WHEN h.NameDisplayPreference = 1
-			THEN h.HashName
-		WHEN h.NameDisplayPreference = 2
-			THEN h.FirstName + ' ' + h.LastName
-		ELSE h.HashName + ' (' + h.FirstName + ' ' + h.LastName + ')'
-		END,DisplayName,'<no name>')
-	AS DisplayName,
-	h.FirstName,
-	h.LastName,
-	h.HashName,
-	h.Email
-
-FROM HC.Hasher h where h.id = @userId
-
-END
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC].[getAllHashers]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC].[getAllHashers]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000)
-
-AS
-
-BEGIN
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-
-	SELECT 
-		id
-		,HashName as HashName
-		,FirstName as FirstName
-		,LastName as LastName
-		,NameDisplayPreference as DispPref
-		,Photo as Photo
-	FROM HC.Hasher
-	WHERE deleted = 0
-END
-
-GO
-/****** Object:  StoredProcedure [HC].[getAllKennels]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [HC].[getAllKennels]
-
- @userId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
- @accessToken nvarchar(1000) = 'none',
- @kennelId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
- @userLatitude float = null,
- @userLongitude float = null,
- @distanceFromUserInKm float = null,
- @procName nvarchar(250) = null
-
-AS
-
-BEGIN
-
-	SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,coalesce(@procName,OBJECT_NAME(@@PROCID)),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	-- EXEC HC.[getAllKennels] @userLatitude = 52.1663, @userLongitude =  4.4814, @userId = '624c51b3-2f64-4de5-9458-b506e75ac544', @accessToken = '', @distanceFromUserInKm = 250, @kennelId = '00000000-0000-0000-0000-000000000000'
-	-- EXEC HC.[getAllKennels] @accessToken = '', @userId = '624c51b3-2f64-4de5-9458-b506e75ac544', @distanceFromUserInKm = 2000, @kennelId = '00000000-0000-0000-0000-000000000000'
-
-	IF ((@userLatitude is NULL) OR (@userLongitude IS NULL))
-	BEGIN
-		-- Assume Leiden Centraal Station
-		SET @userLatitude = 52.1663
-		SET @userLongitude = 4.4814
-	END
-
-	IF (@kennelId is null) SET @kennelId = '00000000-0000-0000-0000-000000000000'
-
-	IF ((@distanceFromUserInKm IS NULL) OR (@distanceFromUserInKm <= 0)) SET @distanceFromUserInKm = 99999
-
-	DECLARE @geoLoc	AS GEOGRAPHY
-	SET @geoloc = geography::Point(@userLatitude,@userLongitude,4326) 
-
-		SELECT k.[id] as kennelId
-			  ,cast ((@geoloc.STDistance(k.kennelGeolocation)/1000) as int) as distance
-			  ,CASE WHEN coalesce (hkm.[Following],0) = 0 THEN 'off' ELSE 'on' END  as [following]
-			  ,coalesce (hkm.[Following],0) as [followingBool]
-			  ,[kennelStatus] 
-			  ,[kennelName]
-			  ,[kennelDescription]
-			  ,k.cityId
-			  ,k.kennelWebsiteUrl
-			  ,k.kennelFacebookId
-			  ,k.kennelFacebookToken
-			  ,k.kennelFacebookTokenUserId
-			  ,k.autoImportFacebookEvents
-			  ,k.importOnlyTaggedEvents
-			  ,k.facebookTagForImport
-			  ,k.defaultEventCurrencyType
-			  ,k.defaultEventPriceForNonMembers
-			  ,k.defaultEventPriceForMembers
-			  ,k.defaultRunStartTime
-			  ,coalesce([KennelShortName],[KennelName],'<no name>') as [kennelShortName]
-			  ,case when datalength(coalesce(KennelLogo,'')) < 4 then 'https://harriercentral.blob.core.windows.net/harrier/MissingLogo.png' else KennelLogo end as kennelLogo
-			  ,k.[latitude]
-			  ,k.[longitude]
-			  ,(select count(*) from HC.Haberdashery hd where hd.KennelId = k.id and hd.Archive = 0) as activeHaberdasheryItems
-			  ,(select count(*) from HC.Haberdashery hd where hd.KennelId = k.id and hd.Archive != 0) as archiveHaberdasheryItems
-			  ,c.CityName + ', ' + r.RegionName + ', ' + n.CountryName as locationName
-				,hkm.isMember  
-				,hkm.mismanagementRoleFlags
-				,hkm.appAccessFlags
-				,CASE
-					WHEN (h.id IS NOT NULL) THEN 1
-					ELSE 0
-					END
-						as isHomeKennel
-			  ,coalesce(kAuth.auth_AllowCredit,0) as authAllowCredit
-			  ,coalesce(kAuth.auth_CheckInAndOut,0) as authCheckInAndOut
-			  ,coalesce(kAuth.auth_CustomLogo,0) as authCustomLogo
-			  ,coalesce(kAuth.auth_CustomSongbook,0) as authCustomSongbook
-			  ,coalesce(kAuth.auth_FacebookIntegration,0) as authFacebookIntegration
-			  ,coalesce(kAuth.auth_Haberdashery,0) as authHaberdashery
-			  ,coalesce(kAuth.auth_HareRaisingManagement,0) as authHareRaisingManagement
-			  ,coalesce(kAuth.auth_MembersAllowed,0) as authMembersAllowed
-			  ,coalesce(kAuth.auth_PromoteEvents,0) as authPromoteEvents
-			  ,coalesce(kAuth.auth_PushNotifications,0) as authPushNotifications
-			  ,coalesce(kAuth.auth_TrackPayments,0) as authTrackPayments
-			  ,coalesce(kAuth.auth_WebsiteIntegration,0) as authWebsiteIntegration
-			  ,(select count(*) from HC.HasherKennelMap hkm2 where hkm2.KennelId = k.id and hkm2.IsMember = 1) as memberCount
-		  FROM [HC].[Kennel] k 
-		  LEFT OUTER JOIN HC.HasherKennelMap hkm on k.id = hkm.KennelId and hkm.UserId = @userId
-		  LEFT OUTER JOIN HC.City c on c.id = k.CityId
-		  LEFT OUTER JOIN HC.Region r on r.id = c.RegionId
-		  LEFT OUTER JOIN HC.Country n on n.id = r.CountryId
-		  LEFT OUTER JOIN HC.Hasher h on h.Home_KennelId = k.id AND h.id = @userId
-		  LEFT OUTER JOIN HC.KennelAuthorization kAuth on kAuth.KennelId = k.id AND kAuth.EndDate IS NULL
-
-		  WHERE 
-		  ((@kennelId = '00000000-0000-0000-0000-000000000000') OR (k.id = @kennelId)) AND
-			
-				((@geoloc.STDistance(k.kennelGeolocation)/1000) <= @distanceFromUserInKm)
-			
-		  ORDER BY 
-		    case when hkm.[Following] = 0 then 0 -- this strange case statement orders the records with the "following" items at the top
-				 when hkm.[Following] = 1 then 2
-				 when hkm.[Following] = 2 then 1
-				end DESC,
-			@geoloc.STDistance(k.kennelGeolocation)
-			
-END
-	
-
-  
-
-
-GO
-/****** Object:  StoredProcedure [HC].[getEventDetails]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE procedure [HC].[getEventDetails]
-
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@eventId uniqueidentifier
-
-AS
-
-BEGIN
-
--- EXEC HC.getEventDetails @eventId = '7520f48f-d9be-4e76-8e23-287dc38cfb45', @userId = '624c51b3-2f64-4de5-9458-b506e75ac544'
-
-
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-SELECT  e.[id] as EventId
-	,e.[EventFacebookId]
-	,e.[EventStartDatetime]
-	,e.[EventEndDatetime]
-	,e.[KennelId]
-	,e.[IsCountedRun]
-	,e.[IsVisible]
-	,e.[IsPromotedEvent]
-	,e.[ThemeRunType]
-	,e.[EventPriceForMembers]
-	,e.[EventPriceForNonMembers]
-	,e.[EventCurrencyType]
-	,e.[AbsoluteEventNumber]
-	,e.[EventNumber]
-	,e.[EventName]
-	,e.[EventDescription]
-	,e.[EventImage]
-	,e.[EventShortDesc]
-	,e.[LocationOneLineDesc]
-	,e.[LocationCity]
-	,e.[LocationStreet]
-	,e.[LocationPostCode]
-	,e.[LocationCountry]
-	,e.[LocationDescription]
-	,coalesce(e.[Latitude],e.[FbLatitude]) as Latitude
-	,coalesce(e.[Longitude],e.[FbLongitude]) as Longitude
-	,cast(e.[deleted] as smallint) as deleted
-	,coalesce(k.KennelShortName,k.KennelName,'<no Kennel name>') as KennelShortName
-	,k.KennelLogo
-	,k.DefaultCity
-	,k.DefaultCountry
-	,k.DefaultCitiesList
-	,k.DefaultCountriesList
-	,k.DefaultEventPriceForMembers
-	,k.DefaultEventPriceForNonMembers
-
-	,coalesce(hem.IsHare,0) as IsHare
-	,coalesce(hem.RsvpState,0) as RsvpState
-	,coalesce(hem.TotalRunsThisKennel,0) as TotalRunsThisKennel
-	,coalesce(hem.TotalHaringThisKennel,0) as TotalHaringThisKennel
-	,coalesce(hem.TotalPackRunsThisKennel,0) as TotalPackRunsThisKennel
-	,case WHEN hem.[UserStartEvent] IS NOT NULL AND hem.[UserEndEvent] IS NULL THEN 4 
-	WHEN hem.[UserStartEvent] IS NOT NULL AND hem.[UserEndEvent] IS NOT NULL THEN 5
-	ELSE coalesce(hem.RsvpState,0)
-	END as UserStatus
-	,(select count(hemYes.id) from HC.HasherEventMap hemYes where hemYes.EventId = e.id and hemYes.RsvpState = 3) as WillAttendCount
-	,(select count(hemMaybe.id) from HC.HasherEventMap hemMaybe where hemMaybe.EventId = e.id and hemMaybe.RsvpState = 2) as MightAttendCount
-	,(select count(hemNo.id) from HC.HasherEventMap hemNo where hemNo.EventId = e.id and hemNo.RsvpState = 1) as WillNotAttendCount
-  FROM [HC].[Event] e INNER JOIN HC.Kennel k on e.KennelId = k.id
-  LEFT OUTER JOIN HC.HasherEventMap hem on hem.EventId = e.id AND hem.UserId = @userId
-
-  WHERE e.id = @eventId
-END
-
-GO
-/****** Object:  StoredProcedure [HC].[getEventsByDistance]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC].[getEventsByDistance]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@latitude float,
-@longitude float,
-@startDate datetime = null,
-@endDate datetime = null,
-@distanceInKm float = null,
-@itemsToDisplay int = 50,
-@procName nvarchar(100) = null
-
-AS
-
-BEGIN
-
--- EXEC HC.getEventsByDistance @userId ='624c51b3-2f64-4de5-9458-b506e75ac544', @accessToken = '', @latitude = 51.9, @longitude = 4.4
--- EXEC HC.getEventsByDistance @userId ='624c51b3-2f64-4de5-9458-b506e75ac544', @accessToken = '', @latitude = 51.9, @longitude = 4.4, @distanceInKm = 40
--- EXEC HC.getEventsByDistance @userId ='624c51b3-2f64-4de5-9458-b506e75ac544', @accessToken = '', @latitude = 51.9, @longitude = 4.4, @distanceInKm = 100, @itemsToDisplay = 3
--- EXEC HC.getEventsByDistance @userId ='624c51b3-2f64-4de5-9458-b506e75ac544', @accessToken = '', @latitude = 51.9, @longitude = 4.4, @distanceInKm = 100, @startDate = '1/1/2018', @endDate = '3/1/2018'
-
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,coalesce(@procName,OBJECT_NAME(@@PROCID)),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-IF @startDate IS NULL SET @startDate = dateadd(day,-9999,getdate())
-IF @endDate IS NULL SET @endDate = dateadd(day, 9999, getdate())
-IF ((@distanceInKm <= 0) OR (@distanceInKm IS NULL)) SET @distanceInKm = 50000
-
-
-	DECLARE @geoLoc	AS GEOGRAPHY
-	SET @geoloc = geography::Point(@latitude,@longitude,4326) 
-
-
-		SELECT TOP (@itemsToDisplay)
-			-- FROM HC.Event
-				e.id as EventId
-				,e.EventStartDatetime
-				,e.EventName
-				,coalesce(e.Latitude,e.FbLatitude,k.Latitude,c.Latitude) as Latitude
-				,coalesce(e.Longitude,e.FbLongitude,k.Longitude,c.Longitude) as Longitude
-				,(@geoloc.STDistance(coalesce(e.[EventGeolocation],k.[KennelGeoLocation],c.[CityGeoLocation]))/1000) as Distance
-			-- From HC.Kennel
-				,case when datalength(coalesce(k.KennelLogo,'')) < 4 then 'https://harriercentral.blob.core.windows.net/harrier/MissingLogo.png' else k.KennelLogo end as KennelLogo
-			-- From HC.HasherEventMap
-				,case WHEN hem.[UserStartEvent] IS NOT NULL AND hem.[UserEndEvent] IS NULL THEN 4 
-					WHEN hem.[UserStartEvent] IS NOT NULL AND hem.[UserEndEvent] IS NOT NULL THEN 5
-					ELSE coalesce(hem.RsvpState,0)
-				 END as UserStatus
-				,coalesce(e.LocationStreet,'') + '~~' + coalesce(e.LocationCity + ', ','') + coalesce(e.LocationPostCode,'') as StreetAddress
-		from HC.Event e 
-		INNER JOIN HC.Kennel k on e.KennelId = k.id
-		INNER JOIN HC.City c on c.id = k.CityId
-		LEFT OUTER JOIN HC.HasherEventMap hem on hem.EventId = e.id AND hem.UserId = @userId
-		WHERE 
-		e.EventStartDatetime BETWEEN @startDate AND @endDate 
-		AND e.deleted = 0 AND e.IsVisible <> 0
-		AND ((@distanceInKm IS NULL) OR (@geoloc.STDistance(coalesce(e.[EventGeolocation],k.[KennelGeoLocation],c.[CityGeoLocation]))/1000) <= @distanceInKm)
-		--order by @geoloc.STDistance(coalesce(e.[EventGeolocation],k.[KennelGeoLocation],c.[CityGeoLocation]))/1000
-		order by e.EventStartDatetime desc
-
-
-END
-GO
-/****** Object:  StoredProcedure [HC].[getFriends]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-CREATE procedure [HC].[getFriends]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@kennelId uniqueidentifier,
-@latitude float = null,
-@longitude float =  null,
-@distanceInKm float = null
-
-AS
-
-BEGIN
-
--- EXEC HC.getFriends @userId ='624c51b3-2f64-4de5-9458-b506e75ac544', @kennelId = '5029DE3A-D231-47AA-BE72-ECE9BCCD55D1'
--- EXEC HC.getFriends @userId ='624c51b3-2f64-4de5-9458-b506e75ac544'
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-
-	SELECT hfm.id as HasherFriendId
-		,h.QR_code as Friend_UserQr
-		,coalesce(CASE 
-		WHEN h.NameDisplayPreference = 1
-			THEN h.HashName
-		WHEN h.NameDisplayPreference = 2
-			THEN h.FirstName + ' ' + h.LastName
-		ELSE h.HashName + ' (' + h.FirstName + ' ' + h.LastName + ')'
-		END,DisplayName,'<no name>')
-		 AS DisplayName
-      ,[Photo]
-      ,[Description]
-	  ,hfm.FriendSince
-	  ,k.KennelName
-	  ,coalesce((SELECT top 1 evt.EventName FROM HC.Event evt
-			INNER JOIN HC.HasherEventMap hem on hem.EventId = evt.id AND hem.UserId = h.id
-			WHERE evt.EventStartDateTime >= dateadd(day,-1,GETDATE())
-			AND hem.RsvpState >= 3 AND evt.deleted = 0 AND evt.isVisible <> 0
-			ORDER BY evt.EventStartDateTime asc),'<no event planned>') as NextEventName
-	FROM HC.Hasher h 
-	INNER JOIN HC.HasherFriendMap hfm on hfm.UserId = @userId AND hfm.Friend_UserId = h.id
-	LEFT OUTER JOIN HC.Kennel k on h.Home_KennelId = k.id
-	WHERE h.id in
-		(
-			SELECT DISTINCT hfm.Friend_UserId 
-				FROM HC.HasherFriendMap hfm 
-				LEFT OUTER JOIN HC.HasherKennelMap hkm on hkm.UserId = hfm.Friend_UserId
-				WHERE hfm.UserId = @userId
-				AND ((@kennelId = '00000000-0000-0000-0000-000000000000') OR ((@kennelId = hkm.KennelId) AND ((hkm.Following = 1) OR (hkm.IsMember = 1))))
-				AND hfm.Ignore = 0
-		)
-
-
-
-
-
-
-END
-GO
-/****** Object:  StoredProcedure [HC].[getGazetteer]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-CREATE procedure [HC].[getGazetteer]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@latitude float = null,
-@longitude float =  null,
-@distanceInKm float = null
-
-AS
-
-BEGIN
-
--- EXEC HC.getGazetteer @userId ='624c51b3-2f64-4de5-9458-b506e75ac544', @accessToken = '', @latitude = 52.5, @longitude = 4.4, @distanceInKm = 50000
-
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	IF ((@distanceInKm <= 0) OR (@distanceInKm IS NULL)) SET @distanceInKm = 50000
-
-	DECLARE @geoLoc	AS GEOGRAPHY
-
-	-- TODO: Need to implement geo filtering
-	IF ((@latitude is not null) AND (@longitude IS NOT NULL))
-		SET @geoloc = geography::Point(@latitude,@longitude,4326) 
-
-	SELECT 
-		c.id as CityId
-		,c.CityName
-		,c.Latitude
-		,c.Longitude
-		,r.id as RegionId
-		,r.RegionName
-		,cn.id as CountryId
-		,cn.CountryName
-		,cn.CountryCode
-		,cn.ContinentCode
-		,cn.ContinentName
-		,cn.CurrencyCode
-		,cn.PrimaryCultureCode
-		,coalesce(c.FlagFile,'') as CityFlagFile
-		,coalesce(r.FlagFile,'') as RegionFlagFile
-		,coalesce(cn.FlagFile,'earth.png') as CountryFlagFile
-		,c.DateLastUpdated
-	FROM
-	HC.City c
-	INNER JOIN HC.Region r on c.RegionId = r.id
-	INNER JOIN HC.Country cn on r.CountryId = cn.id
-	WHERE ((@distanceInKm IS NULL) OR ((@geoloc.STDistance(c.[CityGeoLocation])/1000) <= @distanceInKm))
-	ORDER BY @geoloc.STDistance(c.[CityGeoLocation]) ASC
-
-END
-GO
-/****** Object:  StoredProcedure [HC].[getHaberdashery]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-CREATE PROCEDURE [HC].[getHaberdashery]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@KennelId uniqueidentifier
-
-AS
-
-BEGIN
-
-SET NOCOUNT ON
-
--- EXEC HC.[getHaberdashery] @KennelId = '6F901167-4BD3-45AF-9DA0-6AF5A1128F42'
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	SET NOCOUNT ON
-	SELECT 
-	   [id] as HaberdasheryId
-      ,[KennelId]
-      ,[ItemName]
-      ,[Description]
-      ,[Price]
-	  ,coalesce([CurrencyCulture],'nl-NL') as CurrencyCulture
-      ,[SizesAvailable]
-      ,[ImageUrl]
-	  ,[ReverseSideImageUrl]
-      ,[InStock]
-      ,[Archive]
-		  FROM HC.Haberdashery h
-		  WHERE h.KennelId = @KennelId 
-		 
-
-END
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC].[getHomePageData]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [HC].[getHomePageData]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@latitude decimal(17,14),
-@longitude decimal(18,14),
-@distanceInKm int = 200,
-@itemsToDisplay int = 50,
-@mapItemsOnly int = 0
-
-AS
-
-BEGIN
-
--- EXEC HC.GetHomePageData @userId = '5C4AE228-2CC1-467F-B666-F62EFEDFEE14', @accessToken = '', @distanceInKm = 100, @latitude = 51.9, @longitude = 4.4, @mapItemsOnly = 0
-
-SET NOCOUNT ON
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-BEGIN
-	select 
-	1 as ErrorType 
-	,'Unauthorized Access Token' as ErrorTitle
-	,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-	RETURN
-END
-
-	DECLARE @geoLoc	AS GEOGRAPHY
-	SET @geoloc = geography::Point(@latitude,@longitude,4326) 
-
-
-CREATE TABLE #outputTable
-(
-	OutputType int not null
-	,OutputOrder int not null
-	,OutputGuid1 uniqueidentifier null
-	,OutputStr1 nvarchar(500) null
-	,OutputStr2 nvarchar(500) null
-	,OutputStr3 nvarchar(500) null
-	,OutputInt1 int null
-	,OutputInt2 int null
-	,OutputLat decimal(17,14) null
-	,OutputLon decimal(18,14) null
-	,OutputDatetime1 datetime null
-)
-
--- OutputTypeKey
---
--- 1 = Top 5 run counts
--- 2 = Count of Kennels followed
--- 3 = Next run for each Kennel followed or Kennel not followed but with a run with an RSVP of Yes
--- 4 = User QR Code
--- 5 = List of Kennels followed
--- 6 = List of nearby runs
--- 7 = 6 friends whose photos will show on the friends button
--- 8 = total count of friends
--- 9 = featured kennel
---10 = featured song
---11 = Haberdashery
---12 = Kennel locations
-
-if (@mapItemsOnly = 0)
-BEGIN
-
-		CREATE TABLE #runCounts
-		(
-			KennelId uniqueidentifier
-			,KennelLogo nvarchar(500)
-			,KennelName nvarchar(500)
-			,TotalRunsThisKennel int
-			,TotalPackRunsThisKennel int
-			,TotalHaringThisKennel int
-			,[Following] int
-			,KennelShortName nvarchar(50)
-		)
-
-		INSERT INTO #runCounts
-		EXEC HC.getMyKennelRunTotals @userId = @userId, @accessToken = @accessToken, @procName = 'getHomePageData'
-
-		-- get the run counts (top 5 kennels plus one record with the overall total run count)
-		INSERT #outputTable (OutputType,OutputOrder,OutputGuid1,OutputInt1,OutputStr1,OutputStr2)
-		select top 6 
-		1 as OutputType
-		,ROW_NUMBER() OVER (ORDER BY TotalRunsThisKennel desc) as OutputOrder
-		,KennelId as OutputGuid1
-		,TotalRunsThisKennel as OutputInt1  
-		,KennelLogo as OutputStr1
-		,KennelShortName as OutputStr2
-		from #runCounts 
-		order by TotalRunsThisKennel desc
-
-		CREATE TABLE #nextRuns
-		(
-			EventId uniqueidentifier
-			,EventName nvarchar(500)
-			,KennelLogo nvarchar(500)
-			,DaysUntilNextRun int
-			,FriendsAttending int
-			,UserStatus int
-			,RsvpState int
-			,TotalRunsThisKennel int
-			,KennelId uniqueidentifier
-			,KennelShortName nvarchar(50)
-		)
-
-		INSERT INTO #nextRuns
-		EXEC HC.getNextRuns @userId = @userId, @accessToken = @accessToken, @procName = 'getHomePageData'
-
-		-- get the count of kennels with next runs 
-		-- NOTE: This may cause a problem in the UI if there are runs that are with kennels not
-		--       followed. We will need to check this.
-		INSERT #outputTable (OutputType,OutputOrder,OutputGuid1,OutputInt1,OutputStr1,OutputStr2)
-		select 
-		2 as OutputType
-		,1 as OutputOrder
-		,'00000000-0000-0000-0000-000000000000' as OutputGuid1
-		,count(*) as OutputInt1  
-		,'' as OutputStr1
-		,'' as OutputStr2
-		from #nextRuns 
-
-		-- get the next run for each kennel followed or for kennels not followed where there has been an RSVP
-		INSERT #outputTable (OutputType,OutputOrder,OutputGuid1,OutputInt1,OutputStr1,OutputInt2,OutputStr2)
-		select 
-		3 as OutputType
-		,ROW_NUMBER() OVER (ORDER BY DaysUntilNextRun asc) as OutputOrder
-		,EventId as OutputGuid1
-		,DaysUntilNextRun as OutputInt1  
-		,KennelLogo as OutputStr1
-		,RsvpState as OutputInt2
-		,KennelShortName as OutputStr2
-		from #nextRuns order by DaysUntilNextRun asc
-
-		-- Provide the User QR code to be scanned from the home page
-		INSERT #outputTable (OutputType,OutputOrder,OutputGuid1,OutputInt1,OutputStr1)
-		select  
-		4 as OutputType
-		,1 as OutputOrder
-		,h.id as OutputGuid1
-		,0 as OutputInt1  
-		,h.QR_code as OutputStr1
-		from HC.Hasher h where h.id = @userId
-
-		-- Provide links to all of the followed kennels
-		INSERT #outputTable (OutputType,OutputOrder,OutputGuid1,OutputInt1,OutputStr1,OutputStr2)
-		select  
-		5 as OutputType
-		,ROW_NUMBER() OVER (ORDER BY hkm.MemberSince asc) as OutputOrder
-		,hkm.KennelId as OutputGuid1
-		,0 as OutputInt1  
-		,k.KennelLogo as OutputStr1
-		,k.KennelShortName as OutputStr2
-		from HC.HasherKennelMap hkm
-		INNER JOIN HC.Kennel k on k.id = hkm.KennelId
-		where hkm.UserId = @userId
-		and Following = 1
-
-		-- Insert the top 6 friends so their photos can be displayed in the friends button on the home page
-		INSERT #outputTable (OutputType,OutputOrder,OutputGuid1,OutputStr1)
-		SELECT TOP 6 
-		7 as OutputType
-		,ROW_NUMBER() OVER (ORDER BY h.FirstName asc) as OutputOrder
-		,Friend_UserId
-		,h.Photo
-		FROM HC.HasherFriendMap hfm
-		INNER JOIN HC.Hasher h on hfm.Friend_UserId = h.id
-		WHERE hfm.UserId = @userId
-		AND Ignore = 0
-		AND datalength(h.Photo) > 5
-
-		-- insert a single record that has the count of friends
-		INSERT #outputTable (OutputType,OutputOrder,OutputGuid1,OutputInt1)
-		SELECT
-		8 as OutputType
-		,1 as OutputOrder
-		,@userId
-		,count(*)
-		FROM HC.HasherFriendMap hfm
-		WHERE hfm.UserId = @userId
-		AND Ignore = 0
-
-		-- insert a single record that has information on the featured Kennel
-		INSERT #outputTable (OutputType,OutputOrder,OutputGuid1,OutputStr1,OutputStr2,OutputStr3)
-		SELECT 9,1,id,KennelName,KennelLogo,KennelCoverPhoto FROM HC.Kennel k INNER JOIN
-		(SELECT KennelId,max(StartDate) as StartDate
-		FROM HC.FeaturedKennel 
-		WHERE StartDate < getdate()
-		GROUP BY KennelId) fk on k.id = fk.KennelId
-
-		-- insert a single record that has information on the featured song
-		INSERT #outputTable (OutputType,OutputOrder,OutputGuid1,OutputStr1,OutputStr2,OutputStr3)
-		SELECT 10,1,id,ImageUrl,AudioUrl,SongName FROM HC.Song s INNER JOIN
-		(SELECT SongId,max(StartDate) as StartDate
-		FROM HC.FeaturedSong 
-		WHERE StartDate < getdate()
-		GROUP BY SongId) fs on s.id = fs.SongId
-
-		-- Insert the top 6 haberdashery items so their photos can be displayed in the haberdashery button on the home page
-		INSERT #outputTable (OutputType,OutputOrder,OutputGuid1,OutputStr1)
-		SELECT TOP 6 
-		11 as OutputType
-		,ROW_NUMBER() OVER (ORDER BY hd.id asc) as OutputOrder
-		,id
-		,hd.ImageUrl
-		FROM HC.Haberdashery hd
-		WHERE hd.ShowOnHomePage = 1
-		AND datalength(hd.ImageUrl) > 5
-
-END
-
-CREATE TABLE #localRuns
-(
-	EventId uniqueidentifier
-	,EventStartDatetime datetime
-	,EventName nvarchar(500)
-	,Latitude decimal (12,9)
-	,Longitude decimal (13,9)
-	,Distance float
-	,KennelLogo nvarchar(500)
-	,UserStatus int
-	,StreetAddress nvarchar(500)
-)
-
-INSERT INTO #localRuns
-EXEC HC.getEventsByDistance @userId = @userId, @latitude = @latitude, @longitude = @longitude, @distanceInKm = @distanceInKm, @itemsToDisplay = @itemsToDisplay, @accessToken = @accessToken, @procName = 'getHomePageData'
-
-INSERT #outputTable (OutputType,OutputOrder,OutputGuid1,OutputStr1,OutputStr2,OutputStr3,OutputInt1,OutputInt2,OutputLat,OutputLon,OutputDatetime1)
-SELECT TOP 50
-6 as OutputType
-,ROW_NUMBER() OVER (ORDER BY Distance asc) as OutputOrder
-,EventId as OutputGuid1
-,EventName as OutputStr1
-,KennelLogo as OutputStr2
-,StreetAddress as OutputStr3
-,CAST(Distance as int) as OutputInt1
-,UserStatus as OutputInt2
-,Latitude as OutputLat
-,Longitude as OutputLon
-,EventStartDatetime as OutputDatetime1
-FROM #localRuns
-ORDER BY ABS(DATEDIFF(DAY,EventStartDatetime,getdate())) ASC
-
-INSERT #outputTable (OutputType,OutputOrder,OutputGuid1,OutputStr1,OutputStr2,OutputStr3,OutputInt1,OutputLat,OutputLon)
-		SELECT 
-		12 as OutputType
-		,ROW_NUMBER() OVER (ORDER BY @geoloc.STDistance(k.KennelGeolocation) asc) as OutputOrder
-		,k.[id] as KennelId
-		,[KennelName] as OutputStr1
-		,case when datalength(coalesce(KennelLogo,'')) < 4 then 'https://harriercentral.blob.core.windows.net/harrier/MissingLogo.png' else KennelLogo end as OutputStr2
-		,coalesce([KennelShortName],[KennelName],'<no name>') as OutputStr3
-	    ,cast ((@geoloc.STDistance(k.KennelGeolocation)/1000) as int) as OutputInt1
-		,k.[Latitude] as OutputLat
-		,k.[Longitude] as OutputLon
-		FROM [HC].[Kennel] k
-		WHERE ((@geoloc.STDistance(k.KennelGeolocation)/1000) <= @distanceInKm)
-		ORDER BY @geoloc.STDistance(k.KennelGeolocation)
-
-select 
-	OutputType 
-	,OutputOrder 
-	,OutputGuid1 
-	,OutputStr1 
-	,OutputStr2
-	,OutputStr3
-	,OutputInt1 
-	,OutputInt2
-	,OutputLat
-	,OutputLon
-	,OutputDatetime1
-from #outputTable order by OutputType,OutputOrder
-
-
-if (@mapItemsOnly = 0)
-BEGIN
-	DROP TABLE #nextRuns
-	DROP TABLE #runCounts
-END
-
-DROP TABLE #localRuns
-DROP TABLE #outputTable
-
-END
-GO
-/****** Object:  StoredProcedure [HC].[getKennelMembers]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC].[getKennelMembers]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@kennelId uniqueidentifier
-
-AS
-
-BEGIN
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-
-	SELECT 
-		h.id
-		,h.HashName as HashName
-		,h.FirstName as FirstName
-		,h.LastName as LastName
-		,h.NameDisplayPreference as DispPref
-		,h.Photo as Photo
-	FROM HC.Hasher h
-	INNER JOIN HC.HasherKennelMap hkm on hkm.KennelId = @kennelId and hkm.UserId = h.id
-	WHERE deleted = 0 and hkm.IsMember = 1
-END
-
-GO
-/****** Object:  StoredProcedure [HC].[getKennelSongCounts]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC].[getKennelSongCounts]
-
- @UserId uniqueidentifier,
- @accessToken nvarchar(1000),
- @showAllKennels smallint = null,
- @userLatitude float = null,
- @userLongitude float = null,
- @distanceFromUserInKm float = null
-
-AS
-
-BEGIN
-
--- EXEC HC.getKennelSongCounts @UserId = '624C51B3-2F64-4DE5-9458-B506E75AC544', @distanceFromUserInKm = 1000
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	IF ((@userLatitude is NULL) OR (@userLongitude IS NULL))
-	BEGIN
-		-- Assume Leiden Centraal Station
-		SET @userLatitude = 52.1663
-		SET @userLongitude = 4.4814
-	END
-
-	IF ((@distanceFromUserInKm IS NULL) OR (@showAllKennels = 1)) SET @distanceFromUserInKm = 99999
-
-	DECLARE @geoLoc	AS GEOGRAPHY
-	SET @geoloc = geography::Point(@userLatitude,@userLongitude,4326) 
-
-
-
-SELECT	
-	 hkm.KennelId
-	,cast ((@geoloc.STDistance(k.KennelGeolocation)/1000) as int) as Distance
-	,k.KennelName
-	,coalesce([KennelShortName],[KennelName],'<no name>') as [KennelShortName]
-	,case when datalength(coalesce(KennelLogo,'')) < 4 then 'https://harriercentral.blob.core.windows.net/harrier/MissingLogo.png' else KennelLogo end as KennelLogo
-	,(select count(ksm.id) FROM HC.KennelSongMap ksm WHERE ksm.KennelId = hkm.KennelId AND ksm.[following] = 1) as SongCount
-into #temp
-FROM HC.HasherKennelMap hkm
-INNER JOIN HC.Kennel k on hkm.KennelId = k.id
-
-WHERE hkm.UserId = @UserId and hkm.[Following] <> 0
-ORDER BY k.KennelName ASC
-
-
-	  SELECT * from #temp
-	  WHERE  Distance <= @distanceFromUserInKm
-	  ORDER BY 
-		Distance ASC
-
-	  DROP TABLE #temp
-
-END
-GO
-/****** Object:  StoredProcedure [HC].[getMyKennelRunTotals]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [HC].[getMyKennelRunTotals]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@kennelId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
-@procName nvarchar(100) = null  -- this is here to allow other stored procs to call this one and pass in their own accessTokens
-
-AS
-
--- EXEC HC.getMyKennelRunTotals @userId = '5C4AE228-2CC1-467F-B666-F62EFEDFEE14',@accessToken = ''
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,coalesce(@procName,OBJECT_NAME(@@PROCID)),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-
-select k.id as KennelId
-,k.KennelLogo
-,k.KennelName
-,hkm.CurrentPackRunCount + hkm.CurrentHaringCount as TotalRunsThisKennel
-,hkm.CurrentPackRunCount as TotalPackRunsThisKennel
-,hkm.CurrentHaringCount as TotalHaringThisKennel
-,hkm.[Following]
-,k.KennelShortName
-into #temp
-from HC.HasherKennelMap hkm
-inner join HC.Kennel k on hkm.KennelId = k.id
-where hkm.userId = @userId
-and ((@kennelId = '00000000-0000-0000-0000-000000000000') OR (hkm.KennelId = @kennelId))
-order by hkm.CurrentPackRunCount + hkm.CurrentHaringCount desc
-
--- next insert rows for kennels that we are following but that do not have any runs yet
-insert #temp (KennelId,KennelLogo,KennelName,TotalRunsThisKennel,TotalPackRunsThisKennel,TotalHaringThisKennel,[Following],KennelShortName)
-select k.id,k.KennelLogo,k.KennelName,0,0,0,hkm.[Following],k.KennelShortName
-FROM HC.Kennel k
-inner join HC.HasherKennelMap hkm on k.id = hkm.KennelId and hkm.UserId = @userId
-WHERE hkm.Following = 1
-AND hkm.KennelId not in (select kennelId from #temp)
-
-declare @photo nvarchar(500)
-select @photo = photo from HC.Hasher where id = @userId
-
-select KennelId,KennelLogo,KennelName,TotalRunsThisKennel,TotalPackRunsThisKennel,TotalHaringThisKennel,[Following],KennelShortName from #temp where Following = 1 OR TotalRunsThisKennel > 0
-union
-select '00000000-0000-0000-0000-000000000000' as KennelId, @photo as KennelLogo,'My total run count' as KennelName,sum(TotalRunsThisKennel) as TotalRunsThisKennel,sum(TotalPackRunsThisKennel) as TotalPackRunsThisKennel, sum(TotalHaringThisKennel) as TotalHaringThisKennel, 1 as [Following],'My runs' as KennelShortName from #temp
-order by TotalRunsThisKennel desc
-GO
-/****** Object:  StoredProcedure [HC].[getMyRuns]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [HC].[getMyRuns]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@kennelId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
-@following int = -1
-
-AS
-
--- EXEC HC.getMyRuns @userId = '6f901167-4bd3-45af-9da0-6af5a1128f42'
--- EXEC HC.getMyRuns @userId = '624c51b3-2f64-4de5-9458-b506e75ac544',@kennelId = '00000000-0000-0000-0000-000000000000'
--- EXEC HC.getMyRuns @userId = 'e15f27d1-1ac2-4241-a4fe-00e045cc3091',@kennelId = '6f901167-4bd3-45af-9da0-6af5a1128f42', @accessToken = '', @following = -1
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-
-select 
-e.id as EventId
-,e.EventStartDatetime
-,e.EventEndDatetime
-,e.EventName
-,e.UserEventCounterIncrement
-,hem.IsHare
-,hem.TotalRunsThisKennel
-,hem.TotalRunsAllKennels
-,hem.UserStartEvent
-,coalesce(hem.RsvpState,0) as RsvpState
-,case WHEN hem.[UserStartEvent] IS NOT NULL AND hem.[UserEndEvent] IS NULL THEN 4 
-WHEN hem.[UserStartEvent] IS NOT NULL AND hem.[UserEndEvent] IS NOT NULL THEN 5
-ELSE coalesce(hem.RsvpState,0)
-	END as UserStatus
-FROM HC.Event e 
-INNER JOIN HC.Kennel k on k.id = e.KennelId
-LEFT OUTER JOIN HC.HasherKennelMap hkm on hkm.UserId = @userId AND hkm.KennelId = k.id
-LEFT OUTER JOIN HC.HasherEventMap hem on hem.UserId = @userId and hem.EventId = e.id
-
-WHERE e.deleted = 0 
-AND e.IsVisible <> 0
-AND e.IsCountedRun = 1
-AND ((@following = -1) OR (hkm.Following = @following))
-AND e.EventStartDatetime <= dateadd(day,1,getdate())
-AND ((@kennelId = '00000000-0000-0000-0000-000000000000') OR (e.KennelId = @kennelId))
-ORDER BY e.EventStartDatetime DESC,EventId DESC
-
-
-
-GO
-/****** Object:  StoredProcedure [HC].[getNextRuns]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [HC].[getNextRuns]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @procName nvarchar(100) = null -- this is here to allow other stored procs to call this one and pass in their own accessTokens
-
-AS
-
-BEGIN
-
--- EXEC HC.getNextRuns @userId = '5C4AE228-2CC1-467F-B666-F62EFEDFEE14', @accessToken = ''
-
-	SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,coalesce(@procName,OBJECT_NAME(@@PROCID)),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-		
--- first get a list of all kennels that this user is following plus all of the
--- kennels where this user has RSVP'ed for an upcoming run in the future		
-select distinct(k.id) as KennelId
-into #temp
-FROM HC.Kennel k 
-left outer join HC.HasherKennelMap hkm on hkm.KennelId = k.id and hkm.UserId = @userId
-left outer join HC.HasherEventMap hem on hem.UserId = @userId
-left outer join HC.Event e on e.id = hem.EventId and e.KennelId = k.id
-where (e.EventStartDatetime >= dateadd(day,-1,getdate()) AND hem.RsvpState = 3) 
-OR (hkm.Following = 1)									        
-
--- now find the next run for each of these kennels and return the relevant information
-select
-	coalesce(NextRun.EventId,'00000000-0000-0000-0000-000000000000') as EventId
-    ,coalesce(NextRun.EventName,'<no event planned>') as EventName
-	,case when datalength(coalesce(KennelLogo,'')) < 4 then 'https://harriercentral.blob.core.windows.net/harrier/MissingLogo.png' else KennelLogo end as KennelLogo
-	,coalesce(NextRun.DaysUntilNextRun,99999) as DaysUntilNextRun
-	,coalesce(NextRun.FriendsAttending,0) as FriendsAttending
-	,coalesce(NextRun.UserStatus,0) as UserStatus
-	,coalesce(NextRun.RsvpState,0) as RsvpState
-	,coalesce(NextRun.TotalRunsThisKennel,0) as TotalRunsThisKennel
-	,coalesce(NextRun.KennelId,'00000000-0000-0000-0000-000000000000') as KennelId
-	,coalesce(k.KennelShortName,'H3') as KennelShortName
-
-	FROM HC.Kennel k 
-			  OUTER APPLY
-			  (SELECT top 1 
-					   e.[id] as EventId
-					  ,e.[EventName]
-					  ,e.[KennelId]
-					,coalesce(datediff(day,getdate(),e.EventStartDatetime),99999) as DaysUntilNextRun
-					,coalesce((SELECT count(*) FROM HC.HasherEventMap hem2 INNER JOIN HC.HasherFriendMap hfm2 on hfm2.Friend_UserId = hem2.UserId WHERE hfm2.UserId = @userId AND hem2.EventId = e.id),0) as FriendsAttending
-					 ,coalesce(hem.RsvpState,0) as RsvpState
-					  ,case WHEN hem.[UserStartEvent] IS NOT NULL AND hem.[UserEndEvent] IS NULL THEN 4 
-						WHEN hem.[UserStartEvent] IS NOT NULL AND hem.[UserEndEvent] IS NOT NULL THEN 5
-						ELSE coalesce(hem.RsvpState,0)
-							END as UserStatus
-					  ,coalesce(hkm.CurrentHaringCount + hkm.CurrentPackRunCount,0) as TotalRunsThisKennel
-
-				FROM HC.Event e 
-				LEFT OUTER JOIN HC.HasherEventMap hem on hem.EventId = e.id and hem.UserId = @userId
-				LEFT OUTER JOIN HC.HasherKennelMap hkm on hkm.UserId = @userId and hkm.KennelId = e.KennelId
-				WHERE e.KennelId = k.id and CONVERT(date,e.EventStartDatetime) >= CONVERT(date,getdate()) 
-				AND e.deleted = 0 AND e.IsVisible <> 0
-				ORDER BY e.EventStartDatetime ASC) as NextRun
-
-	WHERE k.id in (select KennelId from #temp) 
-	ORDER BY COALESCE (NextRun.DaysUntilNextRun,99999)
-
-	drop table #temp
-			
-END
-
-
-GO
-/****** Object:  StoredProcedure [HC].[getRunPlanner]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [HC].[getRunPlanner]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@kennelId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
-@following int = -1,
-@showFutureEventsOnly int = 1,
-@daysInTheFuture int = 90,
-@daysInThePast int = 90,
-@eventFacebookIds varchar(8000) = null
-
-AS
-
--- EXEC HC.getRunPlanner @userId = '624c51b3-2f64-4de5-9458-b506e75ac544',@accessToken = '', @showFutureEventsOnly = 0
--- EXEC HC.getRunPlanner @userId = '624c51b3-2f64-4de5-9458-b506e75ac544',@accessToken = '', @showFutureEventsOnly = 0, @eventFacebookIds = '772897806186271,116312275739999,1529941743966986,858993994188218,1032573993460250,1223525784326275,1026132587467299,747766582015741,176991522824124,364792883951393,1155620227798380,897298143658587,1457678761202934,1506690672957290,1216796778376177,245460299242893,138431856804849,1648948395363964,841791985977889,153299781895022,1719252245035189,1766023640392947,1657069567902747,844193005662822,114445595937988,137933936879040,1558800220798922,142246406387577,1060968960594429,477895219063585,1418741664891289,236055900207546,1384055841647943,1657660257823480,1696543923954148,272812136548037,1126900327397933,500702786968498,511384649008950,1629086347104929,666695106811059,531692237023564,1550867785234182,1816446238675037,174122366654356,794472924026914,1861197777450881,581966941969271,1651278991799772,165603920531227,1266562613387044,1589101474686972,160147214723747,1645154885754169,1152445674789214,118198022149347,320671578401864,1743270329284501,1951335348421587,1096353580453051,1317406904959173,116700815459278,1063639990399510,472896256233686,157151971594229,182507502142046,265144757185822,566388743710998,1040489456046994,458329651212699,1646143338990792,1697043933662495,1592463141035553,1749583731949038,1179337768744248,137684947024031,1682566455366331,1885080811756223,128160427716108,1877896589190654,276415756037269,1230726706992602,917267661743140,219010665163226,907627745975097,1610082172591777,1567582173560518,1647726135521069,572575506254667,1286555768125083,1884825201847220,1830186253895131,386380458238424,445330675658056,355599024845508,1594222957571760,1318095631541697,1146685588722852,524505564395253,730938587096891,1435890580067401,263620300701751,197584217480367,298389793923412,1638663579684834,1317974924998633,1439847349361824,112038429393148,1328250863918267,1627326404168987,281011812316714,245623562552997,1628059680790838,319301681843879,1946944812183827,1669515743306350,614923928715764,1691206687842550,1359639814097711,1864852533734898,199502280596571,1741505206129644,972819142825667,1095804420464533,187928161577886,733452663519884,1866425266965419,1868753310106079,2213257865565389,1982558848657613,1506093999697025,1791935794426647,1745033812409081,865660600244253,201966080230479,253201051756099,1786630241568447,1062706853845959,410525076003556,965092193525533,244068846123259,1016931461777352,1120241314730983,2058481771051493,1799403303704977,245897712599455,549926675198685,1719488111612621,1732893523696938,2103173569901505,1968556213376519,414497375423847,134444953872165,542477105907682,387611498320351,1688660268079763,1639618526357155,134043473810464,719055591628954,197440070720435,180608885765078,829493953847014,298941723846786,1740662592828616,126622551085357,403405193369614,828542320639035,1642014029344408,379613192508802,1607135286202870,649191825291680,210284546083003,920772104673995,107322872933863,166413877307417,610978115774626,1528293104149687,276528392872579,937012949697017,1521068411521335,1790087514574565,1483669221710555,196075800905014,879435922186861,238742866593038'
--- EXEC HC.getRunPlanner @userId = '624c51b3-2f64-4de5-9458-b506e75ac544',@accessToken = '', @kennelId = '6F901167-4BD3-45AF-9DA0-6AF5A1128F42', @following = -1, @showFutureEventsOnly = 0, @daysInTheFuture = 90, @daysInThePast = 365
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-DECLARE @filterByFacebookId smallint
-SET @filterByFacebookId = 0
-
-CREATE TABLE #facebookIdTemp (itemNumber int, item varchar(500))
-
-IF ((@eventFacebookIds is not null) AND (datalength(@eventFacebookIds) > 5))
-BEGIN
-	SET @filterByFacebookId = 1
-	INSERT #facebookIdTemp(ItemNumber, Item) SELECT ItemNumber,TRIM(Item) FROM [HC].[DelimitedSplit8K](@eventFacebookIds,',')
-END
-
-select 
-e.id as EventId
-,k.KennelLogo
-,k.KennelShortName
-,e.EventStartDatetime
-,e.EventEndDatetime
-,e.EventFacebookId
-,e.EventImage
-,e.EventImageOffsetX
-,e.EventImageOffsetY
-,coalesce(e.EventNumber,0) as EventNumber
-,e.AbsoluteEventNumber
-,e.Latitude
-,e.Longitude
-,e.FbLatitude
-,e.FbLongitude
-,e.EventDescription
-,e.EventName
-,e.EventShortDesc
-,e.LocationOneLineDesc
-,e.IsCountedRun
-,e.IsVisible
-,e.IsPromotedEvent
-,e.EventGeographicScope
-,e.ThemeRunType
-,e.deleted
-,coalesce(hem.RsvpState,0) as RsvpState
-,case WHEN hem.[UserStartEvent] IS NOT NULL AND hem.[UserEndEvent] IS NULL THEN 4 
-WHEN hem.[UserStartEvent] IS NOT NULL AND hem.[UserEndEvent] IS NOT NULL THEN 5
-ELSE coalesce(hem.RsvpState,0)
-	END as UserStatus
-FROM HC.Event e 
-INNER JOIN HC.Kennel k on k.id = e.KennelId
-LEFT OUTER JOIN HC.HasherEventMap hem on hem.UserId = @userId and hem.EventId = e.id
-LEFT OUTER JOIN HC.HasherKennelMap hkm on hkm.UserId = @userId AND hkm.KennelId = e.KennelId
-
-WHERE e.deleted = 0 
---AND e.IsVisible <> 0 -- we don't need this because the client should be able to process invisible records
-AND ((@following = -1) OR (hkm.Following = @following))
-AND (((@showFutureEventsOnly = 1) AND (e.EventStartDatetime >= dateadd(day,-1,getdate()))) OR (@showFutureEventsOnly <> 1))
-AND ((@kennelId = '00000000-0000-0000-0000-000000000000') OR (e.KennelId = @kennelId))
-AND e.EventStartDatetime <= dateadd(day,@daysInTheFuture,getdate())
-AND e.EventStartDatetime >= dateadd(day,-@daysInThePast,getdate())
-AND ((@filterByFacebookId = 0) OR ((@filterByFacebookId = 1) AND (TRIM(e.EventFacebookId) in (SELECT item from #facebookIdTemp))))
-ORDER BY e.EventStartDatetime ASC
-
-DROP TABLE #facebookIdTemp
-
-GO
-/****** Object:  StoredProcedure [HC].[getSongs]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-CREATE PROCEDURE [HC].[getSongs]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@KennelId uniqueidentifier = null,
-@ShowAllSongs smallint = null
-
-AS
-
-BEGIN
-
-SET NOCOUNT ON
-
--- EXEC HC.getSongs
--- EXEC HC.getSongs @ShowAllSongs = 1
--- EXEC HC.getSongs @KennelId = '5029DE3A-D231-47AA-BE72-ECE9BCCD55D1'
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-
-IF (@showAllSongs IS NULL) SET @showAllSongs = 0
-
-
-if (@KennelId is not null)
-BEGIN
-	SET NOCOUNT ON
-	SELECT s.[id] as SongId
-		  ,[SongName]
-		  ,[Lyrics]
-		  ,datalength([Lyrics]) as LyricsLength
-		  ,[Rank]
-		  ,case when datalength(coalesce([ImageUrl],'')) < 4 then 'https://harriercentral.blob.core.windows.net/harrier/MissingLogo.png' else [ImageUrl] end as [ImageUrl]
-		  ,','+[Tags]+',' as [Tags]
-		  ,case when [BawdyRating] = 0 then 'Good enough for mom'
-			 when [BawdyRating] = 1 then 'Juvenile'
-			 when [BawdyRating] = 2 then 'A bit naughty :-)'
-			 when [BawdyRating] = 3 then 'Downright nasty !!!'
-			 when [BawdyRating] = 4 then 'Can you say that in public?' end as [BawdyRatingText]
-		  ,[BawdyRating] 
-		  ,[AudioUrl]
-		  ,[TuneOf] 
-		  ,[Notes]
-		  ,[Actions]
-		  ,[Variants]
-		  ,CASE WHEN (ksm.id is not null) THEN ksm.[Following] ELSE 0 END AS [Following]
-		  ,0 as ClientSideCounter -- this is a bit of a hack we need to get the ClientSideCounter in the response so Configure.IT can access it
-		  from HC.Song s
-		  LEFT OUTER JOIN HC.KennelSongMap ksm on s.id = ksm.SongId and ksm.KennelId = @KennelId 
-		  WHERE ((@ShowAllSongs <> 0) OR ((ksm.id IS NOT NULL)) AND (ksm.[Following] = 1))
-		  ORDER BY SongName
-		 
-
-END
-ELSE
-BEGIN
-	SELECT s.[id] as SongId
-		  ,[SongName]
-		  ,[Lyrics]
-		  ,datalength([Lyrics]) as LyricsLength
-		  ,[Rank]
-		  ,case when datalength(coalesce([ImageUrl],'')) < 4 then 'https://harriercentral.blob.core.windows.net/harrier/MissingLogo.png' else [ImageUrl] end as [ImageUrl]
-		  ,[Tags]
-		  ,case when [BawdyRating] = 0 then 'Good enough for mom'
-			 when [BawdyRating] = 1 then 'Juvenile'
-			 when [BawdyRating] = 2 then 'A bit naughty :-)'
-			 when [BawdyRating] = 3 then 'Downright nasty !!!'
-			 when [BawdyRating] = 4 then 'Can you say that in public?' end as [BawdyRatingText]
-		  ,[BawdyRating] 
-		  ,[AudioUrl]
-		  ,[TuneOf] 
-		  ,[Notes]
-		  ,[Actions]
-		  ,[Variants]
-		  ,[Following] = 0
-		  ,0 as ClientSideCounter -- this is a bit of a hack we need to get the ClientSideCounter in the response so Configure.IT can access it
-		  from HC.Song s
-		  WHERE ((@ShowAllSongs = 1) OR (s.AutoAddToKennel <> 0))
-		  ORDER BY SongName
-END
-
-END
-GO
-/****** Object:  StoredProcedure [HC].[getSuggestedEventNumber]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC].[getSuggestedEventNumber]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@kennelId uniqueidentifier,
-@proposedEventDate datetime
-
-
-AS
--- currently we are only supporting a single event per day per kennel which is why we are casting everything to date only
-
--- returns the Guid for the event in ResultStr
--- returns the proposed run number in ResultInt
--- if an event exists on the day, but has been deleted, returns -99999 in the ResultInt
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-set @proposedEventDate = cast(@proposedEventDate as Date)
-
--- EXEC HC.getSuggestedEventNumber @kennelId = '5029de3a-d231-47aa-be72-ece9bccd55d1', @proposedEventDate = '4/27/2018 12:00:00 AM'
-
-DECLARE @previousEventDate datetime
-DECLARE @nextEventDate datetime
-
-SELECT @previousEventDate = dateadd(minute,2,cast(cast(max(e.EventStartDatetime) as date)as datetime)) from HC.Event e where e.KennelId = @kennelId and cast(e.EventStartDatetime as date) < @proposedEventDate and e.deleted = 0
-SELECT @nextEventDate = dateadd(minute,-2,cast(cast(min(e.EventStartDatetime) as date)as datetime)) from HC.Event e where e.KennelId = @kennelId and cast(e.EventStartDatetime as date) > @proposedEventDate and e.deleted = 0
-
--- start by checking if there is already an event for this Kennel with this exact date and time / for now we don't allow this.
-
-if (select count(*) from HC.Event WHERE KennelId = @kennelId AND IsCountedRun = 1 AND cast(EventStartDatetime as Date) = @proposedEventDate) <> 0
-BEGIN
-	-- Return -99999 if there is an event, but it has been deleted
-	select top 1 e.id as ResultStr, 
-	case when (e.deleted = 0 AND e.isVisible <> 0) THEN e.EventNumber ELSE -99999 END as ResultInt,
-	COALESCE(@previousEventDate,'1/1/1938') as PreviousEventDate, 
-	COALESCE(@nextEventDate,'1/1/2100') as NextEventDate,
-	(SELECT count(*) from HC.HasherEventMap hem where hem.EventId = e.id AND hem.UserStartEvent is not null) as EventAttendeeCount
-	FROM HC.Event e 
-	WHERE KennelId = @kennelId AND IsCountedRun = 1 AND cast(EventStartDatetime as Date) = @proposedEventDate
-END
-ELSE
-BEGIN
-
-DECLARE @lastNumberedEventDate datetime
-DECLARE @lastEventNumber int
-DECLARE @nextNumberedEventDate datetime
-DECLARE @nextEventNumber int
-
--- look back in time from the proposed event and find the last event with an absolute event number
--- we will count forward from there
-SELECT top 1 @lastNumberedEventDate = cast(EventStartDatetime as Date), @lastEventNumber = AbsoluteEventNumber FROM HC.Event 
-WHERE KennelId = @kennelId
-AND deleted = 0 AND IsVisible <> 0
-AND cast(EventStartDatetime as Date) < @proposedEventDate
-AND AbsoluteEventNumber is not null
-AND IsCountedRun = 1
-ORDER BY EventStartDatetime desc
-
-SET @lastEventNumber = COALESCE(@lastEventNumber,0)
-SET @lastNumberedEventDate = COALESCE(@lastNumberedEventDate,'1/1/1900')
-
-SELECT top 1 @nextNumberedEventDate = cast(max(EventStartDatetime) as date), @nextEventNumber = AbsoluteEventNumber FROM HC.Event 
-WHERE KennelId = @kennelId
-AND deleted = 0 AND IsVisible <> 0
-AND cast(EventStartDatetime as Date) > @proposedEventDate
-AND AbsoluteEventNumber is not null
-AND IsCountedRun = 1
-GROUP BY AbsoluteEventNumber
-ORDER BY max(EventStartDatetime)
-
-if (@lastEventNumber <> 0)
-	BEGIN
-		-- count forward from the last absolute event number to assign the new event number
-		select '00000000-0000-0000-0000-000000000000' as ResultStr, sum(EventNumberIncrement)+@lastEventNumber as ResultInt, 
-		COALESCE(@previousEventDate,'1/1/1938') as PreviousEventDate, 
-		COALESCE(@nextEventDate,'1/1/2100') as NextEventDate,
-		cast(0 as int) as EventAttendeeCount
-		from HC.Event 
-		WHERE KennelId = @kennelId
-		AND deleted = 0 and IsVisible <> 0
-		AND cast(EventStartDatetime as Date) < @proposedEventDate
-		AND EventStartDatetime >= @lastNumberedEventDate
-		AND IsCountedRun = 1
-	END
-ELSE
-	-- we were unable to find a last event with an absolute number, so now look forward and see if we
-	-- can find one in the future. If so, we will use this to count backward to get the
-	-- proposed run number
-	BEGIN
-
-
-		--select @nextEventNumber, @nextNumberedEventDate
-
-		if (@nextNumberedEventDate is not null)
-		BEGIN
-			select '00000000-0000-0000-0000-000000000000' as ResultStr, coalesce(@nextEventNumber,1) - sum(EventNumberIncrement) as ResultInt, 
-			COALESCE(@previousEventDate,'1/1/1938') as PreviousEventDate, 
-			COALESCE(@nextEventDate,'1/1/2100') as NextEventDate,
-			cast(0 as int) as EventAttendeeCount
-			from HC.Event 
-			WHERE KennelId = @kennelId
-			AND deleted = 0 and IsVisible <> 0
-			AND cast (EventStartDatetime as Date) > @proposedEventDate
-			AND EventStartDatetime <= @nextNumberedEventDate
-			AND IsCountedRun = 1
-		END
-		ELSE
-		BEGIN
-			declare @ResultStr nvarchar(50), @ResultInt int
-
-			SELECT @ResultInt = sum(EventNumberIncrement)+1, @ResultStr = '00000000-0000-0000-0000-000000000000'
-			FROM HC.Event
-			WHERE KennelId = @kennelId
-			AND deleted = 0 and IsVisible <> 0
-			AND cast (EventStartDatetime as Date) < @proposedEventDate
-			AND IsCountedRun = 1
-
-			SELECT coalesce(@ResultStr,'00000000-0000-0000-0000-000000000000') as ResultStr, coalesce(@ResultInt,1) as ResultInt, 
-			COALESCE(@previousEventDate,'1/1/1938') as PreviousEventDate, 
-			COALESCE(@nextEventDate,'1/1/2100') as NextEventDate,
-			cast(0 as int) as EventAttendeeCount
-		END
-
-	END
-
-END
-GO
-/****** Object:  StoredProcedure [HC].[getUsersByEventForAdmin]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE Procedure [HC].[getUsersByEventForAdmin]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@EventId uniqueidentifier,
-@TargetUserId uniqueidentifier = null
-
-AS
-
-SET NOCOUNT ON
-
--- exec HC.getUsersByEventForAdmin @eventId = '010AB607-BD6A-4DC7-B108-B729A76DEA85',@userId = '83294C62-2FFE-4FCB-A2F5-52AADD6CEAA0', @accessToken = ''
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-
-	DECLARE @AtHashCount smallint
-	DECLARE @OnInCount smallint
-	DECLARE @OnTrailCount smallint
-	DECLARE @PaidCount smallint
-	DECLARE @WaitingForCount smallint
-
-	IF (@TargetUserId = '00000000-0000-0000-0000-000000000000') SET @TargetUserId = null
-
-	SELECT 
-		@AtHashCount = count(hem2.UserStartEvent),
-		@OnInCount = count(hem2.UserEndEvent),
-		@OnTrailCount = count(hem2.UserStartEvent)-count(hem2.UserEndEvent) 
-	FROM HC.HasherEventMap hem2 WHERE hem2.EventId = @EventId
-
-	SELECT 
-		@WaitingForCount = count(*)
-	FROM HC.HasherEventMap hem WHERE hem.EventId = @EventId AND hem.UserStartEvent IS NULL AND hem.RsvpState = 3
-
-	SELECT @PaidCount = count(*) from HC.Payment p where p.EventId = @EventId and p.CancelledDate is null
-
-
-	SELECT coalesce(sum(p.creditAmount)-sum(p.debitAmount),0) as Credit
-			,p.UserId
-			,e.KennelId
-	INTO #creditTemp
-	FROM HC.Hasher h
-	INNER JOIN HC.Event e ON e.id = @EventId
-	INNER JOIN HC.Kennel k ON k.id = e.KennelId 
-	INNER JOIN HC.Payment p on p.UserId = h.id
-	LEFT OUTER JOIN HC.HasherKennelMap hkm ON hkm.KennelId = k.id AND hkm.UserId = h.id
-	LEFT OUTER JOIN HC.HasherEventMap hem on hem.UserId = h.id AND hem.EventId = @EventId
-	WHERE (
-		 ((hem.EventId = e.id) AND (hem.UserId = h.id)) OR -- this covers users who have RSVP'ed
-		 ((hkm.KennelId = k.id) AND (hkm.UserId = h.id) AND ((hkm.Following = 1) OR (hkm.IsMember = 1)))  -- this covers users who are either members of a kennel or following that kennel
-		)
-		AND e.deleted = 0 AND e.IsVisible <> 0
-		AND p.CancelledDate is null
-		AND ((@TargetUserId IS NULL) OR (h.id = @TargetUserId))
-	GROUP BY 
-		p.UserId, e.KennelId
-
-SELECT
-	@EventId as EventId
-	,h.id as UserId
-	,coalesce(hkm.Following,0) as isFollowing
-	,coalesce(hkm.IsMember,0) as isMember
-	,case when hem.id is null then 0 else 1 end as isRsvped
-	-- From HC.HasherEventMap
-	 ,hem.id AS [HasherEventMapId]
-
-	--,hem.[RegistrationId]
-	,coalesce(hem.[IsHare],0) as isHare
-	,coalesce(hem.[VirginVisitorType],0) as VirginVisitorType
-	,hem.[UserStartEvent]
-	,hem.[UserEndEvent]
-	--,hem.[Rsvp]
-	,CASE 
-		WHEN hem.[UserStartEvent] IS NOT NULL
-			AND hem.[UserEndEvent] IS NULL
-			THEN 4
-		WHEN hem.[UserStartEvent] IS NOT NULL
-			AND hem.[UserEndEvent] IS NOT NULL
-			THEN 5
-		ELSE coalesce(hem.RsvpState, 0)
-		END AS UserStatus
-
-	-- From HC.Payment
-	,CASE 
-		WHEN (
-				SELECT coalesce(count(*), 0)
-				FROM HC.Payment p
-				WHERE HasherEventMapId = hem.id
-					AND p.CancelledDate IS NULL
-				) = 0
-			THEN 0
-		ELSE 1
-		END AS isPaid
-
-	-- FROM HC.Hasher
-	,coalesce(CASE 
-		WHEN h.NameDisplayPreference = 1
-			THEN h.HashName
-		WHEN h.NameDisplayPreference = 2
-			THEN h.FirstName + ' ' + h.LastName
-		ELSE h.HashName + ' (' + h.FirstName + ' ' + h.LastName + ')'
-		END,hem.DisplayName,'<no name>')
-		 AS DisplayName
-	,CASE 
-		WHEN (hem.[VirginVisitorType] = 0)
-			THEN h.Photo
-		WHEN (hem.[VirginVisitorType] = 1)	
-			THEN 'https://harriercentral.blob.core.windows.net/harrier/Virgin.png'
-		WHEN (hem.[VirginVisitorType] = 2)	
-			THEN 'https://harriercentral.blob.core.windows.net/harrier/Visitor.png'
-		ELSE
-			CASE WHEN h.Photo IS NULL THEN	
-			'https://harriercentral.blob.core.windows.net/harrier/Visitor.png'
-			ELSE
-				h.Photo
-			END
-		END AS Photo
-
-	-- Aggregates from HC.HasherEventMap
-	,coalesce(CASE 
-		WHEN (hem.[VirginVisitorType] <> 0)
-			THEN CASE WHEN hem.UserStartEvent IS NOT NULL THEN 1 ELSE 0 END
-		ELSE
-			coalesce(hem.TotalRunsThisKennel,0) END,0)
-		AS UserRunCount
-
-	-- Live totals for display at top of HasherList
-	,@WaitingForCount AS WaitingForCount
-	,@AtHashCount AS AtHashCount
-	,@OnInCount AS OnInCount
-	,@OnTrailCount AS OnTrailCount
-	,@PaidCount AS PaidCount
-	,CASE WHEN COALESCE(hkm.IsMember, 0) = 1
-							THEN coalesce(e.EventPriceForMembers, k.DefaultEventPriceForMembers, e.EventPriceForNonMembers, k.DefaultEventPriceForNonMembers, 0)
-						ELSE coalesce(e.EventPriceForNonMembers, k.DefaultEventPriceForNonMembers, e.EventPriceForMembers, k.DefaultEventPriceForMembers, 0)
-						END AS EventPrice
-    , coalesce(e.EventCurrencyType, k.DefaultEventCurrencyType, 'en-us') as EventLocale
-	, k.AllowNegativeCredit
-	, coalesce(ct.Credit,0) as Credit
-
-FROM HC.Hasher h
-INNER JOIN HC.Event e ON e.id = @EventId
-INNER JOIN HC.Kennel k ON k.id = e.KennelId 
-LEFT OUTER JOIN HC.HasherKennelMap hkm ON hkm.KennelId = k.id AND hkm.UserId = h.id
-LEFT OUTER JOIN HC.HasherEventMap hem on hem.UserId = h.id AND hem.EventId = @EventId
-LEFT OUTER JOIN #creditTemp ct ON ct.UserId = h.id and ct.KennelId = k.id
-
-WHERE (
-	 ((hem.EventId = e.id) AND (hem.UserId = h.id)) OR -- this covers users who have RSVP'ed
-	 ((hkm.KennelId = k.id) AND (hkm.UserId = h.id) AND ((hkm.Following = 1) OR (hkm.IsMember = 1)))  -- this covers users who are either members of a kennel or following that kennel
-	)
-	AND e.deleted = 0 and e.IsVisible <> 0
-	AND ((@TargetUserId IS NULL) OR (h.id = @TargetUserId))
-ORDER BY 
-	COALESCE(
-	CASE 
-		WHEN h.NameDisplayPreference = 1
-			THEN h.HashName
-		WHEN h.NameDisplayPreference = 2
-			THEN h.FirstName + ' ' + h.LastName
-		ELSE h.HashName + ' (' + h.FirstName + ' ' + h.LastName + ')'
-		END
-		,hem.DisplayName,'<no name>')
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC].[joinEvent]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-
-
-CREATE PROCEDURE [HC].[joinEvent]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @eventId uniqueidentifier,
- 
- @state VARCHAR(10) = '-1',
- @isHare VARCHAR(10) = '-1',
- @isAttending VARCHAR(10) = '-1',
-
- @resultRequested nvarchar(25) = 'Attendance totals'
-
-AS
-
-BEGIN
-
--- EXEC HC.JoinEvent @eventId = '7B10155A-92D4-40D7-929A-CF2BDE968444', @userId = '624c51b3-2f64-4de5-9458-b506e75ac544'
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-DECLARE @isHareNumeric smallint
-DECLARE @rsvpState smallint
-DECLARE @isAttendingNumeric smallint
-
-SET @isHareNumeric = CAST(@isHare as smallint)
-SET @isAttendingNumeric = CAST(@isAttending as smallint)
-SET @rsvpState = CAST(@state as smallint)
-
-IF NOT EXISTS(SELECT * FROM HC.HasherEventMap WHERE UserId = @userId AND EventId = @eventId)
-BEGIN 
-	INSERT INTO HC.HasherEventMap(UserId,EventId) VALUES (@userId,@eventId) 
-END
-
-IF @isHareNumeric <> -1
-	UPDATE HC.HasherEventMap SET isHare = @isHareNumeric WHERE UserId=@userId AND EventId = @eventId 
-
-IF @rsvpState <> -1
-	UPDATE HC.HasherEventMap SET RsvpState = @rsvpState, Rsvp = getdate() WHERE UserId=@userId AND EventId = @eventId 
-
-IF @isAttendingNumeric <> -1
-BEGIN
-	UPDATE HC.HasherEventMap SET RsvpState = 3, UserStartEvent = CASE WHEN @isAttendingNumeric = 0 THEN null ELSE getdate() END WHERE UserId=@userId AND EventId = @eventId 
-	
-	EXEC HC.nonApi_adjustHasherRunCounts @limitByUser = 1,@userId = @userId
-END
-
-	
-DECLARE @attending smallint
-DECLARE @notAttending smallint
-DECLARE @maybe smallint
-
--- TODO: We may have to join on these with HC.Event to filter deleted events out of the count
-IF (@resultRequested = 'Attendance totals')
-BEGIN
-	SELECT @attending = count(*) from HC.HasherEventMap WHERE EventId = @EventId and RsvpState = 3
-	SELECT @maybe = count(*) from HC.HasherEventMap WHERE EventId = @EventId and RsvpState = 2
-	SELECT @notAttending = count(*) from HC.HasherEventMap WHERE EventId = @EventId and RsvpState = 1
-
-	SELECT @attending as AttendingEvent, @notAttending as NotAttendingEvent, @maybe as MaybeAttendingEvent
-END
-
-if (@resultRequested = 'Run counts')
-BEGIN
-	SELECT evt.id AS EventId, TotalRunsAllKennels,TotalRunsThisKennel FROM HC.HasherEventMap hem 
-	INNER JOIN HC.Event evt ON hem.EventId = evt.id
-	WHERE hem.UserId = @userId 
-	AND evt.EventStartDatetime >= 
-		(SELECT evt2.EventStartDatetime FROM HC.Event evt2 WHERE evt2.id = @eventId) 
-END
-
-END
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC].[joinEventAsVisitor]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [HC].[joinEventAsVisitor]  
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@eventId uniqueidentifier, 
-@displayName nvarchar(250), 
-@virginVisitorType smallint
-
-AS
-
--- exec HC.joinEventAsVisitor @eventId = '7B10155A-92D4-40D7-929A-CF2BDE968444', @displayName = 'Stacy', @virginVisitorType = '0'
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-DECLARE @isGenericUserPresent smallint  
-DECLARE @kennelId uniqueidentifier   
-DECLARE @result nvarchar(120)
-DECLARE @eventPrice smallmoney
-
--- The segment control is 0-based, so add 1 to get our database native virginVisitorType
-SET @virginVisitorType = @virginVisitorType + 1
-
--- only two types of Virgin/Visitors at the moment... check to make sure it's one of these
-IF ((@VirginVisitorType <> 1) AND (@VirginVisitorType <> 2))   
-	SET @result = 'Unrecognized VirginVisitor Type'
-ELSE
-BEGIN  
-		-- The generic user is a record in HC.Hasher that is available to be mapped to for visitors, virgins and anyone else who 
-		-- is not in the system. This allows us to account for people on runs without having to add a new HC.Hasher record
-		-- for each one of them.
-		SELECT  @isGenericUserPresent = count(*) from HC.Hasher h inner join HC.Event e on h.id = e.KennelId WHERE e.id = @eventId AND e.deleted = 0 and e.IsVisible <> 0  
-
-		-- if the "generic user" is not present for this Kennel, go ahead and add one in HC.Hasher
-		if (@isGenericUserPresent = 0)  
-		BEGIN   
-			SELECT 
-				@kennelId = e.KennelId 
-			FROM HC.Event e 
-			WHERE e.id = @eventId AND e.deleted = 0 and e.IsVisible <> 0
-	
-			INSERT INTO [HC].[Hasher]             
-			(
-				[id]             
-				,[Description]       
-				,[HomeLatitude]       
-				,[HomeLongitude])   
-				SELECT     
-					k.id    
-					,'Placeholder user'    
-					,coalesce(k.Latitude,0)
-					,coalesce(k.Longitude,0)   
-				FROM HC.Event e 
-				INNER JOIN HC.Kennel k 
-				ON e.KennelId = k.id   
-				WHERE e.id = @eventId AND e.deleted = 0 and e.IsVisible <> 0   
-		
-		END    
-
-		DECLARE @hasherEventMapId uniqueidentifier
-		SET @hasherEventMapId = NEWID()
-
-		-- Now, insert a record for the visitor (virgin) into HC.HasherEventMap and return 'Success' as the result
-
-		INSERT INTO [HC].[HasherEventMap]
-				   ([id]
-				   ,[EventId]
-				   ,[UserId]
-				   ,[UserStartEvent]
-				   ,[EventCost]
-				   ,[Rsvp]
-				   ,[RsvpState]
-				   ,[VirginVisitorType] -- 0 = HasherInSystem, 1 = Virgin, 2 = Visitor
-				   ,[DisplayName])
-
-				SELECT @hasherEventMapId
-					,@eventId
-					,e.KennelId 
-					,getdate()
-					,e.EventPriceForNonMembers
-					,getdate()
-					,3 -- RSVP state as 'coming'
-					,@VirginVisitorType
-					,@displayName
-					from HC.Event e where e.id = @eventId and e.deleted = 0 and e.IsVisible <> 0
-
-		DECLARE @locale nvarchar(25)
-		DECLARE @eventPriceStr nvarchar(25)
-
-		SELECT @eventPrice = coalesce(e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,e.EventPriceForMembers,k.DefaultEventPriceForMembers,0)
-		
-		,@locale = coalesce(e.EventCurrencyType,k.DefaultEventCurrencyType,'en-us')
-		FROM HC.Event e
-		INNER JOIN HC.Kennel k on k.id = e.KennelId
-		WHERE e.id = @eventId AND e.deleted = 0 and e.IsVisible <> 0
-
-		SET @eventPriceStr = REPLACE(FORMAT(@eventPrice,'C',@locale),',','.')
-		SET @result = @displayName + ', you are registered for the Hash'
-
-		DECLARE @actionSheetText nvarchar(120)
-
-		-- this is the format required to pull up an action sheet in the Configure.IT mobile app
-		SET @actionSheetText = 'Cancel,Not Paid,Free run,Cash ('+TRIM(@eventPriceStr)+'),Bank Transfer ('+TRIM(@eventPriceStr)+')'
-		if (@actionSheetText is null) SET @actionSheetText = 'Cancel,Not Paid,Free Run,Cash,Bank Transfer'
-
-
-END
-
-SELECT @result as Result, @actionSheetText as ActionSheetText, @hasherEventMapId as HasherEventMapId
-
-GO
-/****** Object:  StoredProcedure [HC].[joinKennel]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-
-CREATE PROCEDURE [HC].[joinKennel]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @kennelId uniqueidentifier,
- @targetUserId uniqueidentifier,
- @isFollowing smallint = null,
- @isMember smallint = null,
- @isHomeKennel smallint = null
-
-AS
-
-BEGIN
-
-	if (@isFollowing = -1) SET @isFollowing = null
-	if (@isMember = -1) SET @isMember = null
-	if (@isHomeKennel = -1) SET @isHomeKennel = null
-
--- EXEC HC.joinKennel @kennelId = '9e85d401-213d-47ad-8a6e-44e5476925f4', @userId = '624c51b3-2f64-4de5-9458-b506e75ac544', @state = '1'
-
-	SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-
-	IF @isHomeKennel = 1 SET @isFollowing = 1
-	IF @isMember = 1 SET @isFollowing = 1
-
-	-- TODO: delete this line once we have membership separate from following
-	SET @isMember = @isFollowing
-
-	if @isFollowing = 0 OR @isFollowing = 2
-	BEGIN
-		if ((SELECT count(*) from HC.Hasher where id = @targetUserId and Home_KennelId = @kennelId) > 0)
-		BEGIN
-			UPDATE HC.Hasher SET Home_KennelId = NULL WHERE id = @targetUserId and Home_KennelId = @kennelId
-		END	
-	END
-
-	IF @isHomeKennel = 1
-	BEGIN
-		UPDATE HC.Hasher SET Home_KennelId = @kennelId WHERE id = @targetUserId
-	END
-
-	IF NOT EXISTS(SELECT * FROM HC.HasherKennelMap WHERE UserId = @targetUserId AND KennelId = @kennelId)
-		BEGIN 
-			INSERT INTO HC.HasherKennelMap(UserId,KennelId,[Following],[IsMember]) VALUES (@targetUserId,@kennelId,coalesce(@isFollowing,0),coalesce(@isMember,0)) 
-		END
-	ELSE
-		BEGIN
-			UPDATE HC.HasherKennelMap SET 
-				[Following] = coalesce(@isFollowing,[Following]),
-				[IsMember] = coalesce(@isMember,[isMember])
-				FROM HC.HasherKennelMap
-				WHERE UserId=@targetUserId AND KennelId = @kennelId 
-		END
-
-	DECLARE @result int
-	SELECT @result = COUNT(*) FROM HC.HasherKennelMap hkm where hkm.KennelId = @kennelId AND IsMember = 1
-		
-	SELECT @result as [result], 'Unused' as [message]
-
-END
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC].[nonApi_adjustHasherRunCounts]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [HC].[nonApi_adjustHasherRunCounts]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5932,7 +2875,7 @@ SET NOCOUNT ON
 
 SET @limitByUser = coalesce(@limitByUser,0)
 
-SELECT @limitByUser,@userId,@kennelId
+--SELECT @limitByUser,@userId,@kennelId
 
 
 -- Start by calculating the updated run counts and putting these into a temp table
@@ -5962,13 +2905,13 @@ AND (((@limitByUser = 1) AND (hem.userId = @userId) AND evt.KennelId = @kennelId
 AND evt.IsCountedRun = 1
 --AND evt.EventStartDatetime < dateadd(day,1,getdate())
 
-select * 
-FROM HC.RunCounts rc
-INNER JOIN #temp t on t.RunCountId = rc.id
-WHERE (coalesce(rc.TotalHaringThisKennel,-99999) <>  t.TotalHaringThisKennel )
-OR (coalesce(rc.TotalPackRunsThisKennel,-99999) <>  t.TotalPackRunsThisKennel)
-OR (coalesce(rc.TotalHaringAllKennels,-99999) <>   t.TotalHaringAllKennels )
-OR (coalesce(rc.TotalPackRunsAllKennels,-99999) <>  t.TotalPackRunsAllKennels )
+--select * 
+--FROM HC.RunCounts rc
+--INNER JOIN #temp t on t.RunCountId = rc.id
+--WHERE (coalesce(rc.TotalHaringThisKennel,-99999) <>  t.TotalHaringThisKennel )
+--OR (coalesce(rc.TotalPackRunsThisKennel,-99999) <>  t.TotalPackRunsThisKennel)
+--OR (coalesce(rc.TotalHaringAllKennels,-99999) <>   t.TotalHaringAllKennels )
+--OR (coalesce(rc.TotalPackRunsAllKennels,-99999) <>  t.TotalPackRunsAllKennels )
 
 -- now, apply updates only where they are required
 UPDATE HC.RunCounts 
@@ -5986,7 +2929,7 @@ OR (coalesce(rc.TotalPackRunsAllKennels,-99999) <>  t.TotalPackRunsAllKennels )
 
 
 
-select * from #temp order by EventStartDatetime desc
+--select * from #temp order by EventStartDatetime desc
 
 -- find cases where Hashers have runs but have never followed a Kennel. Go ahead and insert an HKM record so we can keep
 -- track of run counts
@@ -6037,181 +2980,7 @@ drop table #temp
 END
 
 GO
-/****** Object:  StoredProcedure [HC].[nonApi_getUserResult]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [HC].[nonApi_getUserResult]
-
-@callingProcType int,
-@eventId uniqueidentifier = null,
-@targetUserId uniqueidentifier = null,
-@hasherEventMapId uniqueidentifier = null
-
-AS
-
-SET NOCOUNT ON
-
-	DECLARE @AtHashCount smallint
-	DECLARE @OnInCount smallint
-	DECLARE @OnTrailCount smallint
-	DECLARE @PaidCount smallint
-	DECLARE @WaitingForCount smallint
-
-	IF (@targetUserId = '00000000-0000-0000-0000-000000000000') SET @targetUserId = null
-	IF (@eventId = '00000000-0000-0000-0000-000000000000') SET @eventId = null
-
-	if (@eventId is not null)
-	BEGIN
-		SELECT 
-			@AtHashCount = sum(case when hem2.AttendenceState >= 20 then 1 else 0 end),
-			@OnInCount = sum(case when hem2.AttendenceState >= 30 then 1 else 0 end),
-			@OnTrailCount = sum(case when hem2.AttendenceState >= 20 then 1 else 0 end)-sum(case when hem2.AttendenceState >= 30 then 1 else 0 end) 
-		FROM HC.HasherEventMap hem2 WHERE hem2.EventId = @EventId
-
-		SELECT 
-			@WaitingForCount = count(*)
-		FROM HC.HasherEventMap hem WHERE hem.EventId = @EventId AND hem.AttendenceState < 20 AND hem.RsvpState = 3
-
-		SELECT @PaidCount = count(*) from HC.Payment p where p.EventId = @EventId and p.CancelledDate is null
-	END
-
-	SELECT coalesce(sum(p.creditAmount)-sum(p.debitAmount),0) as Credit
-			,p.UserId
-			,e.KennelId
-	INTO #creditTemp
-	FROM HC.Hasher h
-	INNER JOIN HC.Event e ON e.id = @EventId
-	INNER JOIN HC.Kennel k ON k.id = e.KennelId 
-	INNER JOIN HC.Payment p on p.UserId = h.id
-	LEFT OUTER JOIN HC.HasherKennelMap hkm ON hkm.KennelId = k.id AND hkm.UserId = h.id
-	LEFT OUTER JOIN HC.HasherEventMap hem on hem.UserId = h.id AND hem.EventId = @EventId
-	WHERE (
-		 ((hem.EventId = e.id) AND (hem.UserId = h.id)) OR -- this covers users who have RSVP'ed
-		 ((hkm.KennelId = k.id) AND (hkm.UserId = h.id) AND ((hkm.Following = 1) OR (hkm.IsMember = 1)))  -- this covers users who are either members of a kennel or following that kennel
-		)
-		AND e.deleted = 0 AND e.IsVisible <> 0
-		AND p.CancelledDate is null
-		AND ((@targetUserId IS NULL) OR (h.id = @targetUserId))
-	GROUP BY 
-		p.UserId, e.KennelId
-
-SELECT
-	@EventId as eventId
-	,h.id as userId
-	,coalesce(hkm.Following,0) as isFollowing
-	,coalesce(hkm.IsMember,0) as isMember
-	,case when hem.id is null then 0 else 1 end as isRsvped
-	-- From HC.HasherEventMap
-	,hem.id AS [hasherEventMapId]
-
-	--,hem.[RegistrationId]
-	,coalesce(hem.[IsHare],0) as isHare
-	,coalesce(hem.[VirginVisitorType],0) as virginVisitorType
-	,hem.[UserStartEvent] as userStartEvent
-	,hem.[UserEndEvent] as userEndEvent
-	--,hem.[Rsvp]
-	,coalesce(hem.[RsvpState],0) as rsvpState
-	,coalesce(hem.[AttendenceState],0) as attendenceState
-
-
-	-- From HC.Payment
-
-	,case when pay.id is not null then 1 else 0 end as isPaid
-	,coalesce(pay.PaymentType,-1) as paymentType  
-
-	-- FROM HC.Hasher
-	,coalesce(h.email,'') as eMail
-	,coalesce(h.facebookId,'') as facebookId
-	,coalesce(h.firstName,'') as firstName
-	,coalesce(h.HashName,'') as hashName
-	,coalesce(h.lastName,'') as lastName
-	,h.QR_code as qrCode
-	,h.SupportCode as supportCode
-	,case when @eventId is not null then '00000000-0000-0000-0000-000000000000' else coalesce(h.QR_secret_code,'00000000-0000-0000-0000-000000000000') end as qrSecretCode
-	,coalesce(CASE WHEN (hem.[VirginVisitorType] <> 0)	
-			THEN 
-			coalesce(hem.DisplayName,'<no name>') + CASE WHEN (hem.[VirginVisitorType] = 1) THEN ' (Virgin)' ELSE ' (Visitor)' END	
-		WHEN h.NameDisplayPreference = 1
-			THEN h.HashName
-		WHEN h.NameDisplayPreference = 2
-			THEN h.FirstName + ' ' + h.LastName
-		ELSE h.HashName + ' (' + h.FirstName + ' ' + h.LastName + ')'
-		END,hem.DisplayName,'<no name>')
-		 AS displayName
-	,CASE 
-		WHEN coalesce(hem.[VirginVisitorType],0) = 0
-			THEN h.Photo
-		WHEN (hem.[VirginVisitorType] = 1)	
-			THEN 'bundle://avatar-virgin'
-		WHEN (hem.[VirginVisitorType] = 2)	
-			THEN 'bundle://avatar-visitor'
-		ELSE
-			CASE WHEN h.Photo IS NULL THEN	
-			'bundle://avatar-visitor'
-			ELSE
-				h.Photo
-			END
-		END AS photo
-
-	-- Aggregates from HC.HasherEventMap
-	,coalesce(CASE 
-		WHEN coalesce(hem.[VirginVisitorType],null) <> 0
-			THEN CASE WHEN hem.AttendenceState >= 20 THEN 1 ELSE 0 END
-		ELSE
-			coalesce(rc.TotalPackRunsThisKennel + rc.TotalHaringThisKennel,0) END,0)
-		AS userRunCount
-
-	-- Live totals for display at top of HasherList
-	,@WaitingForCount AS waitingForCount
-	,@AtHashCount AS atHashCount
-	,@OnInCount AS onInCount
-	,@OnTrailCount AS onTrailCount
-	,@PaidCount AS paidCount
-	,CASE WHEN COALESCE(hkm.IsMember, 0) = 1
-							THEN coalesce(e.EventPriceForMembers, k.DefaultEventPriceForMembers, e.EventPriceForNonMembers, k.DefaultEventPriceForNonMembers, 0)
-						ELSE coalesce(e.EventPriceForNonMembers, k.DefaultEventPriceForNonMembers, e.EventPriceForMembers, k.DefaultEventPriceForMembers, 0)
-						END AS eventPrice
-    , coalesce(e.EventCurrencyType, k.DefaultEventCurrencyType, 'en-us') as eventLocale
-	, k.AllowNegativeCredit as allowNegativeCredit
-	, coalesce(ct.Credit,0) as credit
-	, c.CurrencySymbol as currencySymbol
-	, c.DigitsAfterDecimal as digitsAfterDecimal
-	
-FROM HC.Hasher h
-LEFT OUTER JOIN HC.Event e ON e.id = @EventId
-LEFT OUTER JOIN HC.Kennel k ON k.id = e.KennelId 
-LEFT OUTER JOIN HC.Country c on c.id = k.CountryId
-LEFT OUTER JOIN HC.HasherKennelMap hkm ON hkm.KennelId = k.id AND hkm.UserId = h.id
-LEFT OUTER JOIN HC.HasherEventMap hem on hem.UserId = h.id AND hem.EventId = @EventId
-LEFT OUTER JOIN HC.RunCounts rc on rc.id = hem.RunCountId
-LEFT OUTER JOIN HC.Payment pay on pay.HasherEventMapId = hem.id and pay.CancelledDate is null 
-LEFT OUTER JOIN #creditTemp ct ON ct.UserId = h.id and ct.KennelId = k.id
-
-WHERE (
-		(@eventId is null) OR (
-		(
-			 ((hem.EventId = e.id) AND (hem.UserId = h.id)) OR -- this covers users who have RSVP'ed
-			((hkm.KennelId = k.id) AND (hkm.UserId = h.id) AND ((hkm.Following = 1) OR (hkm.IsMember = 1)))  -- this covers users who are either members of a kennel or following that kennel
-			)
-			AND e.deleted = 0 and e.IsVisible <> 0)
-		)
-	AND ((@TargetUserId IS NULL) OR (h.id = @TargetUserId))
-ORDER BY 
-	COALESCE(
-	CASE 
-		WHEN h.NameDisplayPreference = 1
-			THEN h.HashName
-		WHEN h.NameDisplayPreference = 2
-			THEN h.FirstName + ' ' + h.LastName
-		ELSE h.HashName + ' (' + h.FirstName + ' ' + h.LastName + ')'
-		END
-		,hem.DisplayName,'<no name>')
-
-DROP TABLE #creditTemp
-GO
-/****** Object:  StoredProcedure [HC].[nonApi_rptKennelRunStats]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [HC].[nonApi_rptKennelRunStats]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6336,7 +3105,7 @@ EXEC sp_executesql @stmt = @stmt
 DROP TABLE #temp
 
 GO
-/****** Object:  StoredProcedure [HC].[nonApi_updateEventFromFacebook]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [HC].[nonApi_updateEventFromFacebook]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6556,7 +3325,7 @@ END
 
 END
 GO
-/****** Object:  StoredProcedure [HC].[nonApi_updateRunNumbers]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [HC].[nonApi_updateRunNumbers]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6648,4406 +3417,7 @@ SET NOCOUNT ON
 
 END
 GO
-/****** Object:  StoredProcedure [HC].[payForEvent]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE procedure [HC].[payForEvent]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@userIdWhoPaid uniqueidentifier,
-@eventId uniqueidentifier,
-@hasherEventMapId uniqueidentifier = NULL,
-@paymentType smallint,
-@paymentAmount decimal(12,6) = NULL
-
-AS
-
-BEGIN
-
--- exec HC.payForEvent @userId = '624C51B3-2F64-4DE5-9458-B506E75AC544', @hasherEventMapId = '0bc3a6ea-0e9f-432e-acb0-079c1557f004', @paymentType = 3
-
-SET NOCOUNT ON
-
-	IF (@hasherEventMapId = '00000000-0000-0000-0000-000000000000') SET @hasherEventMapId = null
-	IF (@eventId = '00000000-0000-0000-0000-000000000000') SET @eventId = null
-	if (@paymentAmount < 0) SET @paymentAmount = NULL
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	if (@hasherEventMapId is null)
-	BEGIN
-		SELECT @hasherEventMapId = id FROM HC.HasherEventMap hem where hem.UserId = @userIdWhoPaid AND hem.EventId = @eventId
-
-		IF (@hasherEventMapId is null)
-		BEGIN
-			SET @hasherEventMapId = newid()
-			INSERT HC.HasherEventMap (id,UserId,EventId,RsvpState,Rsvp,UserStartEvent) VALUES (@hasherEventMapId,@userIdWhoPaid,@eventId,3, getdate(),getdate())
-		END
-	END
-
-	DECLARE @eventPrice money
-	DECLARE @creditAmount money
-	DECLARE @local nvarchar(10)
-	DECLARE @kennelId uniqueidentifier
-	DECLARE @result nvarchar(250)
-	DECLARE @kennelName nvarchar(250)
-	DECLARE @payer_userIdGuid uniqueidentifier
-	DECLARE @paymentTypeStr nvarchar(120)
-	DECLARE @payer_userName nvarchar(120)
-	DECLARE @buttonState int
-
-	SET @buttonState = 0
-
-	SELECT
-	@eventPrice = CASE WHEN coalesce(hkm.IsMember,0) = 1 THEN
-		coalesce(e.EventPriceForMembers,k.DefaultEventPriceForMembers,e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,0)
-	ELSE
-		coalesce(e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,e.EventPriceForMembers,k.DefaultEventPriceForMembers,0)
-	END
-	,@local = coalesce(e.EventCurrencyType,k.DefaultEventCurrencyType,'en-us')
-	,@kennelId = k.id
-	,@kennelName = coalesce(k.KennelShortName,k.KennelName,'<No kennel name>')
-	,@payer_userIdGuid = hem.UserId
-	,@eventId = coalesce(@eventId,e.id)
-	,@payer_userName = coalesce(CASE 
-		WHEN (h.NameDisplayPreference = 1 AND datalength(h.HashName) > 0)
-			THEN h.HashName
-		WHEN (h.NameDisplayPreference = 2 OR datalength(h.HashName) = 0)
-			THEN h.FirstName + ' ' + h.LastName
-		ELSE h.HashName + ' (' + h.FirstName + ' ' + h.LastName + ')'
-		END,hem.DisplayName,'<no name>')
-	FROM HC.HasherEventMap hem
-	INNER JOIN HC.Event e ON e.id = hem.EventId
-	INNER JOIN HC.Kennel k on k.id = e.KennelId
-	LEFT OUTER JOIN HC.HasherKennelMap hkm on hem.UserId = hkm.UserId AND hkm.KennelId = e.kennelId
-	LEFT OUTER JOIN HC.Hasher h on h.id = hem.UserId
-	WHERE hem.id = @hasherEventMapId AND e.deleted = 0 AND e.IsVisible <> 0
-
-
-	SET @result = 'Payment not processed'
-
-	if (@paymentType = 1) -- handle the 'Not paid' case
-	BEGIN
-		UPDATE HC.Payment SET CancelledDate = getdate(), CancelledBy_UserId = @userId WHERE CancelledDate is null AND HasherEventMapId = @hasherEventMapId
-		SET @result = @payer_userName + ', your payment has been cancelled'
-	END
-
-	IF (@paymentType = 2) SET @eventPrice = 0 -- in this case the run is "free"
-
-	IF ((@paymentType >= 2) AND (@paymentType <= 7)) -- in this case the run is paid in cash, bank transfer or using credits
-	BEGIN
-		IF ((@paymentType = 5) OR (@paymentType = 7))
-			SET @creditAmount = @paymentAmount
-		ELSE
-			SET @creditAmount = @eventPrice
-
-		IF (@paymentType = 6) SET @creditAmount = 0 -- this is the case when hashers are paying using their existing 'hash credit'
-		SET @paymentTypeStr = CASE 
-			WHEN @paymentType = 3 
-				THEN 'cash' 
-			WHEN @paymentType = 4 
-				THEN 'bank transfer' 
-			WHEN @paymentType = 5 
-				THEN 'other amount by cash' 
-			WHEN @paymentType = 6 THEN 
-				'hash credit' 
-			WHEN @paymentType = 7 THEN 
-				'other amount by bank transfer' 
-			END
-
-		-- We only allow one payment per event, so cancel any previous payments when a new payment comes in for an event that is of type "free", "cash", "bank transfer", or "credit"
-		UPDATE HC.Payment SET CancelledDate = getdate(), CancelledBy_UserId = @userId WHERE CancelledDate is null AND HasherEventMapId = @hasherEventMapId
-
-		-- Now insert a new payment record
-		INSERT HC.Payment (KennelId, UserId,		    EventId, HasherEventMapId, CreditAmount,DebitAmount, PaymentProcessedBy_userId,PaidDate, PaymentType) 
-				VALUES    (@kennelId,@payer_userIdGuid,@eventId,@hasherEventMapId,@creditAmount,@eventPrice,@userId,GETDATE(),@paymentType)
-		
-		-- Set the text result
-		SET @result = @payer_userName + ', your ' + @paymentTypeStr + ' payment of ' + REPLACE(REPLACE(FORMAT(@creditAmount,'C',@local),',','.'),' ','') + ' to the ' + @kennelName + ' has been recorded'
-		IF @paymentType = 2 SET @result = @payer_userName + ', congratulations, your run today was free!'
-
-		-- if they have paid, mark them as being at the event.
-		UPDATE HC.HasherEventMap set UserStartEvent = getdate() where id = @hasherEventMapId
-		SET @buttonState = 1
-	END
-
-	EXEC HC.nonApi_adjustHasherRunCounts @limitByUser = 1,@userId = @userIdWhoPaid
-
-	DECLARE @AtHashCount smallint
-	DECLARE @OnInCount smallint
-	DECLARE @OnTrailCount smallint
-	DECLARE @PaidCount smallint
-	DECLARE @WaitingForCount smallint
-	DECLARE @TotalRunsThisKennel smallint
-
-	SELECT @TotalRunsThisKennel = hem.TotalRunsThisKennel from HC.HasherEventMap hem where hem.id = @hasherEventMapId
-
-	SELECT 
-		@AtHashCount = count(hem2.UserStartEvent),
-		@OnInCount = count(hem2.UserEndEvent),
-		@OnTrailCount = count(hem2.UserStartEvent)-count(hem2.UserEndEvent) 
-	FROM HC.HasherEventMap hem2 WHERE hem2.EventId = @EventId
-
-	SELECT 
-		@WaitingForCount = count(*)
-	FROM HC.HasherEventMap hem WHERE hem.EventId = @EventId AND hem.UserStartEvent IS NULL AND hem.RsvpState = 3
-
-	SELECT @PaidCount = count(*) from HC.Payment p where p.EventId = @EventId and p.CancelledDate is null
-
-	SELECT @result as [Result], @WaitingForCount as waitingForCount, @AtHashCount as atHashCount, @OnInCount as onInCount, @OnTrailCount as onTrailCount, @PaidCount as paidCount, @buttonState as buttonState, @TotalRunsThisKennel as totalRunsThisKennel
-
-END
-GO
-/****** Object:  StoredProcedure [HC].[processQrScan]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE procedure [HC].[processQrScan]
-
-@userId nvarchar(120), -- this is the userId of the person who is doing the scanning, not the user being scanned
-@accessToken nvarchar(1000),
-@eventId nvarchar(120) = NULL,
-@scanText nvarchar(500),
-@context1 nvarchar(120),
-@context2 nvarchar(120) = NULL,
-@param1 nvarchar(120) = NULL,
-@param2 nvarchar(120) = NULL
-
-AS
-BEGIN
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-DECLARE @result nvarchar(500)
-DECLARE @result2 nvarchar(500)
-DECLARE @result3 nvarchar(500)
-DECLARE @resultGuid1 uniqueidentifier
-DECLARE @resultGuid2 uniqueidentifier
-DECLARE @resultInt1 int
-DECLARE @resultInt2 int
-DECLARE @paramValue uniqueidentifier
-DECLARE @userIdGuid uniqueidentifier
-DECLARE @eventIdGuid uniqueidentifier
-DECLARE @scanTextGuid uniqueidentifier
-DECLARE @paymentCounter smallint
-DECLARE @startTime datetime
-DECLARE @endTime datetime
-DECLARE @hasherEventMapId uniqueidentifier
-DECLARE @startEvent datetime
-
-DECLARE @runName nvarchar(500)
-
-
---IF (((@scanText like 'evtStart%') AND (@context1 = 'User')) OR ((@userId like 'uid%') AND (@context1 = '0')))
-IF ((@context1 = 'CheckInOut') AND (@scanText like 'uqr:%')) -- this is the case where the user is checking in
-BEGIN
-	-- Context values
-	-- @Context2 = 0 indicates run start
-	-- @Context2 = 1 indicates run end
-	
-	-- Result values
-	-- @Result1 contains the text for the action sheet for payment
-	-- @Result2 contains instructions for payment
-	-- @Result3 contains the user name
-	-- @ResultInt1 contains the number of runs for this particular kennel for the target user
-	-- @ResultGuid1 contains the target user id
-	-- @ResultGuid2 contains the HasherEventMapId
-	-- @ResultInt2 contains the payment counter
-
-
-	-- exec HC.processQrScan @userId ='624c51b3-2f64-4de5-9458-b506e75ac544', @eventId = 'dea28bab-a30c-4a80-ac96-d0b7164551b9', @scanText = 'UQR:TEST01', @context1 = 'CheckInOut', @context2 = '0', @param1 = '', @param2 = ''
-
-
-	SET @userIdGuid = CAST(right(@userId,36) AS uniqueidentifier)
-	SET @eventIdGuid = CAST(right(@eventId,36) AS uniqueidentifier)
-	--SET @scanTextGuid = CAST(right(@scanText,36) AS uniqueidentifier)
-	SET @hasherEventMapId = newid()
-	SET @startTime = getdate()
-	if (@context2 <> '0') SET @endTime = getdate()
-	SET @resultInt1 = -1
-	SET @resultInt2 = -1
-
-
-	--SET @scanTextGuid = CAST(right(@scanText,36) AS uniqueidentifier) -- the QR idf of the hasher being checked in
-	DECLARE @targetUserId uniqueidentifier
-	SELECT @targetUserId = id,
-			@result3 = coalesce(h.HashName, h.DisplayName, h.FirstName + ' ' + h.LastName,'no name')
-		from HC.Hasher h 
-		where h.QR_code = @scanText
-
-	IF (@targetUserId is null)
-		BEGIN
-			SET @result = 'User code not found in Harrier Central database'
-		END
-	ELSE
-		BEGIN
-		SELECT @paymentCounter = coalesce(count(*),0) from HC.Payment p WHERE p.UserId = @targetUserId AND p.EventId = @eventIdGuid AND p.CancelledDate IS NULL
-		SET @resultInt2 = @paymentCounter
-
-		IF NOT EXISTS(SELECT * FROM HC.HasherEventMap WHERE UserId = @targetUserId AND EventId = @eventIdGuid)
-			-- this case is for someone who is on the run but did not RSVP, so there is no record in HEM
-			BEGIN 
-				INSERT INTO HC.HasherEventMap(id,UserId,EventId,RsvpState,Rsvp,UserStartEvent, UserEndEvent) VALUES (@hasherEventMapId,@targetUserId,@eventIdGuid,3,getdate(),@startTime, @endTime) 
-				IF @paymentCounter = 0 SET @result2 = 'Please pay for today''s Hash.'
-				IF @paymentCounter <> 0 SET @result2 = 'You have already paid. Enjoy the Hash!'
-			END
-		ELSE
-			BEGIN
-				-- This case is when a HEM record already exists
-				SELECT @hasherEventMapId = id, @startEvent = UserStartEvent from HC.HasherEventMap WHERE UserId = @targetUserId AND EventId = @eventIdGuid
-				IF (@startEvent is not null)
-					BEGIN
-						if (@context2 = '0')
-						BEGIN
-							-- This executes when someone has already checked in and is checking in again.
-							IF @paymentCounter = 0 SET @result2 = 'You are already checked in, but you still need to pay.'
-							IF @paymentCounter <> 0 SET @result2 = 'You are already checked in and paid. Enjoy the Hash!'
-						END
-
-						if (@context2 <> '0')
-						BEGIN
-							UPDATE HC.HasherEventMap SET UserEndEvent = @endTime WHERE id = @hasherEventMapId 
-							-- This executes when someone has already checked in and is checking in again.
-							IF @paymentCounter = 0 SET @result2 = 'You are recorded as "On In". Please don''t forget to pay for the Hash.'
-							IF @paymentCounter <> 0 SET @result2 = 'You are recorded as "On In". Hope you enjoyed the Hash!'
-						END
-					END
-				ELSE
-					BEGIN
-
-						IF (@context2 = '0')
-						BEGIN
-							-- This case is when someone has RSVP'ed but not yet checked in
-							UPDATE HC.HasherEventMap SET RsvpState = 3, UserStartEvent = getdate() WHERE id = @hasherEventMapId 
-							IF @paymentCounter = 0 SET @result2 = 'You are now checked in. Please pay for today''s Hash.'
-							IF @paymentCounter <> 0 SET @result2 = 'You are now checked in and have paid. Enjoy the Hash!'
-						END
-
-						IF (@context2 <> '0')
-						BEGIN
-							-- This case is when someone has gone on the run without checking in, but they have checked in at the end
-							UPDATE HC.HasherEventMap SET RsvpState = 3, UserStartEvent = @startTime, UserEndEvent = @endTime WHERE id = @hasherEventMapId 
-							IF @paymentCounter = 0 SET @result2 = 'You are recorded as "On In". Please don''t forget to pay for the Hash.'
-							IF @paymentCounter <> 0 SET @result2 = 'You are recorded as "On In". Hope you enjoyed the Hash!'
-						END
-					END
-			END
-
-			EXEC HC.nonApi_adjustHasherRunCounts @limitByUser = 1, @userId = @targetUserId
-
-			DECLARE @remainingCreditStr nvarchar(20)
-			DECLARE @eventPriceStr nvarchar(20)	
-			DECLARE @local nvarchar(20)
-			DECLARE @remainingCredit money
-			DECLARE @eventPrice money
-			DECLARE @allowNegativeCredit smallint
-			DECLARE @creditStatusStr nvarchar(20)
-
-			SELECT @resultInt1 = hem.TotalRunsThisKennel from HC.HasherEventMap hem where hem.id = @hasherEventMapId
-
-			IF (@paymentCounter <> 0)
-				SET @result = 'Already paid'
-			ELSE
-			BEGIN
-				SELECT
-				@eventPrice = CASE WHEN hkm.IsMember = 1 THEN
-					coalesce(e.EventPriceForMembers,k.DefaultEventPriceForMembers,e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,0)
-				ELSE
-					coalesce(e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,e.EventPriceForMembers,k.DefaultEventPriceForMembers,0)
-				END
-				,@local = coalesce(e.EventCurrencyType,k.DefaultEventCurrencyType,'en-US')
-				,@allowNegativeCredit = k.AllowNegativeCredit
-				FROM HC.Event e
-				INNER JOIN HC.Kennel k on k.id = e.KennelId
-				INNER JOIN HC.HasherKennelMap hkm on hkm.UserId = @targetUserId and hkm.KennelId = e.KennelId
-				WHERE e.id = @eventIdGuid AND e.deleted = 0 AND e.IsVisible <> 0
-
-				SET @eventPriceStr = REPLACE(FORMAT(@eventPrice,'C',COALESCE(@local,'en-US')),',','.')
-
-				SELECT @remainingCredit = coalesce(sum(creditAmount)-sum(debitAmount),0)
-				FROM HC.Payment p 
-				INNER JOIN HC.Event e on p.KennelId = e.KennelId
-				WHERE p.UserId = @targetUserId AND e.id = @eventIdGuid AND p.CancelledDate is null AND e.deleted = 0 AND e.IsVisible <> 0
-
-				SET @creditStatusStr = ' '
-				if (@remainingCredit < 0) SET @creditStatusStr = '['+TRIM(@remainingCreditStr)+' owed]'
-				if (@remainingCredit > 0) SET @creditStatusStr = '['+TRIM(@remainingCreditStr)+' left]'
-
-				SET @remainingCreditStr = REPLACE(FORMAT(ABS(@remainingCredit),'C',COALESCE(@local,'en-US')),',','.')
-
-
-				-- this is the format required to pull up an action sheet in the Configure.IT mobile app
-				SET @result = 'Cancel,Not Paid,Free run,Cash ('+TRIM(@eventPriceStr)+'),Bank Transfer ('+TRIM(@eventPriceStr)+')'
-				IF ((@remainingCredit - @eventPrice >= 0) OR (@allowNegativeCredit = 1)) SET @result = @result + ',Credit ('+TRIM(@eventPriceStr)+') ' + @creditStatusStr
-
-				if (@result is null) SET @result = 'Cancel,Not Paid,Free Run,Cash,Bank Transfer'
-			END
-
-			SET @resultGuid2 = @hasherEventMapId
-	END
-
-END
-
-
---IF (((@scanText like 'evtStart%') AND (@context1 = 'User')) OR ((@userId like 'uid%') AND (@context1 = '0')))
-ELSE IF ((@context1 = 'UserScan') AND (@scanText like 'evtStart:%')) -- this is the case where the user is checking in
-	BEGIN
-
-	-- exec HC.processQrScan @userId ='624c51b3-2f64-4de5-9458-b506e75ac544', @eventId = '', @scanText = 'evtStart:7B10155A-92D4-40D7-929A-CF2BDE968444', @context1 = 'UserScan', @context2 = '', @param1 = '', @param2 = ''
-	
-	SET @userIdGuid = CAST(right(@userId,36) AS uniqueidentifier)
-	SET @eventIdGuid = CAST(right(@scanText,36) AS uniqueidentifier)
-
-	SELECT @runName = e.EventName from HC.Event e where e.id = @eventIdGuid
-
-	IF NOT EXISTS(SELECT * FROM HC.HasherEventMap WHERE UserId = @userIdGuid AND EventId = @eventIdGuid)
-		BEGIN 
-			INSERT INTO HC.HasherEventMap(UserId,EventId,RsvpState,Rsvp,UserStartEvent) VALUES (@userIdGuid,@eventIdGuid,3,getdate(),getdate()) 
-			SET @result = 'Checked in for "'+@runName+'". Enjoy your run!'
-		END
-	ELSE
-			IF EXISTS(SELECT * FROM HC.HasherEventMap WHERE UserId = @userIdGuid AND EventId = @eventIdGuid AND UserStartEvent IS NOT NULL)
-			SET @result = 'You are already checked in for "'+@runName+'". Enjoy your run!'
-		ELSE
-			BEGIN
-				UPDATE HC.HasherEventMap SET RsvpState = 3, UserStartEvent = coalesce(UserStartEvent,getdate()) WHERE UserId = @userIdGuid and EventId = @eventIdGuid
-				SET @result = 'Checked in for "'+@runName+'". Enjoy your run!'
-			END
-
-	END
-
-ELSE IF ((@context1 = 'UserScan') AND (@scanText like 'evtEnd:%')) -- this is the case where the user is checking in at the end of the run
-	BEGIN
-
-	-- exec HC.processQrScan @userId ='624c51b3-2f64-4de5-9458-b506e75ac544', @eventId = '', @scanText = 'evtEnd:7B10155A-92D4-40D7-929A-CF2BDE968444', @context1 = 'UserScan', @context2 = '', @param1 = '', @param2 = ''
-
-	SET @userIdGuid = CAST(right(@userId,36) AS uniqueidentifier)
-	SET @eventIdGuid = CAST(right(@scanText,36) AS uniqueidentifier)
-
-	SELECT @runName = e.EventName from HC.Event e where e.id = @eventIdGuid
-
-	IF NOT EXISTS(SELECT * FROM HC.HasherEventMap WHERE UserId = @userIdGuid AND EventId = @eventIdGuid)
-		BEGIN 
-			INSERT INTO HC.HasherEventMap(UserId,EventId,RsvpState,Rsvp,UserStartEvent,UserEndEvent) VALUES (@userIdGuid,@eventIdGuid,3,getdate(),getdate(),getdate()) 
-			SET @result = 'Congratulations for finishing "'+@runName+'". Enjoy your beer!'
-		END
-	ELSE
-			IF EXISTS(SELECT * FROM HC.HasherEventMap WHERE UserId = @userIdGuid AND EventId = @eventIdGuid AND UserStartEvent IS NOT NULL AND UserEndEvent IS NOT NULL)
-			SET @result = 'You are already checked in as finished. Enjoy your beer!'
-		ELSE
-			BEGIN
-				UPDATE HC.HasherEventMap SET RsvpState = 3, UserStartEvent = coalesce(UserStartEvent,getdate()), UserEndEvent = coalesce(UserEndEvent,getdate()) WHERE UserId = @userIdGuid and EventId = @eventIdGuid
-				SET @result = 'Congratulations for finishing "'+@runName+'". Enjoy your beer!'
-			END
-
-	END
-
-ELSE IF ((@context1 = 'UserScan') AND (@scanText like 'uqr:%')) -- this is the case where the user is checking in at the end of the run
-	BEGIN
-
-	-- exec HC.processQrScan @userId ='624c51b3-2f64-4de5-9458-b506e75ac544', @eventId = '', @scanText = 'uqr:A703DA6E-35D9-4BBC-B74B-C3AE270F16FC', @context1 = 'UserScan', @context2 = '', @param1 = '', @param2 = ''
-	DECLARE @friendQrCode uniqueidentifier
-	DECLARE @friendIdGuid uniqueidentifier
-	DECLARE @friendName nvarchar(120)
-
-	SET @userIdGuid = CAST(right(@userId,36) AS uniqueidentifier)
-	--SET @friendQrCode = CAST(right(@scanText,36) AS uniqueidentifier)
-
-	SELECT @friendIdGuid = id, @friendName = DisplayName from HC.Hasher h where h.QR_code = @scanText
-
-	IF (@friendIdGuid IS NULL)
-		BEGIN
-			SET @result = 'QR code not recognized'
-		END
-	ELSE IF (@friendIdGuid = @userIdGuid)
-		SET @result = 'How nice of you to want to be your own friend!'
-	ELSE
-		BEGIN
-
-
-			IF NOT EXISTS(SELECT * FROM HC.HasherFriendMap WHERE UserId = @userIdGuid AND Friend_UserId = @friendIdGuid)
-				BEGIN 
-					INSERT INTO HC.HasherFriendMap(UserId,Friend_UserId,FriendSince,Ignore) VALUES (@userIdGuid,@friendIdGuid,getdate(),0) 
-					SET @result = @friendName + ' has been added to your friend list'
-				END
-			ELSE
-				IF EXISTS(SELECT * FROM HC.HasherFriendMap WHERE UserId = @userIdGuid AND Friend_UserId = @friendIdGuid AND Ignore = 0)
-					SET @result = @friendName + ' is already in your friend list'
-				ELSE
-					BEGIN
-						UPDATE HC.HasherFriendMap SET Ignore = 0 WHERE UserId = @userIdGuid AND Friend_UserId = @friendIdGuid
-						SET @result = @friendName + ' has been added to your friend list'
-					END
-
-			END
-		END
-
-ELSE
-BEGIN
-	SET @result = 'Scanned code not recognized'
-END
-
-select	coalesce(@result,'') as [resultStr1], 
-		coalesce(@result2,'') as [resultStr2], 
-		coalesce(@result3,'') as [resultStr3], 
-		coalesce(@targetUserId,'00000000-0000-0000-0000-000000000000') as resultGuid1, 
-		coalesce(@resultGuid2,'00000000-0000-0000-0000-000000000000') as [resultGuid2], 
-		coalesce(@resultInt1,-1) as [resultInt1], 
-		coalesce(@resultInt2,-1) as [resultInt2]
-
-END
-
-
-
-GO
-/****** Object:  StoredProcedure [HC].[unused_loadEvents]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [HC].[unused_loadEvents]
-
-AS
-
-BEGIN
-
--- NOTE: IF WE NEED TO REACTIVATE THIS, ADD IN A CALL TO HC.nonApi_updateRunNumbers
-
-update HC.Event 
-SET
-EventStartDatetime = CAST(left(imp.start_time,19) as datetime),
-EventEndDatetime = CAST(left(imp.end_time,19) as datetime),
-EventName = imp.[name],
-EventDescription = imp.[description],
-FacebookRecordLastUpdated = CAST(left(imp.updated_time,19) as datetime),
-LocationOneLineDesc = imp.[place.name],
-LocationCity = imp.[place.location.city],
-LocationCountry = imp.[place.location.country],
-Latitude = imp.[place.location.latitude],
-Longitude = imp.[place.location.longitude],
-LocationStreet = imp.[place.location.street],
-LocationPostCode = imp.[place.location.zip],
--- we don't use the FB Place.id, but it is in the FB dataset
-EventImageOffsetX = CAST([cover.offset_x] as smallint),
-EventImageOffsetY = CAST([cover.offset_y] as smallint),
-EventImage = imp.[cover.source],
--- we don't use the FB Cover.id, but it is in the FB dataset
--- we don't use the FB Owner.name, but it is in the FB dataset
--- we don't use the FB Owner.is, but it is in the FB dataset
-FacebookAttendingCount = imp.attending_count,
-FacebookMaybeCount = imp.maybe_count,
-FacebookDeclinedCount = imp.declined_count,
-FacebookInterestedCount = imp.interested_count,
-FacebookNoReplyCount = imp.noreply_count
-
-from HC.Event evt inner join 
-[HC].[FacebookEventImport] imp on evt.EventFacebookId = imp.event_id
-where imp.[type] = 'group'
-AND imp.event_id in (select EventFacebookId from HC.Event) 
-
-
-
-insert HC.Event(EventFacebookId,EventStartDateTime,EventEndDatetime,EventName,EventDescription,
-KennelId,FacebookRecordLastUpdated,LocationOneLineDesc,LocationCity,LocationCountry,Latitude,
-Longitude,LocationStreet,LocationPostCode,EventImageOffsetX,EventImageOffsetY,EventImage,
-FacebookAttendingCount,FacebookMaybeCount,FacebookDeclinedCount,FacebookInterestedCount,FacebookNoReplyCount)
-
-
-select 
--- we don't save the event type, but it is used in filtering this dataset
-imp.event_id as EventFacebookId,
-CAST(left(imp.start_time,19) as datetime) as EventStartDatetime,
-CAST(left(imp.end_time,19) as datetime) as EventEndDatetime,
-imp.[name] as EventName,
-imp.[description] as [EventDescription],
-ken.id as [KennelId],
-CAST(left(imp.updated_time,19) as datetime) as FacebookRecordLastUpdated,
-imp.[place.name] as LocationOneLineDesc,
-imp.[place.location.city] as LocationCity,
-imp.[place.location.country] as LocationCountry,
-imp.[place.location.latitude] as Latitude,
-imp.[place.location.longitude] as Longitude,
-imp.[place.location.street] as LocationStreet,
-imp.[place.location.zip] as LocationPostCode,
--- we don't use the FB Place.id, but it is in the FB dataset
-CAST([cover.offset_x] as smallint) as EventImageOffsetX,
-CAST([cover.offset_y] as smallint) as EventImageOffsetY,
-imp.[cover.source] as EventImage,
--- we don't use the FB Cover.id, but it is in the FB dataset
--- we don't use the FB Owner.name, but it is in the FB dataset
--- we don't use the FB Owner.is, but it is in the FB dataset
-imp.attending_count as FacebookAttendingCount,
-imp.maybe_count as FacebookMaybeCount,
-imp.declined_count as FacebookDeclinedCount,
-imp.interested_count as FacebookInterestedCount,
-imp.noreply_count as FacebookNoReplyCounte
-
-
-
-from [HC].[FacebookEventImport] imp
-inner join HC.Kennel ken on imp.[parent_group.id] = ken.KennelFacebookId
-where imp.[type] = 'group'
-AND imp.event_id not in (select EventFacebookId from HC.Event)
-order by start_time desc;
-
--- REMOVE AND REPLCE!
--- THIS IS DANGEROUS BECAUSE IT MIGHT DELETE THE WRONG EVENT
--- WE NEED TO ADD AN "INSTEAD OF" TRIGGER THAT WILL PREVENT DUPLICATES FROM BEING INSERTED
--- IN THE FIRST PLACE
-WITH CTE AS(
-   SELECT EventFacebookId,
-       RN = ROW_NUMBER()OVER(PARTITION BY EventFacebookId ORDER BY EventFacebookId)
-   FROM HC.Event
-)
-DELETE FROM CTE WHERE RN > 1
-
-
-TRUNCATE TABLE [HC].[FacebookEventImport]
-
-END
-
-GO
-/****** Object:  StoredProcedure [HC].[updateEventCountAndVisibilityStatus]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC].[updateEventCountAndVisibilityStatus]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @kennelId uniqueidentifier,
- @eventId uniqueidentifier,
- @isCountedRun smallint = NULL,
- @absoluteEventNumber smallint = NULL, -- this value set to NULL or -1 will not make any changes to the DB, set to -2 and it will cause the value in the DB to be set to NULL
- @isVisible smallint = NULL,
- @isDeleted smallint = NULL
-
-AS
-
-BEGIN
-
---  EXEC HC.updateEventCountAndVisibilityStatus @eventId = 'E9859142-669F-497A-AB60-E9CEAA44C5A5', @isVisible = 1, @isCountedRun = 0, @absoluteEventNumber = -1, @userId = '624c51b3-2f64-4de5-9458-b506e75ac544', @accessToken = '', @kennelId = '5029DE3A-D231-47AA-BE72-ECE9BCCD55D1'
-
-	SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	declare @deleted bit
-	SET @deleted = NULL
-	IF (@isDeleted = 1) SET @deleted = 1
-	IF (@isDeleted = 0) SET @deleted = 0
-	IF (@isDeleted = -1) SET @deleted = NULL
-
-	IF (@isCountedRun = -1) SET @isCountedRun = NULL
-	IF (@isVisible = -1) SET @isVisible = NULL
-	IF (@absoluteEventNumber = -1) SET @absoluteEventNumber = NULL
-	
-
-	SELECT 
-	e.id,
-	e.EventNumber,
-	e.IsCountedRun,
-	e.IsVisible,
-	e.deleted
-	INTO #temp
-	FROM HC.Event e WHERE e.KennelId = @kennelId
-
-	UPDATE HC.Event SET 
-		IsCountedRun = coalesce(@isCountedRun,e.IsCountedRun), 
-		IsVisible = coalesce(@isVisible,e.isVisible),
-		deleted = coalesce(@deleted,e.deleted),
-		AbsoluteEventNumber = CASE WHEN @absoluteEventNumber = -2 THEN NULL ELSE coalesce(@absoluteEventNumber,e.AbsoluteEventNumber) END 
-	FROM HC.Event e WHERE e.id = @eventId
-
-	EXEC HC.nonApi_updateRunNumbers @eventId = @eventId
-
-	SELECT e.id as EventId, e.EventNumber, e.IsVisible, e.IsCountedRun, e.AbsoluteEventNumber, e.deleted
-	FROM HC.Event e 
-	INNER JOIN #temp t on e.id = t.id 
-	WHERE e.EventNumber <> t.EventNumber OR e.IsCountedRun <> t.IsCountedRun OR e.IsVisible <> t.IsVisible OR e.deleted <> t.deleted
-	--ORDER BY e.EventNumber
-
-END
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC].[updateEventCountStatus]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC].[updateEventCountStatus]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @kennelId uniqueidentifier,
- @eventId uniqueidentifier,
- @isCountedRun smallint = NULL,
- @absoluteEventNumber smallint = NULL, -- this value set to NULL or -1 will not make any changes to the DB, set to -2 and it will cause the value in the DB to be set to NULL
- @isVisible smallint = NULL
-
-AS
-
-BEGIN
-
-
-
---  EXEC HC.updateEventCountStatus @eventId = 'E9859142-669F-497A-AB60-E9CEAA44C5A5', @isVisible = 1, @isCountedRun = 0, @absoluteEventNumber = -1, @userId = '624c51b3-2f64-4de5-9458-b506e75ac544', @accessToken = '', @kennelId = '5029DE3A-D231-47AA-BE72-ECE9BCCD55D1'
-
-	SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	IF (@isCountedRun = -1) SET @isCountedRun = NULL
-	IF (@isVisible = -1) SET @isVisible = NULL
-	IF (@absoluteEventNumber = -1) SET @absoluteEventNumber = NULL
-
-	SELECT 
-	e.id,
-	e.EventNumber,
-	e.IsCountedRun,
-	e.IsVisible
-	INTO #temp
-	FROM HC.Event e WHERE e.KennelId = @kennelId
-
-	UPDATE HC.Event SET 
-		IsCountedRun = coalesce(@isCountedRun,e.IsCountedRun), 
-		IsVisible = coalesce(@isVisible,e.isVisible),
-		AbsoluteEventNumber = CASE WHEN @absoluteEventNumber = -2 THEN NULL ELSE coalesce(@absoluteEventNumber,e.AbsoluteEventNumber) END 
-	FROM HC.Event e WHERE e.id = @eventId
-
-	UPDATE HC.Event SET lastModified = getdate() WHERE id = @eventId
-
-	SELECT e.id as EventId, e.EventNumber, e.IsVisible, e.IsCountedRun 
-	FROM HC.Event e 
-	INNER JOIN #temp t on e.id = t.id 
-	WHERE e.EventNumber <> t.EventNumber OR e.IsCountedRun <> t.IsCountedRun OR e.IsVisible <> t.IsVisible
-	ORDER BY e.EventNumber
-
-END
-
-GO
-/****** Object:  StoredProcedure [HC].[updateUserEventStatus]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-
-CREATE PROCEDURE [HC].[updateUserEventStatus]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @userToUpdateId uniqueidentifier,
- @eventId uniqueidentifier,
- @hasherEventMapId uniqueidentifier = NULL,
- @context nvarchar(120),
- @state nvarchar(10)
-
-AS
-
-BEGIN
-
--- EXEC HC.updateUserEventStatus @userId = '624c51b3-2f64-4de5-9458-b506e75ac544', @eventId = '2137af40-831b-484b-b323-85c11a4a6d60', @context = 'IsAtHash', @state = '1',@hasherEventMapId = '5f26c4ba-482c-496c-8a28-5ba2edaaeed8'
-
-	SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error')) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	if (@hasherEventMapId = '00000000-0000-0000-0000-000000000000') SET @hasherEventMapId = null
-
-	DECLARE @result nvarchar(120)
-
-	DECLARE @attendDate datetime
-	SET @attendDate = NULL
-	if (@state = '1') SET @attendDate = getdate()
-
-	if @context = 'IsAtHash'
-	BEGIN
-		
-		IF @hasherEventMapId IS NOT NULL
-			-- valid @hasherEventMapId was passed in
-			UPDATE HC.HasherEventMap SET UserStartEvent = @attendDate, UserEndEvent = NULL WHERE id=@hasherEventMapId
-		ELSE IF EXISTS(SELECT * FROM HC.HasherEventMap WHERE UserId = @userToUpdateId AND EventId = @eventId)
-			-- otherwise, check userId and event to see if a record already exists
-			UPDATE HC.HasherEventMap SET UserStartEvent = @attendDate, UserEndEvent = NULL WHERE UserId=@userToUpdateId AND EventId = @eventId
-		ELSE
-			-- no record exists, so insert a new one
-			INSERT INTO HC.HasherEventMap(UserId,EventId,UserStartEvent,RsvpState,Rsvp) VALUES (@userToUpdateId,@eventId,@attendDate,3,@attendDate)	
-
-		EXEC HC.nonApi_adjustHasherRunCounts @limitByUser = 1,@userId = @userToUpdateId
-
-	END
-
-	if @context = 'IsOnIn'
-	BEGIN
-		
-		IF @hasherEventMapId IS NOT NULL
-			UPDATE HC.HasherEventMap SET UserEndEvent = @attendDate, UserStartEvent = coalesce(UserStartEvent,@attendDate) WHERE id=@hasherEventMapId
-		ELSE IF EXISTS(SELECT * FROM HC.HasherEventMap WHERE UserId = @userToUpdateId AND EventId = @eventId)
-			UPDATE HC.HasherEventMap SET UserEndEvent = @attendDate, UserStartEvent = coalesce(UserStartEvent,@attendDate) WHERE UserId=@userToUpdateId AND EventId = @eventId
-		ELSE
-			INSERT INTO HC.HasherEventMap(UserId,EventId,UserStartEvent,UserEndEvent,RsvpState,Rsvp) VALUES (@userToUpdateId,@eventId,@attendDate,@attendDate,3,@attendDate)
-	END
-
-	if @hasherEventMapId IS NULL
-	BEGIN
-		SELECT @hasherEventMapId = id from HC.HasherEventMap WHERE UserId=@userToUpdateId AND EventId = @eventId
-	END
-
-
-	SET @result = 'Success'
-
-	DECLARE @AtHashCount smallint
-	DECLARE @OnInCount smallint
-	DECLARE @OnTrailCount smallint
-	DECLARE @PaidCount smallint
-	DECLARE @WaitingForCount smallint
-	DECLARE @UserRunCount smallint
-	DECLARE @UserStatus smallint
-
-
-	SELECT @UserRunCount = CASE 
-		WHEN (hem.[VirginVisitorType] <> 0)
-			THEN 
-				CASE WHEN hem.UserStartEvent IS NOT NULL THEN 1 ELSE 0 END
-		ELSE
-			hem.TotalRunsThisKennel
-		END,
-		@UserStatus = CASE 
-		WHEN hem.[UserStartEvent] IS NOT NULL
-			AND hem.[UserEndEvent] IS NULL
-			THEN 4
-		WHEN hem.[UserStartEvent] IS NOT NULL
-			AND hem.[UserEndEvent] IS NOT NULL
-			THEN 5
-		ELSE coalesce(hem.RsvpState, 0)
-		END 
-		
-	FROM HC.HasherEventMap hem 
-	WHERE (hem.VirginVisitorType <> 0 AND hem.id = @hasherEventMapId) OR (hem.VirginVisitorType = 0 AND hem.EventId = @eventId AND hem.UserId = @userToUpdateId)
-
-
-	SELECT 
-		@AtHashCount = count(hem2.UserStartEvent),
-		@OnInCount = count(hem2.UserEndEvent),
-		@OnTrailCount = count(hem2.UserStartEvent)-count(hem2.UserEndEvent) 
-	FROM HC.HasherEventMap hem2 WHERE hem2.EventId = @EventId
-
-	SELECT 
-		@WaitingForCount = count(*)
-	FROM HC.HasherEventMap hem WHERE hem.EventId = @EventId AND hem.UserStartEvent IS NULL AND hem.RsvpState = 3
-
-	SELECT @PaidCount = count(*) from HC.Payment p where p.EventId = @EventId and p.CancelledDate is null
-
-	SELECT	@result as [Result], 
-			@WaitingForCount as WaitingForCount,
-			@AtHashCount as AtHashCount, 
-			@OnInCount as OnInCount, 
-			@OnTrailCount as OnTrailCount, 
-			@PaidCount as PaidCount, 
-			coalesce(@UserRunCount,-33) as UserRunCount, 
-			@UserStatus as UserStatus,
-			@hasherEventMapId as HasherEventMapId
-
-END
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC].[utilityBuildCitiesJson]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC].[utilityBuildCitiesJson]
-
-AS
-
-BEGIN
-
-select cast('test' as nvarchar(max)) as line into #temp
-
-DECLARE @json nvarchar(3500)
-DECLARE @allJson nvarchar(MAX)
-
-SET @allJson = ''
-
-SET NOCOUNT ON;    
-  
-DECLARE @id uniqueidentifier 
-  
-DECLARE emp_cursor CURSOR FOR     
-SELECT id    
-FROM HC.City  
-order by id;    
-  
-OPEN emp_cursor    
-  
-FETCH NEXT FROM emp_cursor     
-INTO @id      
-  
-WHILE @@FETCH_STATUS = 0    
-BEGIN    
-
-
-	SET @json =
-  	(SELECT
-		c.id as cityId
-      ,[CityName] as cityName
-      ,[RegionId] as regionId
-      ,[Latitude] as latitude
-      ,[Longitude] as longitude
-      ,[City_ASCII] as cityAscii
-      ,[FlagFile] as flagFile
-	  ,[Removed] as removed
-      ,[updatedAt] as updatedAt
-	  ,CAST(DATEDIFF (SECOND,'1/1/1970',updatedAt) as bigint) * 1000 as updatedAtValue
-	FROM HC.City c where c.id = @id FOR JSON AUTO)
-
-
-
-	SET @json = SUBSTRING(TRIM(@json),2,99999)
-	SET @json = SUBSTRING(@json,0,(datalength(@json)/2)-1) + '},'
-
-		INSERT #temp (line) VALUES (@json)
-
-	--if (datalength(@allJson) < 10)
-	--BEGIN
-	--SET @allJson = @allJson + TRIM(@json)
-	--END
-	--ELSE
-	--BEGIN
-	--SET @allJson = @allJson + ',' + TRIM(@json)
-	--END
-      
-    FETCH NEXT FROM emp_cursor     
-INTO @id 
-   
-END     
-CLOSE emp_cursor; 
-
-DEALLOCATE emp_cursor
-
-select * from #temp order by line
-drop table #temp   
-
-END
-
-
-
-	
-	
-	
-GO
-/****** Object:  StoredProcedure [HC2].[addEditEvent]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC2].[addEditEvent]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @eventId uniqueidentifier = null,
- @kennelId uniqueidentifier = null,
- @startDatetime datetime = null,
- @endDatetime datetime = null,
- @isCountedRun smallint = null,
- @isVisible smallint = null,
- @isPromotedEvent smallint = null,
- @eventGeographicScope smallint = null,
- @ThemeRunType smallint = null,
- @eventName nvarchar(120) = null,
- @eventDescription nvarchar(4000) = null,
- @eventShortDescription nvarchar(250) = null,
- @locationCity nvarchar(250) = null,
- @locationStreet nvarchar(250) = null,
- @locationPostCode nvarchar(50) = null,
- @locationCountry nvarchar(250) = null,
- @locationOneLineDesc nvarchar(250) = null,
- @eventFacebookId nvarchar(250) = null,
- @coverPhotoUrl nvarchar(500) = null,
- @coverPhotoOffsetX int = null,
- @coverPhotoOffsetY int = null,
- @latitude decimal(18,15) = null,
- @longitude decimal(19,15) = null,
- @fbLatitude decimal(18,15) = null,
- @fbLongitude decimal(19,15) = null,
- @eventPriceForMembers float = null,
- @eventPriceForNonMembers float = null,
- @absoluteEventNumber smallint = null,
- @eventCurrencyType nvarchar(10) = null,
- @deleted smallint = null
-
-AS
-
-BEGIN
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-	
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-
-
-
--- EXEC HC.addEditEvent @userId = '83294c62-2ffe-4fcb-a2f5-52aadd6ceaa0',@accessToken='',@eventId='00000000-0000-0000-0000-000000000000',@kennelId='5029de3a-d231-47aa-be72-ece9bccd55d1',@startDatetime='4/13/2018 12:00:00 AM',@endDatetime='',@eventName='FILTH-xx',@eventFacebookId='1234567890'
-
-
-
-	DECLARE @resultStr nvarchar(250)
-	DECLARE @resultInt int
-
-	if (@eventId = '00000000-0000-0000-0000-000000000000') SET @eventId = NULL
-	if (@kennelId = '00000000-0000-0000-0000-000000000000') SET @kennelId = NULL
-	if ((@startDatetime IS NOT NULL) AND (@startDatetime <= '1/1/1901')) SET @startDatetime = NULL
-	if ((@endDatetime IS NOT NULL) AND (@endDatetime <= '1/1/1901')) SET @endDatetime = NULL
-	if (@isCountedRun = -1) SET @isCountedRun = NULL
-	if (@isVisible = -1) SET @isVisible = NULL
-	if (@isPromotedEvent = -1) SET @isPromotedEvent = NULL
-	if (@eventGeographicScope = -1) SET @eventGeographicScope = NULL
-	if (@ThemeRunType = -1) SET @ThemeRunType = NULL
-	if (DATALENGTH(@eventName) < 1) SET @eventName = NULL
-	if (DATALENGTH(@eventDescription) < 1) SET @eventDescription = NULL
-	if (DATALENGTH(@eventShortDescription) < 1) SET @eventShortDescription = NULL
-	if (DATALENGTH(@locationCity) < 1) SET @locationCity = NULL
-	if (DATALENGTH(@locationStreet) < 1) SET @locationStreet = NULL
-	if (DATALENGTH(@locationPostCode) < 1) SET @locationPostCode = NULL
-	if (DATALENGTH(@locationCountry) < 1) SET @locationCountry = NULL
-	if (DATALENGTH(@locationOneLineDesc) < 1) SET @locationOneLineDesc = NULL
-	if (DATALENGTH(@eventFacebookId) < 5) SET @eventFacebookId = NULL
-	if (DATALENGTH(@coverPhotoUrl) < 5) SET @coverPhotoUrl = NULL
-	if (@coverPhotoOffsetX = -1) SET @coverPhotoOffsetX = NULL
-	if (@coverPhotoOffsetY = -1) SET @coverPhotoOffsetY = NULL
-	if (@latitude = -1) SET @latitude = NULL
-	if (@longitude = -1) SET @longitude = NULL
-	if (@fbLatitude = -1) SET @fbLatitude = NULL
-	if (@fbLongitude = -1) SET @fbLongitude = NULL
-	if (@eventPriceForMembers = -1) SET @eventPriceForMembers = NULL
-	if (@eventPriceForNonMembers = -1) SET @eventPriceForNonMembers = NULL
-	if (@absoluteEventNumber = -1) SET @absoluteEventNumber = NULL -- if AbsoluteEventNumber is zero, that will cause the record to null out the value currently in AbsoluteEventNumber
-	if (DATALENGTH(@eventCurrencyType) < 4) SET @eventCurrencyType = NULL
-	if (@deleted = -1) SET @deleted = NULL
-
-	set @resultStr = '00000000-0000-0000-0000-000000000000'
-	set @resultInt = -1
-
-	if (@eventFacebookId like '%break%') SET @eventFacebookId = ''
-
-
-    if ((@deleted IS NOT NULL) AND (@deleted = 1))
-	BEGIN
-		-- use the kennel id and date if we don't have an eventId
-		if ((@eventId = '00000000-0000-0000-0000-000000000000') OR (@eventId is null))
-		BEGIN
-			select top 1 @eventId = id from HC.Event WHERE KennelId = @kennelId AND cast(EventStartDatetime as Date) = cast(@startDatetime as Date)
-		END
-
-		if ((@eventId is not null) AND (@eventId <> '00000000-0000-0000-0000-000000000000'))
-		BEGIN
-			UPDATE HC.Event SET 
-			deleted = 1
-			FROM HC.Event e where e.id = @eventId
-
-			set @resultStr = @eventId
-			set @resultInt = 2
-		END
-			
-	END
-	ELSE
-	BEGIN
-	-- does a record exist? If so, we are in "edit" mode
-	if ((@eventId is not null) AND ((SELECT count(*) from HC.Event e where e.id = @eventId) > 0))
-		BEGIN
-			UPDATE HC.Event SET 
-			--KennelId = coalesce(@kennelId,KennelId),
-			EventStartDatetime = coalesce(@startDatetime,EventStartDatetime),
-			EventEndDatetime = coalesce(@endDatetime,EventEndDatetime),
-			IsCountedRun = coalesce(@isCountedRun,IsCountedRun,0),
-			IsVisible = coalesce(@isVisible,IsVisible),
-			IsPromotedEvent = coalesce(@isPromotedEvent,IsPromotedEvent),
-			EventGeographicScope = coalesce(@eventGeographicScope,EventGeographicScope),
-			ThemeRunType = coalesce(@ThemeRunType,ThemeRunType,0),
-			EventName = coalesce(@eventName, EventName),
-			EventDescription = coalesce(@eventDescription, EventDescription),
-			EventShortDesc = coalesce(@eventShortDescription, EventShortDesc),
-			LocationCity = coalesce(@locationCity, LocationCity),
-			LocationStreet = coalesce(@locationStreet, LocationStreet),
-			LocationPostCode = coalesce(@locationPostCode,LocationPostCode),
-			LocationCountry = coalesce(@locationCountry,LocationCountry),
-			LocationOneLineDesc = coalesce(@locationOneLineDesc, LocationOneLineDesc),
-			EventFacebookId = coalesce(@eventFacebookId, EventFacebookId),
-			EventImage = coalesce(@coverPhotoUrl, EventImage),
-			EventImageOffsetX = coalesce(@coverPhotoOffsetX,EventImageOffsetX),
-			EventImageOffsetY = coalesce(@coverPhotoOffsetY,EventImageOffsetY),
-			Latitude = coalesce(cast(@latitude as decimal(18,15)),Latitude),
-			Longitude = coalesce(cast(@longitude as decimal(19,15)),Longitude),
-			FbLatitude = coalesce(cast(@fbLatitude as decimal(18,15)),FbLatitude),
-			FbLongitude = coalesce(cast(@fbLongitude as decimal(19,15)),FbLongitude),
-			EventPriceForMembers = coalesce(@eventPriceForMembers,EventPriceForMembers),
-			EventPriceForNonMembers = coalesce(@eventPriceForNonMembers,EventPriceForNonMembers),
-			AbsoluteEventNumber = case when @absoluteEventNumber = 0 then null else coalesce(@absoluteEventNumber, AbsoluteEventNumber) end,
-			EventCurrencyType = coalesce(@eventCurrencyType, EventCurrencyType),
-			deleted = coalesce(@deleted, deleted)
-			FROM HC.Event e where e.id = @eventId
-
-			set @resultStr = 'Updated record x ' + cast (@eventId as nvarchar(50)) + ' set name to: ' + coalesce(@eventName,'opps, it is null!')
-			set @resultInt = 1
-		END
-		ELSE
-		BEGIN
-			-- record does not exist, we're in insert mode
-			if ((datalength(Trim(@eventName)) > 0) AND (@startDatetime is not null) AND ((@kennelId is not null) AND (@kennelId <> '00000000-0000-0000-0000-000000000000')))
-			BEGIN
-
-				if (cast(@startDatetime as time) = '00:00:00.0000000')
-				BEGIN
-					DECLARE @time time(7)
-					SELECT @time = DefaultRunStartTime from HC.Kennel where id = @kennelId
-					if (@time is not null) SET @startDateTime = @startDatetime + cast(@time as datetime)
-				END
-
-				if (@eventId is null) SET @eventId = newid()
-
-				if ((@kennelId is not null) AND (@kennelId != '00000000-0000-0000-0000-000000000000'))
-				BEGIN
-					SELECT @eventPriceForMembers = coalesce(@eventPriceForMembers,k.DefaultEventPriceForMembers),
-							@eventPriceForNonMembers = coalesce(@eventPriceForNonMembers,k.DefaultEventPriceForNonMembers)
-					 from HC.Kennel k WHERE k.id = @kennelId
-				END
-
-				INSERT HC.Event 
-					(
-						id
-						,KennelId
-						,EventStartDatetime
-						,EventEndDatetime
-						,IsCountedRun
-						,IsVisible
-						,IsPromotedEvent
-						,EventGeographicScope
-						,ThemeRunType
-						,EventName
-						,EventDescription
-						,EventShortDesc
-						,LocationCity
-						,LocationStreet
-						,LocationPostCode
-						,LocationCountry
-						,LocationOneLineDesc
-						,EventFacebookId
-						,EventImage
-						,EventImageOffsetX
-						,EventImageOffsetY
-						,Latitude
-						,Longitude
-						,FbLatitude
-						,FbLongitude
-						,EventPriceForMembers
-						,EventPriceForNonMembers
-						,AbsoluteEventNumber
-						,EventCurrencyType,deleted
-					) VALUES 
-					(
-						@eventId
-						,@KennelId
-						,@startDatetime
-						,@endDatetime
-						,coalesce(@isCountedRun,0)
-						,coalesce(@isVisible,1)
-						,coalesce(@isPromotedEvent,0)
-						,coalesce(@eventGeographicScope,0)
-						,coalesce(@ThemeRunType,0)
-						,@eventName
-						,@eventDescription
-						,@eventShortDescription
-						,@locationCity
-						,@locationStreet
-						,@locationPostCode
-						,@locationCountry
-						,@locationOneLineDesc
-						,@eventFacebookId
-						,@coverPhotoUrl
-						,coalesce(@coverPhotoOffsetX,0)
-						,coalesce(@coverPhotoOffsetY,0)
-						,cast(@latitude as decimal(18,15))
-						,cast(@longitude as decimal(19,15))
-						,cast(@fbLatitude as decimal(18,15))
-						,cast(@fbLongitude as decimal(19,15))
-						,@eventPriceForMembers
-						,@eventPriceForNonMembers
-						,@absoluteEventNumber
-						,@eventCurrencyType,coalesce(@deleted,0)
-					)
-
-				SET @resultStr = 'Insert succeeded'
-				SET @resultInt = 1
-			END
-		END
-	END
-
-	EXEC HC.nonApi_updateRunNumbers @eventId = @eventId
-
-	UPDATE HC.Event SET lastModified = getdate() WHERE id = @eventId
-
-    IF ((@fbLatitude is not null and @fbLongitude is not null) OR (@latitude is not null AND @longitude is not null))
-	BEGIN
-		UPDATE HC.Event Set EventGeolocation = geography::Point(coalesce(@latitude,@fbLatitude), coalesce(@longitude,@fbLongitude), 4326) FROM HC.Event
-			WHERE id = @eventId
-	END
-	
-	DECLARE @resultInt2 int
-	SELECT @resultInt2 = e.EventNumber, @kennelId = e.KennelId from HC.Event e where e.id = @eventId
-
-	SELECT @resultStr as result
-
-END
-
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[addUser]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC2].[addUser]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @email nvarchar(250),
- @eventId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
- @isNewMember int = 1,
- @firstName nvarchar(100) = null,
- @lastName nvarchar(100) = null,
- @deviceId nvarchar(250) = null,
- @memberKennelId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
- @homeLatitude decimal(18,15) = null,
- @homeLongitude decimal (19,15) = null,
- @hashHandle nvarchar(100) = null,
- @facebookId nvarchar(250) = null,
- @gender nvarchar(50) = null,
- @locale nvarchar(50) = null,
- @photo nvarchar(500) = null,
- @hasherType int = 0, -- 0 = Member, 1 = Visitor, 2 = Virgin
- @attendenceState int = 0,
- @hcVersion nvarchar(250) = null
-
-AS
-
-BEGIN
-
-SET NOCOUNT ON
-
--- NOTES: This proc adds a new user. It can be called either to create a new user by someone who has just installed the app or by an admin.
-
-
--- EXEC HC.addUser @userId = '00000000-0000-0000-0000-000000000000', @accessToken = '',@email = 'james@jamesawhite.com', @firstName = 'James', @lastName = 'White', @deviceId = '366bfe5f-9906-443d-86a4-b99c5d668db3',@hashHandle = 'Opee',@facebookId = '10214797082344406'
-
-	IF @hcVersion IS NULL SET @hcVersion = 'pre 0.6.4'
-
-	IF @userId IS NULL
-	BEGIN
-		
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),@accessToken,NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	if (SELECT count(*) from HC.Hasher h where h.Email = trim(@email) and (h.Email <> 'james@jamesawhite.com' AND h.Email <> 'melissatunawhite@gmail.com') AND h.Email <> '') > 0
-	BEGIN
-		DECLARE @errorId uniqueidentifier
-		SET @errorId = newid()
-
-		INSERT HC.ErrorLog (id, HcVersion, ErrorName,ErrorDescription,ProcName,userId,deviceId,string_1,eventId) VALUES (@errorId,@hcVersion,'Duplicate email','A new user is being registered with a duplicate e-mail address to one already in the system',OBJECT_NAME(@@PROCID),@userId,@deviceId,@email,@eventId)
-
-		select 
-		@errorId as errorId,
-		cast (5 as int) as errorType 
-		,'Email address already exists' as errorTitle
-		,'A user already exists with this e-mail address in the system. Please register with a different e-mail address.' as errorUserMessage
-		,'This is a standard error that is anticipated and does not require debugging' as debugMessage
-		,OBJECT_NAME(@@PROCID) as errorProc
-		RETURN
-	END
-
-	DECLARE @newHasherId uniqueidentifier
-	SET @newHasherId = newid()
-
-	-- First insert a record into HC.Hasher with the new member
-	if (@isNewMember is null) SET @isNewMember = 1
-	if (@attendenceState is null) SET @attendenceState = 0
-
-	SELECT @homeLatitude = coalesce(@homeLatitude,52.1663), @homeLongitude = coalesce(@homeLongitude,4.4814) 
-	INSERT HC.Hasher 
-		(
-			Id,FirstName,LastName,Email,HashName,HomeLatitude,HomeLongitude,DisplayName,FacebookId,Gender,Locale,Photo
-		) VALUES 
-		(
-			@newHasherId,@firstName,@lastName,@email,@hashHandle,@homeLatitude,@homeLongitude,@hashHandle,@facebookId,@gender,@locale,@photo
-		)
-
-	DECLARE @hasherKennelMapId uniqueidentifier
-
-
-	DECLARE @hasherEventMapId uniqueidentifier
-	DECLARE @memberCounter int
-
-
-	-- Next, insert records in HasherEventMap and HasherKennelMap if the member is being added during an event
-	if @eventId <> '00000000-0000-0000-0000-000000000000'
-	BEGIN
-
-		DECLARE @kennelId uniqueidentifier
-		SELECT @kennelId = evt.KennelId from HC.Event evt where evt.id = @eventId
-	
-		SET @hasherKennelMapId = newid()
-		INSERT HC.HasherKennelMap (id,UserId,KennelId,[Following],isMember,MemberSince) VALUES (@hasherKennelMapId, @newHasherId, @kennelId,1,@isNewMember,GETDATE())
-
-		SELECT @memberCounter = count(*) from HC.HasherKennelMap hkm WHERE hkm.KennelId = @kennelId AND hkm.IsMember = 1
-		
-		SET @hasherEventMapId = newid()
-		INSERT HC.HasherEventMap (id,EventId,UserId,UserStartEvent,Rsvp,RsvpState,AttendenceState) VALUES (@hasherEventMapId,@eventId,@newHasherId,getdate(),GETDATE(),3,@attendenceState)
-
-	END
-	ELSE
-	-- now if a kennel has been specified but an event has not been specified, sign the Hasher up to follow the kennel, and be a member if requested
-	IF (coalesce(@memberKennelId,'00000000-0000-0000-0000-000000000000') <> '00000000-0000-0000-0000-000000000000')
-	BEGIN
-		if (@hasherKennelMapId is null) SET @hasherKennelMapId = newid()
-		INSERT INTO HC.HasherKennelMap(id,UserId,KennelId,[Following],[IsMember]) VALUES (@hasherKennelMapId, @newHasherId, @memberKennelId,1,@isNewMember) 
-	END
-
---SELECT top 1 
---	h.id as userId, 
---	h.qr_code, 
---	'USC:' + UPPER(cast(h.QR_secret_code as nvarchar(50))) as qr_secret_code,
---	coalesce(CASE 
---		WHEN h.NameDisplayPreference = 1
---			THEN h.HashName
---		WHEN h.NameDisplayPreference = 2
---			THEN h.FirstName + ' ' + h.LastName
---		ELSE h.HashName + ' (' + h.FirstName + ' ' + h.LastName + ')'
---		END,DisplayName,'<no name>')
---	AS displayName,
---	h.FirstName as firstName,
---	h.LastName as lastName,
---	h.HashName as hashName,
---	h.Email as email,
---	coalesce(@hasherKennelMapId,'00000000-0000-0000-0000-000000000000') as hasherKennelMapId,
---	coalesce(@hasherEventMapId, '00000000-0000-0000-0000-000000000000') as hasherEventMapId,
---	coalesce(@memberCounter,0) as memberCount
---FROM HC.Hasher h where h.id = @userId
-
-  EXEC HC.nonApi_getUserResult @callingProcType = 0, @eventId = @eventId, @targetUserId = @newHasherId
-
-END
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[approveLogin]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-CREATE PROCEDURE [HC2].[approveLogin]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@deviceId nvarchar(100),
-@deviceType nvarchar(100),
-@deviceName nvarchar(100),
-@systemName nvarchar(100),
-@systemVersion nvarchar(100),
-@manufacturer nvarchar(100),
-@latitude decimal(18,15),
-@longitude decimal (19,15),
-@hcVersion nvarchar(200) = 'pre 0.6.4'
-
-AS
-
-BEGIN
-
-	SET NOCOUNT ON
-
--- EXEC HC.approveLaunch @userId = '00000000-0000-0000-0000-000000000000', @accessToken = '', @deviceId = 'TestDevice', @deviceType = 'iPhone 6s / iOS 11.4', @latitude = 52.4, @longitude = 4.4
-
-	DECLARE @paramString nvarchar(500)
-	SET @paramString = cast (@deviceId as nvarchar(50))
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),@paramString) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	DECLARE @userName nvarchar(250)
-
-	SELECT @userName = coalesce(h.displayName, h.firstName + ' ' + h.lastName, '<no name>') from HC.Hasher h where h.id = @userId
-
-	INSERT HC.LaunchAndLogin 
-	(
-		UserId
-		,UserName
-		,HcVersion
-		,DeviceType
-		,DeviceId
-		,DeviceName
-		,SystemName
-		,SystemVersion
-		,Manufacturer
-		,Latitude
-		,Longitude
-	)
-	VALUES
-	(
-		@userId
-		,@userName
-		,@hcVersion
-		,@deviceType
-		,@deviceId
-		,@deviceName
-		,@systemName
-		,@systemVersion
-		,@manufacturer
-		,@latitude
-		,@longitude
-	)
-
-	DECLARE @ServerStatusCode smallint
-	DECLARE @LoginMessageTitle nvarchar(120)
-	DECLARE @LoginMessage nvarchar(500)
-	DECLARE @MessageEndDate datetime
-	DECLARE @MessageDisplayType smallint
-	DECLARE @MessageImageUrl nvarchar(500)
-
-	-- Server status codes (to be implemented)
-	-- 0 - Server down for maintenance
-	-- 1 - Server full up
-	-- 2 - Server running degraded
-
-	-- Message display type codes
-	-- 0 - None
-	-- 1 - Alert
-	-- 2 - Full view
-	-- 3 - Full view with countdown timer
-	-- 4 - Image from URL, do not continue
-	-- 5 - Image from URL, allow continue
-
-	-- Approval codes (to be implemented)
-	-- 0 - Unknown
-	-- 1 - Approved for login
-	-- 2 - Not authorized device
-	-- 3 - User account does not exist
-	-- 4 - User account not authorized
-
-	SELECT TOP 1 
-	@ServerStatusCode = smp.ServerStatusCode,
-	@LoginMessageTitle = smp.LoginMessageTitle,
-	@LoginMessage = smp.LoginMessage,
-	@MessageEndDate = smp.MessageWindowCloses,
-	@MessageDisplayType = smp.MessageDisplayType,
-	@MessageImageUrl = smp.MessageImageUrl
-	FROM HC.LoginNotifications smp
-	WHERE getdate() between smp.MessageWindowOpens and smp.MessageWindowCloses order by CreatedDate desc
-
-	if (@ServerStatusCode is null) SET @ServerStatusCode = 1
-	if (@LoginMessageTitle is null) SET @LoginMessageTitle = 'Harrier Central Message'
-	if (@LoginMessage is null) SET @LoginMessage = 'Server running'
-	if (@MessageEndDate is null) SET @MessageEndDate = '1/1/2100'
-	if (@MessageDisplayType is null) SET @MessageDisplayType = 0
-	if (@MessageImageUrl is null) SET @MessageImageUrl = ''
-
-	DECLARE @ApprovalCode int
-	SET @ApprovalCode = 1
-
-	SELECT TOP 1 
-		svr.ApiVersion as apiVersion
-		,svr.LastGazetteerUpdate as lastGazetteerUpdate
-		,case when @ServerStatusCode = 1 then @ApprovalCode else 0 end as approvalCode
-		,@LoginMessageTitle as loginMessageTitle
-		,@LoginMessage as loginMessage
-		,@ServerStatusCode as serverStatusCode
-		,@MessageEndDate as messageEndDate
-		,@MessageDisplayType as messageDisplayType
-		,@MessageImageUrl as messageImageUrl
-	FROM HC.ServerStatus svr
-	ORDER BY svr.CreatedDate desc
-
-END
-GO
-/****** Object:  StoredProcedure [HC2].[authorizeDevice]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC2].[authorizeDevice]
-
- @userId nvarchar(50),
- @accessToken nvarchar(1000),
- @hcVersion nvarchar(250),
- @scanText nvarchar(250),
- @deviceId nvarchar(250)
-
-AS
-
-BEGIN
-
-SET NOCOUNT ON
--- EXEC HC.authorizeDevice @scanText = 'USC:73b9e85c-b8e0-4edb-8a9e-ea55cdfa0de6 ', @deviceId = '0C2852D4-A60E-4BA9-8628-4B0F246034C4'
-
-	IF HC.CHECK_ACCESS_TOKEN('00000000-0000-0000-0000-000000000000',OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),null) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-SET @userId = NULL
-DECLARE @errorId uniqueidentifier
-
-if (@scanText like 'USC:%')
-BEGIN
-
-	DECLARE @secretCode uniqueidentifier
-	SET @secretCode = CAST(right(TRIM(@scanText),36) AS uniqueidentifier)
-
-	SELECT top 1 
-		@userId = h.id 
-	FROM HC.Hasher h where h.QR_secret_code = @secretCode
-
-	IF (@userId is not null)
-		BEGIN
-			EXEC HC.nonApi_getUserResult @callingProcType = 0, @eventId = '00000000-0000-0000-0000-000000000000', @targetUserId = @userId
-		END
-	ELSE
-		BEGIN
-				
-		SET @errorId = newid()
-
-		INSERT HC.ErrorLog (id, HcVersion, ErrorName,ErrorDescription,ProcName,userId,deviceId,string_1) VALUES (@errorId, @hcVersion, 'User secret code not found','A new user is being registered with a duplicate e-mail address to one already in the system',OBJECT_NAME(@@PROCID),@userId,@deviceId,@scanText)
-
-		SELECT 
-		@errorId as errorId,
-		cast (5 as int) as errorType 
-		,'User secret code not found' as errorTitle
-		,'The user secret code that has been scanned was not found in the Harrier Central system. It is possible that this user has been deleted from the system. Please take a screenshot of the code and e-mail it to connect@harriercentral.com' as errorUserMessage
-		,'This is a standard error that is anticipated and does not require debugging' as debugMessage
-		,OBJECT_NAME(@@PROCID) as errorProc
-		RETURN
-		END
-
-END
-
-if (@scanText like 'RC:%')
-BEGIN
-
-	SELECT top 1 
-		@userId = h.id 
-	FROM HC.Hasher h where h.ResetCode = @scanText
-
-	IF (@userId is not null)
-		BEGIN
-			EXEC HC.nonApi_getUserResult @callingProcType = 0, @eventId = '00000000-0000-0000-0000-000000000000', @targetUserId = @userId
-		END
-	ELSE
-		BEGIN
-		SET @errorId = newid()
-
-		INSERT HC.ErrorLog (id, HcVersion, ErrorName,ErrorDescription,ProcName,userId,deviceId,string_1) VALUES (@errorId,@hcVersion,'User reset code not found','A new user is being registered with a duplicate e-mail address to one already in the system',OBJECT_NAME(@@PROCID),@userId,@deviceId,@scanText)
-
-		SELECT 
-		@errorId as errorId,
-		cast (5 as int) as errorType 
-		,'Reset code not found' as errorTitle
-		,'The reset code provided was not found in the Harrier Central system' as errorUserMessage
-		,'This is a standard error that is anticipated and does not require debugging' as debugMessage
-		,OBJECT_NAME(@@PROCID) as errorProc
-		RETURN
-		END
-
-END
-
-END
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[editUser]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC2].[editUser]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @hcVersion nvarchar(250),
- @targetUserId uniqueidentifier,
- @email nvarchar(250) = null,
- @firstName nvarchar(100) = null,
- @lastName nvarchar(100) = null,
- @hashName nvarchar(100) = null,
- @photo nvarchar(500) = null
-
-AS
-
-BEGIN
-
-SET NOCOUNT ON
-
--- NOTES: This proc edits an existing user... either the user who called it or an admin who is editing another user's record
-
-	DECLARE @errorId uniqueidentifier
-
-	IF @userId IS NULL
-	BEGIN
-		
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	DECLARE @paramString nvarchar(250)
-
-	SET @paramString = upper(cast(coalesce(@targetUserId,'00000000-0000-0000-0000-000000000000') as nvarchar(50))) 
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),@accessToken,@paramString) = 0 
-	BEGIN
-		SET @errorId = newid()
-
-		INSERT HC.ErrorLog (id, HcVersion, ErrorName,ErrorDescription,ProcName,userId,string_1) VALUES (@errorId,@hcVersion,'Invalid access token','The access token did not validate',OBJECT_NAME(@@PROCID),@userId,cast(@targetUserId as nvarchar(40)))
-
-		select 
-		@errorId as errorId,
-		cast (1 as int) as errorType 
-		,'Invalid access token' as errorTitle
-		,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
-		,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
-		,OBJECT_NAME(@@PROCID) as errorProc
-		RETURN
-	END
-
-	if (SELECT count(*) from HC.Hasher h where h.id = @targetUserId) = 0
-	BEGIN
-
-		SET @errorId = newid()
-
-		INSERT HC.ErrorLog (id, HcVersion, ErrorName,ErrorDescription,ProcName,userId,string_1) VALUES (@errorId,@hcVersion,'User not found','The userId provided to the edit user interface was not found. It is possible that this user has been deleted from Harrier Central.',OBJECT_NAME(@@PROCID),@userId,cast(@targetUserId as nvarchar(40)))
-
-		select 
-		@errorId as errorId,
-		cast (5 as int) as errorType 
-		,'User not found' as errorTitle
-		,'The userId provided to the edit user interface was not found. It is possible that this user has been deleted from Harrier Central.' as errorUserMessage
-		,'This is a standard error that is anticipated and does not require debugging' as debugMessage
-		,OBJECT_NAME(@@PROCID) as errorProc
-		RETURN
-	END
-
-
-
-
-	if (@firstName = '') SET @firstName = null
-	if (@lastName = '') SET @lastName = null
-	if (@photo = '') SET @photo = null
-	if (@email = '') SET @email = null
-	if (@hashName = '') SET @hashName = null
-
-	IF (@email is not null)
-	BEGIN
-		IF (SELECT count(*) from HC.Hasher h where h.Email = trim(@email) and h.id <> @targetUserId) > 0
-		BEGIN
-			SET @errorId = newid()
-
-			INSERT HC.ErrorLog (id, HcVersion, ErrorName,ErrorDescription,ProcName,userId,string_1) VALUES (@errorId,@hcVersion,'Duplicate email','A user being edited is being registered with a duplicate e-mail address to one already in the system',OBJECT_NAME(@@PROCID),@userId,@email)
-
-			select 
-			@errorId as errorId,
-			cast (5 as int) as errorType 
-			,'Email address already exists' as errorTitle
-			,'A user already exists with this e-mail address in the system. Please register with a different e-mail address.' as errorUserMessage
-			,'This is a standard error that is anticipated and does not require debugging' as debugMessage
-			,OBJECT_NAME(@@PROCID) as errorProc
-			RETURN
-		END
-	END
-
-	UPDATE HC.Hasher 
-	SET
-	FirstName = coalesce(@firstName,FirstName),
-	LastName = coalesce(@lastName,LastName),
-	Email = coalesce(@email, Email),
-	HashName = coalesce(@hashName, HashName),
-	Photo = coalesce(@photo, Photo),
-	DisplayName = CASE WHEN h.NameDisplayPreference = 1
-			THEN coalesce(@hashName, h.HashName)
-		WHEN h.NameDisplayPreference = 2
-			THEN coalesce(@firstName,h.FirstName) + ' ' + coalesce(@lastName,h.LastName)
-		ELSE coalesce(@hashName, h.HashName) + ' (' + coalesce(@firstName,h.FirstName) + ' ' + coalesce(@lastName,h.LastName) + ')' END
-	FROM HC.Hasher h where id = @targetUserId
-
-  EXEC HC.nonApi_getUserResult @callingProcType = 0, @eventId = null, @targetUserId = @targetUserId
-
-END
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[getAllHashers]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC2].[getAllHashers]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @updatedAfter nvarchar(50)
-
-AS
-
-BEGIN
-
-SET NOCOUNT ON
-
-	DECLARE @errorId uniqueidentifier
-
-	IF (@userId IS NULL) OR (@userId = '00000000-0000-0000-0000-000000000000')
-	BEGIN
-
-		SET @errorId = newid()
-
-		INSERT HC.ErrorLog (id, HcVersion, ErrorName,ErrorDescription,ProcName,userId) VALUES (@errorId,'<unknown>','Null or Empty UserID','A null or empty userId was passed to ' + OBJECT_NAME(@@PROCID),OBJECT_NAME(@@PROCID),@userId)
-		
-		SELECT 
-		@errorId as errorId,
-		cast (2 as int) as errorType 
-		,'Null or empty userId' as errorTitle
-		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
-		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
-		,OBJECT_NAME(@@PROCID) as errorProc
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),@accessToken,NULL) = 0 
-	BEGIN
-
-		SET @errorId = newid()
-
-		INSERT HC.ErrorLog (id, HcVersion, ErrorName,ErrorDescription,ProcName,userId, string_1) VALUES (@errorId,'<unknown>','Invalid access token','An invalid access token was passed to ' + OBJECT_NAME(@@PROCID),OBJECT_NAME(@@PROCID),@userId,@accessToken)
-
-		SELECT 
-		@errorId as errorId,
-		cast (3 as int) as errorType 
-		,'Invalid access token' as errorTitle
-		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
-		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
-		,OBJECT_NAME(@@PROCID) as errorProc
-		RETURN
-	END
-
-
-	DECLARE @ua datetime
-	SET @ua = CAST(@updatedAfter as datetime)
-
-	SELECT 
-		h.id as ui,
-		coalesce(h.FirstName,'') as fn,
-		coalesce(h.LastName,'') as ln,
-		coalesce(h.DisplayName,'') as dn,
-		coalesce(h.HashName,'') as hn,
-		coalesce(h.Photo,'') as p,
-		coalesce(h.NameDisplayPreference,0) as dp,
-		coalesce(h.updatedAt,getdate()) as ua,
-		coalesce(h.Removed,0) as removed
-	FROM HC.Hasher h where updatedAt >= @ua
-END
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[getAllKennels]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [HC2].[getAllKennels]
-
- @userId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
- @accessToken nvarchar(1000) = 'none',
- @kennelId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
- @userLatitude float = null,
- @userLongitude float = null,
- @distanceFromUserInKm float = null,
- @procName nvarchar(250) = null
-
-AS
-
-BEGIN
-
-	SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,coalesce(@procName,OBJECT_NAME(@@PROCID)),coalesce(@accessToken,'error'),NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	-- EXEC HC.[getAllKennels] @userLatitude = 52.1663, @userLongitude =  4.4814, @userId = '624c51b3-2f64-4de5-9458-b506e75ac544', @accessToken = '', @distanceFromUserInKm = 250, @kennelId = '00000000-0000-0000-0000-000000000000'
-	-- EXEC HC.[getAllKennels] @accessToken = '', @userId = '624c51b3-2f64-4de5-9458-b506e75ac544', @distanceFromUserInKm = 2000, @kennelId = '00000000-0000-0000-0000-000000000000'
-
-	IF ((@userLatitude is NULL) OR (@userLongitude IS NULL))
-	BEGIN
-		-- Assume Leiden Centraal Station
-		SET @userLatitude = 52.1663
-		SET @userLongitude = 4.4814
-	END
-
-	IF (@kennelId is null) SET @kennelId = '00000000-0000-0000-0000-000000000000'
-
-	IF ((@distanceFromUserInKm IS NULL) OR (@distanceFromUserInKm <= 0)) SET @distanceFromUserInKm = 99999
-
-	DECLARE @geoLoc	AS GEOGRAPHY
-	SET @geoloc = geography::Point(@userLatitude,@userLongitude,4326) 
-
-		SELECT k.[id] as kennelId
-				,cast ((@geoloc.STDistance(k.kennelGeolocation)) as int) as distance
-				,CASE WHEN coalesce (hkm.[Following],0) = 0 THEN 'off' ELSE 'on' END  as [following]
-				,coalesce (hkm.[Following],0) as [followingBool]
-				,[kennelStatus] 
-				,[kennelName]
-				,[kennelDescription]
-				,k.cityId
-				,k.kennelWebsiteUrl
-				,k.kennelFacebookId
-				,k.kennelFacebookToken
-				,k.kennelFacebookTokenUserId
-				,k.autoImportFacebookEvents
-				,k.importOnlyTaggedEvents
-				,k.facebookTagForImport
-				,k.defaultEventCurrencyType
-				,k.defaultEventPriceForNonMembers
-				,k.defaultEventPriceForMembers
-				,k.defaultRunStartTime
-				,coalesce([KennelShortName],[KennelName],'<no name>') as [kennelShortName]
-				,case when datalength(coalesce(KennelLogo,'')) < 4 then 'https://harriercentral.blob.core.windows.net/harrier/MissingLogo.png' else KennelLogo end as kennelLogo
-				,k.[latitude]
-				,k.[longitude]
-				,(select count(*) from HC.Haberdashery hd where hd.KennelId = k.id and hd.Archive = 0) as activeHaberdasheryItems
-				,(select count(*) from HC.Haberdashery hd where hd.KennelId = k.id and hd.Archive != 0) as archiveHaberdasheryItems
-				,coalesce((select top 1 evt.EventStartDatetime from HC.Event evt where evt.KennelId = k.id and evt.EventStartDatetime >= dateadd(day,-1,getdate()) ORDER BY evt.EventStartDatetime asc),'1/1/1900') as dateNextRun
-				,c.CityName + ', ' + case when n.ShowRegion = 1 then r.RegionName + ', ' else '' end + n.CountryName as locationName
-				,hkm.isMember  
-				,hkm.mismanagementRoleFlags
-				,hkm.appAccessFlags
-				,CASE
-				WHEN (h.id IS NOT NULL) THEN 1
-					ELSE 0
-				END
-				as isHomeKennel
-				,0 as authAllowCredit
-				,0 as authCheckInAndOut
-				,0 as authCustomLogo
-				,0 as authCustomSongbook
-				,0 as authFacebookIntegration
-				,0 as authHaberdashery
-				,0 as authHareRaisingManagement
-				,0 as authMembersAllowed
-				,0 as authPromoteEvents
-				,0 as authPushNotifications
-				,0 as authTrackPayments
-				,0 as authWebsiteIntegration
-				,(select count(*) from HC.HasherKennelMap hkm2 where hkm2.KennelId = k.id and hkm2.IsMember = 1) as memberCount
-		 
-		  FROM [HC].[Kennel] k 
-		  LEFT OUTER JOIN HC.HasherKennelMap hkm on k.id = hkm.KennelId and hkm.UserId = @userId
-		  LEFT OUTER JOIN HC.City c on c.id = k.CityId
-		  LEFT OUTER JOIN HC.Region r on r.id = c.RegionId
-		  LEFT OUTER JOIN HC.Country n on n.id = r.CountryId
-		  LEFT OUTER JOIN HC.Hasher h on h.Home_KennelId = k.id AND h.id = @userId
-		  --LEFT OUTER JOIN HC.KennelAuthorization kAuth on kAuth.KennelId = k.id AND kAuth.EndDate IS NULL
-
-		  WHERE 
-		  ((@kennelId = '00000000-0000-0000-0000-000000000000') OR (k.id = @kennelId)) AND
-			
-				((@geoloc.STDistance(k.kennelGeolocation)/1000) <= @distanceFromUserInKm)
-			
-		  ORDER BY 
-		    case when hkm.[Following] = 0 then 0 -- this strange case statement orders the records with the "following" items at the top
-				 when hkm.[Following] = 1 then 2
-				 when hkm.[Following] = 2 then 1
-				end DESC,
-			@geoloc.STDistance(k.kennelGeolocation)
-			
-END
-	
-
-  
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[getFutureRunsByDistance]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [HC2].[getFutureRunsByDistance]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @latitude decimal(18,15) = null,
- @longitude decimal (19,15) = null,
- @distanceInKm float = null,
- @procName nvarchar(100) = null -- this is here to allow other stored procs to call this one and pass in their own accessTokens
-
-AS
-
-BEGIN
-
--- EXEC HC2.getFutureRunsByDistance @userId = '052584EB-FACA-43F9-BD91-5A05AA2E7947', @accessToken = '', @distanceInKm = 500, @latitude = 52.16, @longitude = 4.49
-
-	SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,coalesce(@procName,OBJECT_NAME(@@PROCID)),coalesce(@accessToken,'error'),NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	DECLARE @geoLoc	AS GEOGRAPHY
-	SET @geoloc = geography::Point(@latitude,@longitude,4326) 
-		
--- first get a list of all kennels that this user is following plus all of the
--- kennels where this user has RSVP'ed for an upcoming run in the future or
--- all kennels within the prescribed distance that are not being actively unfollowed
--- this allows us to show runs for nearby kennels that the user may not be aware of	
-select 
-	distinct(k.id) as KennelId,
-		hkm.following,
-	k.KennelShortName,
-	k.KennelLogo,
-	k.Latitude,
-	k.Longitude,
-	k.DefaultEventPriceForMembers,
-	k.DefaultEventPriceForNonMembers,
-	k.DefaultEventCurrencyType,
-	c.CurrencySymbol,
-	c.DigitsAfterDecimal,
-
-	coalesce(hkm.CurrentHaringCount + hkm.CurrentPackRunCount,0) as totalRunsThisKennel,
-	coalesce(hkm.MismanagementRoleFlags,0) as mismanagementRoleFlags
-into #temp
-FROM HC.Kennel k 
-inner join HC.Country c on c.id = k.CountryId
-left outer join HC.HasherKennelMap hkm on hkm.KennelId = k.id and hkm.UserId = @userId
-left outer join HC.HasherEventMap hem on hem.UserId = @userId
-left outer join HC.Event e on e.id = hem.EventId and e.KennelId = k.id
-
-where (
-		(coalesce(hkm.Following,0) != 2) 
-		AND
-		(
-			(hkm.Following = 1)
-		
-		OR 
-	    
-	  		((@distanceInKm IS NOT NULL) AND (@geoloc.STDistance(k.[KennelGeoLocation])/1000) <= @distanceInKm)
-		)
-	  )
-	
-
--- now find the future runs for each of these kennels and return the relevant information
-select
-		e.id as eventId
-		,e.KennelId as kennelId
-		,e.EventName as eventName
-		,e.EventNumber as eventNumber
-		,coalesce(e.LocationOneLineDesc,'') as locationOneLineDesc
-		,e.EventDescription as eventDescription
-		,coalesce(e.[EventPriceForMembers],k.DefaultEventPriceForMembers,-1) as eventPriceForMembers
-		,coalesce(e.[EventPriceForNonMembers],k.DefaultEventPriceForNonMembers,-1) as eventPriceForNonMembers
-		,coalesce(e.[EventCurrencyType],k.DefaultEventCurrencyType,'en-US') as eventCurrencyType
-
-		,c.CurrencySymbol as currencySymbol
-		,c.DigitsAfterDecimal as digitsAfterDecimal
-
-		,coalesce(e.[EventImage],'') as eventImage
-		,coalesce(e.[EventShortDesc],'') as eventShortDesc
-		,coalesce(e.[LocationCity],'') as locationCity
-		,coalesce(e.[LocationStreet],'') as locationStreet
-		,coalesce(e.[LocationPostCode],'') as locationPostCode
-
-		,(select count(*) from HC.HasherEventMap hem3 WHERE EventId = e.id and RsvpState = 3) as attendingEvent
-		,(select count(*) from HC.HasherEventMap hem3 WHERE EventId = e.id and RsvpState = 2) as maybeAttendingEvent
-		,(select count(*) from HC.HasherEventMap hem3 WHERE EventId = e.id and RsvpState = 1) as notAttendingEvent
-		,(select count(*) from HC.HasherEventMap hem3 WHERE EventId = e.id and hem3.IsHare = 1) as haresCount
-
-		,coalesce((select STRING_AGG(h.DisplayName,', ') from HC.HasherEventMap hem2 inner join HC.Hasher h on hem2.UserId = h.id and hem2.IsHare = 1 and hem2.EventId = e.id),'') as hareList
-
-		,coalesce(e.Latitude,e.FbLatitude,k.Latitude) as latitude
-		,coalesce(e.Longitude,e.FbLongitude,k.Longitude) as longitude
-		,case when datalength(coalesce(k.KennelLogo,'')) < 4 then 'https://harriercentral.blob.core.windows.net/harrier/MissingLogo.png' else KennelLogo end as kennelLogo
-		,coalesce(datediff(day,getdate(),e.EventStartDatetime),99999) as daysUntilNextRun
-		,e.EventStartDatetime as eventStartDatetime
-		,coalesce((SELECT count(*) FROM HC.HasherEventMap hem2 INNER JOIN HC.HasherFriendMap hfm2 on hfm2.Friend_UserId = hem2.UserId WHERE hfm2.UserId = @userId AND hem2.EventId = e.id),0) as friendsAttending
-		,coalesce(hem.RsvpState,0) as rsvpState
-		,coalesce(hem.AttendenceState,0) as attendenceState
-		,coalesce(hem.IsHare,0) as isHare
-		,coalesce(rc.TotalPackRunsThisKennel + rc.TotalHaringThisKennel,0) as totalRunsThisKennel
-		,coalesce(k.KennelShortName,'H3') as kennelShortName
-		,coalesce(hkm.mismanagementRoleFlags,0) as mismanagementRoleFlags
-		,CAST(ROW_NUMBER() OVER (PARTITION BY e.KennelId ORDER BY e.EventStartDatetime ASC) AS INT) as runSequence
-		,CAST(coalesce(@geoLoc.STDistance(e.EventGeolocation),-1) as INT) as distanceToEvent
-		,e.IsVisible as isVisible
-		FROM HC.Event e
-		INNER JOIN HC.Kennel k on e.KennelId = k.id
-		INNER JOIN HC.Country c on c.id = k.CountryId
-		LEFT OUTER JOIN HC.HasherKennelMap hkm on hkm.kennelId = k.id and hkm.userId = @userId
-		LEFT OUTER JOIN HC.HasherEventMap hem on hem.UserId = @userId AND hem.EventId = e.id
-		LEFT OUTER JOIN HC.RunCounts rc on rc.id = hem.RunCountId
-		WHERE CONVERT(date,e.EventStartDatetime) >= CONVERT(date,getdate()) 
-		AND ((k.id in (select kennelId from #temp)) OR (hem.RsvpState >= 3))
-		--AND e.IsVisible <> 0
-	UNION
-		SELECT
-		'00000000-0000-0000-0000-000000000000' as eventId
-		,k.KennelId as kennelId
-		,'<no planned runs>' as eventName
-		,-1 as eventNumber
-		,'' as locationOneLineDesc
-		,'' as eventDescription
-
-		,'' as eventPriceForMembers
-		,'' as eventPriceForNonMembers
-		,coalesce(k.DefaultEventCurrencyType,'en-US') as eventCurrencyType
-
-		,k.CurrencySymbol as currencySymbol
-		,k.DigitsAfterDecimal as digitsAfterDecimal
-
-		,'' as eventImage
-		,'' as eventShortDesc
-		,'' as locationCity
-		,'' as locationStreet
-		,'' as locationPostCode
-
-		,-1 as attendingEvent
-		,-1 as maybeAttendingEvent
-		,-1 as notAttendingEvent
-		,-1 as haresCount
-
-		,'' as hareList
-
-		,k.Latitude as latitude
-		,k.Longitude as longitude
-		,case when datalength(coalesce(k.KennelLogo,'')) < 4 then 'https://harriercentral.blob.core.windows.net/harrier/MissingLogo.png' else KennelLogo end as kennelLogo
-		,99999 as daysUntilNextRun
-		,'1/1/2100' as eventStartDatetime
-		,0 as friendsAttending
-		,0 as rsvpState
-		,0 as attendenceState
-		,0 as isHare
-		,0 as totalRunsThisKennel
-		,coalesce(k.KennelShortName,'H3') as kennelShortName
-		,0 as mismanagementRoleFlags
-		,0 as runSequence
-		,-1 as distanceToEvent
-		,0 as isVisible
-		FROM #temp k 
-		WHERE (SELECT count(*) FROM HC.Event e WHERE e.KennelId = k.KennelId AND CONVERT(date,e.EventStartDatetime) >= CONVERT(date,getdate())) = 0
-		
-	ORDER BY eventStartDatetime ASC				       
-
-
-	drop table #temp
-			
-END
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[getKennelMembers]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [HC2].[getKennelMembers]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@kennelId uniqueidentifier
-
-AS
-
-BEGIN
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-
-	SELECT 
-		h.id as hasherId
-		,h.HashName as hashName
-		,h.FirstName as firstName
-		,h.LastName as lastName
-		,h.DisplayName as displayName
-		,h.NameDisplayPreference as dispPref
-		,h.Photo as photo
-		,h.QR_code as qr_code
-		,h.QR_secret_code as qr_secret_code
-	FROM HC.Hasher h
-	INNER JOIN HC.HasherKennelMap hkm on hkm.KennelId = @kennelId and hkm.UserId = h.id
-	WHERE deleted = 0 and hkm.IsMember = 1
-END
-
-GO
-/****** Object:  StoredProcedure [HC2].[getMyKennelRunTotals]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [HC2].[getMyKennelRunTotals]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@kennelId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
-@procName nvarchar(100) = null  -- this is here to allow other stored procs to call this one and pass in their own accessTokens
-
-AS
-
--- EXEC HC.getMyKennelRunTotals @userId = '5C4AE228-2CC1-467F-B666-F62EFEDFEE14',@accessToken = ''
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-
-select k.id as KennelId
-,k.KennelLogo
-,k.KennelName
-,hkm.CurrentPackRunCount + hkm.CurrentHaringCount as TotalRunsThisKennel
-,hkm.CurrentPackRunCount as TotalPackRunsThisKennel
-,hkm.CurrentHaringCount as TotalHaringThisKennel
-,hkm.[Following]
-,k.KennelShortName
-into #temp
-from HC.HasherKennelMap hkm
-inner join HC.Kennel k on hkm.KennelId = k.id
-where hkm.userId = @userId
-and ((@kennelId = '00000000-0000-0000-0000-000000000000') OR (hkm.KennelId = @kennelId))
-and (hkm.CurrentPackRunCount + hkm.CurrentHaringCount > 0) -- need to validate this through testing... we don't want to list a kennel that's not being followed and also has no runs
-order by hkm.CurrentPackRunCount + hkm.CurrentHaringCount desc
-
--- next insert rows for kennels that we are following but that do not have any runs yet
-insert #temp (KennelId,KennelLogo,KennelName,TotalRunsThisKennel,TotalPackRunsThisKennel,TotalHaringThisKennel,[Following],KennelShortName)
-select k.id,k.KennelLogo,k.KennelName,0,0,0,hkm.[Following],k.KennelShortName
-FROM HC.Kennel k
-inner join HC.HasherKennelMap hkm on k.id = hkm.KennelId and hkm.UserId = @userId
-WHERE hkm.Following = 1
-AND hkm.KennelId not in (select kennelId from #temp)
-
-declare @photo nvarchar(500)
-select @photo = photo from HC.Hasher where id = @userId
-
-select 
-	KennelId as kennelId
-	,KennelLogo as kennelLogo
-	,KennelName as kennelName
-	,TotalRunsThisKennel as totalRunsThisKennel
-	,TotalPackRunsThisKennel as totalPackRunsThisKennel
-	,TotalHaringThisKennel as totalHaringThisKennel
-	,[Following] as [following]
-	,KennelShortName as kennelShortName
-	from #temp where Following = 1 OR TotalRunsThisKennel > 0
-union
-	select 
-	'00000000-0000-0000-0000-000000000000' as kennelId
-	 ,@photo as kennelLogo
-	 ,'My total run count' as kennelName
-	 ,sum(TotalRunsThisKennel) as totalRunsThisKennel
-	 ,sum(TotalPackRunsThisKennel) as totalPackRunsThisKennel
-	 ,sum(TotalHaringThisKennel) as totalHaringThisKennel
-	 ,1 as [Following]
-	 ,'My runs' as kennelShortName from #temp
-
-order by TotalRunsThisKennel desc
-GO
-/****** Object:  StoredProcedure [HC2].[getPaymentReport]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [HC2].[getPaymentReport]
-
- @userId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
- @accessToken nvarchar(1000) = 'none',
- @kennelId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
- @eventId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
- @showAllTransactions smallint = 0,
- @paidTo uniqueidentifier = '00000000-0000-0000-0000-000000000000',
- @paidBy uniqueidentifier = '00000000-0000-0000-0000-000000000000',
- @includeAggregates smallint = 1
-
-AS
-
-BEGIN
-
-	SET NOCOUNT ON
-
-	if @userId = '00000000-0000-0000-0000-000000000000' SET @userId = NULL
-	if @paidBy = '00000000-0000-0000-0000-000000000000' SET @paidBy = NULL
-	if @paidTo = '00000000-0000-0000-0000-000000000000' SET @paidTo = NULL
-	if @kennelId = '00000000-0000-0000-0000-000000000000' SET @kennelId = NULL
-	if @eventId = '00000000-0000-0000-0000-000000000000' SET @eventId = NULL
-
-	if ((@showAllTransactions != 0) AND (@showAllTransactions != 1)) SET @showAllTransactions = 0
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	select 
-		hem.id as hemId,
-		hem.UserId as userId,
-		CASE WHEN (hem.[VirginVisitorType] <> 0)	
-			THEN 
-			coalesce(hem.DisplayName,'<no name>') + CASE WHEN (hem.[VirginVisitorType] = 1) THEN ' (Virgin)' ELSE ' (Visitor)' END	
-			ELSE 
-		coalesce(paidBy.DisplayName,hem.DisplayName) END as paidBy
-	into #tempHashersNotPaid
-	from HC.HasherEventMap hem 
-		left outer join HC.Hasher paidBy on hem.UserId = paidBy.id
-	where @eventId is not null
-	-- only look at people who are actually at the event
-	and hem.EventId = @eventId and hem.AttendenceState >= 20 
-	-- and remove any records where the user has paid
-	and hem.id not in (select pay2.HasherEventMapId from HC.Payment pay2 where pay2.EventId = @eventId and pay2.PaymentType >= 2 and pay2.CancelledBy_UserId is null)
-	
-	
-	SELECT coalesce(sum(p.creditAmount)-sum(p.debitAmount),0) as creditAvailable
-			,hnp.userId
-			,hnp.hemId
-			,hnp.paidBy
-			,case when hkm.IsMember = 1 then coalesce(evt.EventPriceForMembers,ken.defaultEventPriceForMembers,0) else coalesce(evt.EventPriceForNonMembers,ken.defaultEventPriceForNonMembers,0) end as eventPrice
-			,coun.CurrencySymbol
-			,coun.DigitsAfterDecimal
-	INTO #creditTemp
-	FROM #tempHashersNotPaid hnp
-	INNER JOIN HC.Event evt on evt.id = @eventId
-	INNER JOIN HC.Kennel ken on ken.id = evt.KennelId
-	INNER JOIN HC.Country coun on ken.CountryId = coun.id
-	--INNER JOIN HC.HasherKennelMap hkm on hnp.userId = hkm.UserId and hkm.KennelId = evt.KennelId
-	LEFT OUTER JOIN HC.HasherKennelMap hkm on hnp.userId = hkm.UserId and hkm.KennelId = evt.KennelId
-	LEFT OUTER JOIN HC.Payment p on p.UserId = hnp.userId and p.CancelledDate is null
-	GROUP BY hnp.userId,hnp.hemId, hnp.paidBy, 
-	case when hkm.IsMember = 1 then coalesce(evt.EventPriceForMembers,ken.defaultEventPriceForMembers,0) else coalesce(evt.EventPriceForNonMembers,ken.defaultEventPriceForNonMembers,0) end,
-	coun.CurrencySymbol,
-	coun.DigitsAfterDecimal
-
-	declare @hashersNotPaidCount nvarchar(20)
-	select @hashersNotPaidCount = cast(count(*) as nvarchar(20)) from #tempHashersNotPaid
-
-
-select * from (
-	select 
-		pay.HasherEventMapId as hasherEventMapId,
-		pay.UserId as userIdWhoPaid,
-		pay.id as paymentId,
-		CASE WHEN (hem.[VirginVisitorType] <> 0)	
-			THEN 
-			coalesce(hem.DisplayName,'<no name>') + CASE WHEN (hem.[VirginVisitorType] = 1) THEN ' (Virgin)' ELSE ' (Visitor)' END	ELSE
-		coalesce(paidBy.DisplayName,hem.DisplayName) END as paidBy, 
-		coalesce(paidTo.DisplayName,'<user deleted>') as paidTo, 
-		cancelledBy.DisplayName as cancelledBy, 
-		pay.CreditAmount as creditAmount, 
-		pay.DebitAmount as debitAmount, 
-		pay.PaymentType as paymentType,
-		pay.PaidDate as paymentDate,
-		pay.CancelledDate as cancelledDate,
-		pay.PaymentReference as paymentReference,
-		pay.Notes as notes,
-		0 as creditRemaining,
-		coun.CurrencySymbol as currencySymbol,
-		coun.DigitsAfterDecimal as digitsAfterDecimal
-	from HC.Payment pay 
-		inner join HC.HasherEventMap hem on hem.id = pay.HasherEventMapId
-		inner join HC.Event evt on pay.EventId = evt.id
-		inner join HC.Kennel k on k.id = evt.KennelId
-		inner join HC.Country coun on coun.id = k.CountryId
-		left outer join HC.Hasher paidBy on pay.UserId = paidBy.id
-		left outer join HC.Hasher paidTo on pay.PaymentProcessedBy_userId = paidTo.id
-		left outer join HC.Hasher cancelledBy on pay.CancelledBy_UserId = cancelledBy.id
-	where ((@kennelId is NULL) OR (pay.KennelId = @kennelId))
-		AND ((@eventId is NULL) OR (pay.EventId = @eventId))
-		AND ((@showAllTransactions = 1) OR (@showAllTransactions = 0 AND pay.CancelledBy_UserId is null))
-		AND ((@paidBy is NULL) OR (@paidBy = pay.UserId))
-		AND ((@paidTo is NULL) OR (@paidTo = pay.PaymentProcessedBy_userId))
-
-	union
-		-- this union query will only run when an eventId is provided
-		-- its purpose is to provide records of Hashers at events that have not paid yet
-
-		select 
-		t.hemId as hasherEventMapId,
-		t.userId as userIdWhoPaid,
-		null as paymentId,
-		t.paidBy as paidBy, 
-		'none' as paidTo, 
-		null as cancelledBy, 
-		0 as creditAmount, 
-		eventPrice as debitAmount, 
-		1 as paymentType,
-		null as paymentDate,
-		null as cancelledDate,
-		'none' as paymentReference,
-		null as notes,
-		creditAvailable as creditRemaining,
-		t.CurrencySymbol as currencySymbol,
-		t.DigitsAfterDecimal as digitsAfterDecimal
-	from #creditTemp t
-
-		union
-		-- this union query will only run when an eventId is provided
-		-- its purpose is to provide aggregate counts by payment type
-
-		select 
-		'00000000-0000-0000-0000-000000000000' as hasherEventMapId,
-		'00000000-0000-0000-0000-000000000000' as userIdWhoPaid,
-		null as paymentId,
-		'not used' as paidBy, 
-		'not used' as paidTo, 
-		null as cancelledBy, 
-		coalesce(sum(pay.CreditAmount),0) as creditTotal, 
-		coalesce(sum(pay.DebitAmount),0) as debitTotal, 
-		(coalesce(pay.PaymentType, 1)+100) as paymentType,
-		null as paymentDate,
-		null as cancelledDate,
-		case when (coalesce(pay.PaymentType, 1)+100) = 101 then @hashersNotPaidCount else cast(count(*) as nvarchar(20)) end as paymentReference,
-		null as notes,
-		0 as creditRemaining,
-		'' as currencySymbol,
-		0 as digitsAfterDecimal
-
-from HC.HasherEventMap hem
-left outer join HC.Payment pay on pay.HasherEventMapId = hem.id
-where @eventId is not null
-and CancelledBy_UserId is null
-and hem.EventId = @eventId
-and pay.PaymentType > 1
-group by (coalesce(pay.PaymentType, 1)+100)
-
-union 
-	-- and finally tag on the aggregate count of the number of hashers who have not paid for this event
-		select 
-		'00000000-0000-0000-0000-000000000000' as hasherEventMapId,
-		'00000000-0000-0000-0000-000000000000' as userIdWhoPaid,
-		null as paymentId,
-		'not used' as paidBy, 
-		'not used' as paidTo, 
-		null as cancelledBy, 
-		0 as creditTotal, 
-		0 as debitTotal, 
-		101 as paymentType,
-		null as paymentDate,
-		null as cancelledDate,
-		@hashersNotPaidCount as paymentReference,
-		null as notes,
-		0 as creditRemaining,
-		'' as currencySymbol,
-		0 as digitsAfterDecimal
-		where @eventId is not null
-) tbl
-ORDER BY paidBy
-
-
-drop table #creditTemp
-drop table #tempHashersNotPaid
-
-END
-	
-
-  
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[getResetCode]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-
-
-CREATE PROCEDURE [HC2].[getResetCode]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @supportCode nvarchar(1000)
-
-AS
-
-BEGIN
-
--- EXEC HC2.updateAvatar @userId = '624c51b3-2f64-4de5-9458-b506e75ac544', @accessToken = '', @avatarUrl = 'bundle://Avatar-2'
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-DECLARE @result nvarchar(100)
-SET @result = 'Support code not found'
-
-IF EXISTS(SELECT * FROM HC.Hasher WHERE SupportCode = @supportCode)
-BEGIN 
-	SELECT @result = ResetCode FROM HC.Hasher h where h.SupportCode = @supportCode
-END
-
-SELECT @result as result
-
-END
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[getRuns]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [HC2].[getRuns]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@kennelId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
-@following smallint = -1,
-@filterByUser smallint = 1,
-@includeHidden smallint = 0,
-@includeFuture smallint = 0
-
-AS
-
--- EXEC HC.getMyRuns @userId = '6f901167-4bd3-45af-9da0-6af5a1128f42'
--- EXEC HC.getMyRuns @userId = '624c51b3-2f64-4de5-9458-b506e75ac544',@kennelId = '00000000-0000-0000-0000-000000000000'
--- EXEC HC.getMyRuns @userId = 'e15f27d1-1ac2-4241-a4fe-00e045cc3091',@kennelId = '6f901167-4bd3-45af-9da0-6af5a1128f42', @accessToken = '', @following = -1
-
-SET NOCOUNT ON
-
-	--DECLARE @paramString nvarchar(500)
-	--SET @paramString = cast(coalesce(@kennelId,'00000000-0000-0000-0000-000000000000') as nvarchar(50)) + '#' + cast(@filterByUser as nvarchar(50))
-	
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	DECLARE @userId_internal uniqueidentifier
-	if (@filterByUser = 1) SET @userId_internal = @userId
-
-select 
-e.id as eventId
-,e.eventStartDatetime as eventStartDatetime
-,e.eventEndDatetime as eventEndDatetime
-,e.eventName as eventName
-,e.EventNumber as eventNumber
-,e.LocationOneLineDesc as locationOneLineDesc
-,e.userEventCounterIncrement as userEventCounterIncrement
-,e.EventFacebookId as eventFacebookId
-,e.IsVisible as isVisible
-,e.IsCountedRun as isCountedRun
-,e.AbsoluteEventNumber as absoluteEventNumber
-,hem.isHare as isHare
-,rc.TotalPackRunsThisKennel + rc.TotalHaringThisKennel as totalRunsThisKennel
-,rc.TotalHaringAllKennels + rc.TotalPackRunsAllKennels as totalRunsAllKennels
-,rc.TotalHaringThisKennel as totalHaringThisKennel
-,hem.userStartEvent as userStartEvent
-,coalesce(hem.RsvpState,0) as rsvpState
-,coalesce(hem.AttendenceState,0) as attendenceState
-,e.CanEditRunAttendence * hkm.CanEditRunAttendence * k.CanEditRunAttendence as canEditRunAttendence
-,coalesce(hkm.MismanagementRoleFlags,0) as mismanagementRoleFlags
-FROM HC.Event e 
-INNER JOIN HC.Kennel k on k.id = e.KennelId
-LEFT OUTER JOIN HC.HasherKennelMap hkm on hkm.UserId = @userId_internal AND hkm.KennelId = k.id
-LEFT OUTER JOIN HC.HasherEventMap hem on hem.UserId = @userId_internal and hem.EventId = e.id
-LEFT OUTER JOIN HC.RunCounts rc on rc.id = hem.RunCountId
-
-WHERE e.deleted = 0 
-AND ((@includeHidden = 1) OR (e.IsVisible <> 0))
-AND ((@includeHidden = 1) OR (e.IsCountedRun = 1))
-AND ((@following = -1) OR (hkm.Following = @following))
-AND ((@includeFuture = 1) OR (e.EventStartDatetime <= dateadd(day,1,getdate())))
-AND ((@kennelId = '00000000-0000-0000-0000-000000000000') OR (e.KennelId = @kennelId))
-ORDER BY e.EventStartDatetime DESC,EventId DESC
-
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[getUsersByEvent]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE Procedure [HC2].[getUsersByEvent]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@EventId uniqueidentifier
-
-AS
-
-SET NOCOUNT ON
-
--- exec HC2.getUsersByEvent @eventId = 'E8500153-3B47-4699-9124-5CA824E956C8'
--- exec HC2.getUsersByEvent @eventId = 'a0f677e8-2f50-4483-b71e-f1138bc039fc', @userId = '', @accessToken = ''
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-
-SELECT
-
-	-- From HC.HasherEventMap
-	 h.id as hasherId,
-	 hem.id AS [hasherEventMapId]
-	 	,coalesce(hem.rsvpState,0) as rsvpState
-		,coalesce(hem.attendenceState,0) as attendenceState
-	 	,coalesce(CASE 
-		WHEN h.NameDisplayPreference = 1
-			THEN h.HashName
-		WHEN h.NameDisplayPreference = 2
-			THEN h.FirstName + ' ' + h.LastName
-		ELSE h.HashName + ' (' + h.FirstName + ' ' + h.LastName + ')'
-		END,hem.DisplayName,'<no name>')
-		 AS displayName
-
-	,CASE 
-		WHEN (hem.[VirginVisitorType] = 0)
-			THEN h.Photo
-		WHEN (hem.[VirginVisitorType] = 1)	
-			THEN 'https://harriercentral.blob.core.windows.net/harrier/Virgin.png'
-		WHEN (hem.[VirginVisitorType] = 2)	
-			THEN 'https://harriercentral.blob.core.windows.net/harrier/Visitor.png'
-		ELSE
-			CASE WHEN h.Photo IS NULL THEN	
-			'https://harriercentral.blob.core.windows.net/harrier/Visitor.png'
-			ELSE
-				h.Photo
-			END
-		END AS photo
-
-       ,coalesce(hem.[IsHare],0) as isHare
-
-
-
-FROM HC.Hasher h
-INNER JOIN HC.Event e ON e.id = @EventId
-INNER JOIN HC.Kennel k ON k.id = e.KennelId 
-INNER JOIN HC.HasherEventMap hem on hem.UserId = h.id AND hem.EventId = @EventId
-
-WHERE (
-	 hem.EventId = e.id
-	)
-	--AND e.deleted = 0 AND e.IsVisible <> 0
-ORDER BY 
-	COALESCE(
-	CASE 
-		WHEN h.NameDisplayPreference = 1
-			THEN h.HashName
-		WHEN h.NameDisplayPreference = 2
-			THEN h.FirstName + ' ' + h.LastName
-		ELSE h.HashName + ' (' + h.FirstName + ' ' + h.LastName + ')'
-		END
-		,hem.DisplayName,'<no name>')
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[getUsersByEventForAdmin]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE Procedure [HC2].[getUsersByEventForAdmin]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@eventId uniqueidentifier,
-@targetUserId uniqueidentifier = null
-
-AS
-
-SET NOCOUNT ON
-
--- exec HC2.getUsersByEventForAdmin @userId = '052584EB-FACA-43F9-BD91-5A05AA2E7947', @accessToken = '', @eventId = '9DC22B4B-A39C-4F09-9506-1C0B0ADA75BA'
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	EXEC HC.nonApi_getUserResult @callingProcType = 0, @eventId = @eventId, @targetUserId = @targetUserId
-
---	DECLARE @AtHashCount smallint
---	DECLARE @OnInCount smallint
---	DECLARE @OnTrailCount smallint
---	DECLARE @PaidCount smallint
---	DECLARE @WaitingForCount smallint
-
---	IF (@TargetUserId = '00000000-0000-0000-0000-000000000000') SET @TargetUserId = null
-
---	--SELECT 
---	--	@AtHashCount = count(hem2.UserStartEvent),
---	--	@OnInCount = count(hem2.UserEndEvent),
---	--	@OnTrailCount = count(hem2.UserStartEvent)-count(hem2.UserEndEvent) 
---	--FROM HC.HasherEventMap hem2 WHERE hem2.EventId = @EventId
-
---	SELECT 
---		@AtHashCount = sum(case when hem2.AttendenceState >= 20 then 1 else 0 end),
---		@OnInCount = sum(case when hem2.AttendenceState >= 30 then 1 else 0 end),
---		@OnTrailCount = sum(case when hem2.AttendenceState >= 20 then 1 else 0 end)-sum(case when hem2.AttendenceState >= 30 then 1 else 0 end) 
---	FROM HC.HasherEventMap hem2 WHERE hem2.EventId = @EventId
-
---	SELECT 
---		@WaitingForCount = count(*)
---	FROM HC.HasherEventMap hem WHERE hem.EventId = @EventId AND hem.AttendenceState < 20 AND hem.RsvpState = 3
-
---	SELECT @PaidCount = count(*) from HC.Payment p where p.EventId = @EventId and p.CancelledDate is null
-
---	SELECT coalesce(sum(p.creditAmount)-sum(p.debitAmount),0) as Credit
---			,p.UserId
---			,e.KennelId
---	INTO #creditTemp
---	FROM HC.Hasher h
---	INNER JOIN HC.Event e ON e.id = @EventId
---	INNER JOIN HC.Kennel k ON k.id = e.KennelId 
---	INNER JOIN HC.Payment p on p.UserId = h.id
---	LEFT OUTER JOIN HC.HasherKennelMap hkm ON hkm.KennelId = k.id AND hkm.UserId = h.id
---	LEFT OUTER JOIN HC.HasherEventMap hem on hem.UserId = h.id AND hem.EventId = @EventId
---	WHERE (
---		 ((hem.EventId = e.id) AND (hem.UserId = h.id)) OR -- this covers users who have RSVP'ed
---		 ((hkm.KennelId = k.id) AND (hkm.UserId = h.id) AND ((hkm.Following = 1) OR (hkm.IsMember = 1)))  -- this covers users who are either members of a kennel or following that kennel
---		)
---		AND e.deleted = 0 AND e.IsVisible <> 0
---		AND p.CancelledDate is null
---		AND ((@TargetUserId IS NULL) OR (h.id = @TargetUserId))
---	GROUP BY 
---		p.UserId, e.KennelId
-
---SELECT
---	@EventId as eventId
---	,h.id as userId
---	,coalesce(hkm.Following,0) as isFollowing
---	,coalesce(hkm.IsMember,0) as isMember
---	,case when hem.id is null then 0 else 1 end as isRsvped
---	-- From HC.HasherEventMap
---	 ,hem.id AS [hasherEventMapId]
-
---	--,hem.[RegistrationId]
---	,coalesce(hem.[IsHare],0) as isHare
---	,coalesce(hem.[VirginVisitorType],0) as virginVisitorType
---	,hem.[UserStartEvent] as userStartEvent
---	,hem.[UserEndEvent] as userEndEvent
---	--,hem.[Rsvp]
---	,coalesce(hem.[RsvpState],0) as rsvpState
---	,coalesce(hem.[AttendenceState],0) as attendenceState
-
-
---	-- From HC.Payment
-
---	,case when pay.id is not null then 1 else 0 end as isPaid
---	,coalesce(pay.PaymentType,-1) as paymentType  
-
---	-- FROM HC.Hasher
---	,coalesce(h.email,'') as eMail
---	,coalesce(h.facebookId,'') as facebookId
---	,coalesce(h.firstName,'') as firstName
---	,coalesce(h.HashName,'') as hashName
---	,coalesce(h.lastName,'') as lastName
---	,coalesce(h.QR_code,'') as qrCode
---	,'**********' as qrSecretCode
---	,coalesce(CASE 
---		WHEN h.NameDisplayPreference = 1
---			THEN h.HashName
---		WHEN h.NameDisplayPreference = 2
---			THEN h.FirstName + ' ' + h.LastName
---		ELSE h.HashName + ' (' + h.FirstName + ' ' + h.LastName + ')'
---		END,hem.DisplayName,'<no name>')
---		 AS displayName
---	,CASE 
---		WHEN (hem.[VirginVisitorType] = 0)
---			THEN h.Photo
---		WHEN (hem.[VirginVisitorType] = 1)	
---			THEN 'bundle://avatar-virgin'
---		WHEN (hem.[VirginVisitorType] = 2)	
---			THEN 'bundle://avatar-visitor'
---		ELSE
---			CASE WHEN h.Photo IS NULL THEN	
---			'bundle://avatar-visitor'
---			ELSE
---				h.Photo
---			END
---		END AS photo
-
---	-- Aggregates from HC.HasherEventMap
---	,coalesce(CASE 
---		WHEN (hem.[VirginVisitorType] <> 0)
---			THEN CASE WHEN hem.AttendenceState >= 20 THEN 1 ELSE 0 END
---		ELSE
---			coalesce(hem.TotalRunsThisKennel,0) END,0)
---		AS userRunCount
-
---	-- Live totals for display at top of HasherList
---	,@WaitingForCount AS waitingForCount
---	,@AtHashCount AS atHashCount
---	,@OnInCount AS onInCount
---	,@OnTrailCount AS onTrailCount
---	,@PaidCount AS paidCount
---	,CASE WHEN COALESCE(hkm.IsMember, 0) = 1
---							THEN coalesce(e.EventPriceForMembers, k.DefaultEventPriceForMembers, e.EventPriceForNonMembers, k.DefaultEventPriceForNonMembers, 0)
---						ELSE coalesce(e.EventPriceForNonMembers, k.DefaultEventPriceForNonMembers, e.EventPriceForMembers, k.DefaultEventPriceForMembers, 0)
---						END AS eventPrice
---    , coalesce(e.EventCurrencyType, k.DefaultEventCurrencyType, 'en-us') as eventLocale
---	, k.AllowNegativeCredit as allowNegativeCredit
---	, coalesce(ct.Credit,0) as credit
---	, c.CurrencySymbol as currencySymbol
---	, c.DigitsAfterDecimal as digitsAfterDecimal
-	
---FROM HC.Hasher h
---INNER JOIN HC.Event e ON e.id = @EventId
---INNER JOIN HC.Kennel k ON k.id = e.KennelId 
---INNER JOIN HC.Country c on c.id = k.CountryId
---LEFT OUTER JOIN HC.HasherKennelMap hkm ON hkm.KennelId = k.id AND hkm.UserId = h.id
---LEFT OUTER JOIN HC.HasherEventMap hem on hem.UserId = h.id AND hem.EventId = @EventId
---LEFT OUTER JOIN HC.Payment pay on pay.HasherEventMapId = hem.id and pay.CancelledDate is null 
---LEFT OUTER JOIN #creditTemp ct ON ct.UserId = h.id and ct.KennelId = k.id
-
---WHERE (
---	 ((hem.EventId = e.id) AND (hem.UserId = h.id)) OR -- this covers users who have RSVP'ed
---	 ((hkm.KennelId = k.id) AND (hkm.UserId = h.id) AND ((hkm.Following = 1) OR (hkm.IsMember = 1)))  -- this covers users who are either members of a kennel or following that kennel
---	)
---	AND e.deleted = 0 and e.IsVisible <> 0
---	AND ((@TargetUserId IS NULL) OR (h.id = @TargetUserId))
---ORDER BY 
---	COALESCE(
---	CASE 
---		WHEN h.NameDisplayPreference = 1
---			THEN h.HashName
---		WHEN h.NameDisplayPreference = 2
---			THEN h.FirstName + ' ' + h.LastName
---		ELSE h.HashName + ' (' + h.FirstName + ' ' + h.LastName + ')'
---		END
---		,hem.DisplayName,'<no name>')
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[joinEvent]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-CREATE PROCEDURE [HC2].[joinEvent]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @eventId uniqueidentifier,
- @hasherId uniqueidentifier,
- @hasherEventMapId uniqueidentifier,
- 
- @isHare VARCHAR(10) = '-1',
- @rsvpState VARCHAR(10) = '-1',
- @attendenceState VARCHAR(10) = '-1',
-
- @resultsRequested nvarchar(25) = 'Attendance totals'
-
-AS
-
-BEGIN
-
--- EXEC HC.JoinEvent @eventId = '7B10155A-92D4-40D7-929A-CF2BDE968444', @userId = '624c51b3-2f64-4de5-9458-b506e75ac544'
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-DECLARE @kennelId uniqueidentifier
-DECLARE @isHareNumeric smallint
-DECLARE @rsvpStateNumeric smallint
-DECLARE @attendenceStateNumeric smallint
-
-SET @isHareNumeric = CAST(@isHare as smallint)
-SET @rsvpStateNumeric = CAST(@rsvpState as smallint)
-SET @attendenceStateNumeric = CAST(@attendenceState as smallint)
-
-if (@hasherEventMapId = '00000000-0000-0000-0000-000000000000') SET @hasherEventMapId = null
-
--- There are three cases where this can be called
--- Case #1: HasherId and HasherEventMapId are null... this is when the user is RSVP'ing themselves
--- Case #2: HasherEventMapId is null but HasherId is not null... this is where an admin is RSVP'ing another Hasher who has a record in HC.Hasher
--- Case #3: HasherEventMapId is not null, but HasherId is null... this is where an admin is RSVP'ing a Visitor or Virgin who does not have a record in HC.Hasher
-
-
-if ((@hasherId is null) AND (@hasherEventMapId is null)) -- CASE #1
-BEGIN
-	SET @hasherId = @userId
-END
-
-if (@hasherEventMapId is null) -- Handle CASE #1 and #2
-BEGIN
-	SELECT 
-		@hasherEventMapId = hem.id,
-		@kennelId = e.KennelId
-	from HC.HasherEventMap hem
-	INNER JOIN HC.Event e on e.id = hem.EventId
-	WHERE UserId = @hasherId AND hem.EventId = @eventId
-
-
-	IF (@hasherEventMapId is null)
-	BEGIN 
-		SET @hasherEventMapId = newid()
-
-		INSERT INTO HC.RunCounts ([TotalPackRunsThisKennel]
-           ,[TotalHaringThisKennel]
-           ,[TotalPackRunsAllKennels]
-           ,[TotalHaringAllKennels]
-           ,[updatedAt]) VALUES (0,0,0,0,GETDATE())
-		
-		INSERT INTO HC.HasherEventMap(id,UserId,EventId,RunCountId) VALUES (@hasherEventMapId,@hasherId,@eventId,@@IDENTITY) 
-	END
-END
-
-
-UPDATE HC.HasherEventMap SET 
-	IsHare = case when @isHareNumeric <> -1 then @isHareNumeric else IsHare end,
-	RsvpState = case when @rsvpStateNumeric <> -1 then @rsvpStateNumeric else RsvpState end,
-	Rsvp = case when @rsvpState <> -1 then getdate() else Rsvp end,
-	AttendenceState = case when @attendenceStateNumeric <> -1 then @attendenceStateNumeric else AttendenceState end
-	WHERE id = @hasherEventMapId
-
-
-IF @attendenceStateNumeric <> -1 OR @rsvpStateNumeric <> -1
-BEGIN
-	IF (@hasherId is not null)
-		BEGIN
-			-- Handle CASES #1 & #2
-			EXEC HC.nonApi_adjustHasherRunCounts @limitByUser = 1,@userId = @hasherId,@kennelId = @kennelId
-		END
-	ELSE
-		BEGIN
-			-- Handle CASE #3
-			EXEC HC.nonApi_adjustHasherRunCounts @limitByUser = 2,@hasherEventMapId = @hasherEventMapId
-		END
-END
-
-DECLARE @rsvpYes smallint
-DECLARE @rsvpNo smallint
-DECLARE @rsvpMaybe smallint
-DECLARE @hares smallint
-DECLARE @totalRunsThisKennsl smallint
-DECLARE @totalRunsAllKennels smallint
-
-
--- TODO: We may have to join on these with HC.Event to filter deleted events out of the count
-IF (@resultsRequested = 'Attendance totals')
-BEGIN
-	SELECT @rsvpYes = count(*) from HC.HasherEventMap WHERE EventId = @EventId and RsvpState = 3
-	SELECT @rsvpMaybe = count(*) from HC.HasherEventMap WHERE EventId = @EventId and RsvpState = 2
-	SELECT @rsvpNo = count(*) from HC.HasherEventMap WHERE EventId = @EventId and RsvpState = 1
-	SELECT @hares = count(*) from HC.HasherEventMap WHERE EventId = @EventId and IsHare = 1
-
-	SELECT top 1 @rsvpYes as rsvpYesCount, @rsvpNo as rsvpNoCount, @rsvpMaybe as rsvpMaybeCount, @hares as haresCount, 
-		rc.TotalPackRunsThisKennel + rc.TotalHaringThisKennel as totalRunsThisKennel, 
-		rc.TotalPackRunsAllKennels + rc.TotalHaringAllKennels as totalRunsAllKennels,
-		hem.id as hasherEventMapId
-	FROM HC.HasherEventMap hem
-	INNER JOIN HC.RunCounts rc on rc.id = hem.RunCountId
-	WHERE hem.id=@hasherEventMapId 
-END
-
-if (@resultsRequested = 'Run counts')
-BEGIN
-	SELECT evt.id AS EventId, rc.TotalPackRunsAllKennels + rc.TotalHaringAllKennels as totalRunsAllKennels,rc.TotalPackRunsThisKennel + rc.TotalHaringThisKennel as totalRunsThisKennel 
-	FROM HC.HasherEventMap hem 
-	INNER JOIN HC.RunCounts rc on rc.id = hem.RunCountId
-	INNER JOIN HC.Event evt ON hem.EventId = evt.id
-	WHERE hem.UserId = @hasherId 
-	AND evt.EventStartDatetime >= 
-		(SELECT evt2.EventStartDatetime FROM HC.Event evt2 WHERE evt2.id = @eventId) 
-END
-
-END
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[joinEventAsVisitor]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE PROCEDURE [HC2].[joinEventAsVisitor]  
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@eventId uniqueidentifier, 
-@displayName nvarchar(250), 
-@virginVisitorType smallint,
-@attendenceState smallint,
-@email nvarchar(250),
-@phoneNumber nvarchar(250)
-
-AS
-
--- exec HC.joinEventAsVisitor @eventId = '7B10155A-92D4-40D7-929A-CF2BDE968444', @displayName = 'Stacy', @virginVisitorType = '0'
-BEGIN
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0  
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-DECLARE @isGenericUserPresent smallint  
-DECLARE @kennelId uniqueidentifier   
-DECLARE @hasherEventMapId uniqueidentifier
-
--- only two types of Virgin/Visitors at the moment... check to make sure it's one of these
-IF ((@VirginVisitorType = 1) OR (@VirginVisitorType = 2))  
-BEGIN  
-		-- The generic user is a record in HC.Hasher that is available to be mapped to for visitors, virgins and anyone else who 
-		-- is not in the system. This allows us to account for people on runs without having to add a new HC.Hasher record
-		-- for each one of them.
-		SELECT  @isGenericUserPresent = count(*) from HC.Hasher h inner join HC.Event e on h.id = e.KennelId WHERE e.id = @eventId AND e.deleted = 0 and e.IsVisible <> 0  
-
-		-- if the "generic user" is not present for this Kennel, go ahead and add one in HC.Hasher
-		if (@isGenericUserPresent = 0)  
-		BEGIN   
-			SELECT 
-				@kennelId = e.KennelId 
-			FROM HC.Event e 
-			WHERE e.id = @eventId AND e.deleted = 0 and e.IsVisible <> 0
-	
-			INSERT INTO [HC].[Hasher]             
-			(
-				[id] 
-				,[DisplayName]
-				,[FirstName]
-				,[LastName]
-				,[HashName]            
-				,[Description]       
-				,[HomeLatitude]       
-				,[HomeLongitude])   
-				SELECT     
-					k.id    
-					,'Placeholder user for visitors / virgins for ' + k.KennelName 
-					,'Placeholder'
-					,'User'
-					,'Placeholder user' 
-					,'Placeholder user for visitors / virgins for ' + k.KennelName    
-					,coalesce(k.Latitude,0)
-					,coalesce(k.Longitude,0)   
-				FROM HC.Event e 
-				INNER JOIN HC.Kennel k 
-				ON e.KennelId = k.id   
-				WHERE e.id = @eventId AND e.deleted = 0 and e.IsVisible <> 0   
-		
-		END    
-
-		SET @hasherEventMapId = NEWID()
-
-		-- Now, insert a record for the visitor (virgin) into HC.HasherEventMap and return 'Success' as the result
-		INSERT INTO HC.RunCounts ([TotalPackRunsThisKennel]
-			   ,[TotalHaringThisKennel]
-			   ,[TotalPackRunsAllKennels]
-			   ,[TotalHaringAllKennels]
-			   ,[updatedAt]) VALUES (0,0,0,0,GETDATE())
-
-		INSERT INTO [HC].[HasherEventMap]
-				   ([id]
-				   ,[EventId]
-				   ,[RunCountId]
-				   ,[UserId]
-				   ,[UserStartEvent]
-				   ,[EventCost]
-				   ,[Rsvp]
-				   ,[RsvpState]
-				   ,[AttendenceState]
-				   ,[VirginVisitorType] -- 0 = HasherInSystem, 1 = Virgin, 2 = Visitor
-				   ,[DisplayName]
-				   ,[Email]
-				   ,[PhoneNumber])
-
-				SELECT @hasherEventMapId
-					,@eventId
-					,@@IDENTITY
-					,e.KennelId  -- Virgins and Visitors don't have their own UserId, so we put in the KennelId instead as a flag
-					,getdate()
-					,e.EventPriceForNonMembers
-					,getdate()
-					,3 -- RSVP state as 'coming'
-					,@attendenceState
-					,@virginVisitorType
-					,@displayName
-					,@email
-					,@phoneNumber
-					from HC.Event e where e.id = @eventId and e.deleted = 0 and e.IsVisible <> 0
-
-
-	--DECLARE @rsvpYes smallint
-	--DECLARE @rsvpNo smallint
-	--DECLARE @rsvpMaybe smallint
-	--DECLARE @hares smallint
-
-	--				-- TODO: We may have to join on these with HC.Event to filter deleted events out of the count
-
-	--SELECT @rsvpYes = count(*) from HC.HasherEventMap WHERE EventId = @EventId and RsvpState = 3
-	--SELECT @rsvpMaybe = count(*) from HC.HasherEventMap WHERE EventId = @EventId and RsvpState = 2
-	--SELECT @rsvpNo = count(*) from HC.HasherEventMap WHERE EventId = @EventId and RsvpState = 1
-	--SELECT @hares = count(*) from HC.HasherEventMap WHERE EventId = @EventId and IsHare = 1
-
-	-- The following query below maps to the UserModel of the app
-	SELECT
-	@EventId as eventId
-	,'00000000-0000-0000-0000-000000000000' as hasherId
-	,0 as isFollowing
-	,0 as isMember
-
-	-- From HC.HasherEventMap
-	,hem.id AS [hasherEventMapId]
-	,coalesce(hem.[IsHare],0) as isHare
-	,coalesce(hem.[VirginVisitorType],0) as virginVisitorType
-	,hem.[UserStartEvent] as userStartEvent
-	,hem.[UserEndEvent] as userEndEvent
-	,coalesce(hem.[RsvpState],0) as rsvpState
-	,coalesce(hem.[AttendenceState],0) as attendenceState
-
-	-- From HC.Payment
-	,0 as isPaid
-	,-1 as paymentType  
-
-
-	,coalesce(hem.DisplayName,'<no name>') AS displayName
-	,CASE 
-		WHEN (hem.[VirginVisitorType] = 1)	
-			THEN 'bundle://avatar-virgin'
-		WHEN (hem.[VirginVisitorType] = 2)	
-			THEN 'bundle://avatar-visitor'
-		ELSE
-			'bundle://avatar-visitor'
-		END AS photo
-
-	-- Aggregates from HC.HasherEventMap
-	,coalesce(CASE 
-		WHEN (hem.[VirginVisitorType] <> 0)
-			THEN CASE WHEN hem.AttendenceState >= 20 THEN 1 ELSE 0 END
-		ELSE
-			coalesce(rc.TotalPackRunsThisKennel + rc.TotalHaringThisKennel,0) END,0)
-		AS userRunCount
-
-
-	
-	-- FROM HC.Hasher (the table does not exist in this query, so we send blanks)
-	,'' as eMail
-	,'' as facebookId
-	,'' as firstName
-	,'' as hashName
-	,'' as lastName
-	,'' as qrCode
-	,'*********' as qrSecretCode
-
-	-- Live totals for display at top of HasherList
-	,0 AS waitingForCount
-	,0 AS atHashCount
-	,0 AS onInCount
-	,0 AS onTrailCount
-	,0 AS paidCount
-	,coalesce(e.EventPriceForNonMembers, k.DefaultEventPriceForNonMembers, e.EventPriceForMembers, k.DefaultEventPriceForMembers, 0) AS eventPrice
-    , coalesce(e.EventCurrencyType, k.DefaultEventCurrencyType, 'en-us') as eventLocale
-	, k.AllowNegativeCredit as allowNegativeCredit
-	, 0 as credit
-	, c.CurrencySymbol as currencySymbol
-	, c.DigitsAfterDecimal as digitsAfterDecimal
-	
-FROM HC.HasherEventMap hem
-INNER JOIN HC.RunCounts rc on rc.id = hem.RunCountId
-INNER JOIN HC.Event e ON e.id = @EventId
-INNER JOIN HC.Kennel k ON k.id = e.KennelId 
-INNER JOIN HC.Country c on c.id = k.CountryId
-
-WHERE hem.id = @hasherEventMapId
-ORDER BY COALESCE(hem.DisplayName,'<no name>')
-
-END
-
-END
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[joinKennel]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-
-CREATE PROCEDURE [HC2].[joinKennel]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @kennelId uniqueidentifier,
- @targetUserId uniqueidentifier,
- @isFollowing smallint = null,
- @isMember smallint = null,
- @isHomeKennel smallint = null
-
-AS
-
-BEGIN
-
-	if (@isFollowing = -1) SET @isFollowing = null
-	if (@isMember = -1) SET @isMember = null
-	if (@isHomeKennel = -1) SET @isHomeKennel = null
-
--- EXEC HC.joinKennel @kennelId = '9e85d401-213d-47ad-8a6e-44e5476925f4', @userId = '624c51b3-2f64-4de5-9458-b506e75ac544', @state = '1'
-
-	SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-
-	IF @isHomeKennel = 1 SET @isFollowing = 1
-	IF @isMember = 1 SET @isFollowing = 1
-
-	if @isFollowing = 0 OR @isFollowing = 2
-	BEGIN
-		if ((SELECT count(*) from HC.Hasher where id = @targetUserId and Home_KennelId = @kennelId) > 0)
-		BEGIN
-			UPDATE HC.Hasher SET Home_KennelId = NULL WHERE id = @targetUserId and Home_KennelId = @kennelId
-		END	
-	END
-
-	IF @isHomeKennel = 1
-	BEGIN
-		UPDATE HC.Hasher SET Home_KennelId = @kennelId WHERE id = @targetUserId
-	END
-
-	IF NOT EXISTS(SELECT * FROM HC.HasherKennelMap WHERE UserId = @targetUserId AND KennelId = @kennelId)
-		BEGIN 
-			INSERT INTO HC.HasherKennelMap(UserId,KennelId,[Following],[IsMember]) VALUES (@targetUserId,@kennelId,coalesce(@isFollowing,0),coalesce(@isMember,0)) 
-		END
-	ELSE
-		BEGIN
-			UPDATE HC.HasherKennelMap SET 
-				[Following] = coalesce(@isFollowing,[Following]),
-				[IsMember] = coalesce(@isMember,[isMember])
-				FROM HC.HasherKennelMap
-				WHERE UserId=@targetUserId AND KennelId = @kennelId 
-		END
-
-	DECLARE @result int
-	SELECT @result = COUNT(*) FROM HC.HasherKennelMap hkm where hkm.KennelId = @kennelId AND IsMember = 1
-		
-	SELECT @result as [result], 'Unused' as [message]
-
-END
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[payForEvent]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE procedure [HC2].[payForEvent]
-
-@userId uniqueidentifier,
-@accessToken nvarchar(1000),
-@userIdWhoPaid uniqueidentifier = NULL,
-@eventId uniqueidentifier,
-@hasherEventMapId uniqueidentifier = NULL,
-@paymentType smallint,
-@paymentAmount decimal(12,6) = NULL,
-@minimumAttendenceValue smallint = NULL
-
-AS
-
-BEGIN
-
--- payment type codes:
---   1 = not paid
---   2 = free run
---   3 = cash
---   4 = bank transfer
---   5 = cash (other amount)
---   6 = hash credit
---   7 = bank transfer (other amount)
-
--- exec HC.payForEvent @userId = '624C51B3-2F64-4DE5-9458-B506E75AC544', @hasherEventMapId = '0bc3a6ea-0e9f-432e-acb0-079c1557f004', @paymentType = 3
-
-SET NOCOUNT ON
-
-	DECLARE @paramString nvarchar(500)
-
-	SET @paramString = cast(coalesce(@hasherEventMapId,'00000000-0000-0000-0000-000000000000') as nvarchar(50)) + '#' + cast(coalesce(@userIdWhoPaid,'00000000-0000-0000-0000-000000000000') as nvarchar(50)) + '#' + cast(cast(@paymentAmount as int) as nvarchar(50)) + '#' + cast(@eventId as nvarchar(50))
-	--SET @paramString = ''
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),@paramString) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	IF (@hasherEventMapId = '00000000-0000-0000-0000-000000000000') SET @hasherEventMapId = null
-	IF (@userIdWhoPaid = '00000000-0000-0000-0000-000000000000') SET @userIdWhoPaid = null
-	IF (@eventId = '00000000-0000-0000-0000-000000000000') SET @eventId = null
-	if (@paymentAmount < 0) SET @paymentAmount = NULL
-	if (@minimumAttendenceValue < 0) SET @minimumAttendenceValue = NULL
-
-	if (@hasherEventMapId is null)
-	BEGIN
-		SELECT @hasherEventMapId = id FROM HC.HasherEventMap hem where hem.UserId = @userIdWhoPaid AND hem.EventId = @eventId
-
-		IF (@hasherEventMapId is null)
-		BEGIN
-			SET @hasherEventMapId = newid()
-
-			INSERT INTO HC.RunCounts ([TotalPackRunsThisKennel]
-           ,[TotalHaringThisKennel]
-           ,[TotalPackRunsAllKennels]
-           ,[TotalHaringAllKennels]
-           ,[updatedAt]) VALUES (0,0,0,0,GETDATE())
-
-			INSERT HC.HasherEventMap (id,UserId,EventId,RunCountId,RsvpState,Rsvp,UserStartEvent,AttendenceState) VALUES (@hasherEventMapId,@userIdWhoPaid,@eventId,@@IDENTITY,3, getdate(),getdate(),coalesce(@minimumAttendenceValue,0))
-		END
-	END
-
-	DECLARE @eventPrice money
-	DECLARE @creditAmount money
-	DECLARE @local nvarchar(10)
-	DECLARE @kennelId uniqueidentifier
-	DECLARE @result nvarchar(250)
-	DECLARE @kennelName nvarchar(250)
-	DECLARE @payer_userIdGuid uniqueidentifier
-	DECLARE @paymentTypeStr nvarchar(120)
-	DECLARE @payer_userName nvarchar(120)
-	DECLARE @buttonState int
-	DECLARE @isPaid int
-
-	SET @isPaid = 0
-	SET @result = 'Error in database function <payForEvent>'
-
-	SET @buttonState = 0
-
-	SELECT
-	@eventPrice = CASE WHEN coalesce(hkm.IsMember,0) = 1 THEN
-		coalesce(e.EventPriceForMembers,k.DefaultEventPriceForMembers,e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,0)
-	ELSE
-		coalesce(e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,e.EventPriceForMembers,k.DefaultEventPriceForMembers,0)
-	END
-	,@local = coalesce(e.EventCurrencyType,k.DefaultEventCurrencyType,'en-us')
-	,@kennelId = k.id
-	,@kennelName = coalesce(k.KennelShortName,k.KennelName,'<No kennel name>')
-	,@payer_userIdGuid = hem.UserId
-	,@eventId = coalesce(@eventId,e.id)
-	,@payer_userName = coalesce(CASE 
-		WHEN (h.NameDisplayPreference = 1 AND datalength(h.HashName) > 0)
-			THEN h.HashName
-		WHEN (h.NameDisplayPreference = 2 OR datalength(h.HashName) = 0)
-			THEN h.FirstName + ' ' + h.LastName
-		ELSE h.HashName + ' (' + h.FirstName + ' ' + h.LastName + ')'
-		END,hem.DisplayName,'<no name>')
-	FROM HC.HasherEventMap hem
-	INNER JOIN HC.Event e ON e.id = hem.EventId
-	INNER JOIN HC.Kennel k on k.id = e.KennelId
-	LEFT OUTER JOIN HC.HasherKennelMap hkm on hem.UserId = hkm.UserId AND hkm.KennelId = e.kennelId
-	LEFT OUTER JOIN HC.Hasher h on h.id = hem.UserId
-	WHERE hem.id = @hasherEventMapId --AND e.deleted = 0 AND e.IsVisible <> 0
-
-
-	SET @result = 'Payment not processed'
-
-	if (@paymentType = 1) -- handle the 'Not paid' case
-	BEGIN
-		UPDATE HC.Payment SET CancelledDate = getdate(), CancelledBy_UserId = @userId WHERE CancelledDate is null AND HasherEventMapId = @hasherEventMapId
-		SET @result = @payer_userName + ', your payment has been cancelled'
-	END
-
-	IF (@paymentType = 2) SET @eventPrice = 0 -- in this case the run is "free"
-
-	IF ((@paymentType >= 2) AND (@paymentType <= 7)) -- in this case the run is paid in cash, bank transfer or using credits
-	BEGIN
-		IF ((@paymentType = 5) OR (@paymentType = 7))
-			SET @creditAmount = @paymentAmount
-		ELSE
-			SET @creditAmount = @eventPrice
-
-		IF (@paymentType = 6) SET @creditAmount = 0 -- this is the case when hashers are paying using their existing 'hash credit'
-		SET @paymentTypeStr = CASE 
-			WHEN @paymentType = 3 
-				THEN 'cash' 
-			WHEN @paymentType = 4 
-				THEN 'bank transfer' 
-			WHEN @paymentType = 5 
-				THEN 'other amount by cash' 
-			WHEN @paymentType = 6 THEN 
-				'hash credit' 
-			WHEN @paymentType = 7 THEN 
-				'other amount by bank transfer' 
-			END
-
-		-- We only allow one payment per event, so cancel any previous payments when a new payment comes in for an event that is of type "free", "cash", "bank transfer", or "credit"
-		UPDATE HC.Payment SET CancelledDate = getdate(), CancelledBy_UserId = @userId WHERE CancelledDate is null AND HasherEventMapId = @hasherEventMapId
-
-		-- Now insert a new payment record
-		INSERT HC.Payment (KennelId, UserId, EventId, HasherEventMapId, CreditAmount,DebitAmount, PaymentProcessedBy_userId,PaidDate, PaymentType, PaymentReference) 
-				VALUES (@kennelId,@payer_userIdGuid,@eventId,@hasherEventMapId,@creditAmount,@eventPrice,@userId,GETDATE(),@paymentType, HC.NUMBER_TO_STR_BASE (36,(RAND() * (2147483647 - 60466177)) + 60466176))
-		
-		-- Set the text result
-		SET @result = @payer_userName + ', your ' + @paymentTypeStr + ' payment of ' + REPLACE(REPLACE(FORMAT(@eventPrice,'C',@local),',','.'),' ','') + ' to the ' + @kennelName + ' has been recorded'
-		IF @paymentType = 2 SET @result = @payer_userName + ', congratulations, your run today was free!'
-
-		-- if they have paid, mark them as being at the event.
-		UPDATE HC.HasherEventMap set UserStartEvent = getdate(), AttendenceState = CASE when AttendenceState < @minimumAttendenceValue then @minimumAttendenceValue else AttendenceState end where id = @hasherEventMapId
-		SET @buttonState = 1
-		SET @isPaid = 1
-	END
-
-	IF (@userIdWhoPaid IS NOT NULL)
-		BEGIN
-			EXEC HC.nonApi_adjustHasherRunCounts @limitByUser = 1,@userId = @userIdWhoPaid, @kennelId = @kennelId
-		END
-	ELSE
-		BEGIN
-			EXEC HC.nonApi_adjustHasherRunCounts @limitByUser = 2,@hasherEventMapId = @hasherEventMapId
-		END
-
-	DECLARE @AtHashCount smallint
-	DECLARE @OnInCount smallint
-	DECLARE @OnTrailCount smallint
-	DECLARE @PaidCount smallint
-	DECLARE @WaitingForCount smallint
-	DECLARE @TotalRunsThisKennel smallint
-
-	SELECT @TotalRunsThisKennel = rc.TotalHaringThisKennel + rc.TotalPackRunsThisKennel from HC.HasherEventMap hem 
-	INNER JOIN HC.RunCounts rc on rc.id = hem.RunCountId
-	
-	where hem.id = @hasherEventMapId
-
-	-- TODO: Update these to use AttendenceState
-	SELECT 
-		@AtHashCount = count(hem2.UserStartEvent),
-		@OnInCount = count(hem2.UserEndEvent),
-		@OnTrailCount = count(hem2.UserStartEvent)-count(hem2.UserEndEvent) 
-	FROM HC.HasherEventMap hem2 WHERE hem2.EventId = @EventId
-
-	SELECT 
-		@WaitingForCount = count(*)
-	FROM HC.HasherEventMap hem WHERE hem.EventId = @EventId AND hem.UserStartEvent IS NULL AND hem.RsvpState = 3
-
-	SELECT @PaidCount = count(*) from HC.Payment p where p.EventId = @EventId and p.CancelledDate is null
-
-	SELECT 
-		@result as [result], 
-		@WaitingForCount as waitingForCount, 
-		@AtHashCount as atHashCount, 
-		@OnInCount as onInCount, 
-		@OnTrailCount as onTrailCount, 
-		@PaidCount as paidCount, 
-		@buttonState as buttonState, 
-		@TotalRunsThisKennel as totalRunsThisKennel, 
-		@isPaid as isPaid,
-		@hasherEventMapId as hasherEventMapId
-
-END
-GO
-/****** Object:  StoredProcedure [HC2].[processQrScan]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE procedure [HC2].[processQrScan]
-
-@userId nvarchar(120), -- this is the userId of the person who is doing the scanning, not the user being scanned
-@accessToken nvarchar(1000),
-@eventId nvarchar(120) = NULL,
-@scanText nvarchar(500),
-@context1 nvarchar(120),
-@context2 nvarchar(120) = NULL,
-@param1 nvarchar(120) = NULL,
-@param2 nvarchar(120) = NULL
-
-AS
-BEGIN
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	-- TODO: Replace checks on startDate and endDate with checks on AttendenceState
-
-DECLARE @result nvarchar(500)
-DECLARE @result2 nvarchar(500)
-DECLARE @result3 nvarchar(500)
-DECLARE @resultGuid1 uniqueidentifier
-DECLARE @resultGuid2 uniqueidentifier
-DECLARE @resultInt1 int
-DECLARE @resultInt2 int
-DECLARE @resultInt3 int
-DECLARE @resultInt4 int
-DECLARE @resultDecimal1 decimal
-DECLARE @resultDecimal2 decimal
-DECLARE @paramValue uniqueidentifier
-DECLARE @userIdGuid uniqueidentifier
-DECLARE @eventIdGuid uniqueidentifier
-DECLARE @scanTextGuid uniqueidentifier
-DECLARE @paymentCounter smallint
-DECLARE @startTime datetime
-DECLARE @endTime datetime
-DECLARE @hasherEventMapId uniqueidentifier
-DECLARE @startEvent datetime
-
-DECLARE @runName nvarchar(500)
-
-
---IF (((@scanText like 'evtStart%') AND (@context1 = 'User')) OR ((@userId like 'uid%') AND (@context1 = '0')))
-IF ((@context1 = 'CheckInOut') AND (@scanText like 'UQR:%')) -- this is the case where the user is checking in
-BEGIN
-	-- Context values
-	-- @Context2 = 0 indicates run start
-	-- @Context2 = 1 indicates run end
-
-	-- Param values
-	-- @param1 = 'user' means the user is scanning themselves
-	-- @param1 = 'admin' means an admin is scanning a user
-	
-	-- Result values
-	-- @Result1 contains the currency symbol
-	-- @Result2 contains instructions for payment
-	-- @Result3 contains the user name
-	-- @Result4 contains the number of digits after the decimal for currencies
-	-- @ResultInt1 contains the number of runs for this particular kennel for the target user
-	-- @ResultInt2 contains the payment counter
-	-- @ResultInt3 contains 0 if credit is not allowed or 1 if credit is allowed
-	-- @ResultGuid1 contains the target user id
-	-- @ResultGuid2 contains the HasherEventMapId
-	-- @ResultDecimal1 contains the run price
-	-- @ResultDecimal2 contains the outstanding credit or debit
-
-
-	-- exec HC.processQrScan @userId ='624c51b3-2f64-4de5-9458-b506e75ac544', @eventId = 'dea28bab-a30c-4a80-ac96-d0b7164551b9', @scanText = 'UQR:TEST01', @context1 = 'CheckInOut', @context2 = '0', @param1 = '', @param2 = ''
-
-
-	SET @userIdGuid = CAST(right(@userId,36) AS uniqueidentifier)
-	SET @eventIdGuid = CAST(right(@eventId,36) AS uniqueidentifier)
-	SET @hasherEventMapId = newid()
-	SET @startTime = getdate()
-	if (@context2 <> '0') SET @endTime = getdate()
-	SET @resultInt1 = -1
-	SET @resultInt2 = -1
-	SET @resultInt3 = -1
-	SET @resultInt4 = -1
-	SET @resultDecimal1 = -99999
-	SET @resultDecimal2 = -99999
-
-	DECLARE @attendenceState int
-	SET @attendenceState = 20 -- this is the code for 'at the Hash'
-	IF @context2 != 0
-	BEGIN
-		SET @attendenceState = 30 -- this corresponds to 'on in'
-	END
-
-	--SET @scanTextGuid = CAST(right(@scanText,36) AS uniqueidentifier) -- the QR id of the hasher being checked in
-	DECLARE @targetUserId uniqueidentifier
-	SELECT @targetUserId = id,
-			@result3 = coalesce(h.HashName, h.DisplayName, h.FirstName + ' ' + h.LastName,'no name')
-		from HC.Hasher h 
-		where h.QR_code = @scanText
-
-	IF (@targetUserId is null)
-		BEGIN
-			SET @result = 'User code not found in Harrier Central database'
-		END
-	ELSE
-
-
-		BEGIN
-		SELECT @paymentCounter = coalesce(count(*),0) from HC.Payment p WHERE p.UserId = @targetUserId AND p.EventId = @eventIdGuid AND p.CancelledDate IS NULL
-		SET @resultInt2 = @paymentCounter
-
-		IF NOT EXISTS(SELECT * FROM HC.HasherEventMap WHERE UserId = @targetUserId AND EventId = @eventIdGuid)
-			-- this case is for someone who is on the run but did not RSVP, so there is no record in HEM
-			BEGIN 
-
-
-					INSERT INTO HC.RunCounts ([TotalPackRunsThisKennel]
-           ,[TotalHaringThisKennel]
-           ,[TotalPackRunsAllKennels]
-           ,[TotalHaringAllKennels]
-           ,[updatedAt]) VALUES (0,0,0,0,GETDATE())
-
-
-				INSERT INTO HC.HasherEventMap(id,UserId,EventId,RunCountId,RsvpState,Rsvp,AttendenceState,UserStartEvent, UserEndEvent) VALUES (@hasherEventMapId,@targetUserId,@eventIdGuid,@@IDENTITY,3,getdate(),@attendenceState,@startTime, @endTime) 
-				IF @paymentCounter = 0 SET @result2 = case when @param1 = 'user' then 'You have been checked in. Please pay for today''s Hash.' else @result3 + ' has been checked in, but needs to pay for the Hash' end
-				IF @paymentCounter <> 0 SET @result2 = case when @param1 = 'user' then 'You have already paid. Enjoy the Hash!' else @result3 + ' has checked in and paid.' end
-			END
-		ELSE
-			BEGIN
-				-- This case is when a HEM record already exists
-				SELECT @hasherEventMapId = id, @startEvent = UserStartEvent from HC.HasherEventMap WHERE UserId = @targetUserId AND EventId = @eventIdGuid
-				IF (@startEvent is not null)
-					BEGIN
-						if (@context2 = '0')
-						BEGIN
-							-- This executes when someone has already checked in and is checking in again.
-							IF @paymentCounter = 0 SET @result2 = case when @param1 = 'user' then 'You are already checked in. Please pay for today''s Hash.' else @result3 + ' is already checked in, but needs to pay for the Hash' end
-							IF @paymentCounter <> 0 SET @result2 = case when @param1 = 'user' then 'You are already checked in and paid. Enjoy the Hash!' else @result3 + ' has checked in and paid.' end
-						END
-
-						if (@context2 <> '0')
-						BEGIN
-							UPDATE HC.HasherEventMap SET UserEndEvent = @endTime WHERE id = @hasherEventMapId 
-							-- This executes when someone has already checked in and is checking in again.
-							IF @paymentCounter = 0 SET @result2 = 'You are recorded as "On In". Please don''t forget to pay for the Hash.'
-							IF @paymentCounter <> 0 SET @result2 = 'You are recorded as "On In". Hope you enjoyed the Hash!'
-						END
-					END
-				ELSE
-					BEGIN
-
-						IF (@context2 = '0')
-						BEGIN
-							-- This case is when someone has RSVP'ed but not yet checked in
-							UPDATE HC.HasherEventMap SET RsvpState = 3, AttendenceState = 20, UserStartEvent = getdate() WHERE id = @hasherEventMapId 
-							IF @paymentCounter = 0 SET @result2 = case when @param1 = 'user' then 'You are now checked in. Please pay for today''s Hash.' else @result3 + ' has been checked in, but needs to pay for the Hash' end
-							IF @paymentCounter <> 0 SET @result2 = case when @param1 = 'user' then 'You are now checked in and paid. Enjoy the Hash!' else @result3 + ' has checked in and paid.' end
-						END
-
-						IF (@context2 <> '0')
-						BEGIN
-							-- This case is when someone has gone on the run without checking in, but they have checked in at the end
-							UPDATE HC.HasherEventMap SET RsvpState = 3, AttendenceState = 30, UserStartEvent = @startTime, UserEndEvent = @endTime WHERE id = @hasherEventMapId 
-							IF @paymentCounter = 0 SET @result2 = 'You are recorded as "On In". Please don''t forget to pay for the Hash.'
-							IF @paymentCounter <> 0 SET @result2 = 'You are recorded as "On In". Hope you enjoyed the Hash!'
-						END
-					END
-			END
-
-		END
-
-		DECLARE @kennelId uniqueidentifier
-		SELECT @kennelId = evt.kennelId from HC.Event evt where evt.id = @eventIdGuid
-		EXEC HC.nonApi_adjustHasherRunCounts @limitByUser = 1, @userId = @targetUserId, @kennelId = @kennelId
-
-		DECLARE @remainingCreditStr nvarchar(20)
-		DECLARE @eventPriceStr nvarchar(20)	
-		DECLARE @local nvarchar(20)
-		DECLARE @remainingCredit money
-		DECLARE @eventPrice money
-		DECLARE @creditStatusStr nvarchar(20)
-
-		SELECT @resultInt1 = rc.TotalHaringThisKennel + rc.TotalPackRunsThisKennel 
-		FROM HC.HasherEventMap hem 
-		INNER JOIN HC.RunCounts rc on rc.id = hem.RunCountId
-		where hem.id = @hasherEventMapId
-
-		IF (@paymentCounter = 0)
-		BEGIN
-			SELECT
-			@eventPrice = CASE WHEN hkm.IsMember = 1 THEN
-				coalesce(e.EventPriceForMembers,k.DefaultEventPriceForMembers,e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,0)
-			ELSE
-				coalesce(e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,e.EventPriceForMembers,k.DefaultEventPriceForMembers,0)
-			END
-			,@result = coalesce(cn.CurrencySymbol,'xxx') -- TODO: Optimize this by de-normalizing the currency symbol down to Kennel and Event
-			,@resultInt3 = k.AllowNegativeCredit
-			,@resultInt4 = cn.DigitsAfterDecimal
-			FROM HC.Event e
-			INNER JOIN HC.Kennel k on k.id = e.KennelId
-			INNER JOIN HC.Country cn on cn.id = k.CountryId
-			INNER JOIN HC.HasherKennelMap hkm on hkm.UserId = @targetUserId and hkm.KennelId = e.KennelId
-			WHERE e.id = @eventIdGuid --AND e.deleted = 0 AND e.IsVisible <> 0
-
-			SET @resultDecimal1 = @eventPrice
-
-			SELECT @remainingCredit = coalesce(sum(creditAmount)-sum(debitAmount),0)
-			FROM HC.Payment p 
-			INNER JOIN HC.Event e on p.KennelId = e.KennelId
-			WHERE p.UserId = @targetUserId AND e.id = @eventIdGuid AND p.CancelledDate is null --AND e.deleted = 0 AND e.IsVisible <> 0
-
-			SET @resultDecimal2 = @remainingCredit
-
-		END
-
-		SET @resultGuid2 = @hasherEventMapId
-	
-
-END
-
-
---IF (((@scanText like 'evtStart%') AND (@context1 = 'User')) OR ((@userId like 'uid%') AND (@context1 = '0')))
-ELSE IF ((@context1 = 'UserScan') AND (@scanText like 'evtStart:%')) -- this is the case where the user is checking in
-	BEGIN
-
-	-- exec HC.processQrScan @userId ='624c51b3-2f64-4de5-9458-b506e75ac544', @eventId = '', @scanText = 'evtStart:7B10155A-92D4-40D7-929A-CF2BDE968444', @context1 = 'UserScan', @context2 = '', @param1 = '', @param2 = ''
-	
-	SET @userIdGuid = CAST(right(@userId,36) AS uniqueidentifier)
-	SET @eventIdGuid = CAST(right(@scanText,36) AS uniqueidentifier)
-
-	SELECT @runName = e.EventName from HC.Event e where e.id = @eventIdGuid
-
-	IF NOT EXISTS(SELECT * FROM HC.HasherEventMap WHERE UserId = @userIdGuid AND EventId = @eventIdGuid)
-		BEGIN 
-			INSERT INTO HC.RunCounts ([TotalPackRunsThisKennel]
-           ,[TotalHaringThisKennel]
-           ,[TotalPackRunsAllKennels]
-           ,[TotalHaringAllKennels]
-           ,[updatedAt]) VALUES (0,0,0,0,GETDATE())
-
-			INSERT INTO HC.HasherEventMap(UserId,EventId,RunCountId,RsvpState,Rsvp, AttendenceState, UserStartEvent) VALUES (@userIdGuid,@eventIdGuid,@@IDENTITY,3,getdate(),20,getdate()) 
-			SET @result = 'Checked in for "'+@runName+'". Enjoy your run!'
-		END
-	ELSE
-			IF EXISTS(SELECT * FROM HC.HasherEventMap WHERE UserId = @userIdGuid AND EventId = @eventIdGuid AND UserStartEvent IS NOT NULL)
-			SET @result = 'You are already checked in for "'+@runName+'". Enjoy your run!'
-		ELSE
-			BEGIN
-				UPDATE HC.HasherEventMap SET RsvpState = 3, AttendenceState = 20, UserStartEvent = coalesce(UserStartEvent,getdate()) WHERE UserId = @userIdGuid and EventId = @eventIdGuid
-				SET @result = 'Checked in for "'+@runName+'". Enjoy your run!'
-			END
-
-	END
-
-ELSE IF ((@context1 = 'UserScan') AND (@scanText like 'evtEnd:%')) -- this is the case where the user is checking in at the end of the run
-	BEGIN
-
-	-- exec HC.processQrScan @userId ='624c51b3-2f64-4de5-9458-b506e75ac544', @eventId = '', @scanText = 'evtEnd:7B10155A-92D4-40D7-929A-CF2BDE968444', @context1 = 'UserScan', @context2 = '', @param1 = '', @param2 = ''
-	
-	SET @userIdGuid = CAST(right(@userId,36) AS uniqueidentifier)
-	SET @eventIdGuid = CAST(right(@scanText,36) AS uniqueidentifier)
-
-	SELECT @runName = e.EventName from HC.Event e where e.id = @eventIdGuid
-
-	
-	IF NOT EXISTS(SELECT * FROM HC.HasherEventMap WHERE UserId = @userIdGuid AND EventId = @eventIdGuid)
-		BEGIN 
-			INSERT INTO HC.RunCounts ([TotalPackRunsThisKennel]
-           ,[TotalHaringThisKennel]
-           ,[TotalPackRunsAllKennels]
-           ,[TotalHaringAllKennels]
-           ,[updatedAt]) VALUES (0,0,0,0,GETDATE())
-
-			INSERT INTO HC.HasherEventMap(UserId,EventId,RunCountId,RsvpState,Rsvp,AttendenceState,UserStartEvent,UserEndEvent) VALUES (@userIdGuid,@eventIdGuid,@@IDENTITY,3,getdate(),30,getdate(),getdate()) 
-			SET @result = 'Congratulations for finishing "'+@runName+'". Enjoy your beer!'
-		END
-	ELSE
-			IF EXISTS(SELECT * FROM HC.HasherEventMap WHERE UserId = @userIdGuid AND EventId = @eventIdGuid AND UserStartEvent IS NOT NULL AND UserEndEvent IS NOT NULL)
-			SET @result = 'You are already checked in as finished. Enjoy your beer!'
-		ELSE
-			BEGIN
-				UPDATE HC.HasherEventMap SET RsvpState = 3, AttendenceState = 30, UserStartEvent = coalesce(UserStartEvent,getdate()), UserEndEvent = coalesce(UserEndEvent,getdate()) WHERE UserId = @userIdGuid and EventId = @eventIdGuid
-				SET @result = 'Congratulations for finishing "'+@runName+'". Enjoy your beer!'
-			END
-
-	END
-
-ELSE IF ((@context1 = 'UserScan') AND (@scanText like 'uqr:%')) -- this is the case where the user is checking in at the end of the run
-	BEGIN
-
-	-- exec HC.processQrScan @userId ='624c51b3-2f64-4de5-9458-b506e75ac544', @eventId = '', @scanText = 'uqr:A703DA6E-35D9-4BBC-B74B-C3AE270F16FC', @context1 = 'UserScan', @context2 = '', @param1 = '', @param2 = ''
-	DECLARE @friendQrCode uniqueidentifier
-	DECLARE @friendIdGuid uniqueidentifier
-	DECLARE @friendName nvarchar(120)
-
-	SET @userIdGuid = CAST(right(@userId,36) AS uniqueidentifier)
-	--SET @friendQrCode = CAST(right(@scanText,36) AS uniqueidentifier)
-
-	SELECT @friendIdGuid = id, @friendName = DisplayName from HC.Hasher h where h.QR_code = @scanText
-
-	IF (@friendIdGuid IS NULL)
-		BEGIN
-			SET @result = 'QR code not recognized'
-		END
-	ELSE IF (@friendIdGuid = @userIdGuid)
-		SET @result = 'How nice of you to want to be your own friend!'
-	ELSE
-		BEGIN
-
-
-			IF NOT EXISTS(SELECT * FROM HC.HasherFriendMap WHERE UserId = @userIdGuid AND Friend_UserId = @friendIdGuid)
-				BEGIN 
-
-					INSERT INTO HC.HasherFriendMap(UserId,Friend_UserId,FriendSince,Ignore) VALUES (@userIdGuid,@friendIdGuid,getdate(),0) 
-					SET @result = @friendName + ' has been added to your friend list'
-				END
-			ELSE
-				IF EXISTS(SELECT * FROM HC.HasherFriendMap WHERE UserId = @userIdGuid AND Friend_UserId = @friendIdGuid AND Ignore = 0)
-					SET @result = @friendName + ' is already in your friend list'
-				ELSE
-					BEGIN
-						UPDATE HC.HasherFriendMap SET Ignore = 0 WHERE UserId = @userIdGuid AND Friend_UserId = @friendIdGuid
-						SET @result = @friendName + ' has been added to your friend list'
-					END
-
-			END
-		END
-
-ELSE
-BEGIN
-	SET @result = 'Scanned code not recognized'
-END
-
-select	coalesce(@result,'') as [resultStr1], 
-		coalesce(@result2,'') as [resultStr2], 
-		coalesce(@result3,'') as [resultStr3], 
-		coalesce(@targetUserId,'00000000-0000-0000-0000-000000000000') as resultGuid1, 
-		coalesce(@resultGuid2,'00000000-0000-0000-0000-000000000000') as [resultGuid2], 
-		coalesce(@resultInt1,-1) as [resultInt1], 
-		coalesce(@resultInt2,-1) as [resultInt2],
-		coalesce(@resultInt3,-1) as [resultInt3],
-		coalesce(@resultInt4,-1) as [resultInt4],
-		coalesce(@resultDecimal1,-9999999) as [resultDecimal1],
-		coalesce(@resultDecimal2,-9999999) as [resultDecimal2]
-
-END
-
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[processQrScanForCheckin]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE procedure [HC2].[processQrScanForCheckin]
-
-@userId nvarchar(120), -- this is the userId of the person who is doing the scanning, not the user being scanned
-@accessToken nvarchar(1000),
-@eventId nvarchar(120) = NULL,
-@scanText nvarchar(500),
-@runStartOrEnd smallint = NULL,
-@selfScan smallint = NULL
-
-AS
-BEGIN
-
-SET @runStartOrEnd = coalesce(@runStartOrEnd,0)
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-	-- TODO: Replace checks on startDate and endDate with checks on AttendenceState
-
-DECLARE @resultStr nvarchar(500)
-DECLARE @result int
-DECLARE @currencySymbol nvarchar(25)
-DECLARE @paymentInstructions nvarchar(500)
-DECLARE @scannedUserName nvarchar(500)
-DECLARE @hasherEventMapId uniqueidentifier
-DECLARE @isPaid smallint
-DECLARE @paymentType smallint
-DECLARE @isCreditAllowed int
-DECLARE @currencyDigitsAfterDecimal int
-DECLARE @runPriceThisUser decimal
-DECLARE @remainingCredit decimal
-DECLARE @paramValue uniqueidentifier
-DECLARE @userIdGuid uniqueidentifier
-DECLARE @eventIdGuid uniqueidentifier
-DECLARE @scanTextGuid uniqueidentifier
-DECLARE @startTime datetime
-DECLARE @endTime datetime
-DECLARE @startEvent datetime
-
-DECLARE @runName nvarchar(500)
-
-
---IF (((@scanText like 'evtStart%') AND (@checkInOrOut = 'User')) OR ((@userId like 'uid%') AND (@checkInOrOut = '0')))
-IF (@scanText not like 'UQR:%') -- this is the case where the user is checking in
-BEGIN
-	SET @result = 0
-	SET @resultStr = 'QR code has an unknown format'
-END
-ELSE
-BEGIN
-	-- Context values
-	-- @runStartOrEnd = 0 indicates run start
-	-- @runStartOrEnd = 1 indicates run end
-
-	-- Param values
-	-- @selfScan = '1' means the user is scanning themselves
-	-- @selfScan = '0' means an admin is scanning another user
-	
-	-- Result values
-	-- @Result1 contains the currency symbol
-	-- @paymentInstructions contains instructions for payment
-	-- @scannedUserName contains the user name
-	-- @Result4 contains the number of digits after the decimal for currencies
-	-- @isCreditAllowed contains 0 if credit is not allowed or 1 if credit is allowed
-	-- @ResultGuid1 contains the target user id
-	-- @hasherEventMapId contains the HasherEventMapId
-	-- @runPriceThisUser contains the run price
-	-- @remainingCredit contains the outstanding credit or debit
-
-
-	-- exec HC.processQrScan @userId ='624c51b3-2f64-4de5-9458-b506e75ac544', @eventId = 'dea28bab-a30c-4a80-ac96-d0b7164551b9', @scanText = 'UQR:TEST01', @checkInOrOut = 'CheckInOut', @runStartOrEnd = '0', @selfScan = '', @param2 = ''
-
-	SET @result = 0
-	SET @resultStr = 'Scanned code not recognized'
-
-	SET @userIdGuid = CAST(right(@userId,36) AS uniqueidentifier)
-	SET @eventIdGuid = CAST(right(@eventId,36) AS uniqueidentifier)
-	SET @hasherEventMapId = newid()
-	SET @startTime = getdate()
-	if (@runStartOrEnd <> 0) SET @endTime = getdate()
-	SET @isPaid = 0
-	SET @paymentType = -1
-	SET @isCreditAllowed = -1
-	SET @currencyDigitsAfterDecimal = -1
-	SET @runPriceThisUser = -99999
-	SET @remainingCredit = -99999
-
-	DECLARE @attendenceState int
-	SET @attendenceState = 20 -- this is the code for 'at the Hash'
-	IF @runStartOrEnd != 0
-	BEGIN
-		SET @attendenceState = 30 -- this corresponds to 'on in'
-	END
-
-	--SET @scanTextGuid = CAST(right(@scanText,36) AS uniqueidentifier) -- the QR id of the hasher being checked in
-	DECLARE @targetUserId uniqueidentifier
-	SELECT @targetUserId = id,
-			@scannedUserName = coalesce(h.HashName, h.DisplayName, h.FirstName + ' ' + h.LastName,'no name')
-		from HC.Hasher h 
-		where h.QR_code = @scanText
-
-	IF (@targetUserId is null)
-		BEGIN
-			SET @result = 'User code not found in Harrier Central database'
-		END
-	ELSE
-
-
-		BEGIN
-
-		SET @result = 1
-
-		SELECT top 1 @isPaid = 1, @paymentType = p.PaymentType from HC.Payment p WHERE p.UserId = @targetUserId AND p.EventId = @eventIdGuid AND p.CancelledDate IS NULL order by p.PaidDate desc
-		
-		IF NOT EXISTS(SELECT * FROM HC.HasherEventMap WHERE UserId = @targetUserId AND EventId = @eventIdGuid)
-			-- this case is for someone who is on the run but did not RSVP, so there is no record in HEM
-			BEGIN 
-				INSERT INTO HC.RunCounts ([TotalPackRunsThisKennel]
-			   ,[TotalHaringThisKennel]
-			   ,[TotalPackRunsAllKennels]
-			   ,[TotalHaringAllKennels]
-			   ,[updatedAt]) VALUES (0,0,0,0,GETDATE())
-
-				INSERT INTO HC.HasherEventMap(id,UserId,EventId,RunCountId,RsvpState,Rsvp,AttendenceState,UserStartEvent, UserEndEvent) VALUES (@hasherEventMapId,@targetUserId,@eventIdGuid,@@IDENTITY,3,getdate(),@attendenceState,@startTime, @endTime) 
-				IF @isPaid = 0 SET @paymentInstructions = case when @selfScan = 1 then 'You have been checked in. Please pay for today''s Hash.' else @scannedUserName + ' has been checked in, but needs to pay for the Hash' end
-				IF @isPaid <> 0 SET @paymentInstructions = case when @selfScan = 1 then 'You have already paid. Enjoy the Hash!' else @scannedUserName + ' has checked in and paid.' end
-			END
-		ELSE
-			BEGIN
-				-- This case is when a HEM record already exists
-				SELECT @hasherEventMapId = id, @startEvent = UserStartEvent from HC.HasherEventMap WHERE UserId = @targetUserId AND EventId = @eventIdGuid
-				IF (@startEvent is not null)
-					BEGIN
-						if (@runStartOrEnd = 0)
-						BEGIN
-							-- This executes when someone has already checked in and is checking in again.
-							IF @isPaid = 0 SET @paymentInstructions = case when @selfScan = 1 then 'You are already checked in. Please pay for today''s Hash.' else @scannedUserName + ' is already checked in, but needs to pay for the Hash' end
-							IF @isPaid <> 0 SET @paymentInstructions = case when @selfScan = 1 then 'You are already checked in and paid. Enjoy the Hash!' else @scannedUserName + ' has checked in and paid.' end
-						END
-
-						if (@runStartOrEnd <> 0)
-						BEGIN
-							UPDATE HC.HasherEventMap SET UserEndEvent = @endTime WHERE id = @hasherEventMapId 
-							-- This executes when someone has already checked in and is checking in again.
-							IF @isPaid = 0 SET @paymentInstructions = 'You are recorded as "On In". Please don''t forget to pay for the Hash.'
-							IF @isPaid <> 0 SET @paymentInstructions = 'You are recorded as "On In". Hope you enjoyed the Hash!'
-						END
-					END
-				ELSE
-					BEGIN
-
-						IF (@runStartOrEnd = 0)
-						BEGIN
-							-- This case is when someone has RSVP'ed but not yet checked in
-							UPDATE HC.HasherEventMap SET RsvpState = 3, AttendenceState = 20, UserStartEvent = getdate() WHERE id = @hasherEventMapId 
-							IF @isPaid = 0 SET @paymentInstructions = case when @selfScan = 1 then 'You are now checked in. Please pay for today''s Hash.' else @scannedUserName + ' has been checked in, but needs to pay for the Hash' end
-							IF @isPaid <> 0 SET @paymentInstructions = case when @selfScan = 1 then 'You are now checked in and paid. Enjoy the Hash!' else @scannedUserName + ' has checked in and paid.' end
-						END
-
-						IF (@runStartOrEnd <> 0)
-						BEGIN
-							-- This case is when someone has gone on the run without checking in, but they have checked in at the end
-							UPDATE HC.HasherEventMap SET RsvpState = 3, AttendenceState = 30, UserStartEvent = @startTime, UserEndEvent = @endTime WHERE id = @hasherEventMapId 
-							IF @isPaid = 0 SET @paymentInstructions = 'You are recorded as "On In". Please don''t forget to pay for the Hash.'
-							IF @isPaid <> 0 SET @paymentInstructions = 'You are recorded as "On In". Hope you enjoyed the Hash!'
-						END
-					END
-			END
-
-		END
-
-		DECLARE @kennelId uniqueidentifier
-		SELECT @kennelId = evt.kennelId from HC.Event evt where evt.id = @eventIdGuid
-		EXEC HC.nonApi_adjustHasherRunCounts @limitByUser = 1, @userId = @targetUserId, @kennelId = @kennelId
-
-		DECLARE @remainingCreditStr nvarchar(20)
-		DECLARE @eventPriceStr nvarchar(20)	
-		DECLARE @local nvarchar(20)
-		DECLARE @eventPrice money
-		DECLARE @creditStatusStr nvarchar(20)
-
-		IF (@isPaid = 0)
-		BEGIN
-			SELECT
-			@eventPrice = CASE WHEN hkm.IsMember = 1 THEN
-				coalesce(e.EventPriceForMembers,k.DefaultEventPriceForMembers,e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,0)
-			ELSE
-				coalesce(e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,e.EventPriceForMembers,k.DefaultEventPriceForMembers,0)
-			END
-			,@currencySymbol = coalesce(cn.CurrencySymbol,'xxx') -- TODO: Optimize this by de-normalizing the currency symbol down to Kennel and Event
-			,@isCreditAllowed = k.AllowNegativeCredit
-			,@currencyDigitsAfterDecimal = cn.DigitsAfterDecimal
-			FROM HC.Event e
-			INNER JOIN HC.Kennel k on k.id = e.KennelId
-			INNER JOIN HC.Country cn on cn.id = k.CountryId
-			INNER JOIN HC.HasherKennelMap hkm on hkm.UserId = @targetUserId and hkm.KennelId = e.KennelId
-			WHERE e.id = @eventIdGuid --AND e.deleted = 0 AND e.IsVisible <> 0
-
-			SET @runPriceThisUser = @eventPrice
-
-			SELECT @remainingCredit = coalesce(sum(creditAmount)-sum(debitAmount),0)
-			FROM HC.Payment p 
-			INNER JOIN HC.Event e on p.KennelId = e.KennelId
-			WHERE p.UserId = @targetUserId AND e.id = @eventIdGuid AND p.CancelledDate is null --AND e.deleted = 0 AND e.IsVisible <> 0
-
-			SET @remainingCredit = @remainingCredit
-
-		END
-
-		SET @hasherEventMapId = @hasherEventMapId
-	
-
-END
-
-
-select	coalesce(@result,0) as result, 
-		coalesce(@resultStr,'Unknown error processing QR code') as resultStr,
-		coalesce(@currencySymbol,'') as currencySymbol,
-		coalesce(@paymentInstructions,'') as paymentInstructions, 
-		coalesce(@scannedUserName,'') as scannedUserName, 
-		coalesce(@targetUserId,'00000000-0000-0000-0000-000000000000') as targetUserId, 
-		coalesce(@hasherEventMapId,'00000000-0000-0000-0000-000000000000') as hasherEventMapId, 
-		coalesce(@isPaid,0) as isPaid,
-		coalesce(@paymentType,-1) as paymentType,
-		coalesce(@isCreditAllowed,-1) as isCreditAllowed,
-		coalesce(@currencyDigitsAfterDecimal,-1) as currencyDigitsAfterDecimal,
-		coalesce(@runPriceThisUser,-9999999) as runPriceThisUser,
-		coalesce(@remainingCredit,-9999999) as remainingCredit,
-		coalesce(rc.TotalPackRunsThisKennel + rc.TotalHaringThisKennel,0) as userRunCountThisKennel, 
-		h.Photo as photo,
-		hem.AttendenceState as attendenceState,
-		hem.RsvpState as rsvpState,
-		hem.IsHare as isHare,
-		hem.VirginVisitorType as virginVisitorType,
-		hem.UserStartEvent as userStartEvent,
-		hem.UserEndEvent as userEndEvent,
-		hkm.IsMember as isMember,
-		hkm.Following as isFollowing,
-		coalesce(k.AllowNegativeCredit,0) as allowNegativeCredit
-		
-		FROM HC.HasherEventMap hem 
-		INNER JOIN HC.RunCounts rc on rc.id = hem.RunCountId
-		INNER JOIN HC.Hasher h on h.id = hem.UserId
-		INNER JOIN HC.Event evt on evt.id = hem.EventId
-		INNER JOIN HC.HasherKennelMap hkm on hkm.KennelId = evt.KennelId and hkm.UserId = h.id
-		INNER JOIN HC.Kennel k on k.id = evt.KennelId
-		WHERE hem.id = @hasherEventMapId
-		
-
-END
-
-
-
-GO
-/****** Object:  StoredProcedure [HC2].[updateAvatar]    Script Date: 6/1/19 5:19:51 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-
-CREATE PROCEDURE [HC2].[updateAvatar]
-
- @userId uniqueidentifier,
- @accessToken nvarchar(1000),
- @avatarUrl nvarchar(1000),
- @avatarUserId uniqueidentifier
-
-AS
-
-BEGIN
-
--- EXEC HC2.updateAvatar @userId = '624c51b3-2f64-4de5-9458-b506e75ac544', @accessToken = '', @avatarUrl = 'bundle://Avatar-2'
-
-SET NOCOUNT ON
-
-	IF @userId IS NULL
-	BEGIN
-		select 
-		2 as ErrorType 
-		,'No user ID provided' as ErrorTitle
-		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-		RETURN
-	END
-
-	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
-	BEGIN
-		select 
-		1 as ErrorType 
-		,'Unauthorized Access Token' as ErrorTitle
-		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
-
-		RETURN
-	END
-
-DECLARE @result nvarchar(100)
-SET @result = 'User not found'
-
-IF EXISTS(SELECT * FROM HC.Hasher WHERE id = @avatarUserId)
-BEGIN 
-	UPDATE HC.Hasher set Photo = @avatarUrl FROM HC.Hasher h where h.id = @avatarUserId
-	SET @result = 'Success'
-END
-
-SELECT @result as result
-
-END
-
-
-
-
-
-GO
-/****** Object:  StoredProcedure [HC3].[addEditEvent]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [HC3].[addEditEvent]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -11384,7 +3754,7 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[addEditReceipt]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [HC3].[addEditReceipt]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -11579,7 +3949,7 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[addEditUser]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [HC3].[addEditUser]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -11877,9 +4247,10 @@ SET NOCOUNT ON
 			,@accessToken
 			,@kennelId = @kennelId
 			,@kennelsUpdatedAfter = 'ignore'
+			,@hashersUpdatedAfter =  @hashersUpdatedAfter
 			,@hasherKennelMapUpdatedAfter = @hasherKennelMapUpdatedAfter
 			,@procName = @procName
-			,@param = NULL	
+			,@param = @paramString	
 		END
 	END
 
@@ -11890,7 +4261,302 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[joinEvent]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [HC3].[approveLogin]    Script Date: 6/7/19 8:39:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+CREATE PROCEDURE [HC3].[approveLogin]
+
+@userId uniqueidentifier,
+@accessToken nvarchar(1000),
+@deviceId nvarchar(100),
+@deviceType nvarchar(100),
+@deviceName nvarchar(100),
+@systemName nvarchar(100),
+@systemVersion nvarchar(100),
+@manufacturer nvarchar(100),
+@latitude decimal(18,15),
+@longitude decimal (19,15),
+@hcVersion nvarchar(200) = 'pre 0.6.4'
+
+AS
+
+BEGIN
+
+	SET NOCOUNT ON
+
+-- EXEC HC.approveLaunch @userId = '00000000-0000-0000-0000-000000000000', @accessToken = '', @deviceId = 'TestDevice', @deviceType = 'iPhone 6s / iOS 11.4', @latitude = 52.4, @longitude = 4.4
+
+	DECLARE @paramString nvarchar(500)
+	SET @paramString = cast (@deviceId as nvarchar(50))
+
+	DECLARE @errorId uniqueidentifier
+
+	IF (@userId IS NULL)
+	BEGIN
+
+		SET @errorId = newid()
+
+		INSERT HC.ErrorLog (id, HcVersion, ErrorName,ErrorDescription,ProcName,userId) VALUES (@errorId,'<unknown>','Null or Empty UserID','A null or empty userId was passed to ' + OBJECT_NAME(@@PROCID),OBJECT_NAME(@@PROCID),@userId)
+		
+		SELECT 
+		@errorId as errorId,
+		cast (2 as int) as errorType 
+		,'Null or empty userId' as errorTitle
+		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
+		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+		,OBJECT_NAME(@@PROCID) as errorProc
+		RETURN
+	END
+
+
+	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),@accessToken,@paramString) = 0 
+	BEGIN
+		SET @errorId = newid()
+
+		INSERT HC.ErrorLog (id, HcVersion, ErrorName,ErrorDescription,ProcName,userId,string_1) VALUES (@errorId,@hcVersion,'Invalid access token','The access token did not validate',OBJECT_NAME(@@PROCID),@userId,cast(@deviceId as nvarchar(40)))
+
+		select 
+		@errorId as errorId,
+		cast (1 as int) as errorType 
+		,'Invalid access token' as errorTitle
+		,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+		,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
+		,OBJECT_NAME(@@PROCID) as errorProc
+		RETURN
+	END
+
+	DECLARE @userName nvarchar(250)
+
+	SELECT @userName = coalesce(h.displayName, h.firstName + ' ' + h.lastName, '<no name>') from HC.Hasher h where h.id = @userId
+
+	INSERT HC.LaunchAndLogin 
+	(
+		UserId
+		,UserName
+		,HcVersion
+		,DeviceType
+		,DeviceId
+		,DeviceName
+		,SystemName
+		,SystemVersion
+		,Manufacturer
+		,Latitude
+		,Longitude
+	)
+	VALUES
+	(
+		@userId
+		,@userName
+		,@hcVersion
+		,@deviceType
+		,@deviceId
+		,@deviceName
+		,@systemName
+		,@systemVersion
+		,@manufacturer
+		,@latitude
+		,@longitude
+	)
+
+	DECLARE @ServerStatusCode smallint
+	DECLARE @LoginMessageTitle nvarchar(120)
+	DECLARE @LoginMessage nvarchar(500)
+	DECLARE @MessageEndDate datetime
+	DECLARE @MessageDisplayType smallint
+	DECLARE @MessageImageUrl nvarchar(500)
+
+	-- Server status codes (to be implemented)
+	-- 0 - Server down for maintenance
+	-- 1 - Server full up
+	-- 2 - Server running degraded
+
+	-- Message display type codes
+	-- 0 - None
+	-- 1 - Alert
+	-- 2 - Full view
+	-- 3 - Full view with countdown timer
+	-- 4 - Image from URL, do not continue
+	-- 5 - Image from URL, allow continue
+
+	-- Approval codes (to be implemented)
+	-- 0 - Unknown
+	-- 1 - Approved for login
+	-- 2 - Not authorized device
+	-- 3 - User account does not exist
+	-- 4 - User account not authorized
+
+	SELECT TOP 1 
+	@ServerStatusCode = smp.ServerStatusCode,
+	@LoginMessageTitle = smp.LoginMessageTitle,
+	@LoginMessage = smp.LoginMessage,
+	@MessageEndDate = smp.MessageWindowCloses,
+	@MessageDisplayType = smp.MessageDisplayType,
+	@MessageImageUrl = smp.MessageImageUrl
+	FROM HC.LoginNotifications smp
+	WHERE getdate() between smp.MessageWindowOpens and smp.MessageWindowCloses order by CreatedDate desc
+
+	if (@ServerStatusCode is null) SET @ServerStatusCode = 1
+	if (@LoginMessageTitle is null) SET @LoginMessageTitle = 'Harrier Central Message'
+	if (@LoginMessage is null) SET @LoginMessage = 'Server running'
+	if (@MessageEndDate is null) SET @MessageEndDate = '1/1/2100'
+	if (@MessageDisplayType is null) SET @MessageDisplayType = 0
+	if (@MessageImageUrl is null) SET @MessageImageUrl = ''
+
+	DECLARE @ApprovalCode int
+	SET @ApprovalCode = 1
+
+	SELECT TOP 1 
+		svr.ApiVersion as apiVersion
+		,case when @ServerStatusCode = 1 then @ApprovalCode else 0 end as approvalCode
+		,@LoginMessageTitle as loginMessageTitle
+		,@LoginMessage as loginMessage
+		,@ServerStatusCode as serverStatusCode
+		,@MessageEndDate as messageEndDate
+		,@MessageDisplayType as messageDisplayType
+		,@MessageImageUrl as messageImageUrl
+	FROM HC.ServerStatus svr
+	ORDER BY svr.CreatedDate desc
+
+END
+GO
+/****** Object:  StoredProcedure [HC3].[authorizeDevice]    Script Date: 6/7/19 8:39:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [HC3].[authorizeDevice]
+
+ @userId nvarchar(50),
+ @accessToken nvarchar(1000),
+ @hcVersion nvarchar(250),
+ @scanText nvarchar(250),
+ @deviceId nvarchar(250)
+
+AS
+
+BEGIN
+
+SET NOCOUNT ON
+-- EXEC HC.authorizeDevice @scanText = 'USC:73b9e85c-b8e0-4edb-8a9e-ea55cdfa0de6 ', @deviceId = '0C2852D4-A60E-4BA9-8628-4B0F246034C4'
+
+	IF HC.CHECK_ACCESS_TOKEN('00000000-0000-0000-0000-000000000000',OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),null) = 0 
+	BEGIN
+		select 
+		1 as ErrorType 
+		,'Unauthorized Access Token' as ErrorTitle
+		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
+
+		RETURN
+	END
+
+SET @userId = NULL
+DECLARE @errorId uniqueidentifier
+
+if (@scanText like 'URC:%')
+BEGIN
+	SELECT top 1 
+		@userId = h.id 
+	FROM HC.Hasher h where h.ResetCode = @scanText
+
+	IF (@userId is not null)
+		BEGIN
+			SELECT
+				h.id as hasherId,
+				h.Photo as photo,
+				h.DisplayName as displayName,
+				h.Email as email,
+				h.FacebookId as facebookId,
+				h.FirstName as firstName,
+				h.HashName as hashName,
+				h.LastName as lastName,
+				h.QR_code as qrCode,
+				h.SupportCode as supportCode,
+				h.QR_secret_code as qrSecretCode,
+				h.ResetCode as resetCode
+			FROM HC.Hasher h where h.id = @userId
+		END
+	ELSE
+		BEGIN
+		SET @errorId = newid()
+
+		INSERT HC.ErrorLog (id, HcVersion, ErrorName,ErrorDescription,ProcName,userId,deviceId,string_1) VALUES (@errorId,@hcVersion,'User reset code not found','A new user is being registered with a duplicate e-mail address to one already in the system',OBJECT_NAME(@@PROCID),@userId,@deviceId,@scanText)
+
+		SELECT 
+		@errorId as errorId,
+		cast (5 as int) as errorType 
+		,'Reset code not found' as errorTitle
+		,'The reset code provided was not found in the Harrier Central system' as errorUserMessage
+		,'This is a standard error that is anticipated and does not require debugging' as debugMessage
+		,OBJECT_NAME(@@PROCID) as errorProc
+		RETURN
+		END
+
+END
+
+END
+
+GO
+/****** Object:  StoredProcedure [HC3].[getResetCode]    Script Date: 6/7/19 8:39:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+
+CREATE PROCEDURE [HC3].[getResetCode]
+
+ @userId uniqueidentifier,
+ @accessToken nvarchar(1000),
+ @supportCode nvarchar(1000)
+
+AS
+
+BEGIN
+
+-- EXEC HC2.updateAvatar @userId = '624c51b3-2f64-4de5-9458-b506e75ac544', @accessToken = '', @avatarUrl = 'bundle://Avatar-2'
+
+SET NOCOUNT ON
+
+	IF @userId IS NULL
+	BEGIN
+		select 
+		2 as ErrorType 
+		,'No user ID provided' as ErrorTitle
+		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
+		RETURN
+	END
+
+	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
+	BEGIN
+		select 
+		1 as ErrorType 
+		,'Unauthorized Access Token' as ErrorTitle
+		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
+
+		RETURN
+	END
+
+DECLARE @result nvarchar(100)
+SET @result = 'Support code not found'
+
+IF EXISTS(SELECT * FROM HC.Hasher WHERE SupportCode = @supportCode)
+BEGIN 
+	SELECT @result = ResetCode FROM HC.Hasher h where h.SupportCode = @supportCode
+END
+
+SELECT @result as result
+
+END
+
+
+GO
+/****** Object:  StoredProcedure [HC3].[joinEvent]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -11975,6 +4641,9 @@ DECLARE @isHareNumeric smallint
 DECLARE @rsvpStateNumeric smallint
 DECLARE @attendenceStateNumeric smallint
 DECLARE @virginVisitorTypeNumeric smallint
+DECLARE @serverMessage nvarchar(250)
+DECLARE @hasherName nvarchar(120)
+DECLARE @isMember int
 
 SET @isHareNumeric = CAST(@isHare as smallint)
 SET @rsvpStateNumeric = CAST(@rsvpState as smallint)
@@ -11989,19 +4658,36 @@ if (@hasherEventMapId = '00000000-0000-0000-0000-000000000000') SET @hasherEvent
 -- Case #3: HasherEventMapId is not null, but HasherId is null... this is where an admin is RSVP'ing a Visitor or Virgin who does not have a record in HC.Hasher
 
 
-if ((@hasherId is null) AND (@hasherEventMapId is null)) -- CASE #1
+if (((@hasherId is null) AND (@hasherEventMapId is null)) OR (@hasherId = @userId)) -- CASE #1
 BEGIN
 	SET @hasherId = @userId
+	SET @hasherName = 'You are '
 END
+
+DECLARE @previousAttendence int, @alreadyText nvarchar(50)
+
+-- set the keyword 'already ' for the display of messages when scanning someone in at the Hash
+-- no need to do this, however, if someone is not at the Hash yet (e.g. a change to an RSVP)
+IF (@attendenceStateNumeric >= 20)
+BEGIN
+	SELECT @previousAttendence = hem.attendenceState from HC.HasherEventMap hem where hem.EventId = @eventId AND hem.UserId = @hasherId
+	IF (@attendenceStateNumeric <= @previousAttendence) SET @alreadyText = 'already '
+END
+
 
 if (@hasherEventMapId is null) -- Handle CASE #1 and #2
 BEGIN
+
 	SELECT 
 		@hasherEventMapId = hem.id,
-		@kennelId = e.KennelId
+		@kennelId = e.KennelId,
+		@hasherName = coalesce(@hasherName,h.displayName + ' is '),
+		@isMember = case when coalesce(hkm.MembershipExpirationDate,'1/1/2000') > getdate() then 1 else 0 end
 	from HC.Event e
 	LEFT OUTER JOIN HC.HasherEventMap hem on hem.EventId = e.id AND hem.UserId = @hasherId
-	WHERE e.id = @eventId
+	LEFT OUTER JOIN HC.HasherKennelMap hkm on hkm.KennelId = e.KennelId AND hkm.UserId = @hasherId
+	,HC.Hasher h
+	WHERE e.id = @eventId AND  h.id = @hasherId
 
 
 	IF (@hasherEventMapId is null)
@@ -12019,9 +4705,15 @@ BEGIN
 END
 ELSE
 BEGIN
-	SELECT @kennelId = e.kennelId from HC.Event e where e.id = @eventId
+	SELECT 
+	@kennelId = e.kennelId,
+	@isMember = case when coalesce(hkm.MembershipExpirationDate,'1/1/2000') > getdate() then 1 else 0 end -- memvership determination required for payment popup 
+	FROM HC.Event e 
+	LEFT OUTER JOIN HC.HasherKennelMap hkm on hkm.kennelId = e.kennelId AND hkm.userId = @hasherId
+	WHERE e.id = @eventId
 END
 
+IF (@hasherName IS NULL) SELECT @hasherName = case when (h.id = hem.userId) then 'You are ' else coalesce(h.DisplayName,hem.DisplayName) + ' is ' end from HC.Hasher h,HC.HasherEventMap hem where h.id = @hasherId and hem.EventId = @eventId and hem.UserId = @hasherId
 
 UPDATE HC.HasherEventMap SET 
 	IsHare = case when @isHareNumeric <> -1 then @isHareNumeric else IsHare end,
@@ -12032,6 +4724,24 @@ UPDATE HC.HasherEventMap SET
 	updatedAt = getdate()
 	WHERE id = @hasherEventMapId
 
+SET @serverMessage = @hasherName + coalesce(@alreadyText,'') + 'recorded as ' + case when @attendenceStateNumeric = 20 then 'at the Hash'  when @attendenceStateNumeric = 30 then 'On Inn' end
+
+DECLARE @payCount int
+
+if (@attendenceStateNumeric >= 20)
+BEGIN
+	-- determine if the Hasher has paid or not, this is needed when scanning is dnne to determine if the payment popup should be displayed
+	SELECT @payCount = COUNT(*) from HC.Payment pay WHERE pay.HasherEventMapId = @hasherEventMapId and pay.CancelledBy_UserId is NULL
+
+	-- set the message appropriately
+	IF @payCount = 0 
+		SET @serverMessage = @serverMessage + '. Don''t forget to pay for the Hash' 
+	ELSE 
+		IF @attendenceStateNumeric = 20
+			SET @serverMessage = @serverMessage + ' and paid. Enjoy your run!' 
+		ELSE IF @attendenceStateNumeric = 30
+			SET @serverMessage = @serverMessage + ' and paid. Enjoy your beer!' 
+END
 
 DECLARE @virginVisitorTypeInt int
 SELECT @virginVisitorTypeInt = hem.VirginVisitorType from HC.HasherEventMap hem where hem.id = @hasherEventMapId
@@ -12051,6 +4761,14 @@ BEGIN
 		END
 END
 
+-- send back adHoc data to support cases when the user was scanned in at a Hash
+SELECT
+	1 as adHocDataId,
+	@serverMessage as userMessage,
+	coalesce(@payCount,0) as isPaid,
+	@hasherEventMapId as hasherEventMapId,
+	@hasherId as hasherId,
+	@isMember as isMember
 
 DECLARE @procName nvarchar(500)
 SET @procName = OBJECT_NAME(@@PROCID)
@@ -12069,7 +4787,6 @@ EXEC HC3.syncEventAdminData
 @param = NULL
 
 
-
 END
 
 
@@ -12077,7 +4794,7 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[joinEventAsVisitor]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [HC3].[joinEventAsVisitor]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -12265,7 +4982,7 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[joinKennel]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [HC3].[joinKennel]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -12472,7 +5189,7 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[payForEvent]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [HC3].[payForEvent]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -12566,6 +5283,8 @@ SET NOCOUNT ON
 	--	RETURN
 	--END
 
+	DECLARE @serverMessage nvarchar(120)
+
 	IF (@paymentAmount IS NULL) OR (@paymentAmount < 0)
 	BEGIN
 
@@ -12622,31 +5341,31 @@ SET NOCOUNT ON
 		END
 	END
 
-	DECLARE @eventPrice money
-	DECLARE @creditAmount money
-	DECLARE @local nvarchar(10)
-	DECLARE @kennelId uniqueidentifier
-	DECLARE @kennelName nvarchar(250)
-	DECLARE @payer_userIdGuid uniqueidentifier
-	DECLARE @paymentTypeStr nvarchar(120)
-	DECLARE @payer_userName nvarchar(120)
-	DECLARE @buttonState int
-	DECLARE @isPaid int
+	DECLARE
+		 @eventPrice money,
+		 @creditAmount money,
+		 @kennelId uniqueidentifier,
+		 @kennelName nvarchar(250),
+		 @payer_userIdGuid uniqueidentifier,
+		 @attendenceState int,
+		 @payer_userName nvarchar(120),
+		 @buttonState int,
+		 @isPaid int
 
 	SET @isPaid = 0
 
 	SET @buttonState = 0
 
 	SELECT
-	@eventPrice = CASE WHEN coalesce(hkm.IsMember,0) = 1 THEN
+	@eventPrice = CASE WHEN coalesce(hkm.MembershipExpirationDate,'1/1/2000') > getdate() THEN
 		coalesce(e.EventPriceForMembers,k.DefaultEventPriceForMembers,e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,0)
 	ELSE
 		coalesce(e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,e.EventPriceForMembers,k.DefaultEventPriceForMembers,0)
 	END
-	,@local = coalesce(e.EventCurrencyType,k.DefaultEventCurrencyType,'en-us')
 	,@kennelId = k.id
 	,@kennelName = coalesce(k.KennelShortName,k.KennelName,'<No kennel name>')
 	,@payer_userIdGuid = hem.UserId
+	,@attendenceState = hem.AttendenceState
 	,@eventId = coalesce(@eventId,e.id)
 	,@payer_userName = coalesce(CASE 
 		WHEN (h.NameDisplayPreference = 1 AND datalength(h.HashName) > 0)
@@ -12668,9 +5387,12 @@ SET NOCOUNT ON
 		UPDATE HC.Payment SET CancelledDate = getdate(), CancelledBy_UserId = @userId, updatedAt = getdate() WHERE CancelledDate is null AND HasherEventMapId = @hasherEventMapId
 	END
 
-	IF (@paymentType = 2) SET @eventPrice = 0 -- in this case the run is "free"
+	IF (@paymentType = 2) 
+	BEGIN
+		SET @eventPrice = 0 -- in this case the run is "free"
+	END
 
-	IF ((@paymentType >= 2) AND (@paymentType <= 7)) -- in this case the run is paid in cash, bank transfer or using credits
+	IF ((@paymentType >= 2) AND (@paymentType <= 7)) -- in this case the run is paid in cash, bank transfer or using credits or was free
 	BEGIN
 		IF ((@paymentType = 5) OR (@paymentType = 7))
 			SET @creditAmount = @paymentAmount
@@ -12678,18 +5400,7 @@ SET NOCOUNT ON
 			SET @creditAmount = @eventPrice
 
 		IF (@paymentType = 6) SET @creditAmount = 0 -- this is the case when hashers are paying using their existing 'hash credit'
-		SET @paymentTypeStr = CASE 
-			WHEN @paymentType = 3 
-				THEN 'cash' 
-			WHEN @paymentType = 4 
-				THEN 'bank transfer' 
-			WHEN @paymentType = 5 
-				THEN 'other amount by cash' 
-			WHEN @paymentType = 6 THEN 
-				'hash credit' 
-			WHEN @paymentType = 7 THEN 
-				'other amount by bank transfer' 
-			END
+
 
 		-- We only allow one payment per event, so cancel any previous payments when a new payment comes in for an event that is of type "free", "cash", "bank transfer", or "credit"
 		UPDATE HC.Payment SET CancelledDate = getdate(), CancelledBy_UserId = @userId, updatedAt = getdate() WHERE CancelledDate is null AND HasherEventMapId = @hasherEventMapId
@@ -12713,25 +5424,36 @@ SET NOCOUNT ON
 			EXEC HC.nonApi_adjustHasherRunCounts @limitByUser = 2,@hasherEventMapId = @hasherEventMapId
 		END
 
-		DECLARE @procName nvarchar(500)
-		SET @procName = OBJECT_NAME(@@PROCID)
+	-- send back adHoc data to support cases when the user was scanned in at a Hash
+	SELECT
+		1 as adHocDataId,
+		@payer_userName as hasherWhoPaid,
+		@attendenceState as attendenceState,
+		@paymentType as paymentType,
+		@eventPrice as debitAmount,
+		@creditAmount as creditAmount,
+		@paymentAmount as paymentAmount
 
-		EXEC HC3.syncEventAdminData 
-		 @userId = @userId,
-		 @accessToken = @accessToken,
-		 @eventId = @eventId,
-		 @hashersUpdatedAfter = 'ignore',
-		 @hasherEventMapUpdatedAfter = @hasherEventMapUpdatedAfter,
-		 @hasherKennelMapUpdatedAfter = 'ignore',
-		 @narrowEventsUpdatedAfter = 'ignore',
-		 @paymentsUpdatedAfter = @paymentsUpdatedAfter,
-		 @receiptsUpdatedAfter = 'ignore',
-		 @procName = @procName,
-		 @param = @paramString
+
+	DECLARE @procName nvarchar(500)
+	SET @procName = OBJECT_NAME(@@PROCID)
+
+	EXEC HC3.syncEventAdminData 
+		@userId = @userId,
+		@accessToken = @accessToken,
+		@eventId = @eventId,
+		@hashersUpdatedAfter = 'ignore',
+		@hasherEventMapUpdatedAfter = @hasherEventMapUpdatedAfter,
+		@hasherKennelMapUpdatedAfter = 'ignore',
+		@narrowEventsUpdatedAfter = 'ignore',
+		@paymentsUpdatedAfter = @paymentsUpdatedAfter,
+		@receiptsUpdatedAfter = 'ignore',
+		@procName = @procName,
+		@param = @paramString
 
 END
 GO
-/****** Object:  StoredProcedure [HC3].[rptKennelRunStats]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [HC3].[rptKennelRunStats]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -12794,7 +5516,7 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[syncEventAdminData]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [HC3].[syncEventAdminData]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -12890,6 +5612,8 @@ SET NOCOUNT ON
 			coalesce(h.HashName,'') as hashName,
 			coalesce(h.Photo,'') as photo,
 			coalesce(h.NameDisplayPreference,0) as dispPref,
+			coalesce(h.ResetCode,'') as resetCode,
+			coalesce(h.QR_code,'') as qrCode,
 			coalesce(h.updatedAt,getdate()) as updatedAt,
 			coalesce(h.Removed,0) as removed
 		FROM HC.Hasher h where updatedAt >= @ua
@@ -13032,7 +5756,7 @@ SET NOCOUNT ON
 END
 
 GO
-/****** Object:  StoredProcedure [HC3].[syncKennelAdminData]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [HC3].[syncKennelAdminData]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13045,6 +5769,7 @@ CREATE PROCEDURE [HC3].[syncKennelAdminData]
  @userId uniqueidentifier,
  @accessToken nvarchar(1000),
  @kennelId uniqueidentifier,
+ @hashersUpdatedAfter nvarchar(50) = 'ignore',
  @kennelsUpdatedAfter nvarchar(50) = 'ignore',
  @hasherKennelMapUpdatedAfter nvarchar(50) = 'ignore',
  @procName nvarchar(100) = NULL,
@@ -13175,10 +5900,28 @@ SET NOCOUNT ON
 		FROM HC.HasherKennelMap where updatedAt > @ua and KennelId = @kennelId
 	END
 
+	if (LOWER(@hashersUpdatedAfter) != 'ignore')
+	BEGIN
+		SET @ua = CAST(@hashersUpdatedAfter as datetime)
+		SELECT 
+			h.id as hasherId,
+			coalesce(h.FirstName,'') as firstName,
+			coalesce(h.LastName,'') as lastName,
+			coalesce(h.DisplayName,'') as dispName,
+			coalesce(h.HashName,'') as hashName,
+			coalesce(h.Photo,'') as photo,
+			coalesce(h.NameDisplayPreference,0) as dispPref,
+			coalesce(h.ResetCode,'') as resetCode,
+			coalesce(h.QR_code,'') as qrCode,
+			coalesce(h.updatedAt,getdate()) as updatedAt,
+			coalesce(h.Removed,0) as removed
+		FROM HC.Hasher h where updatedAt >= @ua
+	END
+
 END
 
 GO
-/****** Object:  StoredProcedure [HC3].[syncUserData]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  StoredProcedure [HC3].[syncUserData]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13255,9 +5998,10 @@ SET NOCOUNT ON
 			coalesce(h.HashName,'') as hashName,
 			coalesce(h.Photo,'') as photo,
 			coalesce(h.NameDisplayPreference,0) as dispPref,
+			coalesce(h.ResetCode,'') as resetCode,
+			coalesce(h.QR_code,'') as qrCode,
 			coalesce(h.updatedAt,getdate()) as updatedAt,
 			coalesce(h.Removed,0) as removed
-			-- either sync the users, or in the case when a new user has been added (@targetUserId has been specified), return only that one record
 		FROM HC.Hasher h where updatedAt >= @ua
 	END
 
@@ -13436,7 +6180,7 @@ END
 
 
 GO
-/****** Object:  Trigger [dbo].[TR_Hasher_InsertUpdateDelete]    Script Date: 6/1/19 5:19:51 AM ******/
+/****** Object:  Trigger [dbo].[TR_Hasher_InsertUpdateDelete]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13445,7 +6189,7 @@ CREATE TRIGGER [dbo].[TR_Hasher_InsertUpdateDelete] ON [dbo].[Hasher] AFTER INSE
 GO
 ALTER TABLE [dbo].[Hasher] ENABLE TRIGGER [TR_Hasher_InsertUpdateDelete]
 GO
-/****** Object:  Trigger [dbo].[trgLoadFacebookEvents]    Script Date: 6/1/19 5:19:53 AM ******/
+/****** Object:  Trigger [dbo].[trgLoadFacebookEvents]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13468,7 +6212,7 @@ END
 GO
 ALTER TABLE [dbo].[unused_FacebookEventImport] DISABLE TRIGGER [trgLoadFacebookEvents]
 GO
-/****** Object:  Trigger [dbo].[trgCreateHasherRecord]    Script Date: 6/1/19 5:19:53 AM ******/
+/****** Object:  Trigger [dbo].[trgCreateHasherRecord]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13511,7 +6255,7 @@ END
 GO
 ALTER TABLE [dbo].[Users] ENABLE TRIGGER [trgCreateHasherRecord]
 GO
-/****** Object:  Trigger [Hashers].[TR_HasherEventMap_InsertUpdateDelete]    Script Date: 6/1/19 5:19:53 AM ******/
+/****** Object:  Trigger [Hashers].[TR_HasherEventMap_InsertUpdateDelete]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13520,7 +6264,7 @@ CREATE TRIGGER [Hashers].[TR_HasherEventMap_InsertUpdateDelete] ON [Hashers].[Ha
 GO
 ALTER TABLE [Hashers].[HasherEventMap] ENABLE TRIGGER [TR_HasherEventMap_InsertUpdateDelete]
 GO
-/****** Object:  Trigger [Hashers].[TR_HasherFriendMap_InsertUpdateDelete]    Script Date: 6/1/19 5:19:53 AM ******/
+/****** Object:  Trigger [Hashers].[TR_HasherFriendMap_InsertUpdateDelete]    Script Date: 6/7/19 8:39:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13529,7 +6273,7 @@ CREATE TRIGGER [Hashers].[TR_HasherFriendMap_InsertUpdateDelete] ON [Hashers].[H
 GO
 ALTER TABLE [Hashers].[HasherFriendMap] ENABLE TRIGGER [TR_HasherFriendMap_InsertUpdateDelete]
 GO
-/****** Object:  Trigger [HC].[TR_BusinessUnits_InsertUpdateDelete]    Script Date: 6/1/19 5:19:54 AM ******/
+/****** Object:  Trigger [HC].[TR_BusinessUnits_InsertUpdateDelete]    Script Date: 6/7/19 8:39:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13538,27 +6282,7 @@ CREATE TRIGGER [HC].[TR_BusinessUnits_InsertUpdateDelete] ON [HC].[BusinessUnits
 GO
 ALTER TABLE [HC].[BusinessUnits] ENABLE TRIGGER [TR_BusinessUnits_InsertUpdateDelete]
 GO
-/****** Object:  Trigger [HC].[trgSetDirtyFlag]    Script Date: 6/1/19 5:19:54 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TRIGGER [HC].[trgSetDirtyFlag]
-   ON  [HC].[City]
-   AFTER INSERT, UPDATE, DELETE
-AS 
-BEGIN
-	-- SET NOCOUNT ON added to prHasher extra result sets from
-	-- interfering with SELECT statements.
-	SET NOCOUNT ON
-
-	UPDATE HC.ServerStatus SET LastGazetteerUpdate = getdate()
-
-END
-GO
-ALTER TABLE [HC].[City] ENABLE TRIGGER [trgSetDirtyFlag]
-GO
-/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForCity]    Script Date: 6/1/19 5:19:54 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForCity]    Script Date: 6/7/19 8:39:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13582,27 +6306,7 @@ END
 GO
 ALTER TABLE [HC].[City] ENABLE TRIGGER [trgUpdateModifiedOnDateForCity]
 GO
-/****** Object:  Trigger [HC].[trgSetDirtyFlagCountry]    Script Date: 6/1/19 5:19:54 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TRIGGER [HC].[trgSetDirtyFlagCountry]
-   ON  [HC].[Country]
-   AFTER INSERT, UPDATE, DELETE
-AS 
-BEGIN
-	-- SET NOCOUNT ON added to prHasher extra result sets from
-	-- interfering with SELECT statements.
-	SET NOCOUNT ON
-
-	UPDATE HC.ServerStatus SET LastGazetteerUpdate = getdate()
-
-END
-GO
-ALTER TABLE [HC].[Country] ENABLE TRIGGER [trgSetDirtyFlagCountry]
-GO
-/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForCountry]    Script Date: 6/1/19 5:19:54 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForCountry]    Script Date: 6/7/19 8:39:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13626,7 +6330,7 @@ END
 GO
 ALTER TABLE [HC].[Country] ENABLE TRIGGER [trgUpdateModifiedOnDateForCountry]
 GO
-/****** Object:  Trigger [HC].[trgCalculateHasherGeolocation]    Script Date: 6/1/19 5:19:54 AM ******/
+/****** Object:  Trigger [HC].[trgCalculateHasherGeolocation]    Script Date: 6/7/19 8:39:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13650,7 +6354,7 @@ END
 GO
 ALTER TABLE [HC].[Hasher] ENABLE TRIGGER [trgCalculateHasherGeolocation]
 GO
-/****** Object:  Trigger [HC].[trgGenerateQrCode]    Script Date: 6/1/19 5:19:54 AM ******/
+/****** Object:  Trigger [HC].[trgGenerateQrCode]    Script Date: 6/7/19 8:39:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13716,7 +6420,7 @@ BEGIN
 		SET @Loop = 'Yes'
 		SET @EmergencyStop = 0
 
-		IF ((SELECT count(*) from HC.Hasher WHERE ResetCode = @ResetCode and id <> @id) > 0) OR (@ResetCode not like 'RC:%')
+		IF ((SELECT count(*) from HC.Hasher WHERE ResetCode = @ResetCode and id <> @id) > 0) OR (@ResetCode not like 'URC:%')
 		BEGIN
 			-- attempt to insert a duplicate QR was detected or the QR being inserted is invalid
 			-- in these cases, create a new QR and insert that instead
@@ -13724,7 +6428,7 @@ BEGIN
 			BEGIN
 				SET @EmergencyStop = @EmergencyStop + 1
 				IF @EmergencyStop > 10 SET @Loop = 'No'
-				SET @QR = 'RC:'+SUBSTRING(TRIM(HC.NUMBER_TO_STR_BASE (25,(RAND() * (2147483647 - 91466177)) + 91466177)),0,7)
+				SET @QR = 'URC:'+SUBSTRING(TRIM(HC.NUMBER_TO_STR_BASE (25,(RAND() * (2147483647 - 91466177)) + 91466177)),0,7)
 				-- if the QR code is unique, go ahead and insert it
 				IF (SELECT count(*) FROM HC.Hasher WHERE ResetCode = @QR) = 0
 				BEGIN
@@ -13738,7 +6442,7 @@ BEGIN
 		SET @Loop = 'Yes'
 		SET @EmergencyStop = 0
 
-		IF ((SELECT count(*) from HC.Hasher WHERE SupportCode = @SupportCode and id <> @id) > 0) OR (@SupportCode not like 'SC:%')
+		IF ((SELECT count(*) from HC.Hasher WHERE SupportCode = @SupportCode and id <> @id) > 0) OR (@SupportCode not like 'USC:%')
 		BEGIN
 			-- attempt to insert a duplicate QR was detected or the QR being inserted is invalid
 			-- in these cases, create a new QR and insert that instead
@@ -13746,7 +6450,7 @@ BEGIN
 			BEGIN
 				SET @EmergencyStop = @EmergencyStop + 1
 				IF @EmergencyStop > 10 SET @Loop = 'No'
-				SET @QR = 'SC:'+SUBSTRING(TRIM(HC.NUMBER_TO_STR_BASE (25,(RAND() * (2147483647 - 91466177)) + 91466177)),0,7)
+				SET @QR = 'USC:'+SUBSTRING(TRIM(HC.NUMBER_TO_STR_BASE (25,(RAND() * (2147483647 - 91466177)) + 91466177)),0,7)
 				-- if the QR code is unique, go ahead and insert it
 				IF (SELECT count(*) FROM HC.Hasher WHERE SupportCode = @QR) = 0
 				BEGIN
@@ -13805,7 +6509,7 @@ END
 GO
 ALTER TABLE [HC].[Hasher] ENABLE TRIGGER [trgGenerateQrCode]
 GO
-/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForNames]    Script Date: 6/1/19 5:19:54 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForNames]    Script Date: 6/7/19 8:39:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13829,7 +6533,7 @@ END
 GO
 ALTER TABLE [HC].[Hasher] ENABLE TRIGGER [trgUpdateModifiedOnDateForNames]
 GO
-/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForHasherEventMap]    Script Date: 6/1/19 5:19:54 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForHasherEventMap]    Script Date: 6/7/19 8:39:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13853,7 +6557,7 @@ END
 GO
 ALTER TABLE [HC].[HasherEventMap] DISABLE TRIGGER [trgUpdateModifiedOnDateForHasherEventMap]
 GO
-/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForHasherKennelMap]    Script Date: 6/1/19 5:19:54 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForHasherKennelMap]    Script Date: 6/7/19 8:39:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13877,7 +6581,7 @@ END
 GO
 ALTER TABLE [HC].[HasherKennelMap] ENABLE TRIGGER [trgUpdateModifiedOnDateForHasherKennelMap]
 GO
-/****** Object:  Trigger [HC].[trgUpdateKennelGeolocation]    Script Date: 6/1/19 5:19:54 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateKennelGeolocation]    Script Date: 6/7/19 8:39:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13933,7 +6637,7 @@ END
 GO
 ALTER TABLE [HC].[Kennel] ENABLE TRIGGER [trgUpdateKennelGeolocation]
 GO
-/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForKennels]    Script Date: 6/1/19 5:19:55 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForKennels]    Script Date: 6/7/19 8:39:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13956,7 +6660,7 @@ END
 GO
 ALTER TABLE [HC].[Kennel] ENABLE TRIGGER [trgUpdateModifiedOnDateForKennels]
 GO
-/****** Object:  Trigger [HC].[TR_Meetings_InsertUpdateDelete]    Script Date: 6/1/19 5:19:55 AM ******/
+/****** Object:  Trigger [HC].[TR_Meetings_InsertUpdateDelete]    Script Date: 6/7/19 8:39:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -13965,27 +6669,7 @@ CREATE TRIGGER [HC].[TR_Meetings_InsertUpdateDelete] ON [HC].[Meetings] AFTER IN
 GO
 ALTER TABLE [HC].[Meetings] ENABLE TRIGGER [TR_Meetings_InsertUpdateDelete]
 GO
-/****** Object:  Trigger [HC].[trgSetDirtyFlagRegion]    Script Date: 6/1/19 5:19:55 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TRIGGER [HC].[trgSetDirtyFlagRegion]
-   ON  [HC].[Region]
-   AFTER INSERT, UPDATE, DELETE
-AS 
-BEGIN
-	-- SET NOCOUNT ON added to prHasher extra result sets from
-	-- interfering with SELECT statements.
-	SET NOCOUNT ON
-
-	UPDATE HC.ServerStatus SET LastGazetteerUpdate = getdate()
-
-END
-GO
-ALTER TABLE [HC].[Region] ENABLE TRIGGER [trgSetDirtyFlagRegion]
-GO
-/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForRegion]    Script Date: 6/1/19 5:19:55 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForRegion]    Script Date: 6/7/19 8:39:47 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -14019,7 +6703,7 @@ SET ANSI_PADDING ON
 SET ANSI_WARNINGS ON
 SET NUMERIC_ROUNDABORT OFF
 GO
-/****** Object:  Index [IX_KennelSpatialIndex]    Script Date: 6/1/19 5:19:55 AM ******/
+/****** Object:  Index [IX_KennelSpatialIndex]    Script Date: 6/7/19 8:39:47 AM ******/
 CREATE SPATIAL INDEX [IX_KennelSpatialIndex] ON [HC].[Kennel]
 (
 	[KennelGeolocation]

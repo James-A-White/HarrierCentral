@@ -16,7 +16,6 @@ import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/receipts_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
-import 'package:harrier_central/data/hc3_services/server_message_model.dart';
 
 class SyncEventAdminService {
   static const int flagHasherEventMapTable = 0x00000001;
@@ -154,8 +153,8 @@ class SyncEventAdminService {
     return true;
   }
 
-  static Future<List<ServerMessageModel>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Database db, Function informUser}) async {
-    List<ServerMessageModel> messages;
+  static Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Database db, Function informUser}) async {
+    List<dynamic> adHocData;
 
     db ??= await DBProvider.db.database;
 
@@ -204,14 +203,14 @@ class SyncEventAdminService {
         print('hasher event map for admin updated');
       }
 
-      if (ms.startsWith(r'[{"messageId"')) {
-        final List<ServerMessageModel> messageModel = ServerMessageModel.itemsFromJson('$ms');
-        if ((messageModel != null) && (messageModel.isNotEmpty)) {
-          messages = messageModel;
+      if (ms.startsWith(r'[{"adHocDataId"')) {
+        final List<dynamic> adHocItems = jsonDecode('$ms'); 
+        if ((adHocItems != null) && (adHocItems.isNotEmpty)) {
+          adHocData = adHocItems;
         }
         print('server messages received');
       }
     }
-    return messages;
+    return adHocData;
   }
 }

@@ -335,7 +335,7 @@ class PaymentsService {
 
   // ============ Functions go here =============
 
-  Future<void> payForEvent(
+  Future<List<dynamic>> payForEvent(
     String eventId,
     String hasherId,
     String hasherEventMapId,
@@ -344,10 +344,11 @@ class PaymentsService {
     int minimumAttendenceValue,
   ) async {
 
-    
+    List<dynamic> results;
+
     if (globalConnectionStatus == connectionStatus_notConnected)
     {
-      return;
+      return results;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
@@ -396,9 +397,9 @@ class PaymentsService {
       },
     );
 
-    await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    results = await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
 
-    return;
+    return results;
   }
 
   static Future<Map<String, String>> sendPaymentReportByEmail({
