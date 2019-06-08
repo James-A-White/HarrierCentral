@@ -11,6 +11,8 @@ Build 138: Fixed a bug with the Facebook login on the create account screen not 
 Build 140: Version 0.7.1 - Added intro screens and the ability to have people initialize the app using an invite code
 Intermediate: refactored and cleaned up app configuration screens on initial launch
 26 Apr 19 > Build 142: Version 0.7.3 - significant changes. Implemented SQFlite to offload work from the backend server and support eventual offline operation of the app
+**************
+08 Jun 19 > Build 143: Version 0.8.0 - MAJOR CHANGES - completely implemented HC3 and eliminated all obsolete code. Also refactored DB
 
 
 Add: Continue implementing permissions

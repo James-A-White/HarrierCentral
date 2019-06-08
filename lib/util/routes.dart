@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/pages/facebook_login.dart';
+//import 'package:harrier_central/pages/facebook_login.dart';
 import 'package:harrier_central/pages/init/login_page.dart';
 import 'package:harrier_central/pages/init/avatar_icons_page.dart';
 import 'package:harrier_central/pages/init/intro_slider.dart';
@@ -18,7 +18,7 @@ enum RouteNames {
 }
 
 final Map<String, WidgetBuilder> routes = <String, WidgetBuilder>{
-  RouteNames.FACEBOOK_LOGIN.toString(): (BuildContext context) => FbLoginPage(),
+  //RouteNames.FACEBOOK_LOGIN.toString(): (BuildContext context) => FbLoginPage(),
   RouteNames.MAIN_LANDING_PAGE.toString(): (BuildContext context) =>
       const MainNavigationPage(),
   RouteNames.NEW_ACCOUNT.toString(): (BuildContext context) =>

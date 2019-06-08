@@ -1,6 +1,6 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 0.7.3+142
+version: 0.8.0+143
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -21,7 +21,7 @@ dependencies:
   crypto: ^2.0.6
   cupertino_icons: ^0.1.2
   fancy_bottom_navigation: ^0.3.2
-  flutter_facebook_login: ^2.0.0 # upgraded from 2.0.0 8 Jun 19
+  # flutter_facebook_login: ^2.0.0 # upgraded from 2.0.0 8 Jun 19 
   flutter_full_pdf_viewer: ^1.0.4
   flutter_image_compress: ^0.4.0 
   flutter_linkify: ^2.1.0
@@ -35,9 +35,9 @@ dependencies:
   image_cropper: ^1.0.2 # updated from 1.0.0 on 8 Jun 19
   image_picker: ^0.6.0+9 # from 0.5.4 May 20 # updated from 0.6.0+4 on 8 Jun 19
   intro_slider: ^1.2.3
-  location_permissions: ^2.0.1
+  # location_permissions: ^2.0.1
   package_info: ^0.4.0+4 # updated from 0.4.0+3 on 8 Jun 19
-  permission_handler: ^2.2.0
+  permission_handler: ^3.1.0 # updated from 2.2.0 on 8 Jun 19
   qr_flutter: ^2.1.0+55 # updated from 2.0.0 on 8 Jun 19
   shared_preferences: ^0.5.3+1 # updated from 0.5.2 on 8 Jun 19
   sqflite: ^1.1.5
@@ -85,8 +85,8 @@ flutter_icons:
   android: true 
   ios: 'HarrierCentralIcon'
   image_path: 'assets/icon/icon.png'
-  # adaptive_icon_background: '#FFE02000'
-  # adaptive_icon_foreground: 'assets/icon/hc_app_icon_adaptive_foot.png'
+  adaptive_icon_background: '#FFE02000'
+  adaptive_icon_foreground: 'assets/icon/hc_app_icon_adaptive_foot.png'
 
   # hc_app_icon_adaptive_foot
 
