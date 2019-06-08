@@ -10,6 +10,12 @@ enum EnumAppPages {
   fab
 }
 
+enum EnumDataContext{
+  user,
+  event,
+  kennel
+}
+
 abstract class Enum<T> {
   const Enum(this._value);
   final T _value;

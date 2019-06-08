@@ -123,8 +123,10 @@ class SyncKennelAdminService {
     return true;
   }
 
-  static Future<void> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Database db,Function informUser}) async {
+  static Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Database db,Function informUser}) async {
     
+    List<dynamic> adHocData;
+
     db ??= await DBProvider.db.database;
     
     if (jsonResults.startsWith('[[')) {
@@ -154,6 +156,16 @@ class SyncKennelAdminService {
         await hkmSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherKennelMapTableType.kennelAdmin);
         print('hasher kennel map for kennel admin updated');
       }
+
+      if (ms.startsWith(r'[{"adHocDataId"')) {
+        final List<dynamic> adHocItems = jsonDecode('$ms'); 
+        if ((adHocItems != null) && (adHocItems.isNotEmpty)) {
+          adHocData = adHocItems;
+        }
+        print('server messages received');
+      }
     }
+
+    return adHocData;
   }
 }

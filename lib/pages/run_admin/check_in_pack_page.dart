@@ -800,6 +800,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                   context,
                   MaterialPageRoute<HashersModel>(
                     builder: (BuildContext context) => HasherProfilePage(
+                          dataContext: EnumDataContext.event,
                           pageType: EnumMyProfilePageType.newHasherProfile,
                           eventId: event['eventId'],
                           kennelId: event['kennelId'],

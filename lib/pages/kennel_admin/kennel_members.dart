@@ -10,6 +10,7 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
 import 'package:harrier_central/widgets/kennel_member_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
@@ -26,19 +27,21 @@ class KennelMembersList extends StatefulWidget {
 }
 
 class KennelMembersResults {
-  KennelMembersResults({this.hasherId, this.dispName, this.photo, this.isMember, this.following, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.membershipDurationInMonths, this.isLoading = false, this.membershipDateBeingUpdated = false});
+  KennelMembersResults({this.hasherId, this.dispName, this.photo, this.isMember, this.following, this.kennelId, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.membershipDurationInMonths, this.isLoading = false, this.kennelShortName, this.membershipDateBeingUpdated = false});
 
   final String hasherId;
   String dispName;
   String photo;
   final int isMember;
   final int following;
+  final String kennelId;
   final DateTime dateOfLastRun;
   final DateTime membershipExpirationDate;
   final DateTime memberSince;
   final int membershipDurationInMonths;
   bool isLoading;
   bool membershipDateBeingUpdated;
+  String kennelShortName;
 
   static KennelMembersResults fromMap(Map<String, dynamic> map) {
     final KennelMembersResults item = KennelMembersResults(
@@ -47,6 +50,8 @@ class KennelMembersResults {
       photo: map['photo'],
       isMember: map['isMember'],
       following: map['following'],
+      kennelShortName: map['kennelShortName'],
+            kennelId: map['kennelId'],
       dateOfLastRun: (map['dateOfLastRun'] == null) ? null : DateTime.parse(map['dateOfLastRun'].toString().substring(0, 19)),
       membershipExpirationDate: (map['membershipExpirationDate'] == null) ? null : DateTime.parse(map['membershipExpirationDate'].toString().substring(0, 19)),
       memberSince: (map['memberSince'] == null) ? null : DateTime.parse(map['memberSince'].toString().substring(0, 19)),
@@ -99,7 +104,9 @@ class KennelMemberListState extends State<KennelMembersList> {
           hkm.dateOfLastRun,
           hkm.membershipExpirationDate,
           hkm.memberSince,
-          k.membershipDurationInMonths
+          k.membershipDurationInMonths,
+          k.kennelShortName,
+          k.kennelId
           FROM hasherKennelMapForKennelAdmin hkm
           INNER JOIN kennels k on k.kennelId = hkm.kennelId
           INNER JOIN hashers h on h.hasherId = hkm.userId
@@ -234,9 +241,11 @@ class KennelMemberListState extends State<KennelMembersList> {
                     context,
                     MaterialPageRoute<HashersModel>(
                       builder: (BuildContext context) => HasherProfilePage(
+                            dataContext: EnumDataContext.kennel,
                             pageType: EnumMyProfilePageType.newHasherProfile,
                             kennelId: widget.kennel['kennelId'],
                             uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
+                            kennelShortName: widget.kennel['kennelShortName'],
                           ),
                     ),
                   ).then((HashersModel result) {

@@ -282,7 +282,7 @@ class HashersService {
 
   // ============ Functions go here =============
 
-  Future<String> addEditUser({String targetUserId, String firstName, String lastName, String email, String hashName, String photo, String eventId, String kennelId}) async {
+  Future<String> addEditUser({String targetUserId, String firstName, String lastName, String email, String hashName, String photo, String eventId, String kennelId, String historicalPackRunCount, String historicalHaringCount, int followKennelOnAddNeewUser}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return '';
       // TODO(James): fix this so we can return a bool
@@ -333,7 +333,10 @@ class HashersService {
       'hashName': hashName,
       'photo': photo,
       'eventId': eventId,
-      'kennelId': kennelId
+      'kennelId': kennelId,
+      'historicalPackRunCount':historicalPackRunCount,
+      'historicalHaringCount':historicalHaringCount,
+      'followKennelOnAddNeewUser' : followKennelOnAddNeewUser.toString()
     });
 
     final http.Response response = await http

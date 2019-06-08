@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
@@ -25,9 +26,12 @@ class KennelMemberListItem extends StatelessWidget {
           context,
           MaterialPageRoute<HashersModel>(
             builder: (BuildContext context) => HasherProfilePage(
+                  dataContext: EnumDataContext.kennel,
                   pageType: EnumMyProfilePageType.anyHasherProfile,
                   hasherId: kennelMember.hasherId,
                   uiElementsToDisplay: HasherProfilePage.flagUiElement_inviteCode,
+                  kennelShortName: kennelMember.kennelShortName,
+                  kennelId: kennelMember.kennelId,
                 ),
           ),
         ).then((HashersModel result){

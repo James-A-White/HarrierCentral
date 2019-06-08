@@ -100,7 +100,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                       settings: const RouteSettings(),
 
                       builder: (BuildContext context) {
-                        return HasherProfilePage(pageType: EnumMyProfilePageType.myProfile, hasherId: userId);
+                        return HasherProfilePage(dataContext: EnumDataContext.user, pageType: EnumMyProfilePageType.myProfile, hasherId: userId);
                       },
                     ),
                   );
