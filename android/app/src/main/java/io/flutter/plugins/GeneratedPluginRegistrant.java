@@ -4,6 +4,7 @@ import io.flutter.plugin.common.PluginRegistry;
 import xyz.luan.audioplayers.AudioplayersPlugin;
 import io.flutter.plugins.deviceinfo.DeviceInfoPlugin;
 import co.apperto.fastqrreaderview.FastQrReaderViewPlugin;
+import com.roughike.facebooklogin.facebooklogin.FacebookLoginPlugin;
 import com.alveliu.flutterfullpdfviewer.FlutterFullPdfViewerPlugin;
 import com.example.flutterimagecompress.FlutterImageCompressPlugin;
 import com.baseflow.flutter.plugin.geolocator.GeolocatorPlugin;
@@ -32,6 +33,7 @@ public final class GeneratedPluginRegistrant {
     AudioplayersPlugin.registerWith(registry.registrarFor("xyz.luan.audioplayers.AudioplayersPlugin"));
     DeviceInfoPlugin.registerWith(registry.registrarFor("io.flutter.plugins.deviceinfo.DeviceInfoPlugin"));
     FastQrReaderViewPlugin.registerWith(registry.registrarFor("co.apperto.fastqrreaderview.FastQrReaderViewPlugin"));
+    FacebookLoginPlugin.registerWith(registry.registrarFor("com.roughike.facebooklogin.facebooklogin.FacebookLoginPlugin"));
     FlutterFullPdfViewerPlugin.registerWith(registry.registrarFor("com.alveliu.flutterfullpdfviewer.FlutterFullPdfViewerPlugin"));
     FlutterImageCompressPlugin.registerWith(registry.registrarFor("com.example.flutterimagecompress.FlutterImageCompressPlugin"));
     GeolocatorPlugin.registerWith(registry.registrarFor("com.baseflow.flutter.plugin.geolocator.GeolocatorPlugin"));

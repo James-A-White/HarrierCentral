@@ -13,12 +13,13 @@ Intermediate: refactored and cleaned up app configuration screens on initial lau
 26 Apr 19 > Build 142: Version 0.7.3 - significant changes. Implemented SQFlite to offload work from the backend server and support eventual offline operation of the app
 **************
 08 Jun 19 > Build 143: Version 0.8.0 - MAJOR CHANGES - completely implemented HC3 and eliminated all obsolete code. Also refactored DB
+08 Jun 19 > Build 144: Version 0.8.1 - Trying to resolve problems with Android build
+08 Jun 19 > Build 144: Version 0.8.1 - Trying to resolve problems with Android build
+09 Jun 19 > Build 145: Version 0.8.2 - Problems now resolved with Android build
 
 
 Add: Continue implementing permissions
-Add: Ability to search for Hashers in the system but not members of a kennel 
 Debug: find out where I need to dispose of memory
-
 
 To check out:
 flutter_background_geolocation 0.3.4

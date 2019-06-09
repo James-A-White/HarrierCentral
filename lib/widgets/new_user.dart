@@ -22,7 +22,7 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/user_details_ui.dart';
-//import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
@@ -387,32 +387,32 @@ class NewUserState extends State<NewUserWidget> with SingleTickerProviderStateMi
                   children: <Widget>[
                     GestureDetector(
                       onTap: () {
-                        // final FacebookLogin facebookLogin = FacebookLogin();
-                        // facebookLogin.logInWithReadPermissions(<String>['email']).then((FacebookLoginResult result) async {
-                        //   final String token = result.accessToken.token;
-                        //   final http.Response graphResponse = await http.get('https://graph.facebook.com/v3.2/me?fields=name,first_name,last_name,picture.width(640),email,gender&access_token=$token');
+                        final FacebookLogin facebookLogin = FacebookLogin();
+                        facebookLogin.logInWithReadPermissions(<String>['email']).then((FacebookLoginResult result) async {
+                          final String token = result.accessToken.token;
+                          final http.Response graphResponse = await http.get('https://graph.facebook.com/v3.2/me?fields=name,first_name,last_name,picture.width(640),email,gender&access_token=$token');
 
-                        //   final dynamic profile = json.decode(graphResponse.body);
+                          final dynamic profile = json.decode(graphResponse.body);
 
-                        //   final String firstName = profile['first_name'];
-                        //   final String lastName = profile['last_name'];
-                        //   final String email = profile['email'];
-                        //   final String facebookId = profile['id'];
-                        //   final String gender = profile['gender'];
-                        //   final dynamic picture = profile['picture']['data']['url'];
+                          final String firstName = profile['first_name'];
+                          final String lastName = profile['last_name'];
+                          final String email = profile['email'];
+                          final String facebookId = profile['id'];
+                          final String gender = profile['gender'];
+                          final dynamic picture = profile['picture']['data']['url'];
 
-                        //   setStringPref(StringPrefsEnum.facebookProfilePhoto, picture);
-                        //   setStringPref(StringPrefsEnum.facebookId, facebookId);
-                        //   setStringPref(StringPrefsEnum.facebookAccessToken, token);
-                        //   setStringPref(StringPrefsEnum.gender, gender);
+                          setStringPref(StringPrefsEnum.facebookProfilePhoto, picture);
+                          setStringPref(StringPrefsEnum.facebookId, facebookId);
+                          setStringPref(StringPrefsEnum.facebookAccessToken, token);
+                          setStringPref(StringPrefsEnum.gender, gender);
 
-                        //   userDetailsUi.updateUi(firstName, lastName, email);
-                        //   userDetailsUi.firstName = firstName;
-                        //   userDetailsUi.lastName = lastName;
-                        //   userDetailsUi.email = email;
+                          userDetailsUi.updateUi(firstName, lastName, email);
+                          userDetailsUi.firstName = firstName;
+                          userDetailsUi.lastName = lastName;
+                          userDetailsUi.email = email;
 
-                        //   Utilities.showAlert(context, 'Facebook profile loaded', 'We have copied your Facebook profile information (name, email and profile photo) to the app. Please continue to register by adding your Hash name.', 'OK');
-                        // });
+                          Utilities.showAlert(context, 'Facebook profile loaded', 'We have copied your Facebook profile information (name, email and profile photo) to the app. Please continue to register by adding your Hash name.', 'OK');
+                        });
                       },
                       child: Container(
                         width: 250,
