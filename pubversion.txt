@@ -16,6 +16,7 @@ Intermediate: refactored and cleaned up app configuration screens on initial lau
 08 Jun 19 > Build 144: Version 0.8.1 - Trying to resolve problems with Android build
 08 Jun 19 > Build 144: Version 0.8.1 - Trying to resolve problems with Android build
 09 Jun 19 > Build 145: Version 0.8.2 - Problems now resolved with Android build
+09 Jun 19 > Build 146: Version 0.8.3 - Still fucking with the Android build!!! 
 
 
 Add: Continue implementing permissions

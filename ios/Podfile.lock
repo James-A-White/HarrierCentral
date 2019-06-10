@@ -11,12 +11,13 @@ PODS:
     - Flutter
   - fast_qr_reader_view (0.0.1):
     - Flutter
-  - FBSDKCoreKit (4.40.0):
+  - FBSDKCoreKit (4.39.1):
     - Bolts (~> 1.9)
   - FBSDKLoginKit (4.39.1):
     - FBSDKCoreKit
   - Flutter (1.0.0)
   - flutter_facebook_login (0.0.1):
+    - FBSDKCoreKit (= 4.39.1)
     - FBSDKLoginKit (= 4.39.1)
     - Flutter
   - flutter_full_pdf_viewer (1.0.1):
@@ -43,7 +44,7 @@ PODS:
     - Flutter
   - path_provider (0.0.1):
     - Flutter
-  - permission_handler (2.2.0):
+  - permission_handler (3.1.0):
     - Flutter
   - screen (0.0.1):
     - Flutter
@@ -138,10 +139,10 @@ SPEC CHECKSUMS:
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
   device_info: 3ebad48f726348f69abd802f3334a8d1ed795fbd
   fast_qr_reader_view: 53b38a544886e650381ca579e0cdd5ae142fffa6
-  FBSDKCoreKit: ae214474b25033399c131dc81d258e412582a2ba
+  FBSDKCoreKit: f442aa96179cc9b382bb4abeb7e340a47cca8f91
   FBSDKLoginKit: c3079d9a4db27c492287b1eed7a4272b28cf8a59
   Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
-  flutter_facebook_login: f1f88c32d5888d6b5f3301fd87cc7de26f02877e
+  flutter_facebook_login: be61e24a4b7d621515353c6b4583d1981bdaa3d6
   flutter_full_pdf_viewer: 8a6723fa44d3e421520b70ca95fa38155a68eccf
   flutter_image_compress: c29e818cdf6e4276875601a245b6bb18eb444157
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
@@ -153,7 +154,7 @@ SPEC CHECKSUMS:
   location_permissions: db47e77cf4f1359866d627523fb7812899a752f3
   package_info: 78cabb3c322943c55d39676f4a5bfc748c01d055
   path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
-  permission_handler: 976a8a94c3443d23fe33c11e98277d471f0e543d
+  permission_handler: fa6b0d784b1a43cb96b468a5b8365cb130b1956a
   screen: abd91ca7bf3426e1cc3646d27e9b2358d6bf07b0
   shared_preferences: 1feebfa37bb57264736e16865e7ffae7fc99b523
   sqflite: ff1d9da63c06588cc8d1faf7256d741f16989d5a

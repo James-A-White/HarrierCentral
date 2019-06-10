@@ -7,6 +7,7 @@ import 'package:harrier_central/data/services/get_reset_code_service.dart';
 import 'package:harrier_central/data/models/single_result_model.dart';
 import 'package:harrier_central/data/services/authorize_device_service.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 
 class GetResetCodePopup extends StatefulWidget {
@@ -87,7 +88,7 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
             onPressed: () {
               final GetResetCodeService svc = GetResetCodeService();
               svc
-                  .getResetCode('SC:' + getResetCodeTextController.text)
+                  .getResetCode(QR_PREFIX_USER_SECRET_CODE + getResetCodeTextController.text)
                   .then((SingleResultModel result) {
                 setState(() {
                   getResetCodeTextController.text = result.result;
@@ -100,7 +101,7 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
               // });
             }),
 
-        ((!getResetCodeTextController.text.startsWith('RC:')) ||
+        ((!getResetCodeTextController.text.startsWith(QR_PREFIX_USER_RESET_CODE)) ||
                 (getResetCodeTextController.text.length != 9))
             ? Container()
             : FlatButton(
@@ -109,7 +110,7 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
                 textColor: Colors.white,
                 onPressed: () {
                   if (getResetCodeTextController.text.toUpperCase() ==
-                      'RC:CLEARD') {
+                      QR_PREFIX_USER_RESET_CODE+ 'CLEAR') {
 
                     clearAllPrefs();
 

@@ -9,9 +9,9 @@ import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 class KennelRunHistoryCountListItem extends StatelessWidget {
-  const KennelRunHistoryCountListItem({@required this.kennelRunHistoryCount,@required this.refreshCounters});
+  const KennelRunHistoryCountListItem({@required this.kennelInfo,@required this.refreshCounters});
 
-  final HistoryListResults kennelRunHistoryCount;
+  final HistoryListResults kennelInfo;
   final Function refreshCounters;
 
   @override
@@ -60,10 +60,7 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
               MaterialPageRoute<dynamic>(
                 builder: (BuildContext context) {
                   return UserRunHistoryListPage(
-                    kennelId: kennelRunHistoryCount.kennelId,
-                    kennelName: kennelRunHistoryCount.kennelName,
-                    kennelShortName: kennelRunHistoryCount.kennelShortName,
-                    kennelLogo: kennelRunHistoryCount.kennelLogo,
+                    kennelInfo: kennelInfo,
                   );
                 },
               ),
@@ -77,10 +74,10 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(left: 20.0),
-                child: (kennelRunHistoryCount.kennelLogo == null || kennelRunHistoryCount.kennelLogo.length < 5) ? Container(height:80, width:80):
+                child: (kennelInfo.kennelLogo == null || kennelInfo.kennelLogo.length < 5) ? Container(height:80, width:80):
                 KennelLogo(
-                  kennelLogoUrl: kennelRunHistoryCount.kennelLogo,
-                  kennelShortName: kennelRunHistoryCount.kennelShortName,
+                  kennelLogoUrl: kennelInfo.kennelLogo,
+                  kennelShortName: kennelInfo.kennelShortName,
                   logoHeight: 80.0,
                   leftPadding: 0.0,
                 ),
@@ -108,7 +105,7 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                       //padding: EdgeInsets.only(left:53.0),
                       
                       child: AutoSizeText(
-                        '   =   ${kennelRunHistoryCount.totalRunsThisKennel.toString()}',
+                        '   =   ${kennelInfo.totalRunsThisKennel.toString()}',
                         //'   =   9999',
                         //'Super fucking long text thats sure to overflow and more',
                         //'999',
@@ -120,13 +117,13 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                       ),
                       //color: Colors.green,
                     ),
-                    kennelRunHistoryCount.totalHaringThisKennel <= 0
+                    kennelInfo.totalHaringThisKennel <= 0
                         ? Container(width: 120)
                         : Container(
                             padding: const EdgeInsets.only(left: 10.0),
                             width: 120,
                             child: AutoSizeText(
-                              '(${kennelRunHistoryCount.totalHaringThisKennel.toString()} times hared)',
+                              '(${kennelInfo.totalHaringThisKennel.toString()} times hared)',
                               //=='   =   22',
                               //'Super fucking long text thats sure to overflow and more',
                               //'999',

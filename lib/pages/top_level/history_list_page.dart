@@ -21,7 +21,7 @@ class HistoryListPage extends StatefulWidget {
 }
 
 class HistoryListResults {
-  HistoryListResults({this.totalRunsThisKennel, this.totalHaringThisKennel, this.kennelName, this.kennelShortName, this.kennelId, this.kennelLogo});
+  HistoryListResults({this.totalRunsThisKennel, this.totalHaringThisKennel, this.kennelName, this.kennelShortName, this.kennelId, this.kennelLogo, this.historicalPackRunCount, this.historicalHaringCount});
 
   final int totalRunsThisKennel;
   final int totalHaringThisKennel;
@@ -29,9 +29,19 @@ class HistoryListResults {
   final String kennelShortName;
   final String kennelId;
   final String kennelLogo;
+  final int historicalHaringCount;
+  final int historicalPackRunCount;
 
   static HistoryListResults fromMap(Map<String, dynamic> map) {
-    final HistoryListResults item = HistoryListResults(totalRunsThisKennel: map['totalRunsThisKennel'], totalHaringThisKennel: map['totalHaringThisKennel'], kennelId: map['kennelId'], kennelLogo: map['kennelLogo'], kennelName: map['kennelName'], kennelShortName: map['kennelShortName']);
+    final HistoryListResults item = HistoryListResults(
+      totalRunsThisKennel: map['totalRunsThisKennel'], 
+      totalHaringThisKennel: map['totalHaringThisKennel'], 
+      kennelId: map['kennelId'], 
+      historicalPackRunCount: map['historicalPackRunCount'], 
+      historicalHaringCount: map['historicalHaringCount'], 
+      kennelLogo: map['kennelLogo'], 
+      kennelName: map['kennelName'], 
+      kennelShortName: map['kennelShortName']);
     return item;
   }
 }
@@ -40,12 +50,15 @@ class HistoryListPageState extends State<HistoryListPage> {
   HistoryListPageState();
 
   bool _isLoading = false;
+  int _totalRuns = 0;
+  int _totalHaring = 0;
 
   List<HistoryListResults> runCountsList = <HistoryListResults>[];
 
   @override
   void initState() {
-    refreshRunHistoryFromTable(true);
+    //refreshRunHistoryFromTable(true);
+    _handleRefresh();
     super.initState();
   }
 
@@ -53,27 +66,19 @@ class HistoryListPageState extends State<HistoryListPage> {
     final Database db = await DBProvider.db.database;
     final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final String query = ''' 
-        SELECT 
-          count(case when hem.attendenceState >= 20 then 1 else null end) as totalRunsThisKennel,
-          count(case when hem.isHare = 1 then 1 else null end) as totalHaringThisKennel,
-          "Total" as kennelShortName,
-          "Grand Total Runs" as kennelName,
-          "00000000-0000-0000-0000-000000000000" as kennelId,
-          "" as kennelLogo
-          FROM hasherEventMap hem
-          INNER JOIN narrowEvents e on hem.eventId = e.eventId
-          WHERE hem.userId = "$userId" AND e.isCountedRun = 1 AND e.isVisible = 1
-          UNION
-          SELECT count(case when hem.attendenceState >= 20 then 1 else null end) as totalRunsThisKennel,
-          count(case when hem.isHare = 1 then 1 else null end) as totalHaringThisKennel,
+    final String query = '''  
+          SELECT count(case when hem.attendenceState >= 20 then 1 else null end) + coalesce(hkm.historicalPackRunCount,0) as totalRunsThisKennel,
+          count(case when hem.isHare = 1 then 1 else null end) + coalesce(hkm.historicalHaringCount,0) as totalHaringThisKennel,
           k.kennelShortName,
           k.kennelName,
           k.kennelId,
-          k.kennelLogo
+          k.kennelLogo,
+          coalesce(hkm.historicalPackRunCount,0) as historicalPackRunCount,
+          coalesce(hkm.historicalHaringCount,0) as historicalHaringCount
           FROM hasherEventMap hem
           INNER JOIN narrowEvents e on hem.eventId = e.eventId
           INNER JOIN kennels k on k.kennelId = e.kennelId
+          LEFT OUTER JOIN hasherKennelMap hkm on hkm.userId = "$userId"  and hkm.kennelId = k.kennelId
           WHERE hem.userId = "$userId" AND e.isCountedRun = 1 AND e.isVisible = 1
           GROUP BY k.kennelId, k.kennelLogo,k.kennelShortName,k.kennelName
           ORDER BY totalRunsThisKennel desc
@@ -83,8 +88,13 @@ class HistoryListPageState extends State<HistoryListPage> {
     try {
       final List<Map<String, dynamic>> results = await db.rawQuery(query);
 
+      _totalHaring = 0;
+      _totalRuns = 0;
+
       for (int i = 0; i < results.length; i++) {
         final HistoryListResults hlrItem = HistoryListResults.fromMap(results[i]);
+        _totalHaring += hlrItem.totalHaringThisKennel;
+        _totalRuns += hlrItem.totalRunsThisKennel;
         runCountsList.add(hlrItem);
 
         if (forceRefresh && (i == results.length - 1)) {
@@ -145,11 +155,11 @@ class HistoryListPageState extends State<HistoryListPage> {
                       Expanded(
                         child: ListView.builder(
                           physics: const AlwaysScrollableScrollPhysics(),
-                          itemCount: runCountsList.length - 1,
+                          itemCount: runCountsList.length,
                           padding: const EdgeInsets.only(top: 20),
                           itemExtent: 100.0,
                           itemBuilder: (BuildContext context, int index) {
-                            return KennelRunHistoryCountListItem(kennelRunHistoryCount: runCountsList[index + 1], refreshCounters: (){
+                            return KennelRunHistoryCountListItem(kennelInfo: runCountsList[index], refreshCounters: (){
                               refreshRunHistoryFromTable(true);
                             },);
                           },
@@ -188,12 +198,12 @@ class HistoryListPageState extends State<HistoryListPage> {
                         textAlign: TextAlign.center,
                       ),
                       Text(
-                        'Total runs: ' + runCountsList[0].totalRunsThisKennel.toString(),
+                        'Total runs: ' + _totalRuns.toString(),
                         style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85),
                         textAlign: TextAlign.left,
                       ),
                       Text(
-                        'Total times hared: ' + runCountsList[0].totalHaringThisKennel.toString(),
+                        'Total times hared: ' + _totalHaring.toString(),
                         style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85),
                         textAlign: TextAlign.left,
                       ),

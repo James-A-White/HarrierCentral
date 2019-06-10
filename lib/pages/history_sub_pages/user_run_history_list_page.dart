@@ -19,17 +19,16 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/user_event_list_item.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
+import 'package:harrier_central/pages/top_level/history_list_page.dart';
+
 
 class UserRunHistoryListPage extends StatefulWidget {
-  const UserRunHistoryListPage({Key key, @required this.kennelId, @required this.kennelName, @required this.kennelShortName, @required this.kennelLogo}) : super(key: key);
+  const UserRunHistoryListPage({Key key, @required this.kennelInfo}) : super(key: key);
 
-  final String kennelId;
-  final String kennelName;
-  final String kennelShortName;
-  final String kennelLogo;
+  final HistoryListResults kennelInfo;
 
   @override
-  UserRunHistoryPageState createState() => UserRunHistoryPageState(kennelId: kennelId);
+  UserRunHistoryPageState createState() => UserRunHistoryPageState(kennelId: kennelInfo.kennelId);
 }
 
 class UserRunHistoryResults {
@@ -93,7 +92,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           coalesce(hem.isHare,0) as isHare
           FROM narrowEvents e
           LEFT OUTER JOIN hasherEventMap hem on hem.eventId = e.eventId AND hem.userId = "$userId"
-          WHERE e.isCountedRun = 1 AND e.isVisible = 1 AND e.kennelId = "${widget.kennelId}" 
+          WHERE e.isCountedRun = 1 AND e.isVisible = 1 AND e.kennelId = "${widget.kennelInfo.kennelId}" 
           AND e.eventStartDatetime <= DateTime('now')
           ORDER BY e.eventStartDatetime desc
           
@@ -140,7 +139,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
               title: Text(
-                'My runs for ${widget.kennelShortName}',
+                'My runs for ${widget.kennelInfo.kennelShortName}',
                 style: const TextStyle(
                   color: Colors.white,
                 ),
@@ -173,7 +172,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                   label: 'Email run counts (this kennel)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
-                    HasherEventMapService.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelName).then((Map<String, String> result) {
+                    HasherEventMapService.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelInfo.kennelName).then((Map<String, String> result) {
                       _scaffoldKey.currentState?.hideCurrentSnackBar();
                       if (result['result'].toLowerCase().startsWith('success')) {
                         Utilities.showAlert(context, 'E-mail successfully sent', 'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
@@ -339,8 +338,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
       if (runCountsList[i].attendenceState >= 20) {
         runCount++;
       }
-      runCountsList[i].totalHaringThisKennel = haringCount;
-      runCountsList[i].totalRunsThisKennel = runCount;
+      runCountsList[i].totalHaringThisKennel = haringCount + widget.kennelInfo.historicalHaringCount;
+      runCountsList[i].totalRunsThisKennel = runCount + widget.kennelInfo.historicalPackRunCount;
     }
 
     myRunCount = runCount;
@@ -381,8 +380,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                         margin: const EdgeInsets.only(right: 20.0),
                         height: 90,
                         child: KennelLogo(
-                          kennelLogoUrl: widget.kennelLogo,
-                          kennelShortName: widget.kennelShortName,
+                          kennelLogoUrl: widget.kennelInfo.kennelLogo,
+                          kennelShortName: widget.kennelInfo.kennelShortName,
                           logoHeight: 80.0,
                           leftPadding: 10.0,
                         ),
@@ -393,7 +392,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                         children: <Widget>[
                           Container(
                             child: AutoSizeText(
-                              '${widget.kennelName}',
+                              '${widget.kennelInfo.kennelName}',
                               //'Super fucking long text thats sure to overflow and more',
                               //'999',
                               overflow: TextOverflow.ellipsis,
@@ -589,7 +588,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                           },
                           child: UserEventListItem(
                             item: item,
-                            kennelShortName: widget.kennelShortName,
+                            kennelShortName: widget.kennelInfo.kennelShortName,
                           ),
                         );
 

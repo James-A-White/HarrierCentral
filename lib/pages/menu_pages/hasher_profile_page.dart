@@ -686,7 +686,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                   RaisedButton(
                     color: _isDirty ? Theme.of(context).accentColor : Colors.grey,
                     onPressed: () {
-                      if (Utilities.checkForConnection(context)) {
+                      if (Utilities.checkForConnection(context) && _isDirty) {
                         _updateProfile();
                       }
                     },
