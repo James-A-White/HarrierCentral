@@ -19,8 +19,6 @@ class KennelsListItem extends StatefulWidget {
   KennelListItemState createState() => KennelListItemState();
 }
 
-
-
 class KennelListItemState extends State<KennelsListItem> {
   @override
   Widget build(BuildContext context) {
@@ -82,9 +80,9 @@ class KennelListItemState extends State<KennelsListItem> {
                     onTap: () {
                       Navigator.of(context).push<dynamic>(
                         MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) {
-                            return KennelAdminMainPage(kennel: widget.kennel);
-                          },
+                          builder: (BuildContext context) 
+                            => KennelAdminMainPage(kennel: widget.kennel)
+                          ,
                         ),
                       );
                     },

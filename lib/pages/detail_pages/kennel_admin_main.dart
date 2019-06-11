@@ -64,6 +64,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  KennelMembersList kennelMembersList;
+
   @override
   Widget build(BuildContext context) {
     return Stack(children: <Widget>[
@@ -446,10 +448,11 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       textColor: Colors.white,
                                       onPressed: () {
                                         if (Utilities.checkForConnection(context)) {
+                                          kennelMembersList = KennelMembersList(kennel: widget.kennel);
                                           Navigator.push<dynamic>(
                                             context,
                                             MaterialPageRoute<dynamic>(
-                                              builder: (BuildContext context) => KennelMembersList(kennel: widget.kennel),
+                                              builder: (BuildContext context) => kennelMembersList,
                                             ),
                                           );
                                         }

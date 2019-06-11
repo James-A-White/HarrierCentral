@@ -189,6 +189,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
+  int flexLeft = 27;
+  int flexRight = 73;
+
   Container buildRunDetailsView() {
     return Container(
       // Details
@@ -223,148 +226,275 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               padding: EdgeInsets.only(top: 40.0, bottom: 10.0),
               child: FancyDivider(innerColor: Colors.white),
             ),
-            Stack(
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(top: 20.0, right: 30.0, left: 20.0, bottom: 20.0),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: <Widget>[
-                    Text(
-                      'Run:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      'Date:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      'Time:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      'Run fees:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      '',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      'Bag drop:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      'Hares:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      'Run start:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      'Street:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      'City:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      'Location:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                  ]),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 21.0, right: 20.0, left: 102.0, bottom: 20.0),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                    Text(
-                      '#${widget.futureRun.event.eventNumber}',
-                      style: listValueStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      DateFormat('E, MMM d').format(widget.futureRun.event.eventStartDatetime),
-                      style: listValueStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      DateFormat('h:mm a').format(widget.futureRun.event.eventStartDatetime),
-                      style: listValueStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      ((widget.futureRun.event.eventPriceForMembers ?? widget.futureRun.kennel.defaultPriceForMembers ?? 0) > 0)
-                          ? '${Utilities.getFormattedMoney(widget.futureRun.event.eventPriceForMembers ?? widget.futureRun.kennel.defaultPriceForMembers ?? 0, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol)} (members)'
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                      Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                'Run:',
+                                style: listLabelStyle,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              flex: flexLeft,
+                            ),
+                            Expanded(
+                                child: Text(
+                                  '  # ${widget.futureRun.event.eventNumber}',
+                                  style: listValueStyle,
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                flex: flexRight),
+                          ],
+                        ),
+
+                                              Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                'Date:',
+                                style: listLabelStyle,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              flex: flexLeft,
+                            ),
+                            Expanded(
+                                child: Text(
+                                  DateFormat('  E, MMM d').format(widget.futureRun.event.eventStartDatetime),
+                                  style: listValueStyle,
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                flex: flexRight),
+                          ],
+                        ),
+
+                                                                      Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                'Time:',
+                                style: listLabelStyle,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              flex: flexLeft,
+                            ),
+                            Expanded(
+                                child: Text(
+                                  DateFormat('  h:mm a').format(widget.futureRun.event.eventStartDatetime),
+                                  style: listValueStyle,
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                flex: flexRight),
+                          ],
+                        ),
+
+                                                                      Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                'Run fees:',
+                                style: listLabelStyle,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              flex: flexLeft,
+                            ),
+                            Expanded(
+                                child: Text(
+                                                        ((widget.futureRun.event.eventPriceForMembers ?? widget.futureRun.kennel.defaultPriceForMembers ?? 0) > 0)
+                          ? '  ${Utilities.getFormattedMoney(widget.futureRun.event.eventPriceForMembers ?? widget.futureRun.kennel.defaultPriceForMembers ?? 0, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol)} (members)'
                           : '',
-                      style: listValueStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
+                                  style: listValueStyle,
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                flex: flexRight),
+                          ],
+                        ), 
+
+                                                                      Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                '',
+                                style: listLabelStyle,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              flex: flexLeft,
+                            ),
+                            Expanded(
+                                child: Text(
                       ((widget.futureRun.event.eventPriceForNonMembers ?? widget.futureRun.kennel.defaultPriceForNonMembers ?? 0) > 0)
-                          ? '${Utilities.getFormattedMoney(widget.futureRun.event.eventPriceForNonMembers ?? widget.futureRun.kennel.defaultPriceForNonMembers ?? 0, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol)} (non-members)'
+                          ? '  ${Utilities.getFormattedMoney(widget.futureRun.event.eventPriceForNonMembers ?? widget.futureRun.kennel.defaultPriceForNonMembers ?? 0, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol)} (non-members)'
                           : '',
-                      style: listValueStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      'Unknown',
-                      style: listValueStyle,
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      widget.futureRun.extensions.hareList ?? '',
-                      style: listValueStyle,
-                      textAlign: TextAlign.left,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    widget.futureRun.extensions.distToEvent >= 0
-                        ? Text(
-                            Utilities.getDistance(widget.futureRun.extensions.distToEvent, context) + ' from here',
-                            style: listValueStyle,
-                            textAlign: TextAlign.left,
-                          )
-                        : Text(
-                            '<unknown>',
-                            style: listValueStyle,
-                            textAlign: TextAlign.left,
-                          ),
-                    Text(
-                      widget.futureRun.event.locationStreet ?? '',
-                      style: listValueStyle,
-                      textAlign: TextAlign.left,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      (widget.futureRun.event.locationPostCode ?? '') + ' ' + (widget.futureRun.event.locationCity ?? ''),
-                      style: listValueStyle,
-                      textAlign: TextAlign.left,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      widget.futureRun.event.locationOneLineDesc ?? '',
-                      style: listValueStyle,
-                      textAlign: TextAlign.left,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                                  style: listValueStyle,
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                flex: flexRight),
+                          ],
+                        ),
+
+                                                                      Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                'Bag drop:',
+                                style: listLabelStyle,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              flex: flexLeft,
+                            ),
+                            Expanded(
+                                child: Text(
+                                  '  Unknown',
+                                  style: listValueStyle,
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                flex: flexRight),
+                          ],
+                        ),
+
+                                                                      Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                'Hares:',
+                                style: listLabelStyle,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              flex: flexLeft,
+                            ),
+                            Expanded(
+                                child: Text(
+                                  '  ' + (widget.futureRun.extensions.hareList ?? ''),
+                                  style: listValueStyle,
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                flex: flexRight),
+                          ],
+                        ),
+
+                                                                                              Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                'Run start:',
+                                style: listLabelStyle,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              flex: flexLeft,
+                            ),
+                            Expanded(
+                                child: Text(
+                                  '  ' + (widget.futureRun.extensions.distToEvent >= 0 ? Utilities.getDistance(widget.futureRun.extensions.distToEvent, context) + ' from here' : '<unknown>'),
+                                  style: listValueStyle,
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                flex: flexRight),
+                          ],
+                        ),
+
+                                                                      Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                'Street:',
+                                style: listLabelStyle,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              flex: flexLeft,
+                            ),
+                            Expanded(
+                                child: Text(
+                                  '  ' +  (widget.futureRun.event.locationStreet ?? ''),
+                                  style: listValueStyle,
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                flex: flexRight),
+                          ],
+                        ),
+
+                                                                      Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                'City:',
+                                style: listLabelStyle,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              flex: flexLeft,
+                            ),
+                            Expanded(
+                                child: Text(
+                                  '  ' + ((((widget.futureRun.event.locationPostCode== null) || (widget.futureRun.event.locationPostCode.isEmpty))  ? '' : widget.futureRun.event.locationPostCode + ' ') + (widget.futureRun.event.locationCity ?? '')),
+                                  style: listValueStyle,
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                flex: flexRight),
+                          ],
+                        ),
+
+                                                                      Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                'Location:',
+                                style: listLabelStyle,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              flex: flexLeft,
+                            ),
+                            Expanded(
+                                child: Text(
+                                  '  ' + (widget.futureRun.event.locationOneLineDesc ?? ''), 
+                                  style: listValueStyle,
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                flex: flexRight),
+                          ],
+                        ),
                   ]),
-                ),
-              ],
-            ),
             const Padding(
               padding: EdgeInsets.only(top: 32.0),
               child: FancyDivider(innerColor: Colors.white),
