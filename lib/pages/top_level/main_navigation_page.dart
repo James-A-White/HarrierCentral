@@ -36,6 +36,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   @override
   void initState() {
+        print('initState called from MainPage @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
     tabs.add(const FutureRunsListPage());
     tabs.add(const KennelsListPage());
     tabs.add(const UserQrCodePage());
@@ -76,10 +77,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   GlobalKey bottomNavigationKey = GlobalKey();
 
-  @override
-  Widget build(BuildContext context) {
-    final int dbCreated = getIntPref(IntPrefsEnum.dbCreated) ?? 0;
-    Widget _getPage(int pageIndex) {
+  Widget _getPage(int pageIndex) {
       Widget w;
       appBarText = tabTitles[pageIndex];
 
@@ -99,6 +97,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       }
       return w;
     }
+
+  @override
+  Widget build(BuildContext context) {
+    final int dbCreated = getIntPref(IntPrefsEnum.dbCreated) ?? 0;
 
     return Stack(
       children: <Widget>[

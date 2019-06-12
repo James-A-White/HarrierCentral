@@ -27,7 +27,8 @@ class KennelMembersList extends StatefulWidget {
 }
 
 class KennelMembersResults {
-  KennelMembersResults({this.hasherId, this.dispName, this.photo, this.isMember, this.following, this.kennelId, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.membershipDurationInMonths, this.isLoading = false, this.kennelShortName, this.membershipDateBeingUpdated = false});
+  KennelMembersResults(
+      {this.hasherId, this.dispName, this.photo, this.isMember, this.following, this.kennelId, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.membershipDurationInMonths, this.isLoading = false, this.kennelShortName, this.membershipDateBeingUpdated = false});
 
   final String hasherId;
   String dispName;
@@ -51,7 +52,7 @@ class KennelMembersResults {
       isMember: map['isMember'],
       following: map['following'],
       kennelShortName: map['kennelShortName'],
-            kennelId: map['kennelId'],
+      kennelId: map['kennelId'],
       dateOfLastRun: (map['dateOfLastRun'] == null) ? null : DateTime.parse(map['dateOfLastRun'].toString().substring(0, 19)),
       membershipExpirationDate: (map['membershipExpirationDate'] == null) ? null : DateTime.parse(map['membershipExpirationDate'].toString().substring(0, 19)),
       memberSince: (map['memberSince'] == null) ? null : DateTime.parse(map['memberSince'].toString().substring(0, 19)),
@@ -73,7 +74,20 @@ class KennelMemberListState extends State<KennelMembersList> {
 
   @override
   void initState() {
+    print('initState called from kennel_members @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+
+    appBar = AppBar(
+      centerTitle: true,
+      backgroundColor: themeAppBarBackground,
+      title: Text(
+        '${widget.kennel['kennelShortName']} Members',
+        style: const TextStyle(
+          color: Colors.white,
+        ),
+      ),
+    );
     refreshKennelMembersFromTable(true);
+    setSortBySpeedDial();
     super.initState();
   }
 
@@ -134,12 +148,13 @@ class KennelMemberListState extends State<KennelMembersList> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    String sortBySpeedDialLabel = '';
-    IconData sortBySpeedDialIcon;
-    EnumSortByType sortBySpeedDialType;
+  String sortBySpeedDialLabel = '';
+  IconData sortBySpeedDialIcon;
+  EnumSortByType sortBySpeedDialType;
 
+  AppBar appBar;
+
+  void setSortBySpeedDial() {
     switch (_sortBy) {
       case EnumSortByType.sortByName:
         sortBySpeedDialLabel = 'Date of last run';
@@ -157,18 +172,12 @@ class KennelMemberListState extends State<KennelMembersList> {
         sortBySpeedDialIcon = FontAwesome.sort_alpha_asc;
         break;
     }
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: themeAppBarBackground,
-          title: Text(
-            '${widget.kennel['kennelShortName']} Members',
-            style: const TextStyle(
-              color: Colors.white,
-            ),
-          ),
-        ),
+        appBar: appBar,
         floatingActionButton: SpeedDial(
           // both default to 16
           marginRight: 18,
@@ -198,6 +207,7 @@ class KennelMemberListState extends State<KennelMembersList> {
                 onTap: () {
                   _sortBy = sortBySpeedDialType;
                   refreshKennelMembersFromTable(true);
+                  setSortBySpeedDial();
                 }),
             SpeedDialChild(
                 child: const Icon(MaterialCommunityIcons.account_search),
@@ -254,13 +264,114 @@ class KennelMemberListState extends State<KennelMembersList> {
                 }),
           ],
         ),
-        body: _isLoading ? _buildCircularProgressIndicator() : _buildListView());
-  }
+        body: _isLoading
+            ? const Center(
+                child: HcCircularProgressIndicator(),
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 0.0),
+                      child: kennelMemberList.isEmpty
+                          ? const Center(child: Text('No members found.'))
+                          : RefreshIndicator(
+                              onRefresh: () => _handleRefresh(),
+                              displacement: 40.0,
+                              child: ListView.separated(
+                                separatorBuilder: (BuildContext context, int index) => const Divider(
+                                      height: 1.0,
+                                      color: Colors.black45,
+                                    ),
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemCount: kennelMemberList.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  final KennelMembersResults item = kennelMemberList[index];
+                                  return Dismissible(
+                                    key: Key(item.hasherId),
+                                    confirmDismiss: (DismissDirection direction) {
+                                      setState(() {
+                                        // swipe from right to left to indicate that
+                                        // the hasher either attended the run as a pack
+                                        // member or as a hare
+                                        if (direction == DismissDirection.endToStart) {
+                                          modifyMembership(item, item.membershipDurationInMonths);
+                                        } else {
+                                          modifyMembership(item, -9999);
+                                        }
+                                      });
 
-  Widget _buildCircularProgressIndicator() {
-    return const Center(
-      child: HcCircularProgressIndicator(),
-    );
+                                      return Future<bool>.value(false);
+                                    },
+                                    background: Container(
+                                        color: Colors.red,
+                                        child: Row(children: const <Widget>[
+                                          Padding(
+                                            padding: EdgeInsets.only(left: 10.0),
+                                            child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.only(left: 15.0),
+                                            child: Text(
+                                                // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                                'Cancel\r\nmembership',
+                                                maxLines: 2,
+                                                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                          )
+                                        ])),
+                                    secondaryBackground: Container(
+                                      color: Colors.green,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: <Widget>[
+                                          const Padding(
+                                            padding: EdgeInsets.only(right: 15.0),
+                                            child: Icon(FontAwesome.plus_circle, color: Colors.white, size: 35.0),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(right: 15.0),
+                                            child: Text(
+                                                //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                                'Add ${item.membershipDurationInMonths} months\r\nto membership',
+                                                style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                    onDismissed: (DismissDirection direction) {
+                                      print(direction.toString() + ' NOTE: We should never reach this point');
+                                    },
+                                    child: KennelMemberListItem(
+                                      kennelMember: kennelMemberList[index],
+                                      modifyMembershipCallback: (EnumMemberPopupActions retVal) {
+                                        switch (retVal) {
+                                          case EnumMemberPopupActions.addOneMonth:
+                                            modifyMembership(kennelMemberList[index], 1);
+                                            break;
+                                          case EnumMemberPopupActions.addSixMonths:
+                                            modifyMembership(kennelMemberList[index], 6);
+                                            break;
+                                          case EnumMemberPopupActions.subtractOneMonth:
+                                            modifyMembership(kennelMemberList[index], -1);
+                                            break;
+                                          case EnumMemberPopupActions.subtractSixMonths:
+                                            modifyMembership(kennelMemberList[index], -6);
+                                            break;
+                                          case EnumMemberPopupActions.cancelMembership:
+                                            modifyMembership(kennelMemberList[index], -9999);
+                                            break;
+                                        }
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ));
   }
 
   Future<void> _handleRefresh() async {
@@ -275,113 +386,6 @@ class KennelMemberListState extends State<KennelMembersList> {
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Event map data synchronized $resultStr');
     refreshKennelMembersFromTable(true);
-  }
-
-  Widget _buildListView() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: <Widget>[
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 0.0),
-            child: kennelMemberList.isEmpty
-                ? const Center(child: Text('No members found.'))
-                : RefreshIndicator(
-                    onRefresh: () => _handleRefresh(),
-                    displacement: 40.0,
-                    child: ListView.separated(
-                      separatorBuilder: (BuildContext context, int index) => const Divider(
-                            height: 1.0,
-                            color: Colors.black45,
-                          ),
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: kennelMemberList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final KennelMembersResults item = kennelMemberList[index];
-                        return Dismissible(
-                          key: Key(item.hasherId),
-                          confirmDismiss: (DismissDirection direction) {
-                            setState(() {
-                              // swipe from right to left to indicate that
-                              // the hasher either attended the run as a pack
-                              // member or as a hare
-                              if (direction == DismissDirection.endToStart) {
-                                modifyMembership(item, item.membershipDurationInMonths);
-                              } else {
-                                modifyMembership(item, -9999);
-                              }
-                            });
-
-                            return Future<bool>.value(false);
-                          },
-                          background: Container(
-                              color: Colors.red,
-                              child: Row(children: const <Widget>[
-                                Padding(
-                                  padding: EdgeInsets.only(left: 10.0),
-                                  child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 15.0),
-                                  child: Text(
-                                      // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                      'Cancel\r\nmembership',
-                                      maxLines: 2,
-                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                )
-                              ])),
-                          secondaryBackground: Container(
-                            color: Colors.green,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: <Widget>[
-                                const Padding(
-                                  padding: EdgeInsets.only(right: 15.0),
-                                  child: Icon(FontAwesome.plus_circle, color: Colors.white, size: 35.0),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 15.0),
-                                  child: Text(
-                                      //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                      'Add ${item.membershipDurationInMonths} months\r\nto membership',
-                                      style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                )
-                              ],
-                            ),
-                          ),
-                          onDismissed: (DismissDirection direction) {
-                            print(direction.toString() + ' NOTE: We should never reach this point');
-                          },
-                          child: KennelMemberListItem(
-                            kennelMember: kennelMemberList[index],
-                            modifyMembershipCallback: (EnumMemberPopupActions retVal) {
-                              switch (retVal) {
-                                case EnumMemberPopupActions.addOneMonth:
-                                  modifyMembership(kennelMemberList[index], 1);
-                                  break;
-                                case EnumMemberPopupActions.addSixMonths:
-                                  modifyMembership(kennelMemberList[index], 6);
-                                  break;
-                                case EnumMemberPopupActions.subtractOneMonth:
-                                  modifyMembership(kennelMemberList[index], -1);
-                                  break;
-                                case EnumMemberPopupActions.subtractSixMonths:
-                                  modifyMembership(kennelMemberList[index], -6);
-                                  break;
-                                case EnumMemberPopupActions.cancelMembership:
-                                  modifyMembership(kennelMemberList[index], -9999);
-                                  break;
-                              }
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-          ),
-        ),
-      ],
-    );
   }
 
   void modifyMembership(KennelMembersResults item, int monthsToAddToMembership) {

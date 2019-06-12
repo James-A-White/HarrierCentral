@@ -11,15 +11,24 @@ import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 
 class KennelsListItem extends StatefulWidget {
-  const KennelsListItem({Key key, @required this.kennel}) : super(key: key);
+  const KennelsListItem({Key key, @required this.kennel, @required this.kennelSelected}) : super(key: key);
 
   final Map<String, dynamic> kennel;
+  final Function kennelSelected;
 
   @override
   KennelListItemState createState() => KennelListItemState();
 }
 
 class KennelListItemState extends State<KennelsListItem> {
+
+  @override
+  void initState() {
+    print('initState called from kennel_list_item @ ${DateTime.now().millisecondsSinceEpoch.toString()} ${widget.kennel['kennelShortName']}');
+    super.initState();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -78,13 +87,19 @@ class KennelListItemState extends State<KennelsListItem> {
                 ),
                 InkWell(
                     onTap: () {
-                      Navigator.of(context).push<dynamic>(
-                        MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) 
-                            => KennelAdminMainPage(kennel: widget.kennel)
-                          ,
-                        ),
-                      );
+                      // NOTE: leave this comment in for now. Ideally we would navigate
+                      // from here to the next page, but there was an intermittent bug
+                      // where the selected Kennel would change unexpectedly. This "hack" of
+                      // navigating from the parent is my attempt to fix it
+                      //
+                      // Navigator.of(context).push<dynamic>(
+                      //   MaterialPageRoute<dynamic>(
+                      //     builder: (BuildContext context) 
+                      //       => KennelAdminMainPage(kennel: widget.kennel)
+                      //     ,
+                      //   ),
+                      // );
+                      widget.kennelSelected();
                     },
                     child: Stack(
                       children: <Widget>[

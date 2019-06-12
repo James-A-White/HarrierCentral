@@ -13,6 +13,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
+import 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
 
 class KennelsListPage extends StatefulWidget {
   const KennelsListPage({Key key}) : super(key: key);
@@ -29,6 +30,7 @@ class KennelsListPageState extends State<KennelsListPage> {
   @override
   void initState() {
     refreshFromTable(false);
+    print('initState called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
     // DBProvider.db.database.then((Database db) {
     //   db.rawQuery('SELECT id,kennelId FROM kennels ORDER BY id').then((List<Map<String,dynamic>> result) {
     //     print(result);
@@ -44,7 +46,7 @@ class KennelsListPageState extends State<KennelsListPage> {
   }
 
   void refreshFromTable(bool forceRefresh) {
-    if (forceRefresh || (globalKennelMainPageList == null)) {
+    if (forceRefresh || (globalKennelMainPageList == null)|| (globalKennelMainPageList.isEmpty)) {
       final Geolocator locator = Geolocator();
       if (globalKennelMainPageList != null) {
         globalKennelMainPageList.clear();
@@ -72,7 +74,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           
           ''';
 
-          globalKennelMainPageList = <Map<String, dynamic>>[]; 
+          globalKennelMainPageList = <Map<String, dynamic>>[];
           try {
             db.rawQuery(query).then((List<Map<String, dynamic>> results) {
               for (int i = 0; i < results.length; i++) {
@@ -83,6 +85,8 @@ class KennelsListPageState extends State<KennelsListPage> {
                   item.addAll(results[i]);
                   globalKennelMainPageList.add(item);
                   if (i == results.length - 1) {
+                    globalKennelMainPageList.sort((Map<String, dynamic> a, Map<String, dynamic> b) => (a['distance']).compareTo(b['distance']));
+                    globalKennelMainPageList.sort((Map<String, dynamic> a, Map<String, dynamic> b) => (a['following'] == 1 ? 0 : a['following'] == 2 ? 1 : 2).compareTo(b['following'] == 1 ? 0 : b['following'] == 2 ? 1 : 2));
                     setState(() {});
                   }
                 });
@@ -98,14 +102,53 @@ class KennelsListPageState extends State<KennelsListPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      body: globalKennelMainPageList == null ? _buildCircularProgressIndicator() : _buildListView());
-  }
-
-  Widget _buildCircularProgressIndicator() {
-    return const Center(
-      child: HcCircularProgressIndicator(),
+      body: globalKennelMainPageList == null
+          ? Center(
+              child: HcCircularProgressIndicator(),
+            )
+          : Container(
+              decoration: Backgrounds.defaultHcBackground(),
+              padding: const EdgeInsets.only(top: 0.0),
+              child: globalKennelMainPageList.isEmpty
+                  ? const Center(child: Text('No Kennels available.'))
+                  : RefreshIndicator(
+                      onRefresh: () => _handleRefresh(),
+                      displacement: 40.0,
+                      child: ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: globalKennelMainPageList.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          print('buildListView called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+                          return Container(
+                            height: 150.0,
+                            padding: const EdgeInsets.all(0.0),
+                            child: ListView(scrollDirection: Axis.horizontal, children: <Widget>[
+                              KennelsListItem(
+                                kennel: globalKennelMainPageList[index],
+                                kennelSelected: () {
+                                  final Map<String,dynamic> kennel = globalKennelMainPageList[index];
+                                  // this is a bit of a hack where we clear the list before navigating to the
+                                  // next page. When state changes occurred in child pages further down the
+                                  // route tree, the list would get refreshed, which I think was causing 
+                                  // a bug where the selected Kennel itself would occasioinall change.
+                                  // By deleting the list, I'm hoping that this bug will be fixed.
+                                  globalKennelMainPageList = <Map<String, dynamic>>[];
+                                  Navigator.of(context).push<dynamic>(
+                                    MaterialPageRoute<dynamic>(
+                                      builder: (BuildContext context) => KennelAdminMainPage(kennel: kennel),
+                                    ),
+                                  ).then((void dummy){
+                                    refreshFromTable(true);
+                                  });
+                                },
+                              ),
+                            ]),
+                          );
+                        },
+                      ),
+                    ),
+            ),
     );
   }
 
@@ -118,33 +161,5 @@ class KennelsListPageState extends State<KennelsListPage> {
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Kennel user data synchronized $resultStr');
     });
-  }
-
-  Widget _buildListView() {
-    globalKennelMainPageList.sort((Map<String, dynamic> a, Map<String, dynamic> b) => (a['distance']).compareTo(b['distance']));
-    globalKennelMainPageList.sort((Map<String, dynamic> a, Map<String, dynamic> b) => (a['following']==1?0:a['following']==2?1:2).compareTo(b['following']==1?0:b['following']==2?1:2));
-    return Container(
-      decoration: Backgrounds.defaultHcBackground(),
-      padding: const EdgeInsets.only(top: 0.0),
-      child: globalKennelMainPageList.isEmpty
-          ? const Center(child: Text('No Kennels available.'))
-          : RefreshIndicator(
-              onRefresh: () => _handleRefresh(),
-              displacement: 40.0,
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: globalKennelMainPageList.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return Container(
-                    height: 150.0,
-                    padding: const EdgeInsets.all(0.0),
-                    child: ListView(scrollDirection: Axis.horizontal, children: <Widget>[
-                      KennelsListItem(kennel: globalKennelMainPageList[index]),
-                    ]),
-                  );
-                },
-              ),
-            ),
-    );
   }
 }

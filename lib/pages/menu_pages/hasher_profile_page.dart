@@ -174,6 +174,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   @override
   void initState() {
+        print('initState called from hasher_profile_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
     if (widget.pageType != EnumMyProfilePageType.newHasherProfile) {
       refreshUserDataFromTable(true);
       photoPrefix = widget.hasherId;
@@ -185,6 +186,17 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       photoPrefix = 'newHcUser_' + DateTime.now().microsecondsSinceEpoch.toString();
       _isLoading = false;
     }
+
+    appBar = AppBar(
+      centerTitle: true,
+      backgroundColor: themeAppBarBackground,
+      title: Text(
+        widget.pageType == EnumMyProfilePageType.myProfile ? 'My Profile' : 'Hasher Profile',
+        style: const TextStyle(
+          color: Colors.white,
+        ),
+      ),
+    );
 
     firstNameController.addListener(() {
       checkDirty();
@@ -422,6 +434,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     return null;
   }
 
+  AppBar appBar;
+
   @override
   Widget build(BuildContext context) {
     num scrollHeight = 740.0;
@@ -431,16 +445,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       scrollHeight = 860.0;
     }
 
-    final AppBar appBar = AppBar(
-      centerTitle: true,
-      backgroundColor: themeAppBarBackground,
-      title: Text(
-        widget.pageType == EnumMyProfilePageType.myProfile ? 'My Profile' : 'Hasher Profile',
-        style: const TextStyle(
-          color: Colors.white,
-        ),
-      ),
-    );
+
     return Stack(
       children: <Widget>[
         Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),

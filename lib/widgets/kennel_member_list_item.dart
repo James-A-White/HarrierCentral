@@ -22,9 +22,9 @@ class KennelMemberListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.push<HashersModel>(
-          context,
+        Navigator.of(context).push<HashersModel>(
           MaterialPageRoute<HashersModel>(
+            maintainState: false,
             builder: (BuildContext context) => HasherProfilePage(
                   dataContext: EnumDataContext.kennel,
                   pageType: EnumMyProfilePageType.anyHasherProfile,
