@@ -53,8 +53,11 @@ class FutureRunAggregate {
   final FutureRunQueryExtenstions extensions;
 }
 
-class FutureRunListPageState extends State<FutureRunsListPage> {
+class FutureRunListPageState extends State<FutureRunsListPage> with AutomaticKeepAliveClientMixin {
   // BuildContext context;
+
+  @override
+  bool get wantKeepAlive => true;
 
   int pageIndex = 1;
   List<FutureRunAggregate> futureRunsList;
@@ -77,16 +80,13 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
   @override
   void initState() {
-    refreshFromTable(true);
+    refreshFromTable(false);
     super.initState();
   }
 
   void refreshFromTable(bool forceRefresh) {
-    if (forceRefresh || (futureRunsList == null)) {
+    if (forceRefresh || (futureRunsList == null)|| (futureRunsList.isEmpty)) {
       final Geolocator locator = Geolocator();
-      if (futureRunsList != null) {
-        futureRunsList.clear();
-      }
 
       final String userId = getStringPref(StringPrefsEnum.userId);
 

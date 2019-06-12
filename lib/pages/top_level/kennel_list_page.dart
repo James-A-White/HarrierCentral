@@ -30,18 +30,8 @@ class KennelsListPageState extends State<KennelsListPage> {
   @override
   void initState() {
     refreshFromTable(false);
-    print('initState called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-    // DBProvider.db.database.then((Database db) {
-    //   db.rawQuery('SELECT id,kennelId FROM kennels ORDER BY id').then((List<Map<String,dynamic>> result) {
-    //     print(result);
-    //   });
-    // });
+    //print('initState called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
 
-    // DBProvider.db.database.then((Database db) {
-    //   db.rawQuery('SELECT id,kennelId,userId FROM hasherKennelMap ORDER BY id').then((List<Map<String,dynamic>> result) {
-    //     print(result.toString().replaceAll('},', '},\r\n'));
-    //   });
-    // });
     super.initState();
   }
 
@@ -119,7 +109,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                         physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: globalKennelMainPageList.length,
                         itemBuilder: (BuildContext context, int index) {
-                          print('buildListView called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+                          //print('buildListView called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
                           return Container(
                             height: 150.0,
                             padding: const EdgeInsets.all(0.0),
@@ -133,7 +123,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                                   // route tree, the list would get refreshed, which I think was causing 
                                   // a bug where the selected Kennel itself would occasioinall change.
                                   // By deleting the list, I'm hoping that this bug will be fixed.
-                                  globalKennelMainPageList = <Map<String, dynamic>>[];
+                                  globalKennelMainPageList.clear();
                                   Navigator.of(context).push<dynamic>(
                                     MaterialPageRoute<dynamic>(
                                       builder: (BuildContext context) => KennelAdminMainPage(kennel: kennel),

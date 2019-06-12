@@ -139,9 +139,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       final List<Map<String, dynamic>> results = await db.rawQuery(query);
       if ((results != null) && (results.isNotEmpty)) {
         hasher = HashersTableHelper.fromMap(results[0]);
-        if (widget.dataContext ==EnumDataContext.kennel)
-        {
-           hkmData =HasherKennelMapTableHelper.fromMap(results[0]);
+        if (widget.dataContext == EnumDataContext.kennel) {
+          hkmData = HasherKennelMapTableHelper.fromMap(results[0]);
         }
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
           hasher.email = getStringPref(StringPrefsEnum.email);
@@ -154,7 +153,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         newPhoto = hasher.photo;
         previousRunCountController.text = (hkmData?.historicalPackRunCount ?? 0).toString();
         previousHaringCountController.text = (hkmData?.historicalHaringCount ?? 0).toString();
-        
       }
 
       setState(() {
@@ -174,7 +172,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   @override
   void initState() {
-        print('initState called from hasher_profile_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+    // print('initState called from hasher_profile_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
     if (widget.pageType != EnumMyProfilePageType.newHasherProfile) {
       refreshUserDataFromTable(true);
       photoPrefix = widget.hasherId;
@@ -444,7 +442,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     } else if (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_followKennel != 0) {
       scrollHeight = 860.0;
     }
-
 
     return Stack(
       children: <Widget>[

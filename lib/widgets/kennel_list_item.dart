@@ -22,11 +22,11 @@ class KennelsListItem extends StatefulWidget {
 
 class KennelListItemState extends State<KennelsListItem> {
 
-  @override
-  void initState() {
-    print('initState called from kennel_list_item @ ${DateTime.now().millisecondsSinceEpoch.toString()} ${widget.kennel['kennelShortName']}');
-    super.initState();
-  }
+  // @override
+  // void initState() {
+  //   print('initState called from kennel_list_item @ ${DateTime.now().millisecondsSinceEpoch.toString()} ${widget.kennel['kennelShortName']}');
+  //   super.initState();
+  // }
 
 
   @override

@@ -74,7 +74,7 @@ class KennelMemberListState extends State<KennelMembersList> {
 
   @override
   void initState() {
-    print('initState called from kennel_members @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+    //print('initState called from kennel_members @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
 
     appBar = AppBar(
       centerTitle: true,

@@ -57,8 +57,8 @@ class HistoryListPageState extends State<HistoryListPage> {
 
   @override
   void initState() {
-    //refreshRunHistoryFromTable(true);
-    _handleRefresh();
+    refreshRunHistoryFromTable(true);
+    //_handleRefresh();
     super.initState();
   }
 

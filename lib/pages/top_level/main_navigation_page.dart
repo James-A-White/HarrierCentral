@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -17,7 +15,6 @@ import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 import 'package:harrier_central/database/database.dart';
 
-
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);
 
@@ -34,20 +31,27 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   String appBarText;
   String initializationMessage = '';
 
+  // TODO(James): Investigate Page Storage Bucket / PageView
+
+  final FutureRunsListPage futureRunsListPage =  const FutureRunsListPage();
+  final KennelsListPage kennelsListPage = const KennelsListPage();
+  final HistoryListPage historyListPage = const HistoryListPage();
+  final UserQrCodePage userQrCodePage = const UserQrCodePage();
+
   @override
   void initState() {
-        print('initState called from MainPage @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-    tabs.add(const FutureRunsListPage());
-    tabs.add(const KennelsListPage());
-    tabs.add(const UserQrCodePage());
-    tabs.add(const UserQrCodePage());
-    tabs.add(const UserQrCodePage());
+    // print('initState called from MainPage @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+    // tabs.add(const FutureRunsListPage());
+    // tabs.add(const KennelsListPage());
+    // tabs.add(const UserQrCodePage());
+    // tabs.add(const UserQrCodePage());
+    //tabs.add(const UserQrCodePage());
 
     tabTitles.add('Upcoming Runs');
     tabTitles.add('Kennels');
     tabTitles.add('Your Total Run Counts');
     tabTitles.add('Scanner');
-    tabTitles.add('Friends');
+   // tabTitles.add('Friends');
 
     appBarText = tabTitles[0];
 
@@ -70,7 +74,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     });
   }
 
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   int currentPage = 0;
@@ -78,25 +81,26 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   GlobalKey bottomNavigationKey = GlobalKey();
 
   Widget _getPage(int pageIndex) {
-      Widget w;
-      appBarText = tabTitles[pageIndex];
+    Widget w;
+    appBarText = tabTitles[pageIndex];
 
-      switch (pageIndex) {
-        case 0:
-          w = const FutureRunsListPage();
-          break;
-        case 1:
-          w = const KennelsListPage();
-          break;
-        case 2:
-          w = const HistoryListPage();
-          break;
-        case 3:
-          w = const UserQrCodePage();
-          break;
-      }
-      return w;
+    switch (pageIndex) {
+      case 0:
+        //futureRunsListPage??= const FutureRunsListPage();
+        w = futureRunsListPage;
+        break;
+      case 1:
+        w = kennelsListPage;
+        break;
+      case 2:
+        w = historyListPage;
+        break;
+      case 3:
+        w = userQrCodePage;
+        break;
     }
+    return w;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -201,4 +205,3 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     );
   }
 }
-
