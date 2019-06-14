@@ -150,6 +150,13 @@ packages:
       url: "git://github.com/facundomedica/fast_qr_reader_view.git"
     source: git
     version: "0.1.5"
+  firebase_messaging:
+    dependency: "direct main"
+    description:
+      name: firebase_messaging
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "5.0.3"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -452,6 +459,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.3"
+  platform:
+    dependency: transitive
+    description:
+      name: platform
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.2.0"
   positioned_tap_detector:
     dependency: transitive
     description:

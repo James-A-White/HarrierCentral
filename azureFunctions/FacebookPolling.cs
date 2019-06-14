@@ -19,11 +19,20 @@ namespace HcAzureFunctions
 {
     public static class FacebookPolling
     {
+        static MobileMessagingClient mmClient;
+
         [FunctionName("FacebookPolling")]
-        public async static Task Run([TimerTrigger("*/5 * * * *")]TimerInfo myTimer, ILogger log)
+        public async static Task Run([TimerTrigger("*/5 * * * *")]TimerInfo myTimer, ILogger log, ExecutionContext context)
         {
+
+            if (mmClient == null)
+            {
+                String appDirectory = context.FunctionAppDirectory;
+                mmClient = new MobileMessagingClient(appDirectory);
+            }
+
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
-            await CheckFacebook(log);
+            await CheckFacebook(log, mmClient);
             //await PublishUpdatedWebPages(log);
         }
 
@@ -191,9 +200,11 @@ namespace HcAzureFunctions
             return stream;
         }
 
-        public static async Task CheckFacebook(ILogger log)
+        public static async Task CheckFacebook(ILogger log, MobileMessagingClient mmClient)
         {
             bool updateWebFiles = false;
+
+            Regex latLonRegex = new Regex(@"(^[-+]?(?:[1-8]?\d(?:\.\d+)?|90(?:\.0+)?)),\s*([-+]?(?:180(?:\.0+)?|(?:(?:1[0-7]\d)|(?:[1-9]?\d))(?:\.\d+)?))$", RegexOptions.IgnoreCase);
 
             var str = ConfigurationManager.ConnectionStrings["HarrierCentralDb"]?.ConnectionString;
             if (String.IsNullOrWhiteSpace(str))
@@ -349,47 +360,38 @@ namespace HcAzureFunctions
 
                                                                 updateWebFiles = true;
 
-                                                                string notificationUri = "https://harriercentralnotificationhubnamespace.servicebus.windows.net/HarrierCentralNotificationHub/messages/?api-version=2015-01";
-
-                                                                // Send Notifications
-
-                                                                string notificationAccessToken = createToken(notificationUri, "DefaultFullSharedAccessSignature", "peuznPhAmaFjJ7I2+wy7tN+/UZeUvW2RAtLUt/RnLaI=");
-
-
-                                                                using (var notificationClient = new HttpClient())
-                                                                {
-                                                                    try
-                                                                    {
-
-                                                                        notificationClient.DefaultRequestHeaders.Add("Authorization", notificationAccessToken);
-                                                                        notificationClient.DefaultRequestHeaders.Add("ServiceBusNotification-Format", "template");
-
-
-                                                                        String msg = "{\"message\":\"" + updateRows.GetValue(0).ToString() + "\"}";
-
-                                                                        var nContent = new StringContent(msg,
-                                                                                                            Encoding.UTF8,
-                                                                                                             "application/json");//CONTENT-TYPE header
-
-                                                                        await notificationClient.PostAsync(new Uri(notificationUri), nContent);
-
-                                                                    }
-
-                                                                    catch (System.Exception ex)
-                                                                    {
-                                                                        log.LogInformation("########### Notification Failed");
-                                                                        log.LogInformation(ex.Message);
-                                                                    }
-                                                                }
-
+                                                                await mmClient.SendNotification("Run updated", updateRows.GetValue(0).ToString(), log);
 
                                                                 // Check to see if Geocoding is requird
 
                                                                 if ((Latitude == -1) || (Longitude == -1))
                                                                 {
+                                                                    log.LogInformation("########### LatLong detected");
+                                                                    bool reverse = false;
+
+                                                                    if (latLonRegex.IsMatch(PlaceName))
+                                                                    {
+                                                                        Match latLonMatch = latLonRegex.Match(PlaceName);
+                                                                        double lat = -1;
+                                                                        double lon = -1;
+
+                                                                        reverse = double.TryParse(latLonMatch.Groups[1].Value, out lat);
+                                                                        if (reverse)
+                                                                        {
+                                                                            reverse = double.TryParse(latLonMatch.Groups[2].Value, out lon);
+                                                                            if(reverse)
+                                                                            {
+                                                                                Latitude = lat;
+                                                                                Longitude = lon;
+                                                                                PlaceName = $"{lat},{lon}";
+                                                                            }
+                                                                        }
+                                                                    }
+
+
                                                                     log.LogInformation("########### Geocoding Required");
 
-                                                                    GeocodeResult geo = await AzureGeocode(PlaceName, KennelLatitude, KennelLongitude);
+                                                                    GeocodeResult geo = await AzureGeocode(PlaceName, KennelLatitude, KennelLongitude,reverse);
 
                                                                     if (geo != null)
                                                                     {
@@ -397,8 +399,11 @@ namespace HcAzureFunctions
                                                                         Country = geo?.Country?.Replace("'", "''") ?? "";
                                                                         Street = geo?.Street?.Replace("'", "''") ?? "";
                                                                         Zip = geo?.Zip?.Replace("'", "''") ?? "";
-                                                                        Latitude = geo?.Latitude ?? -1;
-                                                                        Longitude = geo?.Longitude ?? -1;
+                                                                        if (!reverse)
+                                                                        {
+                                                                            Latitude = geo?.Latitude ?? -1;
+                                                                            Longitude = geo?.Longitude ?? -1;
+                                                                        }
 
                                                                         log.LogInformation($"City={City}, Street={Street}, Lat={Latitude}, Lon={Longitude}, Post={Zip}");
                                                                     }
@@ -544,11 +549,19 @@ namespace HcAzureFunctions
         }
 
 
-        static async Task<GeocodeResult> AzureGeocode(string address, string lat, string lon)
+        static async Task<GeocodeResult> AzureGeocode(string address, string lat, string lon, bool reverse)
         {
             GeocodeResult geo = new GeocodeResult();
+            string url;
 
-            string url = $"https://atlas.microsoft.com/search/fuzzy/JSON?subscription-key=kTv-hbcehDKyCUljAaqcbE5IIycrVkcG30RkqHZqgkw&api-version=1.0&minFuzzyLevel={1}&maxFuzzyLevel={4}&query={System.Net.WebUtility.UrlEncode(address)}.&lat={lat}&lon={lon}";
+            if (reverse)
+            {
+                url = $"https://atlas.microsoft.com/search/address/reverse/JSON?subscription-key=kTv-hbcehDKyCUljAaqcbE5IIycrVkcG30RkqHZqgkw&api-version=1.0&query={address}";
+            }
+            else
+            {
+                url = $"https://atlas.microsoft.com/search/fuzzy/JSON?subscription-key=kTv-hbcehDKyCUljAaqcbE5IIycrVkcG30RkqHZqgkw&api-version=1.0&minFuzzyLevel={1}&maxFuzzyLevel={4}&query={System.Net.WebUtility.UrlEncode(address)}.&lat={lat}&lon={lon}";
+            }
 
             // ... Use HttpClient.
             using (System.Net.Http.HttpClient client = new HttpClient())
@@ -558,64 +571,46 @@ namespace HcAzureFunctions
                 // ... Read the string.
                 string result = await content.ReadAsStringAsync();
 
-                AzurePlace places = Newtonsoft.Json.JsonConvert.DeserializeObject<AzurePlace>(result);
-
-                if (places != null)
+                if (!reverse)
                 {
-                    if (places.results.Count() > 0)
+                    AzureFuzzyPlace places = Newtonsoft.Json.JsonConvert.DeserializeObject<AzureFuzzyPlace>(result);
+
+                    if (places != null)
                     {
-                        geo.PlaceName = places.summary.query?.Replace("'", "''") ?? "";
-                        geo.City = places.results[0].address.municipality?.Replace("'", "''") ?? "";
-                        geo.Country = places.results[0].address.country?.Replace("'", "''") ?? "";
-                        geo.Street = (places.results[0].address.streetNumber?.Replace("'", "''") ?? "") + " " + (places.results[0].address.streetName?.Replace("'", "''") ?? "");
-                        geo.Zip = places.results[0].address.extendedPostalCode?.Replace("'", "''") ?? places.results[0].address.postalCode?.Replace("'", "''") ?? "";
-                        geo.Latitude = places.results[0].position.lat ?? -1.0;
-                        geo.Longitude = places.results[0].position.lon ?? -1.0;
+                        if (places.results.Count() > 0)
+                        {
+                            geo.PlaceName = places.summary.query?.Replace("'", "''") ?? "";
+                            geo.City = places.results[0].address.municipality?.Replace("'", "''") ?? "";
+                            geo.Country = places.results[0].address.country?.Replace("'", "''") ?? "";
+                            geo.Street = (places.results[0].address.streetNumber?.Replace("'", "''") ?? "") + " " + (places.results[0].address.streetName?.Replace("'", "''") ?? "");
+                            geo.Zip = places.results[0].address.extendedPostalCode?.Replace("'", "''") ?? places.results[0].address.postalCode?.Replace("'", "''") ?? "";
+                            geo.Latitude = places.results[0].position.lat ?? -1.0;
+                            geo.Longitude = places.results[0].position.lon ?? -1.0;
+                        }
+                        else
+                        {
+                            geo = null;
+                        }
                     }
-                    else
+                } else
+                {
+                    AzureAddressPlace places = Newtonsoft.Json.JsonConvert.DeserializeObject<AzureAddressPlace>(result);
+
+                    if (places != null)
                     {
-                        geo = null;
+                        if (places.addresses.Count() > 0)
+                        {
+                            geo.PlaceName = address;
+                            geo.City = places.addresses[0].address.municipality?.Replace("'", "''") ?? "";
+                            geo.Country = places.addresses[0].address.country?.Replace("'", "''") ?? "";
+                            geo.Street = (places.addresses[0].address.streetNumber?.Replace("'", "''") ?? "") + " " + (places.addresses[0].address.streetName?.Replace("'", "''") ?? "");
+                            geo.Zip = places.addresses[0].address.extendedPostalCode?.Replace("'", "''") ?? places.addresses[0].address.postalCode?.Replace("'", "''") ?? "";
+                        }
+                        else
+                        {
+                            geo = null;
+                        }
                     }
-
-
-                    /*
-                    Console.WriteLine(places.summary.query);
-                     Console.WriteLine(places.summary.queryType);
-                     Console.WriteLine(places.summary.queryTime);
-                     Console.WriteLine(places.summary.numResults);
-                     Console.WriteLine(places.summary.offset);
-                     Console.WriteLine(places.summary.totalResults);
-                     Console.WriteLine(places.summary.fuzzyLevel);
-
-                    Console.WriteLine("+++++++++++++++++++++");
-
-                    foreach(Result r in places.results)
-                    {
-                             Console.WriteLine(r.address.streetNumber);
-                             Console.WriteLine(r.address.streetName);
-                             Console.WriteLine(r.address.municipalitySubdivision);
-                             Console.WriteLine(r.address.municipality);
-                             Console.WriteLine(r.address.countrySecondarySubdivision);
-                             Console.WriteLine(r.address.countryTertiarySubdivision);
-                             Console.WriteLine(r.address.countrySubdivision);
-                             Console.WriteLine(r.address.postalCode);
-                             Console.WriteLine(r.address.extendedPostalCode);
-                             Console.WriteLine(r.address.countryCode);
-                             Console.WriteLine(r.address.country);
-                             Console.WriteLine(r.address.countryCodeISO3);
-                             Console.WriteLine(r.address.freeformAddress);
-                             Console.WriteLine(r.address.countrySubdivisionName);
-
-                             Console.WriteLine(r.type);
-                             Console.WriteLine(r.id);
-                             Console.WriteLine(r.score);
-                             Console.WriteLine(r.dist);
-
-                             Console.WriteLine(r.position.lat);
-                             Console.WriteLine(r.position.lon);
-
-                             Console.WriteLine("-----------------"); */
-
                 }
             }
 
@@ -834,7 +829,7 @@ namespace HcAzureFunctions
             public To to { get; set; }
         }
 
-        public class Result
+        public class FuzzyResult
         {
             public string type { get; set; }
             public string id { get; set; }
@@ -847,12 +842,11 @@ namespace HcAzureFunctions
             public AddressRanges addressRanges { get; set; }
         }
 
-        public class AzurePlace
+        public class AzureFuzzyPlace
         {
             public Summary summary { get; set; }
-            public List<Result> results { get; set; }
+            public List<FuzzyResult> results { get; set; }
         }
-
 
         public class RunDataForWebPage
         {
@@ -861,6 +855,57 @@ namespace HcAzureFunctions
             public string EventDescription;
             public DateTime EventStartDate;
             public string EventImage;
+        }
+
+
+
+        ///// AzureAddressPlace
+        ///
+
+        public class AapSummary
+        {
+            public int queryTime { get; set; }
+            public int numResults { get; set; }
+        }
+
+        public class AapBoundingBox
+        {
+            public string northEast { get; set; }
+            public string southWest { get; set; }
+            public string entity { get; set; }
+        }
+
+        public class AapAddress2
+        {
+            public string buildingNumber { get; set; }
+            public string streetNumber { get; set; }
+            public List<object> routeNumbers { get; set; }
+            public string street { get; set; }
+            public string streetName { get; set; }
+            public string streetNameAndNumber { get; set; }
+            public string countryCode { get; set; }
+            public string countrySubdivision { get; set; }
+            public string municipality { get; set; }
+            public string postalCode { get; set; }
+            public string municipalitySubdivision { get; set; }
+            public string country { get; set; }
+            public string countryCodeISO3 { get; set; }
+            public string freeformAddress { get; set; }
+            public AapBoundingBox boundingBox { get; set; }
+            public string extendedPostalCode { get; set; }
+            public string localName { get; set; }
+        }
+
+        public class AapAddress
+        {
+            public AapAddress2 address { get; set; }
+            public string position { get; set; }
+        }
+
+        public class AzureAddressPlace
+        {
+            public AapSummary summary { get; set; }
+            public List<AapAddress> addresses { get; set; }
         }
 
 

@@ -18,6 +18,7 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class AppEntryPage extends StatefulWidget {
   @override
@@ -35,6 +36,23 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
 
     await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);
+
+    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+    _firebaseMessaging.requestNotificationPermissions();
+
+    _firebaseMessaging.subscribeToTopic('test');
+
+    _firebaseMessaging.configure(onMessage: (dynamic content) {
+      print('onMessage content = ${content.toString()}');
+    }, onLaunch: (dynamic content) {
+      print('onLaunch content = ${content.toString()}');
+    }, onResume: (dynamic content) {
+      print('onResume content = ${content.toString()}');
+    });
+
+    _firebaseMessaging.getToken().then((String token) {
+      print('Messaging token = $token');
+    });
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 

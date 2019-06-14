@@ -21,6 +21,7 @@ dependencies:
   crypto: ^2.0.6
   cupertino_icons: ^0.1.2
   fancy_bottom_navigation: ^0.3.2
+  firebase_messaging: ^5.0.3
   flutter_facebook_login: ^2.0.1 # upgraded from 2.0.0 8 Jun 19 
   flutter_full_pdf_viewer: ^1.0.4
   flutter_image_compress: ^0.4.0 
