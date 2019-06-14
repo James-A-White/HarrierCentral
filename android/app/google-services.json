@@ -24,13 +24,25 @@
           "current_key": "AIzaSyAwo7nAC02nMVQn36ULyyKIgmnKaxP5XKs"
         }
       ],
-      "services": {
-        "analytics_service": {
-          "status": 1
-        },
+      "services": {       
+         "analytics_service": {
+        "status": 1
+      },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "699693953835-git8gjtc7qjcvq4l7c6srdf4c63nugil.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "699693953835-o537dp89b34r5nuvpo2p2t3r3sj3bs04.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.harriercentral.app",
+                "app_store_id": "1445513595"
+              }
+            }
+          ]
         },
         "ads_service": {
           "status": 2
