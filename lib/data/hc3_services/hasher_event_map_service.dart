@@ -15,7 +15,7 @@ import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart'
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 
 class HasherEventMapModel {
-  HasherEventMapModel({this.hemId, this.userId, this.eventId, this.userStartEvent, this.userEndEvent, this.rsvpState, this.attendenceState, this.isHare, this.eventCountOverride, this.virginVisitorType, this.displayName, this.email, this.phoneNumber, this.removed, this.updatedAt});
+  HasherEventMapModel({this.hemId, this.userId, this.eventId, this.userStartEvent, this.userEndEvent, this.rsvpState, this.attendenceState, this.isHare, this.eventNotificationPreference, this.eventCountOverride, this.virginVisitorType, this.displayName, this.email, this.phoneNumber, this.removed, this.updatedAt});
 
   final String hemId;
   final String userId;
@@ -25,6 +25,7 @@ class HasherEventMapModel {
   int rsvpState;
   final int attendenceState;
   int isHare;
+  int eventNotificationPreference;
   final num eventCountOverride;
   final num virginVisitorType;
   final String displayName;
@@ -50,6 +51,7 @@ class HasherEventMapModel {
             rsvpState: jsonItem['rsvpState'],
             attendenceState: jsonItem['attendenceState'],
             isHare: jsonItem['isHare'],
+            eventNotificationPreference: jsonItem['eventNotificationPreference'],
             eventCountOverride: jsonItem['eventCountOverride'],
             virginVisitorType: jsonItem['virginVisitorType'],
             displayName: jsonItem['displayName'],
@@ -96,6 +98,7 @@ class HasherEventMapTableHelper {
   static const String colRsvpState = 'rsvpState';
   static const String colAttendenceState = 'attendenceState';
   static const String colIsHare = 'isHare';
+  static const String colEventNotificationPreference = 'eventNotificationPreference';
   static const String colEventCountOverride = 'eventCountOverride';
   static const String colVirginVisitorType = 'virginVisitorType';
   static const String colDisplayName = 'displayName';
@@ -145,6 +148,7 @@ class HasherEventMapTableHelper {
             $colRsvpState INT,
             $colAttendenceState INT,
             $colIsHare INT,
+            $colEventNotificationPreference INT,
             $colEventCountOverride NUM,
             $colVirginVisitorType NUM,
             $colDisplayName TEXT,
@@ -172,6 +176,7 @@ class HasherEventMapTableHelper {
       HasherEventMapTableHelper.colRsvpState: item.rsvpState,
       HasherEventMapTableHelper.colAttendenceState: item.attendenceState,
       HasherEventMapTableHelper.colIsHare: item.isHare,
+      HasherEventMapTableHelper.colEventNotificationPreference: item.eventNotificationPreference,
       HasherEventMapTableHelper.colEventCountOverride: item.eventCountOverride,
       HasherEventMapTableHelper.colVirginVisitorType: item.virginVisitorType,
       HasherEventMapTableHelper.colDisplayName: item.displayName,
@@ -195,6 +200,7 @@ class HasherEventMapTableHelper {
       rsvpState: map[HasherEventMapTableHelper.colRsvpState],
       attendenceState: map[HasherEventMapTableHelper.colAttendenceState],
       isHare: map[HasherEventMapTableHelper.colIsHare],
+      eventNotificationPreference: map[HasherEventMapTableHelper.colEventNotificationPreference],
       eventCountOverride: map[HasherEventMapTableHelper.colEventCountOverride],
       virginVisitorType: map[HasherEventMapTableHelper.colVirginVisitorType],
       displayName: map[HasherEventMapTableHelper.colDisplayName],
@@ -346,7 +352,7 @@ class HasherEventMapService {
     };
   }
 
-  Future<List<dynamic>> joinEvent(String eventId, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, int rsvpState, int attendenceState, int isHare, int virginVisitorType) async {
+  Future<List<dynamic>> joinEvent(String eventId, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, {int rsvpState = -1, int attendenceState = -1, int isHare = -1, int virginVisitorType = 0, int notificationState = -1}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return null;
       // TODO(James): fix this so we can return a bool
@@ -374,6 +380,7 @@ class HasherEventMapService {
       'rsvpState': rsvpState,
       'attendenceState': attendenceState,
       'virginVisitorType': virginVisitorType,
+      'notificationState': notificationState,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString()
     });

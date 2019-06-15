@@ -17,7 +17,7 @@ import 'package:harrier_central/util/enums.dart';
 
 class HasherKennelMapModel {
   HasherKennelMapModel(
-      {this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.isHomeKennel, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.removed, this.updatedAt});
+      {this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.isHomeKennel, this.kennelNotificationPreference, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.removed, this.updatedAt});
 
   final String hkmId;
   final String userId;
@@ -25,6 +25,7 @@ class HasherKennelMapModel {
   final int following;
   final int isMember;
   final int isHomeKennel;
+  final int kennelNotificationPreference;
   final int mismanagementRoleFlags;
   final int userRoleFlags;
   final int appAccessFlags;
@@ -50,6 +51,7 @@ class HasherKennelMapModel {
           following: jsonItem['following'],
           isMember: jsonItem['isMember'],
           isHomeKennel: jsonItem['isHomeKennel'],
+          kennelNotificationPreference: jsonItem['kennelNotificationPreference'],
           mismanagementRoleFlags: jsonItem['mismanagementRoleFlags'] ?? 0,
           userRoleFlags: jsonItem['userRoleFlags'],
           appAccessFlags: jsonItem['appAccessFlags'],
@@ -99,6 +101,7 @@ class HasherKennelMapTableHelper {
   static const String colFollowing = 'following';
   static const String colIsMember = 'isMember';
   static const String colIsHomeKennel = 'isHomeKennel';
+  static const String colKennelNotificationPreference = 'kennelNotificationPreference';
   static const String colMismanagementRoleFlags = 'mismanagementRoleFlags';
   static const String colUserRoleFlags = 'userRoleFlags';
   static const String colAppAccessFlags = 'appAccessFlags';
@@ -151,6 +154,7 @@ class HasherKennelMapTableHelper {
             $colFollowing INT,
             $colIsMember INT,
             $colIsHomeKennel INT,
+            $colKennelNotificationPreference INT,
             $colMismanagementRoleFlags INT,
             $colUserRoleFlags INT,
             $colAppAccessFlags INT,
@@ -179,6 +183,7 @@ class HasherKennelMapTableHelper {
       HasherKennelMapTableHelper.colFollowing: item.following,
       HasherKennelMapTableHelper.colIsMember: item.isMember,
       HasherKennelMapTableHelper.colIsHomeKennel: item.isHomeKennel,
+      HasherKennelMapTableHelper.colKennelNotificationPreference: item.kennelNotificationPreference,
       HasherKennelMapTableHelper.colMismanagementRoleFlags: item.mismanagementRoleFlags,
       HasherKennelMapTableHelper.colUserRoleFlags: item.userRoleFlags,
       HasherKennelMapTableHelper.colAppAccessFlags: item.appAccessFlags,
@@ -202,6 +207,7 @@ class HasherKennelMapTableHelper {
       following: map[HasherKennelMapTableHelper.colFollowing],
       isMember: map[HasherKennelMapTableHelper.colIsMember],
       isHomeKennel: map[HasherKennelMapTableHelper.colIsHomeKennel],
+      kennelNotificationPreference: map[HasherKennelMapTableHelper.colKennelNotificationPreference],
       mismanagementRoleFlags: map[HasherKennelMapTableHelper.colMismanagementRoleFlags],
       userRoleFlags: map[HasherKennelMapTableHelper.colUserRoleFlags],
       appAccessFlags: map[HasherKennelMapTableHelper.colAppAccessFlags],

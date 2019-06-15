@@ -4,11 +4,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
+import 'package:harrier_central/widgets/multiple_choice_popup.dart';
+import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/notifications/notification_support.dart';
 
 //import 'package:flip_panel/flip_panel.dart';
 
@@ -47,19 +54,45 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     // return IntrinsicWidth(
     //     child:
     return Card(
-        elevation: 4.0,
-        margin: const EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
-        color: Colors.white,
-        child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(top: 5.0, left: 8.0, right: 8.0),
-            child: Text(
-              widget.futureRun.event.eventName,
-              style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 17.0, color: Colors.black, height: 1.0),
-              textAlign: TextAlign.left,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+      elevation: 4.0,
+      margin: const EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Stack(
+            children: <Widget>[
+              Container(
+                width: MediaQuery.of(context).size.width,
+                padding: const EdgeInsets.only(top: 5.0, left: 20.0, right: 20.0),
+                child: Text(
+                  widget.futureRun.event.eventName,
+                  style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 17.0, color: Colors.black, height: 1.0),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              widget.futureRun.extensions.notificationPreference == 0
+                  ? Container()
+                  : Positioned(
+                      right: 5,
+                      top: 6,
+                      child: GestureDetector(
+                        onTap: (){
+                          showNotificationPopup(context);
+                        },
+                        child: 
+                        widget.futureRun.extensions.notificationPreference == -1 ? Icon(delayIcon, color: Colors.blue[800], size: 24.0) :
+                        Image(
+                          width: 24.0,
+                          height: 24.0,
+                          fit: BoxFit.fill,
+                          image: widget.futureRun.extensions.notificationPreference == 1 ? const AssetImage('images/icons/green_bell_50px.png') : const AssetImage('images/icons/red_bell_50px.png'),
+                        ),
+                      ),
+                    ),
+            ],
           ),
           // Stack(children: <Widget>[
           //   Positioned(top:10.0,
@@ -83,78 +116,148 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
             height: 1.0,
             color: Colors.grey[300],
           ),
-          FlatButton(
-            splashColor: Theme.of(context).accentColor,
-            highlightColor: Theme.of(context).accentColor,
-            onPressed: () {
-              Navigator.push<dynamic>(
-                this.context,
-                MaterialPageRoute<dynamic>(
-                  builder: (BuildContext context) => RunDetailsPage(futureRun: widget.futureRun),
-                ),
-              );
-              //   },
-              // );
-            },
-            padding: const EdgeInsets.only(top: 10.0, left: 4.0, right: 10.0, bottom: 10.0),
-            child: Stack(
-              children: <Widget>[
-                widget.futureRun.extensions.hareList == null ? Align(alignment: Alignment.topRight, child: Image(width: 75.0, height: 75.0, fit: BoxFit.fill, image: const AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Stack(alignment: Alignment.center, children: <Widget>[
-                      KennelLogo(
-                        kennelLogoUrl: widget.futureRun.kennel.kennelLogo,
-                        kennelShortName: widget.futureRun.kennel.kennelShortName,
-                        logoHeight: 70.0,
-                        leftPadding: 10.0,
-                      ),
-                    ]),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 3.0, left: 10.0),
-                      child: Column(
+          Stack(
+            children: <Widget>[
+              widget.futureRun.extensions.hareList == null ? Positioned(right: 20, top: 10, child: Image(width: 70.0, height: 70.0, fit: BoxFit.fill, image: const AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    flex: 90,
+                    child: FlatButton(
+                      splashColor: Theme.of(context).accentColor,
+                      highlightColor: Theme.of(context).accentColor,
+                      onPressed: () {
+                        Navigator.push<dynamic>(
+                          this.context,
+                          MaterialPageRoute<dynamic>(
+                            builder: (BuildContext context) => RunDetailsPage(futureRun: widget.futureRun),
+                          ),
+                        );
+                        //   },
+                        // );
+                      },
+                      padding: const EdgeInsets.only(top: 10.0, left: 4.0, right: 0.0, bottom: 10.0),
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: <Widget>[
-                          Text(
-                            (widget.futureRun.event.isCountedRun == 1 ? 
-                            'Run #${widget.futureRun.event.eventNumber}, ' : 'Run / Event ') +
-                                (widget.futureRun.extensions.daysUntilEvent <= 14
-                                    ? widget.futureRun.extensions.daysUntilEvent.toInt() == 0 ? 'TODAY' : widget.futureRun.extensions.daysUntilEvent.toInt() == 1 ? 'Tomorrow' : 'in ${widget.futureRun.extensions.daysUntilEvent.toInt().toString()} days'
-                                    : (widget.futureRun.extensions.daysUntilEvent <= 30)
-                                        ? 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 7.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks')
-                                        : widget.futureRun.extensions.daysUntilEvent <= 365
-                                            ? 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 30.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months')
-                                            : 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 365.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years')),
-                            style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
-                            textAlign: TextAlign.left,
+                          KennelLogo(
+                            kennelLogoUrl: widget.futureRun.kennel.kennelLogo,
+                            kennelShortName: widget.futureRun.kennel.kennelShortName,
+                            logoHeight: 70.0,
+                            leftPadding: 10.0,
                           ),
-                          Text(
-                            DateFormat("E, MMM d 'at' h:mm a").format(widget.futureRun.event.eventStartDatetime),
-                            style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
-                            textAlign: TextAlign.left,
-                          ),
-                          Text(
-                            widget.futureRun.extensions.hareList == null ? 'RSVP to sign up to Hare!' : 'Hares: ' + widget.futureRun.extensions.hareList,
-                            style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
-                            textAlign: TextAlign.left,
-                          ),
-                          widget.futureRun.extensions.distToEvent >= 0
-                              ? Text(
-                                  Utilities.getDistance(widget.futureRun.extensions.distToEvent, context) + ' from here',
+                          Padding(
+                            padding: const EdgeInsets.only(top: 3.0, left: 10.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  (widget.futureRun.event.isCountedRun == 1 ? 'Run #${widget.futureRun.event.eventNumber}, ' : 'Run / Event ') +
+                                      (widget.futureRun.extensions.daysUntilEvent <= 14
+                                          ? widget.futureRun.extensions.daysUntilEvent.toInt() == 0 ? 'TODAY' : widget.futureRun.extensions.daysUntilEvent.toInt() == 1 ? 'Tomorrow' : 'in ${widget.futureRun.extensions.daysUntilEvent.toInt().toString()} days'
+                                          : (widget.futureRun.extensions.daysUntilEvent <= 30)
+                                              ? 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 7.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks')
+                                              : widget.futureRun.extensions.daysUntilEvent <= 365
+                                                  ? 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 30.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months')
+                                                  : 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 365.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years')),
+                                  style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
+                                  textAlign: TextAlign.left,
+                                ),
+                                Text(
+                                  DateFormat("E, MMM d 'at' h:mm a").format(widget.futureRun.event.eventStartDatetime),
                                   style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
                                   textAlign: TextAlign.left,
-                                )
-                              : const Text(''),
+                                ),
+                                Text(
+                                  widget.futureRun.extensions.hareList == null ? 'RSVP to sign up to Hare!' : 'Hares: ' + widget.futureRun.extensions.hareList,
+                                  style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
+                                  textAlign: TextAlign.left,
+                                ),
+                                widget.futureRun.extensions.distToEvent >= 0
+                                    ? Text(
+                                        Utilities.getDistance(widget.futureRun.extensions.distToEvent, context) + ' from here',
+                                        style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
+                                        textAlign: TextAlign.left,
+                                      )
+                                    : const Text(''),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ],
-            ),
-          )
-        ]));
+                  ),
+                  Expanded(
+                    flex: 10,
+                    child: IconButton(
+                      icon: const Icon(MaterialCommunityIcons.dots_vertical),
+                      iconSize: Theme.of(context).iconTheme.size,
+                      color: Colors.black54,
+                      splashColor: Theme.of(context).highlightColor,
+                      onPressed: () {
+                        showNotificationPopup(context);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void showNotificationPopup(BuildContext context) {
+    final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+      <String, dynamic>{
+        'title': 'Turn notifications on',
+        'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(left: 3, top: 1.5, child: Icon(MaterialCommunityIcons.bell, size: 25, color: Colors.green[800]))],
+        'returnValue': notificationsOn,
+      },
+      <String, dynamic>{
+        'title': 'Turn notifications off',
+        'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(left: 3, top: 1.5, child: Icon(MaterialCommunityIcons.bell_off, size: 25, color: Colors.red[800]))],
+        'returnValue': notificationsOff,
+      },
+      // <String, dynamic>{
+      //   'title': 'Set notifications to auto',
+      //   'icon':  <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(left:3,top:1.5,child:Icon(MaterialCommunityIcons.bell_off, size:25, color: Colors.red[800]))],
+      //   'returnValue': EnumNotificationPopupActions.notificationsAuto,
+      // },
+    ];
+
+    final MultipleChoicePopup popup = MultipleChoicePopup(
+        title: 'Notification options for this run',
+        buttons: buttons,
+        cancelButtonTitle: 'Cancel',
+        buttonPress: (dynamic retVal) {
+          if ((retVal == notificationsOn) || (retVal == notificationsOff)) {
+            final String userId = getStringPref(StringPrefsEnum.userId);
+            final HasherEventMapService hemSrv = HasherEventMapService();
+            final EnumNotificationState<int> nState = retVal;
+            setState(() {
+              widget.futureRun.extensions.notificationPreference = -1;
+            });
+            
+            hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.user, userId, null, notificationState: nState.value).then((dynamic notUsed) {
+              setState(() {
+                final NotificationSupport notifications = NotificationSupport();
+                notifications.configureNotifications();
+                widget.futureRun.extensions.notificationPreference = nState.value;
+              });
+            });
+          }
+
+          // modifyMembershipCallback(retVal);
+        });
+
+    showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return popup;
+        });
   }
 }

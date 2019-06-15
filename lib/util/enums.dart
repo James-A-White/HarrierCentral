@@ -59,12 +59,23 @@ const EnumConnectionStatus<int> connectionStatus_connected = EnumConnectionStatu
 
 
 //////////////////////////
+///
+class EnumNotificationState<int> extends Enum<int> {
+  const EnumNotificationState(int val) : super(val);
+}
 
+const EnumNotificationState<int> notificationsUnchanged = EnumNotificationState<int>(-1);
+const EnumNotificationState<int> notificationsAuto = EnumNotificationState<int>(0);
+const EnumNotificationState<int> notificationsOn = EnumNotificationState<int>(1);
+const EnumNotificationState<int> notificationsOff = EnumNotificationState<int>(2);
+
+//////////////////////////
 
 class EnumRsvpState<int> extends Enum<int> {
   const EnumRsvpState(int val) : super(val);
 }
 
+const EnumRsvpState<int> rsvpNoChange = EnumRsvpState<int>(-1);
 const EnumRsvpState<int> rsvpUnknown = EnumRsvpState<int>(0);
 const EnumRsvpState<int> rsvpNo = EnumRsvpState<int>(1);
 const EnumRsvpState<int> rsvpMaybe = EnumRsvpState<int>(2);
@@ -76,6 +87,7 @@ class EnumIsHare<int> extends Enum<int> {
   const EnumIsHare(int val) : super(val);
 }
 
+const EnumIsHare<int> isHareNoChange = EnumIsHare<int>(-1);
 const EnumIsHare<int> isHareNo = EnumIsHare<int>(0);
 const EnumIsHare<int> isHareYes = EnumIsHare<int>(1);
 
@@ -158,6 +170,17 @@ const EnumFollowType<int> followTypeCancel = EnumFollowType<int>(-1);
 const EnumFollowType<int> followTypeAuto = EnumFollowType<int>(0);
 const EnumFollowType<int> followTypeFollow = EnumFollowType<int>(1);
 const EnumFollowType<int> followTypeIgnore = EnumFollowType<int>(2);
+
+//////////////////////////
+
+class EnumNotificationType<int> extends Enum<int> {
+  const EnumNotificationType(int val) : super(val);
+}
+
+const EnumNotificationType<int> notificationTypeCancel = EnumNotificationType<int>(-1);
+const EnumNotificationType<int> notificationTypeAuto = EnumNotificationType<int>(0);
+const EnumNotificationType<int> notificationTypeAlways = EnumNotificationType<int>(1);
+const EnumNotificationType<int> notificationTypeBlock = EnumNotificationType<int>(2);
 
 //////////////////////////
 

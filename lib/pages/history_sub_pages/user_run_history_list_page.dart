@@ -462,7 +462,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   if (item.attendenceState < attendenceAtHash.value) {
                                     item.isLoading = true;
                                     final HasherEventMapService hemSrv = HasherEventMapService();
-                                    final Future<void> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpYes.value, attendenceAtHash.value, isHareNo.value, enumHasher.value);
+                                    final Future<void> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value);
 
                                     retVal.then((void dummy) {
                                       refreshRunHistoryFromTable(true).then((void dummy) {});
@@ -470,7 +470,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   } else {
                                     item.isLoading = true;
                                     final HasherEventMapService hemSrv = HasherEventMapService();
-                                    final Future<void> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpYes.value, attendenceAtHash.value, item.isHare == 1 ? isHareNo.value : isHareYes.value, enumHasher.value);
+                                    final Future<void> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: item.isHare == 1 ? isHareNo.value : isHareYes.value);
 
                                     retVal.then((void dummy) {
                                       refreshRunHistoryFromTable(true).then((void dummy) {});
@@ -481,7 +481,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   // indicate that the hasher did
                                   // not participate in this event
                                   final HasherEventMapService hemSrv = HasherEventMapService();
-                                  final Future<void> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpNo.value, attendenceNo.value, isHareNo.value, enumHasher.value);
+                                  final Future<void> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpState: rsvpNo.value, attendenceState: attendenceNo.value, isHare: isHareNo.value);
 
                                   retVal.then((void dummy) {
                                     refreshRunHistoryFromTable(true).then((void dummy) {});

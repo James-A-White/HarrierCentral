@@ -23,7 +23,7 @@ class FutureRunsListPage extends StatefulWidget {
 }
 
 class FutureRunQueryExtenstions {
-  FutureRunQueryExtenstions({this.daysUntilEvent, this.distToEvent, this.hareList, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isHare, this.following});
+  FutureRunQueryExtenstions({this.daysUntilEvent, this.distToEvent, this.hareList, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isHare, this.following, this.notificationPreference});
 
   final num daysUntilEvent;
   num distToEvent;
@@ -34,9 +34,10 @@ class FutureRunQueryExtenstions {
   final int rsvpState;
   final int isHare;
   final int following;
+  int notificationPreference;
 
   static FutureRunQueryExtenstions fromMap(Map<String, dynamic> map) {
-    final FutureRunQueryExtenstions item = FutureRunQueryExtenstions(daysUntilEvent: map['daysUntilEvent'], hareList: map['hareList'], mismanagementRoleFlags: map['mismanagementRoleFlags'], following: map['following']);
+    final FutureRunQueryExtenstions item = FutureRunQueryExtenstions(daysUntilEvent: map['daysUntilEvent'], hareList: map['hareList'], mismanagementRoleFlags: map['mismanagementRoleFlags'], following: map['following'], notificationPreference: map['notificationPreference']);
     return item;
   }
 }
@@ -101,15 +102,16 @@ class FutureRunListPageState extends State<FutureRunsListPage> with AutomaticKee
           coalesce(hkm.following,0) as following,
           coalesce(hem.rsvpState,0) as rsvpState,
           coalesce(hem.isHare,0) as isHare,
-          julianday(evt.eventStartDatetime) - julianday('now') as daysUntilEvent,
+          coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) as notificationPreference,
+          CAST(julianday(evt.eventStartDatetime) AS INT) - CAST(julianday('now','localtime') AS INT) as daysUntilEvent,
              (SELECT GROUP_CONCAT(h.dispName,",") FROM hasherEventMapForRunAdmin hem2
               INNER JOIN hashers h on hem2.userId = h.hasherId
               WHERE hem2.eventId = evt.eventId AND hem2.isHare = 1) as hareList
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
           LEFT OUTER JOIN hasherKennelMap hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
-          LEFT OUTER JOIN hasherEventMapForRunAdmin hem on hem.eventId = evt.eventId and hem.userId = "$userId"
-          WHERE evt.eventStartDatetime > date('now','-4 hour') and evt.isVisible = 1
+          LEFT OUTER JOIN hasherEventMap hem on hem.eventId = evt.eventId and hem.userId = "$userId"
+          WHERE evt.eventStartDatetime > datetime('now','localtime','-4 hours') and evt.isVisible = 1
           AND (
                 (coalesce(hkm.following,0) <= 1) 
                 OR 

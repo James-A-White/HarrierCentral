@@ -312,7 +312,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
         final HasherEventMapService hemSrv = HasherEventMapService();
 
         CommonQueries.getUserIdFromUqr(prefix + content).then((String hasherId) {
-          hemSrv.joinEvent(widget.eventId, HasherEventMapTableType.eventAdmin, hasherId, null, rsvpYes.value, attendenceState, isHareNo.value, enumHasher.value).then((List<dynamic> adHocData) {
+          hemSrv.joinEvent(widget.eventId, HasherEventMapTableType.eventAdmin, hasherId, null, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value, virginVisitorType: enumHasher.value).then((List<dynamic> adHocData) {
             setState(() {
               if ((adHocData != null) && (adHocData.isNotEmpty)) {
                 onScreenMessage = adHocData[0]['userMessage'];
