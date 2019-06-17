@@ -65,6 +65,7 @@ class AuthorizeDeviceService {
           setStringPref(StringPrefsEnum.lastName, result[0]['lastName']);
           setStringPref(StringPrefsEnum.qrCode, result[0]['qrCode']);
           setStringPref(StringPrefsEnum.supportCode, result[0]['supportCode']);
+          setStringPref(StringPrefsEnum.resetCode, result[0]['resetCode']);
           setStringPref(StringPrefsEnum.qrSecretCode, result[0]['qrSecretCode']);
           setStringPref(StringPrefsEnum.userId, result[0]['hasherId']);
 

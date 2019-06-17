@@ -113,14 +113,14 @@ class PaymentReportState extends State<PaymentReportPage> {
             (
                 SELECT COUNT(*) 
                 FROM ${PaymentsTableHelper.tableName} pay 
-                INNER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem on hem.eventId = pay.eventId AND hem.userId = pay.paidBy AND hem.attendenceState >= 20
+                INNER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem on hem.hemId = pay.hemId AND hem.attendenceState >= 20
                 WHERE pay.paymentType = x.paymentType AND pay.cancelledBy IS NULL
 
             ) as count,
             (
                 SELECT SUM(pay2.creditAmount) 
                 FROM ${PaymentsTableHelper.tableName} pay2 
-                INNER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem2 on hem2.eventId = pay2.eventId AND hem2.userId = pay2.paidBy AND hem2.attendenceState >= 20
+                INNER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
                 WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
             ) as totalCollected
           FROM (select 1 as paymentType union values (2), (3), (4), (5), (6), (7) ) x

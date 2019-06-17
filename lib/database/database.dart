@@ -23,6 +23,8 @@ class DBProvider {
   DBProvider._();
   static final DBProvider db = DBProvider._();
 
+  static int dbVersion = 131;
+
   Database _database;
 
   Future<Database> get database async {
@@ -32,6 +34,14 @@ class DBProvider {
     // if _database is null we instantiate it
     _database = await initDB(null);
     return _database;
+  }
+
+  Future<bool> deleteDb() async {
+    final Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    final String path = join(documentsDirectory.path, DB_NAME);
+    await deleteDatabase(path);
+
+    return true;
   }
 
   // Future<bool> resetDb() async
@@ -55,19 +65,19 @@ class DBProvider {
       await RegionsTableHelper.createTable(db, version);
       await CountriesTableHelper.createTable(db, version);
       await KennelsTableHelper.createTable(db, version);
-      await HasherKennelMapTableHelper.createTable(db, version,HasherKennelMapTableType.user);
-      await HasherEventMapTableHelper.createTable(db, version,HasherEventMapTableType.user);
+      await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.user);
+      await HasherEventMapTableHelper.createTable(db, version, HasherEventMapTableType.user);
       await NarrowEventsTableHelper.createTable(db, version);
 
       // create event admin tables
-      await HasherEventMapTableHelper.createTable(db, version,HasherEventMapTableType.eventAdmin);
-      await HasherKennelMapTableHelper.createTable(db, version,HasherKennelMapTableType.eventAdmin);
+      await HasherEventMapTableHelper.createTable(db, version, HasherEventMapTableType.eventAdmin);
+      await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.eventAdmin);
       await PaymentsTableHelper.createTable(db, version);
       await ReceiptsTableHelper.createTable(db, version);
 
       // create kennel admin tables
-      await HasherKennelMapTableHelper.createTable(db, version,HasherKennelMapTableType.kennelAdmin);
-      
+      await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.kennelAdmin);
+
       if (informUser != null) {
         informUser('Loading city data\r\n0% complete');
       }

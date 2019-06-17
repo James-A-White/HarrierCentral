@@ -19,6 +19,7 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/notifications/notification_support.dart';
+import 'package:harrier_central/data/services/authorize_device_service.dart';
 
 class AppEntryPage extends StatefulWidget {
   @override
@@ -70,17 +71,47 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
             if (userId == null) {
               Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
             } else {
-              final Database db = await DBProvider.db.database;
+              if ((getIntPref(IntPrefsEnum.databaseVersion) ?? 0) != DBProvider.dbVersion) {
+                // we've upgraded the database since the last launch, so it need to be reloaded
+                final String resetCode = getStringPref(StringPrefsEnum.resetCode);
 
-              final SyncUserDataService cSrv = SyncUserDataService();
-              final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagsAllData, false);
-              final String resultStr = result ? 'successfully' : 'unsuccessfully';
-              print('Master data synchronized $resultStr');
+                DBProvider.db.deleteDb();
 
-              final NotificationSupport notifications = NotificationSupport();
-              notifications.configureNotifications();
+                //bool isLoading = true;
+                String userName;
 
-              Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+                final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, resetCode.toUpperCase());
+                apiCall.then((Map<String, String> result) async {
+                  setState(() {
+                    //isLoading = false;
+                  });
+
+                  if (result['result'] != 'failed') {
+                    userName = getStringPref(StringPrefsEnum.displayName);
+
+                    await setIntPref(IntPrefsEnum.databaseVersion, DBProvider.dbVersion);
+
+                    Utilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void dummy) {
+                      Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+                    });
+                  } else {
+                    // TODO(James): Do something here if the auth device fails
+                  }
+                });
+              } else {
+                final Database db = await DBProvider.db.database;
+
+                final SyncUserDataService cSrv = SyncUserDataService();
+                final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagsAllData, false);
+                final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                print('Master data synchronized $resultStr');
+
+                final NotificationSupport notifications = NotificationSupport();
+                notifications.configureNotifications();
+
+                Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+              }
             }
           } else {
             // TODO(James): Handle cases where login is disapproved

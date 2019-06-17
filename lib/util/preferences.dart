@@ -6,6 +6,7 @@ enum StringPrefsEnum {
   userId,
   qrCode,
   supportCode,
+  resetCode,
   qrSecretCode,
   displayName,
   firstName,
@@ -25,6 +26,9 @@ enum StringPrefsEnum {
 enum DoublePrefsEnum { latitude, longitude }
 
 enum IntPrefsEnum {
+  databaseVersion,
+
+
   lastUpdateAllHasherData,
   lastCacheClearAllHasherData,
 

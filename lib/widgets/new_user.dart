@@ -538,6 +538,7 @@ class NewUserState extends State<NewUserWidget> with SingleTickerProviderStateMi
                 setStringPref(StringPrefsEnum.lastName, result['lastName']);
                 setStringPref(StringPrefsEnum.qrCode, result['qrCode']);
                 setStringPref(StringPrefsEnum.supportCode, result['supportCode']);
+                setStringPref(StringPrefsEnum.resetCode, result['resetCode']);
                 setStringPref(StringPrefsEnum.qrSecretCode, result['qrSecretCode']);
                 setStringPref(StringPrefsEnum.userId, result['hasherId']);
               }

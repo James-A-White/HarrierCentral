@@ -73,25 +73,23 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              widget.futureRun.extensions.notificationPreference == 0
-                  ? Container()
-                  : Positioned(
-                      right: 5,
-                      top: 6,
-                      child: GestureDetector(
-                        onTap: (){
-                          showNotificationPopup(context);
-                        },
-                        child: 
-                        widget.futureRun.extensions.notificationPreference == -1 ? Icon(delayIcon, color: Colors.blue[800], size: 24.0) :
-                        Image(
+              Positioned(
+                right: 5,
+                top: 6,
+                child: GestureDetector(
+                  onTap: () {
+                    showNotificationPopup(context);
+                  },
+                  child: widget.futureRun.extensions.notificationPreference == -1
+                      ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
+                      : Image(
                           width: 24.0,
                           height: 24.0,
                           fit: BoxFit.fill,
-                          image: widget.futureRun.extensions.notificationPreference == 1 ? const AssetImage('images/icons/green_bell_50px.png') : const AssetImage('images/icons/red_bell_50px.png'),
+                          image: widget.futureRun.extensions.notificationPreference == 1 ? const AssetImage('images/icons/bell_gold_50px.png') : const AssetImage('images/icons/bell_silver_50px.png'),
                         ),
-                      ),
-                    ),
+                ),
+              ),
             ],
           ),
           // Stack(children: <Widget>[
@@ -122,7 +120,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               Row(
                 children: <Widget>[
                   Expanded(
-                    flex: 90,
+                    flex: 100,
                     child: FlatButton(
                       splashColor: Theme.of(context).accentColor,
                       highlightColor: Theme.of(context).accentColor,
@@ -188,18 +186,18 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                       ),
                     ),
                   ),
-                  Expanded(
-                    flex: 10,
-                    child: IconButton(
-                      icon: const Icon(MaterialCommunityIcons.dots_vertical),
-                      iconSize: Theme.of(context).iconTheme.size,
-                      color: Colors.black54,
-                      splashColor: Theme.of(context).highlightColor,
-                      onPressed: () {
-                        showNotificationPopup(context);
-                      },
-                    ),
-                  ),
+                  // Expanded(
+                  //   flex: 10,
+                  //   child: IconButton(
+                  //     icon: const Icon(MaterialCommunityIcons.dots_vertical),
+                  //     iconSize: Theme.of(context).iconTheme.size,
+                  //     color: Colors.black54,
+                  //     splashColor: Theme.of(context).highlightColor,
+                  //     onPressed: () {
+                  //       showNotificationPopup(context);
+                  //     },
+                  //   ),
+                  // ),
                 ],
               ),
             ],
@@ -213,12 +211,36 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
         'title': 'Turn notifications on',
-        'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(left: 3, top: 1.5, child: Icon(MaterialCommunityIcons.bell, size: 25, color: Colors.green[800]))],
+        'icon': <Widget>[
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Positioned(
+            left: 3,
+            top: 1.5,
+            child: Image(
+              width: 25.0,
+              height: 25.0,
+              fit: BoxFit.fill,
+              image: const AssetImage('images/icons/bell_gold_50px.png'),
+            ),
+          )
+        ],
         'returnValue': notificationsOn,
       },
       <String, dynamic>{
         'title': 'Turn notifications off',
-        'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(left: 3, top: 1.5, child: Icon(MaterialCommunityIcons.bell_off, size: 25, color: Colors.red[800]))],
+        'icon': <Widget>[
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Positioned(
+            left: 3,
+            top: 1.5,
+            child: Image(
+              width: 25.0,
+              height: 25.0,
+              fit: BoxFit.fill,
+              image: const AssetImage('images/icons/bell_silver_50px.png'),
+            ),
+          )
+        ],
         'returnValue': notificationsOff,
       },
       // <String, dynamic>{
@@ -240,7 +262,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
             setState(() {
               widget.futureRun.extensions.notificationPreference = -1;
             });
-            
+
             hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.user, userId, null, notificationState: nState.value).then((dynamic notUsed) {
               setState(() {
                 final NotificationSupport notifications = NotificationSupport();
