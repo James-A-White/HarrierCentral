@@ -37,7 +37,7 @@ class FutureRunQueryExtenstions {
   int notificationPreference;
 
   static FutureRunQueryExtenstions fromMap(Map<String, dynamic> map) {
-    final FutureRunQueryExtenstions item = FutureRunQueryExtenstions(daysUntilEvent: map['daysUntilEvent'], hareList: map['hareList'], mismanagementRoleFlags: map['mismanagementRoleFlags'], following: map['following'], notificationPreference: map['notificationPreference']);
+    final FutureRunQueryExtenstions item = FutureRunQueryExtenstions(daysUntilEvent: map['daysUntilEvent'], hareList: map['hareList'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'], mismanagementRoleFlags: map['mismanagementRoleFlags'], following: map['following'], notificationPreference: map['notificationPreference']);
     return item;
   }
 }
@@ -103,12 +103,15 @@ class FutureRunListPageState extends State<FutureRunsListPage> with AutomaticKee
           coalesce(hem.rsvpState,0) as rsvpState,
           coalesce(hem.isHare,0) as isHare,
           coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) as notificationPreference,
+          n.digitsAfterDecimal,
+          n.currencySymbol,
           CAST(julianday(evt.eventStartDatetime) AS INT) - CAST(julianday('now','localtime') AS INT) as daysUntilEvent,
              (SELECT GROUP_CONCAT(h.dispName,",") FROM hasherEventMapForRunAdmin hem2
               INNER JOIN hashers h on hem2.userId = h.hasherId
               WHERE hem2.eventId = evt.eventId AND hem2.isHare = 1) as hareList
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
+          INNER JOIN countries n on n.countryId = k.countryId
           LEFT OUTER JOIN hasherKennelMap hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
           LEFT OUTER JOIN hasherEventMap hem on hem.eventId = evt.eventId and hem.userId = "$userId"
           WHERE evt.eventStartDatetime > datetime('now','localtime','-4 hours') and evt.isVisible = 1
@@ -129,8 +132,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> with AutomaticKee
                   final KennelsModel kennelItem = KennelsTableHelper.fromMap(results[i]);
                   final FutureRunQueryExtenstions extensionsItem = FutureRunQueryExtenstions.fromMap(results[i]);
                   extensionsItem.distToEvent = dist;
-                  extensionsItem.currencySymbol = '€^';
-                  extensionsItem.digitsAfterDecimal = 2;
+                  // extensionsItem.currencySymbol = '€^';
+                  // extensionsItem.digitsAfterDecimal = 2;
 
                   if ((extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < 50000))) {
                     final FutureRunAggregate item = FutureRunAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem);

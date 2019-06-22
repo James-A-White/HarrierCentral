@@ -22,10 +22,10 @@ class HasherKennelMapModel {
   final String hkmId;
   final String userId;
   final String kennelId;
-  final int following;
+  int following;
   final int isMember;
   final int isHomeKennel;
-  final int kennelNotificationPreference;
+  int kennelNotificationPreference;
   final int mismanagementRoleFlags;
   final int userRoleFlags;
   final int appAccessFlags;
@@ -325,11 +325,13 @@ class HasherKennelMapService {
 
   //=================  Domain specific functions ================
 
-  Future<void> updateHasherKennelStatus(Map<String, dynamic> kennel, HasherKennelMapTableType tblType, {int monthsToAddToMembership, String targetUserId}) async {
+  Future<List<dynamic>> updateHasherKennelStatus(String kennelId, HasherKennelMapTableType tblType, {int monthsToAddToMembership, String targetUserId, int notificationState = -1, int followingState = -1}) async {
+
+    List<dynamic> adHocData;
 
     if (globalConnectionStatus == connectionStatus_notConnected)
     {
-      return;
+      return adHocData;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
@@ -348,12 +350,12 @@ class HasherKennelMapService {
     final String body = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
-      'kennelId': kennel['kennelId'],
+      'kennelId': kennelId,
       'targetUserId': targetUserId ?? userId,
-      'isFollowing': kennel['followingRequested'],
+      'isFollowing': followingState,
       'isHomeKennel' : -1,
+      'notificationState': notificationState,
       'monthsToAddToMembership' : monthsToAddToMembership,
-      //'paymentAmount' : ,
       'hasherKennelMapUpdatedAfter' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
       'kennelsUpdatedAfter' : kennelsUpdatedAfter.toString().substring(0, 19)
     });
@@ -366,16 +368,14 @@ class HasherKennelMapService {
 
     if (tblType == HasherKennelMapTableType.eventAdmin)
     { 
-        await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);  
+        adHocData = await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);  
     } else if (tblType == HasherKennelMapTableType.kennelAdmin) {
-        await SyncKennelAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body); 
+        adHocData = await SyncKennelAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body); 
     } else {
-        await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body); 
+        adHocData = await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body); 
     }
+    
+    return adHocData;
 
-    final dynamic result = json.decode(response.body);
-
-    kennel['following'] = result[1][0]['following'];  // HACK!!! Fix this so that results can be returned in any order and not specifically [1][0]
-    kennel['followingRequested'] = -1;
   }
 }
