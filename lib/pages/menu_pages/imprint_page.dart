@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:package_info/package_info.dart';
 
-import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/database/migrations.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 
@@ -101,7 +101,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nDatabase version: ${DBProvider.dbVersion.toString()}\r\nStatus: Private Beta', style: bodyStyle),
+                      Text('Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nDatabase version: ${MigrationsTableHelper.dbVersion.toString()}\r\nStatus: Private Beta', style: bodyStyle),
                     ],
                   ),
                   Row(

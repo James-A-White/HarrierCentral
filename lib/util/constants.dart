@@ -9,6 +9,8 @@ const int DEFAULT_HTTP_TIMEOUT = 10;
 const num ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT = 3;
 const num ALLOW_CHECKIN_SCAN_HOURS_AFTER_EVENT = 6;
 
+const int NOTIFICATION_DAYS_IN_FUTURE = 90;
+
 const int SPLASH_SCREEN_DISPLAY_TIME = 1;
 
 const String BASE_API_URL = 'https://harrier.azurewebsites.net/api/';
@@ -22,7 +24,7 @@ const String EMAIL_KENNEL_RUN_STATS_API_URL = 'https://hcazurefunctions7.azurewe
 
 const String GOOGLE_API_KEY = 'AIzaSyAiJXV8P99FwXq2FtYby7To80e9SBTrV2c';
 
-
+const String NOTIFICATION_PREFIX_EVENT_UPDATE = 'evtUpdate_';
 
 const String ERROR_KEY = 'HC_ERROR';
 

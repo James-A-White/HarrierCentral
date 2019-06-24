@@ -9,6 +9,7 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
+import 'package:harrier_central/notifications/notification_support.dart';
 
 class KennelsListItem extends StatefulWidget {
   const KennelsListItem({Key key, @required this.kennelItem, @required this.kennelSelected, @required this.kennelFollowingUpdated}) : super(key: key);
@@ -99,7 +100,7 @@ class KennelListItemState extends State<KennelsListItem> {
                             width: 24.0,
                             height: 24.0,
                             fit: BoxFit.fill,
-                            image: widget.kennelItem.hkm.kennelNotificationPreference == 1 ? const AssetImage('images/icons/bell_gold_50px.png') : const AssetImage('images/icons/bell_silver_50px.png'),
+                            image: widget.kennelItem.hkm.kennelNotificationPreference == 1 ? const AssetImage('images/icons/bell_gold_50px.png') : const AssetImage('images/icons/bell_silver_strike_out_50px.png'),
                           ),
                   ),
                 ),
@@ -276,7 +277,7 @@ class KennelListItemState extends State<KennelsListItem> {
               width: 25.0,
               height: 25.0,
               fit: BoxFit.fill,
-              image: const AssetImage('images/icons/bell_silver_50px.png'),
+              image: const AssetImage('images/icons/bell_silver_strike_out_50px.png'),
             ),
           )
         ],
@@ -304,6 +305,8 @@ class KennelListItemState extends State<KennelsListItem> {
                 srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, notificationState: notificationStatus).then((List<dynamic> queryResults) {
                   setState(() {
                     widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference']);
+                                    final NotificationSupport notifications = NotificationSupport();
+                notifications.setNotificationState(kennelId:widget.kennelItem.kennel.kennelId);
                   });
                 });
               }

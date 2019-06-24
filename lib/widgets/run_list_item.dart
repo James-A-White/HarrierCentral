@@ -2,9 +2,10 @@ import 'dart:core';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:harrier_central/util/constants.dart';
 
 import 'package:intl/intl.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+//import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 import 'package:harrier_central/util/utilities.dart';
@@ -73,6 +74,8 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              widget.futureRun.event.eventStartDatetime.isAfter(DateTime.now().add(Duration(days:NOTIFICATION_DAYS_IN_FUTURE))) ? 
+              Container():
               Positioned(
                 right: 5,
                 top: 6,
@@ -86,7 +89,9 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                           width: 24.0,
                           height: 24.0,
                           fit: BoxFit.fill,
-                          image: widget.futureRun.extensions.notificationPreference == 1 ? const AssetImage('images/icons/bell_gold_50px.png') : const AssetImage('images/icons/bell_silver_50px.png'),
+                          image: widget.futureRun.extensions.notificationPreference == 1
+                              ? const AssetImage('images/icons/bell_gold_50px.png')
+                              : widget.futureRun.extensions.notificationPreference == 2 ? const AssetImage('images/icons/bell_silver_strike_out_50px.png') : const AssetImage('images/icons/bell_silver_50px.png'),
                         ),
                 ),
               ),
@@ -237,11 +242,28 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               width: 25.0,
               height: 25.0,
               fit: BoxFit.fill,
-              image: const AssetImage('images/icons/bell_silver_50px.png'),
+              image: const AssetImage('images/icons/bell_silver_strike_out_50px.png'),
             ),
           )
         ],
         'returnValue': notificationsOff,
+      },
+      <String, dynamic>{
+        'title': 'Use Kennel setting',
+        'icon': <Widget>[
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Positioned(
+            left: 3,
+            top: 1.5,
+            child: Image(
+              width: 25.0,
+              height: 25.0,
+              fit: BoxFit.fill,
+              image: const AssetImage('images/icons/bell_silver_50px.png'),
+            ),
+          )
+        ],
+        'returnValue': notificationsAuto,
       },
       // <String, dynamic>{
       //   'title': 'Set notifications to auto',
@@ -255,7 +277,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
         buttonPress: (dynamic retVal) {
-          if ((retVal == notificationsOn) || (retVal == notificationsOff)) {
+          if ((retVal == notificationsOn) || (retVal == notificationsOff) || (retVal == notificationsAuto)) {
             final String userId = getStringPref(StringPrefsEnum.userId);
             final HasherEventMapService hemSrv = HasherEventMapService();
             final EnumNotificationState<int> nState = retVal;
@@ -263,11 +285,13 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               widget.futureRun.extensions.notificationPreference = -1;
             });
 
-            hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.user, userId, null, notificationState: nState.value).then((dynamic notUsed) {
+            hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.user, userId, null, notificationState: nState.value).then((List<dynamic> results) {
               setState(() {
                 final NotificationSupport notifications = NotificationSupport();
-                notifications.configureNotifications();
-                widget.futureRun.extensions.notificationPreference = nState.value;
+                notifications.setNotificationState(eventId: widget.futureRun.event.eventId);
+                // TODO(James): Fix this to reflect true value of what is in the DB not just the value
+                // provided to the function
+                widget.futureRun.extensions.notificationPreference = results[0]['notificationPreference'] ?? 0;
               });
             });
           }

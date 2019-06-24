@@ -5,6 +5,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 
+import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/database/migrations.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -13,7 +15,6 @@ import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
-import 'package:harrier_central/database/database.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);
@@ -33,7 +34,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   // TODO(James): Investigate Page Storage Bucket / PageView
 
-  final FutureRunsListPage futureRunsListPage =  const FutureRunsListPage();
+  final FutureRunsListPage futureRunsListPage = const FutureRunsListPage();
   final KennelsListPage kennelsListPage = const KennelsListPage();
   final HistoryListPage historyListPage = const HistoryListPage();
   final UserQrCodePage userQrCodePage = const UserQrCodePage();
@@ -51,7 +52,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     tabTitles.add('Kennels');
     tabTitles.add('Your Total Run Counts');
     tabTitles.add('Scanner');
-   // tabTitles.add('Friends');
+    // tabTitles.add('Friends');
 
     appBarText = tabTitles[0];
 
@@ -64,6 +65,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     DBProvider.db.initDB(informUser).then((Database db) {
       setState(() {
         setIntPref(IntPrefsEnum.dbCreated, 1);
+        setIntPref(IntPrefsEnum.databaseVersion, MigrationsTableHelper.dbVersion);
       });
     });
   }

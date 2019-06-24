@@ -17,13 +17,13 @@ import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/receipts_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
+import 'package:harrier_central/database/notifications_table.dart';
+import 'package:harrier_central/database/migrations.dart';
 import 'package:harrier_central/util/constants.dart';
 
 class DBProvider {
   DBProvider._();
   static final DBProvider db = DBProvider._();
-
-  static int dbVersion = 131;
 
   Database _database;
 
@@ -68,6 +68,8 @@ class DBProvider {
       await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.user);
       await HasherEventMapTableHelper.createTable(db, version, HasherEventMapTableType.user);
       await NarrowEventsTableHelper.createTable(db, version);
+      await NotificationsTableHelper.createTable(db, version);
+      await MigrationsTableHelper.createTable(db,version);
 
       // create event admin tables
       await HasherEventMapTableHelper.createTable(db, version, HasherEventMapTableType.eventAdmin);
