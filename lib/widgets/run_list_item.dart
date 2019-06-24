@@ -74,27 +74,27 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              widget.futureRun.event.eventStartDatetime.isAfter(DateTime.now().add(Duration(days:NOTIFICATION_DAYS_IN_FUTURE))) ? 
-              Container():
-              Positioned(
-                right: 5,
-                top: 6,
-                child: GestureDetector(
-                  onTap: () {
-                    showNotificationPopup(context);
-                  },
-                  child: widget.futureRun.extensions.notificationPreference == -1
-                      ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
-                      : Image(
-                          width: 24.0,
-                          height: 24.0,
-                          fit: BoxFit.fill,
-                          image: widget.futureRun.extensions.notificationPreference == 1
-                              ? const AssetImage('images/icons/bell_gold_50px.png')
-                              : widget.futureRun.extensions.notificationPreference == 2 ? const AssetImage('images/icons/bell_silver_strike_out_50px.png') : const AssetImage('images/icons/bell_silver_50px.png'),
-                        ),
-                ),
-              ),
+              widget.futureRun.event.eventStartDatetime.isAfter(DateTime.now().add(Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))
+                  ? Container()
+                  : Positioned(
+                      right: 5,
+                      top: 6,
+                      child: GestureDetector(
+                        onTap: () {
+                          showNotificationPopup(context);
+                        },
+                        child: widget.futureRun.extensions.notificationPreference == -1
+                            ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
+                            : Image(
+                                width: 24.0,
+                                height: 24.0,
+                                fit: BoxFit.fill,
+                                image: widget.futureRun.extensions.notificationPreference == 1
+                                    ? const AssetImage('images/icons/bell_gold_50px.png')
+                                    : widget.futureRun.extensions.notificationPreference == 2 ? const AssetImage('images/icons/bell_silver_strike_out_50px.png') : const AssetImage('images/icons/bell_silver_50px.png'),
+                              ),
+                      ),
+                    ),
             ],
           ),
           // Stack(children: <Widget>[
@@ -121,7 +121,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
           ),
           Stack(
             children: <Widget>[
-              widget.futureRun.extensions.hareList == null ? Positioned(right: 20, top: 10, child: Image(width: 70.0, height: 70.0, fit: BoxFit.fill, image: const AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
+              (widget.futureRun.event.hares ?? '') == '' ? Positioned(right: 20, top: 10, child: Image(width: 70.0, height: 70.0, fit: BoxFit.fill, image: const AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
               Row(
                 children: <Widget>[
                   Expanded(
@@ -148,43 +148,48 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                             kennelLogoUrl: widget.futureRun.kennel.kennelLogo,
                             kennelShortName: widget.futureRun.kennel.kennelShortName,
                             logoHeight: 70.0,
-                            leftPadding: 10.0,
+                            leftPadding: 7.0,
+                            rightPadding: 7.0,
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 3.0, left: 10.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  (widget.futureRun.event.isCountedRun == 1 ? 'Run #${widget.futureRun.event.eventNumber}, ' : 'Run / Event ') +
-                                      (widget.futureRun.extensions.daysUntilEvent <= 14
-                                          ? widget.futureRun.extensions.daysUntilEvent.toInt() == 0 ? 'TODAY' : widget.futureRun.extensions.daysUntilEvent.toInt() == 1 ? 'Tomorrow' : 'in ${widget.futureRun.extensions.daysUntilEvent.toInt().toString()} days'
-                                          : (widget.futureRun.extensions.daysUntilEvent <= 30)
-                                              ? 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 7.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks')
-                                              : widget.futureRun.extensions.daysUntilEvent <= 365
-                                                  ? 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 30.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months')
-                                                  : 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 365.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years')),
-                                  style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
-                                  textAlign: TextAlign.left,
-                                ),
-                                Text(
-                                  DateFormat("E, MMM d 'at' h:mm a").format(widget.futureRun.event.eventStartDatetime),
-                                  style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
-                                  textAlign: TextAlign.left,
-                                ),
-                                Text(
-                                  widget.futureRun.extensions.hareList == null ? 'RSVP to sign up to Hare!' : 'Hares: ' + widget.futureRun.extensions.hareList,
-                                  style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
-                                  textAlign: TextAlign.left,
-                                ),
-                                widget.futureRun.extensions.distToEvent >= 0
-                                    ? Text(
-                                        Utilities.getDistance(widget.futureRun.extensions.distToEvent, context) + ' from here',
-                                        style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
-                                        textAlign: TextAlign.left,
-                                      )
-                                    : const Text(''),
-                              ],
+                          Expanded(
+                            flex: 75,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 3.0, left: 10.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    (widget.futureRun.event.isCountedRun == 1 ? 'Run #${widget.futureRun.event.eventNumber}, ' : 'Run / Event ') +
+                                        (widget.futureRun.extensions.daysUntilEvent <= 14
+                                            ? widget.futureRun.extensions.daysUntilEvent.toInt() == 0 ? 'TODAY' : widget.futureRun.extensions.daysUntilEvent.toInt() == 1 ? 'Tomorrow' : 'in ${widget.futureRun.extensions.daysUntilEvent.toInt().toString()} days'
+                                            : (widget.futureRun.extensions.daysUntilEvent <= 30)
+                                                ? 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 7.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks')
+                                                : widget.futureRun.extensions.daysUntilEvent <= 365
+                                                    ? 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 30.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months')
+                                                    : 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 365.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years')),
+                                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                  Text(
+                                    DateFormat("E, MMM d 'at' h:mm a").format(widget.futureRun.event.eventStartDatetime),
+                                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                  Text(
+                                    (widget.futureRun.event.hares ?? '') == '' ? 'RSVP to sign up to Hare!' : 'Hares: ' + widget.futureRun.event.hares,
+                                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
+                                    textAlign: TextAlign.left,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  widget.futureRun.extensions.distToEvent >= 0
+                                      ? Text(
+                                          Utilities.getDistance(widget.futureRun.extensions.distToEvent, context) + ' from here',
+                                          style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
+                                          textAlign: TextAlign.left,
+                                        )
+                                      : const Text(''),
+                                ],
+                              ),
                             ),
                           ),
                         ],

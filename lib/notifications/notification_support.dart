@@ -43,7 +43,7 @@ class NotificationSupport {
         //
 
         String sql = '''
-          SELECT e.eventId,e.eventName,
+          SELECT e.eventId,e.eventName,e.eventStartDatetime,
           coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) as notificationPreference
           FROM ${NarrowEventsTableHelper.tableName} e
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId and hkm.userId = "$userId"
@@ -63,7 +63,7 @@ class NotificationSupport {
         for (int i = 0; i < results.length; i++) {
           final String tag = '$NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']}';
           _firebaseMessaging.subscribeToTopic(tag);
-          print('subscribed to: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']}');
+          print('subscribed to: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
           NotificationsTableHelper.recordNotificationStatus(db, NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
         }
 
@@ -71,7 +71,7 @@ class NotificationSupport {
         // this is a classic "clean up" function. Normally this would not produce
         // any records because they should already be cleaned up
         sql = '''
-          SELECT e.eventId,e.eventName,
+          SELECT e.eventId,e.eventName,e.eventStartDatetime,
           coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) as notificationPreference
           FROM ${NarrowEventsTableHelper.tableName} e
           INNER JOIN ${NotificationsTableHelper.tableName} notif on notif.${NotificationsTableHelper.colNotificationTag} = "$NOTIFICATION_PREFIX_EVENT_UPDATE" || e.eventId
@@ -91,7 +91,7 @@ class NotificationSupport {
         for (int i = 0; i < results.length; i++) {
           final String tag = '$NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']}';
           _firebaseMessaging.unsubscribeFromTopic(tag);
-          print('unsubscribed from: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']}');
+          print('unsubscribed from: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
           NotificationsTableHelper.recordNotificationStatus(db, NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 0);
         }
 
@@ -146,7 +146,7 @@ class NotificationSupport {
         //
 
         final String sql = '''
-          SELECT e.eventId,e.eventName,
+          SELECT e.eventId,e.eventName,e.eventStartDatetime,
           CASE WHEN e.eventStartDatetime < datetime('now','localtime','-1 days') THEN 2 ELSE coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) END as notificationPreference
           FROM ${NarrowEventsTableHelper.tableName} e
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId and hkm.userId = "$userId"
@@ -161,10 +161,10 @@ class NotificationSupport {
           final String tag = '$NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']}';
           if (results[i]['notificationPreference'] == 1) {
             _firebaseMessaging.subscribeToTopic(tag);
-            print('subscribed to: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']}');
+            print('subscribed to: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
           } else if (results[i]['notificationPreference'] == 2) {
             _firebaseMessaging.unsubscribeFromTopic(tag);
-            print('unsubscribed from: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']}');
+            print('unsubscribed from: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
           }
           
           NotificationsTableHelper.recordNotificationStatus(db, NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);

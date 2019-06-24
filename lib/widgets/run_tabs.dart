@@ -389,7 +389,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             ),
                             Expanded(
                                 child: Text(
-                                  '  ' + (widget.futureRun.extensions.hareList ?? ''),
+                                  '  ' + (widget.futureRun.event.hares ?? ''),
                                   style: listValueStyle,
                                   textAlign: TextAlign.left,
                                   maxLines: 1,
@@ -725,7 +725,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                               alignment: Alignment.topCenter,
                               splashColor: Colors.greenAccent,
                               onPressed: () {
-                                _promptForHare(widget.futureRun.extensions.hareList).then<dynamic>((bool willHare) {
+                                _promptForHare(widget.futureRun.event.hares ?? '').then<dynamic>((bool willHare) {
                                   if (willHare) {
                                     setState(() {
                                       if (_thisUserIndex >= 0) {
@@ -1056,7 +1056,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               label: 'I will hare',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
-                _promptForHare(widget.futureRun.extensions.hareList).then<dynamic>((bool willHare) {
+                _promptForHare(widget.futureRun.event.hares ?? '').then<dynamic>((bool willHare) {
                   if (willHare) {
                     setState(() {
                       if (_thisUserIndex >= 0) {

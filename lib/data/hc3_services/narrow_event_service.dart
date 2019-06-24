@@ -34,6 +34,7 @@ class NarrowEventsModel {
       this.locationPostCode,
       this.locationCity,
       this.locationStreet,
+      this.hares,
       this.removed,
       this.updatedAt});
 
@@ -57,6 +58,7 @@ class NarrowEventsModel {
   final String locationPostCode;
   final String locationCity;
   final String locationStreet;
+  final String hares;
   final int removed;
   final DateTime updatedAt;
 
@@ -88,6 +90,7 @@ class NarrowEventsModel {
             locationPostCode: jsonItem['locationPostCode'],
             locationCity: jsonItem['locationCity'],
             locationStreet: jsonItem['locationStreet'],
+            hares: jsonItem['hares'],
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
 
@@ -137,6 +140,7 @@ class NarrowEventsTableHelper {
   static const String colLocationPostCode = 'locationPostCode';
   static const String colLocationCity = 'locationCity';
   static const String colLocationStreet = 'locationStreet';
+  static const String colHares = 'hares';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -172,6 +176,7 @@ class NarrowEventsTableHelper {
             $colLocationPostCode TEXT,
             $colLocationCity TEXT,
             $colLocationStreet TEXT,
+            $colHares TEXT,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
@@ -205,6 +210,7 @@ class NarrowEventsTableHelper {
       NarrowEventsTableHelper.colLocationPostCode: item.locationPostCode,
       NarrowEventsTableHelper.colLocationCity: item.locationCity,
       NarrowEventsTableHelper.colLocationStreet: item.locationStreet,
+      NarrowEventsTableHelper.colHares: item.hares,
       NarrowEventsTableHelper.colUpdatedAt: item.updatedAt.toString(),
       NarrowEventsTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       NarrowEventsTableHelper.colRemoved: item.removed
@@ -235,6 +241,7 @@ class NarrowEventsTableHelper {
       locationPostCode: map[NarrowEventsTableHelper.colLocationPostCode],
       locationCity: map[NarrowEventsTableHelper.colLocationCity],
       locationStreet: map[NarrowEventsTableHelper.colLocationStreet],
+      hares: map[NarrowEventsTableHelper.colHares],
       updatedAt: DateTime.parse(map[NarrowEventsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[NarrowEventsTableHelper.colRemoved],
     );

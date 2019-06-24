@@ -23,11 +23,10 @@ class FutureRunsListPage extends StatefulWidget {
 }
 
 class FutureRunQueryExtenstions {
-  FutureRunQueryExtenstions({this.daysUntilEvent, this.distToEvent, this.hareList, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isHare, this.following, this.notificationPreference});
+  FutureRunQueryExtenstions({this.daysUntilEvent, this.distToEvent, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isHare, this.following, this.notificationPreference});
 
   final num daysUntilEvent;
   num distToEvent;
-  final String hareList;
   final int mismanagementRoleFlags;
   int digitsAfterDecimal;
   String currencySymbol;
@@ -37,7 +36,7 @@ class FutureRunQueryExtenstions {
   int notificationPreference;
 
   static FutureRunQueryExtenstions fromMap(Map<String, dynamic> map) {
-    final FutureRunQueryExtenstions item = FutureRunQueryExtenstions(daysUntilEvent: map['daysUntilEvent'], hareList: map['hareList'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'], mismanagementRoleFlags: map['mismanagementRoleFlags'], following: map['following'], notificationPreference: map['notificationPreference']);
+    final FutureRunQueryExtenstions item = FutureRunQueryExtenstions(daysUntilEvent: map['daysUntilEvent'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'], mismanagementRoleFlags: map['mismanagementRoleFlags'], following: map['following'], notificationPreference: map['notificationPreference']);
     return item;
   }
 }
@@ -105,10 +104,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> with AutomaticKee
           coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) as notificationPreference,
           n.digitsAfterDecimal,
           n.currencySymbol,
-          CAST(julianday(evt.eventStartDatetime) AS INT) - CAST(julianday('now','localtime') AS INT) as daysUntilEvent,
-             (SELECT GROUP_CONCAT(h.dispName,",") FROM hasherEventMapForRunAdmin hem2
-              INNER JOIN hashers h on hem2.userId = h.hasherId
-              WHERE hem2.eventId = evt.eventId AND hem2.isHare = 1) as hareList
+          CAST(julianday(evt.eventStartDatetime) AS INT) - CAST(julianday('now','localtime') AS INT) as daysUntilEvent
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
           INNER JOIN countries n on n.countryId = k.countryId

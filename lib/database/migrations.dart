@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 
 class MigrationsModel {
   MigrationsModel({this.migrationNumber, this.migrationText, this.appliedAtInt});
@@ -76,6 +77,10 @@ class MigrationsTableHelper {
   }
 
   static Future<bool> doDatabaseMigrations(int currentDbVersion, int upgradedDbVersion) async {
+    if (currentDbVersion == upgradedDbVersion)
+    {
+      return true;
+    }
     final Database db = await DBProvider.db.database;
     bool migrationsSuccessful = true;
 
@@ -101,13 +106,13 @@ class MigrationsTableHelper {
   ///  
   /// 
   
-  static int dbVersion = 135;
+  static int dbVersion = 136;
   
   static List<MigrationsModel> migrationList = <MigrationsModel>[
-    // // MIGRATION 136
-    // MigrationsModel(migrationNumber: 136, migrationText: '''
-    //         ALTER TABLE $tableName ADD status2 INT;
-    //      '''),
+    // MIGRATION 136
+    MigrationsModel(migrationNumber: 136, migrationText: '''
+            ALTER TABLE ${NarrowEventsTableHelper.tableName} ADD COLUMN hares TEXT;
+         '''),
     // // MIGRATION 137 
     // MigrationsModel(migrationNumber: 136, migrationText: '''
     //         ALTER TABLE $tableName ADD status2 INT;
