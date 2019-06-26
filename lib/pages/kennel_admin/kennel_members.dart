@@ -7,6 +7,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
 import 'package:harrier_central/widgets/kennel_member_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
@@ -20,7 +21,7 @@ import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 class KennelMembersList extends StatefulWidget {
   const KennelMembersList({Key key, @required this.kennel}) : super(key: key);
 
-  final Map<String, dynamic> kennel;
+  final KennelListAggregate kennel;
 
   @override
   KennelMemberListState createState() => KennelMemberListState();
@@ -80,7 +81,7 @@ class KennelMemberListState extends State<KennelMembersList> {
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
       title: Text(
-        '${widget.kennel['kennelShortName']} Members',
+        '${widget.kennel.kennel.kennelShortName} Members',
         style: const TextStyle(
           color: Colors.white,
         ),
@@ -229,9 +230,9 @@ class KennelMemberListState extends State<KennelMembersList> {
                     });
                     if ((result != null) && (result['hasher']?.hasherId != null)) {
                       final HasherKennelMapService srv = HasherKennelMapService();
-                      widget.kennel['followingRequested'] = -1;
+                      widget.kennel.extensions.followingRequested = -1;
                       setState(() {});
-                      srv.updateHasherKennelStatus(widget.kennel['kennelId'], HasherKennelMapTableType.kennelAdmin, monthsToAddToMembership: widget.kennel['membershipDurationInMonths'], targetUserId: result['hasher'].hasherId).then((void dummy) {
+                      srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, HasherKennelMapTableType.kennelAdmin, monthsToAddToMembership: widget.kennel.kennel.membershipDurationInMonths, targetUserId: result['hasher'].hasherId).then((void dummy) {
                         refreshKennelMembersFromTable(true).then((void dummy) {
                           setState(() {
                             _isLoading = false;
@@ -253,9 +254,9 @@ class KennelMemberListState extends State<KennelMembersList> {
                       builder: (BuildContext context) => HasherProfilePage(
                             dataContext: EnumDataContext.kennel,
                             pageType: EnumMyProfilePageType.newHasherProfile,
-                            kennelId: widget.kennel['kennelId'],
+                            kennelId: widget.kennel.kennel.kennelId,
                             uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
-                            kennelShortName: widget.kennel['kennelShortName'],
+                            kennelShortName: widget.kennel.kennel.kennelShortName,
                           ),
                     ),
                   ).then((HashersModel result) {
@@ -382,7 +383,7 @@ class KennelMemberListState extends State<KennelMembersList> {
     });
 
     final SyncKennelAdminService cSrv = SyncKennelAdminService();
-    final bool result = await cSrv.updateFromBackend(db, SyncKennelAdminService.flagKennelTable | SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennel['kennelId']);
+    final bool result = await cSrv.updateFromBackend(db, SyncKennelAdminService.flagKennelTable | SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennel.kennel.kennelId);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Event map data synchronized $resultStr');
     refreshKennelMembersFromTable(true);
@@ -390,10 +391,10 @@ class KennelMemberListState extends State<KennelMembersList> {
 
   void modifyMembership(KennelMembersResults item, int monthsToAddToMembership) {
     final HasherKennelMapService srv = HasherKennelMapService();
-    widget.kennel['followingRequested'] = -1;
+    widget.kennel.extensions.followingRequested = -1;
     item.membershipDateBeingUpdated = true;
     setState(() {});
-    srv.updateHasherKennelStatus(widget.kennel['kennelId'], HasherKennelMapTableType.kennelAdmin, monthsToAddToMembership: monthsToAddToMembership, targetUserId: item.hasherId).then((void dummy) {
+    srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, HasherKennelMapTableType.kennelAdmin, monthsToAddToMembership: monthsToAddToMembership, targetUserId: item.hasherId).then((void dummy) {
       refreshKennelMembersFromTable(true).then((void dummy) {
         item.membershipDateBeingUpdated = false;
         setState(() {});

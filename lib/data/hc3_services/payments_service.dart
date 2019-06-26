@@ -38,7 +38,11 @@ class PaymentsModel {
       this.paidToName,
       this.isMember,
       this.eventPriceForMembers,
-      this.eventPriceForNonMembers});
+      this.eventPriceForNonMembers,
+
+// and these from HC.KennelCredits
+      this.creditAvailable
+      });
 
   final String paymentId;
   final String kennelId;
@@ -64,6 +68,9 @@ class PaymentsModel {
   final int isMember;
   final num eventPriceForMembers;
   final num eventPriceForNonMembers;
+
+// these fields are joined from HC.KennelCredit
+  final num creditAvailable;
 
 // other required fields
   bool isLoading = false;
@@ -232,6 +239,9 @@ class PaymentsTableHelper {
       isMember: map.containsKey('isMember') ? map['isMember'] : -1,
       eventPriceForMembers: map.containsKey('eventPriceForMembers') ? map['eventPriceForMembers'] : 0,
       eventPriceForNonMembers: map.containsKey('eventPriceForNonMembers') ? map['eventPriceForNonMembers'] : 0,
+
+      // joined from HC.KennelCredit
+      creditAvailable: map.containsKey('creditAvailable') ? map['creditAvailable'] : 0,
     );
 
     return item;

@@ -13,6 +13,8 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
+import 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
+
 
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
@@ -165,20 +167,20 @@ class KennelsListPageState extends State<KennelsListPage> {
                                   globalKennelMainPageList[index].hkm.kennelNotificationPreference = notificationStatus;
                                 },
                                 kennelSelected: () {
-                                  // final Map<String,dynamic> kennel = globalKennelMainPageList[index];
+                                  final KennelListAggregate kennel = globalKennelMainPageList[index];
                                   // // this is a bit of a hack where we clear the list before navigating to the
                                   // // next page. When state changes occurred in child pages further down the
                                   // // route tree, the list would get refreshed, which I think was causing 
                                   // // a bug where the selected Kennel itself would occasioinall change.
                                   // // By deleting the list, I'm hoping that this bug will be fixed.
-                                  // globalKennelMainPageList.clear();
-                                  // Navigator.of(context).push<dynamic>(
-                                  //   MaterialPageRoute<dynamic>(
-                                  //     builder: (BuildContext context) => KennelAdminMainPage(kennel: kennel),
-                                  //   ),
-                                  // ).then((void dummy){
-                                  //   refreshFromTable(true);
-                                  // });
+                                  globalKennelMainPageList.clear();
+                                  Navigator.of(context).push<dynamic>(
+                                    MaterialPageRoute<dynamic>(
+                                      builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
+                                    ),
+                                  ).then((void dummy){
+                                    refreshFromTable(true);
+                                  });
                                 },
                               );
                         },

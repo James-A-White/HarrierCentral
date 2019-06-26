@@ -18,6 +18,7 @@ import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
+import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
 import 'package:harrier_central/pages/menu_pages/video_tutorial_page.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -156,6 +157,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       final String sql = ''' 
 
           SELECT 
+            -- get all of the members of a Kennel and display them
             h.hasherId,
             hem.hemId,
             coalesce(hkm.isMember,0) as isMember,
@@ -171,14 +173,16 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             0 as userRunCount,
             hem.updatedAt as hemUpdatedAt,
             pay.updatedAt as payUpdatedAt,
-            0 as credit
+            coalesce(credits.currentBalance,0) as credit
           FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm
           INNER JOIN ${HashersTableHelper.tableName} h on h.hasherId = hkm.userId
           LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventId}"
           LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
+          LEFT OUTER JOIN ${KennelCreditsTableHelper.tableName} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
           WHERE hkm.kennelId = "${widget.kennelId}" AND hkm.isMember = 1 AND coalesce(hem.virginVisitorType,0) = 0
           UNION
           SELECT 
+            -- now get all virgins & visitors
             null as hasherId,
             coalesce(hem2.hemId,"00000000-0000-0000-0000-000000000000") as hemId,
             0 as isMember,
@@ -201,6 +205,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             WHERE hem2.eventId = "${widget.eventId}" and hem2.virginVisitorType != 0
           UNION
           SELECT 
+            -- now get all Hashers who are in HC and have RSVP'ed but are not members of the kennel
             hem3.userId as hasherId,
             hem3.hemId as hemId,
             0 as isMember,

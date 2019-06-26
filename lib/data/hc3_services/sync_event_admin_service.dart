@@ -16,16 +16,18 @@ import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/receipts_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
+import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 
 class SyncEventAdminService {
-  static const int flagHasherEventMapTable = 0x00000001;
-  static const int flagHasherKennelMapTable = 0x00000002;
-  static const int flagNarrowEventsTable = 0x00000004;
-  static const int flagPaymentsTable = 0x00000008;
-  static const int flagReceiptsTable = 0x00000010;
-  static const int flagHashersTable = 0x00000020;
+  static const int flagHasherEventMapTable      = 0x00000001;
+  static const int flagHasherKennelMapTable     = 0x00000002;
+  static const int flagNarrowEventsTable        = 0x00000004;
+  static const int flagPaymentsTable            = 0x00000008;
+  static const int flagReceiptsTable            = 0x00000010;
+  static const int flagHashersTable             = 0x00000020;
+  static const int flagKennelCreditTable        = 0x00000040;
 
-  static const int flagsAllData = 0x0000003f;
+  static const int flagsAllData = 0x0000007f;
 
   num _hasherEventMapLastUpdated;
   num _hasherKennelMapLastUpdated;
@@ -33,6 +35,7 @@ class SyncEventAdminService {
   num _paymentsLastUpdated;
   num _receiptsLastUpdated;
   num _hashersLastUpdated;
+  num _kennelCreditsLastUpdated;
 
   Future<num> getLastUpdatedTime(Database db, String colName, String tableName) async {
     final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
@@ -48,6 +51,7 @@ class SyncEventAdminService {
     _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? 0 : await getLastUpdatedTime(db, PaymentsTableHelper.colUpdatedAtValue, PaymentsTableHelper.tableName);
     _receiptsLastUpdated = (flags & flagReceiptsTable) == 0 ? 0 : await getLastUpdatedTime(db, ReceiptsTableHelper.colUpdatedAtValue, ReceiptsTableHelper.tableName);
     _hashersLastUpdated = (flags & flagHashersTable) == 0 ? 0 : await getLastUpdatedTime(db, HashersTableHelper.colUpdatedAtValue, HashersTableHelper.tableName);
+    _kennelCreditsLastUpdated = (flags & flagKennelCreditTable) == 0 ? 0 : await getLastUpdatedTime(db, KennelCreditsTableHelper.colUpdatedAtValue, KennelCreditsTableHelper.tableName);
   }
 
   Future<bool> updateFromBackend(Database db, int flags, bool forceRefresh, String eventId, {Function informUser}) async {
@@ -60,6 +64,7 @@ class SyncEventAdminService {
       final HasherEventMapService hem2srv = HasherEventMapService();
       final HasherKennelMapService hkm2srv = HasherKennelMapService();
       final ReceiptsService recSrv = ReceiptsService();
+      final KennelCreditsService creditsService = KennelCreditsService();
       //final HashersService hSrv = HashersService();
       // narrowEvents is not included here because all events are loaded all the time for all hashers.
       // TODO(James): create separate events table for event management
@@ -68,6 +73,7 @@ class SyncEventAdminService {
       hem2srv.clearTable(HasherEventMapTableType.eventAdmin);
       hkm2srv.clearTable(HasherKennelMapTableType.eventAdmin);
       recSrv.clearTable();
+      creditsService.clearTable();
       // we don't want to clear the Hashers table since it is meant to be persistent and not tied to a single event
 
       await setStringPref(StringPrefsEnum.adminEventId, eventId);
@@ -79,6 +85,7 @@ class SyncEventAdminService {
     final int paymentsLastUpdate = (flags & flagReceiptsTable) == 0 ? null : getIntPref(PaymentsTableHelper.lastUpdatedKey) ?? 0;
     final int receiptsLastUpdate = (flags & flagReceiptsTable) == 0 ? null : getIntPref(ReceiptsTableHelper.lastUpdatedKey) ?? 0;
     final int hashersLastUpdate = (flags & flagHashersTable) == 0 ? null : getIntPref(HashersTableHelper.lastUpdatedKey) ?? 0;
+    final int kennelCreditsLastUpdate = (flags & flagKennelCreditTable) == 0 ? null : getIntPref(KennelCreditsTableHelper.lastUpdatedKey) ?? 0;
 
     if (forceRefresh ||
         ((paymentsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - paymentsLastUpdate) > PaymentsTableHelper.forceRequeryInterval) ||
@@ -86,7 +93,10 @@ class SyncEventAdminService {
         ((hasherEventMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherEventMapLastUpdate) > HasherEventMapTableHelper.forceRequeryInterval) ||
         ((hasherKennelMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherKennelMapLastUpdate) > HasherKennelMapTableHelper.forceRequeryInterval) ||
         ((narrowEventsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - narrowEventsLastUpdate) > NarrowEventsTableHelper.forceRequeryInterval) ||
-        ((hashersLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hashersLastUpdate) > HasherEventMapTableHelper.forceRequeryInterval)) {
+        ((hashersLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hashersLastUpdate) > HasherEventMapTableHelper.forceRequeryInterval) ||
+        ((kennelCreditsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - kennelCreditsLastUpdate) > KennelCreditsTableHelper.forceRequeryInterval)
+        
+        ) {
       // check to see if we need to clear the cache
       //int lastCacheClear = getIntPref(CitiesTableHelper.lastCacheClearKey);
 
@@ -117,6 +127,7 @@ class SyncEventAdminService {
       final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
       final DateTime receiptsUpdatedAfter = _receiptsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_receiptsLastUpdated + 1000);
       final DateTime hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
+      final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
@@ -135,6 +146,7 @@ class SyncEventAdminService {
         'narrowEventsUpdatedAfter': (flags & flagNarrowEventsTable) == 0 ? 'ignore' : narrowEventsUpdatedAfter.toString().substring(0, 19),
         'paymentsUpdatedAfter': (flags & flagPaymentsTable) == 0 ? 'ignore' : paymentsUpdatedAfter.toString().substring(0, 19),
         'receiptsUpdatedAfter': (flags & flagReceiptsTable) == 0 ? 'ignore' : receiptsUpdatedAfter.toString().substring(0, 19),
+        'kennelCreditsUpdatedAfter': (flags & flagKennelCreditTable) == 0 ? 'ignore' : kennelCreditsUpdatedAfter.toString().substring(0, 19),
       });
 
       final http.Response response = await http
@@ -201,6 +213,12 @@ class SyncEventAdminService {
         final HasherKennelMapService hkmSrv = HasherKennelMapService();
         await hkmSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherKennelMapTableType.eventAdmin);
         print('hasher event map for admin updated');
+      }
+
+      if (ms.startsWith(r'[{"kennelCreditId"')) {
+        final KennelCreditsService creditSrv = KennelCreditsService();
+        await creditSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        print('kennel credits updated');
       }
 
       if (ms.startsWith(r'[{"adHocDataId"')) {

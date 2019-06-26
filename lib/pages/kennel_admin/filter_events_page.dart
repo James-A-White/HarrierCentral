@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
@@ -22,7 +23,7 @@ import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 class FilterEventsPage extends StatefulWidget {
   const FilterEventsPage({Key key, @required this.kennel}) : super(key: key);
 
-  final Map<String, dynamic> kennel;
+  final KennelListAggregate kennel;
 
   @override
   FilterEventsPageState createState() => FilterEventsPageState();
@@ -75,10 +76,10 @@ class FilterEventsPageState extends State<FilterEventsPage> {
             evt.eventStartDatetime,
             hkm.mismanagementRoleFlags,
             evt.canEditRunAttendence,
-            (SELECT COUNT(*) FROM ${NarrowEventsTableHelper.tableName} evt2 where kennelId = "${widget.kennel['kennelId']}" AND isVisible = 1) as publishedRunCount
+            (SELECT COUNT(*) FROM ${NarrowEventsTableHelper.tableName} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount
           FROM ${NarrowEventsTableHelper.tableName} evt
-          INNER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on hkm.kennelId = "${widget.kennel['kennelId']}" and hkm.userId = "$userId"
-          WHERE evt.kennelId = "${widget.kennel['kennelId']}"
+          INNER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on hkm.kennelId = "${widget.kennel.kennel.kennelId}" and hkm.userId = "$userId"
+          WHERE evt.kennelId = "${widget.kennel.kennel.kennelId}"
           ORDER BY evt.eventStartDatetime desc
         
           ''';
@@ -188,7 +189,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
           centerTitle: true,
           backgroundColor: themeAppBarBackground,
           title: Text(
-            'Events for ${widget.kennel['kennelShortName']}',
+            'Events for ${widget.kennel.kennel.kennelShortName}',
             style: const TextStyle(
               color: Colors.white,
             ),
@@ -259,8 +260,8 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                         Container(
                           height: 75,
                           child: KennelLogo(
-                            kennelLogoUrl: widget.kennel['kennelLogo'],
-                            kennelShortName: widget.kennel['kennelShortName'],
+                            kennelLogoUrl: widget.kennel.kennel.kennelLogo,
+                            kennelShortName: widget.kennel.kennel.kennelShortName,
                             logoHeight: 75.0,
                             rightPadding: 15.0,
                           ),
@@ -271,7 +272,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                           children: <Widget>[
                             Container(
                               child: AutoSizeText(
-                                '${widget.kennel['kennelName']}',
+                                '${widget.kennel.kennel.kennelName}',
                                 //'Super fucking long text thats sure to overflow and more',
                                 //'999',
                                 overflow: TextOverflow.ellipsis,
@@ -366,7 +367,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                           },
                           child: FilterEventListItem(
                             event: event,
-                            kennelShortName: widget.kennel['kennelShortName'],
+                            kennelShortName: widget.kennel.kennel.kennelShortName,
                             updateEvent: (dynamic retVal) {
                               final EnumEventFilterType<int> ft =  retVal;
                               switch(ft) {

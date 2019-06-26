@@ -21,6 +21,7 @@ import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
+import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 
 class PaymentReportPage extends StatefulWidget {
   const PaymentReportPage({Key key, @required this.event}) : super(key: key);
@@ -78,6 +79,7 @@ class PaymentReportState extends State<PaymentReportPage> {
           COALESCE(CASE WHEN hem.displayName IS NULL THEN NULL ELSE hem.displayName || CASE WHEN hem.virginVisitorType = 1 THEN " (Virgin)" ELSE " (Visitor)" END END, h.dispName,'<hasher not found>') as paidByName,
           COALESCE(paidTo.dispName,'<hasher not found>') as paidToName,
           COALESCE(hkm.isMember,0) as isMember,
+          COALESCE(credits.currentBalance,0) as creditAvailable,
           pay.*,
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as eventPriceForMembers,
           coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as eventPriceForNonMembers
@@ -88,10 +90,12 @@ class PaymentReportState extends State<PaymentReportPage> {
           LEFT OUTER JOIN ${HashersTableHelper.tableName} h on h.hasherId = hem.userId
           LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.CancelledBy IS NULL
           LEFT OUTER JOIN ${HashersTableHelper.tableName} paidTo on paidTo.hasherId = pay.paidTo
+          LEFT OUTER JOIN ${KennelCreditsTableHelper.tableName} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
           WHERE hem.attendenceState >= 20
           ''';
 
     final List<Map<String, dynamic>> results = await db.rawQuery(sql);
+    // TODO(James): Split this into aggregates and clean up!
     paymentsList = PaymentsTableHelper.listFromMap(results);
     applyFilter();
   }
@@ -436,7 +440,7 @@ class PaymentReportState extends State<PaymentReportPage> {
             final PaymentPopup pp = PaymentPopup(
               amount: (item.isMember != 0) ? item.eventPriceForMembers : item.eventPriceForNonMembers,
               creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
-              creditRemaining: 0,
+              creditRemaining: item.creditAvailable,
               currencySymbol: widget.event['currencySymbol'],
               hemId: item.pkHemId,
               decimalDigits: widget.event['decimalDigits'],
