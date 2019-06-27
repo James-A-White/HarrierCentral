@@ -166,6 +166,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             h.dispName as nameForDisplay,
             lower(h.dispName || " " || h.firstName || " " || h.lastName) as nameForSort,
             coalesce(pay.paymentType,0) as paymentType,
+            coalesce(pay.creditAmount,0) as creditAmount,
             h.photo,
             0 as virginVisitorType,
             coalesce(hem.rsvpState,0) as rsvpState,
@@ -191,6 +192,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             coalesce(hem2.displayName,CASE WHEN hem2.virginVisitorType = 3 THEN h2.dispName ELSE "<no name>" END) || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END as nameForDisplay,
             lower(coalesce(hem2.displayName,CASE WHEN hem2.virginVisitorType = 3 THEN h2.dispName ELSE "<no name>" END) || CASE WHEN hem2.virginVisitorType = 1 THEN " (virgin)" ELSE " (visitor)" END) as nameForSort,
             coalesce(pay2.paymentType,0) as paymentType,
+            coalesce(pay2.creditAmount,0) as creditAmount,
             CASE WHEN hem2.virginVisitorType = 1 THEN "https://harriercentral.blob.core.windows.net/harrier/Virgin.png" ELSE "https://harriercentral.blob.core.windows.net/harrier/Visitor.png" END as photo,
             coalesce(hem2.virginVisitorType,1) as virginVisitorType,
             coalesce(hem2.rsvpState,0) as rsvpState,
@@ -214,6 +216,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             coalesce(h3.dispName,"<no name>") as nameForDisplay,
             lower(h3.dispName || " " || h3.lastName || " " || h3.firstName) as nameForSort,
             coalesce(pay3.paymentType,0) as paymentType,
+            coalesce(pay3.creditAmount,0) as creditAmount,
             h3.photo as photo,
             hem3.virginVisitorType as virginVisitorType,
             coalesce(hem3.rsvpState,0) as rsvpState,
@@ -423,7 +426,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     ).then((Map<String, dynamic> result) {
       if ((result != null) && (result['hasher']?.hasherId != null)) {
         final HasherEventMapService hemSrv = HasherEventMapService();
-        final Future<void> retVal = hemSrv.joinEvent(event['eventId'], HasherEventMapTableType.eventAdmin, result['hasher'].hasherId, null, rsvpState: rsvpYes.value,attendenceState: attendenceAtHash.value, isHare: isHareNo.value, virginVisitorType: result['virginVisitorType']);
+        final Future<void> retVal = hemSrv.joinEvent(event['eventId'], HasherEventMapTableType.eventAdmin, result['hasher'].hasherId, null, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value, virginVisitorType: result['virginVisitorType']);
 
         retVal.then((void dummy) {
           _refreshPackListFromTables(false).then((void dummy) {
@@ -1085,9 +1088,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
         Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
         updateRsvpState(packMember, rsvpState, attendenceState, isHare);
       },
-      onPaidCallback: (Map<String, dynamic> packMember, int paymentType) {
+      onPaidCallback: (Map<String, dynamic> packMember, int paymentType, {num otherAmount = -1}) {
         Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-        payForEvent(packMember, paymentType);
+        payForEvent(packMember, paymentType, otherAmount: otherAmount);
       },
     );
 
@@ -1325,7 +1328,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     });
 
     final HasherEventMapService hemSrv = HasherEventMapService();
-    final Future<void> retVal = hemSrv.joinEvent(event['eventId'], HasherEventMapTableType.eventAdmin, hasherId, hemId, rsvpState: rsvpState, attendenceState: attendenceState, isHare: isHare, virginVisitorType:-1);
+    final Future<void> retVal = hemSrv.joinEvent(event['eventId'], HasherEventMapTableType.eventAdmin, hasherId, hemId, rsvpState: rsvpState, attendenceState: attendenceState, isHare: isHare, virginVisitorType: -1);
 
     retVal.then((void dummy) {
       _refreshPackListFromTables(false).then((void dummy) {
@@ -1334,10 +1337,13 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     });
   }
 
-  void payForEvent(Map<String, dynamic> packMember, int paymentType) {
+  void payForEvent(Map<String, dynamic> packMember, int paymentType, {num otherAmount = -1}) {
     final String hemId = packMember['hemId'];
     final String hasherId = packMember['hasherId'];
-    final num amount = packMember['isMember'] != 0 ? event['eventPriceForMembers'] : event['eventPriceForNonMembers'];
+    num amount = packMember['isMember'] != 0 ? event['eventPriceForMembers'] : event['eventPriceForNonMembers'];
+    if (otherAmount != -1) {
+      amount = otherAmount;
+    }
 
     setState(() {
       // these are here to manage the loading indicator on the list items

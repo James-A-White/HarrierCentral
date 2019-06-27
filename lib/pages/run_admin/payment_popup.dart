@@ -3,17 +3,21 @@ import 'dart:core';
 import 'package:flutter/material.dart';
 
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/pages/run_admin/other_payment_popup.dart';
+
+
+class PaymentPopupResult{
+
+  PaymentPopupResult({this.transactionType,this.transactionValue});
+
+  final int transactionType;
+  final num transactionValue;
+}
 
 class PaymentPopup extends StatefulWidget {
-   const PaymentPopup(
-      {@required this.hemId,
-      @required this.currencySymbol,
-      @required this.amount,
-      @required this.creditRemaining,
-      @required this.creditAllowed,
-      @required this.decimalDigits
-     // @required this.valueChanged
-     });
+  const PaymentPopup({@required this.hemId, @required this.currencySymbol, @required this.amount, @required this.creditRemaining, @required this.creditAllowed, @required this.decimalDigits
+      // @required this.valueChanged
+      });
 
   final String hemId;
   final String currencySymbol;
@@ -22,6 +26,8 @@ class PaymentPopup extends StatefulWidget {
   final int creditAllowed;
   final int decimalDigits;
 
+  static const int otherAmountRowId = 10;
+
   //final Function valueChanged;
 
   @override
@@ -29,8 +35,15 @@ class PaymentPopup extends StatefulWidget {
 }
 
 class _PaymentPopupState extends State<PaymentPopup> {
+  int selectedValue = 1;
+  num otherAmount;
+  int otherTransType;
 
-  int selectedValue = 0;
+  // @override
+  // void initState() {
+
+  //   super.initState();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -87,38 +100,30 @@ class _PaymentPopupState extends State<PaymentPopup> {
                   ),
                 ]),
               ]..addAll((widget.creditAllowed == 0)
-                  ? List<Widget>.from(<Widget>[])
+                  ? List<Widget>.from(<Widget>[otherAmountRow()])
                   : List<Widget>.from(<Widget>[
-                      Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                      Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                        Radio<int>(
+                          value: 6,
+                          groupValue: selectedValue,
+                          onChanged: _handleRadioValueChange1,
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            Radio<int>(
-                              value: 6,
-                              groupValue: selectedValue,
-                              onChanged: _handleRadioValueChange1,
+                            Text(
+                              'Credit (${Utilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
+                              style: const TextStyle(fontSize: 16.0),
                             ),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  'Credit (${Utilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
-                                  style: const TextStyle(fontSize: 16.0),
-                                ),
-                                Text(
-                                  '${Utilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ' +
-                                      ((widget.creditRemaining >= 0)
-                                          ? 'remaining'
-                                          : 'owed'),
-                                  style: TextStyle(
-                                      fontSize: 16.0,
-                                      color: (widget.creditRemaining >= 0)
-                                          ? Colors.green[800]
-                                          : Colors.red[800]),
-                                ),
-                              ],
+                            Text(
+                              '${Utilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ' + ((widget.creditRemaining >= 0) ? 'remaining' : 'owed'),
+                              style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
                             ),
-                          ]),
+                          ],
+                        ),
+                      ]),
+                      otherAmountRow()
                       // Row(
                       //     //crossAxisAlignment: CrossAxisAlignment.start,
                       //     children: <Widget>[
@@ -172,7 +177,8 @@ class _PaymentPopupState extends State<PaymentPopup> {
               child: const Text('Cancel'),
               textColor: Colors.white,
               onPressed: () {
-                Navigator.of(context).pop(-1);
+                final PaymentPopupResult popupResult = PaymentPopupResult(transactionType: -1, transactionValue: 0);
+                Navigator.of(context).pop(popupResult);
               },
             ),
           ),
@@ -183,19 +189,89 @@ class _PaymentPopupState extends State<PaymentPopup> {
             child: const Text('Process'),
             textColor: Colors.white,
             onPressed: () {
-              Navigator.of(context).pop(selectedValue);
+              num resultAmount = widget.amount;
+              int resultTransType = selectedValue;
+              if (selectedValue == PaymentPopup.otherAmountRowId)
+              {
+                resultAmount = otherAmount;
+                resultTransType = otherTransType;
+              }
+
+              final PaymentPopupResult result = PaymentPopupResult(transactionType: resultTransType, transactionValue: resultAmount);
+              Navigator.of(context).pop(result);
             },
           ),
         ),
       ],
     );
-  } 
+  }
+
+  Widget otherAmountRow() {
+    return GestureDetector(
+      onTap: () {
+        if (selectedValue == PaymentPopup.otherAmountRowId) {
+          _handleRadioValueChange1(PaymentPopup.otherAmountRowId);
+        }
+      },
+      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+        Radio<int>(
+          value: PaymentPopup.otherAmountRowId,
+          groupValue: selectedValue,
+          onChanged: _handleRadioValueChange1,
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const Text(
+              'Other Amount',
+              style: TextStyle(fontSize: 16.0),
+            ),
+            otherTransType == null
+                ? Container(height:1, width:1)
+                : Text(
+                    '${Utilities.getFormattedMoney(otherAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ' + ((otherTransType == 5) ? ' cash' : ' bank transfer'),
+                    style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
+                  ),
+          ],
+        ),
+      ]),
+    );
+  }
 
   void _handleRadioValueChange1(int value) {
-    setState(() {
-            selectedValue = value;
-      
+    if (value != PaymentPopup.otherAmountRowId) {
+      setState(() {
+        selectedValue = value;
+      });
+    } else {
+      const OtherPaymentPopup otherPaymentPopup = OtherPaymentPopup();
 
-    });
+      final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
+          context: context,
+          barrierDismissible: false, // user must tap button!
+          builder: (BuildContext context) {
+            return otherPaymentPopup;
+          });
+
+      dlg.then((Map<String, String> x) {
+        final String amount = x['amount'];
+        final String type = x['type'];
+
+        if (type != 'cancel') {
+          final num amountNumeric = num.tryParse(amount);
+          final int typeNumeric = int.tryParse(type);
+
+          if ((amountNumeric != null) && (typeNumeric != null)) {
+            otherTransType = typeNumeric;
+            otherAmount = amountNumeric;
+
+            setState(() {
+              selectedValue = value;
+            });
+          }
+        }
+      });
+    }
   }
 }

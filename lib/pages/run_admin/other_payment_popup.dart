@@ -7,9 +7,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:harrier_central/util/enums.dart';
 
 class OtherPaymentPopup extends StatefulWidget {
-  const OtherPaymentPopup({@required this.currencySymbol});
-
-  final String currencySymbol;
+  const OtherPaymentPopup();
 
   @override
   _OtherPaymentPopupState createState() => _OtherPaymentPopupState();
@@ -17,8 +15,7 @@ class OtherPaymentPopup extends StatefulWidget {
 
 class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
   final FocusNode myFocusNodeFirstName = FocusNode();
-  TextEditingController otherPaymentAmountTextController =
-      TextEditingController();
+  TextEditingController otherPaymentAmountTextController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +26,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
         focusNode: myFocusNodeFirstName,
         controller: otherPaymentAmountTextController,
         keyboardType: TextInputType.number,
-        style: const TextStyle(
-            fontFamily: 'WorkSansSemiBold',
-            fontSize: 16.0,
-            color: Colors.white),
+        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
         decoration: const InputDecoration(
           border: InputBorder.none,
           icon: Icon(
@@ -55,8 +49,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
           child: const Text('Cancel'),
           textColor: Colors.white,
           onPressed: () {
-            Navigator.of(context)
-                .pop(<String, String>{'type': 'cancel', 'amount': ''});
+            Navigator.of(context).pop(<String, String>{'type': 'cancel', 'amount': ''});
           },
         ),
         //   ),
@@ -70,10 +63,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
             child: const Text('Cash'),
             textColor: Colors.white,
             onPressed: () {
-              Navigator.of(context).pop(<String, String>{
-                'type': paymentCashOtherAmount.value.toString(),
-                'amount': otherPaymentAmountTextController.text
-              });
+              Navigator.of(context).pop(<String, String>{'type': paymentCashOtherAmount.value.toString(), 'amount': otherPaymentAmountTextController.text});
             }),
         // ),
         // Container(
@@ -85,10 +75,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
             child: const Text('Bank transfer'),
             textColor: Colors.white,
             onPressed: () {
-              Navigator.of(context).pop(<String, String>{
-                'type': paymentBankTransferOtherAmount.value.toString(),
-                'amount': otherPaymentAmountTextController.text
-              });
+              Navigator.of(context).pop(<String, String>{'type': paymentBankTransferOtherAmount.value.toString(), 'amount': otherPaymentAmountTextController.text});
             }),
         // ),
       ],

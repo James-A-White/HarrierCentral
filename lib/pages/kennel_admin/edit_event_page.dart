@@ -74,7 +74,7 @@
 //                   mainAxisSize: MainAxisSize.min,
 //                   mainAxisAlignment: MainAxisAlignment.start,
 //                   children: <Widget>[
-//                     // TODO(James): Bring this back eventually
+//                     
 //                     // UserDetailsUi(firstName: firstName, lastName: lastName, email: email, hashName: hashName,),
 //                     // const FancyDivider(innerColor: Colors.white),
 //                     Container(

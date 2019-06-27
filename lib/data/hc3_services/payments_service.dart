@@ -11,6 +11,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
+import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/util/enums.dart';
 
 class PaymentsModel {
@@ -383,6 +384,9 @@ class PaymentsService {
     final num _paymentsLastUpdated = await PaymentsService.getLastUpdatedTime();
     final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
 
+    final num _kennelCreditsLastUpdated = await KennelCreditsService.getLastUpdatedTime();
+    final DateTime kennelCreditsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
+
     final String body = jsonEncode(<String, String>{
       'userId': userId,
       'accessToken': accessToken,
@@ -394,6 +398,7 @@ class PaymentsService {
       'minimumAttendenceValue': minimumAttendenceValue.toString(),
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
+      'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString(),
     });
 
     final http.Response response = await http

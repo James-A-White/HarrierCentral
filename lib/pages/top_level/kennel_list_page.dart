@@ -141,7 +141,7 @@ class KennelsListPageState extends State<KennelsListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: globalKennelMainPageList == null
-          ? Center(
+          ? const Center(
               child: HcCircularProgressIndicator(),
             )
           : Container(

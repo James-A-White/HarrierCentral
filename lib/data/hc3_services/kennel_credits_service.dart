@@ -128,6 +128,13 @@ class KennelCreditsTableHelper {
 class KennelCreditsService {
   static final KennelCreditsTableHelper instance = KennelCreditsTableHelper._privateConstructor();
 
+  static Future<num> getLastUpdatedTime() async {
+    final Database db = await DBProvider.db.database;
+    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${KennelCreditsTableHelper.colUpdatedAtValue}) AS maxDate FROM ${KennelCreditsTableHelper.tableName}');
+    final num timeValue = table.first['maxDate'];
+    return timeValue;
+  }
+
   Future<void> clearTable() async {
     final Database db = await DBProvider.db.database;
     await db.rawDelete('DELETE FROM ${KennelCreditsTableHelper.tableName}').then((void dummy) {

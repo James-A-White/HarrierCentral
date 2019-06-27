@@ -449,7 +449,7 @@ class PaymentReportState extends State<PaymentReportPage> {
               // },
             );
 
-            final Future<int> dlg = showDialog<int>(
+            final Future<PaymentPopupResult> dlg = showDialog<PaymentPopupResult>(
                 context: context,
                 barrierDismissible: false, // user must tap button!
                 builder: (BuildContext context) {
@@ -457,12 +457,12 @@ class PaymentReportState extends State<PaymentReportPage> {
                 });
 
             dlg.then(
-              (int selectedTransactionType) {
-                if (selectedTransactionType != -1) {
+              (PaymentPopupResult paymentValue) {
+                if (paymentValue.transactionType != -1) {
                   setState(() {
                     item.isLoading = true;
                   });
-                  payForEvent(item, selectedTransactionType, pp.amount);
+                  payForEvent(item, paymentValue.transactionType, paymentValue.transactionValue);
                 }
               },
             );

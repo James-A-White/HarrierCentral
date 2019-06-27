@@ -53,11 +53,11 @@ class FutureRunAggregate {
   final FutureRunQueryExtenstions extensions;
 }
 
-class FutureRunListPageState extends State<FutureRunsListPage> with AutomaticKeepAliveClientMixin {
+class FutureRunListPageState extends State<FutureRunsListPage>  {
   // BuildContext context;
 
-  @override
-  bool get wantKeepAlive => true;
+  // @override
+  // bool get wantKeepAlive => true;
 
   int pageIndex = 1;
   List<FutureRunAggregate> futureRunsList;

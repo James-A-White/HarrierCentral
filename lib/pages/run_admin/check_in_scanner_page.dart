@@ -317,7 +317,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
               if ((adHocData != null) && (adHocData.isNotEmpty)) {
                 onScreenMessage = adHocData[0]['userMessage'];
                 if (adHocData[0]['isPaid'] != 0) {
-                  Future<void>.delayed(Duration(seconds: 4)).then((void dummy) {
+                  Future<void>.delayed(const Duration(seconds: 4)).then((void dummy) {
                     scanUserBarcode();
                   });
                 } else {
@@ -333,7 +333,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                     // },
                   );
 
-                  final Future<int> dlg = showDialog<int>(
+                  final Future<PaymentPopupResult> dlg = showDialog<PaymentPopupResult>(
                       context: context,
                       barrierDismissible: false, // user must tap button!
                       builder: (BuildContext context) {
@@ -341,13 +341,13 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                       });
 
                   dlg.then(
-                    (int selectedTransactionType) {
-                      if (selectedTransactionType != -1) {
+                    (PaymentPopupResult popupResult) {
+                      if (popupResult.transactionType != -1) {
                         setState(() {
                           onScreenMessage = 'Please wait, processing payment';
                         });
 
-                        payForEvent(adHocData[0]['hasherEventMapId'], selectedTransactionType, pp.amount);
+                        payForEvent(adHocData[0]['hasherEventMapId'], popupResult.transactionType, popupResult.transactionValue);
                       }
                     },
                   );
@@ -461,7 +461,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
           }
           setState(() {});
 
-          Future<void>.delayed(Duration(seconds: 4)).then((void dummy) {
+          Future<void>.delayed(const Duration(seconds: 4)).then((void dummy) {
             scanUserBarcode();
           });
         }

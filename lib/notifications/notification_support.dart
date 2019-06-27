@@ -5,7 +5,6 @@ import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart'
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/enums.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/database/notifications_table.dart';
