@@ -312,7 +312,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                     Navigator.push<void>(
                                       context,
                                       MaterialPageRoute<void>(
-                                        builder: (BuildContext context) => ZoomableImagePage(image: _imageFromCamera != null ? _imageFromCamera : _imageFromCache),
+                                        builder: (BuildContext context) => ZoomableImagePage(image: _imageFromCamera != null ? _imageFromCamera : _imageFromCache, pageTitle: 'Zoomable Receipt',),
                                       ),
                                     );
                                   },

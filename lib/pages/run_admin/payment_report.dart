@@ -283,6 +283,39 @@ class PaymentReportState extends State<PaymentReportPage> {
                                 filterTapped(2);
                               },
                             ),
+                                                        PaymentTotalsCell(
+                              creditAmount: paymentTotals[paymentBankTransfer.value]['totalCollected'],
+                              counter: paymentTotals[paymentBankTransfer.value]['count'],
+                              color: (filterValue & 16) != 0 ? Colors.green : Colors.black26,
+                              paymentRecordType: paymentBankTransfer,
+                              currencySymbol: widget.event['currencySymbol'],
+                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              onTap: () {
+                                filterTapped(16);
+                              },
+                            ),
+                                                        PaymentTotalsCell(
+                              creditAmount: paymentTotals[paymentFreeRun.value]['totalCollected'],
+                              counter: paymentTotals[paymentFreeRun.value]['count'],
+                              color: (filterValue & 8) != 0 ? Colors.green : Colors.black26,
+                              paymentRecordType: paymentFreeRun,
+                              currencySymbol: widget.event['currencySymbol'],
+                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              onTap: () {
+                                filterTapped(8);
+                              },
+                            ),
+                                                        PaymentTotalsCell(
+                              creditAmount: paymentTotals[paymentHashCredit.value]['totalCollected'],
+                              counter: paymentTotals[paymentHashCredit.value]['count'],
+                              color: (filterValue & 64) != 0 ? Colors.green : Colors.black26,
+                              paymentRecordType: paymentHashCredit,
+                              currencySymbol: widget.event['currencySymbol'],
+                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              onTap: () {
+                                filterTapped(64);
+                              },
+                            ),
                             PaymentTotalsCell(
                               creditAmount: paymentTotals[paymentCashOtherAmount.value]['totalCollected'],
                               counter: paymentTotals[paymentCashOtherAmount.value]['count'],
@@ -294,28 +327,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                 filterTapped(4);
                               },
                             ),
-                            PaymentTotalsCell(
-                              creditAmount: paymentTotals[paymentFreeRun.value]['totalCollected'],
-                              counter: paymentTotals[paymentFreeRun.value]['count'],
-                              color: (filterValue & 8) != 0 ? Colors.green : Colors.black26,
-                              paymentRecordType: paymentFreeRun,
-                              currencySymbol: widget.event['currencySymbol'],
-                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
-                              onTap: () {
-                                filterTapped(8);
-                              },
-                            ),
-                            PaymentTotalsCell(
-                              creditAmount: paymentTotals[paymentBankTransfer.value]['totalCollected'],
-                              counter: paymentTotals[paymentBankTransfer.value]['count'],
-                              color: (filterValue & 16) != 0 ? Colors.green : Colors.black26,
-                              paymentRecordType: paymentBankTransfer,
-                              currencySymbol: widget.event['currencySymbol'],
-                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
-                              onTap: () {
-                                filterTapped(16);
-                              },
-                            ),
+
                             PaymentTotalsCell(
                               creditAmount: paymentTotals[paymentBankTransferOtherAmount.value]['totalCollected'],
                               counter: paymentTotals[paymentBankTransferOtherAmount.value]['count'],
@@ -327,17 +339,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                 filterTapped(32);
                               },
                             ),
-                            PaymentTotalsCell(
-                              creditAmount: paymentTotals[paymentHashCredit.value]['totalCollected'],
-                              counter: paymentTotals[paymentHashCredit.value]['count'],
-                              color: (filterValue & 64) != 0 ? Colors.green : Colors.black26,
-                              paymentRecordType: paymentHashCredit,
-                              currencySymbol: widget.event['currencySymbol'],
-                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
-                              onTap: () {
-                                filterTapped(64);
-                              },
-                            ),
+
                           ],
                         ),
                       ],
