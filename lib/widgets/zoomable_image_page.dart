@@ -3,7 +3,6 @@ import 'dart:io' as platform;
 import 'package:flutter/material.dart';
 
 import 'package:zoomable_image/zoomable_image.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:harrier_central/util/styles.dart';
 

@@ -74,7 +74,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              widget.futureRun.event.eventStartDatetime.isAfter(DateTime.now().add(Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))
+              widget.futureRun.event.eventStartDatetime.isAfter(DateTime.now().add(const Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))
                   ? Container()
                   : Positioned(
                       right: 5,

@@ -120,7 +120,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           padding: const EdgeInsets.only(right: 2.0),
                                           child: Image.asset('images/icons/excel.png', height: 50.0, width: 50.0),
                                         ),
-                                         Padding(
+                                        Padding(
                                           padding: const EdgeInsets.only(left: 10, right: 10, top: 8),
                                           child: Text(
                                             'Email run stats',
@@ -163,12 +163,12 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                                         padding: const EdgeInsets.only(top: 2.0, left: 0, bottom: 8.0),
                                         child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                                          Padding(
+                                          const Padding(
                                             padding: EdgeInsets.only(left: 0),
                                             child: Icon(Ionicons.md_people, color: Colors.white, size: 60),
                                           ),
                                           Padding(
-                                            padding: EdgeInsets.only(left: 10, right: 10,top:4),
+                                            padding: const EdgeInsets.only(left: 10, right: 10, top: 4),
                                             child: Text(
                                               'Manage Members',
                                               textAlign: TextAlign.center,
@@ -206,13 +206,17 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                                           padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 8.0),
                                           child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                                            Padding(
+                                            const Padding(
                                               padding: EdgeInsets.only(left: 0),
                                               child: Icon(MaterialCommunityIcons.playlist_edit, color: Colors.white, size: 60),
                                             ),
                                             Padding(
-                                              padding: EdgeInsets.only(left: 10, right: 10, top: 5),
-                                              child: Text('Edit\r\nevents', textAlign: TextAlign.center,style: buttonLabelStyleSmall,),
+                                              padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
+                                              child: Text(
+                                                'Edit\r\nevents',
+                                                textAlign: TextAlign.center,
+                                                style: buttonLabelStyleSmall,
+                                              ),
                                             ),
                                           ]),
                                           textColor: Colors.white,
@@ -240,12 +244,12 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                                           padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 8.0),
                                           child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                                            Padding(
+                                            const Padding(
                                               padding: EdgeInsets.only(left: 0, top: 4),
                                               child: Icon(MaterialCommunityIcons.qrcode, color: Colors.white, size: 55),
                                             ),
                                             Padding(
-                                              padding: EdgeInsets.only(left: 10, right: 10, top: 7),
+                                              padding: const EdgeInsets.only(left: 10, right: 10, top: 7),
                                               child: Text(
                                                 'Print QR codes',
                                                 textAlign: TextAlign.center,
@@ -279,16 +283,24 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                           ),
                     ((widget.kennelAggregateItem.kennel.kennelCoverPhoto ?? '').isNotEmpty && widget.kennelAggregateItem.kennel.kennelCoverPhoto.startsWith('http'))
                         ? Column(mainAxisSize: MainAxisSize.max, children: <Widget>[
-                            Row(mainAxisAlignment: MainAxisAlignment.start, mainAxisSize: MainAxisSize.max, children: <Widget>[
-                              KennelLogo(
-                                kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
-                                kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
-                                logoHeight: 80.0,
-                                leftPadding: 0.0,
-                              ),
-                              Container(width: MediaQuery.of(context).size.width - 120, padding: const EdgeInsets.only(left: 15.0), child: Text(widget.kennelAggregateItem.kennel.kennelName, maxLines: 3, style: smallTitleStyle))
-                              //Container(width: MediaQuery.of(context).size.width - 120, padding: const EdgeInsets.only(left: 15.0), child: Text('Test of a long hash name that will span several lines and then keep going until we get an elipsis', maxLines: 3, overflow:TextOverflow.ellipsis, style: smallTitleStyle))
-                            ]),
+                            // Row(mainAxisAlignment: MainAxisAlignment.start, mainAxisSize: MainAxisSize.max, children: <Widget>[
+                            //   KennelLogo(
+                            //     kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
+                            //     kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
+                            //     logoHeight: 80.0,
+                            //     leftPadding: 0.0,
+                            //   ),
+                            //   Container(width: MediaQuery.of(context).size.width - 120, padding: const EdgeInsets.only(left: 15.0), child: Text(widget.kennelAggregateItem.kennel.kennelName, maxLines: 3, style: smallTitleStyle))
+                            //   //Container(width: MediaQuery.of(context).size.width - 120, padding: const EdgeInsets.only(left: 15.0), child: Text('Test of a long hash name that will span several lines and then keep going until we get an elipsis', maxLines: 3, overflow:TextOverflow.ellipsis, style: smallTitleStyle))
+                            // ]),
+                            Container(margin: const EdgeInsets.only(bottom: 20.0), width: MediaQuery.of(context).size.width - 40, child: Text(widget.kennelAggregateItem.kennel.kennelName, textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
+                            //Container(width: MediaQuery.of(context).size.width - 40, child: Text('this is a test of what a long kennel name might look like', textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
+                            KennelLogo(
+                              kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
+                              kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
+                              logoHeight: 200.0,
+                              leftPadding: 0.0,
+                            ),
                             const Padding(
                               padding: EdgeInsets.only(top: 45.0, bottom: 15.0),
                               child: FancyDivider(innerColor: Colors.white),
@@ -541,7 +553,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                             ? Container()
                             : Container(
                                 padding: const EdgeInsets.only(top: 30),
-                                margin: EdgeInsets.only(bottom: 20),
+                                margin: const EdgeInsets.only(bottom: 20),
                                 width: 180,
                                 child: Utilities.styleForConnected(
                                   RaisedButton(
