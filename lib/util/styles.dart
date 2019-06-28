@@ -47,6 +47,7 @@ TextStyle headingStyleOnLightBg = TextStyle(fontFamily: 'AvenirNextRegular', fon
 TextStyle smallHeadingStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 20.0, height: 1.0);
 
 TextStyle buttonLabelStyleMedium = const TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0);
+TextStyle buttonLabelStyleSmall = const TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 16.0, height: 0.8);
 
 TextStyle largeText = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 32.0, height: 1.0);
 
