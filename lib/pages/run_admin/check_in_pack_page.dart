@@ -30,6 +30,7 @@ import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
+import 'package:harrier_central/widgets/qr_popup.dart';
 
 class CheckInPackPage extends StatefulWidget {
   const CheckInPackPage({@required this.eventId, @required this.kennelId});
@@ -121,8 +122,13 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
           SELECT e.*,hkm.mismanagementRoleFlags,
           k.kennelShortName,k.kennelName,
-          coalesce(c.digitsAfterDecimal,2) as digitsAfterDecimal, 
-          coalesce(c.currencySymbol,"$dollarSign") as currencySymbol,
+          coalesce(k.digitsAfterDecimal,c.digitsAfterDecimal,2) as digitsAfterDecimal, 
+          coalesce(k.currencySymbol,c.currencySymbol,"$dollarSign") as currencySymbol,
+          coalesce(k.${KennelsTableHelper.colCurrencyCode},c.${CountriesTableHelper.colCurrencyCode},"USD") as currencyCode,
+          k.${KennelsTableHelper.colBankAccountNumber} as bankAccountNumber,
+          k.${KennelsTableHelper.colBankBic} as bankBic,
+          k.${KennelsTableHelper.colBankBeneficiary} as bankBeneficiary,
+          k.${KennelsTableHelper.colBankScheme} as bankScheme,
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers) as eventPriceForMembers,
           coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers) as eventPriceForNonMembers
           FROM ${NarrowEventsTableHelper.tableName} e
@@ -413,6 +419,47 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   //     });
   //   }
   // }
+
+  void showBankTransferQrCode(bool member) {
+    num amount = event['eventPriceForMembers'];
+    if (!member) {
+      amount = event['eventPriceForNonMembers'];
+    }
+    final QrPopup pp = QrPopup(
+      dialogTitle: 'Scan to pay by bank transfer',
+      qrText: '''BCD
+001
+1
+SCT
+${event['bankBic']}
+${event['bankBeneficiary']}
+${event['bankAccountNumber']}
+${event['currencyCode']}$amount
+SCVE''',
+
+      // valueChanged: (num value) {
+      //   finalValue = value;
+      // },
+    );
+
+    showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return pp;
+        });
+
+    // dlg.then(
+    //   (PaymentPopupResult paymentValue) {
+    //     if (paymentValue.transactionType != -1) {
+    //       setState(() {
+    //         item.isLoading = true;
+    //       });
+    //       payForEvent(item, paymentValue.transactionType, paymentValue.transactionValue);
+    //     }
+    //   },
+    // );
+  }
 
   void findHasher() {
     Navigator.push<Map<String, dynamic>>(
@@ -784,20 +831,6 @@ class CheckInPackPageState extends State<CheckInPackPage> {
               filterOptionsPopup();
             },
           ),
-          // SpeedDialChild(
-          //   child: const Icon(Ionicons.ios_beer),
-          //   backgroundColor: Colors.green,
-          //   label: 'Scan: On In',
-          //   labelStyle: const TextStyle(fontSize: 18.0),
-          //   onTap: () => print('FIRST CHILD'),
-          // ),
-          // SpeedDialChild(
-          //   child: const Icon(Icons.directions_run),
-          //   backgroundColor: Colors.red,
-          //   label: 'Scan: At Hash',
-          //   labelStyle: const TextStyle(fontSize: 18.0),
-          //   onTap: () => print('SECOND CHILD'),
-          // ),
           SpeedDialChild(
               child: const Icon(Icons.person_add),
               backgroundColor: Colors.blue,
@@ -871,7 +904,24 @@ class CheckInPackPageState extends State<CheckInPackPage> {
                               videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',
                             )),
                   )),
-        ],
+        ]..addAll(((event == null) || (event['bankScheme'] == null) || (event['bankScheme'] == ''))
+            ? List<SpeedDialChild>.from(<SpeedDialChild>[])
+            : List<SpeedDialChild>.from(<SpeedDialChild>[
+                SpeedDialChild(
+                  child: const Icon(MaterialCommunityIcons.bank),
+                  backgroundColor: Colors.purple,
+                  label: 'Bank Transfer (Member)',
+                  labelStyle: const TextStyle(fontSize: 18.0),
+                  onTap: () => showBankTransferQrCode(true),
+                ),
+                SpeedDialChild(
+                  child: const Icon(MaterialCommunityIcons.bank),
+                  backgroundColor: Colors.purple,
+                  label: 'Bank Transfer (Non-Member)',
+                  labelStyle: const TextStyle(fontSize: 18.0),
+                  onTap: () => showBankTransferQrCode(false),
+                ),
+              ])),
       ),
       appBar: getAppBar((_isLoading || (event == null)) ? '... Loading' : event['kennelName']),
       body: _isLoading

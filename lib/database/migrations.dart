@@ -6,6 +6,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
+import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 
 class MigrationsModel {
   MigrationsModel({this.migrationNumber, this.migrationText, this.appliedAtInt});
@@ -105,12 +106,13 @@ class MigrationsTableHelper {
   ///
   ///
 
-  static int dbVersion = 149;
+  static int dbVersion = 153;
 
   static List<MigrationsModel> migrationList = <MigrationsModel>[
     // MIGRATION 136
     MigrationsModel(migrationNumber: 136, migrationText: '''
-            ALTER TABLE ${NarrowEventsTableHelper.tableName} ADD COLUMN hares TEXT;
+            ALTER TABLE ${NarrowEventsTableHelper.tableName} 
+              ADD COLUMN hares TEXT;
          '''),
     // MIGRATION 149
     MigrationsModel(migrationNumber: 149, migrationText: '''
@@ -132,6 +134,17 @@ class MigrationsTableHelper {
          CREATE INDEX idx_${KennelCreditsTableHelper.tableName}_id ON ${KennelCreditsTableHelper.tableName}(${KennelCreditsTableHelper.remoteDbId});
          CREATE INDEX idx_${KennelCreditsTableHelper.tableName}_update_at_value ON ${KennelCreditsTableHelper.tableName}($KennelCreditsTableHelper.colUpdatedAtValue);
          
+         '''),
+    // MIGRATION 153
+    MigrationsModel(migrationNumber: 153, migrationText: '''
+            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colCurrencyCode} TEXT;
+            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colPrimaryCultureCode} TEXT;
+            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colCurrencySymbol} TEXT;
+            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colDigitsAfterDecimal} NUM;
+            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colBankScheme} TEXT;
+            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colBankAccountNumber} TEXT,
+            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colBankBic} TEXT;
+            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colBankBeneficiary} TEXT;
          '''),
   ];
 }

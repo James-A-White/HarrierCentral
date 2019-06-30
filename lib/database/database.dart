@@ -17,6 +17,7 @@ import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/receipts_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
+import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/database/notifications_table.dart';
 import 'package:harrier_central/database/migrations.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -76,6 +77,7 @@ class DBProvider {
       await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.eventAdmin);
       await PaymentsTableHelper.createTable(db, version);
       await ReceiptsTableHelper.createTable(db, version);
+      await KennelCreditsTableHelper.createTable(db, version);
 
       // create kennel admin tables
       await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.kennelAdmin);

@@ -27,6 +27,14 @@ class KennelsModel {
       this.defaultPriceForNonMembers,
       this.membershipDurationInMonths,
       this.defaultRunStartTime,
+      this.currencyCode,
+      this.primaryCultureCode,
+      this.currencySymbol,
+      this.digitsAfterDecimal,
+      this.bankScheme,
+      this.bankAccountNumber,
+      this.bankBic,
+      this.bankBeneficiary,
       this.updatedAt,
       this.removed});
 
@@ -49,6 +57,14 @@ class KennelsModel {
   final num defaultPriceForNonMembers;
   final int membershipDurationInMonths;
   final DateTime defaultRunStartTime;
+  final String currencyCode;
+  final String primaryCultureCode;
+  final String currencySymbol;
+  final num digitsAfterDecimal;
+  final String bankScheme;
+  final String bankAccountNumber;
+  final String bankBic;
+  final String bankBeneficiary;
   final DateTime updatedAt;
   final int removed;
 
@@ -78,10 +94,16 @@ class KennelsModel {
           defaultPriceForMembers: jsonItem['defaultPriceForMembers'],
           defaultPriceForNonMembers: jsonItem['defaultPriceForNonMembers'],
           membershipDurationInMonths: jsonItem['membershipDurationInMonths'],
-          defaultRunStartTime: DateTime.parse(
-              jsonItem['defaultRunStartTime'].toString().substring(0, 19)),
-          updatedAt:
-              DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
+          defaultRunStartTime: DateTime.parse(jsonItem['defaultRunStartTime'].toString().substring(0, 19)),
+          currencyCode: jsonItem['currencyCode'],
+          primaryCultureCode: jsonItem['primaryCultureCode'],
+          currencySymbol: jsonItem['currencySymbol'],
+          digitsAfterDecimal: jsonItem['digitsAfterDecimal'],
+          bankScheme: jsonItem['bankScheme'],
+          bankAccountNumber: jsonItem['bankAccountNumber'],
+          bankBic: jsonItem['bankBic'],
+          bankBeneficiary: jsonItem['bankBeneficiary'],
+          updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
           removed: jsonItem['removed'],
         );
 
@@ -104,13 +126,10 @@ class KennelsTableHelper {
 
   //static const num forceRequeryInterval = 1 * 86400000;
   static const num forceRequeryInterval = 1 * 1000;
-  static const num cacheDuration = 365 *
-      3 *
-      86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
+  static const num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
 
   static const IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateKennelData;
-  static const IntPrefsEnum lastCacheClearKey =
-      IntPrefsEnum.lastCacheClearKennelData;
+  static const IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearKennelData;
 
   static const String colId = 'id';
   static const String remoteDbId = 'kennelId';
@@ -132,8 +151,16 @@ class KennelsTableHelper {
   static const String colKennelLongitude = 'kennelLongitude';
   static const String colDefaultPriceForMembers = 'defaultPriceForMembers';
   static const String colDefaultPriceForNonMembers = 'defaultPriceForNonMembers';
-  static const String colMembershipDurationInMonths= 'membershipDurationInMonths';
+  static const String colMembershipDurationInMonths = 'membershipDurationInMonths';
   static const String colDefaultRunStartTime = 'defaultRunStartTime';
+  static const String colCurrencyCode= 'currencyCode';
+  static const String colPrimaryCultureCode= 'primaryCultureCode';
+  static const String colCurrencySymbol= 'currencySymbol';
+  static const String colDigitsAfterDecimal= 'digitsAfterDecimal';
+  static const String colBankScheme= 'bankScheme';
+  static const String colBankAccountNumber= 'bankAccountNumber';
+  static const String colBankBic= 'bankBic';
+  static const String colBankBeneficiary= 'bankBeneficiary';
   static const String colUpdatedAt = 'updatedAt';
   static const String colRemoved = 'removed';
 
@@ -141,8 +168,7 @@ class KennelsTableHelper {
 
   // make this a singleton class
 
-  static final KennelsTableHelper instance =
-      KennelsTableHelper._privateConstructor();
+  static final KennelsTableHelper instance = KennelsTableHelper._privateConstructor();
 
   // SQL code to create the database table
   static Future<dynamic> createTable(Database db, int version) async {
@@ -169,6 +195,14 @@ class KennelsTableHelper {
             $colDefaultPriceForNonMembers NUM,
             $colMembershipDurationInMonths INT,
             $colDefaultRunStartTime TEXT,
+            $colCurrencyCode TEXT,
+            $colPrimaryCultureCode TEXT,
+            $colCurrencySymbol TEXT,
+            $colDigitsAfterDecimal NUM,
+            $colBankScheme TEXT,
+            $colBankAccountNumber TEXT,
+            $colBankBic TEXT,
+            $colBankBeneficiary TEXT,
             $colUpdatedAt TEXT,
             $colRemoved INT,
 
@@ -176,10 +210,8 @@ class KennelsTableHelper {
           )
           ''');
 
-    await db.execute(
-        'CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute(
-        'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
+    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
+    await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
   static Map<String, dynamic> toMap(KennelsModel item) {
@@ -194,17 +226,23 @@ class KennelsTableHelper {
       KennelsTableHelper.colKennelLogo: item.kennelLogo,
       KennelsTableHelper.colKennelCoverPhoto: item.kennelCoverPhoto,
       KennelsTableHelper.colKennelWebsiteUrl: item.kennelWebsiteUrl,
-      KennelsTableHelper.colDefaultEventCurrencyType:
-          item.defaultEventCurrencyType,
+      KennelsTableHelper.colDefaultEventCurrencyType: item.defaultEventCurrencyType,
       KennelsTableHelper.colKennelStatus: item.kennelStatus,
       KennelsTableHelper.colAllowNegativeCredit: item.allowNegativeCredit,
       KennelsTableHelper.colKennelLatitude: item.kennelLatitude,
       KennelsTableHelper.colKennelLongitude: item.kennelLongitude,
       KennelsTableHelper.colDefaultPriceForMembers: item.defaultPriceForMembers,
-      KennelsTableHelper.colDefaultPriceForNonMembers:
-          item.defaultPriceForNonMembers,
+      KennelsTableHelper.colDefaultPriceForNonMembers: item.defaultPriceForNonMembers,
       KennelsTableHelper.colMembershipDurationInMonths: item.membershipDurationInMonths,
       KennelsTableHelper.colDefaultRunStartTime: item.defaultRunStartTime,
+      KennelsTableHelper.colCurrencyCode: item.currencyCode,
+      KennelsTableHelper.colPrimaryCultureCode: item.primaryCultureCode,
+      KennelsTableHelper.colCurrencySymbol: item.currencySymbol,
+      KennelsTableHelper.colDigitsAfterDecimal: item.digitsAfterDecimal,
+      KennelsTableHelper.colBankScheme: item.bankScheme,
+      KennelsTableHelper.colBankAccountNumber: item.bankAccountNumber,
+      KennelsTableHelper.colBankBic: item.bankBic,
+      KennelsTableHelper.colBankBeneficiary: item.bankBeneficiary,
       KennelsTableHelper.colUpdatedAt: item.updatedAt,
       KennelsTableHelper.colRemoved: item.removed,
     };
@@ -224,8 +262,7 @@ class KennelsTableHelper {
       kennelLogo: map[KennelsTableHelper.colKennelLogo],
       kennelCoverPhoto: map[KennelsTableHelper.colKennelCoverPhoto],
       kennelWebsiteUrl: map[KennelsTableHelper.colKennelWebsiteUrl],
-      defaultEventCurrencyType:
-          map[KennelsTableHelper.colDefaultEventCurrencyType],
+      defaultEventCurrencyType: map[KennelsTableHelper.colDefaultEventCurrencyType],
       kennelStatus: map[KennelsTableHelper.colKennelStatus],
       allowNegativeCredit: map[KennelsTableHelper.colAllowNegativeCredit],
       kennelLatitude: map[KennelsTableHelper.colKennelLatitude],
@@ -233,13 +270,16 @@ class KennelsTableHelper {
       defaultPriceForMembers: map[KennelsTableHelper.colDefaultPriceForMembers],
       defaultPriceForNonMembers: map[KennelsTableHelper.colDefaultPriceForNonMembers],
       membershipDurationInMonths: map[KennelsTableHelper.colMembershipDurationInMonths],
-      defaultRunStartTime: DateTime.now(),
-      // DateTime.parse(
-      //     map[KennelsTableHelper.colDefaultRunStartTime]
-      //         .toString()
-      //         .substring(0, 19)),
-      updatedAt: DateTime.parse(
-          map[KennelsTableHelper.colUpdatedAt].toString().substring(0, 19)),
+      defaultRunStartTime: DateTime.parse(map[KennelsTableHelper.colDefaultRunStartTime].toString().substring(0, 19)),
+      currencyCode: map[KennelsTableHelper.colCurrencyCode],
+      primaryCultureCode: map[KennelsTableHelper.colPrimaryCultureCode],
+      currencySymbol: map[KennelsTableHelper.colCurrencySymbol],
+      digitsAfterDecimal: map[KennelsTableHelper.colDigitsAfterDecimal],
+      bankScheme: map[KennelsTableHelper.colBankScheme],
+      bankAccountNumber: map[KennelsTableHelper.colBankAccountNumber],
+      bankBic: map[KennelsTableHelper.colBankBic],
+      bankBeneficiary: map[KennelsTableHelper.colBankBeneficiary],
+      updatedAt: DateTime.parse(map[KennelsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[KennelsTableHelper.colRemoved],
     );
 
@@ -248,8 +288,7 @@ class KennelsTableHelper {
 }
 
 class KennelsService {
-  static final KennelsTableHelper instance =
-      KennelsTableHelper._privateConstructor();
+  static final KennelsTableHelper instance = KennelsTableHelper._privateConstructor();
 
   static Future<num> getLastUpdatedTime() async {
     final Database db = await DBProvider.db.database;
@@ -260,11 +299,8 @@ class KennelsService {
 
   Future<void> clearTable() async {
     final Database db = await DBProvider.db.database;
-    await db
-        .rawDelete('DELETE FROM ${KennelsTableHelper.tableName}')
-        .then((void dummy) {
-      setIntPref(KennelsTableHelper.lastCacheClearKey,
-          DateTime.now().millisecondsSinceEpoch);
+    await db.rawDelete('DELETE FROM ${KennelsTableHelper.tableName}').then((void dummy) {
+      setIntPref(KennelsTableHelper.lastCacheClearKey, DateTime.now().millisecondsSinceEpoch);
     });
   }
 
@@ -274,30 +310,24 @@ class KennelsService {
     for (int i = 0; i < items?.length ?? 0; i++) {
       final Map<String, dynamic> row = KennelsTableHelper.toMap(items[i]);
 
-      final List<Map<String, dynamic>> table = await db.rawQuery(
-          'SELECT * FROM ${KennelsTableHelper.tableName} WHERE ${KennelsTableHelper.remoteDbId} = "${items[i].kennelId}"');
+      final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${KennelsTableHelper.tableName} WHERE ${KennelsTableHelper.remoteDbId} = "${items[i].kennelId}"');
       if ((table == null) || (table.isEmpty)) {
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result =
-              await txn.insert(KennelsTableHelper.tableName, row);
-          print(result.toString() +
-              ' inserted into to the ${KennelsTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          final int result = await txn.insert(KennelsTableHelper.tableName, row);
+          print(result.toString() + ' inserted into to the ${KennelsTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
         });
       } else {
         final String rowId = table.first['id'].toString();
 
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.update(KennelsTableHelper.tableName, row,
-              where: 'id = $rowId');
-          print(result.toString() +
-              ' update to the ${KennelsTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          final int result = await txn.update(KennelsTableHelper.tableName, row, where: 'id = $rowId');
+          print(result.toString() + ' update to the ${KennelsTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
         });
       }
     }
   }
 
-  Future<int> bulkUpdateDatabase(
-      String rawResults, Database db, Function informUser) async {
+  Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser) async {
     int updateCounter = 0;
     int insertCounter = 0;
 
@@ -321,13 +351,10 @@ class KennelsService {
         }
 
         jsonItem.addAll(<String, dynamic>{
-          'updatedAtValue':
-              DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19))
-                  .millisecondsSinceEpoch,
+          'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch,
         });
 
-        final String query =
-            'SELECT * FROM ${KennelsTableHelper.tableName} WHERE ${KennelsTableHelper.remoteDbId} = "${jsonItem['kennelId']}"';
+        final String query = 'SELECT * FROM ${KennelsTableHelper.tableName} WHERE ${KennelsTableHelper.remoteDbId} = "${jsonItem['kennelId']}"';
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
 
         if ((table == null) || (table.isEmpty)) {
@@ -344,8 +371,7 @@ class KennelsService {
 
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.update(KennelsTableHelper.tableName, jsonItem,
-                where: 'id = $rowId');
+            await txn.update(KennelsTableHelper.tableName, jsonItem, where: 'id = $rowId');
             updateCounter++;
             // print(result.toString() +
             //     ' update to the ${KennelsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -354,9 +380,7 @@ class KennelsService {
       }
     }
 
-    print(
-        '$insertCounter kennel records inserted, $updateCounter kennel records updated');
+    print('$insertCounter kennel records inserted, $updateCounter kennel records updated');
     return insertCounter;
   }
-
 }
