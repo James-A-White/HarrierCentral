@@ -1,27 +1,4 @@
-import 'dart:core';
-import 'dart:convert';
-
-import 'package:flutter/services.dart' show rootBundle;
-
-import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-
-class QrPopup extends StatefulWidget {
-  const QrPopup({
-    @required this.dialogTitle,
-    @required this.qrText,
-    // @required this.valueChanged
-  });
-
-  final String dialogTitle;
-  final String qrText;
-
-  @override
-  _QrPopupState createState() => _QrPopupState();
-}
-
-String qrMediumJson = '''
-[{"quality":"M","version":1,"numeric":34,"character":20,"binary":14},
+[[{"quality":"M","version":1,"numeric":34,"character":20,"binary":14},
 {"quality":"M","version":2,"numeric":63,"character":38,"binary":26},
 {"quality":"M","version":3,"numeric":101,"character":61,"binary":42},
 {"quality":"M","version":4,"numeric":149,"character":90,"binary":62},
@@ -60,60 +37,4 @@ String qrMediumJson = '''
 {"quality":"M","version":37,"numeric":4775,"character":2894,"binary":1989},
 {"quality":"M","version":38,"numeric":5039,"character":3054,"binary":2099},
 {"quality":"M","version":39,"numeric":5313,"character":3220,"binary":2213},
-{"quality":"M","version":40,"numeric":5596,"character":3391,"binary":2331}]
-''';
-
-class _QrPopupState extends State<QrPopup> {
-  int selectedValue = 1;
-  num otherAmount;
-  int otherTransType;
-
-  // @override
-  // void initState() {
-
-  //   super.initState();
-  // }
-
-
-  @override
-  Widget build(BuildContext context) {
-    final List<dynamic> items = json.decode(qrMediumJson);
-    int qrVersion = 15;
-
-    for (int i = 0; i < items.length; i++)
-    {
-      final int charLength = items[i]['character'];
-      if (charLength > widget.qrText.length)
-      {
-        qrVersion = items[i]['version'];
-        break;
-      }
-    }
-
-    return AlertDialog(
-      title: Text(widget.dialogTitle),
-      content:  Container(
-          height: 250,
-          width: 250,
-          child: QrImage(backgroundColor: Colors.white, padding: const EdgeInsets.all(10.0), data: widget.qrText, version: qrVersion+2, errorCorrectionLevel: QrErrorCorrectLevel.M),
-        ),
-      
-      actions: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(right: 0.0),
-          child: Container(
-            width: 100.0,
-            child: RaisedButton(
-              color: Colors.red,
-              child: const Text('Done'),
-              textColor: Colors.white,
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
+{"quality":"M","version":40,"numeric":5596,"character":3391,"binary":2331}]]

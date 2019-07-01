@@ -420,11 +420,34 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   //   }
   // }
 
-  void showBankTransferQrCode(bool member) {
+  void showBankTransferQrCode(bool member, {String remitString, num remitAmount}) {
     num amount = event['eventPriceForMembers'];
-    if (!member) {
-      amount = event['eventPriceForNonMembers'];
+    String remittanceInfo = '${event['eventStartDatetime'].toString().substring(0, 10)} - ${event['eventName']}';
+    String beneficiaryInfo = '${event['eventStartDatetime'].toString().substring(0, 10)} - ${event['eventName']}';
+
+    if (remitString != null)
+    {
+      remittanceInfo = remitString;
     }
+
+    if (remittanceInfo.length > 139) 
+    {
+      remittanceInfo = remittanceInfo.substring(0,139);
+    }
+
+    if (beneficiaryInfo.length > 69) 
+    {
+      beneficiaryInfo = beneficiaryInfo.substring(0,69);
+    }
+
+    if ((remitAmount != null) && (remitAmount != -1)) {
+      amount = remitAmount;
+    } else {
+      if (!member) {
+        amount = event['eventPriceForNonMembers'];
+      }
+    }
+
     final QrPopup pp = QrPopup(
       dialogTitle: 'Scan to pay by bank transfer',
       qrText: '''BCD
@@ -435,7 +458,11 @@ ${event['bankBic']}
 ${event['bankBeneficiary']}
 ${event['bankAccountNumber']}
 ${event['currencyCode']}$amount
-SCVE''',
+SCVE
+
+$remittanceInfo
+$beneficiaryInfo
+''',
 
       // valueChanged: (num value) {
       //   finalValue = value;
@@ -1141,6 +1168,29 @@ SCVE''',
       onPaidCallback: (Map<String, dynamic> packMember, int paymentType, {num otherAmount = -1}) {
         Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
         payForEvent(packMember, paymentType, otherAmount: otherAmount);
+        if ((paymentType == paymentBankTransfer.value) || (paymentType == paymentBankTransferOtherAmount.value)) {
+          String topUp = '';
+          if (paymentType == paymentBankTransferOtherAmount.value)
+          {
+            topUp = ' (plus credit top-up)';
+          }
+          Scaffold.of(context).showSnackBar(SnackBar(
+              backgroundColor: Colors.blue,
+              duration: const Duration(seconds: 10),
+              content: Container(
+                height: 50,
+                child: RaisedButton(
+                  color: Colors.red,
+                  child: Text('Show Payment QR code', style: buttonLabelStyleMedium),
+                  textColor: Colors.white,
+                  onPressed: () {
+                    Scaffold.of(context).hideCurrentSnackBar();
+                    final String remittanceInfo = '${event['eventStartDatetime'].toString().substring(0, 10)} - ${event['eventName']} for ${packMember['nameForDisplay']}'+topUp;
+                    showBankTransferQrCode(packMember['isMember'] != 0,remitString: remittanceInfo, remitAmount: otherAmount );
+                  },
+                ),
+              )));
+        }
       },
     );
 
