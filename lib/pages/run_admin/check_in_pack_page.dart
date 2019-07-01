@@ -425,19 +425,16 @@ class CheckInPackPageState extends State<CheckInPackPage> {
     String remittanceInfo = '${event['eventStartDatetime'].toString().substring(0, 10)} - ${event['eventName']}';
     String beneficiaryInfo = '${event['eventStartDatetime'].toString().substring(0, 10)} - ${event['eventName']}';
 
-    if (remitString != null)
-    {
+    if (remitString != null) {
       remittanceInfo = remitString;
     }
 
-    if (remittanceInfo.length > 139) 
-    {
-      remittanceInfo = remittanceInfo.substring(0,139);
+    if (remittanceInfo.length > 139) {
+      remittanceInfo = remittanceInfo.substring(0, 139);
     }
 
-    if (beneficiaryInfo.length > 69) 
-    {
-      beneficiaryInfo = beneficiaryInfo.substring(0,69);
+    if (beneficiaryInfo.length > 69) {
+      beneficiaryInfo = beneficiaryInfo.substring(0, 69);
     }
 
     if ((remitAmount != null) && (remitAmount != -1)) {
@@ -1167,30 +1164,40 @@ $beneficiaryInfo
       },
       onPaidCallback: (Map<String, dynamic> packMember, int paymentType, {num otherAmount = -1}) {
         Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-        payForEvent(packMember, paymentType, otherAmount: otherAmount);
-        if ((paymentType == paymentBankTransfer.value) || (paymentType == paymentBankTransferOtherAmount.value)) {
-          String topUp = '';
-          if (paymentType == paymentBankTransferOtherAmount.value)
-          {
-            topUp = ' (plus credit top-up)';
-          }
-          Scaffold.of(context).showSnackBar(SnackBar(
-              backgroundColor: Colors.blue,
-              duration: const Duration(seconds: 10),
-              content: Container(
-                height: 50,
-                child: RaisedButton(
-                  color: Colors.red,
-                  child: Text('Show Payment QR code', style: buttonLabelStyleMedium),
-                  textColor: Colors.white,
-                  onPressed: () {
-                    Scaffold.of(context).hideCurrentSnackBar();
-                    final String remittanceInfo = '${event['eventStartDatetime'].toString().substring(0, 10)} - ${event['eventName']} for ${packMember['nameForDisplay']}'+topUp;
-                    showBankTransferQrCode(packMember['isMember'] != 0,remitString: remittanceInfo, remitAmount: otherAmount );
-                  },
-                ),
-              )));
-        }
+        payForEvent(packMember, paymentType, otherAmount: otherAmount).then((List<dynamic> results) {
+          _refreshPackListFromTables(false).then((void dummy) {
+            _refreshCounters(true);
+
+            String paymentReference = '';
+            if ((results != null) && (results.isNotEmpty) && (results[0]['paymentReference'] != null))
+            {
+              paymentReference = ' (HC Payment Ref: ${results[0]['paymentReference']})';
+            }
+
+            if ((paymentType == paymentBankTransfer.value) || (paymentType == paymentBankTransferOtherAmount.value)) {
+              String paidFor = ' - run fee';
+              if (paymentType == paymentBankTransferOtherAmount.value) {
+                paidFor = ' - run fee plus top-up';
+              }
+              Scaffold.of(context).showSnackBar(SnackBar(
+                  backgroundColor: Colors.blue,
+                  duration: const Duration(seconds: 10),
+                  content: Container(
+                    height: 50,
+                    child: RaisedButton(
+                      color: Colors.red,
+                      child: Text('Show Payment QR code', style: buttonLabelStyleMedium),
+                      textColor: Colors.white,
+                      onPressed: () {
+                        Scaffold.of(context).hideCurrentSnackBar();
+                        final String remittanceInfo = '${event['eventStartDatetime'].toString().substring(0, 10)} - ${event['eventName']} - ${packMember['nameForDisplay']}' + paymentReference + paidFor;
+                        showBankTransferQrCode(packMember['isMember'] != 0, remitString: remittanceInfo, remitAmount: otherAmount);
+                      },
+                    ),
+                  )));
+            }
+          });
+        });
       },
     );
 
@@ -1437,7 +1444,7 @@ $beneficiaryInfo
     });
   }
 
-  void payForEvent(Map<String, dynamic> packMember, int paymentType, {num otherAmount = -1}) {
+  Future<List<dynamic>> payForEvent(Map<String, dynamic> packMember, int paymentType, {num otherAmount = -1}) async {
     final String hemId = packMember['hemId'];
     final String hasherId = packMember['hasherId'];
     num amount = packMember['isMember'] != 0 ? event['eventPriceForMembers'] : event['eventPriceForNonMembers'];
@@ -1471,7 +1478,7 @@ $beneficiaryInfo
     indicatorPaidUpdating.addAll(<String, String>{packMember['hemId'] != null ? 'hem:' + packMember['hemId'].toString().toLowerCase() : 'hid:' + packMember['hasherId'].toString().toLowerCase(): packMember['payUpdatedAt'] ?? ''});
 
     final PaymentsService paySrv = PaymentsService();
-    final Future<void> retVal = paySrv.payForEvent(
+    return paySrv.payForEvent(
       widget.eventId,
       ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId,
       ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId,
@@ -1479,11 +1486,6 @@ $beneficiaryInfo
       amount,
       attendenceAtHash.value,
     );
-    retVal.then((void dummy) {
-      _refreshPackListFromTables(false).then((void dummy) {
-        _refreshCounters(true);
-      });
-    });
   }
 
   Widget buildPackListView() {
@@ -1503,7 +1505,11 @@ $beneficiaryInfo
             confirmDismiss: (DismissDirection direction) {
               if (packMember['isPaid'] != 1) {
                 print(direction.toString() + ' ' + index.toString());
-                payForEvent(packMember, direction == DismissDirection.endToStart ? 3 : 4);
+                payForEvent(packMember, direction == DismissDirection.endToStart ? 3 : 4).then((List<dynamic> results) {
+                  _refreshPackListFromTables(false).then((void dummy) {
+                    _refreshCounters(true);
+                  });
+                });
               } else {
                 if (direction == DismissDirection.endToStart) {
                   updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
