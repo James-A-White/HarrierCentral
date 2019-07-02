@@ -3,21 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/data/hc3_services/payments_service.dart';
+//import 'package:harrier_central/data/hc3_services/payments_service.dart';
+import 'package:harrier_central/pages/run_admin/payment_report.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class PaymentReportListItem extends StatelessWidget {
   const PaymentReportListItem({@required this.paymentReportItem, @required this.currencySymbol, @required this.digitsAfterDecimal, @required this.onTap});
 
-  final PaymentsModel paymentReportItem;
+  final PaymentAggregate paymentReportItem;
   final String currencySymbol;
   final int digitsAfterDecimal;
   final Function onTap;
 
   @override
   Widget build(BuildContext context) {
-    final String amountPaid = Utilities.getFormattedMoney(paymentReportItem.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
+    final String amountPaid = Utilities.getFormattedMoney(paymentReportItem.payment.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
     return InkWell(
       onTap: onTap,
@@ -31,18 +32,18 @@ class PaymentReportListItem extends StatelessWidget {
               //fit: StackFit.expand,
               children: <Widget>[
                 Positioned(
-                  right: paymentReportItem.isLoading ? 6.0 : 10.0,
-                  top: paymentReportItem.isLoading ? 2.5 : 7.0,
-                  child: paymentReportItem.isLoading
+                  right: paymentReportItem.extensions.isLoading ? 6.0 : 10.0,
+                  top: paymentReportItem.extensions.isLoading ? 2.5 : 7.0,
+                  child: paymentReportItem.extensions.isLoading
                       ? Icon(delayIcon, color: Colors.blue[800], size: 37.0)
-                      : Image.asset('images/icons/payment_type_${paymentReportItem.paymentType ?? paymentNotPaid.value}.png', height: 30.0, width: 30.0, color: (paymentReportItem.paymentType ?? paymentNotPaid.value) <= paymentNotPaid.value ? Colors.red : Colors.green[700]),
+                      : Image.asset('images/icons/payment_type_${paymentReportItem.payment.paymentType ?? paymentNotPaid.value}.png', height: 30.0, width: 30.0, color: (paymentReportItem.payment.paymentType ?? paymentNotPaid.value) <= paymentNotPaid.value ? Colors.red : Colors.green[700]),
                 ),
                 Positioned(
                   left: 10.0,
                   top: 7.0,
                   child: Text(
-                    '${paymentReportItem.paidByName}',
-                    style: TextStyle(fontFamily: (paymentReportItem.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
+                    '${paymentReportItem.extensions.paidByName}',
+                    style: TextStyle(fontFamily: (paymentReportItem.extensions.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
                     textAlign: TextAlign.center,
                   ),
                 ),

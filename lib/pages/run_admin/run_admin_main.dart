@@ -19,6 +19,35 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/util/preferences.dart';
 
+class RunAdminAggregate {
+  RunAdminAggregate({
+    this.event,
+    this.extensions,
+  });
+
+  final RunAdminQueryExtensions extensions;
+  final NarrowEventsModel event;
+}
+
+class RunAdminQueryExtensions {
+  RunAdminQueryExtensions({this.mismanagementRoleFlags, this.kennelShortName, this.digitsAfterDecimal, this.currencySymbol, this.memberPrice, this.nonMemberPrice});
+
+  final int mismanagementRoleFlags;
+  final String kennelShortName;
+  final int digitsAfterDecimal;
+  final String currencySymbol;
+  final num memberPrice;
+  final num nonMemberPrice;
+
+  bool isLoading = false;
+
+  static RunAdminQueryExtensions fromMap(Map<String, dynamic> map) {
+    final RunAdminQueryExtensions item =
+        RunAdminQueryExtensions(mismanagementRoleFlags: map['mismanagementRoleFlags'], kennelShortName: map['kennelShortName'], digitsAfterDecimal: map['digitsAfterDecimal'], currencySymbol: map['currencySymbol'], memberPrice: map['memberPrice'], nonMemberPrice: map['nonMemberPrice']);
+    return item;
+  }
+}
+
 class RunAdminMainPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
@@ -33,7 +62,7 @@ class RunAdminMainPage extends StatefulWidget {
 class RunAdminMainPageState extends State<RunAdminMainPage> {
   bool _isLoading = true;
 
-  Map<String, dynamic> event;
+  RunAdminAggregate eventAggregate;
 
   @override
   void initState() {
@@ -80,7 +109,10 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
         db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
           setState(() {
             if (results.isNotEmpty) {
-              event = results[0];
+                final NarrowEventsModel eventItem = NarrowEventsTableHelper.fromMap(results[0]);
+                final RunAdminQueryExtensions extensions = RunAdminQueryExtensions.fromMap(results[0]);
+                eventAggregate = RunAdminAggregate(event: eventItem, extensions: extensions);
+
             }
           });
         });
@@ -148,7 +180,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                   Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => CheckInPackPage(eventId: widget.eventId, kennelId: event['kennelId']),
+                      builder: (BuildContext context) => CheckInPackPage(eventId: widget.eventId, kennelId: eventAggregate.event.kennelId),
                     ),
                   );
                 },
@@ -183,14 +215,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                     context,
                     MaterialPageRoute<dynamic>(
                       builder: (BuildContext context) => CheckInScannerPage(
-                            kennelShortName: event['kennelShortName'],
-                            eventId: event['eventId'],
-                            eventName: event['eventName'],
-                            eventNumber: event['eventNumber'],
-                            currencySymbol: event['currencySymbol'],
-                            digitsAfterDecimal: event['digitsAfterDecimal'],
-                            memberPrice: event['memberPrice'],
-                            nonMemberPrice: event['nonMemberPrice'],
+                            eventAggregate: eventAggregate
                           ),
                     ),
                   );
@@ -233,7 +258,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                   context,
                   MaterialPageRoute<dynamic>(
                     builder: (BuildContext context) => PaymentReportPage(
-                          event: event,
+                          eventAggregate: eventAggregate,
                         ),
                   ),
                 );
@@ -269,10 +294,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                   context,
                   MaterialPageRoute<dynamic>(
                     builder: (BuildContext context) => ReceiptsList(
-                          eventName: event['eventName'],
-                          eventId: event['eventId'],
-                          digitsAfterDecimal: event['digitsAfterDecimal'],
-                          currencySymbol: event['currencySymbol'],
+                          eventAggregate: eventAggregate,
                         ),
                   ),
                 );
@@ -282,7 +304,6 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
         ),
       ],
     ));
-
 
     kiddies.add(Padding(
       padding: const EdgeInsets.only(top: 15, bottom: 15),
@@ -298,7 +319,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
               child: Image.asset('images/icons/print_qr_icon.png', height: 55.0, width: 55.0),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 10, right: 10,top:10),
+              padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
               child: Text(
                 'Print QR codes',
                 style: buttonLabelStyleSmall,
@@ -312,7 +333,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                 context,
                 MaterialPageRoute<dynamic>(
                     builder: (BuildContext context) =>
-                        EventQrCodePage(kennelShortName: event['kennelShortName'], qrContent: event['eventId'], title: event['eventName'], runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START, runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END, eventStartDatetime: DateTime.parse(event['eventStartDatetime']))));
+                        EventQrCodePage(kennelShortName: eventAggregate.extensions.kennelShortName, qrContent: eventAggregate.event.eventId, title: eventAggregate.event.eventName, runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START, runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END, eventStartDatetime: eventAggregate.event.eventStartDatetime)));
           },
         ),
       ),

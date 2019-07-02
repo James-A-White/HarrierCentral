@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
@@ -15,12 +16,9 @@ import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart'
 import 'package:harrier_central/data/hc3_services/receipts_service.dart';
 
 class ReceiptsList extends StatefulWidget {
-  const ReceiptsList({Key key, @required this.eventName, @required this.eventId, @required this.digitsAfterDecimal, @required this.currencySymbol}) : super(key: key);
+  const ReceiptsList({Key key, @required this.eventAggregate}) : super(key: key);
 
-  final String eventName;
-  final String eventId;
-  final String currencySymbol;
-  final int digitsAfterDecimal;
+  final RunAdminAggregate eventAggregate;
 
   @override
   ReceiptsListState createState() => ReceiptsListState();
@@ -67,7 +65,7 @@ class ReceiptsListState extends State<ReceiptsList> {
           centerTitle: true,
           backgroundColor: themeAppBarBackground,
           title: Text(
-            '${widget.eventName} receipts',
+            '${widget.eventAggregate.event.eventName} receipts',
             style: const TextStyle(
               color: Colors.white,
             ),
@@ -103,7 +101,7 @@ class ReceiptsListState extends State<ReceiptsList> {
                       context,
                       MaterialPageRoute<void>(
                           builder: (BuildContext context) => ReceiptDetailPage(
-                                eventId: widget.eventId,
+                                eventId: widget.eventAggregate.event.eventId,
                               )),
                     ).then<dynamic>((void receipt) {
                       refreshFromTable();
@@ -124,7 +122,7 @@ class ReceiptsListState extends State<ReceiptsList> {
     final Database db = await DBProvider.db.database;
 
     final SyncEventAdminService cSrv = SyncEventAdminService();
-    final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagReceiptsTable, true, widget.eventId);
+    final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagReceiptsTable, true, widget.eventAggregate.event.eventId);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Receipts data synchronized $resultStr');
     refreshFromTable();
@@ -144,7 +142,7 @@ class ReceiptsListState extends State<ReceiptsList> {
       });
 
     final ReceiptsModel item =
-        ReceiptsModel(receiptId: receiptId, eventId: widget.eventId, receiptShortDescription: '', receiptAmount: -1, notes: '', reimbursedBy: cancelReimbursement ? GUID_MAX : userId, reimbursedAmount: 0, reimbursedOn: '1999/1/1', reimbursedNotes: '', imageUrl: '', removed: -1);
+        ReceiptsModel(receiptId: receiptId, eventId: widget.eventAggregate.event.eventId, receiptShortDescription: '', receiptAmount: -1, notes: '', reimbursedBy: cancelReimbursement ? GUID_MAX : userId, reimbursedAmount: 0, reimbursedOn: '1999/1/1', reimbursedNotes: '', imageUrl: '', removed: -1);
 
     setState(() {
       final ReceiptsService srv = ReceiptsService();
@@ -171,7 +169,7 @@ class ReceiptsListState extends State<ReceiptsList> {
       });
 
     final ReceiptsModel item =
-        ReceiptsModel(receiptId: receiptId, eventId: widget.eventId, receiptShortDescription: '', receiptAmount: -1, notes: '', reimbursedBy: GUID_EMPTY, reimbursedAmount: -1, reimbursedOn: '1999/1/1', reimbursedNotes: '', imageUrl: '', removed: removed ? 0 : 1);
+        ReceiptsModel(receiptId: receiptId, eventId: widget.eventAggregate.event.eventId, receiptShortDescription: '', receiptAmount: -1, notes: '', reimbursedBy: GUID_EMPTY, reimbursedAmount: -1, reimbursedOn: '1999/1/1', reimbursedNotes: '', imageUrl: '', removed: removed ? 0 : 1);
 
     setState(() {
       final ReceiptsService srv = ReceiptsService();
@@ -302,15 +300,15 @@ class ReceiptsListState extends State<ReceiptsList> {
                             padding: const EdgeInsets.all(0.0),
                             child: ListView(scrollDirection: Axis.horizontal, children: <Widget>[
                               ReceiptListItem(
-                                  currencySymbol: widget.currencySymbol,
-                                  digitsAfterDecimal: widget.digitsAfterDecimal,
+                                  currencySymbol: widget.eventAggregate.extensions.currencySymbol,
+                                  digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
                                   receipt: receiptsList[index],
                                   itemPressed: () {
                                     Navigator.push<void>(
                                       context,
                                       MaterialPageRoute<void>(
                                           builder: (BuildContext context) => ReceiptDetailPage(
-                                                eventId: widget.eventId,
+                                                eventId: widget.eventAggregate.event.eventId,
                                                 receiptItem: receiptsList[index],
                                               )),
                                     ).then<dynamic>((void receipt) {

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:intl/intl.dart';
 
@@ -23,10 +24,40 @@ import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart'
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 
-class PaymentReportPage extends StatefulWidget {
-  const PaymentReportPage({Key key, @required this.event}) : super(key: key);
+class PaymentAggregate {
+  PaymentAggregate({
+    this.payment,
+    this.extensions,
+  });
 
-  final Map<String, dynamic> event;
+  final PaymentQueryExtensions extensions;
+  final PaymentsModel payment;
+}
+
+class PaymentQueryExtensions {
+  PaymentQueryExtensions({this.pkHemId, this.paidByName, this.paidToName, this.isMember, this.creditAvailable, this.eventPriceForMembers, this.eventPriceForNonMembers});
+
+  final String pkHemId;
+  final String paidByName;
+  final String paidToName;
+  final int isMember;
+  final num creditAvailable;
+  final num eventPriceForMembers;
+  final num eventPriceForNonMembers;
+
+  bool isLoading = false;
+
+  static PaymentQueryExtensions fromMap(Map<String, dynamic> map) {
+    final PaymentQueryExtensions item =
+        PaymentQueryExtensions(pkHemId: map['pkHemId'], paidByName: map['paidByName'], paidToName: map['paidToName'], isMember: map['isMember'], creditAvailable: map['creditAvailable'], eventPriceForMembers: map['eventPriceForMembers'], eventPriceForNonMembers: map['eventPriceForNonMembers']);
+    return item;
+  }
+}
+
+class PaymentReportPage extends StatefulWidget {
+  const PaymentReportPage({Key key, @required this.eventAggregate}) : super(key: key);
+
+  final RunAdminAggregate eventAggregate;
 
   @override
   PaymentReportState createState() => PaymentReportState();
@@ -35,8 +66,8 @@ class PaymentReportPage extends StatefulWidget {
 class PaymentReportState extends State<PaymentReportPage> {
   PaymentReportState();
 
-  List<PaymentsModel> paymentsList = <PaymentsModel>[];
-  List<PaymentsModel> filteredList = <PaymentsModel>[];
+  List<PaymentAggregate> paymentsList = <PaymentAggregate>[];
+  List<PaymentAggregate> filteredList = <PaymentAggregate>[];
 
   bool _isLoading = true;
 
@@ -56,7 +87,7 @@ class PaymentReportState extends State<PaymentReportPage> {
 
     DBProvider.db.database.then((Database db) async {
       final SyncEventAdminService cSrv = SyncEventAdminService();
-      final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable, true, widget.event['eventId']);
+      final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable, true, widget.eventAggregate.event.eventId);
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Payments data synchronized $resultStr');
 
@@ -75,18 +106,20 @@ class PaymentReportState extends State<PaymentReportPage> {
     final String sql = '''
 
           SELECT
+          -- Payment table
+          pay.*,
+          -- Extensions
           hem.hemId as pkHemId,
           COALESCE(CASE WHEN hem.displayName IS NULL THEN NULL ELSE hem.displayName || CASE WHEN hem.virginVisitorType = 1 THEN " (Virgin)" ELSE " (Visitor)" END END, h.dispName,'<hasher not found>') as paidByName,
           COALESCE(paidTo.dispName,'<hasher not found>') as paidToName,
           COALESCE(hkm.isMember,0) as isMember,
           COALESCE(credits.currentBalance,0) as creditAvailable,
-          pay.*,
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as eventPriceForMembers,
           coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as eventPriceForNonMembers
           FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem
           INNER JOIN ${NarrowEventsTableHelper.tableName} e on e.eventId = hem.eventId
           INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
-          LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm on hkm.userId = hem.userId and hkm.kennelId = "${widget.event['kennelId']}"
+          LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm on hkm.userId = hem.userId and hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
           LEFT OUTER JOIN ${HashersTableHelper.tableName} h on h.hasherId = hem.userId
           LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.CancelledBy IS NULL
           LEFT OUTER JOIN ${HashersTableHelper.tableName} paidTo on paidTo.hasherId = pay.paidTo
@@ -95,9 +128,21 @@ class PaymentReportState extends State<PaymentReportPage> {
           ''';
 
     final List<Map<String, dynamic>> results = await db.rawQuery(sql);
-    // TODO(James): Split this into aggregates and clean up!
-    paymentsList = PaymentsTableHelper.listFromMap(results);
-    applyFilter();
+
+    paymentsList.clear();
+
+    for (int i = 0; i < results.length; i++) {
+      final PaymentsModel paymentItem = PaymentsTableHelper.fromMap(results[i]);
+      final PaymentQueryExtensions extensions = PaymentQueryExtensions.fromMap(results[i]);
+      final PaymentAggregate item = PaymentAggregate(payment: paymentItem, extensions: extensions);
+
+      paymentsList.add(item);
+      if (i == results.length - 1) {
+        paymentsList.sort((PaymentAggregate a, PaymentAggregate b) => a.extensions.paidByName.compareTo(b.extensions.paidByName));
+        applyFilter();
+        setState(() {});
+      }
+    }
   }
 
   List<Map<String, dynamic>> paymentTotals;
@@ -144,12 +189,12 @@ class PaymentReportState extends State<PaymentReportPage> {
     print('Payment totals refreshed at ' + DateTime.now().millisecondsSinceEpoch.toString());
   }
 
-  void payForEvent(PaymentsModel item, int paymentType, num amount) {
+  void payForEvent(PaymentAggregate item, int paymentType, num amount) {
     final PaymentsService paySrv = PaymentsService();
     final Future<void> retVal = paySrv.payForEvent(
-      widget.event['eventId'],
+      widget.eventAggregate.event.eventId,
       GUID_EMPTY,
-      item.pkHemId,
+      item.extensions.pkHemId,
       paymentType,
       amount,
       attendenceAtHash.value,
@@ -167,17 +212,17 @@ class PaymentReportState extends State<PaymentReportPage> {
 
   void applyFilter() {
     filteredList = paymentsList
-        .where((PaymentsModel evt) =>
-            ((filterValue & 1) != 0 && ((evt.paymentType ?? paymentNotPaid.value) == paymentNotPaid.value)) ||
-            ((filterValue & 2) != 0 && (evt.paymentType == paymentCash.value)) ||
-            ((filterValue & 4) != 0 && (evt.paymentType == paymentCashOtherAmount.value)) ||
-            ((filterValue & 8) != 0 && (evt.paymentType == paymentFreeRun.value)) ||
-            ((filterValue & 16) != 0 && (evt.paymentType == paymentBankTransfer.value)) ||
-            ((filterValue & 32) != 0 && (evt.paymentType == paymentBankTransferOtherAmount.value)) ||
-            ((filterValue & 64) != 0 && (evt.paymentType == paymentHashCredit.value)))
+        .where((PaymentAggregate evt) =>
+            ((filterValue & 1) != 0 && ((evt.payment.paymentType ?? paymentNotPaid.value) == paymentNotPaid.value)) ||
+            ((filterValue & 2) != 0 && (evt.payment.paymentType == paymentCash.value)) ||
+            ((filterValue & 4) != 0 && (evt.payment.paymentType == paymentCashOtherAmount.value)) ||
+            ((filterValue & 8) != 0 && (evt.payment.paymentType == paymentFreeRun.value)) ||
+            ((filterValue & 16) != 0 && (evt.payment.paymentType == paymentBankTransfer.value)) ||
+            ((filterValue & 32) != 0 && (evt.payment.paymentType == paymentBankTransferOtherAmount.value)) ||
+            ((filterValue & 64) != 0 && (evt.payment.paymentType == paymentHashCredit.value)))
         .toList();
 
-    filteredList.sort((PaymentsModel a, PaymentsModel b) => a.paidByName.compareTo(b.paidByName));
+    filteredList.sort((PaymentAggregate a, PaymentAggregate b) => a.extensions.paidByName.compareTo(b.extensions.paidByName));
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -190,7 +235,7 @@ class PaymentReportState extends State<PaymentReportPage> {
           centerTitle: true,
           backgroundColor: themeAppBarBackground,
           title: Text(
-            widget.event['eventName'],
+            widget.eventAggregate.event.eventName,
             style: const TextStyle(
               color: Colors.white,
             ),
@@ -223,7 +268,7 @@ class PaymentReportState extends State<PaymentReportPage> {
               label: 'Email me payment report',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
-                PaymentsService.sendPaymentReportByEmail(eventId: widget.event['eventId'], eventName: widget.event['eventName']).then((Map<String, String> result) {
+                PaymentsService.sendPaymentReportByEmail(eventId: widget.eventAggregate.event.eventId, eventName: widget.eventAggregate.event.eventName).then((Map<String, String> result) {
                   _scaffoldKey.currentState?.hideCurrentSnackBar();
                   if (result['result'].toLowerCase().startsWith('success')) {
                     Utilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
@@ -266,8 +311,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                               counter: paymentTotals[0]['count'] + paymentTotals[paymentNotPaid.value]['count'],
                               color: (filterValue & 1) != 0 ? Colors.red : Colors.black26,
                               paymentRecordType: paymentNotPaid,
-                              currencySymbol: widget.event['currencySymbol'],
-                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
+                              digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
                               onTap: () {
                                 filterTapped(1);
                               },
@@ -277,41 +322,41 @@ class PaymentReportState extends State<PaymentReportPage> {
                               counter: paymentTotals[paymentCash.value]['count'],
                               color: (filterValue & 2) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentCash,
-                              currencySymbol: widget.event['currencySymbol'],
-                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
+                              digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
                               onTap: () {
                                 filterTapped(2);
                               },
                             ),
-                                                        PaymentTotalsCell(
+                            PaymentTotalsCell(
                               creditAmount: paymentTotals[paymentBankTransfer.value]['totalCollected'],
                               counter: paymentTotals[paymentBankTransfer.value]['count'],
                               color: (filterValue & 16) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentBankTransfer,
-                              currencySymbol: widget.event['currencySymbol'],
-                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
+                              digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
                               onTap: () {
                                 filterTapped(16);
                               },
                             ),
-                                                        PaymentTotalsCell(
+                            PaymentTotalsCell(
                               creditAmount: paymentTotals[paymentFreeRun.value]['totalCollected'],
                               counter: paymentTotals[paymentFreeRun.value]['count'],
                               color: (filterValue & 8) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentFreeRun,
-                              currencySymbol: widget.event['currencySymbol'],
-                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
+                              digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
                               onTap: () {
                                 filterTapped(8);
                               },
                             ),
-                                                        PaymentTotalsCell(
+                            PaymentTotalsCell(
                               creditAmount: paymentTotals[paymentHashCredit.value]['totalCollected'],
                               counter: paymentTotals[paymentHashCredit.value]['count'],
                               color: (filterValue & 64) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentHashCredit,
-                              currencySymbol: widget.event['currencySymbol'],
-                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
+                              digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
                               onTap: () {
                                 filterTapped(64);
                               },
@@ -321,25 +366,23 @@ class PaymentReportState extends State<PaymentReportPage> {
                               counter: paymentTotals[paymentCashOtherAmount.value]['count'],
                               color: (filterValue & 4) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentCashOtherAmount,
-                              currencySymbol: widget.event['currencySymbol'],
-                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
+                              digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
                               onTap: () {
                                 filterTapped(4);
                               },
                             ),
-
                             PaymentTotalsCell(
                               creditAmount: paymentTotals[paymentBankTransferOtherAmount.value]['totalCollected'],
                               counter: paymentTotals[paymentBankTransferOtherAmount.value]['count'],
                               color: (filterValue & 32) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentBankTransferOtherAmount,
-                              currencySymbol: widget.event['currencySymbol'],
-                              digitsAfterDecimal: widget.event['digitsAfterDecimal'],
+                              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
+                              digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
                               onTap: () {
                                 filterTapped(32);
                               },
                             ),
-
                           ],
                         ),
                       ],
@@ -361,16 +404,16 @@ class PaymentReportState extends State<PaymentReportPage> {
                                 physics: const AlwaysScrollableScrollPhysics(),
                                 itemCount: filteredList.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  return (filteredList[index].paymentType ?? paymentNotPaid.value) != paymentNotPaid.value
+                                  return (filteredList[index].payment.paymentType ?? paymentNotPaid.value) != paymentNotPaid.value
                                       ? listItem(filteredList[index])
                                       : Dismissible(
                                           key: Key(index.toString()),
                                           confirmDismiss: (DismissDirection direction) {
-                                            print(direction.toString() + ' ' + index.toString() + ' ' + widget.event['eventPriceForNonMembers'].toString());
+                                            print(direction.toString() + ' ' + index.toString() + ' ' + widget.eventAggregate.extensions.nonMemberPrice.toString());
                                             setState(() {
-                                              filteredList[index].isLoading = true;
+                                              filteredList[index].extensions.isLoading = true;
                                             });
-                                            payForEvent(filteredList[index], direction == DismissDirection.endToStart ? 3 : 4, (filteredList[index].isMember != 0) ? filteredList[index].eventPriceForMembers : filteredList[index].eventPriceForNonMembers);
+                                            payForEvent(filteredList[index], direction == DismissDirection.endToStart ? 3 : 4, (filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers);
                                             return Future<bool>.value(false);
                                           },
                                           background: Container(
@@ -383,7 +426,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                 Padding(
                                                   padding: const EdgeInsets.only(left: 15.0),
                                                   child: Text(
-                                                      '${Utilities.getFormattedMoney((filteredList[index].isMember != 0) ? filteredList[index].eventPriceForMembers : filteredList[index].eventPriceForNonMembers, widget.event['digitsAfterDecimal'], widget.event['currencySymbol'])} Bank Transfer',
+                                                      '${Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digitsAfterDecimal, widget.eventAggregate.extensions.currencySymbol)} Bank Transfer',
                                                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                 )
                                               ])),
@@ -396,7 +439,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                 ),
                                                 Padding(
                                                   padding: const EdgeInsets.only(right: 15.0),
-                                                  child: Text('${Utilities.getFormattedMoney((filteredList[index].isMember != 0) ? filteredList[index].eventPriceForMembers : filteredList[index].eventPriceForNonMembers, widget.event['digitsAfterDecimal'], widget.event['currencySymbol'])} Cash',
+                                                  child: Text('${Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digitsAfterDecimal, widget.eventAggregate.extensions.currencySymbol)} Cash',
                                                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                 )
                                               ])),
@@ -429,23 +472,24 @@ class PaymentReportState extends State<PaymentReportPage> {
     setState(() {});
   }
 
-  Container listItem(PaymentsModel item) {
+
+  Container listItem(PaymentAggregate item) {
     return Container(
       height: 60.0,
       padding: const EdgeInsets.only(top: 10),
       child: PaymentReportListItem(
+        currencySymbol: widget.eventAggregate.extensions.currencySymbol,
+        digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
         paymentReportItem: item,
-        currencySymbol: widget.event['currencySymbol'],
-        digitsAfterDecimal: widget.event['digitsAfterDecimal'],
         onTap: () {
-          if ((item.paymentType == null) || (item.paymentType == paymentNotPaid.value)) {
+          if ((item.payment.paymentType == null) || (item.payment.paymentType == paymentNotPaid.value)) {
             final PaymentPopup pp = PaymentPopup(
-              amount: (item.isMember != 0) ? item.eventPriceForMembers : item.eventPriceForNonMembers,
+              amount: (item.extensions.isMember != 0) ? item.extensions.eventPriceForMembers : item.extensions.eventPriceForNonMembers,
               creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
-              creditRemaining: item.creditAvailable,
-              currencySymbol: widget.event['currencySymbol'],
-              hemId: item.pkHemId,
-              decimalDigits: widget.event['decimalDigits'],
+              creditRemaining: item.extensions.creditAvailable,
+              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
+              hemId: item.extensions.pkHemId,
+              decimalDigits: widget.eventAggregate.extensions.digitsAfterDecimal,
               // valueChanged: (num value) {
               //   finalValue = value;
               // },
@@ -462,7 +506,7 @@ class PaymentReportState extends State<PaymentReportPage> {
               (PaymentPopupResult paymentValue) {
                 if (paymentValue.transactionType != -1) {
                   setState(() {
-                    item.isLoading = true;
+                    item.extensions.isLoading = true;
                   });
                   payForEvent(item, paymentValue.transactionType, paymentValue.transactionValue);
                 }
@@ -472,7 +516,7 @@ class PaymentReportState extends State<PaymentReportPage> {
             _displayPaymentDetails(item, context).then((bool doCancelTransaction) {
               if (doCancelTransaction) {
                 setState(() {
-                  item.isLoading = true;
+                  item.extensions.isLoading = true;
                 });
                 payForEvent(item, paymentNotPaid.value, 0);
               }
@@ -483,7 +527,7 @@ class PaymentReportState extends State<PaymentReportPage> {
     );
   }
 
-  Future<bool> _displayPaymentDetails(PaymentsModel item, BuildContext context) async {
+  Future<bool> _displayPaymentDetails(PaymentAggregate item, BuildContext context) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -494,7 +538,7 @@ class PaymentReportState extends State<PaymentReportPage> {
 
         String paymentTypeStr = '';
 
-        switch (item.paymentType) {
+        switch (item.payment.paymentType) {
           case 1:
             paymentTypeStr = 'Not paid';
             break;
@@ -520,7 +564,7 @@ class PaymentReportState extends State<PaymentReportPage> {
             paymentTypeStr = 'Other';
         }
 
-        final String amountStr = Utilities.getFormattedMoney(item?.creditAmount ?? 0, widget.event['digitsAfterDecimal'], widget.event['currencySymbol']);
+        final String amountStr = Utilities.getFormattedMoney(item?.payment?.creditAmount ?? 0, widget.eventAggregate.extensions.digitsAfterDecimal, widget.eventAggregate.extensions.currencySymbol);
 
         return AlertDialog(
           title: const Text('Payment Detail'),
@@ -574,11 +618,11 @@ class PaymentReportState extends State<PaymentReportPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              item.paymentReference,
+                              item.payment.paymentReference,
                               style: bodyStyle,
                             ),
                             Text(
-                              item.paidByName,
+                              item.extensions.paidByName,
                               style: bodyStyle,
                               maxLines: 1,
                             ),
@@ -589,7 +633,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                             //   minFontSize: 12.0,
                             // ),
                             Text(
-                              item.paidToName,
+                              item.extensions.paidToName,
                               style: bodyStyle,
                               maxLines: 1,
                             ),
@@ -605,11 +649,11 @@ class PaymentReportState extends State<PaymentReportPage> {
                               style: bodyStyle,
                             ),
                             Text(
-                              (item?.paidDate == null) ? '' : DateFormat('MMM dd, yyyy').format(item.paidDate),
+                              (item?.payment?.paidDate == null) ? '' : DateFormat('MMM dd, yyyy').format(item.payment.paidDate),
                               style: bodyStyle,
                             ),
                             Text(
-                              (item?.paidDate == null) ? '' : DateFormat('kk:mm').format(item.paidDate),
+                              (item?.payment?.paidDate == null) ? '' : DateFormat('kk:mm').format(item.payment.paidDate),
                               style: bodyStyle,
                             ),
                             Text(

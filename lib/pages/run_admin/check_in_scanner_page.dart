@@ -6,6 +6,7 @@ import 'package:audioplayers/audio_cache.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 import 'package:harrier_central/database/common_queries.dart';
+import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -15,16 +16,9 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 
 class CheckInScannerPage extends StatefulWidget {
-  const CheckInScannerPage({@required this.kennelShortName, @required this.eventId, @required this.eventName, @required this.eventNumber, @required this.currencySymbol, @required this.digitsAfterDecimal, @required this.memberPrice, @required this.nonMemberPrice});
+  const CheckInScannerPage({@required this.eventAggregate});
 
-  final String kennelShortName;
-  final String eventId;
-  final String eventName;
-  final int eventNumber;
-  final String currencySymbol;
-  final int digitsAfterDecimal;
-  final num memberPrice;
-  final num nonMemberPrice;
+  final RunAdminAggregate eventAggregate;
 
   @override
   _CheckInScannerPageState createState() => _CheckInScannerPageState();
@@ -312,7 +306,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
         final HasherEventMapService hemSrv = HasherEventMapService();
 
         CommonQueries.getUserIdFromUqr(prefix + content).then((String hasherId) {
-          hemSrv.joinEvent(widget.eventId, HasherEventMapTableType.eventAdmin, hasherId, null, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value, virginVisitorType: enumHasher.value).then((List<dynamic> adHocData) {
+          hemSrv.joinEvent(widget.eventAggregate.event.eventId, HasherEventMapTableType.eventAdmin, hasherId, null, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value, virginVisitorType: enumHasher.value).then((List<dynamic> adHocData) {
             setState(() {
               if ((adHocData != null) && (adHocData.isNotEmpty)) {
                 onScreenMessage = adHocData[0]['userMessage'];
@@ -322,12 +316,12 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                   });
                 } else {
                   final PaymentPopup pp = PaymentPopup(
-                    amount: adHocData[0]['isMember'] == 1 ? widget.memberPrice : widget.nonMemberPrice,
+                    amount: adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice,
                     creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
                     creditRemaining: 0,
-                    currencySymbol: widget.currencySymbol,
+                    currencySymbol: widget.eventAggregate.extensions.currencySymbol,
                     hemId: adHocData[0]['hasherEventMapId'],
-                    decimalDigits: widget.digitsAfterDecimal,
+                    decimalDigits: widget.eventAggregate.extensions.digitsAfterDecimal,
                     // valueChanged: (num value) {
                     //   finalValue = value;
                     // },
@@ -413,7 +407,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
   void payForEvent(String hemId, int paymentType, num amount) {
     final PaymentsService paySrv = PaymentsService();
     final Future<List<dynamic>> retVal = paySrv.payForEvent(
-      widget.eventId,
+      widget.eventAggregate.event.eventId,
       GUID_EMPTY,
       hemId,
       paymentType,
@@ -424,7 +418,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
       (List<dynamic> paymentResult) {
         if ((paymentResult != null) && (paymentResult.isNotEmpty)) {
           final int paymentType = paymentResult[0]['paymentType'];
-          final String amountPaid = Utilities.getFormattedMoney(paymentResult[0]['creditAmount'], widget.digitsAfterDecimal, widget.currencySymbol);
+          final String amountPaid = Utilities.getFormattedMoney(paymentResult[0]['creditAmount'], widget.eventAggregate.extensions.digitsAfterDecimal, widget.eventAggregate.extensions.currencySymbol);
 
           onScreenMessage = paymentResult[0]['hasherWhoPaid'];
 

@@ -14,6 +14,7 @@ import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart'
 import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/util/enums.dart';
 
+
 class PaymentsModel {
   PaymentsModel(
       {this.paymentId,
@@ -32,17 +33,6 @@ class PaymentsModel {
       this.notes,
       this.removed,
       this.updatedAt,
-
-// these fields are joined from HC.Hasher
-      this.pkHemId,
-      this.paidByName,
-      this.paidToName,
-      this.isMember,
-      this.eventPriceForMembers,
-      this.eventPriceForNonMembers,
-
-// and these from HC.KennelCredits
-      this.creditAvailable
       });
 
   final String paymentId;
@@ -61,20 +51,6 @@ class PaymentsModel {
   final String notes;
   final int removed;
   final DateTime updatedAt;
-
-// these fields are joined from HC.Hasher
-  final String pkHemId;
-  final String paidToName;
-  final String paidByName;
-  final int isMember;
-  final num eventPriceForMembers;
-  final num eventPriceForNonMembers;
-
-// these fields are joined from HC.KennelCredit
-  final num creditAvailable;
-
-// other required fields
-  bool isLoading = false;
 
   static List<PaymentsModel> itemsFromJson(String jsonResult) {
     final List<PaymentsModel> items = <PaymentsModel>[];
@@ -233,16 +209,16 @@ class PaymentsTableHelper {
       updatedAt: (map[PaymentsTableHelper.colUpdatedAt] == null) ? null : DateTime.parse(map[PaymentsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[PaymentsTableHelper.colRemoved],
 
-      // joined from HC.Hasher
-      pkHemId: map.containsKey('pkHemId') ? map['pkHemId'] : '',
-      paidByName: map.containsKey('paidByName') ? map['paidByName'] : '',
-      paidToName: map.containsKey('paidToName') ? map['paidToName'] : '',
-      isMember: map.containsKey('isMember') ? map['isMember'] : -1,
-      eventPriceForMembers: map.containsKey('eventPriceForMembers') ? map['eventPriceForMembers'] : 0,
-      eventPriceForNonMembers: map.containsKey('eventPriceForNonMembers') ? map['eventPriceForNonMembers'] : 0,
+      // // joined from HC.Hasher
+      // pkHemId: map.containsKey('pkHemId') ? map['pkHemId'] : '',
+      // paidByName: map.containsKey('paidByName') ? map['paidByName'] : '',
+      // paidToName: map.containsKey('paidToName') ? map['paidToName'] : '',
+      // isMember: map.containsKey('isMember') ? map['isMember'] : -1,
+      // eventPriceForMembers: map.containsKey('eventPriceForMembers') ? map['eventPriceForMembers'] : 0,
+      // eventPriceForNonMembers: map.containsKey('eventPriceForNonMembers') ? map['eventPriceForNonMembers'] : 0,
 
-      // joined from HC.KennelCredit
-      creditAvailable: map.containsKey('creditAvailable') ? map['creditAvailable'] : 0,
+      // // joined from HC.KennelCredit
+      // creditAvailable: map.containsKey('creditAvailable') ? map['creditAvailable'] : 0,
     );
 
     return item;
