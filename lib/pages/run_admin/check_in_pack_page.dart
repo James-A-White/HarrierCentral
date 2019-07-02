@@ -460,10 +460,6 @@ SCVE
 $remittanceInfo
 $beneficiaryInfo
 ''',
-
-      // valueChanged: (num value) {
-      //   finalValue = value;
-      // },
     );
 
     showDialog<void>(
@@ -472,17 +468,6 @@ $beneficiaryInfo
         builder: (BuildContext context) {
           return pp;
         });
-
-    // dlg.then(
-    //   (PaymentPopupResult paymentValue) {
-    //     if (paymentValue.transactionType != -1) {
-    //       setState(() {
-    //         item.isLoading = true;
-    //       });
-    //       payForEvent(item, paymentValue.transactionType, paymentValue.transactionValue);
-    //     }
-    //   },
-    // );
   }
 
   void findHasher() {
@@ -1167,41 +1152,43 @@ $beneficiaryInfo
         payForEvent(packMember, paymentType, otherAmount: otherAmount).then((List<dynamic> results) {
           _refreshPackListFromTables(false).then((void dummy) {
             _refreshCounters(true);
-
-            String paymentReference = '';
-            if ((results != null) && (results.isNotEmpty) && (results[0]['paymentReference'] != null))
-            {
-              paymentReference = ', HC Payment Ref: ${results[0]['paymentReference']}';
-            }
-
-            if ((paymentType == paymentBankTransfer.value) || (paymentType == paymentBankTransferOtherAmount.value)) {
-              String paidFor = 'Run fee, ${event['eventStartDatetime'].toString().substring(0, 10)}, ${event['eventName']}';
-              if (paymentType == paymentBankTransferOtherAmount.value) {
-                paidFor += ' + credit';
-              }
-              Scaffold.of(context).showSnackBar(SnackBar(
-                  backgroundColor: Colors.blue,
-                  duration: const Duration(seconds: 10),
-                  content: Container(
-                    height: 50,
-                    child: RaisedButton(
-                      color: Colors.red,
-                      child: Text('Show Payment QR code', style: buttonLabelStyleMedium),
-                      textColor: Colors.white,
-                      onPressed: () {
-                        Scaffold.of(context).hideCurrentSnackBar();
-                        final String remittanceInfo = '${event['kennelShortName']}, $paidFor, ${packMember['nameForDisplay']}' + paymentReference;
-                        showBankTransferQrCode(packMember['isMember'] != 0, remitString: remittanceInfo, remitAmount: otherAmount);
-                      },
-                    ),
-                  )));
-            }
+            showBankTransferSnackbar(results, paymentType, context, packMember, otherAmount);
           });
         });
       },
     );
 
     return snackbar;
+  }
+
+  void showBankTransferSnackbar(List results, int paymentType, BuildContext context, Map<String, dynamic> packMember, num otherAmount) {
+    String paymentReference = '';
+    if ((results != null) && (results.isNotEmpty) && (results[0]['paymentReference'] != null)) {
+      paymentReference = ', HC Payment Ref: ${results[0]['paymentReference']}';
+    }
+    
+    if ((paymentType == paymentBankTransfer.value) || (paymentType == paymentBankTransferOtherAmount.value)) {
+      String paidFor = 'Run fee, ${event['eventStartDatetime'].toString().substring(0, 10)}, ${event['eventName']}';
+      if (paymentType == paymentBankTransferOtherAmount.value) {
+        paidFor += ' + credit';
+      }
+      Scaffold.of(context).showSnackBar(SnackBar(
+          backgroundColor: Colors.blue,
+          duration: const Duration(seconds: 10),
+          content: Container(
+            height: 50,
+            child: RaisedButton(
+              color: Colors.red,
+              child: Text('Show Payment QR code', style: buttonLabelStyleMedium),
+              textColor: Colors.white,
+              onPressed: () {
+                Scaffold.of(context).hideCurrentSnackBar();
+                final String remittanceInfo = '${event['kennelShortName']}, $paidFor, ${packMember['nameForDisplay']}' + paymentReference;
+                showBankTransferQrCode(packMember['isMember'] != 0, remitString: remittanceInfo, remitAmount: otherAmount);
+              },
+            ),
+          )));
+    }
   }
 
   Widget listItem(BuildContext context, int index) {
@@ -1508,6 +1495,7 @@ $beneficiaryInfo
                 payForEvent(packMember, direction == DismissDirection.endToStart ? 3 : 4).then((List<dynamic> results) {
                   _refreshPackListFromTables(false).then((void dummy) {
                     _refreshCounters(true);
+                    showBankTransferSnackbar(results, direction == DismissDirection.endToStart ? 3 : 4, context, packMember, -1);
                   });
                 });
               } else {
