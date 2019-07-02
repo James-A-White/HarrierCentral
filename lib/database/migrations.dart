@@ -7,6 +7,7 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
+import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 
 class MigrationsModel {
   MigrationsModel({this.migrationNumber, this.migrationText, this.appliedAtInt});
@@ -78,11 +79,11 @@ class MigrationsTableHelper {
     return item;
   }
 
-  static Future<bool> doDatabaseMigrations(int currentDbVersion, int upgradedDbVersion) async {
+  static Future<bool> doDatabaseMigrations(Database db, int currentDbVersion, int upgradedDbVersion) async {
     if (currentDbVersion == upgradedDbVersion) {
       return true;
     }
-    final Database db = await DBProvider.db.database;
+    
     bool migrationsSuccessful = true;
 
     try {
@@ -93,9 +94,12 @@ class MigrationsTableHelper {
         }
         final String sql = mm.migrationText.trim();
         await db.execute(sql);
+        print('Migration ${mm.migrationNumber.toString()} succeeded');
       }
     } catch (e) {
       migrationsSuccessful = false;
+      print('Migrations failed');
+      print(e.toString());
     }
 
     return migrationsSuccessful;
@@ -106,45 +110,16 @@ class MigrationsTableHelper {
   ///
   ///
 
-  static int dbVersion = 170;
+  static int dbVersion = 190;
 
   static List<MigrationsModel> migrationList = <MigrationsModel>[
-    // MIGRATION 136
-    MigrationsModel(migrationNumber: 136, migrationText: '''
-            ALTER TABLE ${NarrowEventsTableHelper.tableName} 
-              ADD COLUMN hares TEXT;
-         '''),
-    // MIGRATION 149
-    MigrationsModel(migrationNumber: 149, migrationText: '''
 
-          CREATE TABLE ${KennelCreditsTableHelper.tableName} (
-            ${KennelCreditsTableHelper.colId} INTEGER PRIMARY KEY,
-
-            ${KennelCreditsTableHelper.colKennelCreditId} TEXT,
-            ${KennelCreditsTableHelper.colUserId} TEXT,
-            ${KennelCreditsTableHelper.colKennelId} TEXT,
-            ${KennelCreditsTableHelper.colCurrentBalance} NUM,
-            ${KennelCreditsTableHelper.colBalanceAsOfEventId} TEXT,
-
-            ${KennelCreditsTableHelper.colRemoved} NUM,
-            ${KennelCreditsTableHelper.colUpdatedAt} TEXT,
-            ${KennelCreditsTableHelper.colUpdatedAtValue} NUM NULL
-          );
-         
-         CREATE INDEX idx_${KennelCreditsTableHelper.tableName}_id ON ${KennelCreditsTableHelper.tableName}(${KennelCreditsTableHelper.remoteDbId});
-         CREATE INDEX idx_${KennelCreditsTableHelper.tableName}_update_at_value ON ${KennelCreditsTableHelper.tableName}($KennelCreditsTableHelper.colUpdatedAtValue);
-         
-         '''),
-    // MIGRATION 153
-    MigrationsModel(migrationNumber: 153, migrationText: '''
-            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colCurrencyCode} TEXT;
-            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colPrimaryCultureCode} TEXT;
-            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colCurrencySymbol} TEXT;
-            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colDigitsAfterDecimal} NUM;
-            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colBankScheme} TEXT;
-            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colBankAccountNumber} TEXT,
-            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colBankBic} TEXT;
-            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colBankBeneficiary} TEXT;
+    // MIGRATION 190
+    MigrationsModel(migrationNumber: 190, migrationText: '''
+            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colKennelPaymentUrl} TEXT;
+            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colKennelPaymentUrlExpires} TEXT;
+            ALTER TABLE ${NarrowEventsTableHelper.tableName} ADD COLUMN ${NarrowEventsTableHelper.colEventPaymentUrl} TEXT;
+            ALTER TABLE ${NarrowEventsTableHelper.tableName} ADD COLUMN ${NarrowEventsTableHelper.colEventPaymentUrlExpires} TEXT;
          '''),
   ];
 }

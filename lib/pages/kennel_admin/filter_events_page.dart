@@ -253,11 +253,11 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                       ],
                     ),
                     //color:Color.fromARGB(30, 0, 0, 0),
-                    padding: const EdgeInsets.only(left: 5, top: 5, right: 20, bottom: 5),
+                    padding: const EdgeInsets.only(left: 5, top: 5, right: 0, bottom: 5),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
-                        Container(
+ Container(
                           height: 75,
                           child: KennelLogo(
                             kennelLogoUrl: widget.kennel.kennel.kennelLogo,
@@ -266,7 +266,9 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                             rightPadding: 15.0,
                           ),
                         ),
-                        Column(
+                        Expanded(
+                          flex:1,
+                        child:Column(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
@@ -297,7 +299,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                               //color: Colors.green,
                             ),
                           ],
-                        ),
+                        ),),
                       ],
                     ),
                   ),

@@ -1171,13 +1171,13 @@ $beneficiaryInfo
             String paymentReference = '';
             if ((results != null) && (results.isNotEmpty) && (results[0]['paymentReference'] != null))
             {
-              paymentReference = ' (HC Payment Ref: ${results[0]['paymentReference']})';
+              paymentReference = ', HC Payment Ref: ${results[0]['paymentReference']}';
             }
 
             if ((paymentType == paymentBankTransfer.value) || (paymentType == paymentBankTransferOtherAmount.value)) {
-              String paidFor = ' - run fee';
+              String paidFor = 'Run fee, ${event['eventStartDatetime'].toString().substring(0, 10)}, ${event['eventName']}';
               if (paymentType == paymentBankTransferOtherAmount.value) {
-                paidFor = ' - run fee plus top-up';
+                paidFor += ' + credit';
               }
               Scaffold.of(context).showSnackBar(SnackBar(
                   backgroundColor: Colors.blue,
@@ -1190,7 +1190,7 @@ $beneficiaryInfo
                       textColor: Colors.white,
                       onPressed: () {
                         Scaffold.of(context).hideCurrentSnackBar();
-                        final String remittanceInfo = '${event['eventStartDatetime'].toString().substring(0, 10)} - ${event['eventName']} - ${packMember['nameForDisplay']}' + paymentReference + paidFor;
+                        final String remittanceInfo = '${event['kennelShortName']}, $paidFor, ${packMember['nameForDisplay']}' + paymentReference;
                         showBankTransferQrCode(packMember['isMember'] != 0, remitString: remittanceInfo, remitAmount: otherAmount);
                       },
                     ),

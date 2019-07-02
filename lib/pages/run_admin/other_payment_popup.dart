@@ -25,7 +25,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
         autofocus: true,
         focusNode: myFocusNodeFirstName,
         controller: otherPaymentAmountTextController,
-        keyboardType: TextInputType.number,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
         style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
         decoration: const InputDecoration(
           border: InputBorder.none,

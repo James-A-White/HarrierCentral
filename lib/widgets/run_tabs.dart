@@ -194,6 +194,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   int flexRight = 73;
 
   Container buildRunDetailsView() {
+    String paymentLinkUrl = '';
+
+    if (((widget.futureRun.event.eventPaymentUrl ?? '') != '') && (widget.futureRun.event.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
+      paymentLinkUrl = widget.futureRun.event.eventPaymentUrl;
+    } else if (((widget.futureRun.kennel.kennelPaymentUrl ?? '') != '') && (widget.futureRun.kennel.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+      paymentLinkUrl = widget.futureRun.kennel.kennelPaymentUrl;
+    }
+
     return Container(
       // Details
       // decoration:
@@ -499,26 +507,51 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                 ],
               ),
             ]),
-            const Padding(
-              padding: EdgeInsets.only(top: 32.0),
-              child: FancyDivider(innerColor: Colors.white),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 30.0, right: 20.0, left: 20.0, bottom: 20.0),
-              child: Linkify(
-                text: widget.futureRun.event.eventDescription.replaceAll('\r\n', '\n'),
-                style: bodyStyle,
-                linkStyle: bodyStyleYellow,
-                humanize: true,
-                onOpen: (LinkableElement link) async {
-                  if (await canLaunch(link.url)) {
-                    await launch(link.url);
-                  } else {
-                    Utilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
-                  }
-                },
-              ),
-            ),
+            (paymentLinkUrl == '')
+                ? Container()
+                : const Padding(
+                    padding: EdgeInsets.only(top: 32.0),
+                    child: FancyDivider(innerColor: Colors.white),
+                  ),
+            (paymentLinkUrl == '')
+                ? Container()
+                : Padding(
+                    padding: const EdgeInsets.only(top: 30.0, right: 20.0, left: 20.0, bottom: 20.0),
+                    child: RaisedButton(
+                      onPressed: () async {
+                        if (await canLaunch(paymentLinkUrl)) {
+                          await launch(paymentLinkUrl);
+                        } else {
+                          Utilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $paymentLinkUrl', 'OK');
+                        }
+                      },
+                      child: Text('Pay for Hash', style: buttonTextStyle),
+                    ),
+                  ),
+            (widget.futureRun.event.eventDescription ?? '') == ''
+                ? Container()
+                : const Padding(
+                    padding: EdgeInsets.only(top: 32.0),
+                    child: FancyDivider(innerColor: Colors.white),
+                  ),
+            (widget.futureRun.event.eventDescription ?? '') == ''
+                ? Container()
+                : Padding(
+                    padding: const EdgeInsets.only(top: 30.0, right: 20.0, left: 20.0, bottom: 20.0),
+                    child: Linkify(
+                      text: widget.futureRun.event.eventDescription.replaceAll('\r\n', '\n'),
+                      style: bodyStyle,
+                      linkStyle: bodyStyleYellow,
+                      humanize: true,
+                      onOpen: (LinkableElement link) async {
+                        if (await canLaunch(link.url)) {
+                          await launch(link.url);
+                        } else {
+                          Utilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                        }
+                      },
+                    ),
+                  ),
           ],
         ),
       ),

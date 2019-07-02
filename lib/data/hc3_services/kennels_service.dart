@@ -35,6 +35,8 @@ class KennelsModel {
       this.bankAccountNumber,
       this.bankBic,
       this.bankBeneficiary,
+      this.kennelPaymentUrl,
+      this.kennelPaymentUrlExpires,
       this.updatedAt,
       this.removed});
 
@@ -65,6 +67,8 @@ class KennelsModel {
   final String bankAccountNumber;
   final String bankBic;
   final String bankBeneficiary;
+  final String kennelPaymentUrl;
+  final DateTime kennelPaymentUrlExpires;
   final DateTime updatedAt;
   final int removed;
 
@@ -103,6 +107,8 @@ class KennelsModel {
           bankAccountNumber: jsonItem['bankAccountNumber'],
           bankBic: jsonItem['bankBic'],
           bankBeneficiary: jsonItem['bankBeneficiary'],
+          kennelPaymentUrl: jsonItem['kennelPaymentUrl'],
+          kennelPaymentUrlExpires: jsonItem['kennelPaymentUrlExpires'],
           updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
           removed: jsonItem['removed'],
         );
@@ -161,6 +167,8 @@ class KennelsTableHelper {
   static const String colBankAccountNumber= 'bankAccountNumber';
   static const String colBankBic= 'bankBic';
   static const String colBankBeneficiary= 'bankBeneficiary';
+  static const String colKennelPaymentUrl= 'kennelPaymentUrl';
+  static const String colKennelPaymentUrlExpires= 'kennelPaymentUrlExpires';
   static const String colUpdatedAt = 'updatedAt';
   static const String colRemoved = 'removed';
 
@@ -203,6 +211,8 @@ class KennelsTableHelper {
             $colBankAccountNumber TEXT,
             $colBankBic TEXT,
             $colBankBeneficiary TEXT,
+            $colKennelPaymentUrl TEXT,
+            $colKennelPaymentUrlExpires TEXT,
             $colUpdatedAt TEXT,
             $colRemoved INT,
 
@@ -243,7 +253,9 @@ class KennelsTableHelper {
       KennelsTableHelper.colBankAccountNumber: item.bankAccountNumber,
       KennelsTableHelper.colBankBic: item.bankBic,
       KennelsTableHelper.colBankBeneficiary: item.bankBeneficiary,
-      KennelsTableHelper.colUpdatedAt: item.updatedAt,
+      KennelsTableHelper.colKennelPaymentUrl: item.kennelPaymentUrl,
+      KennelsTableHelper.colKennelPaymentUrlExpires: item.kennelPaymentUrlExpires.toString(),
+      KennelsTableHelper.colUpdatedAt: item.updatedAt.toString(),
       KennelsTableHelper.colRemoved: item.removed,
     };
 
@@ -279,6 +291,8 @@ class KennelsTableHelper {
       bankAccountNumber: map[KennelsTableHelper.colBankAccountNumber],
       bankBic: map[KennelsTableHelper.colBankBic],
       bankBeneficiary: map[KennelsTableHelper.colBankBeneficiary],
+      kennelPaymentUrl: map[KennelsTableHelper.colKennelPaymentUrl],
+      kennelPaymentUrlExpires: DateTime.parse((map[KennelsTableHelper.colKennelPaymentUrlExpires] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
       updatedAt: DateTime.parse(map[KennelsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[KennelsTableHelper.colRemoved],
     );

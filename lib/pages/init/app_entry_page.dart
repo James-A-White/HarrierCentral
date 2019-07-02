@@ -75,51 +75,37 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
             } else {
               // app has been run before... let's check the DB version.
               final int installedDbVersion = getIntPref(IntPrefsEnum.databaseVersion) ?? 0;
-              if (installedDbVersion != MigrationsTableHelper.dbVersion) {
+              if ((installedDbVersion != MigrationsTableHelper.dbVersion) && ((installedDbVersion + 9) < MigrationsTableHelper.dbVersion)) {
                 // the installed DB version is not up to date
-                // if the version numbers are less than 10 apart, apply migrations
-                // otherwise reload the entire DB.
+                // if the version numbers are greater than 10 apart, 
+                // reload the entire DB.
 
-                if ((installedDbVersion + 9) >= MigrationsTableHelper.dbVersion) {
-                  final bool succeeded = await MigrationsTableHelper.doDatabaseMigrations(installedDbVersion, MigrationsTableHelper.dbVersion);
-                  if (succeeded)
-                  {
-                    await setIntPref(IntPrefsEnum.databaseVersion, MigrationsTableHelper.dbVersion);
-                     Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
-                  } else {
-                    Utilities.showAlert(context, 'Error upgrading internal database', 'There was an error upgrading the internal database. The app may not run correctly. Try deleting and reloading the app from the iOS App Store or Google Play. If this does not work, please contact us at connect@harriercentral.com', 'OK').then((void dummy) {
-                        Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
-                      });
-                  }
+                final String resetCode = getStringPref(StringPrefsEnum.resetCode);
 
-                } else {
-                  final String resetCode = getStringPref(StringPrefsEnum.resetCode);
+                DBProvider.db.deleteDb();
 
-                  DBProvider.db.deleteDb();
+                //bool isLoading = true;
+                String userName;
 
-                  //bool isLoading = true;
-                  String userName;
-
-                  final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                  final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, resetCode.toUpperCase());
-                  apiCall.then((Map<String, String> result) async {
-                    setState(() {
-                      //isLoading = false;
-                    });
-
-                    if (result['result'] != 'failed') {
-                      userName = getStringPref(StringPrefsEnum.displayName);
-
-                      await setIntPref(IntPrefsEnum.databaseVersion, MigrationsTableHelper.dbVersion);
-
-                      Utilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void dummy) {
-                        Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
-                      });
-                    } else {
-                      // TODO(James): Do something here if the auth device fails
-                    }
+                final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, resetCode.toUpperCase());
+                apiCall.then((Map<String, String> result) async {
+                  setState(() {
+                    //isLoading = false;
                   });
-                }
+
+                  if (result['result'] != 'failed') {
+                    userName = getStringPref(StringPrefsEnum.displayName);
+
+                    await setIntPref(IntPrefsEnum.databaseVersion, MigrationsTableHelper.dbVersion);
+
+                    Utilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void dummy) {
+                      Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+                    });
+                  } else {
+                    // TODO(James): Do something here if the auth device fails
+                  }
+                });
               } else {
                 final Database db = await DBProvider.db.database;
 

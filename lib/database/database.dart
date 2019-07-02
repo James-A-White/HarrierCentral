@@ -21,6 +21,7 @@ import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/database/notifications_table.dart';
 import 'package:harrier_central/database/migrations.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/preferences.dart';
 
 class DBProvider {
   DBProvider._();
@@ -59,57 +60,65 @@ class DBProvider {
   Future<Database> initDB(Function informUser) async {
     final Directory documentsDirectory = await getApplicationDocumentsDirectory();
     final String path = join(documentsDirectory.path, DB_NAME);
-    return openDatabase(path, version: 1, onOpen: (Database db) {}, onCreate: (Database db, int version) async {
-      // create user tables
-      await HashersTableHelper.createTable(db, version);
-      await CitiesTableHelper.createTable(db, version);
-      await RegionsTableHelper.createTable(db, version);
-      await CountriesTableHelper.createTable(db, version);
-      await KennelsTableHelper.createTable(db, version);
-      await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.user);
-      await HasherEventMapTableHelper.createTable(db, version, HasherEventMapTableType.user);
-      await NarrowEventsTableHelper.createTable(db, version);
-      await NotificationsTableHelper.createTable(db, version);
-      await MigrationsTableHelper.createTable(db,version);
+    return openDatabase(path, version: MigrationsTableHelper.dbVersion, 
+      onOpen: (Database db) {
+        // nothing happens in here
+      }, 
+      onUpgrade: (Database db, int oldVersion, int newVersion) async {
+          MigrationsTableHelper.doDatabaseMigrations(db,oldVersion, MigrationsTableHelper.dbVersion);
+          await setIntPref(IntPrefsEnum.databaseVersion, MigrationsTableHelper.dbVersion);
+      },
+      onCreate: (Database db, int version) async {
+        // create user tables
+        await HashersTableHelper.createTable(db, version);
+        await CitiesTableHelper.createTable(db, version);
+        await RegionsTableHelper.createTable(db, version);
+        await CountriesTableHelper.createTable(db, version);
+        await KennelsTableHelper.createTable(db, version);
+        await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.user);
+        await HasherEventMapTableHelper.createTable(db, version, HasherEventMapTableType.user);
+        await NarrowEventsTableHelper.createTable(db, version);
+        await NotificationsTableHelper.createTable(db, version);
+        await MigrationsTableHelper.createTable(db,version);
 
-      // create event admin tables
-      await HasherEventMapTableHelper.createTable(db, version, HasherEventMapTableType.eventAdmin);
-      await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.eventAdmin);
-      await PaymentsTableHelper.createTable(db, version);
-      await ReceiptsTableHelper.createTable(db, version);
-      await KennelCreditsTableHelper.createTable(db, version);
+        // create event admin tables
+        await HasherEventMapTableHelper.createTable(db, version, HasherEventMapTableType.eventAdmin);
+        await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.eventAdmin);
+        await PaymentsTableHelper.createTable(db, version);
+        await ReceiptsTableHelper.createTable(db, version);
+        await KennelCreditsTableHelper.createTable(db, version);
 
-      // create kennel admin tables
-      await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.kennelAdmin);
+        // create kennel admin tables
+        await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.kennelAdmin);
 
-      if (informUser != null) {
-        informUser('Loading city data\r\n0% complete');
-      }
-      // first load the cities from the static text file into SQFLITE
-      final String cityJson = await rootBundle.loadString('database/cities.json');
-      final CitiesService citySrv = CitiesService();
-      await citySrv.bulkUpdateDatabase(cityJson, db, informUser);
+        if (informUser != null) {
+          informUser('Loading city data\r\n0% complete');
+        }
+        // first load the cities from the static text file into SQFLITE
+        final String cityJson = await rootBundle.loadString('database/cities.json');
+        final CitiesService citySrv = CitiesService();
+        await citySrv.bulkUpdateDatabase(cityJson, db, informUser);
 
-      if (informUser != null) {
-        informUser('Loading region data\r\n0% complete');
-      }
-      // first load the regions from the static text file into SQFLITE
-      final String regionJson = await rootBundle.loadString('database/regions.json');
-      final RegionsService regionSrv = RegionsService();
-      await regionSrv.bulkUpdateDatabase(regionJson, db, informUser);
+        if (informUser != null) {
+          informUser('Loading region data\r\n0% complete');
+        }
+        // first load the regions from the static text file into SQFLITE
+        final String regionJson = await rootBundle.loadString('database/regions.json');
+        final RegionsService regionSrv = RegionsService();
+        await regionSrv.bulkUpdateDatabase(regionJson, db, informUser);
 
-      if (informUser != null) {
-        informUser('Loading country data\r\n0% complete');
-      }
+        if (informUser != null) {
+          informUser('Loading country data\r\n0% complete');
+        }
 
-      final String countriesJson = await rootBundle.loadString('database/countries.json');
-      final CountriesService countriesSrv = CountriesService();
-      await countriesSrv.bulkUpdateDatabase(countriesJson, db, informUser);
+        final String countriesJson = await rootBundle.loadString('database/countries.json');
+        final CountriesService countriesSrv = CountriesService();
+        await countriesSrv.bulkUpdateDatabase(countriesJson, db, informUser);
 
-      final SyncUserDataService cSrv = SyncUserDataService();
-      final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagsAllData, false, informUser: informUser);
-      final String resultStr = result ? 'successfully' : 'unsuccessfully';
-      print('Master data synchronized $resultStr');
+        final SyncUserDataService cSrv = SyncUserDataService();
+        final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagsAllData, false, informUser: informUser);
+        final String resultStr = result ? 'successfully' : 'unsuccessfully';
+        print('Master data synchronized $resultStr');
     });
   }
 }
