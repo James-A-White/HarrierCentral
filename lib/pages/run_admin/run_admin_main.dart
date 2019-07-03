@@ -23,19 +23,21 @@ class RunAdminAggregate {
   RunAdminAggregate({
     this.event,
     this.extensions,
+    this.kennel,
   });
 
   final RunAdminQueryExtensions extensions;
   final NarrowEventsModel event;
+  final KennelsModel kennel;
 }
 
 class RunAdminQueryExtensions {
-  RunAdminQueryExtensions({this.mismanagementRoleFlags, this.kennelShortName, this.digitsAfterDecimal, this.currencySymbol, this.memberPrice, this.nonMemberPrice});
+  RunAdminQueryExtensions({this.mismanagementRoleFlags, this.digAfterDec, this.curSym, this.curCode, this.memberPrice, this.nonMemberPrice});
 
   final int mismanagementRoleFlags;
-  final String kennelShortName;
-  final int digitsAfterDecimal;
-  final String currencySymbol;
+  final int digAfterDec;
+  final String curSym;
+  final String curCode;
   final num memberPrice;
   final num nonMemberPrice;
 
@@ -43,7 +45,7 @@ class RunAdminQueryExtensions {
 
   static RunAdminQueryExtensions fromMap(Map<String, dynamic> map) {
     final RunAdminQueryExtensions item =
-        RunAdminQueryExtensions(mismanagementRoleFlags: map['mismanagementRoleFlags'], kennelShortName: map['kennelShortName'], digitsAfterDecimal: map['digitsAfterDecimal'], currencySymbol: map['currencySymbol'], memberPrice: map['memberPrice'], nonMemberPrice: map['nonMemberPrice']);
+        RunAdminQueryExtensions(mismanagementRoleFlags: map['mismanagementRoleFlags'], digAfterDec: map['digAfterDec'], curSym: map['curSym'],curCode: map['curCode'], memberPrice: map['memberPrice'], nonMemberPrice: map['nonMemberPrice']);
     return item;
   }
 }
@@ -91,10 +93,11 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
         final String sql = '''
 
           SELECT e.*,
+          k.*,
           hkm.mismanagementRoleFlags,
-          k.kennelShortName,
-          coalesce(c.digitsAfterDecimal,2) as digitsAfterDecimal, 
-          coalesce(c.currencySymbol,"$dollarSign") as currencySymbol,
+          coalesce(k.${KennelsTableHelper.colCurrencyCode},c.${CountriesTableHelper.colCurrencyCode},"USD") as curCode,
+          coalesce(k.digitsAfterDecimal,c.digitsAfterDecimal,2) as digAfterDec, 
+          coalesce(k.currencySymbol,c.currencySymbol,"$dollarSign") as curSym,
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as memberPrice,
           coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as nonMemberPrice
           FROM ${NarrowEventsTableHelper.tableName} e
@@ -111,8 +114,8 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
             if (results.isNotEmpty) {
                 final NarrowEventsModel eventItem = NarrowEventsTableHelper.fromMap(results[0]);
                 final RunAdminQueryExtensions extensions = RunAdminQueryExtensions.fromMap(results[0]);
-                eventAggregate = RunAdminAggregate(event: eventItem, extensions: extensions);
-
+                final KennelsModel kennel = KennelsTableHelper.fromMap(results[0]);
+                eventAggregate = RunAdminAggregate(event: eventItem, extensions: extensions,kennel: kennel);
             }
           });
         });
@@ -180,7 +183,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                   Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => CheckInPackPage(eventId: widget.eventId, kennelId: eventAggregate.event.kennelId),
+                      builder: (BuildContext context) => CheckInPackPage(eventAggregate: eventAggregate),
                     ),
                   );
                 },
@@ -333,7 +336,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                 context,
                 MaterialPageRoute<dynamic>(
                     builder: (BuildContext context) =>
-                        EventQrCodePage(kennelShortName: eventAggregate.extensions.kennelShortName, qrContent: eventAggregate.event.eventId, title: eventAggregate.event.eventName, runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START, runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END, eventStartDatetime: eventAggregate.event.eventStartDatetime)));
+                        EventQrCodePage(kennelShortName: eventAggregate.kennel.kennelShortName, qrContent: eventAggregate.event.eventId, title: eventAggregate.event.eventName, runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START, runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END, eventStartDatetime: eventAggregate.event.eventStartDatetime)));
           },
         ),
       ),

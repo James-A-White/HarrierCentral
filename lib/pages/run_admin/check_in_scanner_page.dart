@@ -319,9 +319,9 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                     amount: adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice,
                     creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
                     creditRemaining: 0,
-                    currencySymbol: widget.eventAggregate.extensions.currencySymbol,
+                    currencySymbol: widget.eventAggregate.extensions.curSym,
                     hemId: adHocData[0]['hasherEventMapId'],
-                    decimalDigits: widget.eventAggregate.extensions.digitsAfterDecimal,
+                    decimalDigits: widget.eventAggregate.extensions.digAfterDec,
                     // valueChanged: (num value) {
                     //   finalValue = value;
                     // },
@@ -418,7 +418,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
       (List<dynamic> paymentResult) {
         if ((paymentResult != null) && (paymentResult.isNotEmpty)) {
           final int paymentType = paymentResult[0]['paymentType'];
-          final String amountPaid = Utilities.getFormattedMoney(paymentResult[0]['creditAmount'], widget.eventAggregate.extensions.digitsAfterDecimal, widget.eventAggregate.extensions.currencySymbol);
+          final String amountPaid = Utilities.getFormattedMoney(paymentResult[0]['creditAmount'], widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
           onScreenMessage = paymentResult[0]['hasherWhoPaid'];
 

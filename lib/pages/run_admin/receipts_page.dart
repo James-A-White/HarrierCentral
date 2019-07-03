@@ -300,8 +300,8 @@ class ReceiptsListState extends State<ReceiptsList> {
                             padding: const EdgeInsets.all(0.0),
                             child: ListView(scrollDirection: Axis.horizontal, children: <Widget>[
                               ReceiptListItem(
-                                  currencySymbol: widget.eventAggregate.extensions.currencySymbol,
-                                  digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
+                                  currencySymbol: widget.eventAggregate.extensions.curSym,
+                                  digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
                                   receipt: receiptsList[index],
                                   itemPressed: () {
                                     Navigator.push<void>(

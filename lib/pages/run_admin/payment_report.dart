@@ -311,8 +311,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                               counter: paymentTotals[0]['count'] + paymentTotals[paymentNotPaid.value]['count'],
                               color: (filterValue & 1) != 0 ? Colors.red : Colors.black26,
                               paymentRecordType: paymentNotPaid,
-                              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
-                              digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
+                              currencySymbol: widget.eventAggregate.extensions.curSym,
+                              digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
                               onTap: () {
                                 filterTapped(1);
                               },
@@ -322,8 +322,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                               counter: paymentTotals[paymentCash.value]['count'],
                               color: (filterValue & 2) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentCash,
-                              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
-                              digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
+                              currencySymbol: widget.eventAggregate.extensions.curSym,
+                              digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
                               onTap: () {
                                 filterTapped(2);
                               },
@@ -333,8 +333,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                               counter: paymentTotals[paymentBankTransfer.value]['count'],
                               color: (filterValue & 16) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentBankTransfer,
-                              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
-                              digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
+                              currencySymbol: widget.eventAggregate.extensions.curSym,
+                              digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
                               onTap: () {
                                 filterTapped(16);
                               },
@@ -344,8 +344,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                               counter: paymentTotals[paymentFreeRun.value]['count'],
                               color: (filterValue & 8) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentFreeRun,
-                              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
-                              digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
+                              currencySymbol: widget.eventAggregate.extensions.curSym,
+                              digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
                               onTap: () {
                                 filterTapped(8);
                               },
@@ -355,8 +355,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                               counter: paymentTotals[paymentHashCredit.value]['count'],
                               color: (filterValue & 64) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentHashCredit,
-                              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
-                              digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
+                              currencySymbol: widget.eventAggregate.extensions.curSym,
+                              digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
                               onTap: () {
                                 filterTapped(64);
                               },
@@ -366,8 +366,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                               counter: paymentTotals[paymentCashOtherAmount.value]['count'],
                               color: (filterValue & 4) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentCashOtherAmount,
-                              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
-                              digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
+                              currencySymbol: widget.eventAggregate.extensions.curSym,
+                              digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
                               onTap: () {
                                 filterTapped(4);
                               },
@@ -377,8 +377,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                               counter: paymentTotals[paymentBankTransferOtherAmount.value]['count'],
                               color: (filterValue & 32) != 0 ? Colors.green : Colors.black26,
                               paymentRecordType: paymentBankTransferOtherAmount,
-                              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
-                              digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
+                              currencySymbol: widget.eventAggregate.extensions.curSym,
+                              digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
                               onTap: () {
                                 filterTapped(32);
                               },
@@ -426,7 +426,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                 Padding(
                                                   padding: const EdgeInsets.only(left: 15.0),
                                                   child: Text(
-                                                      '${Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digitsAfterDecimal, widget.eventAggregate.extensions.currencySymbol)} Bank Transfer',
+                                                      '${Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Bank Transfer',
                                                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                 )
                                               ])),
@@ -439,7 +439,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                 ),
                                                 Padding(
                                                   padding: const EdgeInsets.only(right: 15.0),
-                                                  child: Text('${Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digitsAfterDecimal, widget.eventAggregate.extensions.currencySymbol)} Cash',
+                                                  child: Text('${Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Cash',
                                                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                 )
                                               ])),
@@ -478,8 +478,8 @@ class PaymentReportState extends State<PaymentReportPage> {
       height: 60.0,
       padding: const EdgeInsets.only(top: 10),
       child: PaymentReportListItem(
-        currencySymbol: widget.eventAggregate.extensions.currencySymbol,
-        digitsAfterDecimal: widget.eventAggregate.extensions.digitsAfterDecimal,
+        currencySymbol: widget.eventAggregate.extensions.curSym,
+        digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
         paymentReportItem: item,
         onTap: () {
           if ((item.payment.paymentType == null) || (item.payment.paymentType == paymentNotPaid.value)) {
@@ -487,9 +487,9 @@ class PaymentReportState extends State<PaymentReportPage> {
               amount: (item.extensions.isMember != 0) ? item.extensions.eventPriceForMembers : item.extensions.eventPriceForNonMembers,
               creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
               creditRemaining: item.extensions.creditAvailable,
-              currencySymbol: widget.eventAggregate.extensions.currencySymbol,
+              currencySymbol: widget.eventAggregate.extensions.curSym,
               hemId: item.extensions.pkHemId,
-              decimalDigits: widget.eventAggregate.extensions.digitsAfterDecimal,
+              decimalDigits: widget.eventAggregate.extensions.digAfterDec,
               // valueChanged: (num value) {
               //   finalValue = value;
               // },
@@ -564,7 +564,7 @@ class PaymentReportState extends State<PaymentReportPage> {
             paymentTypeStr = 'Other';
         }
 
-        final String amountStr = Utilities.getFormattedMoney(item?.payment?.creditAmount ?? 0, widget.eventAggregate.extensions.digitsAfterDecimal, widget.eventAggregate.extensions.currencySymbol);
+        final String amountStr = Utilities.getFormattedMoney(item?.payment?.creditAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
         return AlertDialog(
           title: const Text('Payment Detail'),

@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
@@ -33,10 +34,9 @@ import 'package:harrier_central/widgets/payment_snackbar.dart';
 import 'package:harrier_central/widgets/qr_popup.dart';
 
 class CheckInPackPage extends StatefulWidget {
-  const CheckInPackPage({@required this.eventId, @required this.kennelId});
+  const CheckInPackPage({@required this.eventAggregate});
 
-  final String eventId;
-  final String kennelId;
+  final RunAdminAggregate eventAggregate;
 
   @override
   State<CheckInPackPage> createState() {
@@ -100,7 +100,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 
     DBProvider.db.database.then((Database db) async {
       final SyncEventAdminService cSrv = SyncEventAdminService();
-      final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable, true, widget.eventId);
+      final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable, true, widget.eventAggregate.event.eventId);
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Payments data synchronized $resultStr');
 
@@ -135,7 +135,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
           INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
           LEFT OUTER JOIN ${CountriesTableHelper.tableName} c on c.countryId = k.countryId
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId
-          WHERE e.eventId = "${widget.eventId}"
+          WHERE e.eventId = "${widget.eventAggregate.event.eventId}"
           AND hkm.userId = "$userId"
           
           ''';
@@ -183,10 +183,10 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             coalesce(credits.currentBalance,0) as credit
           FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm
           INNER JOIN ${HashersTableHelper.tableName} h on h.hasherId = hkm.userId
-          LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventId}"
+          LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventAggregate.event.eventId}"
           LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
           LEFT OUTER JOIN ${KennelCreditsTableHelper.tableName} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
-          WHERE hkm.kennelId = "${widget.kennelId}" AND hkm.isMember = 1 AND coalesce(hem.virginVisitorType,0) = 0
+          WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" AND hkm.isMember = 1 AND coalesce(hem.virginVisitorType,0) = 0
           UNION
           SELECT 
             -- now get all virgins & visitors
@@ -210,7 +210,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem2 
             INNER JOIN ${HashersTableHelper.tableName} h2 on h2.hasherId = hem2.userId
             LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay2 on pay2.hemId = hem2.hemId and pay2.cancelledBy IS NULL
-            WHERE hem2.eventId = "${widget.eventId}" and hem2.virginVisitorType != 0
+            WHERE hem2.eventId = "${widget.eventAggregate.event.eventId}" and hem2.virginVisitorType != 0
           UNION
           SELECT 
             -- now get all Hashers who are in HC and have RSVP'ed but are not members of the kennel
@@ -234,8 +234,8 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem3
             INNER JOIN ${HashersTableHelper.tableName} h3 on h3.hasherId = hem3.userId
             LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay3 on pay3.hemId = hem3.hemId and pay3.cancelledBy IS NULL
-            LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm3 on hkm3.userId = h3.hasherId and hkm3.kennelId = "${widget.kennelId}" AND hkm3.isMember = 1
-            WHERE hem3.eventId = "${widget.eventId}" AND hem3.virginVisitorType == 0 AND hkm3.hkmId IS NULL
+            LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm3 on hkm3.userId = h3.hasherId and hkm3.kennelId = "${widget.eventAggregate.event.kennelId}" AND hkm3.isMember = 1
+            WHERE hem3.eventId = "${widget.eventAggregate.event.eventId}" AND hem3.virginVisitorType == 0 AND hkm3.hkmId IS NULL
           ORDER BY nameForSort
             
           
@@ -375,7 +375,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
               COUNT(CASE WHEN pay.paymentType >= 2 THEN 1 ELSE NULL END) as paid,
               COUNT(CASE WHEN rsvpState >= 2 AND attendenceState < 20 THEN 1 ELSE NULL END) as coming,
               COUNT(CASE WHEN attendenceState >= 30 THEN 1 ELSE NULL END) as onIn,
-              (SELECT COUNT(*) FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm WHERE hkm.kennelId = "${widget.kennelId}" and hkm.isMember = 1) as memberCount
+              (SELECT COUNT(*) FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" and hkm.isMember = 1) as memberCount
           FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem
           LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
   
@@ -969,138 +969,7 @@ $beneficiaryInfo
     );
   }
 
-//
-//
-//
-//
-//
-//
 
-  void scanUserBarcode(num checkinType, BuildContext scanContext) {
-    // final Widget snackBar = buildScanResultSnackbar(
-    //     scanContext, _packScopedModel, 'Processing QR Scan');
-
-    // final Future<String> scanAction = BarcodeScanner.scan();
-    // scanAction.then((String scanText) {
-    //   ProcessQrScanForCheckinService srv = ProcessQrScanForCheckinService();
-    //   final Future<ProcessQrScanForCheckinModel> apiCall =
-    //       srv.processQrScan(widget.futureRun.eventId, scanText, checkinType, 0);
-    //   apiCall.then((ProcessQrScanForCheckinModel result) {
-    //     if (result.isPaid == 0) {
-    //       PaymentPopup pp = PaymentPopup(
-    //         amount: result.runPriceThisUser,
-    //         creditAllowed: result.isCreditAllowed,
-    //         creditRemaining: result.remainingCredit,
-    //         currencySymbol: result.currencySymbol,
-    //         hemId: result.hasherEventMapId,
-    //         decimalDigits: result.currencyDigitsAfterDecimal,
-    //       );
-
-    //       Future<bool> dlg = showDialog<bool>(
-    //           context: context,
-    //           barrierDismissible: false, // user must tap button!
-    //           builder: (BuildContext context) {
-    //             return pp;
-    //           });
-
-    //       dlg.then((bool x) {
-    //         int minimumAttendenceValue =
-    //             checkinType == checkinTypeRunStart.value
-    //                 ? attendenceAtHash.value
-    //                 : attendenceOnIn.value;
-
-    //         PayForEventService paySrv = PayForEventService();
-    //         Future<List<PayForEventModel>> retVal = paySrv.payForEvent(
-    //             result.targetUserId,
-    //             widget.futureRun.eventId,
-    //             result.hasherEventMapId,
-    //             pp.selectedValue,
-    //             pp.amount,
-    //             minimumAttendenceValue);
-    //         retVal.then((List<PayForEventModel> paymentResult) {
-    //           if (paymentResult.isNotEmpty) {
-    //             showScanResults(
-    //                 snackBar,
-    //                 scanContext,
-    //                 result,
-    //                 checkinType,
-    //                 paymentResult[0].isPaid,
-    //                 paymentResult[0].result,
-    //                 pp.selectedValue);
-    //             //_packScopedModel.forceRefresh();
-    //           } else {
-    //             //setState(() => barcode = 'Error processing payment');
-    //           }
-    //         });
-    //       });
-    //     } else {
-    //       showScanResults(snackBar, scanContext, result, checkinType, 1,
-    //           result.paymentInstructions, result.paymentType);
-    //       //_packScopedModel.forceRefresh();
-    //     }
-    //   });
-
-    //   Scaffold.of(scanContext)
-    //       .removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-    //   Scaffold.of(scanContext).showSnackBar(snackBar);
-    // });
-  }
-
-//   Widget showScanResults(Widget snackBar, BuildContext scanContext, ProcessQrScanForCheckinModel result, num checkinType, num isPaid, String userMessage, int paymentType) {
-//     snackBar = buildScanResultSnackbar(scanContext, userMessage);
-
-//     Scaffold.of(scanContext).removeCurrentSnackBar(reason: SnackBarClosedReason.remove);
-//     Scaffold.of(scanContext).showSnackBar(snackBar);
-
-//     UserModel packItem = pack.firstWhere((UserModel packMember) => packMember.hasherId.toUpperCase() == result.targetUserId.toUpperCase(), orElse: () => null);
-
-//     if (packItem == null) {
-//       packItem = UserModel(
-//           hasherId: result.targetUserId,
-//           photo: result.photo,
-//           rsvpState: result.rsvpState,
-//           attendenceState: result.attendenceState,
-//           displayName: result.scannedUserName,
-//           eventId: widget.eventId,
-//           isMember: result.isMember,
-//           isHare: result.isHare,
-//           hasherEventMapId: result.hasherEventMapId,
-//           isFollowing: result.isFollowing,
-//           currencySymbol: event['currencySymbol'],
-//           eventPrice: result.runPriceThisUser,
-//           digitsAfterDecimal: event['digitsAfterDecimal'] ?? 2,
-//           virginVisitorType: result.virginVisitorType,
-//           userStartEvent: result.userStartEvent,
-//           userEndEvent: result.userEndEvent,
-//           userRunCount: result.userRunCountThisKennel,
-//           credit: result.remainingCredit,
-//           allowNegativeCredit: result.allowNegativeCredit,
-//           isPaid: result.isPaid,
-//           paymentType: paymentType);
-
-//       pack.add(packItem);
-//     }
-
-//     packItem.paymentType = paymentType;
-//     packItem.rsvpState = rsvpYes.value;
-
-//     if (isPaid >= 0) {
-//       packItem.isPaid = isPaid;
-//     }
-
-//     if (checkinType == 0) {
-//       packItem.attendenceState = attendenceAtHash.value;
-//     } else {
-//       packItem.attendenceState = attendenceOnIn.value;
-//     }
-
-//     return snackBar;
-//   }
-
-// //
-// //
-//
-//
 
   Widget buildScanResultSnackbar(BuildContext contextl, String resultStr) {
     final SnackBar snackbar = SnackBar(
@@ -1120,23 +989,6 @@ $beneficiaryInfo
     return snackbar;
   }
 
-//
-//
-//
-
-  // Widget buildRsvpAndPaymentSnackbar(
-  //     BuildContext context, int index, PackScopedModel _packScopedModel) {
-  //   final SnackBar snackbar = PaymentSnackBar(
-  //     context: context,
-  //     index: index,
-  //     futureRun: widget.futureRun,
-  //     packScopedModel: _packScopedModel,
-  //     payScopedModel: _payScopedModel,
-  //     widget.packList: widget.packList,
-  //   );
-
-  //   return snackbar;
-  // }
 
   SnackBar buildRsvpAndPaymentSnackbar(BuildContext context, int index) {
     final SnackBar snackbar = PaymentSnackBar(
@@ -1466,7 +1318,7 @@ $beneficiaryInfo
 
     final PaymentsService paySrv = PaymentsService();
     return paySrv.payForEvent(
-      widget.eventId,
+      widget.eventAggregate.event.eventId,
       ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId,
       ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId,
       paymentType,
