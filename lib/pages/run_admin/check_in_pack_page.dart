@@ -60,7 +60,6 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   Map<String, String> indicatorAttendenceUpdating = <String, String>{};
   Map<String, String> indicatorPaidUpdating = <String, String>{};
 
-  Map<String, dynamic> event;
   String filterText = '';
 
   int countAtHash = 0;
@@ -104,58 +103,57 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Payments data synchronized $resultStr');
 
-      _refreshEventFromTables(false).then((void dummy) {
         _refreshPackListFromTables(false).then((void dummy) {
           _refreshCounters(true);
         });
-      });
+      
     });
   }
 
-  Future<void> _refreshEventFromTables(bool forceRefresh) async {
-    final Database db = await DBProvider.db.database;
+  // Future<void> _refreshEventFromTables(bool forceRefresh) async {
+  //   final Database db = await DBProvider.db.database;
 
-    try {
-      const String dollarSign = r'$^';
+  //   try {
+  //     const String dollarSign = r'$^';
 
-      final String sql = ''' 
+  //     final String sql = ''' 
 
-          SELECT e.*,hkm.mismanagementRoleFlags,
-          k.kennelShortName,k.kennelName,
-          coalesce(k.digitsAfterDecimal,c.digitsAfterDecimal,2) as digitsAfterDecimal, 
-          coalesce(k.currencySymbol,c.currencySymbol,"$dollarSign") as currencySymbol,
-          coalesce(k.${KennelsTableHelper.colCurrencyCode},c.${CountriesTableHelper.colCurrencyCode},"USD") as currencyCode,
-          k.${KennelsTableHelper.colBankAccountNumber} as bankAccountNumber,
-          k.${KennelsTableHelper.colBankBic} as bankBic,
-          k.${KennelsTableHelper.colBankBeneficiary} as bankBeneficiary,
-          k.${KennelsTableHelper.colBankScheme} as bankScheme,
-          coalesce(e.eventPriceForMembers,k.defaultPriceForMembers) as eventPriceForMembers,
-          coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers) as eventPriceForNonMembers
-          FROM ${NarrowEventsTableHelper.tableName} e
-          INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
-          LEFT OUTER JOIN ${CountriesTableHelper.tableName} c on c.countryId = k.countryId
-          LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId
-          WHERE e.eventId = "${widget.eventAggregate.event.eventId}"
-          AND hkm.userId = "$userId"
+  //         SELECT e.*,hkm.mismanagementRoleFlags,
+  //         k.kennelShortName,k.kennelName,
+  //         coalesce(k.digitsAfterDecimal,c.digitsAfterDecimal,2) as digitsAfterDecimal, 
+  //         coalesce(k.currencySymbol,c.currencySymbol,"$dollarSign") as currencySymbol,
+  //         coalesce(k.${KennelsTableHelper.colCurrencyCode},c.${CountriesTableHelper.colCurrencyCode},"USD") as currencyCode,
+  //         k.${KennelsTableHelper.colBankAccountNumber} as bankAccountNumber,
+  //         k.${KennelsTableHelper.colBankBic} as bankBic,
+  //         k.${KennelsTableHelper.colBankBeneficiary} as bankBeneficiary,
+  //         k.${KennelsTableHelper.colBankScheme} as bankScheme,
+  //         coalesce(e.eventPriceForMembers,k.defaultPriceForMembers) as eventPriceForMembers,
+  //         coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers) as eventPriceForNonMembers
+  //         FROM ${NarrowEventsTableHelper.tableName} e
+  //         INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
+  //         LEFT OUTER JOIN ${CountriesTableHelper.tableName} c on c.countryId = k.countryId
+  //         LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId
+  //         WHERE e.eventId = "${widget.eventAggregate.event.eventId}"
+  //         AND hkm.userId = "$userId"
           
-          ''';
+  //         ''';
 
-      db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
-        setState(() {
-          if (results.isNotEmpty) {
-            event = results[0];
-            if (forceRefresh) {
-              setState(() {
-                _isLoading = false;
-              });
-            }
-          }
-        });
-      });
-    } catch (e) {
-      print(e);
-    }
-  }
+  //     db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
+  //       setState(() {
+  //         if (results.isNotEmpty) {
+  //           event = results[0];
+  //           if (forceRefresh) {
+  //             setState(() {
+  //               _isLoading = false;
+  //             });
+  //           }
+  //         }
+  //       });
+  //     });
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
 
   Future<void> _refreshPackListFromTables(bool forceRefresh) async {
     final Database db = await DBProvider.db.database;
@@ -421,9 +419,9 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   // }
 
   void showBankTransferQrCode(bool member, {String remitString, num remitAmount}) {
-    num amount = event['eventPriceForMembers'];
-    String remittanceInfo = '${event['eventStartDatetime'].toString().substring(0, 10)} - ${event['eventName']}';
-    String beneficiaryInfo = '${event['eventStartDatetime'].toString().substring(0, 10)} - ${event['eventName']}';
+    num amount = widget.eventAggregate.extensions.memberPrice;
+    String remittanceInfo = '${widget.eventAggregate.event.eventStartDatetime.toString().substring(0, 10)} - ${widget.eventAggregate.event.eventName}';
+    String beneficiaryInfo = '${widget.eventAggregate.event.eventStartDatetime.toString().substring(0, 10)} - ${widget.eventAggregate.event.eventName}';
 
     if (remitString != null) {
       remittanceInfo = remitString;
@@ -441,7 +439,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
       amount = remitAmount;
     } else {
       if (!member) {
-        amount = event['eventPriceForNonMembers'];
+        amount = widget.eventAggregate.extensions.nonMemberPrice;
       }
     }
 
@@ -451,10 +449,10 @@ class CheckInPackPageState extends State<CheckInPackPage> {
 001
 1
 SCT
-${event['bankBic']}
-${event['bankBeneficiary']}
-${event['bankAccountNumber']}
-${event['currencyCode']}$amount
+${widget.eventAggregate.kennel.bankBic}
+${widget.eventAggregate.kennel.bankBeneficiary}
+${widget.eventAggregate.kennel.bankAccountNumber}
+${widget.eventAggregate.extensions.curCode}$amount
 SCVE
 
 $remittanceInfo
@@ -482,7 +480,7 @@ $beneficiaryInfo
     ).then((Map<String, dynamic> result) {
       if ((result != null) && (result['hasher']?.hasherId != null)) {
         final HasherEventMapService hemSrv = HasherEventMapService();
-        final Future<void> retVal = hemSrv.joinEvent(event['eventId'], HasherEventMapTableType.eventAdmin, result['hasher'].hasherId, null, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value, virginVisitorType: result['virginVisitorType']);
+        final Future<void> retVal = hemSrv.joinEvent(widget.eventAggregate.event.eventId, HasherEventMapTableType.eventAdmin, result['hasher'].hasherId, null, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value, virginVisitorType: result['virginVisitorType']);
 
         retVal.then((void dummy) {
           _refreshPackListFromTables(false).then((void dummy) {
@@ -516,7 +514,7 @@ $beneficiaryInfo
 
       if (type != 'cancel') {
         final HasherEventMapService hemSrv = HasherEventMapService();
-        final Future<void> retVal = hemSrv.joinEventAsVisitor(event, HasherEventMapTableType.eventAdmin, name, evv.value, attendenceAtHash.value, email, phoneNumber);
+        final Future<void> retVal = hemSrv.joinEventAsVisitor(widget.eventAggregate.event.eventId, HasherEventMapTableType.eventAdmin, name, evv.value, attendenceAtHash.value, email, phoneNumber);
 
         retVal.then((void dummy) {
           _refreshPackListFromTables(false).then((void dummy) {
@@ -852,8 +850,8 @@ $beneficiaryInfo
                     builder: (BuildContext context) => HasherProfilePage(
                           dataContext: EnumDataContext.event,
                           pageType: EnumMyProfilePageType.newHasherProfile,
-                          eventId: event['eventId'],
-                          kennelId: event['kennelId'],
+                          eventId: widget.eventAggregate.event.eventId,
+                          kennelId: widget.eventAggregate.event.kennelId,
                           uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
                         ),
                   ),
@@ -913,7 +911,7 @@ $beneficiaryInfo
                               videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',
                             )),
                   )),
-        ]..addAll(((event == null) || (event['bankScheme'] == null) || (event['bankScheme'] == ''))
+        ]..addAll(( (widget.eventAggregate?.kennel?.bankScheme == null) || (widget.eventAggregate?.kennel?.bankScheme == ''))
             ? List<SpeedDialChild>.from(<SpeedDialChild>[])
             : List<SpeedDialChild>.from(<SpeedDialChild>[
                 SpeedDialChild(
@@ -932,7 +930,7 @@ $beneficiaryInfo
                 ),
               ])),
       ),
-      appBar: getAppBar((_isLoading || (event == null)) ? '... Loading' : event['kennelName']),
+      appBar: getAppBar((_isLoading || (widget?.eventAggregate?.kennel?.kennelName == null)) ? '... Loading' : widget?.eventAggregate?.kennel?.kennelName),
       body: _isLoading
           ? const HcCircularProgressIndicator()
           : LayoutBuilder(
@@ -993,7 +991,7 @@ $beneficiaryInfo
   SnackBar buildRsvpAndPaymentSnackbar(BuildContext context, int index) {
     final SnackBar snackbar = PaymentSnackBar(
       context: context,
-      event: event,
+      eventAggregate: widget.eventAggregate,
       packMember: packList[index],
       onRsvpCallback: (Map<String, dynamic> packMember, {int rsvpState = -1, int attendenceState = -1, int isHare = -1}) {
         Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
@@ -1020,7 +1018,7 @@ $beneficiaryInfo
     }
     
     if ((paymentType == paymentBankTransfer.value) || (paymentType == paymentBankTransferOtherAmount.value)) {
-      String paidFor = 'Run fee, ${event['eventStartDatetime'].toString().substring(0, 10)}, ${event['eventName']}';
+      String paidFor = 'Run fee, ${widget.eventAggregate.event.eventStartDatetime.toString().substring(0, 10)}, ${widget.eventAggregate.event.eventName}';
       if (paymentType == paymentBankTransferOtherAmount.value) {
         paidFor += ' + credit';
       }
@@ -1035,7 +1033,7 @@ $beneficiaryInfo
               textColor: Colors.white,
               onPressed: () {
                 Scaffold.of(context).hideCurrentSnackBar();
-                final String remittanceInfo = '${event['kennelShortName']}, $paidFor, ${packMember['nameForDisplay']}' + paymentReference;
+                final String remittanceInfo = '${widget.eventAggregate.kennel.kennelShortName}, $paidFor, ${packMember['nameForDisplay']}' + paymentReference;
                 showBankTransferQrCode(packMember['isMember'] != 0, remitString: remittanceInfo, remitAmount: otherAmount);
               },
             ),
@@ -1047,7 +1045,7 @@ $beneficiaryInfo
     final Map<String, dynamic> packMember = packList[index];
     return GestureDetector(
       onTap: () {
-        if (((event['mismanagementRoleFlags'] ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) {
+        if (((widget.eventAggregate.extensions.mismanagementRoleFlags ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) {
           final SnackBar snackBar = buildRsvpAndPaymentSnackbar(context, index);
 
           Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
@@ -1274,7 +1272,7 @@ $beneficiaryInfo
     });
 
     final HasherEventMapService hemSrv = HasherEventMapService();
-    final Future<void> retVal = hemSrv.joinEvent(event['eventId'], HasherEventMapTableType.eventAdmin, hasherId, hemId, rsvpState: rsvpState, attendenceState: attendenceState, isHare: isHare, virginVisitorType: -1);
+    final Future<void> retVal = hemSrv.joinEvent(widget.eventAggregate.event.eventId, HasherEventMapTableType.eventAdmin, hasherId, hemId, rsvpState: rsvpState, attendenceState: attendenceState, isHare: isHare, virginVisitorType: -1);
 
     retVal.then((void dummy) {
       _refreshPackListFromTables(false).then((void dummy) {
@@ -1286,7 +1284,7 @@ $beneficiaryInfo
   Future<List<dynamic>> payForEvent(Map<String, dynamic> packMember, int paymentType, {num otherAmount = -1}) async {
     final String hemId = packMember['hemId'];
     final String hasherId = packMember['hasherId'];
-    num amount = packMember['isMember'] != 0 ? event['eventPriceForMembers'] : event['eventPriceForNonMembers'];
+    num amount = packMember['isMember'] != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
     if (otherAmount != -1) {
       amount = otherAmount;
     }
@@ -1386,7 +1384,7 @@ $beneficiaryInfo
                         ),
                         Padding(
                           padding: const EdgeInsets.only(left: 15.0),
-                          child: Text('${Utilities.getFormattedMoney(packMember['isMember'] != 0 ? event['eventPriceForMembers'] : event['eventPriceForNonMembers'], event['digitsAfterDecimal'], event['currencySymbol'])} Bank Transfer',
+                          child: Text('${Utilities.getFormattedMoney(packMember['isMember'] != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Bank Transfer',
                               style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
                         ),
                       ],
@@ -1443,7 +1441,7 @@ $beneficiaryInfo
                         ),
                         Padding(
                           padding: const EdgeInsets.only(right: 15.0),
-                          child: Text('${Utilities.getFormattedMoney(packMember['isMember'] != 0 ? event['eventPriceForMembers'] : event['eventPriceForNonMembers'], event['digitsAfterDecimal'], event['currencySymbol'])} Cash',
+                          child: Text('${Utilities.getFormattedMoney(packMember['isMember'] != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Cash',
                               style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
                         ),
                       ],

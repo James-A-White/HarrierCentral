@@ -400,7 +400,7 @@ class HasherEventMapService {
     return adHocData;
   }
 
-  Future<void> joinEventAsVisitor(Map<String, dynamic> event, HasherEventMapTableType tblType, String displayName, int virginVisitorType, int attendenceState, String email, String phoneNumber) async {
+  Future<void> joinEventAsVisitor(String eventId, HasherEventMapTableType tblType, String displayName, int virginVisitorType, int attendenceState, String email, String phoneNumber) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return;
       // TODO(James): fix this so we can return a bool
@@ -419,7 +419,7 @@ class HasherEventMapService {
     final String body = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
-      'eventId': event['eventId'],
+      'eventId': eventId,
       'displayName': displayName ?? '<no name>',
       'virginVisitorType': virginVisitorType.toString(),
       'attendenceState': attendenceAtHash.value.toString(),
