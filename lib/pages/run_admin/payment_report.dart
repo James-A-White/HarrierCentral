@@ -23,6 +23,7 @@ import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart'
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
+import 'package:harrier_central/util/bank_transfer_qr.dart';
 
 class PaymentAggregate {
   PaymentAggregate({
@@ -189,24 +190,15 @@ class PaymentReportState extends State<PaymentReportPage> {
     print('Payment totals refreshed at ' + DateTime.now().millisecondsSinceEpoch.toString());
   }
 
-  void payForEvent(PaymentAggregate item, int paymentType, num amount) {
+  Future<List<dynamic>> payForEvent(PaymentAggregate item, int paymentType, num amount) {
     final PaymentsService paySrv = PaymentsService();
-    final Future<void> retVal = paySrv.payForEvent(
+    return paySrv.payForEvent(
       widget.eventAggregate.event.eventId,
       GUID_EMPTY,
       item.extensions.pkHemId,
       paymentType,
       amount,
       attendenceAtHash.value,
-    );
-    retVal.then(
-      (void paymentResult) {
-        _refreshListsFromTable().then((void dummy) {
-          setState(() {
-            refreshTotals();
-          });
-        });
-      },
     );
   }
 
@@ -405,7 +397,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                 itemCount: filteredList.length,
                                 itemBuilder: (BuildContext context, int index) {
                                   return (filteredList[index].payment.paymentType ?? paymentNotPaid.value) != paymentNotPaid.value
-                                      ? listItem(filteredList[index])
+                                      ? listItem(filteredList[index],context)
                                       : Dismissible(
                                           key: Key(index.toString()),
                                           confirmDismiss: (DismissDirection direction) {
@@ -413,7 +405,15 @@ class PaymentReportState extends State<PaymentReportPage> {
                                             setState(() {
                                               filteredList[index].extensions.isLoading = true;
                                             });
-                                            payForEvent(filteredList[index], direction == DismissDirection.endToStart ? 3 : 4, (filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers);
+                                            payForEvent(filteredList[index], direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, (filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers)
+                                                .then((List<dynamic> results) {
+                                              _refreshListsFromTable().then((void dummy) {
+                                                setState(() {
+                                                  refreshTotals();
+                                                  BankTransferQr.showBankTransferSnackbar(widget.eventAggregate,results, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, context, filteredList[index].extensions.paidByName, filteredList[index].extensions.isMember, -1);
+                                                });
+                                              });
+                                            });
                                             return Future<bool>.value(false);
                                           },
                                           background: Container(
@@ -439,14 +439,15 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                 ),
                                                 Padding(
                                                   padding: const EdgeInsets.only(right: 15.0),
-                                                  child: Text('${Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Cash',
+                                                  child: Text(
+                                                      '${Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Cash',
                                                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                 )
                                               ])),
                                           onDismissed: (DismissDirection direction) {
                                             print(direction.toString() + ' NOTE: We should never reach this point');
                                           },
-                                          child: listItem(filteredList[index]),
+                                          child: listItem(filteredList[index],context),
                                         );
                                 },
                               ),
@@ -472,8 +473,7 @@ class PaymentReportState extends State<PaymentReportPage> {
     setState(() {});
   }
 
-
-  Container listItem(PaymentAggregate item) {
+  Container listItem(PaymentAggregate item, BuildContext topContext) {
     return Container(
       height: 60.0,
       padding: const EdgeInsets.only(top: 10),
@@ -482,6 +482,7 @@ class PaymentReportState extends State<PaymentReportPage> {
         digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
         paymentReportItem: item,
         onTap: () {
+          Scaffold.of(topContext).hideCurrentSnackBar();
           if ((item.payment.paymentType == null) || (item.payment.paymentType == paymentNotPaid.value)) {
             final PaymentPopup pp = PaymentPopup(
               amount: (item.extensions.isMember != 0) ? item.extensions.eventPriceForMembers : item.extensions.eventPriceForNonMembers,
@@ -508,7 +509,14 @@ class PaymentReportState extends State<PaymentReportPage> {
                   setState(() {
                     item.extensions.isLoading = true;
                   });
-                  payForEvent(item, paymentValue.transactionType, paymentValue.transactionValue);
+                  payForEvent(item, paymentValue.transactionType, paymentValue.transactionValue).then((List<dynamic> results) {
+                    _refreshListsFromTable().then((void dummy) {
+                      setState(() {
+                        refreshTotals();
+                        BankTransferQr.showBankTransferSnackbar(widget.eventAggregate,results, paymentValue.transactionType, topContext, item.extensions.paidByName, item.extensions.isMember, paymentValue.transactionValue);
+                      });
+                    });
+                  });
                 }
               },
             );
@@ -518,7 +526,14 @@ class PaymentReportState extends State<PaymentReportPage> {
                 setState(() {
                   item.extensions.isLoading = true;
                 });
-                payForEvent(item, paymentNotPaid.value, 0);
+                payForEvent(item, paymentNotPaid.value, 0).then((List<dynamic> results) {
+                  _refreshListsFromTable().then((void dummy) {
+                    setState(() {
+                      refreshTotals();
+                      
+                    });
+                  });
+                });
               }
             });
           }

@@ -7,28 +7,29 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
+import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
-import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
-import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
+import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 import 'package:harrier_central/pages/menu_pages/video_tutorial_page.dart';
+import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
+import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/bank_transfer_qr.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
-import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
-import 'package:harrier_central/widgets/qr_popup.dart';
+
 
 
 class CheckInPackModel {
@@ -444,55 +445,6 @@ class CheckInPackPageState extends State<CheckInPackPage> {
   //   }
   // }
 
-  void showBankTransferQrCode(bool member, {String remitString, num remitAmount}) {
-    num amount = widget.eventAggregate.extensions.memberPrice;
-    String remittanceInfo = '${widget.eventAggregate.event.eventStartDatetime.toString().substring(0, 10)} - ${widget.eventAggregate.event.eventName}';
-    String beneficiaryInfo = '${widget.eventAggregate.event.eventStartDatetime.toString().substring(0, 10)} - ${widget.eventAggregate.event.eventName}';
-
-    if (remitString != null) {
-      remittanceInfo = remitString;
-    }
-
-    if (remittanceInfo.length > 139) {
-      remittanceInfo = remittanceInfo.substring(0, 139);
-    }
-
-    if (beneficiaryInfo.length > 69) {
-      beneficiaryInfo = beneficiaryInfo.substring(0, 69);
-    }
-
-    if ((remitAmount != null) && (remitAmount != -1)) {
-      amount = remitAmount;
-    } else {
-      if (!member) {
-        amount = widget.eventAggregate.extensions.nonMemberPrice;
-      }
-    }
-
-    final QrPopup pp = QrPopup(
-      dialogTitle: 'Scan to pay by bank transfer',
-      qrText: '''BCD
-001
-1
-SCT
-${widget.eventAggregate.kennel.bankBic}
-${widget.eventAggregate.kennel.bankBeneficiary}
-${widget.eventAggregate.kennel.bankAccountNumber}
-${widget.eventAggregate.extensions.curCode}$amount
-SCVE
-
-$remittanceInfo
-$beneficiaryInfo
-''',
-    );
-
-    showDialog<void>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return pp;
-        });
-  }
 
   void findHasher() {
     Navigator.push<Map<String, dynamic>>(
@@ -945,14 +897,14 @@ $beneficiaryInfo
                   backgroundColor: Colors.purple,
                   label: 'Bank Transfer (Member)',
                   labelStyle: const TextStyle(fontSize: 18.0),
-                  onTap: () => showBankTransferQrCode(true),
+                  onTap: () => BankTransferQr.showBankTransferQrCode(context,widget.eventAggregate,true),
                 ),
                 SpeedDialChild(
                   child: const Icon(MaterialCommunityIcons.bank),
                   backgroundColor: Colors.purple,
                   label: 'Bank Transfer (Non-Member)',
                   labelStyle: const TextStyle(fontSize: 18.0),
-                  onTap: () => showBankTransferQrCode(false),
+                  onTap: () => BankTransferQr.showBankTransferQrCode(context,widget.eventAggregate,false),
                 ),
               ])),
       ),
@@ -1028,7 +980,7 @@ $beneficiaryInfo
         payForEvent(packMember, paymentType, otherAmount: otherAmount).then((List<dynamic> results) {
           _refreshPackListFromTables(false).then((void dummy) {
             _refreshCounters(true);
-            showBankTransferSnackbar(results, paymentType, context, packMember, otherAmount);
+            BankTransferQr.showBankTransferSnackbar(widget.eventAggregate,results, paymentType, context, packMember.nameForDisplay, packMember.isMember, otherAmount);
           });
         });
       },
@@ -1037,35 +989,7 @@ $beneficiaryInfo
     return snackbar;
   }
 
-  void showBankTransferSnackbar(List results, int paymentType, BuildContext context, CheckInPackModel packMember, num otherAmount) {
-    String paymentReference = '';
-    if ((results != null) && (results.isNotEmpty) && (results[0]['paymentReference'] != null)) {
-      paymentReference = ', HC Payment Ref: ${results[0]['paymentReference']}';
-    }
-    
-    if ((paymentType == paymentBankTransfer.value) || (paymentType == paymentBankTransferOtherAmount.value)) {
-      String paidFor = 'Run fee, ${widget.eventAggregate.event.eventStartDatetime.toString().substring(0, 10)}, ${widget.eventAggregate.event.eventName}';
-      if (paymentType == paymentBankTransferOtherAmount.value) {
-        paidFor += ' + credit';
-      }
-      Scaffold.of(context).showSnackBar(SnackBar(
-          backgroundColor: Colors.blue,
-          duration: const Duration(seconds: 10),
-          content: Container(
-            height: 50,
-            child: RaisedButton(
-              color: Colors.red,
-              child: Text('Show Payment QR code', style: buttonLabelStyleMedium),
-              textColor: Colors.white,
-              onPressed: () {
-                Scaffold.of(context).hideCurrentSnackBar();
-                final String remittanceInfo = '${widget.eventAggregate.kennel.kennelShortName}, $paidFor, ${packMember.nameForDisplay}' + paymentReference;
-                showBankTransferQrCode(packMember.isMember != 0, remitString: remittanceInfo, remitAmount: otherAmount);
-              },
-            ),
-          )));
-    }
-  }
+
 
   Widget listItem(BuildContext context, int index) {
     final CheckInPackModel packMember = packList[index];
@@ -1371,7 +1295,7 @@ $beneficiaryInfo
                 payForEvent(packMember, direction == DismissDirection.endToStart ? 3 : 4).then((List<dynamic> results) {
                   _refreshPackListFromTables(false).then((void dummy) {
                     _refreshCounters(true);
-                    showBankTransferSnackbar(results, direction == DismissDirection.endToStart ? 3 : 4, context, packMember, -1);
+                    BankTransferQr.showBankTransferSnackbar(widget.eventAggregate,results, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, context, packMember.nameForDisplay, packMember.isMember, -1);
                   });
                 });
               } else {
