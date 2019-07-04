@@ -20,7 +20,7 @@ class ZoomableImagePage extends StatelessWidget {
       backgroundColor: themeAppBarBackground,
       title: Text(
         pageTitle ?? 'Image',
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.white,
         ),
       ),

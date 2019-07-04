@@ -1,7 +1,5 @@
-import 'dart:core';
 import 'dart:convert';
-
-import 'package:flutter/services.dart' show rootBundle;
+import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';

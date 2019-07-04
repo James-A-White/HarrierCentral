@@ -3,11 +3,11 @@ import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/database/database.dart';
+//import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
-import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
+//import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
-import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
+//import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 
 class MigrationsModel {
   MigrationsModel({this.migrationNumber, this.migrationText, this.appliedAtInt});

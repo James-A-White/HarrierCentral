@@ -267,7 +267,7 @@ class CheckInPackPageState extends State<CheckInPackPage> {
             packList = <CheckInPackModel>[];
             for (int i = 0; i < results.length; i++)
             {
-              CheckInPackModel item = CheckInPackModel.fromMap(results[i]);
+              final CheckInPackModel item = CheckInPackModel.fromMap(results[i]);
               packList.add(item);
             }
 

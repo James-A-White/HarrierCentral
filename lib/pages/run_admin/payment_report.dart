@@ -447,9 +447,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                       padding: const EdgeInsets.only(left: 15.0),
                                                       child: Image.asset('images/icons/payment_type_4.png', height: 25.0, width: 25.0, color: Colors.white),
                                                     ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(left: 15.0),
-                                                      child: Text('Confirm Bank Transfer', style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(left: 15.0),
+                                                      child: Text('Confirm Bank Transfer', style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                     )
                                                   ]))
                                               : Container(
@@ -474,9 +474,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                       padding: const EdgeInsets.only(right: 15.0),
                                                       child: Image.asset('images/icons/payment_type_4.png', height: 25.0, width: 25.0, color: Colors.white),
                                                     ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(right: 15.0),
-                                                      child: Text('Confirm bank transfer', style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(right: 15.0),
+                                                      child: Text('Confirm bank transfer', style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                     )
                                                   ]))
                                               : Container(
@@ -583,6 +583,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                   });
                 });
               } else if (action == 'confirm') {
+                setState(() {
+                  item.extensions.isLoading = true;
+                });
                 payForEvent(item, paymentConfirmBankTransfer.value, -1).then((List<dynamic> results) {
                   _refreshListsFromTable().then((void dummy) {
                     setState(() {
@@ -635,8 +638,9 @@ class PaymentReportState extends State<PaymentReportPage> {
             paymentTypeStr = 'Other';
         }
 
-        const int flexLeft = 35;
-        const int flexRight = 65;
+        const int flexLeft = 37;
+        const int flexRight = 63;
+        const num spacer = 6.0;
 
         final String amountStr = Utilities.getFormattedMoney(item?.payment?.creditAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
@@ -657,9 +661,10 @@ class PaymentReportState extends State<PaymentReportPage> {
                     ),
                     flex: flexLeft,
                   ),
+                  const SizedBox(width: spacer, height: 10.0),
                   Expanded(
                       child: Text(
-                        ' ' + item.payment.paymentReference,
+                        item.payment.paymentReference,
                         style: bodyStyle,
                       ),
                       flex: flexRight),
@@ -675,9 +680,10 @@ class PaymentReportState extends State<PaymentReportPage> {
                     ),
                     flex: flexLeft,
                   ),
+                  const SizedBox(width: spacer, height: 10.0),
                   Expanded(
                       child: Text(
-                        ' ' + item.extensions.paidByName,
+                        item.extensions.paidByName,
                         style: bodyStyle,
                       ),
                       flex: flexRight),
@@ -693,9 +699,10 @@ class PaymentReportState extends State<PaymentReportPage> {
                     ),
                     flex: flexLeft,
                   ),
+                  const SizedBox(width: spacer, height: 10.0),
                   Expanded(
                       child: Text(
-                        ' ' + item.extensions.paidToName,
+                        item.extensions.paidToName,
                         style: bodyStyle,
                       ),
                       flex: flexRight),
@@ -711,9 +718,10 @@ class PaymentReportState extends State<PaymentReportPage> {
                     ),
                     flex: flexLeft,
                   ),
+                  const SizedBox(width: spacer, height: 10.0),
                   Expanded(
                       child: Text(
-                        ' ' + amountStr,
+                        amountStr,
                         style: bodyStyle,
                       ),
                       flex: flexRight),
@@ -729,9 +737,10 @@ class PaymentReportState extends State<PaymentReportPage> {
                     ),
                     flex: flexLeft,
                   ),
+                  const SizedBox(width: spacer, height: 10.0),
                   Expanded(
                       child: Text(
-                        ' ' + ((item?.payment?.paidDate == null) ? '' : DateFormat('MMM dd, yyyy').format(item.payment.paidDate)),
+                        (item?.payment?.paidDate == null) ? '' : DateFormat('MMM dd, yyyy').format(item.payment.paidDate),
                         style: bodyStyle,
                       ),
                       flex: flexRight),
@@ -747,9 +756,10 @@ class PaymentReportState extends State<PaymentReportPage> {
                     ),
                     flex: flexLeft,
                   ),
+                  const SizedBox(width: spacer, height: 10.0),
                   Expanded(
                       child: Text(
-                        ' ' + ((item?.payment?.paidDate == null) ? '' : DateFormat('kk:mm').format(item.payment.paidDate)),
+                        (item?.payment?.paidDate == null) ? '' : DateFormat('kk:mm').format(item.payment.paidDate),
                         style: bodyStyle,
                       ),
                       flex: flexRight),
@@ -765,9 +775,10 @@ class PaymentReportState extends State<PaymentReportPage> {
                     ),
                     flex: flexLeft,
                   ),
+                  const SizedBox(width: spacer, height: 10.0),
                   Expanded(
                       child: Text(
-                        ' ' + paymentTypeStr,
+                        paymentTypeStr,
                         style: bodyStyle,
                       ),
                       flex: flexRight),
@@ -785,9 +796,10 @@ class PaymentReportState extends State<PaymentReportPage> {
                           ),
                           flex: flexLeft,
                         ),
+                        const SizedBox(width: spacer, height: 10.0),
                         Expanded(
                             child: Text(
-                              ' ' + item.extensions.confByName,
+                              item.extensions.confByName,
                               style: bodyStyle,
                             ),
                             flex: flexRight),
@@ -805,9 +817,10 @@ class PaymentReportState extends State<PaymentReportPage> {
                           ),
                           flex: flexLeft,
                         ),
+                        const SizedBox(width: spacer, height: 10.0),
                         Expanded(
                             child: Text(
-                              ' ' + ((item?.payment?.confirmedDate == null) ? '' : DateFormat('MMM dd, yyyy kk:mm').format(item.payment.paidDate)),
+                              (item?.payment?.confirmedDate == null) ? '' : DateFormat('MMM dd, yyyy kk:mm').format(item.payment.paidDate),
                               style: bodyStyle,
                             ),
                             flex: flexRight),
