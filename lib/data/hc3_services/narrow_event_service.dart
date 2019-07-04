@@ -37,6 +37,7 @@ class NarrowEventsModel {
       this.hares,
       this.eventPaymentUrl,
       this.eventPaymentUrlExpires,
+      this.unconfirmedBankXferCount,
       this.removed,
       this.updatedAt});
 
@@ -63,6 +64,7 @@ class NarrowEventsModel {
   final String hares;
   final String eventPaymentUrl;
   final DateTime eventPaymentUrlExpires;
+  final int unconfirmedBankXferCount;
   final int removed;
   final DateTime updatedAt;
 
@@ -97,6 +99,7 @@ class NarrowEventsModel {
             hares: jsonItem['hares'],
             eventPaymentUrl: jsonItem['eventPaymentUrl'],
             eventPaymentUrlExpires: jsonItem['eventPaymentUrlExpires'],
+            unconfirmedBankXferCount: jsonItem['unconfirmedBankXferCount'],
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
 
@@ -149,6 +152,7 @@ class NarrowEventsTableHelper {
   static const String colHares = 'hares';
   static const String colEventPaymentUrl= 'eventPaymentUrl';
   static const String colEventPaymentUrlExpires= 'eventPaymentUrlExpires';
+  static const String colUnconfirmedBankXferCount= 'unconfirmedBankXferCount';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -187,6 +191,7 @@ class NarrowEventsTableHelper {
             $colHares TEXT,
             $colEventPaymentUrl TEXT,
             $colEventPaymentUrlExpires TEXT,
+            $colUnconfirmedBankXferCount INT,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
@@ -223,6 +228,7 @@ class NarrowEventsTableHelper {
       NarrowEventsTableHelper.colHares: item.hares,
       NarrowEventsTableHelper.colEventPaymentUrl: item.eventPaymentUrl,
       NarrowEventsTableHelper.colEventPaymentUrlExpires: item.eventPaymentUrlExpires.toString(),
+      NarrowEventsTableHelper.colUnconfirmedBankXferCount: item.unconfirmedBankXferCount,
       NarrowEventsTableHelper.colUpdatedAt: item.updatedAt.toString(),
       NarrowEventsTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       NarrowEventsTableHelper.colRemoved: item.removed
@@ -256,6 +262,7 @@ class NarrowEventsTableHelper {
       hares: map[NarrowEventsTableHelper.colHares],
       eventPaymentUrl: map[NarrowEventsTableHelper.colEventPaymentUrl],
       eventPaymentUrlExpires: DateTime.parse((map[NarrowEventsTableHelper.colEventPaymentUrlExpires] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
+      unconfirmedBankXferCount: map[NarrowEventsTableHelper.colUnconfirmedBankXferCount],
       updatedAt: DateTime.parse(map[NarrowEventsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[NarrowEventsTableHelper.colRemoved],
     );

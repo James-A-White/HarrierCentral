@@ -126,8 +126,9 @@ const EnumPaymentType<int> paymentCash = EnumPaymentType<int>(3);
 const EnumPaymentType<int> paymentBankTransfer = EnumPaymentType<int>(4);
 const EnumPaymentType<int> paymentCashOtherAmount = EnumPaymentType<int>(5);
 const EnumPaymentType<int> paymentHashCredit = EnumPaymentType<int>(6);
-const EnumPaymentType<int> paymentBankTransferOtherAmount =
-    EnumPaymentType<int>(7);
+const EnumPaymentType<int> paymentBankTransferOtherAmount = EnumPaymentType<int>(7);
+const EnumPaymentType<int> paymentConfirmBankTransfer = EnumPaymentType<int>(100);
+
 
 // const EnumPaymentType<int> paymentTypeUnknownTotals = EnumPaymentType<int>(100);
 // const EnumPaymentType<int> paymentNotPaidTotals = EnumPaymentType<int>(101);

@@ -29,6 +29,8 @@ class PaymentsModel {
       this.paymentType,
       this.cancelledDate,
       this.cancelledBy,
+      this.confirmedDate,
+      this.confirmedBy, 
       this.paymentReference,
       this.notes,
       this.removed,
@@ -47,6 +49,8 @@ class PaymentsModel {
   int paymentType;
   final DateTime cancelledDate;
   final String cancelledBy;
+  final DateTime confirmedDate;
+  final String confirmedBy;
   final String paymentReference;
   final String notes;
   final int removed;
@@ -72,6 +76,8 @@ class PaymentsModel {
             paymentType: jsonItem['paymentType'],
             cancelledDate: DateTime.parse(jsonItem['cancelledDate'].toString().substring(0, 19)),
             cancelledBy: jsonItem['cancelledBy'],
+            confirmedDate: DateTime.parse(jsonItem['confirmedDate'].toString().substring(0, 19)),
+            confirmedBy: jsonItem['confirmedBy'],
             paymentReference: jsonItem['paymentReference'],
             notes: jsonItem['notes'],
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
@@ -115,6 +121,8 @@ class PaymentsTableHelper {
   static const String colPaymentType = 'paymentType';
   static const String colCancelledDate = 'cancelledDate';
   static const String colCancelledBy = 'cancelledBy';
+  static const String colConfirmedDate= 'confirmedDate';
+  static const String colConfirmedBy= 'confirmedBy';
   static const String colPaymentReference = 'paymentReference';
   static const String colNotes = 'notes';
 
@@ -144,6 +152,8 @@ class PaymentsTableHelper {
             $colPaymentType INT,
             $colCancelledDate TEXT,
             $colCancelledBy TEXT,
+            $colConfirmedDate TEXT,
+            $colConfirmedBy TEXT,
             $colPaymentReference TEXT,
             $colNotes TEXT,
 
@@ -171,6 +181,8 @@ class PaymentsTableHelper {
       PaymentsTableHelper.colPaymentType: item.paymentType,
       PaymentsTableHelper.colCancelledDate: item.cancelledDate.toString(),
       PaymentsTableHelper.colCancelledBy: item.cancelledBy,
+      PaymentsTableHelper.colConfirmedDate: item.confirmedDate,
+      PaymentsTableHelper.colConfirmedBy: item.confirmedBy,
       PaymentsTableHelper.colPaymentReference: item.paymentReference,
       PaymentsTableHelper.colNotes: item.notes,
       PaymentsTableHelper.colUpdatedAt: item.updatedAt.toString(),
@@ -203,6 +215,8 @@ class PaymentsTableHelper {
       paymentType: map[PaymentsTableHelper.colPaymentType],
       cancelledDate: (map[PaymentsTableHelper.colCancelledDate] == null) ? null : DateTime.parse(map[PaymentsTableHelper.colCancelledDate].toString().substring(0, 19)),
       cancelledBy: map[PaymentsTableHelper.colCancelledBy],
+      confirmedDate: (map[PaymentsTableHelper.colConfirmedDate] == null) ? null : DateTime.parse(map[PaymentsTableHelper.colConfirmedDate].toString().substring(0, 19)),
+      confirmedBy: map[PaymentsTableHelper.colConfirmedBy],
       paymentReference: map[PaymentsTableHelper.colPaymentReference],
       notes: map[PaymentsTableHelper.colNotes],
 

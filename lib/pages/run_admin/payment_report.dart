@@ -36,7 +36,7 @@ class PaymentAggregate {
 }
 
 class PaymentQueryExtensions {
-  PaymentQueryExtensions({this.pkHemId, this.paidByName, this.paidToName, this.isMember, this.creditAvailable, this.eventPriceForMembers, this.eventPriceForNonMembers});
+  PaymentQueryExtensions({this.pkHemId, this.paidByName, this.paidToName, this.isMember, this.creditAvailable, this.eventPriceForMembers, this.eventPriceForNonMembers, this.confByName});
 
   final String pkHemId;
   final String paidByName;
@@ -45,12 +45,20 @@ class PaymentQueryExtensions {
   final num creditAvailable;
   final num eventPriceForMembers;
   final num eventPriceForNonMembers;
+  final String confByName;
 
   bool isLoading = false;
 
   static PaymentQueryExtensions fromMap(Map<String, dynamic> map) {
-    final PaymentQueryExtensions item =
-        PaymentQueryExtensions(pkHemId: map['pkHemId'], paidByName: map['paidByName'], paidToName: map['paidToName'], isMember: map['isMember'], creditAvailable: map['creditAvailable'], eventPriceForMembers: map['eventPriceForMembers'], eventPriceForNonMembers: map['eventPriceForNonMembers']);
+    final PaymentQueryExtensions item = PaymentQueryExtensions(
+        pkHemId: map['pkHemId'],
+        paidByName: map['paidByName'],
+        paidToName: map['paidToName'],
+        isMember: map['isMember'],
+        creditAvailable: map['creditAvailable'],
+        eventPriceForMembers: map['eventPriceForMembers'],
+        eventPriceForNonMembers: map['eventPriceForNonMembers'],
+        confByName: map['confByName']);
     return item;
   }
 }
@@ -116,7 +124,8 @@ class PaymentReportState extends State<PaymentReportPage> {
           COALESCE(hkm.isMember,0) as isMember,
           COALESCE(credits.currentBalance,0) as creditAvailable,
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as eventPriceForMembers,
-          coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as eventPriceForNonMembers
+          coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as eventPriceForNonMembers,
+          COALESCE(confBy.dispName,'') as confByName
           FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem
           INNER JOIN ${NarrowEventsTableHelper.tableName} e on e.eventId = hem.eventId
           INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
@@ -125,6 +134,7 @@ class PaymentReportState extends State<PaymentReportPage> {
           LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.CancelledBy IS NULL
           LEFT OUTER JOIN ${HashersTableHelper.tableName} paidTo on paidTo.hasherId = pay.paidTo
           LEFT OUTER JOIN ${KennelCreditsTableHelper.tableName} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
+          LEFT OUTER JOIN ${HashersTableHelper.tableName} confBy on confBy.hasherId = pay.confirmedBy
           WHERE hem.attendenceState >= 20
           ''';
 
@@ -396,8 +406,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                                 physics: const AlwaysScrollableScrollPhysics(),
                                 itemCount: filteredList.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  return (filteredList[index].payment.paymentType ?? paymentNotPaid.value) != paymentNotPaid.value
-                                      ? listItem(filteredList[index],context)
+                                  final bool needsConfirm = ((filteredList[index].payment.paymentType == paymentBankTransfer.value) || (filteredList[index].payment.paymentType == paymentBankTransferOtherAmount.value)) && (filteredList[index].payment.confirmedBy == null);
+                                  return (((filteredList[index].payment.paymentType ?? paymentNotPaid.value) != paymentNotPaid.value) && !needsConfirm)
+                                      ? listItem(filteredList[index], context)
                                       : Dismissible(
                                           key: Key(index.toString()),
                                           confirmDismiss: (DismissDirection direction) {
@@ -405,49 +416,87 @@ class PaymentReportState extends State<PaymentReportPage> {
                                             setState(() {
                                               filteredList[index].extensions.isLoading = true;
                                             });
-                                            payForEvent(filteredList[index], direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, (filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers)
-                                                .then((List<dynamic> results) {
-                                              _refreshListsFromTable().then((void dummy) {
-                                                setState(() {
-                                                  refreshTotals();
-                                                  BankTransferQr.showBankTransferSnackbar(widget.eventAggregate,results, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, context, filteredList[index].extensions.paidByName, filteredList[index].extensions.isMember, -1);
+                                            if (needsConfirm) {
+                                              payForEvent(filteredList[index], paymentConfirmBankTransfer.value, -1).then((List<dynamic> results) {
+                                                _refreshListsFromTable().then((void dummy) {
+                                                  setState(() {
+                                                    refreshTotals();
+                                                  });
                                                 });
                                               });
-                                            });
-                                            return Future<bool>.value(false);
+                                            } else {
+                                              payForEvent(filteredList[index], direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value,
+                                                      (filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers)
+                                                  .then((List<dynamic> results) {
+                                                _refreshListsFromTable().then((void dummy) {
+                                                  setState(() {
+                                                    refreshTotals();
+                                                    BankTransferQr.showBankTransferSnackbar(
+                                                        widget.eventAggregate, results, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, context, filteredList[index].extensions.paidByName, filteredList[index].extensions.isMember, -1);
+                                                  });
+                                                });
+                                              });
+                                              return Future<bool>.value(false);
+                                            }
                                           },
-                                          background: Container(
-                                              color: Colors.blue,
-                                              child: Row(children: <Widget>[
-                                                Padding(
-                                                  padding: const EdgeInsets.only(left: 15.0),
-                                                  child: Image.asset('images/icons/payment_type_4.png', height: 25.0, width: 25.0, color: Colors.white),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets.only(left: 15.0),
-                                                  child: Text(
-                                                      '${Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Bank Transfer',
-                                                      style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                                )
-                                              ])),
-                                          secondaryBackground: Container(
-                                              color: Colors.green,
-                                              child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
-                                                Padding(
-                                                  padding: const EdgeInsets.only(right: 15.0),
-                                                  child: Image.asset('images/icons/payment_type_3.png', height: 25.0, width: 25.0, color: Colors.white),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets.only(right: 15.0),
-                                                  child: Text(
-                                                      '${Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Cash',
-                                                      style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                                )
-                                              ])),
+                                          background: needsConfirm
+                                              ? Container(
+                                                  color: Colors.purple,
+                                                  child: Row(children: <Widget>[
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(left: 15.0),
+                                                      child: Image.asset('images/icons/payment_type_4.png', height: 25.0, width: 25.0, color: Colors.white),
+                                                    ),
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(left: 15.0),
+                                                      child: Text('Confirm Bank Transfer', style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                    )
+                                                  ]))
+                                              : Container(
+                                                  color: Colors.blue,
+                                                  child: Row(children: <Widget>[
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(left: 15.0),
+                                                      child: Image.asset('images/icons/payment_type_4.png', height: 25.0, width: 25.0, color: Colors.white),
+                                                    ),
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(left: 15.0),
+                                                      child: Text(
+                                                          '${Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Bank Transfer',
+                                                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                    )
+                                                  ])),
+                                          secondaryBackground: needsConfirm
+                                              ? Container(
+                                                  color: Colors.purple,
+                                                  child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(right: 15.0),
+                                                      child: Image.asset('images/icons/payment_type_4.png', height: 25.0, width: 25.0, color: Colors.white),
+                                                    ),
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(right: 15.0),
+                                                      child: Text('Confirm bank transfer', style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                    )
+                                                  ]))
+                                              : Container(
+                                                  color: Colors.green,
+                                                  child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(right: 15.0),
+                                                      child: Image.asset('images/icons/payment_type_3.png', height: 25.0, width: 25.0, color: Colors.white),
+                                                    ),
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(right: 15.0),
+                                                      child: Text(
+                                                          '${Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Cash',
+                                                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                    )
+                                                  ])),
                                           onDismissed: (DismissDirection direction) {
                                             print(direction.toString() + ' NOTE: We should never reach this point');
                                           },
-                                          child: listItem(filteredList[index],context),
+                                          child: listItem(filteredList[index], context),
                                         );
                                 },
                               ),
@@ -513,7 +562,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                     _refreshListsFromTable().then((void dummy) {
                       setState(() {
                         refreshTotals();
-                        BankTransferQr.showBankTransferSnackbar(widget.eventAggregate,results, paymentValue.transactionType, topContext, item.extensions.paidByName, item.extensions.isMember, paymentValue.transactionValue);
+                        BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentValue.transactionType, topContext, item.extensions.paidByName, item.extensions.isMember, paymentValue.transactionValue);
                       });
                     });
                   });
@@ -521,8 +570,8 @@ class PaymentReportState extends State<PaymentReportPage> {
               },
             );
           } else {
-            _displayPaymentDetails(item, context).then((bool doCancelTransaction) {
-              if (doCancelTransaction) {
+            _displayPaymentDetails(item, context).then((String action) {
+              if (action == 'cancel') {
                 setState(() {
                   item.extensions.isLoading = true;
                 });
@@ -530,7 +579,14 @@ class PaymentReportState extends State<PaymentReportPage> {
                   _refreshListsFromTable().then((void dummy) {
                     setState(() {
                       refreshTotals();
-                      
+                    });
+                  });
+                });
+              } else if (action == 'confirm') {
+                payForEvent(item, paymentConfirmBankTransfer.value, -1).then((List<dynamic> results) {
+                  _refreshListsFromTable().then((void dummy) {
+                    setState(() {
+                      refreshTotals();
                     });
                   });
                 });
@@ -542,8 +598,8 @@ class PaymentReportState extends State<PaymentReportPage> {
     );
   }
 
-  Future<bool> _displayPaymentDetails(PaymentAggregate item, BuildContext context) async {
-    return showDialog<bool>(
+  Future<String> _displayPaymentDetails(PaymentAggregate item, BuildContext context) async {
+    return showDialog<String>(
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
@@ -579,122 +635,216 @@ class PaymentReportState extends State<PaymentReportPage> {
             paymentTypeStr = 'Other';
         }
 
+        const int flexLeft = 35;
+        const int flexRight = 65;
+
         final String amountStr = Utilities.getFormattedMoney(item?.payment?.creditAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
         return AlertDialog(
           title: const Text('Payment Detail'),
           content: SingleChildScrollView(
-            child: ListBody(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Expanded(
-                      flex: 3,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: const <Widget>[
-                          Text(
-                            'Pay Ref:',
-                            style: headingStyle,
-                          ),
-                          Text(
-                            'Paid by:',
-                            style: headingStyle,
-                          ),
-                          Text(
-                            'Paid to:',
-                            style: headingStyle,
-                          ),
-                          Text(
-                            'Amount:',
-                            style: headingStyle,
-                          ),
-                          Text(
-                            'Date:',
-                            style: headingStyle,
-                          ),
-                          Text(
-                            'Time:',
-                            style: headingStyle,
-                          ),
-                          Text(
-                            'Type:',
-                            style: headingStyle,
-                          ),
-                        ],
-                      ),
+                Row(children: <Widget>[
+                  const Expanded(
+                    child: Text(
+                      'Pay Ref:',
+                      style: headingStyle,
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    Expanded(
-                      flex: 7,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 4.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              item.payment.paymentReference,
-                              style: bodyStyle,
-                            ),
-                            Text(
-                              item.extensions.paidByName,
-                              style: bodyStyle,
-                              maxLines: 1,
-                            ),
-                            // AutoSizeText(
-                            //   item.paidBy,
-                            //   style: bodyStyle,
-                            //   maxLines: 1,
-                            //   minFontSize: 12.0,
-                            // ),
-                            Text(
-                              item.extensions.paidToName,
-                              style: bodyStyle,
-                              maxLines: 1,
-                            ),
-
-                            // AutoSizeText(
-                            //   item.paidTo,
-                            //   style: bodyStyle,
-                            //   maxLines: 1,
-                            //   minFontSize: 12.0,
-                            // ),
-                            Text(
-                              amountStr,
-                              style: bodyStyle,
-                            ),
-                            Text(
-                              (item?.payment?.paidDate == null) ? '' : DateFormat('MMM dd, yyyy').format(item.payment.paidDate),
-                              style: bodyStyle,
-                            ),
-                            Text(
-                              (item?.payment?.paidDate == null) ? '' : DateFormat('kk:mm').format(item.payment.paidDate),
-                              style: bodyStyle,
-                            ),
-                            Text(
-                              paymentTypeStr,
-                              style: bodyStyle,
-                            ),
-                          ],
+                    flex: flexLeft,
+                  ),
+                  Expanded(
+                      child: Text(
+                        ' ' + item.payment.paymentReference,
+                        style: bodyStyle,
+                      ),
+                      flex: flexRight),
+                ]),
+                Row(children: <Widget>[
+                  const Expanded(
+                    child: Text(
+                      'Paid by:',
+                      style: headingStyle,
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    flex: flexLeft,
+                  ),
+                  Expanded(
+                      child: Text(
+                        ' ' + item.extensions.paidByName,
+                        style: bodyStyle,
+                      ),
+                      flex: flexRight),
+                ]),
+                Row(children: <Widget>[
+                  const Expanded(
+                    child: Text(
+                      'Paid to:',
+                      style: headingStyle,
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    flex: flexLeft,
+                  ),
+                  Expanded(
+                      child: Text(
+                        ' ' + item.extensions.paidToName,
+                        style: bodyStyle,
+                      ),
+                      flex: flexRight),
+                ]),
+                Row(children: <Widget>[
+                  const Expanded(
+                    child: Text(
+                      'Amount:',
+                      style: headingStyle,
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    flex: flexLeft,
+                  ),
+                  Expanded(
+                      child: Text(
+                        ' ' + amountStr,
+                        style: bodyStyle,
+                      ),
+                      flex: flexRight),
+                ]),
+                Row(children: <Widget>[
+                  const Expanded(
+                    child: Text(
+                      'Date:',
+                      style: headingStyle,
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    flex: flexLeft,
+                  ),
+                  Expanded(
+                      child: Text(
+                        ' ' + ((item?.payment?.paidDate == null) ? '' : DateFormat('MMM dd, yyyy').format(item.payment.paidDate)),
+                        style: bodyStyle,
+                      ),
+                      flex: flexRight),
+                ]),
+                Row(children: <Widget>[
+                  const Expanded(
+                    child: Text(
+                      'Time:',
+                      style: headingStyle,
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    flex: flexLeft,
+                  ),
+                  Expanded(
+                      child: Text(
+                        ' ' + ((item?.payment?.paidDate == null) ? '' : DateFormat('kk:mm').format(item.payment.paidDate)),
+                        style: bodyStyle,
+                      ),
+                      flex: flexRight),
+                ]),
+                Row(children: <Widget>[
+                  const Expanded(
+                    child: Text(
+                      'Type:',
+                      style: headingStyle,
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    flex: flexLeft,
+                  ),
+                  Expanded(
+                      child: Text(
+                        ' ' + paymentTypeStr,
+                        style: bodyStyle,
+                      ),
+                      flex: flexRight),
+                ]),
+                ((item.payment.paymentType != paymentBankTransfer.value) && (item.payment.paymentType != paymentBankTransferOtherAmount.value))
+                    ? Container()
+                    : Row(children: <Widget>[
+                        const Expanded(
+                          child: Text(
+                            'Confirmed:',
+                            style: headingStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          flex: flexLeft,
                         ),
-                      ),
-                    ),
-                  ],
-                ),
+                        Expanded(
+                            child: Text(
+                              ' ' + item.extensions.confByName,
+                              style: bodyStyle,
+                            ),
+                            flex: flexRight),
+                      ]),
+                ((item.payment.paymentType != paymentBankTransfer.value) && (item.payment.paymentType != paymentBankTransferOtherAmount.value))
+                    ? Container()
+                    : Row(children: <Widget>[
+                        const Expanded(
+                          child: Text(
+                            'Conf on:',
+                            style: headingStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          flex: flexLeft,
+                        ),
+                        Expanded(
+                            child: Text(
+                              ' ' + ((item?.payment?.confirmedDate == null) ? '' : DateFormat('MMM dd, yyyy kk:mm').format(item.payment.paidDate)),
+                              style: bodyStyle,
+                            ),
+                            flex: flexRight),
+                      ]),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Center(
+                    child: (((item.payment.paymentType != paymentBankTransfer.value) && (item.payment.paymentType != paymentBankTransferOtherAmount.value)) || (item.payment.confirmedBy != null))
+                        ? Container()
+                        : RaisedButton(
+                            onPressed: () {
+                              Navigator.of(context, rootNavigator: true).pop('confirm');
+                            },
+                            child: Text('Confirm Bank Transfer', style: buttonTextStyle),
+                          ),
+                  ),
+                )
               ],
             ),
           ),
+          //           ),
+          //         ],
+          //       ),
+          //     ],
+          //   ),
+          // ),
           actions: <Widget>[
             FlatButton(
               child: const Text('Cancel transaction'),
               onPressed: () {
-                Navigator.of(context, rootNavigator: true).pop(true);
+                Navigator.of(context, rootNavigator: true).pop('cancel');
               },
             ),
             FlatButton(
               child: const Text('Close'),
               onPressed: () {
-                Navigator.of(context, rootNavigator: true).pop(false);
+                Navigator.of(context, rootNavigator: true).pop('close');
               },
             ),
           ],

@@ -52,7 +52,12 @@ class PaymentReportListItem extends StatelessWidget {
                   top: 7.0,
                   child: Text(
                     '$amountPaid',
-                    style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
+                    style: TextStyle(
+                        color: (((paymentReportItem.payment.paymentType == paymentBankTransfer.value) || (paymentReportItem.payment.paymentType == paymentBankTransferOtherAmount.value)) && (paymentReportItem.payment.confirmedBy == null)) ? Colors.red : Colors.black,
+                        fontFamily: 'AvenirNextCondensedDemiBold',
+                        fontStyle: FontStyle.normal,
+                        fontSize: 22.0,
+                        height: 1.0),
                     textAlign: TextAlign.right,
                   ),
                 ),
