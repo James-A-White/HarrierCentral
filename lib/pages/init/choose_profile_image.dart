@@ -480,104 +480,6 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     }
 
     Navigator.of(context).pop(profileImageUrl);
-
-    // if ((widget.doAddUser) && (widget.isForThisDevice)) {
-    //   // this is the case where we are adding a new user for the user of
-    //   // this device. This typically happens when a user installs the app.
-    //   // When this code is finished, we want to redirect the user to the
-    //   // main screen
-    //   setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
-
-    //   // final UpdateProfilePhotoService svc = UpdateProfilePhotoService();
-    //   // svc
-    //   //     .updateProfilePhoto(profileImageUrl, userId)
-    //   //     .then((SingleResultModel result) {
-    //   //   if (imageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
-    //   //     _imageFromCamera.then((platform.File file) {
-    //   //       _upload(file, fileName);
-    //   //     });
-    //   //   } else if (imageTypeSelection == _SelectedImageTypeEnum.fromGallery) {
-    //   //     _imageFromGallery.then((platform.File file) {
-    //   //       _upload(file, fileName);
-    //   //     });
-    //   //   }
-
-    //   //   // how long has the
-    //   //   final num deltaTime = DateTime.now().millisecondsSinceEpoch - startTime;
-
-    //   //   if (deltaTime > 1000) {
-    //   //     print('Delay to show uploading screen = $deltaTime milliseconds');
-    //   //     Future<dynamic>.delayed(Duration(milliseconds: deltaTime))
-    //   //         .then((void dummy) {
-    //   //       Navigator.of(context)
-    //   //           .pushReplacementNamed(RouteNames.MAIN_LANDING_PAGE.toString());
-    //   //     });
-    //   //   } else {
-    //   //     Navigator.of(context)
-    //   //         .pushReplacementNamed(RouteNames.MAIN_LANDING_PAGE.toString());
-    //   //   }
-    //   // });
-    // } else if ((widget.doAddUser) && (!widget.isForThisDevice)) {
-    //   // this is for a user being added from the device,
-    //   // but not a user that represents the owner of this device.
-    //   // This is usually called when an admin adds a new user from his / her device.
-    //   // When this code is done executing, we want to pop back
-    //   // to the caller.
-    //   final UpdateProfilePhotoService svc = UpdateProfilePhotoService();
-    //   svc
-    //       .updateProfilePhoto(profileImageUrl, userId)
-    //       .then((SingleResultModel result) {
-    //     if (imageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
-    //       _imageFromCamera.then((platform.File file) {
-    //         _upload(file, fileName);
-    //       });
-    //     } else if (imageTypeSelection == _SelectedImageTypeEnum.fromGallery) {
-    //       _imageFromGallery.then((platform.File file) {
-    //         _upload(file, fileName);
-    //       });
-    //     }
-
-    //     Future<dynamic>.delayed(const Duration(milliseconds: 3500))
-    //         .then((void dummy) {
-    //       Navigator.of(context).pop(profileImageUrl);
-    //     });
-    //   });
-    // } else {
-    //   // this last case will be for updating the profile photo
-    //   // of the user of this device, but without creating a
-    //   // user
-    //   print('Uploading profile image');
-
-    //   final UpdateProfilePhotoService svc = UpdateProfilePhotoService();
-    //   svc
-    //       .updateProfilePhoto(profileImageUrl, userId)
-    //       .then((SingleResultModel result) {
-    //     if (result.result.toLowerCase() == 'success') {
-    //       setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
-
-    //       if (imageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
-    //         _imageFromCamera.then((platform.File file) {
-    //           _upload(file, fileName);
-    //         });
-    //       } else if (imageTypeSelection == _SelectedImageTypeEnum.fromGallery) {
-    //         _imageFromGallery.then((platform.File file) {
-    //           _upload(file, fileName);
-    //         });
-    //       }
-    //     } else {
-    //       Utilities.showAlert(
-    //           context,
-    //           'Error Uploading Image',
-    //           'There was an error uploading your new profile image. Please try again later. If you continue to have a problem please contact us at connect@harriercentral.com',
-    //           'OK');
-    //     }
-
-    //     Future<dynamic>.delayed(const Duration(milliseconds: 3500))
-    //         .then((void dummy) {
-    //       Navigator.of(context).pop(profileImageUrl);
-    //     });
-    //   });
-    // }
   }
 
   String _upload(platform.File imageFile, String fileName) {
@@ -679,7 +581,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
   }
 
   void _onImageButtonPressed(ImageSource source) {
-    setState(() async {
+    setState(() {
       ImagePicker.pickImage(source: source).then((platform.File image) {
         setState(() {
           final Future<platform.File> img = ImageCropper.cropImage(

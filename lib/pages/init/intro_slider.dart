@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:intro_slider/intro_slider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/util/styles.dart';
@@ -128,26 +129,26 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
     );
     slides.add(
       Slide(
-        title: 'OK! Let\'s\r\nGet Started!',
+        title: 'Let us know where you are!',
         maxLineTitle: 2,
         styleTitle: titleStyle,
         description:
-            'Now We Need Just a Bit of Information to Create Your Custom Harrier Central Experience!',
+            'This lets us find the Hash events closest to you',
         styleDescription: descriptionStyle,
-        pathImage: 'images/init/intro/intro_info_sign.png',
-        //widthImage: 250,
-        heightImage: 180,
-        colorBegin: const Color.fromARGB(255, 255, 160, 151),
-        colorEnd: const Color.fromARGB(255, 255, 160, 151),
+        pathImage: 'images/init/intro/intro_phone_location.png',
+        heightImage: 240,
+        colorBegin: const Color.fromARGB(255, 230, 203, 203),
+        colorEnd: const Color.fromARGB(255, 230, 203, 203),
         directionColorBegin: Alignment.topRight,
         directionColorEnd: Alignment.bottomLeft,
       ),
     );
   }
 
-  void onDonePress() {
+  Future<void> onDonePress() async {
+    await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.location]);
     Navigator.of(context)
-        .pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
+        .pushReplacementNamed(RouteNames.PERMISSION_PHOTO_SLIDER.toString());
 
         // Navigator.of(context)
         // .pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
@@ -171,7 +172,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
     //   Icons.done,
     //   color: themeAppBarBackground,
     // );
-        return Text('Start!', style:navStyle
+        return Text('OK', style:navStyle
     );
   }
 

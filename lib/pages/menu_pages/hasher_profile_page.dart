@@ -297,7 +297,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             kennelId: ((widget.kennelId == null) || (widget.kennelId == '')) ? GUID_EMPTY : widget.kennelId,
             historicalPackRunCount: previousRunCountController.text,
             historicalHaringCount: previousHaringCountController.text,
-            followKennelOnAddNeewUser: _addAsKennelFollower ? 1 : 0);
+            followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0);
 
         apiCall.then((void dummy) async {
           refreshUserDataFromTable(false).then((void dummy) {

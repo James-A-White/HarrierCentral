@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:permission_handler/permission_handler.dart';
 import 'package:package_info/package_info.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -37,7 +36,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
     await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
 
-    await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);
+    // await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
@@ -115,7 +114,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
                 print('Master data synchronized $resultStr');
 
                 final NotificationSupport notifications = NotificationSupport();
-                notifications.configureNotifications();
+                notifications.configureNotifications(true);
 
                 Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
               }

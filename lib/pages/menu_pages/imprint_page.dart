@@ -101,7 +101,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nDatabase version: ${MigrationsTableHelper.dbVersion.toString()}\r\nStatus: Private Beta', style: bodyStyle),
+                      Text('Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nDatabase version: ${MigrationsTableHelper.dbVersion.toString()}', style: bodyStyle),
                     ],
                   ),
                   Row(

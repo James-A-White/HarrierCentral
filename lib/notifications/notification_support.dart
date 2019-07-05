@@ -10,9 +10,9 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/database/notifications_table.dart';
 
 class NotificationSupport {
-  void configureNotifications() {
+  void configureNotifications(bool doSubscriptions) {
     final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-    _firebaseMessaging.requestNotificationPermissions();
+    _firebaseMessaging.requestNotificationPermissions(const IosNotificationSettings(sound: true, alert: true, badge: false));
 
     _firebaseMessaging.configure(onMessage: (dynamic content) {
       print('onMessage content = ${content.toString()}');
@@ -26,7 +26,9 @@ class NotificationSupport {
       print('Messaging token = $token');
     });
 
-    initNotificationTopics(_firebaseMessaging);
+    if (doSubscriptions) {
+      initNotificationTopics(_firebaseMessaging);
+    }
   }
 
   Future<void> initNotificationTopics(FirebaseMessaging _firebaseMessaging) async {
@@ -130,7 +132,7 @@ class NotificationSupport {
     });
   }
 
-  Future<void> setNotificationState({String eventId,String kennelId}) async {
+  Future<void> setNotificationState({String eventId, String kennelId}) async {
     final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
     DBProvider.db.database.then((Database db) async {
@@ -165,7 +167,7 @@ class NotificationSupport {
             _firebaseMessaging.unsubscribeFromTopic(tag);
             print('unsubscribed from: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
           }
-          
+
           NotificationsTableHelper.recordNotificationStatus(db, NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
         }
       } catch (e) {
