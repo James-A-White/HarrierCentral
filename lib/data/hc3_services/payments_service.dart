@@ -27,6 +27,7 @@ class PaymentsModel {
       this.debitAmount,
       this.paidDate,
       this.paymentType,
+      this.productType,
       this.cancelledDate,
       this.cancelledBy,
       this.confirmedDate,
@@ -47,6 +48,7 @@ class PaymentsModel {
   final num debitAmount;
   final DateTime paidDate;
   int paymentType;
+  final int productType;
   final DateTime cancelledDate;
   final String cancelledBy;
   final DateTime confirmedDate;
@@ -74,6 +76,7 @@ class PaymentsModel {
             debitAmount: jsonItem['debitAmount'],
             paidDate: DateTime.parse(jsonItem['paidDate'].toString().substring(0, 19)),
             paymentType: jsonItem['paymentType'],
+            productType: jsonItem['productType'],
             cancelledDate: DateTime.parse(jsonItem['cancelledDate'].toString().substring(0, 19)),
             cancelledBy: jsonItem['cancelledBy'],
             confirmedDate: DateTime.parse(jsonItem['confirmedDate'].toString().substring(0, 19)),
@@ -119,6 +122,7 @@ class PaymentsTableHelper {
   static const String colDebitAmount = 'debitAmount';
   static const String colPaidDate = 'paidDate';
   static const String colPaymentType = 'paymentType';
+  static const String colProductType = 'productType';
   static const String colCancelledDate = 'cancelledDate';
   static const String colCancelledBy = 'cancelledBy';
   static const String colConfirmedDate= 'confirmedDate';
@@ -150,6 +154,7 @@ class PaymentsTableHelper {
             $colDebitAmount NUM,
             $colPaidDate TEXT,
             $colPaymentType INT,
+            $colProductType INT,
             $colCancelledDate TEXT,
             $colCancelledBy TEXT,
             $colConfirmedDate TEXT,
@@ -179,6 +184,7 @@ class PaymentsTableHelper {
       PaymentsTableHelper.colDebitAmount: item.debitAmount,
       PaymentsTableHelper.colPaidDate: item.paidDate.toString(),
       PaymentsTableHelper.colPaymentType: item.paymentType,
+      PaymentsTableHelper.colProductType: item.productType,
       PaymentsTableHelper.colCancelledDate: item.cancelledDate.toString(),
       PaymentsTableHelper.colCancelledBy: item.cancelledBy,
       PaymentsTableHelper.colConfirmedDate: item.confirmedDate,
@@ -213,6 +219,7 @@ class PaymentsTableHelper {
       debitAmount: map[PaymentsTableHelper.colDebitAmount],
       paidDate: (map[PaymentsTableHelper.colPaidDate] == null) ? null : DateTime.parse(map[PaymentsTableHelper.colPaidDate].toString().substring(0, 19)),
       paymentType: map[PaymentsTableHelper.colPaymentType],
+      productType: map[PaymentsTableHelper.colProductType],
       cancelledDate: (map[PaymentsTableHelper.colCancelledDate] == null) ? null : DateTime.parse(map[PaymentsTableHelper.colCancelledDate].toString().substring(0, 19)),
       cancelledBy: map[PaymentsTableHelper.colCancelledBy],
       confirmedDate: (map[PaymentsTableHelper.colConfirmedDate] == null) ? null : DateTime.parse(map[PaymentsTableHelper.colConfirmedDate].toString().substring(0, 19)),
@@ -366,7 +373,7 @@ class PaymentsService {
 
     final String tokenParameterString = hasherEventMapId.toUpperCase() + '#' + hasherId + '#' + paymentAmount.toInt().toString() + '#' + eventId.toUpperCase();
 
-    final String accessToken = Utilities.generateToken(userId, 'payForEvent', paramString: tokenParameterString);
+    final String accessToken = Utilities.generateToken(userId, 'processPayment', paramString: tokenParameterString);
 
     final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.eventAdmin);
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
@@ -384,6 +391,7 @@ class PaymentsService {
       'eventId': eventId,
       'hasherEventMapId': hasherEventMapId,
       'paymentType': paymentType == null ? null : paymentType.toString(),
+      'productType': productTypeEvent.value.toString(),
       'paymentAmount': paymentAmount == null ? null : paymentAmount.toString(),
       'minimumAttendenceValue': minimumAttendenceValue.toString(),
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
@@ -392,7 +400,7 @@ class PaymentsService {
     });
 
     final http.Response response = await http
-        .post(BASE_API_URL + 'hc3_pay_for_event', headers: <String, String>{'content-type': 'application/json'}, body: body
+        .post(BASE_API_URL + 'hc3_process_payment', headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )

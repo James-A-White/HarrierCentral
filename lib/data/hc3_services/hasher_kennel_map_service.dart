@@ -17,7 +17,7 @@ import 'package:harrier_central/util/enums.dart';
 
 class HasherKennelMapModel {
   HasherKennelMapModel(
-      {this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.isHomeKennel, this.kennelNotificationPreference, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.removed, this.updatedAt});
+      {this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.isHomeKennel, this.kennelNotificationPreference, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.historicalCountIsEstimate, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.removed, this.updatedAt});
 
   final String hkmId;
   final String userId;
@@ -29,8 +29,9 @@ class HasherKennelMapModel {
   final int mismanagementRoleFlags;
   final int userRoleFlags;
   final int appAccessFlags;
-  final num historicalPackRunCount;
-  final num historicalHaringCount;
+  final int historicalPackRunCount;
+  final int historicalHaringCount;
+  final int historicalCountIsEstimate;
   final DateTime dateOfLastRun;
   final DateTime membershipExpirationDate;
   final DateTime memberSince;
@@ -57,6 +58,7 @@ class HasherKennelMapModel {
           appAccessFlags: jsonItem['appAccessFlags'],
           historicalPackRunCount: jsonItem['historicalPackRunCount'],
           historicalHaringCount: jsonItem['historicalHaringCount'],
+          historicalCountIsEstimate: jsonItem['historicalCountIsEstimate'],
           dateOfLastRun: jsonItem['dateOfLastRun'] == null ? null : DateTime.parse(jsonItem['dateOfLastRun'].toString().substring(0, 19)),
           membershipExpirationDate: jsonItem['membershipExpirationDate'] == null ? null : DateTime.parse(jsonItem['membershipExpirationDate'].toString().substring(0, 19)),
           memberSince: jsonItem['memberSince'] == null ? null : DateTime.parse(jsonItem['memberSince'].toString().substring(0, 19)),
@@ -106,7 +108,8 @@ class HasherKennelMapTableHelper {
   static const String colUserRoleFlags = 'userRoleFlags';
   static const String colAppAccessFlags = 'appAccessFlags';
   static const String colHistoricalPackRunCount = 'historicalPackRunCount';
-  static const String colHistoricalHaringCount = 'historicalHaringCount';
+  static const String colHistoricalHaringCount = 'historicalHaringCount'; 
+  static const String colHistoricalCountIsEstimate = 'historicalCountIsEstimate';
   static const String colDateOfLastRun = 'dateOfLastRun';
   static const String colMembershipExpirationDate = 'membershipExpirationDate';
   static const String colMemberSince = 'memberSince';
@@ -158,8 +161,9 @@ class HasherKennelMapTableHelper {
             $colMismanagementRoleFlags INT,
             $colUserRoleFlags INT,
             $colAppAccessFlags INT,
-            $colHistoricalPackRunCount NUM,
-            $colHistoricalHaringCount NUM,
+            $colHistoricalPackRunCount INT,
+            $colHistoricalHaringCount INT,
+            $colHistoricalCountIsEstimate INT,
             $colDateOfLastRun TEXT,
             $colMembershipExpirationDate TEXT,
             $colMemberSince TEXT,
@@ -189,6 +193,7 @@ class HasherKennelMapTableHelper {
       HasherKennelMapTableHelper.colAppAccessFlags: item.appAccessFlags,
       HasherKennelMapTableHelper.colHistoricalPackRunCount: item.historicalPackRunCount,
       HasherKennelMapTableHelper.colHistoricalHaringCount: item.historicalHaringCount,
+      HasherKennelMapTableHelper.colHistoricalCountIsEstimate: item.historicalCountIsEstimate,
       HasherKennelMapTableHelper.colDateOfLastRun: item.dateOfLastRun,
       HasherKennelMapTableHelper.colMembershipExpirationDate: item.membershipExpirationDate,
       HasherKennelMapTableHelper.colMemberSince: item.memberSince,
@@ -213,6 +218,7 @@ class HasherKennelMapTableHelper {
       appAccessFlags: map[HasherKennelMapTableHelper.colAppAccessFlags],
       historicalPackRunCount: map[HasherKennelMapTableHelper.colHistoricalPackRunCount],
       historicalHaringCount: map[HasherKennelMapTableHelper.colHistoricalHaringCount],
+      historicalCountIsEstimate: map[HasherKennelMapTableHelper.colHistoricalCountIsEstimate],
       dateOfLastRun: (map[HasherKennelMapTableHelper.colDateOfLastRun] == null) ? null : DateTime.parse(map[HasherKennelMapTableHelper.colDateOfLastRun].toString().substring(0, 19)),
       membershipExpirationDate: (map[HasherKennelMapTableHelper.colMembershipExpirationDate] == null) ? null : DateTime.parse(map[HasherKennelMapTableHelper.colMembershipExpirationDate].toString().substring(0, 19)),
       memberSince: (map[HasherKennelMapTableHelper.colMemberSince] == null) ? null : DateTime.parse(map[HasherKennelMapTableHelper.colMemberSince].toString().substring(0, 19)),

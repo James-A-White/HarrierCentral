@@ -130,17 +130,15 @@ const EnumPaymentType<int> paymentBankTransferOtherAmount = EnumPaymentType<int>
 const EnumPaymentType<int> paymentConfirmBankTransfer = EnumPaymentType<int>(100);
 
 
-// const EnumPaymentType<int> paymentTypeUnknownTotals = EnumPaymentType<int>(100);
-// const EnumPaymentType<int> paymentNotPaidTotals = EnumPaymentType<int>(101);
-// const EnumPaymentType<int> paymentFreeRunTotals = EnumPaymentType<int>(102);
-// const EnumPaymentType<int> paymentCashTotals = EnumPaymentType<int>(103);
-// const EnumPaymentType<int> paymentBankTransferTotals =
-//     EnumPaymentType<int>(104);
-// const EnumPaymentType<int> paymentCashOtherAmountTotals =
-//     EnumPaymentType<int>(105);
-// const EnumPaymentType<int> paymentHashCreditTotals = EnumPaymentType<int>(106);
-// const EnumPaymentType<int> paymentBankTransferOtherAmountTotals =
-//     EnumPaymentType<int>(107);
+//////////////////////////
+
+class EnumProductType<int> extends Enum<int> {
+  const EnumProductType(int val) : super(val);
+}
+
+const EnumProductType<int> productTypeEvent = EnumProductType<int>(1);
+const EnumProductType<int> productTypeMembership = EnumProductType<int>(2);
+const EnumProductType<int> productTypeHaberdashery = EnumProductType<int>(3);
 
 //////////////////////////
 

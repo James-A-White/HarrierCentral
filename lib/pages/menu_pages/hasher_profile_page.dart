@@ -121,7 +121,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           SELECT 
             h.*,
             hkm.historicalPackRunCount,
-            hkm.historicalHaringCount
+            hkm.historicalHaringCount,
+            hkm.historicalCountIsEstimate
             FROM hashers h
             LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin)} hkm ON hkm.kennelId = "${widget.kennelId}" AND hkm.userId = "${widget.hasherId}"
             WHERE h.hasherId = "${widget.hasherId}"
@@ -153,6 +154,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         newPhoto = hasher.photo;
         previousRunCountController.text = (hkmData?.historicalPackRunCount ?? 0).toString();
         previousHaringCountController.text = (hkmData?.historicalHaringCount ?? 0).toString();
+        historicalCountIsEstimate = (hkmData?.historicalCountIsEstimate ?? 0) == 1;
       }
 
       setState(() {
@@ -169,6 +171,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   TextEditingController hashNameController = TextEditingController();
   TextEditingController previousRunCountController = TextEditingController();
   TextEditingController previousHaringCountController = TextEditingController();
+  bool historicalCountIsEstimate = false;
 
   @override
   void initState() {
@@ -244,6 +247,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       isDirty = true;
     }
 
+    if (historicalCountIsEstimate != ((hkmData?.historicalCountIsEstimate ?? 0) == 1))
+    {
+      isDirty = true;
+    }
+
     if (isDirty != _isDirty) {
       setState(() {
         _isDirty = isDirty;
@@ -297,6 +305,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             kennelId: ((widget.kennelId == null) || (widget.kennelId == '')) ? GUID_EMPTY : widget.kennelId,
             historicalPackRunCount: previousRunCountController.text,
             historicalHaringCount: previousHaringCountController.text,
+            historicalCountIsEstimate: historicalCountIsEstimate,
             followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0);
 
         apiCall.then((void dummy) async {
@@ -396,7 +405,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         TextFormField(
           autocorrect: false,
           controller: previousRunCountController,
-          //initialValue: hasher.firstName,
           decoration: const InputDecoration(labelText: 'Historical run count'),
           keyboardType: TextInputType.number,
           onSaved: (String val) {
@@ -406,12 +414,38 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         TextFormField(
           autocorrect: false,
           controller: previousHaringCountController,
-          //initialValue: hasher.firstName,
           decoration: const InputDecoration(labelText: 'Historical haring count'),
           keyboardType: TextInputType.number,
           onSaved: (String val) {
             hasher.firstName = val;
           },
+        ),
+                const SizedBox(
+          height: 15.0,
+        ),
+        Row(
+          children: <Widget>[
+            Container(
+              margin: const EdgeInsets.only(right: 10),
+              height: 25,
+              width: 25,
+              color: Colors.yellow[100],
+              child: Checkbox(
+                value: historicalCountIsEstimate,
+                onChanged: (bool value) {
+                  setState(() {
+                    historicalCountIsEstimate = value;
+                    checkDirty();
+                  });
+                },
+              ),
+            ),
+            const Text(
+              'Run counts are estimates',
+              //style: headingStyle,
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
         const SizedBox(
           height: 10.0,

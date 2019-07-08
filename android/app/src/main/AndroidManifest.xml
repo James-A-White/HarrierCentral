@@ -35,6 +35,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+
         <activity android:name="com.apptreesoftware.barcodescan.BarcodeScannerActivity"/>
 
         <!-- Set custom default icon. This is used when no icon is set for incoming notification messages. -->
