@@ -21,7 +21,6 @@ import 'package:harrier_central/widgets/user_event_list_item.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/pages/top_level/history_list_page.dart';
 
-
 class UserRunHistoryListPage extends StatefulWidget {
   const UserRunHistoryListPage({Key key, @required this.kennelInfo}) : super(key: key);
 
@@ -320,9 +319,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
   static const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
 
-  static const TextStyle numberStyle =  TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85);
+  static const TextStyle numberStyle = TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85);
 
-  static const TextStyle boldTitleStyle =  TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85);
+  static const TextStyle boldTitleStyle = TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85);
 
   int myRunCount = 0;
   int myHaringCount = 0;
@@ -373,63 +372,93 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                       ],
                     ),
                     //color:Color.fromARGB(30, 0, 0, 0),
-                    padding: const EdgeInsets.only(left: 5, top: 5, right: 20, bottom: 5),
+                    padding: const EdgeInsets.only(left: 5, top: 5, right: 0, bottom: 5),
 
                     child: Row(children: <Widget>[
                       Container(
-                        margin: const EdgeInsets.only(right: 20.0),
+                        margin: const EdgeInsets.only(right: 12.0),
                         height: 90,
                         child: KennelLogo(
                           kennelLogoUrl: widget.kennelInfo.kennelLogo,
                           kennelShortName: widget.kennelInfo.kennelShortName,
                           logoHeight: 80.0,
-                          leftPadding: 10.0,
+                          leftPadding: 5.0,
                         ),
                       ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Container(
-                            child: AutoSizeText(
-                              '${widget.kennelInfo.kennelName}',
-                              //'Super fucking long text thats sure to overflow and more',
-                              //'999',
-                              overflow: TextOverflow.ellipsis,
-                              minFontSize: 18.0,
-                              maxLines: 1,
-                              style: boldTitleStyle,
-                              textAlign: TextAlign.center,
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Container(
+                              child: AutoSizeText(
+                                '${widget.kennelInfo.kennelName}',
+                                //'Super fucking long text thats sure to overflow and more',
+                                //'999',
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 18.0,
+                                maxLines: 1,
+                                style: boldTitleStyle,
+                                textAlign: TextAlign.left,
+                              ),
+                              //color: Colors.green,
                             ),
-                            //color: Colors.green,
-                          ),
-                          Container(
-                            child: AutoSizeText(
-                              'My run count: ${myRunCount.toString()}',
-                              //'Super fucking long text thats sure to overflow and more',
-                              //'999',
-                              overflow: TextOverflow.ellipsis,
-                              minFontSize: 18.0,
-                              maxLines: 1,
-                              style: numberStyle,
-                              textAlign: TextAlign.center,
+                            Container(
+                              child: AutoSizeText(
+                                'My verified run count: ${myRunCount.toString()}',
+                                //'Super fucking long text thats sure to overflow and more',
+                                //'999',
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 18.0,
+                                maxLines: 1,
+                                style: numberStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                              //color: Colors.green,
                             ),
-                            //color: Colors.green,
-                          ),
-                          Container(
-                            child: AutoSizeText(
-                              'Times I\'ve hared: ${myHaringCount.toString()}',
-                              //'Super fucking long text thats sure to overflow and more',
-                              //'999',
-                              overflow: TextOverflow.ellipsis,
-                              minFontSize: 18.0,
-                              maxLines: 1,
-                              style: numberStyle,
-                              textAlign: TextAlign.center,
+                            Container(
+                              child: AutoSizeText(
+                                'My verified haring count: ${myHaringCount.toString()}',
+                                //'Super fucking long text thats sure to overflow and more',
+                                //'999',
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 18.0,
+                                maxLines: 1,
+                                style: numberStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                              //color: Colors.green,
                             ),
-                            //color: Colors.green,
-                          ),
-                        ],
+                            widget.kennelInfo.historicalPackRunCount == 0 ? Container() :
+                            Container(
+                              child: AutoSizeText(
+                                'Historical run count: ${widget.kennelInfo.historicalCountIsEstimate != 0 ? '~' : ''}${widget.kennelInfo.historicalPackRunCount}',
+                                //'Super fucking long text thats sure to overflow and more',
+                                //'999',
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 18.0,
+                                maxLines: 1,
+                                style: numberStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                              //color: Colors.green,
+                            ),
+                            widget.kennelInfo.historicalPackRunCount == 0 ? Container() :
+                            Container(
+                              child: AutoSizeText(
+                                'Historical haring coung ${widget.kennelInfo.historicalCountIsEstimate != 0 ? '~' : ''}${widget.kennelInfo.historicalHaringCount}',
+                                //'Super fucking long text thats sure to overflow and more',
+                                //'999',
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 18.0,
+                                maxLines: 1,
+                                style: numberStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                              //color: Colors.green,
+                            ),
+                          ],
+                        ),
                       ),
                     ]),
                   ),

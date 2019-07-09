@@ -34,26 +34,6 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        // Container(
-        //   width: MediaQuery.of(context).size.width,
-        //   height: 36.0,
-        //   padding: const EdgeInsets.only(left: 10.0, bottom: 2.0),
-        //   child: AutoSizeText(
-        //     '${kennelRunHistoryCount.kennelName}',
-        //     //'Super fucking long text thats sure to overflow and more',
-        //     //'Super fucking',
-        //     minFontSize: 18,
-        //     maxFontSize: 22,
-        //     overflow: TextOverflow.ellipsis,
-        //     maxLines: 1,
-        //     style: const TextStyle(
-        //         fontFamily: 'AvenirNextCondensedDemiBold',
-        //         fontStyle: FontStyle.normal,
-        //         fontSize: 22.0,
-        //         height: 1.0),
-        //     textAlign: TextAlign.center,
-        //   ),
-        // ),
         InkWell(
           onTap: () {
             Navigator.of(context).push<dynamic>(
@@ -82,30 +62,13 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                   leftPadding: 0.0,
                 ),
               ),
-
-              // Container(
-              //   width: textWidth,
-              //   child: AutoSizeText(
-              //     '${kennelRunHistoryCount.totalPackRunsThisKennel.toString()}',
-              //     //'Super fucking long text thats sure to overflow and more',
-              //     //'999',
-              //     overflow: TextOverflow.ellipsis,
-              //     minFontSize: 18.0,
-              //     maxLines: 1,
-              //     style: numberStyle,
-              //     textAlign: TextAlign.center,
-              //   ),
-              //   //color: Colors.red,
-              // ),
               Container(
                 width: 250,
                 child: Row(
                   children: <Widget>[
                     Container(
-                      //padding: EdgeInsets.only(left:53.0),
-                      
                       child: AutoSizeText(
-                        '   =   ${kennelInfo.totalRunsThisKennel.toString()}',
+                        '  =  ' +  (kennelInfo.historicalCountIsEstimate != 0 ? '~' : '') + '${kennelInfo.totalRunsThisKennel.toString()}',
                         //'   =   9999',
                         //'Super fucking long text thats sure to overflow and more',
                         //'999',

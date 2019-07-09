@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:intro_slider/intro_slider.dart';
-import 'package:permission_handler/permission_handler.dart';
+
 
 import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/util/styles.dart';
@@ -28,10 +28,16 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
     TextStyle navStyle = TextStyle(
       color: themeAppBarBackground, fontSize: 20.0, fontFamily: 'AvenirNextDemiBold');
 
+
   @override
   void initState() {
     super.initState();
 
+    addSlides();
+  }
+
+
+  void addSlides() {
     slides.add(
       Slide(
         title: 'Welcome to Harrier Central',
@@ -42,8 +48,8 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         pathImage: 'images/other/hc_app_icon.png',
         //widthImage: 150,
         heightImage: 150,
-        colorBegin: const Color.fromARGB(255, 206, 237, 255),
-        colorEnd: const Color.fromARGB(255, 206, 237, 255),
+        colorBegin: const Color.fromARGB(255, 227, 227, 227),
+        colorEnd: const Color.fromARGB(255, 227, 227, 227),
         directionColorBegin: Alignment.topRight,
         directionColorEnd: Alignment.bottomLeft,
       ),
@@ -81,6 +87,22 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
     );
     slides.add(
       Slide(
+        title: 'Easy\r\nHash Cash',
+        maxLineTitle: 2,
+        styleTitle: titleStyle,
+        description:
+            'With new ways to pay for the Hash, you\'ll never fumble for cash again',
+        styleDescription: descriptionStyle,
+        pathImage: 'images/init/intro/intro_cash.png',
+        heightImage: 220,
+        colorBegin: const Color.fromARGB(255, 255, 244, 210),
+        colorEnd: const Color.fromARGB(255, 255, 244, 210),
+        directionColorBegin: Alignment.topRight,
+        directionColorEnd: Alignment.bottomLeft,
+      ),
+    );
+    slides.add(
+      Slide(
         title: 'Built for\r\nMis-Management',
         maxLineTitle: 2,
         styleTitle: titleStyle,
@@ -89,8 +111,8 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_admin_tools.png',
         heightImage: 180,
-        colorBegin: const Color.fromARGB(255, 143, 234, 255),
-        colorEnd: const Color.fromARGB(255, 143, 234, 255),
+        colorBegin: const Color.fromARGB(255, 200, 200, 255),
+        colorEnd: const Color.fromARGB(255, 200, 200, 255),
         directionColorBegin: Alignment.topRight,
         directionColorEnd: Alignment.bottomLeft,
       ),
@@ -105,55 +127,64 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_data_security.png',
         heightImage: 220,
-        colorBegin: const Color.fromARGB(255, 255, 165, 115),
-        colorEnd: const Color.fromARGB(255, 255, 165, 115),
+        colorBegin: const Color.fromARGB(255, 255, 190, 180),
+        colorEnd: const Color.fromARGB(255, 255, 190, 180),
         directionColorBegin: Alignment.topRight,
         directionColorEnd: Alignment.bottomLeft,
       ),
     );
     slides.add(
       Slide(
-        title: 'Beta Software',
+        title: 'More to Come!',
         maxLineTitle: 2,
         styleTitle: titleStyle,
         description:
-            'We are building 5-star software, but we\'re not done yet! Please contact us with bug reports and feature requests',
+            'There are dozens more features designed just for the Hash coming soon!',
         styleDescription: descriptionStyle,
-        pathImage: 'images/init/intro/intro_beta_testing.png',
+        pathImage: 'images/init/intro/intro_rocket.png',
+        heightImage: 260,
+        colorBegin: const Color.fromARGB(255, 143, 234, 255),
+        colorEnd: const Color.fromARGB(255, 143, 234, 255),
+        directionColorBegin: Alignment.topRight,
+        directionColorEnd: Alignment.bottomLeft,
+      ),
+    );
+    slides.add(
+      Slide(
+        title: 'OK! Let\'s\r\nGet Started!',
+        maxLineTitle: 2,
+        styleTitle: titleStyle,
+        description:
+            'Now We Need Just a Bit of Information to Create Your Custom Harrier Central Experience!',
+        styleDescription: descriptionStyle,
+        pathImage: 'images/init/intro/intro_info_sign.png',
+        //widthImage: 250,
         heightImage: 180,
-        colorBegin: const Color.fromARGB(255, 221, 255, 69),
-        colorEnd: const Color.fromARGB(255, 221, 255, 69),
+        colorBegin: const Color.fromARGB(255, 227, 227, 227),
+        colorEnd: const Color.fromARGB(255, 227, 227, 227),
         directionColorBegin: Alignment.topRight,
         directionColorEnd: Alignment.bottomLeft,
       ),
     );
-    slides.add(
-      Slide(
-        title: 'Let us know where you are!',
-        maxLineTitle: 2,
-        styleTitle: titleStyle,
-        description:
-            'This lets us find the Hash events closest to you',
-        styleDescription: descriptionStyle,
-        pathImage: 'images/init/intro/intro_phone_location.png',
-        heightImage: 240,
-        colorBegin: const Color.fromARGB(255, 230, 203, 203),
-        colorEnd: const Color.fromARGB(255, 230, 203, 203),
-        directionColorBegin: Alignment.topRight,
-        directionColorEnd: Alignment.bottomLeft,
-      ),
-    );
+
   }
 
   Future<void> onDonePress() async {
-    await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.location]);
+    
     Navigator.of(context)
-        .pushReplacementNamed(RouteNames.PERMISSION_PHOTO_SLIDER.toString());
+        .pushReplacementNamed(RouteNames.PERMISSION_LOCATION_SLIDER.toString());
 
-        // Navigator.of(context)
-        // .pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+  }
 
-
+  Future<void> onSkipPress() async {
+    // introSlider = null;
+    // slides.clear();
+    // addSlides();
+    // setState(() {
+    //   buildIntroSlider();
+    // });
+        Navigator.of(context)
+        .pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
   }
 
   Widget renderNextBtn() {
@@ -192,6 +223,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
     return IntroSlider(
       // List slides
       slides: slides,
+      onSkipPress: onSkipPress,
 
       // Skip button
       renderSkipBtn: renderSkipBtn(),

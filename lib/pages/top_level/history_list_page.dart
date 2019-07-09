@@ -21,7 +21,7 @@ class HistoryListPage extends StatefulWidget {
 }
 
 class HistoryListResults {
-  HistoryListResults({this.totalRunsThisKennel, this.totalHaringThisKennel, this.kennelName, this.kennelShortName, this.kennelId, this.kennelLogo, this.historicalPackRunCount, this.historicalHaringCount});
+  HistoryListResults({this.totalRunsThisKennel, this.totalHaringThisKennel, this.kennelName, this.kennelShortName, this.kennelId, this.kennelLogo, this.historicalPackRunCount, this.historicalHaringCount, this.historicalCountIsEstimate});
 
   final int totalRunsThisKennel;
   final int totalHaringThisKennel;
@@ -31,6 +31,7 @@ class HistoryListResults {
   final String kennelLogo;
   final int historicalHaringCount;
   final int historicalPackRunCount;
+  final int historicalCountIsEstimate;
 
   static HistoryListResults fromMap(Map<String, dynamic> map) {
     final HistoryListResults item = HistoryListResults(
@@ -39,6 +40,7 @@ class HistoryListResults {
       kennelId: map['kennelId'], 
       historicalPackRunCount: map['historicalPackRunCount'], 
       historicalHaringCount: map['historicalHaringCount'], 
+      historicalCountIsEstimate: map['historicalCountIsEstimate'],
       kennelLogo: map['kennelLogo'], 
       kennelName: map['kennelName'], 
       kennelShortName: map['kennelShortName']);
@@ -74,7 +76,8 @@ class HistoryListPageState extends State<HistoryListPage> {
           k.kennelId,
           k.kennelLogo,
           coalesce(hkm.historicalPackRunCount,0) as historicalPackRunCount,
-          coalesce(hkm.historicalHaringCount,0) as historicalHaringCount
+          coalesce(hkm.historicalHaringCount,0) as historicalHaringCount,
+          coalesce(hkm.historicalCountIsEstimate,0) as historicalCountIsEstimate
           FROM hasherEventMap hem
           INNER JOIN narrowEvents e on hem.eventId = e.eventId
           INNER JOIN kennels k on k.kennelId = e.kennelId

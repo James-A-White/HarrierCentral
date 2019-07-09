@@ -6,6 +6,7 @@ import 'package:harrier_central/pages/init/login_page.dart';
 import 'package:harrier_central/pages/init/avatar_icons_page.dart';
 import 'package:harrier_central/pages/init/intro_slider.dart';
 import 'package:harrier_central/pages/init/permissions_photo.dart';
+import 'package:harrier_central/pages/init/permissions_location.dart';
 import 'package:harrier_central/pages/init/permissions_notification.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
@@ -16,6 +17,7 @@ enum RouteNames {
   AVATAR_ICON_PAGE,
   NEW_ACCOUNT,
   INTRO_SLIDER,
+  PERMISSION_LOCATION_SLIDER,
   PERMISSION_PHOTO_SLIDER,
   PERMISSION_NOTIFICATION_SLIDER,
   GET_STARTED_SLIDER,
@@ -30,6 +32,8 @@ final Map<String, WidgetBuilder> routes = <String, WidgetBuilder>{
       const LoginPage(),
   RouteNames.INTRO_SLIDER.toString(): (BuildContext context) =>
       const IntroSliderPage(),
+  RouteNames.PERMISSION_LOCATION_SLIDER.toString(): (BuildContext context) =>
+      const LocationPermissionSliderPage(),
   RouteNames.PERMISSION_PHOTO_SLIDER.toString(): (BuildContext context) =>
       const PhotoPermissionSliderPage(),
   RouteNames.PERMISSION_NOTIFICATION_SLIDER.toString(): (BuildContext context) =>

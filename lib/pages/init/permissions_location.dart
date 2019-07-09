@@ -4,18 +4,19 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:intro_slider/intro_slider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/util/styles.dart';
 
-class GetStartedSliderPage extends StatefulWidget {
-  const GetStartedSliderPage({Key key}) : super(key: key);
+class LocationPermissionSliderPage extends StatefulWidget {
+  const LocationPermissionSliderPage({Key key}) : super(key: key);
 
   @override
-  _GetStartedSliderPageState createState() => _GetStartedSliderPageState();
+  _LocationPermissionSliderPageState createState() => _LocationPermissionSliderPageState();
 }
 
-class _GetStartedSliderPageState extends State<GetStartedSliderPage> {
+class _LocationPermissionSliderPageState extends State<LocationPermissionSliderPage> {
   List<Slide> slides = <Slide>[];
 
   TextStyle titleStyle = const TextStyle(
@@ -33,17 +34,16 @@ class _GetStartedSliderPageState extends State<GetStartedSliderPage> {
 
     slides.add(
       Slide(
-        title: 'Some Last\r\nDetails',
+        title: 'Let us know where you are!',
         maxLineTitle: 2,
         styleTitle: titleStyle,
         description:
-            'Now Just a Tiny Bit of Personal Information (we don\'t share this outside of Harrier Central)',
+            'This lets us find the Hash events closest to you',
         styleDescription: descriptionStyle,
-        pathImage: 'images/init/intro/intro_pen.png',
-        //widthImage: 250,
-        heightImage: 180,
-        colorBegin: const Color.fromARGB(255, 227, 227, 227),
-        colorEnd: const Color.fromARGB(255, 227, 227, 227),
+        pathImage: 'images/init/intro/intro_phone_location.png',
+        heightImage: 240,
+        colorBegin: const Color.fromARGB(255, 230, 203, 203),
+        colorEnd: const Color.fromARGB(255, 230, 203, 203),
         directionColorBegin: Alignment.topRight,
         directionColorEnd: Alignment.bottomLeft,
       ),
@@ -52,13 +52,16 @@ class _GetStartedSliderPageState extends State<GetStartedSliderPage> {
     
 
   Future<void> onDonePress() async {
+
+    await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.location]);
     Navigator.of(context)
-        .pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
+        .pushReplacementNamed(RouteNames.PERMISSION_PHOTO_SLIDER.toString());
+
   }
 
   void onSkipPress() {
     Navigator.of(context)
-        .pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
+        .pushReplacementNamed(RouteNames.PERMISSION_PHOTO_SLIDER.toString());
 
   }
 
@@ -78,7 +81,7 @@ class _GetStartedSliderPageState extends State<GetStartedSliderPage> {
     //   Icons.done,
     //   color: themeAppBarBackground,
     // );
-        return Text('Start!', style:navStyle
+        return Text('OK', style:navStyle
     );
   }
 

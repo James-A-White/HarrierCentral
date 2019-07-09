@@ -609,6 +609,7 @@ class PaymentReportState extends State<PaymentReportPage> {
         const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 16.0);
 
         const TextStyle bodyStyle = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0);
+        final TextStyle bodyStyleRed = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, color: Colors.red[600]);
 
         String paymentTypeStr = '';
 
@@ -799,8 +800,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                         const SizedBox(width: spacer, height: 10.0),
                         Expanded(
                             child: Text(
-                              item.extensions.confByName,
-                              style: bodyStyle,
+                              (item?.payment?.confirmedDate == null) ? '<not confirmed>' : item.extensions.confByName,
+                              style: (item?.payment?.confirmedDate == null) ? bodyStyleRed : bodyStyle,
                             ),
                             flex: flexRight),
                       ]),
@@ -820,11 +821,25 @@ class PaymentReportState extends State<PaymentReportPage> {
                         const SizedBox(width: spacer, height: 10.0),
                         Expanded(
                             child: Text(
-                              (item?.payment?.confirmedDate == null) ? '' : DateFormat('MMM dd, yyyy kk:mm').format(item.payment.paidDate),
-                              style: bodyStyle,
+                              (item?.payment?.confirmedDate == null) ? '<not confirmed>' : DateFormat('MMM dd, yyyy kk:mm').format(item.payment.paidDate),
+                              style: (item?.payment?.confirmedDate == null) ? bodyStyleRed : bodyStyle,
                             ),
                             flex: flexRight),
                       ]),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Center(
+                    child: (((item.payment.paymentType != paymentBankTransfer.value) && (item.payment.paymentType != paymentBankTransferOtherAmount.value)) || (item.payment.confirmedBy != null) || (widget.eventAggregate.kennel.bankBic == null))
+                        ? Container()
+                        : RaisedButton(
+                            onPressed: () {
+                                final String remittanceInfo = item.payment.paymentReference + '-${item.extensions.paidByName}';
+                                BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, item.extensions.isMember != 0, packMemberNameForDisplay: item.extensions.paidByName, remitString: remittanceInfo, remitAmount: item.payment.creditAmount);
+                            },
+                            child: Text('Show Payment QR Code', style: buttonTextStyle),
+                          ),
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Center(
@@ -838,6 +853,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                           ),
                   ),
                 )
+
               ],
             ),
           ),

@@ -89,7 +89,7 @@ class _QrPopupState extends State<QrPopup> {
     }
 
     return AlertDialog(
-      title: Text(widget.dialogTitle),
+      title: Text(widget.dialogTitle, textAlign: TextAlign.center,),
       content:  Container(
           height: 250,
           width: 250,
