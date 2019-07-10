@@ -223,7 +223,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
     return IntroSlider(
       // List slides
       slides: slides,
-      onSkipPress: onSkipPress,
+      //onSkipPress: onSkipPress,
 
       // Skip button
       renderSkipBtn: renderSkipBtn(),
