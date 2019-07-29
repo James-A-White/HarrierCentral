@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'package:intro_slider/intro_slider.dart';
+import 'package:intro_slider/slide_object.dart';
 
 import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/util/styles.dart';

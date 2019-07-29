@@ -4,6 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:intro_slider/intro_slider.dart';
+import 'package:intro_slider/slide_object.dart';
+
 import 'package:permission_handler/permission_handler.dart';
 
 import 'package:harrier_central/util/routes.dart';

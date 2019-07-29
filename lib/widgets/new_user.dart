@@ -514,7 +514,7 @@ class NewUserState extends State<NewUserWidget> with SingleTickerProviderStateMi
                 fileNamePrefix: 'newHcUser_' + DateTime.now().microsecondsSinceEpoch.toString(),
               ),
         ),
-      ).then<String>((String profilePhotoUrl) {
+      ).then<void>((String profilePhotoUrl) {
         final HashersService srv = HashersService();
 
         final Future<String> apiCall = srv.addEditUser(targetUserId: GUID_EMPTY, firstName: userDetailsUi.firstName, lastName: userDetailsUi.lastName, email: userDetailsUi.email, hashName: userDetailsUi.hashName, photo: profilePhotoUrl);

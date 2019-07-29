@@ -436,8 +436,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                   });
                                                 });
                                               });
-                                              return Future<bool>.value(false);
                                             }
+                                            return Future<bool>.value(false);
                                           },
                                           background: needsConfirm
                                               ? Container(

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:harrier_central/notifications/notification_support.dart';
 
 import 'package:intro_slider/intro_slider.dart';
+import 'package:intro_slider/slide_object.dart';
 
 import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/util/styles.dart';

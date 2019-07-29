@@ -187,12 +187,12 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
           initialValue: _receiptAmount,
           decoration: const InputDecoration(labelText: 'Receipt amount'),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          validator: (String arg) {
-            // if (arg.length < 1)
-            //   return 'Name must be more than 2 charaters';
-            // else
-            //   return null;
-          },
+          // validator: (String arg) {
+          //   // if (arg.length < 1)
+          //   //   return 'Name must be more than 2 charaters';
+          //   // else
+          //   //   return null;
+          // },
           onSaved: (String val) {
             _receiptAmount = val;
           },

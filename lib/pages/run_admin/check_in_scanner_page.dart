@@ -53,11 +53,11 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                     Positioned(
                       top: 30,
                       width: MediaQuery.of(context).size.width * 0.86,
-                      child: AutoSizeText(
+                      child: const AutoSizeText(
                         'Use this scanner to scan Hasher barcodes at the start of the run so you know who is at the Hash and at the end of the run so you can ensure that no one is lost on trail.',
                         textAlign: TextAlign.justify,
                         maxLines: 4,
-                        style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 0.8),
+                        style: TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 0.8),
                       ),
                     ),
                     Positioned(

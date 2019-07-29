@@ -8,7 +8,7 @@ import io.flutter.plugins.firebasemessaging.FirebaseMessagingPlugin;
 import com.roughike.facebooklogin.facebooklogin.FacebookLoginPlugin;
 import com.alveliu.flutterfullpdfviewer.FlutterFullPdfViewerPlugin;
 import com.example.flutterimagecompress.FlutterImageCompressPlugin;
-import com.baseflow.flutter.plugin.geolocator.GeolocatorPlugin;
+import com.baseflow.geolocator.GeolocatorPlugin;
 import com.baseflow.googleapiavailability.GoogleApiAvailabilityPlugin;
 import vn.hunghd.flutter.plugins.imagecropper.ImageCropperPlugin;
 import io.flutter.plugins.imagepicker.ImagePickerPlugin;
@@ -38,7 +38,7 @@ public final class GeneratedPluginRegistrant {
     FacebookLoginPlugin.registerWith(registry.registrarFor("com.roughike.facebooklogin.facebooklogin.FacebookLoginPlugin"));
     FlutterFullPdfViewerPlugin.registerWith(registry.registrarFor("com.alveliu.flutterfullpdfviewer.FlutterFullPdfViewerPlugin"));
     FlutterImageCompressPlugin.registerWith(registry.registrarFor("com.example.flutterimagecompress.FlutterImageCompressPlugin"));
-    GeolocatorPlugin.registerWith(registry.registrarFor("com.baseflow.flutter.plugin.geolocator.GeolocatorPlugin"));
+    GeolocatorPlugin.registerWith(registry.registrarFor("com.baseflow.geolocator.GeolocatorPlugin"));
     GoogleApiAvailabilityPlugin.registerWith(registry.registrarFor("com.baseflow.googleapiavailability.GoogleApiAvailabilityPlugin"));
     ImageCropperPlugin.registerWith(registry.registrarFor("vn.hunghd.flutter.plugins.imagecropper.ImageCropperPlugin"));
     ImagePickerPlugin.registerWith(registry.registrarFor("io.flutter.plugins.imagepicker.ImagePickerPlugin"));

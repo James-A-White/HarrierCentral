@@ -16,10 +16,13 @@ class NotificationSupport {
 
     _firebaseMessaging.configure(onMessage: (dynamic content) {
       print('onMessage content = ${content.toString()}');
+      return;
     }, onLaunch: (dynamic content) {
       print('onLaunch content = ${content.toString()}');
+      return;
     }, onResume: (dynamic content) {
       print('onResume content = ${content.toString()}');
+      return;
     });
 
     _firebaseMessaging.getToken().then((String token) {

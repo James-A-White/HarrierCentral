@@ -1,10 +1,10 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 0.8.31+181
+version: 0.8.32+182
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
-  flutter: ^1.5.4-hotfix.2
+  sdk: ">=2.4.0 <3.0.0"
+  flutter: ^1.7.8-hotfix.4
 
 dependencies:
   flutter:
@@ -14,64 +14,52 @@ dependencies:
 
   # last checked 20 Feb 2019
   # one incompatibility with permission_handler (see below) 
-  audioplayers: ^0.10.0
-  auto_size_text: ^1.1.2
-  cached_network_image: ^0.8.0
+  audioplayers: ^0.13.1 # updated from ^0.10.0 on 29 Jul
+  auto_size_text: ^2.0.2+1 #updated from ^1.1.2 on 29 Jul
+  cached_network_image: ^1.1.1 # upgraded from 0.8.0 on 28 Jul
   chewie: ^0.9.7
   crypto: ^2.0.6
   cupertino_icons: ^0.1.2
+  device_info: ^0.4.0+2
   fancy_bottom_navigation: ^0.3.2
-  firebase_messaging: ^5.0.4 #upgraded from 5.0.3 on 5 Jul 19
+  firebase_messaging: ^5.1.2 #upgraded from 5.0.4 on 28 Jul #upgraded from 5.0.3 on 5 Jul 19
   flutter_facebook_login: ^2.0.1 # upgraded from 2.0.0 8 Jun 19 
   flutter_full_pdf_viewer: ^1.0.4
-  flutter_image_compress: ^0.4.0 
+  flutter_image: ^2.0.0
+  flutter_image_compress: ^0.6.3 # upgraded from 0.4.0 on 28 Jul
   flutter_linkify: ^2.1.0
-  flutter_map: ^0.4.0   # latest version is 0.5.0, but it depends on cached_network_image 0.5.1 - 19 March 2019
+  flutter_map: ^0.7.0+1 # upodated from 0.4.0 on 29 Jul # latest version is 0.5.0, but it depends on cached_network_image 0.5.1 - 19 March 2019
   flutter_speed_dial: ^1.2.1   # updated from 1.1.2 on 8 Jun 19
   flutter_spinkit: ^3.1.0 
-  flutter_staggered_grid_view: ^0.2.7 
-  flutter_vector_icons: ^0.1.0
-  geolocator: ^4.0.3
+  flutter_staggered_grid_view: ^0.3.0 # upgraded from ^0.2.7 on 29 Jul
+  flutter_vector_icons: ^0.2.0 # upgraded from 0.1.0 on Jul 29
+  geolocator: ^5.1.1+1 #upgraded from ^4.0.3 on Jul 29
+  google_api_availability: ^2.0.1 # upgraded from 2.0.0 on 29 Jul # Geolocator Dependency.
   http: ^0.12.0+2
   image_cropper: ^1.0.2 # updated from 1.0.0 on 8 Jun 19
-  image_picker: ^0.6.0+10 # updated from 0.6.0+4 on 8 Jun 19, updated from 0.6.0+8 on July 5
-  intro_slider: ^1.2.3
+  image_picker: ^0.6.0+17 #updated from +10 on 29 Jul # updated from 0.6.0+4 on 8 Jun 19, updated from 0.6.0+8 on July 5
+  intro_slider: ^2.2.5 # upgraded from ^1.2.3 Jul 29
   # location_permissions: ^2.0.1
-  package_info: ^0.4.0+4 # updated from 0.4.0+3 on 8 Jun 19
-  permission_handler: ^3.1.0 # updated from 2.2.0 on 8 Jun 19
+  meta: ^1.1.6  # Geolocator Dependency.
+  package_info: ^0.4.0+6 # updated from +4 on 29 Jul # updated from 0.4.0+3 on 8 Jun 19
+  permission_handler: ^3.2.1+1 #updated from ^3.1.0 on 29 Jul # updated from 2.2.0 on 8 Jun 19
+  photo_view: ^0.4.2
   qr_flutter: ^2.1.0+55 # updated from 2.0.0 on 8 Jun 19
-  shared_preferences: ^0.5.3+1 # updated from 0.5.2 on 8 Jun 19
-  sqflite: ^1.1.6+1 #updated from 1.1.5 on 5 July
+  shared_preferences: ^0.5.3+4 #updated from ^0.5.3+1 on Jul 29 # updated from 0.5.2 on 8 Jun 19
+  sqflite: ^1.1.6+3 #updated from +1 on 29 Jul #updated from 1.1.5 on 5 July
   tinycolor: ^1.0.2
-  url_launcher: ^5.0.3 # updated from 5.0.2 on 8 Jun 19
-  utf: ^0.9.0
-  video_player: ^0.10.1+3 # from ^0.10.0+8 May 20, from 0.10.1 on 5 July
-  zoomable_image: ^1.3.1
+  url_launcher: ^5.1.1 #updated from ^5.0.3 on 29 Jul # updated from 5.0.2 on 8 Jun 19
+  utf: ^0.9.0+5
+  video_player: ^0.10.1+5 #updated from +3 on 29 Jul # from ^0.10.0+8 May 20, from 0.10.1 on 5 July
   
   fast_qr_reader_view: 
     git:
       url: git://github.com/facundomedica/fast_qr_reader_view.git
 
-  # barcode_scan:
-  #   git:
-  #     url: git://github.com/apptreesoftware/flutter_barcode_reader.git
-  # #     ref: 2.0.0-dev.1
-  # # barcode_scan: git: https://github.com/apptreesoftware/flutter_barcode_reader.git 
-
-
-  device_info: ^0.4.0+2
-  # fast_qr_reader_view: ^0.1.5 - incompatible with AndroidX
-
-  # Dependencies added to get geolocator working correctly. Check to see if the geolocator dependencies have been resolved in April 2019
-  google_api_availability: 2.0.0 # Geolocator Dependency.
-  meta: 1.1.6 # Geolocator Dependency.
-
-
 
   # # flip_panel: ^1.0.0
   # # qr_mobile_vision: ^0.1.0
   # # polygon_clipper 1.0.2
-
 
 
 dev_dependencies:

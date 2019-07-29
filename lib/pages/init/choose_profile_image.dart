@@ -95,6 +95,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       body: NotificationListener<OverscrollIndicatorNotification>(
         onNotification: (OverscrollIndicatorNotification overscroll) {
           overscroll.disallowGlow();
+          return true; // TODO(James): What shoudl the return type really be?
         },
         child: Container(
           height: MediaQuery.of(context).size.height,

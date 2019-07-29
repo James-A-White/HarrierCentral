@@ -664,11 +664,11 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
               Positioned(
                 top: 0,
                 width: MediaQuery.of(context).size.width * 0.86,
-                child: AutoSizeText(
+                child: const AutoSizeText(
                   'Use this scanner to either scan in at the beginning or end of runs or to scan the QR codes of other Hashers who you want to add to your friend list.',
                   textAlign: TextAlign.justify,
                   maxLines: 4,
-                  style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 0.8),
+                  style: TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 0.8),
                 ),
               ),
               Positioned(

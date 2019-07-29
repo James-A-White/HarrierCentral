@@ -215,7 +215,6 @@ class HasherListView extends StatelessWidget {
       highlightColor: Colors.red,
       onTap: () {
 
-
         if (pageType ==FindHasherPageType.addHasherToRun)
         {
 
@@ -295,6 +294,7 @@ class HasherListView extends StatelessWidget {
             final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index]};
             Navigator.of(context).pop(result);
         }
+        return null;
       },
       child: Container(
         width: MediaQuery.of(context).size.width,
