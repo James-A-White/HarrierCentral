@@ -255,7 +255,9 @@ class PaymentReportState extends State<PaymentReportPage> {
           curve: Curves.bounceIn,
           overlayColor: Colors.black,
           overlayOpacity: 0.5,
-          onOpen: () => print('OPENING DIAL'),
+          onOpen: () {
+            _scaffoldKey.currentState.hideCurrentSnackBar();
+          },
           onClose: () => print('DIAL CLOSED'),
           tooltip: 'Speed Dial',
           heroTag: 'speed-dial-hero-tag',
@@ -400,9 +402,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                               displacement: 40.0,
                               child: ListView.separated(
                                 separatorBuilder: (BuildContext context, int index) => const Divider(
-                                      height: 1.0,
-                                      color: Colors.black45,
-                                    ),
+                                  height: 1.0,
+                                  color: Colors.black45,
+                                ),
                                 physics: const AlwaysScrollableScrollPhysics(),
                                 itemCount: filteredList.length,
                                 itemBuilder: (BuildContext context, int index) {
@@ -833,8 +835,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                         ? Container()
                         : RaisedButton(
                             onPressed: () {
-                                final String remittanceInfo = item.payment.paymentReference + '-${item.extensions.paidByName}';
-                                BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, item.extensions.isMember != 0, packMemberNameForDisplay: item.extensions.paidByName, remitString: remittanceInfo, remitAmount: item.payment.creditAmount);
+                              final String remittanceInfo = item.payment.paymentReference + '-${item.extensions.paidByName}';
+                              BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, item.extensions.isMember != 0, packMemberNameForDisplay: item.extensions.paidByName, remitString: remittanceInfo, remitAmount: item.payment.creditAmount);
                             },
                             child: Text('Show Payment QR Code', style: buttonTextStyle),
                           ),
@@ -853,7 +855,6 @@ class PaymentReportState extends State<PaymentReportPage> {
                           ),
                   ),
                 )
-
               ],
             ),
           ),

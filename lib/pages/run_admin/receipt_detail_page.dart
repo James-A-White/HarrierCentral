@@ -93,7 +93,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
   TextStyle buttonTextStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 16.0, height: 1.0);
 
-  GlobalKey<ScaffoldState> scaffoldKey;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   String _upload(platform.File imageFile, String fileName) {
     final Uri uri = Uri.parse('$BASE_RECEIPTS_URL$fileName?st=2019-04-30T18%3A08%3A40Z&se=2050-05-01T18%3A08%3A00Z&sp=rw&sv=2018-03-28&sr=c&sig=8f8DFDrH7Eq2Jv1JLQ9%2Bh4igcvEZEqE1zcFvUAxsXwY%3D');
@@ -228,7 +228,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
       ),
     );
     return Scaffold(
-      key: scaffoldKey,
+      key: _scaffoldKey,
       appBar: appBar,
       body: _isLoading
           ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())

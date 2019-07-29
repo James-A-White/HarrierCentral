@@ -64,7 +64,7 @@ class FindHasherPageState extends State<FindHasherPage> {
     findHasher();
   }
 
-  GlobalKey<ScaffoldState> scaffoldKey;
+  GlobalKey<ScaffoldState> _scaffoldKey;
 
   final FocusNode searchFocusNode = FocusNode();
   TextEditingController searchController = TextEditingController();
@@ -144,7 +144,7 @@ class FindHasherPageState extends State<FindHasherPage> {
   Widget build(BuildContext context) {
     //getPack(false);
     return Scaffold(
-      key: scaffoldKey,
+      key: _scaffoldKey,
       floatingActionButton: SpeedDial(
         // both default to 16
         marginRight: 18,
@@ -157,7 +157,9 @@ class FindHasherPageState extends State<FindHasherPage> {
         curve: Curves.bounceIn,
         overlayColor: Colors.black,
         overlayOpacity: 0.5,
-        onOpen: () => print('OPENING DIAL'),
+        onOpen: ()  {
+          _scaffoldKey.currentState.hideCurrentSnackBar();
+        },
         onClose: () => print('DIAL CLOSED'),
         tooltip: 'Speed Dial',
         heroTag: 'speed-dial-hero-tag',

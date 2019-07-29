@@ -218,9 +218,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             context,
                             MaterialPageRoute<void>(
                               builder: (BuildContext context) => ZoomableImagePage(
-                                    pageTitle: 'Zoomable Event Image',
-                                    imageUrl: widget.futureRun.event.eventImage,
-                                  ),
+                                pageTitle: 'Zoomable Event Image',
+                                imageUrl: widget.futureRun.event.eventImage,
+                              ),
                             ),
                           );
                         },
@@ -1012,13 +1012,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                   height: 120.0,
                   point: LatLng(widget.futureRun.event.narrowEventLatitude, widget.futureRun.event.narrowEventLongitude),
                   builder: (BuildContext ctx) => GestureDetector(
-                        onTap: () => _launchMaps(widget.futureRun.event.narrowEventLatitude, widget.futureRun.event.narrowEventLongitude),
-                        child: Container(
-                          padding: const EdgeInsets.only(bottom: 58.0),
-                          child: Image.asset('images/icons/map_pin_foot.png'),
-                          //child: FlutterLogo(colors: Colors.purple),
-                        ),
-                      ),
+                    onTap: () => _launchMaps(widget.futureRun.event.narrowEventLatitude, widget.futureRun.event.narrowEventLongitude),
+                    child: Container(
+                      padding: const EdgeInsets.only(bottom: 58.0),
+                      child: Image.asset('images/icons/map_pin_foot.png'),
+                      //child: FlutterLogo(colors: Colors.purple),
+                    ),
+                  ),
                 ),
               ],
             )
@@ -1051,7 +1051,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           curve: Curves.bounceIn,
           overlayColor: Colors.black,
           overlayOpacity: 0.5,
-          onOpen: () => print('OPENING DIAL'),
+          onOpen: () {
+            _scaffoldKey.currentState.hideCurrentSnackBar();
+          },
           onClose: () => print('DIAL CLOSED'),
           tooltip: 'Speed Dial',
           heroTag: 'speed-dial-hero-tag',

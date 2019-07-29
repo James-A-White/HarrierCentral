@@ -22,7 +22,6 @@ class ReceiptsList extends StatefulWidget {
 
   @override
   ReceiptsListState createState() => ReceiptsListState();
-
 }
 
 class ReceiptsListState extends State<ReceiptsList> {
@@ -31,6 +30,8 @@ class ReceiptsListState extends State<ReceiptsList> {
   int pageIndex = 1;
 
   List<Map<String, dynamic>> receiptsList = <Map<String, dynamic>>[];
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -83,7 +84,9 @@ class ReceiptsListState extends State<ReceiptsList> {
           curve: Curves.bounceIn,
           overlayColor: Colors.black,
           overlayOpacity: 0.5,
-          onOpen: () => print('OPENING DIAL'),
+          onOpen: () {
+            _scaffoldKey.currentState.hideCurrentSnackBar();
+          },
           onClose: () => print('DIAL CLOSED'),
           tooltip: 'Speed Dial',
           heroTag: 'speed-dial-hero-tag',
@@ -105,9 +108,7 @@ class ReceiptsListState extends State<ReceiptsList> {
                               )),
                     ).then<dynamic>((void receipt) {
                       refreshFromTable();
-                    })
-
-                ),
+                    })),
           ],
         ),
         body:
@@ -116,7 +117,6 @@ class ReceiptsListState extends State<ReceiptsList> {
             //     :
             _buildListView());
   }
-
 
   Future<void> _handleRefresh() async {
     final Database db = await DBProvider.db.database;
@@ -134,12 +134,12 @@ class ReceiptsListState extends State<ReceiptsList> {
     final Database db = await DBProvider.db.database;
 
     await db.transaction<dynamic>((Transaction txn) async {
-          final String guidFlag = cancelReimbursement ? GUID_9 : GUID_8;
-          final String sql = 'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
-          final int result = await txn.rawUpdate(sql);
-          print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-          refreshFromTable();
-      });
+      final String guidFlag = cancelReimbursement ? GUID_9 : GUID_8;
+      final String sql = 'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
+      final int result = await txn.rawUpdate(sql);
+      print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+      refreshFromTable();
+    });
 
     final ReceiptsModel item =
         ReceiptsModel(receiptId: receiptId, eventId: widget.eventAggregate.event.eventId, receiptShortDescription: '', receiptAmount: -1, notes: '', reimbursedBy: cancelReimbursement ? GUID_MAX : userId, reimbursedAmount: 0, reimbursedOn: '1999/1/1', reimbursedNotes: '', imageUrl: '', removed: -1);
@@ -156,17 +156,16 @@ class ReceiptsListState extends State<ReceiptsList> {
     });
   }
 
-    Future<void> setReceiptRemovedStatus(String receiptId, bool removed) async {
-
+  Future<void> setReceiptRemovedStatus(String receiptId, bool removed) async {
     final Database db = await DBProvider.db.database;
 
     await db.transaction<dynamic>((Transaction txn) async {
-          final String guidFlag = removed ? GUID_9 : GUID_8;
-          final String sql = 'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
-          final int result = await txn.rawUpdate(sql);
-          print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-          refreshFromTable();
-      });
+      final String guidFlag = removed ? GUID_9 : GUID_8;
+      final String sql = 'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
+      final int result = await txn.rawUpdate(sql);
+      print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+      refreshFromTable();
+    });
 
     final ReceiptsModel item =
         ReceiptsModel(receiptId: receiptId, eventId: widget.eventAggregate.event.eventId, receiptShortDescription: '', receiptAmount: -1, notes: '', reimbursedBy: GUID_EMPTY, reimbursedAmount: -1, reimbursedOn: '1999/1/1', reimbursedNotes: '', imageUrl: '', removed: removed ? 0 : 1);
@@ -183,9 +182,6 @@ class ReceiptsListState extends State<ReceiptsList> {
     });
   }
 
-
-
-
   Widget _buildListView() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -200,98 +196,93 @@ class ReceiptsListState extends State<ReceiptsList> {
                     displacement: 40.0,
                     child: ListView.separated(
                       separatorBuilder: (BuildContext context, int index) => const Divider(
-                            height: 1.0,
-                            color: Colors.black45,
-                          ),
+                        height: 1.0,
+                        color: Colors.black45,
+                      ),
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: receiptsList.length,
                       itemBuilder: (BuildContext context, int index) {
-                        final Map<String,dynamic> receipt = receiptsList[index];
+                        final Map<String, dynamic> receipt = receiptsList[index];
                         return Dismissible(
                           key: Key(receipt['receiptId']),
                           confirmDismiss: (DismissDirection direction) {
                             if (direction == DismissDirection.endToStart) {
                               setReceiptReimbursementStatus(receipt['receiptId'], (receipt['reimbursedBy'] != null) && (receipt['reimbursedBy'] != GUID_EMPTY));
-                            } else if (direction == DismissDirection.startToEnd)
-                            {
+                            } else if (direction == DismissDirection.startToEnd) {
                               setReceiptRemovedStatus(receipt['receiptId'], receipt['removed'] == 1);
                             }
                             return Future<bool>.value(false);
                           },
-                          background: receipt['removed'] == 0 ?
-                                                    Container(
-
-                              color: Colors.red,
-                              child: Row(children: const <Widget>[
-                                Padding(
-                                  padding: EdgeInsets.only(left: 10.0),
-                                  child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
-                                ),
-                                Padding( 
-                                  padding: EdgeInsets.only(left: 15.0),
-                                  child: Text(
-                                      // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                      'Ignore receipt',
-                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                          background: receipt['removed'] == 0
+                              ? Container(
+                                  color: Colors.red,
+                                  child: Row(children: const <Widget>[
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 10.0),
+                                      child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 15.0),
+                                      child: Text(
+                                          // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                          'Ignore receipt',
+                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                    )
+                                  ]))
+                              : Container(
+                                  color: Colors.green,
+                                  child: Row(children: const <Widget>[
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 10.0),
+                                      child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 15.0),
+                                      child: Text(
+                                          // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                          'Restore receipt',
+                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                    )
+                                  ])),
+                          secondaryBackground: (receipt['reimbursedBy'] != null) && (receipt['reimbursedBy'] != GUID_EMPTY) && (receipt['reimbursedBy'] != GUID_8)
+                              ? Container(
+                                  color: Colors.yellow,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: const <Widget>[
+                                      Padding(
+                                        padding: EdgeInsets.only(right: 15.0),
+                                        child: Icon(FontAwesome.times_circle, color: Colors.black, size: 35.0),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.only(right: 15.0),
+                                        child: Text(
+                                            //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                            'Cancel Reimbursement',
+                                            style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 17.0, height: 1.0)),
+                                      )
+                                    ],
+                                  ),
                                 )
-                              ]))
-                          
-                         : Container(
-
-                              color: Colors.green,
-                              child: Row(children: const <Widget>[
-                                Padding(
-                                  padding: EdgeInsets.only(left: 10.0),
-                                  child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
+                              : Container(
+                                  color: Colors.green,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: const <Widget>[
+                                      Padding(
+                                        padding: EdgeInsets.only(right: 15.0),
+                                        child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.only(right: 15.0),
+                                        child: Text(
+                                            //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                            'Receipt reimbursed',
+                                            style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                      )
+                                    ],
+                                  ),
                                 ),
-                                Padding( 
-                                  padding: EdgeInsets.only(left: 15.0),
-                                  child: Text(
-                                      // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                      'Restore receipt',
-                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                )
-                              ])),
-
-                          secondaryBackground: (receipt['reimbursedBy'] != null) && (receipt['reimbursedBy'] != GUID_EMPTY) && (receipt['reimbursedBy'] != GUID_8) ?
-                          Container(
-                            color: Colors.yellow,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: const <Widget>[
-                                Padding(
-                                  padding: EdgeInsets.only(right: 15.0),
-                                  child: Icon(FontAwesome.times_circle, color: Colors.black, size: 35.0),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(right: 15.0),
-                                  child: Text(
-                                      //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                      'Cancel Reimbursement',
-                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 17.0, height: 1.0)),
-                                )
-                              ],
-                            ),
-                          )
-                          : Container(
-                            color: Colors.green,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: const <Widget>[
-                                Padding(
-                                  padding: EdgeInsets.only(right: 15.0),
-                                  child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(right: 15.0),
-                                  child: Text(
-                                      //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                      'Receipt reimbursed',
-                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                )
-                              ],
-                            ),
-                          ),
                           onDismissed: (DismissDirection direction) {
                             print(direction.toString() + ' NOTE: We should never reach this point');
                           },
@@ -370,12 +361,12 @@ class ReceiptListItem extends StatelessWidget {
           children: <Widget>[
             Expanded(
               flex: 1,
-              child: Padding(padding: const EdgeInsets.only(left: 10.0), child: 
-              ((receipt['reimbursedBy'] == null) || (receipt['reimbursedBy'] == GUID_EMPTY)) 
-                ? const Icon(FontAwesome.circle_thin, size: 35.0, color: Colors.grey) 
-                : receipt['reimbursedBy'] == GUID_8 || receipt['reimbursedBy'] == GUID_9
-                  ? Icon(delayIcon, size: 35.0, color: Colors.blue)
-                  : Icon(FontAwesome.check_circle, size: 35.0, color: receipt['removed'] == 0 ? Colors.green : Colors.grey),),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 10.0),
+                child: ((receipt['reimbursedBy'] == null) || (receipt['reimbursedBy'] == GUID_EMPTY))
+                    ? const Icon(FontAwesome.circle_thin, size: 35.0, color: Colors.grey)
+                    : receipt['reimbursedBy'] == GUID_8 || receipt['reimbursedBy'] == GUID_9 ? Icon(delayIcon, size: 35.0, color: Colors.blue) : Icon(FontAwesome.check_circle, size: 35.0, color: receipt['removed'] == 0 ? Colors.green : Colors.grey),
+              ),
             ),
             Expanded(
               flex: 3,
@@ -396,8 +387,7 @@ class ReceiptListItem extends StatelessWidget {
               flex: 6,
               child: Text(
                 '${receipt['receiptShortDesc']}',
-                
-                style:  TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0,color: receipt['removed'] == 0 ? Colors.black : Colors.grey),
+                style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0, color: receipt['removed'] == 0 ? Colors.black : Colors.grey),
                 textAlign: TextAlign.left,
               ),
             ),

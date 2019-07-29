@@ -25,11 +25,13 @@ class CheckInScannerPage extends StatefulWidget {
 }
 
 bool isScanningAtRunStart = true;
+final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
 class _CheckInScannerPageState extends State<CheckInScannerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
@@ -280,6 +282,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
   }
 
   Future<void> onCodeRead(dynamic scanResult) async {
+    _scaffoldKey.currentState?.hideCurrentSnackBar();
     final AudioCache audioPlayer = AudioCache(prefix: 'sounds/');
     audioPlayer.play('camera.mp3');
 
@@ -308,15 +311,19 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
         CommonQueries.getUserIdFromUqr(prefix + content).then((String hasherId) {
           hemSrv.joinEvent(widget.eventAggregate.event.eventId, HasherEventMapTableType.eventAdmin, hasherId, null, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value, virginVisitorType: enumHasher.value).then((List<dynamic> adHocData) {
             setState(() {
+              
               if ((adHocData != null) && (adHocData.isNotEmpty)) {
-                onScreenMessage = adHocData[0]['userMessage'];
-                if (adHocData[0]['isPaid'] != 0) {
-                  Future<void>.delayed(const Duration(seconds: 4)).then((void dummy) {
-                    scanUserBarcode();
-                  });
+                final num amount = adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
+                Utilities.showInSnackBar(context, _scaffoldKey, adHocData[0]['userMessage'], durationInSeconds: 10);
+                //
+                if ((adHocData[0]['isPaid'] != 0) || (amount <= 0)) {
+                  scanUserBarcode();
+                  // Future<void>.delayed(const Duration(seconds: 4)).then((void dummy) {
+                  //   scanUserBarcode();
+                  // });
                 } else {
                   final PaymentPopup pp = PaymentPopup(
-                    amount: adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice,
+                    amount: amount,
                     creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
                     creditRemaining: 0,
                     currencySymbol: widget.eventAggregate.extensions.curSym,

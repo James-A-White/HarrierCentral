@@ -76,7 +76,7 @@ class KennelMemberListState extends State<KennelMembersList> {
   @override
   void initState() {
     //print('initState called from kennel_members @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-
+    _isLoading = true;
     appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
@@ -87,7 +87,11 @@ class KennelMemberListState extends State<KennelMembersList> {
         ),
       ),
     );
-    refreshKennelMembersFromTable(true);
+    refreshKennelMembersFromTable(true).then((void dummy) {
+      setState(() {
+        
+      });
+    });
     setSortBySpeedDial();
     super.initState();
   }
@@ -155,6 +159,8 @@ class KennelMemberListState extends State<KennelMembersList> {
 
   AppBar appBar;
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   void setSortBySpeedDial() {
     switch (_sortBy) {
       case EnumSortByType.sortByName:
@@ -179,6 +185,7 @@ class KennelMemberListState extends State<KennelMembersList> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: appBar,
+        key: _scaffoldKey,
         floatingActionButton: SpeedDial(
           // both default to 16
           marginRight: 18,
@@ -191,7 +198,9 @@ class KennelMemberListState extends State<KennelMembersList> {
           curve: Curves.bounceIn,
           overlayColor: Colors.black,
           overlayOpacity: 0.5,
-          onOpen: () => print('OPENING DIAL'),
+              onOpen: () {
+                _scaffoldKey.currentState.hideCurrentSnackBar();
+              },
           onClose: () => print('DIAL CLOSED'),
           tooltip: 'Speed Dial',
           heroTag: 'speed-dial-hero-tag',
@@ -252,12 +261,12 @@ class KennelMemberListState extends State<KennelMembersList> {
                     context,
                     MaterialPageRoute<HashersModel>(
                       builder: (BuildContext context) => HasherProfilePage(
-                            dataContext: EnumDataContext.kennel,
-                            pageType: EnumMyProfilePageType.newHasherProfile,
-                            kennelId: widget.kennel.kennel.kennelId,
-                            uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
-                            kennelShortName: widget.kennel.kennel.kennelShortName,
-                          ),
+                        dataContext: EnumDataContext.kennel,
+                        pageType: EnumMyProfilePageType.newHasherProfile,
+                        kennelId: widget.kennel.kennel.kennelId,
+                        uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
+                        kennelShortName: widget.kennel.kennel.kennelShortName,
+                      ),
                     ),
                   ).then((HashersModel result) {
                     refreshKennelMembersFromTable(true);
@@ -275,100 +284,104 @@ class KennelMemberListState extends State<KennelMembersList> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 0.0),
-                      child: kennelMemberList.isEmpty
-                          ? const Center(child: Text('No members found.'))
-                          : RefreshIndicator(
-                              onRefresh: () => _handleRefresh(),
-                              displacement: 40.0,
-                              child: ListView.separated(
-                                separatorBuilder: (BuildContext context, int index) => const Divider(
+                      child: _isLoading
+                          ? const Center(
+                              child: HcCircularProgressIndicator(),
+                            )
+                          : kennelMemberList.isEmpty
+                              ? const Center(child: Text('No members found.'))
+                              : RefreshIndicator(
+                                  onRefresh: () => _handleRefresh(),
+                                  displacement: 40.0,
+                                  child: ListView.separated(
+                                    separatorBuilder: (BuildContext context, int index) => const Divider(
                                       height: 1.0,
                                       color: Colors.black45,
                                     ),
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                itemCount: kennelMemberList.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  final KennelMembersResults item = kennelMemberList[index];
-                                  return Dismissible(
-                                    key: Key(item.hasherId),
-                                    confirmDismiss: (DismissDirection direction) {
-                                      setState(() {
-                                        // swipe from right to left to indicate that
-                                        // the hasher either attended the run as a pack
-                                        // member or as a hare
-                                        if (direction == DismissDirection.endToStart) {
-                                          modifyMembership(item, item.membershipDurationInMonths);
-                                        } else {
-                                          modifyMembership(item, -9999);
-                                        }
-                                      });
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    itemCount: kennelMemberList.length,
+                                    itemBuilder: (BuildContext context, int index) {
+                                      final KennelMembersResults item = kennelMemberList[index];
+                                      return Dismissible(
+                                        key: Key(item.hasherId),
+                                        confirmDismiss: (DismissDirection direction) {
+                                          setState(() {
+                                            // swipe from right to left to indicate that
+                                            // the hasher either attended the run as a pack
+                                            // member or as a hare
+                                            if (direction == DismissDirection.endToStart) {
+                                              modifyMembership(item, item.membershipDurationInMonths);
+                                            } else {
+                                              modifyMembership(item, -9999);
+                                            }
+                                          });
 
-                                      return Future<bool>.value(false);
-                                    },
-                                    background: Container(
-                                        color: Colors.red,
-                                        child: Row(children: const <Widget>[
-                                          Padding(
-                                            padding: EdgeInsets.only(left: 10.0),
-                                            child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
+                                          return Future<bool>.value(false);
+                                        },
+                                        background: Container(
+                                            color: Colors.red,
+                                            child: Row(children: const <Widget>[
+                                              Padding(
+                                                padding: EdgeInsets.only(left: 10.0),
+                                                child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
+                                              ),
+                                              Padding(
+                                                padding: EdgeInsets.only(left: 15.0),
+                                                child: Text(
+                                                    // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                                    'Cancel\r\nmembership',
+                                                    maxLines: 2,
+                                                    style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                              )
+                                            ])),
+                                        secondaryBackground: Container(
+                                          color: Colors.green,
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            children: <Widget>[
+                                              const Padding(
+                                                padding: EdgeInsets.only(right: 15.0),
+                                                child: Icon(FontAwesome.plus_circle, color: Colors.white, size: 35.0),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(right: 15.0),
+                                                child: Text(
+                                                    //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                                    'Add ${item.membershipDurationInMonths} months\r\nto membership',
+                                                    style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                              )
+                                            ],
                                           ),
-                                          Padding(
-                                            padding: EdgeInsets.only(left: 15.0),
-                                            child: Text(
-                                                // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                                'Cancel\r\nmembership',
-                                                maxLines: 2,
-                                                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                          )
-                                        ])),
-                                    secondaryBackground: Container(
-                                      color: Colors.green,
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
-                                        children: <Widget>[
-                                          const Padding(
-                                            padding: EdgeInsets.only(right: 15.0),
-                                            child: Icon(FontAwesome.plus_circle, color: Colors.white, size: 35.0),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(right: 15.0),
-                                            child: Text(
-                                                //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                                'Add ${item.membershipDurationInMonths} months\r\nto membership',
-                                                style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    onDismissed: (DismissDirection direction) {
-                                      print(direction.toString() + ' NOTE: We should never reach this point');
+                                        ),
+                                        onDismissed: (DismissDirection direction) {
+                                          print(direction.toString() + ' NOTE: We should never reach this point');
+                                        },
+                                        child: KennelMemberListItem(
+                                          kennelMember: kennelMemberList[index],
+                                          modifyMembershipCallback: (EnumMemberPopupActions retVal) {
+                                            switch (retVal) {
+                                              case EnumMemberPopupActions.addOneMonth:
+                                                modifyMembership(kennelMemberList[index], 1);
+                                                break;
+                                              case EnumMemberPopupActions.addSixMonths:
+                                                modifyMembership(kennelMemberList[index], 6);
+                                                break;
+                                              case EnumMemberPopupActions.subtractOneMonth:
+                                                modifyMembership(kennelMemberList[index], -1);
+                                                break;
+                                              case EnumMemberPopupActions.subtractSixMonths:
+                                                modifyMembership(kennelMemberList[index], -6);
+                                                break;
+                                              case EnumMemberPopupActions.cancelMembership:
+                                                modifyMembership(kennelMemberList[index], -9999);
+                                                break;
+                                            }
+                                          },
+                                        ),
+                                      );
                                     },
-                                    child: KennelMemberListItem(
-                                      kennelMember: kennelMemberList[index],
-                                      modifyMembershipCallback: (EnumMemberPopupActions retVal) {
-                                        switch (retVal) {
-                                          case EnumMemberPopupActions.addOneMonth:
-                                            modifyMembership(kennelMemberList[index], 1);
-                                            break;
-                                          case EnumMemberPopupActions.addSixMonths:
-                                            modifyMembership(kennelMemberList[index], 6);
-                                            break;
-                                          case EnumMemberPopupActions.subtractOneMonth:
-                                            modifyMembership(kennelMemberList[index], -1);
-                                            break;
-                                          case EnumMemberPopupActions.subtractSixMonths:
-                                            modifyMembership(kennelMemberList[index], -6);
-                                            break;
-                                          case EnumMemberPopupActions.cancelMembership:
-                                            modifyMembership(kennelMemberList[index], -9999);
-                                            break;
-                                        }
-                                      },
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
+                                  ),
+                                ),
                     ),
                   ),
                 ],

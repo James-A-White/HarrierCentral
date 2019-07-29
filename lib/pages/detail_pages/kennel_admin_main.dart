@@ -25,6 +25,7 @@ import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
+import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 
 class KennelAdminMainPage extends StatefulWidget {
   const KennelAdminMainPage({@required this.kennelAggregateItem});
@@ -36,6 +37,7 @@ class KennelAdminMainPage extends StatefulWidget {
 
 class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   num sliderValue;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -46,7 +48,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
         setState(() {
           final String resultStr = result ? 'successfully' : 'unsuccessfully';
           print('Event admin data synchronized $resultStr');
-          //_isLoading = false;
+          _isLoading = false;
         });
       });
     });
@@ -88,7 +90,11 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               ),
             ),
           ),
-          body: Container(
+          body: _isLoading ? const Center(
+      child: HcCircularProgressIndicator(),
+    ) :
+          
+          Container(
             height: MediaQuery.of(context).size.height,
             decoration: Backgrounds.defaultHcBackground(),
             child: SingleChildScrollView(

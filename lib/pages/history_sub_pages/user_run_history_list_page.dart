@@ -156,7 +156,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
               curve: Curves.bounceIn,
               overlayColor: Colors.black,
               overlayOpacity: 0.5,
-              onOpen: () => print('OPENING DIAL'),
+              onOpen: () {
+                _scaffoldKey.currentState.hideCurrentSnackBar();
+              },
               onClose: () => print('DIAL CLOSED'),
               tooltip: 'Speed Dial',
               heroTag: 'speed-dial-hero-tag',
@@ -429,34 +431,36 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                               ),
                               //color: Colors.green,
                             ),
-                            widget.kennelInfo.historicalPackRunCount == 0 ? Container() :
-                            Container(
-                              child: AutoSizeText(
-                                'Historical run count: ${widget.kennelInfo.historicalCountIsEstimate != 0 ? '~' : ''}${widget.kennelInfo.historicalPackRunCount}',
-                                //'Super fucking long text thats sure to overflow and more',
-                                //'999',
-                                overflow: TextOverflow.ellipsis,
-                                minFontSize: 18.0,
-                                maxLines: 1,
-                                style: numberStyle,
-                                textAlign: TextAlign.center,
-                              ),
-                              //color: Colors.green,
-                            ),
-                            widget.kennelInfo.historicalPackRunCount == 0 ? Container() :
-                            Container(
-                              child: AutoSizeText(
-                                'Historical haring coung ${widget.kennelInfo.historicalCountIsEstimate != 0 ? '~' : ''}${widget.kennelInfo.historicalHaringCount}',
-                                //'Super fucking long text thats sure to overflow and more',
-                                //'999',
-                                overflow: TextOverflow.ellipsis,
-                                minFontSize: 18.0,
-                                maxLines: 1,
-                                style: numberStyle,
-                                textAlign: TextAlign.center,
-                              ),
-                              //color: Colors.green,
-                            ),
+                            widget.kennelInfo.historicalPackRunCount == 0
+                                ? Container()
+                                : Container(
+                                    child: AutoSizeText(
+                                      'Historical run count: ${widget.kennelInfo.historicalCountIsEstimate != 0 ? '~' : ''}${widget.kennelInfo.historicalPackRunCount}',
+                                      //'Super fucking long text thats sure to overflow and more',
+                                      //'999',
+                                      overflow: TextOverflow.ellipsis,
+                                      minFontSize: 18.0,
+                                      maxLines: 1,
+                                      style: numberStyle,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    //color: Colors.green,
+                                  ),
+                            widget.kennelInfo.historicalPackRunCount == 0
+                                ? Container()
+                                : Container(
+                                    child: AutoSizeText(
+                                      'Historical haring coung ${widget.kennelInfo.historicalCountIsEstimate != 0 ? '~' : ''}${widget.kennelInfo.historicalHaringCount}',
+                                      //'Super fucking long text thats sure to overflow and more',
+                                      //'999',
+                                      overflow: TextOverflow.ellipsis,
+                                      minFontSize: 18.0,
+                                      maxLines: 1,
+                                      style: numberStyle,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    //color: Colors.green,
+                                  ),
                           ],
                         ),
                       ),
@@ -468,9 +472,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                       itemCount: runCountsList.length,
                       padding: const EdgeInsets.only(top: 5),
                       separatorBuilder: (BuildContext context, int index) => const Divider(
-                            height: 1.0,
-                            color: Colors.black45,
-                          ),
+                        height: 1.0,
+                        color: Colors.black45,
+                      ),
                       //itemExtent: 58.0,
                       //shrinkWrap: true,
                       itemBuilder: (BuildContext context, int index) {
