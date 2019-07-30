@@ -107,7 +107,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   Map<String, String> indicatorAttendenceUpdating = <String, String>{};
   Map<String, String> indicatorPaidUpdating = <String, String>{};
 
-  String filterText = '';
+  String searchText = '';
 
   int countAtHash = 0;
   int countRsvps = 0;
@@ -119,6 +119,48 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   num snackBarButtonSize = 35.0;
 
   String userId = getStringPref(StringPrefsEnum.userId);
+
+  AnimationController animationController;
+  Animation<double> buttonAnimation;
+  Animation<Offset> filterPanelAnimation;
+  Animation<RelativeRect> hasherListAnimation;
+  ScrollController scrollController;
+  FocusNode searchFocusNode;
+  TextEditingController searchController;
+  String searchTypeText;
+
+  static const String searchKennel = 'Searching Kennel members and RSVPs';
+  static const String searchAllHashers = 'Searching all Hashers';
+  bool highlightSearchType = false;
+
+  @override
+  void initState() {
+    searchTypeText = searchKennel;
+    searchController = TextEditingController();
+    searchFocusNode = FocusNode();
+    scrollController = ScrollController();
+    scrollController.addListener(() {
+      searchFocusNode.unfocus();
+    });
+
+    // searchController.addListener(() {
+    //   print(searchController.value);
+    //   _scaffoldKey.currentState.hideCurrentSnackBar();
+    // });
+
+    _getAllHashers().then((void dummy) {
+      // get all Hashers first, then build the tables from the backend
+      _refreshSqlTablesFromBackend(true);
+    });
+    super.initState();
+
+    animationController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+
+    buttonAnimation = Tween<double>(begin: 0, end: 90.0 / 360.0).animate(animationController)
+      ..addListener(() {
+        setState(() {});
+      });
+  }
 
   Future<void> _refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
     if (showLoadingIndicator) {
@@ -378,8 +420,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     }
   }
 
-  
-
   void filterPackListResults() {
     //bool showSnackbar = false;
     //bool searchingAllHashers = false;
@@ -405,14 +445,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       filteredList.addAll(packList);
     }
 
-    if ((filterText != null) && (filterText.isNotEmpty)) {
-      filteredList = filteredList.where((CheckInPackModel a) => a.nameForSort.toLowerCase().contains(filterText.toLowerCase())).toList();
+    if ((searchText != null) && (searchText.isNotEmpty)) {
+      filteredList = filteredList.where((CheckInPackModel a) => a.nameForSort.toLowerCase().contains(searchText.toLowerCase())).toList();
       if (filteredList.isEmpty) {
         // if (!ignoreTextFilter) {
         //   showSnackbar = true;
         // }
         ignoreTextFilter = true;
-        filteredList = allHashers.where((CheckInPackModel a) => a.nameForSort.toLowerCase().contains(filterText.toLowerCase())).toList();
+        filteredList = allHashers.where((CheckInPackModel a) => a.nameForSort.toLowerCase().contains(searchText.toLowerCase())).toList();
       } else {
         ignoreTextFilter = false;
         _scaffoldKey.currentState.hideCurrentSnackBar();
@@ -423,10 +463,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
     searchTypeText = ignoreTextFilter ? searchAllHashers : searchKennel;
 
-    if (temp != searchTypeText)
-    {
+    if (temp != searchTypeText) {
       highlightSearchType = true;
-      Future<void>.delayed(const Duration(milliseconds: 1500)).then((void dummy){
+      Future<void>.delayed(const Duration(milliseconds: 1500)).then((void dummy) {
         setState(() {
           highlightSearchType = false;
         });
@@ -434,7 +473,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     }
 
     // if (showSnackbar) {
-      
+
     //   // _scaffoldKey.currentState.showSnackBar(SnackBar(
     //   //   content: const Text(
     //   //     'Ignoring all filters and searching all Hashers',
@@ -482,45 +521,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     } catch (e) {
       print(e);
     }
-  }
-
-  AnimationController animationController;
-  Animation<double> animation;
-  ScrollController scrollController;
-  FocusNode searchFocusNode;
-  TextEditingController searchController;
-  String searchTypeText;
-
-  static const String searchKennel = 'Searching Kennel members and RSVPs';
-  static const String searchAllHashers = 'Searching all Hashers';
-  bool highlightSearchType = false;
-
-  @override
-  void initState() {
-    searchTypeText = searchKennel;
-    searchController = TextEditingController();
-    searchFocusNode = FocusNode();
-    scrollController = ScrollController();
-    scrollController.addListener(() {
-      searchFocusNode.unfocus();
-    });
-
-    searchController.addListener(() {
-      print(searchController.value);
-      _scaffoldKey.currentState.hideCurrentSnackBar();
-    });
-
-    _getAllHashers().then((void dummy) {
-      // get all Hashers first, then build the tables from the backend
-      _refreshSqlTablesFromBackend(true);
-    });
-    super.initState();
-
-    animationController = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
-    animation = Tween<double>(begin: 0, end: 90.0 / 360.0).animate(animationController)
-      ..addListener(() {
-        setState(() {});
-      });
   }
 
   void findHasher() {
@@ -599,7 +599,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
   bool showFilter = false;
 
-  Container searchBar(num width) {
+  Container searchBar() {
     return Container(
       decoration: const BoxDecoration(
         // border: new Border.all(width: 1.0, color: Colors.black),
@@ -614,14 +614,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         ],
       ),
       padding: const EdgeInsets.only(top: 10),
-      width: width,
-      height: showFilter ? 200 : 85,
+      width: MediaQuery.of(context).size.width,
+      height: 85,
       child: Column(
         children: <Widget>[
           Row(
             children: <Widget>[
               RotationTransition(
-                turns: animation,
+                turns: buttonAnimation,
                 child: IconButton(
                   padding: const EdgeInsets.all(0),
                   onPressed: () {
@@ -633,8 +633,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                     }
 
                     showFilter = !showFilter;
-                    searchController.text = '';
-                    filterText = '';
+                    // searchController.text = '';
+                    // searchText = '';
                     _refreshPackListFromTables(true);
                   },
                   icon: Icon(FontAwesome5Solid.arrow_alt_circle_right, size: 35, color: showFilter ? Colors.green : Colors.grey),
@@ -652,12 +652,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               Expanded(
                 child: Column(
                   children: <Widget>[
-                    
                     TextField(
                       autocorrect: false,
                       onChanged: (String text) {
                         setState(() {
-                          filterText = text;
+                          searchText = text;
                           filterPackListResults();
                         });
                       },
@@ -675,7 +674,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                         hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                       ),
                     ),
-                    Text(searchTypeText, style: highlightSearchType ? footnoteRed : footnote) 
+                    Text(searchTypeText, style: highlightSearchType ? footnoteRed : footnote)
                   ],
                 ),
               ),
@@ -687,75 +686,92 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   textColor: Colors.grey[700],
                   onPressed: () {
                     searchController.text = '';
-                    filterText = '';
+                    searchText = '';
                     _refreshPackListFromTables(true);
                   },
                 ),
               ),
             ],
           ),
-          !showFilter ? Container() : Divider(color: Colors.black54),
-          !showFilter
-              ? Container()
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    CheckinFiltersCell(
-                      counter: memberCount,
-                      label: 'Member',
-                      index: 5,
-                      onTap: () {
-                        _refreshPackListFromTables(true);
-                      },
-                    ),
-                    CheckinFiltersCell(
-                      counter: countRsvps,
-                      label: 'RSVP',
-                      index: 0,
-                      onTap: () {
-                        _refreshPackListFromTables(true);
-                      },
-                    ),
-                    CheckinFiltersCell(
-                      counter: countComing,
-                      label: 'Coming',
-                      index: 1,
-                      useTriState: false,
-                      onTap: () {
-                        _refreshPackListFromTables(true);
-                      },
-                    ),
-                    CheckinFiltersCell(
-                      counter: countAtHash,
-                      index: 2,
-                      label: 'At Hash',
-                      onTap: () {
-                        _refreshPackListFromTables(true);
-                      },
-                    ),
-                    CheckinFiltersCell(
-                      counter: countPaid,
-                      index: 3,
-                      label: 'Paid',
-                      onTap: () {
-                        _refreshPackListFromTables(true);
-                      },
-                    ),
-                    CheckinFiltersCell(
-                      counter: countOnIn,
-                      index: 4,
-                      label: 'On In',
-                      onTap: () {
-                        _refreshPackListFromTables(true);
-                      },
-                    ),
-                  ],
-                ),
         ],
       ),
     );
   }
 
+  Container filterBar() {
+    return Container(
+      decoration: const BoxDecoration(
+        // border: new Border.all(width: 1.0, color: Colors.black),
+        //shape: BoxShape.circle,
+        color: Colors.white,
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Color.fromARGB(70, 0, 0, 0),
+            offset: Offset(0.0, 6.0),
+            blurRadius: 10.0,
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.only(top: 10),
+      width: MediaQuery.of(context).size.width,
+      height: 120,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisSize: MainAxisSize.max,
+        children: <Widget>[
+          CheckinFiltersCell(
+            counter: memberCount,
+            label: 'Member',
+            index: 5,
+            onTap: () {
+              _refreshPackListFromTables(true);
+            },
+          ),
+          CheckinFiltersCell(
+            counter: countRsvps,
+            label: 'RSVP',
+            index: 0,
+            onTap: () {
+              _refreshPackListFromTables(true);
+            },
+          ),
+          CheckinFiltersCell(
+            counter: countComing,
+            label: 'Coming',
+            index: 1,
+            useTriState: false,
+            onTap: () {
+              _refreshPackListFromTables(true);
+            },
+          ),
+          CheckinFiltersCell(
+            counter: countAtHash,
+            index: 2,
+            label: 'At Hash',
+            onTap: () {
+              _refreshPackListFromTables(true);
+            },
+          ),
+          CheckinFiltersCell(
+            counter: countPaid,
+            index: 3,
+            label: 'Paid',
+            onTap: () {
+              _refreshPackListFromTables(true);
+            },
+          ),
+          CheckinFiltersCell(
+            counter: countOnIn,
+            index: 4,
+            label: 'On In',
+            onTap: () {
+              _refreshPackListFromTables(true);
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   void filterOptionsPopup() {
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
@@ -806,37 +822,37 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             case FilterOptions.hashersNotHereYet:
               filterValues = <int>[0, 1, 0, 0, 0, 0, 0];
               showFilter = false;
-              filterText = '';
+              searchText = '';
               searchController.text = '';
               break;
             case FilterOptions.hashersNotPaid:
               filterValues = <int>[0, 0, 1, -1, 0, 0, 0];
               showFilter = false;
-              filterText = '';
+              searchText = '';
               searchController.text = '';
               break;
             case FilterOptions.hashersStillOnTrail:
               filterValues = <int>[0, 0, 1, 0, -1, 0, 0];
               showFilter = false;
-              filterText = '';
+              searchText = '';
               searchController.text = '';
               break;
             case FilterOptions.clearAllFilters:
               filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
               showFilter = false;
-              filterText = '';
+              searchText = '';
               searchController.text = '';
               break;
             case FilterOptions.visitors:
               filterValues = <int>[0, 0, 1, 0, 0, 0, 0];
               showFilter = true;
-              filterText = '(visitor)';
+              searchText = '(visitor)';
               searchController.text = '(visitor)';
               break;
             case FilterOptions.virgins:
               filterValues = <int>[0, 0, 1, 0, 0, 0, 0];
               showFilter = true;
-              filterText = '(virgin)';
+              searchText = '(virgin)';
               searchController.text = '(virgin)';
               break;
             case FilterOptions.cancel:
@@ -844,7 +860,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             default:
               filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
               showFilter = false;
-              filterText = '';
+              searchText = '';
               searchController.text = '';
               break;
           }
@@ -866,6 +882,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
   @override
   Widget build(BuildContext context) {
+    //print('mediaQuery = ${MediaQuery.of(context).size.toString()}');
+    //print('filter dx = ${filterPanelAnimation.value.dy}');
+    filterPanelAnimation ??= Tween<Offset>(begin: const Offset(0, -.35), end: const Offset(0, .71)).animate(animationController);
+    hasherListAnimation ??= RelativeRectTween(begin: const RelativeRect.fromLTRB(0, 86, 0, 0), end: const RelativeRect.fromLTRB(0, 204, 0, 0)).animate(animationController);
+    //print('rect = ${filterPanelAnimation.value}');
     return Scaffold(
       key: _scaffoldKey,
       floatingActionButton: SpeedDial(
@@ -971,38 +992,26 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       appBar: getAppBar((_isLoading || (widget?.eventAggregate?.kennel?.kennelName == null)) ? '... Loading' : widget?.eventAggregate?.kennel?.kennelName),
       body: _isLoading
           ? const HcCircularProgressIndicator()
-          : LayoutBuilder(
-              builder: (BuildContext scaffoldContext, BoxConstraints constraints) => Stack(children: <Widget>[
-                Positioned(top: 0, child: searchBar(constraints.maxWidth)),
-                Positioned(
-                  top: searchBar(constraints.maxWidth).constraints.maxHeight,
-                  right: 0.0,
-                  left: 0.0,
-                  child: (filteredList == null || filteredList.isEmpty)
-                      ? getAddHasherBlock()
-                      // Container(
-                      //     padding: const EdgeInsets.only(left: 30, right: 30, bottom: 60),
-                      //     height: constraints.maxHeight - searchBar(constraints.maxWidth).constraints.maxHeight,
-                      //     child: Center(
-                      //       child: Text(
-                      //         'There are no pack members to display',
-                      //         style: headingStyleOnLightBg,
-                      //         textAlign: TextAlign.center,
-                      //       ),
-                      //     ),
-                      //   )
-                      : Container(
-                          key: packListBox,
-                          height: constraints.maxHeight - searchBar(constraints.maxWidth).constraints.maxHeight,
-                          child: RefreshIndicator(
-                              onRefresh: () async {
-                                _refreshSqlTablesFromBackend(true);
-                              },
-                              child: buildPackListView()),
-                        ),
-                ),
-              ]),
-            ),
+          : Stack(fit: StackFit.loose, alignment: AlignmentDirectional.topStart, children: <Widget>[
+              Container(height: MediaQuery.of(context).size.height, width: 10),
+              (filteredList == null || filteredList.isEmpty)
+                  //? Positioned(top: showFilter ? 210 : 95, left:0, right: 0, child: getAddHasherBlock())
+                   ? Positioned(top: (filterPanelAnimation.value.dy*120) + 125, left:0, right: 0, child: getAddHasherBlock())
+                  : PositionedTransition(
+                      rect: hasherListAnimation,
+                      child: Container(
+                        key: packListBox,
+                        height: 300,
+                        child: RefreshIndicator(
+                            onRefresh: () async {
+                              _refreshSqlTablesFromBackend(true);
+                            },
+                            child: buildPackListView()),
+                      ),
+                    ),
+              SlideTransition(position: filterPanelAnimation, child: filterBar()),
+              Positioned(top: 0, child: searchBar()),
+            ]),
     );
   }
 
@@ -1474,6 +1483,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             ),
           ),
         ).then((HashersModel result) {
+          searchController.text = result.dispName;
           _refreshPackListFromTables(true);
         });
       },
