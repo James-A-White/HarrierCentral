@@ -31,7 +31,7 @@ enum EnumMyProfilePageType { myProfile, anyHasherProfile, newHasherProfile }
 class HasherProfilePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const HasherProfilePage({Key key, @required this.dataContext, @required this.pageType, this.hasherId = GUID_EMPTY, this.eventId = GUID_EMPTY, this.kennelId = GUID_EMPTY, this.uiElementsToDisplay = 0, this.kennelShortName}) : super(key: key);
+  const HasherProfilePage({Key key, @required this.dataContext, @required this.pageType, this.hasherId = GUID_EMPTY, this.eventId = GUID_EMPTY, this.kennelId = GUID_EMPTY, this.uiElementsToDisplay = 0, this.kennelShortName, this.hashNameFromSearch = ''}) : super(key: key);
 
   final EnumDataContext dataContext;
   final EnumMyProfilePageType pageType;
@@ -40,6 +40,7 @@ class HasherProfilePage extends StatefulWidget {
   final String kennelId;
   final int uiElementsToDisplay;
   final String kennelShortName;
+  final String hashNameFromSearch;
 
   static const int flagUiElement_followKennel = 0x00000001;
   static const int flagUiElement_inviteCode = 0x00000002;
@@ -175,6 +176,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   @override
   void initState() {
+
+    if (widget.hashNameFromSearch.isNotEmpty)
+    {
+      hashNameController.text = widget.hashNameFromSearch;
+    }
     // print('initState called from hasher_profile_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
     if (widget.pageType != EnumMyProfilePageType.newHasherProfile) {
       refreshUserDataFromTable(true);
@@ -343,11 +349,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           autocorrect: false,
           controller: firstNameController,
           //initialValue: hasher.firstName,
-          decoration: const InputDecoration(labelText: 'First Name'),
+          decoration: const InputDecoration(labelText: 'First name (or initial)'),
           keyboardType: TextInputType.text,
           validator: (String arg) {
-            if (arg.length < 3)
-              return 'Name must be more than 2 charaters';
+            if (arg.isEmpty)
+              return 'First name must have a least one letter';
             else
               return null;
           },
@@ -359,11 +365,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           autocorrect: false,
           //initialValue: hasher.lastName,
           controller: lastNameController,
-          decoration: const InputDecoration(labelText: 'Last Name'),
+          decoration: const InputDecoration(labelText: 'Last Name (or initial)'),
           keyboardType: TextInputType.text,
           validator: (String arg) {
-            if (arg.length < 3)
-              return 'Name must be more than 2 charaters';
+            if (arg.isEmpty)
+              return 'Last name must have a least one letter';
             else
               return null;
           },
