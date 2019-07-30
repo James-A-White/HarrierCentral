@@ -1483,8 +1483,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             ),
           ),
         ).then((HashersModel result) {
-          searchController.text = result.dispName;
           _refreshPackListFromTables(true);
+          searchController.text = result.dispName;
         });
       },
       child: Container(
