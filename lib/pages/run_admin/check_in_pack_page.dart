@@ -378,10 +378,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     }
   }
 
-  bool ignoreTextFilter = false;
+  
 
   void filterPackListResults() {
-    bool showSnackbar = false;
+    //bool showSnackbar = false;
+    //bool searchingAllHashers = false;
+
+    bool ignoreTextFilter = false;
+    final String temp = searchTypeText;
 
     if (showFilter) {
       filteredList = packList
@@ -404,28 +408,43 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     if ((filterText != null) && (filterText.isNotEmpty)) {
       filteredList = filteredList.where((CheckInPackModel a) => a.nameForSort.toLowerCase().contains(filterText.toLowerCase())).toList();
       if (filteredList.isEmpty) {
-        if (!ignoreTextFilter) {
-          showSnackbar = true;
-        }
+        // if (!ignoreTextFilter) {
+        //   showSnackbar = true;
+        // }
         ignoreTextFilter = true;
         filteredList = allHashers.where((CheckInPackModel a) => a.nameForSort.toLowerCase().contains(filterText.toLowerCase())).toList();
       } else {
         ignoreTextFilter = false;
         _scaffoldKey.currentState.hideCurrentSnackBar();
       }
+    } else {
+      searchTypeText = searchKennel;
     }
 
-    if (showSnackbar) {
-      _scaffoldKey.currentState.showSnackBar(SnackBar(
-        content: const Text(
-          'Ignoring all filters and searching all Hashers',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white, fontSize: 16.0, fontFamily: 'WorkSansSemiBold'),
-        ),
-        backgroundColor: Colors.blue,
-        duration: const Duration(seconds: 60),
-      ));
+    searchTypeText = ignoreTextFilter ? searchAllHashers : searchKennel;
+
+    if (temp != searchTypeText)
+    {
+      highlightSearchType = true;
+      Future<void>.delayed(const Duration(milliseconds: 1500)).then((void dummy){
+        setState(() {
+          highlightSearchType = false;
+        });
+      });
     }
+
+    // if (showSnackbar) {
+      
+    //   // _scaffoldKey.currentState.showSnackBar(SnackBar(
+    //   //   content: const Text(
+    //   //     'Ignoring all filters and searching all Hashers',
+    //   //     textAlign: TextAlign.center,
+    //   //     style: TextStyle(color: Colors.white, fontSize: 16.0, fontFamily: 'WorkSansSemiBold'),
+    //   //   ),
+    //   //   backgroundColor: Colors.blue,
+    //   //   duration: const Duration(seconds: 60),
+    //   // ));
+    // }
   }
 
   Future<void> _refreshCounters(bool forceRefresh) async {
@@ -470,9 +489,15 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   ScrollController scrollController;
   FocusNode searchFocusNode;
   TextEditingController searchController;
+  String searchTypeText;
+
+  static const String searchKennel = 'Searching Kennel members and RSVPs';
+  static const String searchAllHashers = 'Searching all Hashers';
+  bool highlightSearchType = false;
 
   @override
   void initState() {
+    searchTypeText = searchKennel;
     searchController = TextEditingController();
     searchFocusNode = FocusNode();
     scrollController = ScrollController();
@@ -590,14 +615,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       ),
       padding: const EdgeInsets.only(top: 10),
       width: width,
-      height: showFilter ? 180 : 65,
+      height: showFilter ? 200 : 85,
       child: Column(
         children: <Widget>[
           Row(
-            // mainAxisAlignment: MainAxisAlignment.start,
-            // mainAxisSize: MainAxisSize.max,
-            // crossAxisAlignment: CrossAxisAlignment.center,
-
             children: <Widget>[
               RotationTransition(
                 turns: animation,
@@ -620,36 +641,42 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 ),
               ),
               Container(
-                height: 50,
-                margin: EdgeInsets.only(left: 3, right: 10),
+                height: 60,
+                margin: const EdgeInsets.only(left: 3, right: 10),
                 decoration: BoxDecoration(
                   border: Border(
-                    left: BorderSide(color: Colors.black, width: 1.0),
+                    left: const BorderSide(color: Colors.black, width: 1.0),
                   ),
                 ),
               ),
               Expanded(
-                child: TextField(
-                  autocorrect: false,
-                  onChanged: (String text) {
-                    setState(() {
-                      filterText = text;
-                      filterPackListResults();
-                    });
-                  },
-                  focusNode: searchFocusNode,
-                  controller: searchController,
-                  keyboardType: TextInputType.text,
-                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    icon: Icon(
-                      FontAwesome.search,
-                      color: Colors.black,
+                child: Column(
+                  children: <Widget>[
+                    
+                    TextField(
+                      autocorrect: false,
+                      onChanged: (String text) {
+                        setState(() {
+                          filterText = text;
+                          filterPackListResults();
+                        });
+                      },
+                      focusNode: searchFocusNode,
+                      controller: searchController,
+                      keyboardType: TextInputType.text,
+                      style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        icon: Icon(
+                          FontAwesome.search,
+                          color: Colors.black,
+                        ),
+                        hintText: 'Enter Hash or mortal name',
+                        hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                      ),
                     ),
-                    hintText: 'Hash or mortal name',
-                    hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                  ),
+                    Text(searchTypeText, style: highlightSearchType ? footnoteRed : footnote) 
+                  ],
                 ),
               ),
               Container(
@@ -728,6 +755,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       ),
     );
   }
+
 
   void filterOptionsPopup() {
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[

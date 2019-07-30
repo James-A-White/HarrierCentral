@@ -56,6 +56,9 @@ TextStyle buttonTextStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fon
 TextStyle smallContentStyleDb = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 20.0, height: 1.0);
 TextStyle smallContentStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 20.0, height: 1.0);
 
+TextStyle footnote = TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.italic, color: Colors.grey[700], fontSize: 14.0, height: 1.0);
+TextStyle footnoteRed = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.italic, color: Colors.red[900], fontSize: 14.0, height: 1.0);
+
 // Color brown = const Color.fromARGB(255, 107, 87, 66);
 // Color purple = const Color.fromARGB(255, 61, 27, 142);
 // Color yellow = const Color.fromARGB(255, 236, 212, 68);
