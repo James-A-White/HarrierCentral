@@ -422,7 +422,7 @@ class HasherEventMapService {
       'eventId': eventId,
       'displayName': displayName ?? '<no name>',
       'virginVisitorType': virginVisitorType == null ? null : virginVisitorType.toString(),
-      'attendenceState': attendenceAtHash == null ? null : attendenceAtHash.value.toString(),
+      'attendenceState': attendenceState == null ? null : attendenceState.toString(),
       'email': email,
       'phoneNumber': phoneNumber,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),

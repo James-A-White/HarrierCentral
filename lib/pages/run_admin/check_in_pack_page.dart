@@ -124,7 +124,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   Animation<double> buttonAnimation;
   Animation<Offset> filterPanelAnimation;
   Animation<RelativeRect> hasherListAnimation;
-  ScrollController scrollController;
+  //ScrollController scrollController;
   FocusNode searchFocusNode;
   TextEditingController searchController;
   String searchTypeText;
@@ -138,10 +138,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     searchTypeText = searchKennel;
     searchController = TextEditingController();
     searchFocusNode = FocusNode();
-    scrollController = ScrollController();
-    scrollController.addListener(() {
-      searchFocusNode.unfocus();
-    });
+    // scrollController = ScrollController();
+    // scrollController.addListener(() {
+    //   searchFocusNode.unfocus();
+    // });
 
     // searchController.addListener(() {
     //   print(searchController.value);
@@ -568,12 +568,23 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       }
 
       if (type != 'cancel') {
+        setState(() {
+          _isLoading = true;
+        });
         final HasherEventMapService hemSrv = HasherEventMapService();
-        final Future<void> retVal = hemSrv.joinEventAsVisitor(widget.eventAggregate.event.eventId, HasherEventMapTableType.eventAdmin, name, evv.value, attendenceAtHash.value, email, phoneNumber);
+        final Future<void> retVal = hemSrv.joinEventAsVisitor(widget.eventAggregate.event.eventId, HasherEventMapTableType.eventAdmin, name, evv.value, attendenceUnknown.value, email, phoneNumber);
 
         retVal.then((void dummy) {
           _refreshPackListFromTables(false).then((void dummy) {
             _refreshCounters(true);
+            if (name?.isNotEmpty ?? false) {
+              searchText = name;
+              searchController.text = searchText;
+              filterPackListResults();
+            }
+            setState(() {
+              _isLoading = false;
+            });
           });
         });
       }
@@ -631,7 +642,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                     } else {
                       animationController.forward();
                     }
-
                     showFilter = !showFilter;
                     // searchController.text = '';
                     // searchText = '';
@@ -821,37 +831,31 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           switch (retVal) {
             case FilterOptions.hashersNotHereYet:
               filterValues = <int>[0, 1, 0, 0, 0, 0, 0];
-              showFilter = false;
               searchText = '';
               searchController.text = '';
               break;
             case FilterOptions.hashersNotPaid:
               filterValues = <int>[0, 0, 1, -1, 0, 0, 0];
-              showFilter = false;
               searchText = '';
               searchController.text = '';
               break;
             case FilterOptions.hashersStillOnTrail:
               filterValues = <int>[0, 0, 1, 0, -1, 0, 0];
-              showFilter = false;
               searchText = '';
               searchController.text = '';
               break;
             case FilterOptions.clearAllFilters:
               filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
-              showFilter = false;
               searchText = '';
               searchController.text = '';
               break;
             case FilterOptions.visitors:
               filterValues = <int>[0, 0, 1, 0, 0, 0, 0];
-              showFilter = true;
               searchText = '(visitor)';
               searchController.text = '(visitor)';
               break;
             case FilterOptions.virgins:
               filterValues = <int>[0, 0, 1, 0, 0, 0, 0];
-              showFilter = true;
               searchText = '(virgin)';
               searchController.text = '(virgin)';
               break;
@@ -859,13 +863,17 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               break;
             default:
               filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
-              showFilter = false;
               searchText = '';
               searchController.text = '';
               break;
           }
 
           if (retVal != FilterOptions.cancel) {
+            if (!showFilter) {
+              showFilter = true;
+
+              animationController.forward();
+            }
             _refreshPackListFromTables(true);
           }
 
@@ -950,13 +958,13 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () => showVirginVisitorPopup(),
           ),
-          SpeedDialChild(
-            child: const Icon(MaterialCommunityIcons.account_search),
-            backgroundColor: Colors.blue,
-            label: 'Find Hasher',
-            labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () => findHasher(),
-          ),
+          // SpeedDialChild(
+          //   child: const Icon(MaterialCommunityIcons.account_search),
+          //   backgroundColor: Colors.blue,
+          //   label: 'Find Hasher',
+          //   labelStyle: const TextStyle(fontSize: 18.0),
+          //   onTap: () => findHasher(),
+          // ),
           SpeedDialChild(
               child: const Icon(MaterialCommunityIcons.message_video),
               backgroundColor: Colors.deepOrange,
@@ -996,7 +1004,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               Container(height: MediaQuery.of(context).size.height, width: 10),
               (filteredList == null || filteredList.isEmpty)
                   //? Positioned(top: showFilter ? 210 : 95, left:0, right: 0, child: getAddHasherBlock())
-                   ? Positioned(top: (filterPanelAnimation.value.dy*120) + 125, left:0, right: 0, child: getAddHasherBlock())
+                  ? Positioned(top: (filterPanelAnimation.value.dy * 120) + 125, left: 0, right: 0, child: getAddHasherBlock())
                   : PositionedTransition(
                       rect: hasherListAnimation,
                       child: Container(
@@ -1334,138 +1342,149 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
   Widget buildPackListView() {
     print('buildPackListView: ${DateTime.now().millisecondsSinceEpoch.toString()}');
-    return ListView.separated(
-        separatorBuilder: (BuildContext context, int index) => const Divider(
-              height: 1.0,
-              color: Colors.black45,
-            ),
-        physics: const AlwaysScrollableScrollPhysics(),
-        controller: scrollController,
-        itemCount: (filteredList?.length ?? 0) + (searchController.text.isNotEmpty ? 1 : 0),
-        itemBuilder: (BuildContext context, int index) {
-          if ((index == (filteredList?.length ?? 0)) && (searchController.text.isNotEmpty)) {
-            return getAddHasherBlock();
-          } else {
-            final CheckInPackModel packMember = filteredList[index];
-            final Key key = Key(index.toString());
-            return Dismissible(
-              child: listItem(context, packMember),
-              key: key,
-              confirmDismiss: (DismissDirection direction) {
-                if (packMember.isPaid != 1) {
-                  print(direction.toString() + ' ' + index.toString());
-                  payForEvent(packMember, direction == DismissDirection.endToStart ? 3 : 4).then((List<dynamic> results) {
-                    _refreshPackListFromTables(false).then((void dummy) {
-                      _refreshCounters(true);
-                      BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, context, packMember.nameForDisplay, packMember.isMember, -1);
+    return NotificationListener<ScrollNotification>(
+      onNotification: (ScrollNotification scrollNotification) {
+        if (scrollNotification is UserScrollNotification)
+        {
+           searchFocusNode.unfocus();
+        }
+        return false;
+      },
+      child: ListView.separated(
+          separatorBuilder: (BuildContext context, int index) => const Divider(
+                height: 1.0,
+                color: Colors.black45,
+              ),
+          physics: const AlwaysScrollableScrollPhysics(),
+          //controller: scrollController,
+          itemCount: (filteredList?.length ?? 0) + (searchController.text.isNotEmpty ? 1 : 0),
+          itemBuilder: (BuildContext context, int index) {
+            if ((index == (filteredList?.length ?? 0)) && (searchController.text.isNotEmpty)) {
+              return getAddHasherBlock();
+            } else {
+              final CheckInPackModel packMember = filteredList[index];
+              final Key key = Key(index.toString());
+              return Dismissible(
+                child: listItem(context, packMember),
+                key: key,
+                confirmDismiss: (DismissDirection direction) {
+                  if (packMember.isPaid != 1) {
+                    print(direction.toString() + ' ' + index.toString());
+                    payForEvent(packMember, direction == DismissDirection.endToStart ? 3 : 4).then((List<dynamic> results) {
+                      _refreshPackListFromTables(false).then((void dummy) {
+                        _refreshCounters(true);
+                        BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, context, packMember.nameForDisplay, packMember.isMember, -1);
+                      });
                     });
-                  });
-                } else {
-                  if (direction == DismissDirection.endToStart) {
-                    updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
+                  } else {
+                    if (direction == DismissDirection.endToStart) {
+                      updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
+                    }
                   }
-                }
-                return Future<bool>.value(false);
-              },
-              background: packMember.isPaid == 1
-                  ? Container(
-                      color: Colors.grey,
-                      child: Row(
-                        children: const <Widget>[
-                          Padding(
-                            padding: EdgeInsets.only(left: 15.0),
-                            child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(left: 15.0),
-                            child: Text(
-                              'Already paid',
-                              style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                  return Future<bool>.value(false);
+                },
+                background: packMember.isPaid == 1
+                    ? Container(
+                        color: Colors.grey,
+                        child: Row(
+                          children: const <Widget>[
+                            Padding(
+                              padding: EdgeInsets.only(left: 15.0),
+                              child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
                             ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : Container(
-                      color: Colors.blue,
-                      child: Row(
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(left: 15.0),
-                            child: Image.asset('images/icons/payment_type_4.png', height: 30.0, width: 30.0, color: Colors.white),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 15.0),
-                            child: Text('${Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Bank Transfer',
-                                style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
-                          ),
-                        ],
-                      ),
-                    ),
-              secondaryBackground: packMember.isPaid == 1
-                  ? packMember.attendenceState >= attendenceOnIn.value
-                      ? Container(
-                          color: Colors.grey,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: const <Widget>[
-                              Padding(
-                                padding: EdgeInsets.only(right: 15.0),
-                                child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
+                            Padding(
+                              padding: EdgeInsets.only(left: 15.0),
+                              child: Text(
+                                'Already paid',
+                                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
                               ),
-                              Padding(
-                                padding: EdgeInsets.only(right: 15.0),
-                                child: Text(
-                                  'Already marked On-In',
-                                  style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Container(
+                        color: Colors.blue,
+                        child: Row(
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(left: 15.0),
+                              child: Image.asset('images/icons/payment_type_4.png', height: 30.0, width: 30.0, color: Colors.white),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 15.0),
+                              child: Text('${Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Bank Transfer',
+                                  style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+                            ),
+                          ],
+                        ),
+                      ),
+                secondaryBackground: packMember.isPaid == 1
+                    ? packMember.attendenceState >= attendenceOnIn.value
+                        ? Container(
+                            color: Colors.grey,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: const <Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(right: 15.0),
+                                  child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
                                 ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : Container(
-                          color: Colors.amber[800],
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: const <Widget>[
-                              Padding(
-                                padding: EdgeInsets.only(right: 15.0),
-                                child: Icon(Ionicons.ios_beer, size: 35.0, color: Colors.white),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(right: 15.0),
-                                child: Text(
-                                  'Record as On-In',
-                                  style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                Padding(
+                                  padding: EdgeInsets.only(right: 15.0),
+                                  child: Text(
+                                    'Already marked On-In',
+                                    style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        )
-                  : Container(
-                      color: Colors.green,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(right: 15.0),
-                            child: Image.asset('images/icons/payment_type_3.png', height: 30.0, width: 30.0, color: Colors.white),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 15.0),
-                            child: Text('${Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Cash',
-                                style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
-                          ),
-                        ],
+                              ],
+                            ),
+                          )
+                        : Container(
+                            color: Colors.amber[800],
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: const <Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(right: 15.0),
+                                  child: Icon(Ionicons.ios_beer, size: 35.0, color: Colors.white),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(right: 15.0),
+                                  child: Text(
+                                    'Record as On-In',
+                                    style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                    : Container(
+                        color: Colors.green,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(right: 15.0),
+                              child: Image.asset('images/icons/payment_type_3.png', height: 30.0, width: 30.0, color: Colors.white),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 15.0),
+                              child: Text('${Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Cash',
+                                  style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-              onDismissed: (DismissDirection direction) {
-                print(direction.toString() + ' NOTE: We should never reach this point');
-              },
-            );
-          }
-        });
+                onDismissed: (DismissDirection direction) {
+                  print(direction.toString() + ' NOTE: We should never reach this point');
+                },
+              );
+            }
+          }),
+    );
   }
+
+  String capitalizeFirstLetter(String s) => (s?.isNotEmpty ?? false) ? '${s[0].toUpperCase()}${s.substring(1)}' : s;
 
   Widget getAddHasherBlock() {
     return GestureDetector(
@@ -1479,12 +1498,23 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               eventId: widget.eventAggregate.event.eventId,
               kennelId: widget.eventAggregate.event.kennelId,
               uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
-              hashNameFromSearch: searchController.text,
+              hashNameFromSearch: capitalizeFirstLetter(searchController.text),
             ),
           ),
         ).then((HashersModel result) {
-          _refreshPackListFromTables(true);
-          searchController.text = result.dispName;
+          if (result != null) {
+            _refreshPackListFromTables(true);
+            if (result.dispName == '') {
+              result.dispName = null;
+            }
+            if (result.hashName == '') {
+              result.hashName = null;
+            }
+
+            searchText = result.dispName ?? result.hashName ?? '${result.firstName} ${result.lastName}' ?? '<error no name entered>';
+            searchController.text = searchText;
+            filterPackListResults();
+          }
         });
       },
       child: Container(
@@ -1498,7 +1528,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
               Text('Can\'t find a Hasher?', style: smallContentStyleDb),
               AutoSizeText(
-                'Click here to add \'${searchController.text}\'',
+                'Click here to add \'${capitalizeFirstLetter(searchController.text)}\'',
                 style: smallContentStyle,
                 maxLines: 1,
               ),
