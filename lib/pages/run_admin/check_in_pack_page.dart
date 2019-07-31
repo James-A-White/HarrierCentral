@@ -1347,140 +1347,142 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         if (scrollNotification is UserScrollNotification)
         {
            searchFocusNode.unfocus();
+           _scaffoldKey.currentState.hideCurrentSnackBar();
         }
-        return false;
+        return true;
       },
       child: ListView.separated(
-          separatorBuilder: (BuildContext context, int index) => const Divider(
-                height: 1.0,
-                color: Colors.black45,
-              ),
-          physics: const AlwaysScrollableScrollPhysics(),
-          //controller: scrollController,
-          itemCount: (filteredList?.length ?? 0) + (searchController.text.isNotEmpty ? 1 : 0),
-          itemBuilder: (BuildContext context, int index) {
-            if ((index == (filteredList?.length ?? 0)) && (searchController.text.isNotEmpty)) {
-              return getAddHasherBlock();
-            } else {
-              final CheckInPackModel packMember = filteredList[index];
-              final Key key = Key(index.toString());
-              return Dismissible(
-                child: listItem(context, packMember),
-                key: key,
-                confirmDismiss: (DismissDirection direction) {
-                  if (packMember.isPaid != 1) {
-                    print(direction.toString() + ' ' + index.toString());
-                    payForEvent(packMember, direction == DismissDirection.endToStart ? 3 : 4).then((List<dynamic> results) {
-                      _refreshPackListFromTables(false).then((void dummy) {
-                        _refreshCounters(true);
-                        BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, context, packMember.nameForDisplay, packMember.isMember, -1);
-                      });
+        separatorBuilder: (BuildContext context, int index) => const Divider(
+          height: 1.0,
+          color: Colors.black45,
+        ),
+        physics: const AlwaysScrollableScrollPhysics(),
+        //controller: scrollController,
+        itemCount: (filteredList?.length ?? 0) + (searchController.text.isNotEmpty ? 1 : 0),
+        itemBuilder: (BuildContext context, int index) {
+          if ((index == (filteredList?.length ?? 0)) && (searchController.text.isNotEmpty)) {
+            return getAddHasherBlock();
+          } else {
+            final CheckInPackModel packMember = filteredList[index];
+            final Key key = Key(index.toString());
+            return Dismissible(
+              child: listItem(context, packMember),
+              key: key,
+              confirmDismiss: (DismissDirection direction) {
+                if (packMember.isPaid != 1) {
+                  print(direction.toString() + ' ' + index.toString());
+                  payForEvent(packMember, direction == DismissDirection.endToStart ? 3 : 4).then((List<dynamic> results) {
+                    _refreshPackListFromTables(false).then((void dummy) {
+                      _refreshCounters(true);
+                      BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, context, packMember.nameForDisplay, packMember.isMember, -1);
                     });
-                  } else {
-                    if (direction == DismissDirection.endToStart) {
-                      updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
-                    }
+                  });
+                } else {
+                  if (direction == DismissDirection.endToStart) {
+                    updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
                   }
-                  return Future<bool>.value(false);
-                },
-                background: packMember.isPaid == 1
-                    ? Container(
-                        color: Colors.grey,
-                        child: Row(
-                          children: const <Widget>[
-                            Padding(
-                              padding: EdgeInsets.only(left: 15.0),
-                              child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
+                }
+                return Future<bool>.value(false);
+              },
+              background: packMember.isPaid == 1
+                  ? Container(
+                      color: Colors.grey,
+                      child: Row(
+                        children: const <Widget>[
+                          Padding(
+                            padding: EdgeInsets.only(left: 15.0),
+                            child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(left: 15.0),
+                            child: Text(
+                              'Already paid',
+                              style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
                             ),
-                            Padding(
-                              padding: EdgeInsets.only(left: 15.0),
-                              child: Text(
-                                'Already paid',
-                                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Container(
+                      color: Colors.blue,
+                      child: Row(
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(left: 15.0),
+                            child: Image.asset('images/icons/payment_type_4.png', height: 30.0, width: 30.0, color: Colors.white),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 15.0),
+                            child: Text('${Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Bank Transfer',
+                                style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+                          ),
+                        ],
+                      ),
+                    ),
+              secondaryBackground: packMember.isPaid == 1
+                  ? packMember.attendenceState >= attendenceOnIn.value
+                      ? Container(
+                          color: Colors.grey,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: const <Widget>[
+                              Padding(
+                                padding: EdgeInsets.only(right: 15.0),
+                                child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
                               ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Container(
-                        color: Colors.blue,
-                        child: Row(
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.only(left: 15.0),
-                              child: Image.asset('images/icons/payment_type_4.png', height: 30.0, width: 30.0, color: Colors.white),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 15.0),
-                              child: Text('${Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Bank Transfer',
-                                  style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
-                            ),
-                          ],
-                        ),
+                              Padding(
+                                padding: EdgeInsets.only(right: 15.0),
+                                child: Text(
+                                  'Already marked On-In',
+                                  style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Container(
+                          color: Colors.amber[800],
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: const <Widget>[
+                              Padding(
+                                padding: EdgeInsets.only(right: 15.0),
+                                child: Icon(Ionicons.ios_beer, size: 35.0, color: Colors.white),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(right: 15.0),
+                                child: Text(
+                                  'Record as On-In',
+                                  style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                  : Container(
+                      color: Colors.green,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(right: 15.0),
+                            child: Image.asset('images/icons/payment_type_3.png', height: 30.0, width: 30.0, color: Colors.white),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 15.0),
+                            child: Text('${Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Cash',
+                                style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+                          ),
+                        ],
                       ),
-                secondaryBackground: packMember.isPaid == 1
-                    ? packMember.attendenceState >= attendenceOnIn.value
-                        ? Container(
-                            color: Colors.grey,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: const <Widget>[
-                                Padding(
-                                  padding: EdgeInsets.only(right: 15.0),
-                                  child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(right: 15.0),
-                                  child: Text(
-                                    'Already marked On-In',
-                                    style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : Container(
-                            color: Colors.amber[800],
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: const <Widget>[
-                                Padding(
-                                  padding: EdgeInsets.only(right: 15.0),
-                                  child: Icon(Ionicons.ios_beer, size: 35.0, color: Colors.white),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(right: 15.0),
-                                  child: Text(
-                                    'Record as On-In',
-                                    style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                    : Container(
-                        color: Colors.green,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.only(right: 15.0),
-                              child: Image.asset('images/icons/payment_type_3.png', height: 30.0, width: 30.0, color: Colors.white),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 15.0),
-                              child: Text('${Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Cash',
-                                  style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
-                            ),
-                          ],
-                        ),
-                      ),
-                onDismissed: (DismissDirection direction) {
-                  print(direction.toString() + ' NOTE: We should never reach this point');
-                },
-              );
-            }
-          }),
+                    ),
+              onDismissed: (DismissDirection direction) {
+                print(direction.toString() + ' NOTE: We should never reach this point');
+              },
+            );
+          }
+        },
+      ),
     );
   }
 
