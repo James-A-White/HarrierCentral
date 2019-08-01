@@ -17,9 +17,10 @@ import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart'
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 
 class HashersModel {
-  HashersModel({this.hasherId, this.firstName, this.lastName, this.dispName, this.hashName, this.email, this.photo, this.dispPref, this.resetCode, this.qrCode, this.removed, this.updatedAt});
+  HashersModel({this.hasherId, this.homeKennelId, this.firstName, this.lastName, this.dispName, this.hashName, this.email, this.photo, this.dispPref, this.resetCode, this.qrCode, this.removed, this.updatedAt});
 
   final String hasherId;
+  final String homeKennelId;
   String firstName;
   String lastName;
   String dispName;
@@ -41,6 +42,7 @@ class HashersModel {
       (dynamic jsonItem) {
         item = HashersModel(
             hasherId: jsonItem['hasherId'],
+            homeKennelId: jsonItem['homeKennelId'],
             firstName: jsonItem['firstName'],
             lastName: jsonItem['lastName'],
             dispName: jsonItem['dispName'],
@@ -80,6 +82,7 @@ class HashersTableHelper {
   static const String remoteDbId = 'hasherId';
 
   static const String colHasherId = 'hasherId';
+  static const String colHomeKennelId = 'homeKennelId';
   static const String colFirstName = 'firstName';
   static const String colLastName = 'lastName';
   static const String colDispName = 'dispName';
@@ -87,7 +90,7 @@ class HashersTableHelper {
   static const String colEmail = 'email';
   static const String colPhoto = 'photo';
   static const String colDispPref = 'dispPref';
-  static const String colResetCode= 'resetCode';
+  static const String colResetCode = 'resetCode';
   static const String colQrCode= 'qrCode';
 
   static const String colRemoved = 'removed';
@@ -105,6 +108,7 @@ class HashersTableHelper {
             $colId INTEGER PRIMARY KEY,
 
             $colHasherId TEXT NOT NULL,
+            $colHomeKennelId TEXT,
             $colFirstName TEXT,
             $colLastName TEXT,
             $colDispName TEXT,
@@ -128,6 +132,7 @@ class HashersTableHelper {
   static Map<String, dynamic> toMap(HashersModel item) {
     final Map<String, dynamic> map = <String, dynamic>{
       HashersTableHelper.colHasherId: item.hasherId,
+      HashersTableHelper.colHomeKennelId: item.homeKennelId,
       HashersTableHelper.colFirstName: item.firstName,
       HashersTableHelper.colLastName: item.lastName,
       HashersTableHelper.colDispName: item.dispName,
@@ -148,6 +153,7 @@ class HashersTableHelper {
   static HashersModel fromMap(Map<String, dynamic> map) {
     final HashersModel item = HashersModel(
       hasherId: map[HashersTableHelper.colHasherId],
+      homeKennelId: map[HashersTableHelper.colHomeKennelId],
       firstName: map[HashersTableHelper.colFirstName],
       lastName: map[HashersTableHelper.colLastName],
       dispName: map[HashersTableHelper.colDispName],

@@ -56,8 +56,13 @@ TextStyle buttonTextStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fon
 TextStyle smallContentStyleDb = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 20.0, height: 1.0);
 TextStyle smallContentStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 20.0, height: 1.0);
 
-TextStyle footnote = TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.italic, color: Colors.grey[700], fontSize: 14.0, height: 1.0);
-TextStyle footnoteRed = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.italic, color: Colors.red[900], fontSize: 14.0, height: 1.0);
+TextStyle footnoteSmall = TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.italic, color: Colors.grey[700], fontSize: 14.0, height: 1.0);
+TextStyle footnoteSmallRed = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.italic, color: Colors.red[900], fontSize: 14.0, height: 1.0);
+TextStyle footnoteSmallBlack = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.italic, color: Colors.black, fontSize: 14.0, height: 1.0);
+
+TextStyle footnoteMedium = TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.italic, color: Colors.grey[700], fontSize: 16.0, height: 1.0);
+TextStyle footnoteMediumRed = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.italic, color: Colors.red[900], fontSize: 16.0, height: 1.0);
+TextStyle footnoteMediumBlack = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.italic, color: Colors.black, fontSize: 16.0, height: 1.0);
 
 // Color brown = const Color.fromARGB(255, 107, 87, 66);
 // Color purple = const Color.fromARGB(255, 61, 27, 142);

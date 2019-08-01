@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:harrier_central/util/preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:geolocator/geolocator.dart';
@@ -8,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/database/database.dart';
 
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
+import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/widgets/kennel_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
@@ -21,7 +23,7 @@ import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart
 
 
 class KennelListQueryExtenstions {
-  KennelListQueryExtenstions({this.location,this.distToKennel,this.nextRunDate,this.lastRunDate,this.digitsAfterDecimal,this.currencySymbol});
+  KennelListQueryExtenstions({this.location,this.distToKennel,this.nextRunDate,this.lastRunDate,this.digitsAfterDecimal,this.currencySymbol, this.isHomeKennel});
 
   final String location;
   num distToKennel;
@@ -29,12 +31,13 @@ class KennelListQueryExtenstions {
   final String lastRunDate;
   final int digitsAfterDecimal;
   final String currencySymbol;
+  int isHomeKennel;
 
   int followingRequested;
   int notificationsRequested;
 
   static KennelListQueryExtenstions fromMap(Map<String, dynamic> map) {
-    final KennelListQueryExtenstions item = KennelListQueryExtenstions(location: map['location'], distToKennel: map['distToKennel'], nextRunDate: map['nextRunDate'], lastRunDate: map['lastRunDate'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'] );
+    final KennelListQueryExtenstions item = KennelListQueryExtenstions(location: map['location'], distToKennel: map['distToKennel'], nextRunDate: map['nextRunDate'], lastRunDate: map['lastRunDate'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'],isHomeKennel: map['isHomeKennel']);
     return item;
   }
 }
@@ -78,9 +81,11 @@ class KennelsListPageState extends State<KennelsListPage> {
         globalKennelMainPageList.clear();
       }
 
+      final String hasherId = getStringPref(StringPrefsEnum.userId);
+
       Utilities.getLatLong().then((LatLon ll) {
         DBProvider.db.database.then((Database db) {
-          const String query = ''' 
+          final String query = ''' 
       
         SELECT  
           k.*, 
@@ -92,12 +97,14 @@ class KennelsListPageState extends State<KennelsListPage> {
           (SELECT min(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime >= datetime('now','localtime') ) as nextRunDate,
           (SELECT max(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime <= datetime('now','localtime') ) as lastRunDate,
           n.digitsAfterDecimal,
-          n.currencySymbol
+          n.currencySymbol,
+          case when h.hasherId is not null then 1 else 0 end as isHomeKennel
           FROM kennels k
           INNER JOIN cities c on c.cityId = k.cityId
           INNER JOIN regions r on r.regionId = k.regionId
           INNER JOIN countries n on n.countryId = k.countryId
           LEFT OUTER JOIN hasherKennelMap hkm on hkm.kennelId = k.kennelId 
+          LEFT OUTER JOIN ${HashersTableHelper.tableName} h on h.homeKennelId = k.kennelId AND h.hasherId = "$hasherId"
           
           ''';
 
@@ -160,11 +167,20 @@ class KennelsListPageState extends State<KennelsListPage> {
                           return 
                               KennelsListItem(
                                 kennelItem: globalKennelMainPageList[index],
-                                kennelFollowingUpdated: (int following,int notificationStatus){
+                                kennelFollowingUpdated: (int following,int notificationStatus,int isHomeKennel){
+                                  for (int i = 0; i < globalKennelMainPageList.length; i++)
+                                  {
+                                    globalKennelMainPageList[i].extensions.isHomeKennel = 0;
+                                  }
                                   globalKennelMainPageList[index].extensions.followingRequested = -1;
                                   globalKennelMainPageList[index].extensions.notificationsRequested = -1;
                                   globalKennelMainPageList[index].hkm.following = following;
                                   globalKennelMainPageList[index].hkm.kennelNotificationPreference = notificationStatus;
+                                  globalKennelMainPageList[index].extensions.isHomeKennel = isHomeKennel;
+                                  setState(() {
+                                    
+                                  });
+
                                 },
                                 kennelSelected: () {
                                   final KennelListAggregate kennel = globalKennelMainPageList[index];

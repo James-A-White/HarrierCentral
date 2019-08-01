@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:http/http.dart' as http;
 
@@ -331,7 +332,7 @@ class HasherKennelMapService {
 
   //=================  Domain specific functions ================
 
-  Future<List<dynamic>> updateHasherKennelStatus(String kennelId, HasherKennelMapTableType tblType, {int monthsToAddToMembership, String targetUserId, int notificationState = -1, int followingState = -1}) async {
+  Future<List<dynamic>> updateHasherKennelStatus(String kennelId, HasherKennelMapTableType tblType, {int monthsToAddToMembership, String targetUserId, int notificationState = -1, int followingState = -1, int currentHomeKennel = -1}) async {
 
     List<dynamic> adHocData;
 
@@ -342,14 +343,30 @@ class HasherKennelMapService {
       //return false;
     }
 
+    int homeKennelState = -1;
+
+    if (followingState == followTypeToggleHomeKennel.value) 
+    {
+      followingState = -1;
+      if (currentHomeKennel == 1)
+      {
+        homeKennelState = 0;
+      } else {
+        homeKennelState = 1;
+      }
+    }
+
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
 
     final num _hasherKennelMapLastUpdated = await HasherKennelMapService.getLastUpdatedTime(tblType);
     final num _kennelsLastUpdated = await KennelsService.getLastUpdatedTime();
+    final num _hashersLastUpdated = await HashersService.getLastUpdatedTime();
 
     final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
     final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
+    final DateTime hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
+
 
     monthsToAddToMembership ??= 0;
 
@@ -359,11 +376,12 @@ class HasherKennelMapService {
       'kennelId': kennelId,
       'targetUserId': targetUserId ?? userId,
       'isFollowing': followingState,
-      'isHomeKennel' : -1,
+      'isHomeKennel' : homeKennelState,
       'notificationState': notificationState,
       'monthsToAddToMembership' : monthsToAddToMembership,
       'hasherKennelMapUpdatedAfter' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
-      'kennelsUpdatedAfter' : kennelsUpdatedAfter.toString().substring(0, 19)
+      'kennelsUpdatedAfter' : kennelsUpdatedAfter.toString().substring(0, 19),
+      'hashersUpdatedAfter' : hashersUpdatedAfter.toString().substring(0, 19)
     });
 
     final http.Response response = await http.post(BASE_API_URL + 'hc3_join_kennel', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(

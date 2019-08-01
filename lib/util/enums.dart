@@ -169,6 +169,7 @@ const EnumFollowType<int> followTypeCancel = EnumFollowType<int>(-1);
 const EnumFollowType<int> followTypeAuto = EnumFollowType<int>(0);
 const EnumFollowType<int> followTypeFollow = EnumFollowType<int>(1);
 const EnumFollowType<int> followTypeIgnore = EnumFollowType<int>(2);
+const EnumFollowType<int> followTypeToggleHomeKennel = EnumFollowType<int>(3);
 
 //////////////////////////
 

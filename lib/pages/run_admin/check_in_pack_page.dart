@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
@@ -32,13 +33,14 @@ import 'package:harrier_central/widgets/payment_snackbar.dart';
 
 class CheckInPackModel {
   CheckInPackModel(
-      {this.hasherId, this.hemId, this.isMember, this.isHare, this.isPaid, this.nameForDisplay, this.nameForSort, this.paymentType, this.creditAmount, this.photo, this.virginVisitorType, this.rsvpState, this.attendenceState, this.userRunCount, this.hemUpdatedAt, this.payUpdatedAt, this.credit});
+      {this.hasherId, this.hemId, this.isMember, this.isHare, this.isPaid, this.homeKennelName, this.nameForDisplay, this.nameForSort, this.paymentType, this.creditAmount, this.photo, this.virginVisitorType, this.rsvpState, this.attendenceState, this.userRunCount, this.hemUpdatedAt, this.payUpdatedAt, this.credit});
 
   final String hasherId;
   final String hemId;
   final int isMember;
   final int isHare;
   final int isPaid;
+  final String homeKennelName;
   final String nameForDisplay;
   final String nameForSort;
   final int paymentType;
@@ -59,6 +61,7 @@ class CheckInPackModel {
         isMember: map['isMember'],
         isHare: map['isHare'],
         isPaid: map['isPaid'],
+        homeKennelName: map['homeKennelName'],
         nameForDisplay: map['nameForDisplay'],
         nameForSort: map['nameForSort'],
         paymentType: map['paymentType'],
@@ -117,7 +120,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   int memberCount = 0;
 
   num snackBarButtonSize = 35.0;
-  static const num LIST_ITEM_HEIGHT = 70.0;
+  static const num LIST_ITEM_HEIGHT = 84.0;
 
   String userId = getStringPref(StringPrefsEnum.userId);
 
@@ -225,6 +228,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           SELECT 
             -- get all of the members of a Kennel and display them
             h.hasherId,
+            k.kennelName as homeKennelName,
             hem.hemId,
             coalesce(hkm.isMember,0) as isMember,
             coalesce(hem.isHare,0) as isHare,
@@ -243,6 +247,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             coalesce(credits.currentBalance,0) as credit
           FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm
           INNER JOIN ${HashersTableHelper.tableName} h on h.hasherId = hkm.userId
+          LEFT OUTER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = h.homeKennelId
           LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventAggregate.event.eventId}"
           LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
           LEFT OUTER JOIN ${KennelCreditsTableHelper.tableName} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
@@ -251,6 +256,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           SELECT 
             -- now get all virgins & visitors
             null as hasherId,
+            null as homeKennelName,
             coalesce(hem2.hemId,"00000000-0000-0000-0000-000000000000") as hemId,
             0 as isMember,
             hem2.isHare as isHare,
@@ -275,6 +281,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           SELECT 
             -- now get all Hashers who are in HC and have RSVP'ed but are not members of the kennel
             hem3.userId as hasherId,
+            k3.kennelName as homeKennelName,
             hem3.hemId as hemId,
             0 as isMember,
             hem3.isHare as isHare,
@@ -293,6 +300,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             0 as credit
             FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem3
             INNER JOIN ${HashersTableHelper.tableName} h3 on h3.hasherId = hem3.userId
+            LEFT OUTER JOIN ${KennelsTableHelper.tableName} k3 on k3.kennelId = h3.homeKennelId
             LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay3 on pay3.hemId = hem3.hemId and pay3.cancelledBy IS NULL
             LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm3 on hkm3.userId = h3.hasherId and hkm3.kennelId = "${widget.eventAggregate.event.kennelId}" AND hkm3.isMember = 1
             WHERE hem3.eventId = "${widget.eventAggregate.event.eventId}" AND hem3.virginVisitorType == 0 AND hkm3.hkmId IS NULL
@@ -690,7 +698,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                         hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                       ),
                     ),
-                    Text(searchTypeText, style: highlightSearchType ? footnoteRed : footnote)
+                    Text(searchTypeText, style: highlightSearchType ? footnoteSmallRed : footnoteSmall)
                   ],
                 ),
               ),
@@ -1062,6 +1070,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     return snackbar;
   }
 
+  static const num LIST_ITEM_LEFT_MARGIN = 88.0;
+
   Widget listItem(BuildContext context, CheckInPackModel packMember) {
     return GestureDetector(
       onTap: () {
@@ -1113,14 +1123,19 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                       ),
 
             Positioned(
-              left: 77.0,
-              top: 3.0,
+              left: LIST_ITEM_LEFT_MARGIN + 2.0,
+              top: packMember.homeKennelName == null ? 9.0 : 3.0,
               child: Text(packMember.nameForDisplay, style: TextStyle(fontFamily: (packMember.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0)),
+            ),
+            Positioned(
+              left: LIST_ITEM_LEFT_MARGIN + 2.0,
+              top: 32.0,
+              child: Text(packMember.homeKennelName ?? '', style: footnoteMedium),
             ),
             // this widget is here to grow the contents of the cell to a size that fills nearly the whole cell
             // in order to give plenty of room for the tap gesture.
             Positioned(
-              left: 75,
+              left: LIST_ITEM_LEFT_MARGIN,
               top: 0,
               child: Container(width: MediaQuery.of(context).size.width - 80, height: 65, color: Colors.transparent),
             ),
@@ -1140,8 +1155,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             // ),
 
             Positioned(
-              left: 75.0,
-              bottom: 3.0,
+              left: LIST_ITEM_LEFT_MARGIN,
+              bottom: packMember.homeKennelName == null ? 9.0 : 3.0,
               child: packMember.rsvpState == -1
                   ? CircleAvatar(
                       backgroundColor: Colors.grey[350],
@@ -1153,8 +1168,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                     ),
             ),
             Positioned(
-              left: 76.0,
-              bottom: packMember.rsvpState <= 0 ? 2.0 : packMember.isHare == 1 ? 5.0 : 3.5,
+              left: LIST_ITEM_LEFT_MARGIN + 1.0,
+              bottom: (packMember.rsvpState <= 0 ? 2.0 : packMember.isHare == 1 ? 5.0 : 3.5) + (packMember.homeKennelName == null ? 6.0 : 0.0),
               child: ((packMember.hemId != null) && (indicatorRsvpUpdating.containsKey('hem:' + (packMember.hemId.toString().toLowerCase() ?? ''))) || ((packMember.hasherId != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember.hasherId.toString().toLowerCase() ?? '')))))
                   ? Icon(delayIcon, color: Colors.blue[800])
                   : packMember.rsvpState == 0
@@ -1166,8 +1181,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                               : packMember.isHare == 0 ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 27.0) : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 24.0, width: 24.0),
             ),
             Positioned(
-              left: 115.0,
-              bottom: 3.0,
+              left: LIST_ITEM_LEFT_MARGIN + 40.0,
+              bottom: packMember.homeKennelName == null ? 9.0 : 3.0,
               child: ((packMember.hemId != null) && (indicatorAttendenceUpdating.containsKey('hem:' + (packMember.hemId.toString().toLowerCase() ?? ''))) || ((packMember.hasherId != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember.hasherId.toString().toLowerCase() ?? '')))))
                   ? Icon(delayIcon, color: Colors.blue[800])
                   : (packMember.rsvpState != rsvpYes.value)
@@ -1181,8 +1196,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                         ),
             ),
             Positioned(
-              left: 117.0,
-              bottom: packMember.attendenceState <= 0 ? 4.5 : 5.5,
+              left: LIST_ITEM_LEFT_MARGIN + 42.0,
+              bottom: (packMember.attendenceState <= 0 ? 4.5 : 5.5) + (packMember.homeKennelName == null ? 6.0 : 0.0),
               child: ((packMember.hemId != null) && (indicatorAttendenceUpdating.containsKey('hem:' + (packMember.hemId.toString().toLowerCase() ?? ''))) || ((packMember.hasherId != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember.hasherId.toString().toLowerCase() ?? '')))))
                   ? Container()
                   : (packMember.rsvpState != rsvpYes.value)
@@ -1194,8 +1209,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                               : packMember.attendenceState >= attendenceOnIn.value ? Image.asset('images/icons/beer_icon.png', height: 24.0, width: 24.0, color: Colors.green) : Container(),
             ),
             Positioned(
-              left: 155.0,
-              bottom: 3.0,
+              left: LIST_ITEM_LEFT_MARGIN + 80.0,
+              bottom: packMember.homeKennelName == null ? 9.0 : 3.0,
               child: ((packMember.hemId != null) && (indicatorPaidUpdating.containsKey('hem:' + (packMember.hemId.toString().toLowerCase() ?? ''))) || ((packMember.hasherId != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember.hasherId.toString().toLowerCase() ?? '')))))
                   ? Icon(delayIcon, color: Colors.blue[800])
                   : (packMember.attendenceState < attendenceAtHash.value)
@@ -1215,8 +1230,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             ),
 
             Positioned(
-                left: 157.0,
-                bottom: packMember.attendenceState < -1 ? 4.5 : 5.5,
+                left: LIST_ITEM_LEFT_MARGIN + 82.0,
+                bottom: (packMember.attendenceState < -1 ? 4.5 : 5.5)+ (packMember.homeKennelName == null ? 6.0 : 0.0),
                 child: ((packMember.hemId != null) && (indicatorPaidUpdating.containsKey('hem:' + (packMember.hemId.toString().toLowerCase() ?? ''))) || ((packMember.hasherId != null) && (indicatorRsvpUpdating.containsKey('hid:' + (packMember.hasherId.toString().toLowerCase() ?? '')))))
                     ? Container()
                     : (packMember.attendenceState < attendenceAtHash.value)

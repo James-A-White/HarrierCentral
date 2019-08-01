@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
@@ -40,71 +41,75 @@ class KennelListItemState extends State<KennelsListItem> {
         mainAxisSize: MainAxisSize.max,
         children: <Widget>[
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Expanded(
-                flex: 13,
-                child: Container(
-                  child: IconButton(
-                    icon: Utilities.styleForConnected(Icon(
-                        widget.kennelItem.extensions.followingRequested != -1 ? delayIcon : widget.kennelItem.hkm.following == 1 ? const Icon(FontAwesome.check_circle).icon : widget.kennelItem.hkm.following == 2 ? const Icon(FontAwesome.times_circle).icon : const Icon(FontAwesome.star).icon,
-                        color: widget.kennelItem.extensions.followingRequested != -1 ? Colors.blue : widget.kennelItem.hkm.following == 1 ? Colors.green : widget.kennelItem.hkm.following == 2 ? Colors.red : Colors.yellow[800])),
-                    tooltip: 'Select to follow a Kennel',
-                    iconSize: 35.0,
-                    alignment: Alignment.topCenter,
-                    splashColor: Colors.greenAccent,
-                    onPressed: () {
-                      if (Utilities.checkForConnection(context, message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
-                        final HasherKennelMapService srv = HasherKennelMapService();
-                        int followingRequested = widget.kennelItem.hkm.following + 1;
-                        if (followingRequested > 2) {
-                          followingRequested = 0;
-                        }
-                        widget.kennelItem.extensions.followingRequested = followingRequested;
-                        setState(() {});
-                        srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, followingState: followingRequested).then((List<dynamic> queryResults) {
-                          setState(() {
-                            widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference']);
-                          });
-                        });
-                      }
-                    },
-                  ),
+              Container(
+                child: IconButton(
+                  icon: Utilities.styleForConnected(Icon(
+                      widget.kennelItem.extensions.followingRequested != -1 ? delayIcon : widget.kennelItem.hkm.following == 1 ? const Icon(FontAwesome.check_circle).icon : widget.kennelItem.hkm.following == 2 ? const Icon(FontAwesome.times_circle).icon : const Icon(FontAwesome.star).icon,
+                      color: widget.kennelItem.extensions.followingRequested != -1 ? Colors.blue : widget.kennelItem.hkm.following == 1 ? Colors.green : widget.kennelItem.hkm.following == 2 ? Colors.red : Colors.yellow[800])),
+                  tooltip: 'Select to follow a Kennel',
+                  iconSize: 35.0,
                   alignment: Alignment.topCenter,
+                  splashColor: Colors.greenAccent,
+                  onPressed: () {
+                    if (Utilities.checkForConnection(context, message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
+                      final HasherKennelMapService srv = HasherKennelMapService();
+                      int followingRequested = widget.kennelItem.hkm.following + 1;
+                      if (followingRequested > 2) {
+                        followingRequested = 0;
+                      }
+                      widget.kennelItem.extensions.followingRequested = followingRequested;
+                      setState(() {});
+                      srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, followingState: followingRequested).then((List<dynamic> queryResults) {
+                        setState(() {
+                          widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['isHomeKennel']);
+                        });
+                      });
+                    }
+                  },
                 ),
+                alignment: Alignment.topCenter,
               ),
+              widget.kennelItem.extensions.isHomeKennel == 0
+                  ? Container()
+                  : Container(
+                      child: widget.kennelItem.extensions.followingRequested != -1 ? Icon(delayIcon, size: 35, color: Colors.blue) : Icon(FontAwesome.home, size: 35, color: Colors.red[900]),
+                      alignment: Alignment.topLeft,
+                      padding: const EdgeInsets.only(right: 5.0, bottom: 2.0),
+                    ),
               Expanded(
-                flex: 80,
                 child: Container(
                   width: MediaQuery.of(context).size.width - 70,
-                  padding: const EdgeInsets.only(left: 0.0, bottom: 2.0),
-                  child: Text(
+                  padding: const EdgeInsets.only(left: 5.0, bottom: 2.0, right:5.0),
+                  child: AutoSizeText(
                     '${widget.kennelItem.kennel.kennelName}',
+                    //'An extremely long kennel name for testing purposes',
                     style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
                     textAlign: TextAlign.left,
                     maxLines: 1,
+                    minFontSize: 18,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
-              Expanded(
-                flex: 10,
-                child: Container(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: GestureDetector(
-                    onTap: () {
-                      showNotificationPopup(context);
-                    },
-                    child: widget.kennelItem.extensions.notificationsRequested != -1
-                        ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
-                        : Image(
-                            width: 24.0,
-                            height: 24.0,
-                            fit: BoxFit.fill,
-                            image: widget.kennelItem.hkm.kennelNotificationPreference == 1 ? const AssetImage('images/icons/bell_gold_50px.png') : const AssetImage('images/icons/bell_silver_strike_out_50px.png'),
-                          ),
-                  ),
+              Container(
+                padding: const EdgeInsets.only(right: 10),
+                child: GestureDetector(
+                  onTap: () {
+                    showNotificationPopup(context);
+                  },
+                  child: widget.kennelItem.extensions.notificationsRequested != -1
+                      ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
+                      : Image(
+                          width: 24.0,
+                          height: 24.0,
+                          fit: BoxFit.fill,
+                          image: widget.kennelItem.hkm.kennelNotificationPreference == 1 ? const AssetImage('images/icons/bell_gold_50px.png') : const AssetImage('images/icons/bell_silver_strike_out_50px.png'),
+                        ),
                 ),
-              )
+              ),
             ],
           ),
           Container(
@@ -211,10 +216,21 @@ class KennelListItemState extends State<KennelsListItem> {
                               ],
                               'returnValue': followTypeAuto
                             },
+                            widget.kennelItem.extensions.isHomeKennel == 0
+                                ? <String, dynamic>{
+                                    'title': 'Set as home kennel',
+                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size:23)],
+                                    'returnValue': followTypeToggleHomeKennel
+                                  }
+                                : <String, dynamic>{
+                                    'title': 'Remove as home kennel',
+                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size:23)],
+                                    'returnValue': followTypeToggleHomeKennel
+                                  },
                           ];
 
                           final MultipleChoicePopup popup = MultipleChoicePopup(
-                              title: 'Follow ${widget.kennelItem.kennel.kennelName}',
+                              title: 'Follow ${widget.kennelItem.kennel.kennelName}', 
                               buttons: buttons,
                               cancelButtonTitle: 'Cancel',
                               buttonPress: (dynamic retVal) {
@@ -222,10 +238,10 @@ class KennelListItemState extends State<KennelsListItem> {
                                   final HasherKennelMapService srv = HasherKennelMapService();
                                   widget.kennelItem.extensions.followingRequested = retVal.value;
                                   setState(() {});
-                                  srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, followingState: retVal.value).then((List<dynamic> queryResults) {
-                          setState(() {
-                            widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference']);
-                          });
+                                  srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, followingState: retVal.value, currentHomeKennel: widget.kennelItem.extensions.isHomeKennel).then((List<dynamic> queryResults) {
+                                    setState(() {
+                                      widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['isHomeKennel']);
+                                    });
                                   });
                                 }
                               });
@@ -305,8 +321,8 @@ class KennelListItemState extends State<KennelsListItem> {
                 srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, notificationState: notificationStatus).then((List<dynamic> queryResults) {
                   setState(() {
                     widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference']);
-                                    final NotificationSupport notifications = NotificationSupport();
-                notifications.setNotificationState(kennelId:widget.kennelItem.kennel.kennelId);
+                    final NotificationSupport notifications = NotificationSupport();
+                    notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
                   });
                 });
               }

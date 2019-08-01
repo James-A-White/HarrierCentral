@@ -4,10 +4,11 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 
 //import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
-//import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 //import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
+//import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
+//import 'package:harrier_central/data/hc3_services/kennels_service.dart';
+//import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
+import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 
 class MigrationsModel {
   MigrationsModel({this.migrationNumber, this.migrationText, this.appliedAtInt});
@@ -110,16 +111,13 @@ class MigrationsTableHelper {
   ///
   ///
 
-  static int dbVersion = 220;
+  static int dbVersion = 221;
 
   static List<MigrationsModel> migrationList = <MigrationsModel>[
 
     // MIGRATION 190
-    MigrationsModel(migrationNumber: 190, migrationText: '''
-            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colKennelPaymentUrl} TEXT;
-            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colKennelPaymentUrlExpires} TEXT;
-            ALTER TABLE ${NarrowEventsTableHelper.tableName} ADD COLUMN ${NarrowEventsTableHelper.colEventPaymentUrl} TEXT;
-            ALTER TABLE ${NarrowEventsTableHelper.tableName} ADD COLUMN ${NarrowEventsTableHelper.colEventPaymentUrlExpires} TEXT;
+    MigrationsModel(migrationNumber: 221, migrationText: '''
+            ALTER TABLE ${HashersTableHelper.tableName} ADD COLUMN ${HashersTableHelper.colHomeKennelId} TEXT;
          '''),
   ];
 }
