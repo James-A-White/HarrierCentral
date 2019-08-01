@@ -64,6 +64,10 @@ class _MultipleChoicePopupState extends State<MultipleChoicePopup> {
     final List<Widget> buttons = <Widget>[];
 
     for (Map<String, dynamic> btnDef in widget.buttons) {
+      if (btnDef['title'].toString().isEmpty)
+      {
+        continue;
+      }
       final Widget w = Container(
         width: 350,
         padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),

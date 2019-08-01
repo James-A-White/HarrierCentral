@@ -29,7 +29,7 @@ class KennelMembersList extends StatefulWidget {
 
 class KennelMembersResults {
   KennelMembersResults(
-      {this.hasherId, this.dispName, this.photo, this.isMember, this.following, this.kennelId, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.membershipDurationInMonths, this.isLoading = false, this.kennelShortName, this.membershipDateBeingUpdated = false});
+      {this.hasherId, this.dispName, this.photo, this.isMember, this.following, this.kennelId, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.membershipDurationInMonths, this.isLoading = false, this.kennelShortName, this.homeKennelName, this.homeKennelBeingUpdated = false, this.membershipDateBeingUpdated = false});
 
   final String hasherId;
   String dispName;
@@ -43,7 +43,9 @@ class KennelMembersResults {
   final int membershipDurationInMonths;
   bool isLoading;
   bool membershipDateBeingUpdated;
+  bool homeKennelBeingUpdated;
   String kennelShortName;
+  String homeKennelName;
 
   static KennelMembersResults fromMap(Map<String, dynamic> map) {
     final KennelMembersResults item = KennelMembersResults(
@@ -53,6 +55,7 @@ class KennelMembersResults {
       isMember: map['isMember'],
       following: map['following'],
       kennelShortName: map['kennelShortName'],
+      homeKennelName: map['homeKennelName'],
       kennelId: map['kennelId'],
       dateOfLastRun: (map['dateOfLastRun'] == null) ? null : DateTime.parse(map['dateOfLastRun'].toString().substring(0, 19)),
       membershipExpirationDate: (map['membershipExpirationDate'] == null) ? null : DateTime.parse(map['membershipExpirationDate'].toString().substring(0, 19)),
@@ -125,10 +128,12 @@ class KennelMemberListState extends State<KennelMembersList> {
           hkm.memberSince,
           k.membershipDurationInMonths,
           k.kennelShortName,
-          k.kennelId
+          k.kennelId,
+          hk.kennelName as homeKennelName
           FROM hasherKennelMapForKennelAdmin hkm
           INNER JOIN kennels k on k.kennelId = hkm.kennelId
           INNER JOIN hashers h on h.hasherId = hkm.userId
+          LEFT OUTER JOIN kennels hk on hk.kennelId = h.homeKennelId
           WHERE hkm.membershipExpirationDate >= date('now') OR hkm.following = 1
           ORDER BY $orderBy
           
@@ -375,6 +380,9 @@ class KennelMemberListState extends State<KennelMembersList> {
                                               case EnumMemberPopupActions.cancelMembership:
                                                 modifyMembership(kennelMemberList[index], -9999);
                                                 break;
+                                              case EnumMemberPopupActions.toggleHomeKennel:
+                                                setAsHomeKennel(kennelMemberList[index], 1);
+                                                break;
                                             }
                                           },
                                         ),
@@ -402,7 +410,7 @@ class KennelMemberListState extends State<KennelMembersList> {
     refreshKennelMembersFromTable(true);
   }
 
-  void modifyMembership(KennelMembersResults item, int monthsToAddToMembership) {
+    void modifyMembership(KennelMembersResults item, int monthsToAddToMembership) {
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennel.extensions.followingRequested = -1;
     item.membershipDateBeingUpdated = true;
@@ -410,6 +418,19 @@ class KennelMemberListState extends State<KennelMembersList> {
     srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, HasherKennelMapTableType.kennelAdmin, monthsToAddToMembership: monthsToAddToMembership, targetUserId: item.hasherId).then((void dummy) {
       refreshKennelMembersFromTable(true).then((void dummy) {
         item.membershipDateBeingUpdated = false;
+        setState(() {});
+      });
+    });
+  }
+
+  void setAsHomeKennel(KennelMembersResults item, int isHomeKennel) {
+    final HasherKennelMapService srv = HasherKennelMapService();
+    widget.kennel.extensions.followingRequested = -1;
+    item.homeKennelBeingUpdated = true;
+    setState(() {});
+    srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, HasherKennelMapTableType.kennelAdmin, targetUserId: item.hasherId, followingState: followTypeToggleHomeKennel.value, isHomeKennel: isHomeKennel).then((void dummy) {
+      refreshKennelMembersFromTable(true).then((void dummy) {
+        item.homeKennelBeingUpdated = false;
         setState(() {});
       });
     });

@@ -82,7 +82,7 @@ class KennelListItemState extends State<KennelsListItem> {
               Expanded(
                 child: Container(
                   width: MediaQuery.of(context).size.width - 70,
-                  padding: const EdgeInsets.only(left: 5.0, bottom: 2.0, right:5.0),
+                  padding: const EdgeInsets.only(left: 5.0, bottom: 2.0, right: 5.0),
                   child: AutoSizeText(
                     '${widget.kennelItem.kennel.kennelName}',
                     //'An extremely long kennel name for testing purposes',
@@ -219,18 +219,18 @@ class KennelListItemState extends State<KennelsListItem> {
                             widget.kennelItem.extensions.isHomeKennel == 0
                                 ? <String, dynamic>{
                                     'title': 'Set as home kennel',
-                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size:23)],
+                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size: 23)],
                                     'returnValue': followTypeToggleHomeKennel
                                   }
                                 : <String, dynamic>{
                                     'title': 'Remove as home kennel',
-                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size:23)],
+                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size: 23)],
                                     'returnValue': followTypeToggleHomeKennel
                                   },
                           ];
 
                           final MultipleChoicePopup popup = MultipleChoicePopup(
-                              title: 'Follow ${widget.kennelItem.kennel.kennelName}', 
+                              title: 'Follow ${widget.kennelItem.kennel.kennelName}',
                               buttons: buttons,
                               cancelButtonTitle: 'Cancel',
                               buttonPress: (dynamic retVal) {
@@ -238,7 +238,12 @@ class KennelListItemState extends State<KennelsListItem> {
                                   final HasherKennelMapService srv = HasherKennelMapService();
                                   widget.kennelItem.extensions.followingRequested = retVal.value;
                                   setState(() {});
-                                  srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, followingState: retVal.value, currentHomeKennel: widget.kennelItem.extensions.isHomeKennel).then((List<dynamic> queryResults) {
+                                  int isHomeKennel = -1;
+                                  if (retVal == followTypeToggleHomeKennel) {
+                                    isHomeKennel = widget.kennelItem.extensions.isHomeKennel == 0 ? 1 : 0;
+                                  }
+
+                                  srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, followingState: retVal.value, isHomeKennel: isHomeKennel).then((List<dynamic> queryResults) {
                                     setState(() {
                                       widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['isHomeKennel']);
                                     });

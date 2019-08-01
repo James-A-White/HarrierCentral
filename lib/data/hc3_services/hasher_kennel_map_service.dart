@@ -332,7 +332,7 @@ class HasherKennelMapService {
 
   //=================  Domain specific functions ================
 
-  Future<List<dynamic>> updateHasherKennelStatus(String kennelId, HasherKennelMapTableType tblType, {int monthsToAddToMembership, String targetUserId, int notificationState = -1, int followingState = -1, int currentHomeKennel = -1}) async {
+  Future<List<dynamic>> updateHasherKennelStatus(String kennelId, HasherKennelMapTableType tblType, {int monthsToAddToMembership, String targetUserId, int notificationState = -1, int followingState = -1, int isHomeKennel = -1}) async {
 
     List<dynamic> adHocData;
 
@@ -343,18 +343,10 @@ class HasherKennelMapService {
       //return false;
     }
 
-    int homeKennelState = -1;
-
     if (followingState == followTypeToggleHomeKennel.value) 
     {
       followingState = -1;
-      if (currentHomeKennel == 1)
-      {
-        homeKennelState = 0;
-      } else {
-        homeKennelState = 1;
-      }
-    }
+    } 
 
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
@@ -376,7 +368,7 @@ class HasherKennelMapService {
       'kennelId': kennelId,
       'targetUserId': targetUserId ?? userId,
       'isFollowing': followingState,
-      'isHomeKennel' : homeKennelState,
+      'isHomeKennel' : isHomeKennel,
       'notificationState': notificationState,
       'monthsToAddToMembership' : monthsToAddToMembership,
       'hasherKennelMapUpdatedAfter' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),

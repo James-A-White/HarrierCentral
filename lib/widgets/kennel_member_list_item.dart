@@ -10,7 +10,7 @@ import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 
-enum EnumMemberPopupActions { addOneMonth, addSixMonths, subtractOneMonth, subtractSixMonths, cancelMembership }
+enum EnumMemberPopupActions { addOneMonth, addSixMonths, subtractOneMonth, subtractSixMonths, cancelMembership, toggleHomeKennel }
 
 class KennelMemberListItem extends StatelessWidget {
   const KennelMemberListItem({@required this.kennelMember, @required this.modifyMembershipCallback});
@@ -18,25 +18,28 @@ class KennelMemberListItem extends StatelessWidget {
   final KennelMembersResults kennelMember;
   final Function modifyMembershipCallback;
 
+  static const num PROFILE_PIC_SIZE = 92.0;
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.of(context).push<HashersModel>(
+        Navigator.of(context)
+            .push<HashersModel>(
           MaterialPageRoute<HashersModel>(
             maintainState: false,
             builder: (BuildContext context) => HasherProfilePage(
-                  dataContext: EnumDataContext.kennel,
-                  pageType: EnumMyProfilePageType.anyHasherProfile,
-                  hasherId: kennelMember.hasherId,
-                  uiElementsToDisplay: HasherProfilePage.flagUiElement_inviteCode,
-                  kennelShortName: kennelMember.kennelShortName,
-                  kennelId: kennelMember.kennelId,
-                ),
+              dataContext: EnumDataContext.kennel,
+              pageType: EnumMyProfilePageType.anyHasherProfile,
+              hasherId: kennelMember.hasherId,
+              uiElementsToDisplay: HasherProfilePage.flagUiElement_inviteCode,
+              kennelShortName: kennelMember.kennelShortName,
+              kennelId: kennelMember.kennelId,
+            ),
           ),
-        ).then((HashersModel result){
-          if (result != null)
-          {
+        )
+            .then((HashersModel result) {
+          if (result != null) {
             kennelMember.dispName = result.dispName;
             kennelMember.photo = result.photo;
           }
@@ -61,26 +64,26 @@ class KennelMemberListItem extends StatelessWidget {
                         errorWidget: (BuildContext context, String url, Object error) => Image.asset('images/avatars/avatar-2.png', height: 80, width: 80, fit: BoxFit.fill),
                         //fadeOutDuration:  Duration(seconds: 1),
                         fadeInDuration: const Duration(milliseconds: 0),
-                        width: 80.0,
-                        height: 80.0,
+                        width: PROFILE_PIC_SIZE,
+                        height: PROFILE_PIC_SIZE,
                         fit: BoxFit.fill)
                     : kennelMember.photo.startsWith('bundle')
                         ? Image(
-                            width: 80.0,
-                            height: 80.0,
+                            width: PROFILE_PIC_SIZE,
+                            height: PROFILE_PIC_SIZE,
                             fit: BoxFit.fill,
                             image: AssetImage(('images/avatars/' + kennelMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.png').toLowerCase()),
                           )
                         : Image(
-                            width: 80.0,
-                            height: 80.0,
+                            width: PROFILE_PIC_SIZE,
+                            height: PROFILE_PIC_SIZE,
                             fit: BoxFit.fill,
                             image: const AssetImage('images/avatars/avatar-2.png'),
                           ),
               ),
               Container(
                   padding: const EdgeInsets.only(left: 10.0, bottom: 2.0),
-                  width: MediaQuery.of(context).size.width - 135,
+                  width: MediaQuery.of(context).size.width - 145,
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -92,17 +95,30 @@ class KennelMemberListItem extends StatelessWidget {
                         style: TextStyle(fontFamily: kennelMember.isMember == 1 ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensed', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
                         textAlign: TextAlign.left,
                       ),
+                      kennelMember.homeKennelBeingUpdated ?? false
+                          ? const Text(
+                              '<Updating home kennel>',
+                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0, color: Colors.blue),
+                              textAlign: TextAlign.center,
+                            )
+                          : 
+                      Text(
+                        '${kennelMember.homeKennelName ?? '<no home hash>'}',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0),
+                        textAlign: TextAlign.left,
+                      ),
                       kennelMember.dateOfLastRun == null
                           ? Container()
                           : Text(
                               'Last run: ${DateFormat('MMM dd, yyyy').format(kennelMember.dateOfLastRun)}',
-                              style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0),
+                              style: const TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0),
                               textAlign: TextAlign.center,
                             ),
                       kennelMember.membershipDateBeingUpdated ?? false
                           ? const Text(
-                              '<Update in progress>',
-                              style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0, color: Colors.blue),
+                              '<Updating membership>',
+                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0, color: Colors.blue),
                               textAlign: TextAlign.center,
                             )
                           : kennelMember.membershipExpirationDate == null
@@ -115,7 +131,7 @@ class KennelMemberListItem extends StatelessWidget {
                                     )
                               : Text(
                                   'Valid until: ${DateFormat('MMM dd, yyyy').format(kennelMember.membershipExpirationDate)}',
-                                  style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0),
+                                  style: const TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0),
                                   textAlign: TextAlign.center,
                                 ),
                     ],
@@ -186,6 +202,23 @@ class KennelMemberListItem extends StatelessWidget {
                         ],
                         'returnValue': EnumMemberPopupActions.cancelMembership,
                       },
+                      kennelMember.homeKennelName == null
+                          ? <String, dynamic>{
+                              'title': 'Set home kennel',
+                              'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size:23)],
+                              'returnValue': EnumMemberPopupActions.toggleHomeKennel,
+                            }
+                          : <String, dynamic>{ 
+                              'title': '', // NOTE: Because the title is empty, this button will not be displayed
+                              'icon': <Widget>[
+                                Container(
+                                  height: 30,
+                                  width: 30,
+                                  child: Icon(FontAwesome.times_circle, color: Colors.red[200]),
+                                ),
+                              ],
+                              'returnValue': EnumMemberPopupActions.cancelMembership,
+                            },
                     ];
 
                     final MultipleChoicePopup popup = MultipleChoicePopup(
