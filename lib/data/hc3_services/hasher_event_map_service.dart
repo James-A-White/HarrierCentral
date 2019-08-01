@@ -15,7 +15,8 @@ import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart'
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 
 class HasherEventMapModel {
-  HasherEventMapModel({this.hemId, this.userId, this.eventId, this.userStartEvent, this.userEndEvent, this.rsvpState, this.attendenceState, this.isHare, this.eventNotificationPreference, this.eventCountOverride, this.virginVisitorType, this.displayName, this.email, this.phoneNumber, this.removed, this.updatedAt});
+  HasherEventMapModel(
+      {this.hemId, this.userId, this.eventId, this.userStartEvent, this.userEndEvent, this.rsvpState, this.attendenceState, this.isHare, this.eventNotificationPreference, this.eventCountOverride, this.virginVisitorType, this.displayName, this.email, this.phoneNumber, this.removed, this.updatedAt});
 
   final String hemId;
   final String userId;
@@ -297,6 +298,7 @@ class HasherEventMapService {
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
             await txn.update(HasherEventMapTableHelper.getTableName(tblType), jsonItem, where: 'id = $rowId');
+            
             updateCounter++;
             // print(result.toString() +
             //     ' update to the ${HasherEventMapTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -305,40 +307,25 @@ class HasherEventMapService {
       }
     }
 
-    print('$insertCounter hasher event map records inserted, $updateCounter hasher event map records updated');
+    print('$insertCounter hasher event map records inserted, $updateCounter hasher event map records updated @ ${DateTime.now().millisecondsSinceEpoch}');
     return insertCounter;
   }
 
   //==============  Domain specific functions ===========
 
-  static Future<Map<String, String>> sendRunCountReportByEmail(
-      {String kennelId, String kennelName}) async {
+  static Future<Map<String, String>> sendRunCountReportByEmail({String kennelId, String kennelName}) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String userName = getStringPref(StringPrefsEnum.displayName);
     final String emailAddress = getStringPref(StringPrefsEnum.email);
 
-    final String accessToken1 =
-        Utilities.generateToken(userId.toUpperCase(), 'getRuns');
+    final String accessToken1 = Utilities.generateToken(userId.toUpperCase(), 'getRuns');
 
-    final String accessToken2 =
-        Utilities.generateToken(userId, 'getMyKennelRunTotals');
+    final String accessToken2 = Utilities.generateToken(userId, 'getMyKennelRunTotals');
 
     if ((emailAddress ?? '').isNotEmpty) {
-      final String body = jsonEncode(<String, String>{
-        'userId': userId,
-        'accessToken1': accessToken1,
-        'accessToken2': accessToken2,
-        'kennelId': kennelId,
-        'kennelName': kennelName,
-        'userName': userName,
-        'emailAddress': emailAddress
-      });
+      final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken1': accessToken1, 'accessToken2': accessToken2, 'kennelId': kennelId, 'kennelName': kennelName, 'userName': userName, 'emailAddress': emailAddress});
 
-      final http.Response response = await http
-          .post(EMAIL_RUN_REPORT_API_URL,
-              headers: <String, String>{'content-type': 'application/json'},
-              body: body)
-          .catchError(
+      final http.Response response = await http.post(EMAIL_RUN_REPORT_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
         (dynamic error) {
           return <String, String>{'result': 'error', 'email': ''};
         },
@@ -346,10 +333,7 @@ class HasherEventMapService {
 
       return <String, String>{'result': response.body, 'email': emailAddress};
     }
-    return <String, String>{
-      'result': 'No valid email address found',
-      'email': ''
-    };
+    return <String, String>{'result': 'No valid email address found', 'email': ''};
   }
 
   Future<List<dynamic>> joinEvent(String eventId, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, {int rsvpState = -1, int attendenceState = -1, int isHare = -1, int virginVisitorType = 0, int notificationState = -1}) async {
@@ -358,8 +342,6 @@ class HasherEventMapService {
       // TODO(James): fix this so we can return a bool
       //return false;
     }
-
-    List<dynamic> adHocData;
 
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEvent');
@@ -391,6 +373,8 @@ class HasherEventMapService {
       },
     );
 
+    List<dynamic> adHocData;
+
     if (tblType == HasherEventMapTableType.eventAdmin) {
       adHocData = await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else {
@@ -400,9 +384,9 @@ class HasherEventMapService {
     return adHocData;
   }
 
-  Future<void> joinEventAsVisitor(String eventId, HasherEventMapTableType tblType, String displayName, int virginVisitorType, int attendenceState, String email, String phoneNumber) async {
+  Future<List<dynamic>> joinEventAsVisitor(String eventId, HasherEventMapTableType tblType, String displayName, int virginVisitorType, int attendenceState, String email, String phoneNumber) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
-      return;
+      return null;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
@@ -435,6 +419,8 @@ class HasherEventMapService {
       },
     );
 
-    await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    final List<dynamic> adHocData = await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+
+    return adHocData;
   }
 }

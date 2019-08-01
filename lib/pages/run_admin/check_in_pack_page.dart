@@ -117,6 +117,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   int memberCount = 0;
 
   num snackBarButtonSize = 35.0;
+  static const num LIST_ITEM_HEIGHT = 70.0;
 
   String userId = getStringPref(StringPrefsEnum.userId);
 
@@ -124,7 +125,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   Animation<double> buttonAnimation;
   Animation<Offset> filterPanelAnimation;
   Animation<RelativeRect> hasherListAnimation;
-  //ScrollController scrollController;
+  ScrollController scrollController = ScrollController(initialScrollOffset: 0.0);
   FocusNode searchFocusNode;
   TextEditingController searchController;
   String searchTypeText;
@@ -138,15 +139,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     searchTypeText = searchKennel;
     searchController = TextEditingController();
     searchFocusNode = FocusNode();
-    // scrollController = ScrollController();
-    // scrollController.addListener(() {
-    //   searchFocusNode.unfocus();
-    // });
-
-    // searchController.addListener(() {
-    //   print(searchController.value);
-    //   _scaffoldKey.currentState.hideCurrentSnackBar();
-    // });
 
     _getAllHashers().then((void dummy) {
       // get all Hashers first, then build the tables from the backend
@@ -309,111 +301,111 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           
           ''';
 
-      db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
-        setState(() {
-          if (results.isNotEmpty) {
-            packList = <CheckInPackModel>[];
-            for (int i = 0; i < results.length; i++) {
-              final CheckInPackModel item = CheckInPackModel.fromMap(results[i]);
-              packList.add(item);
-            }
+      final List<Map<String, dynamic>> results = await db.rawQuery(sql);
 
-            // this code is here to manage the "loading indicator" for RSVPs.
-            // There's got to be a better way to do this, I just can't figure
-            // it out!
-            final List<String> removeList = <String>[];
-
-            for (String key in indicatorRsvpUpdating.keys) {
-              if (key.startsWith('hem:')) {
-                final String hem = key.substring(4);
-
-                final CheckInPackModel hasher = packList.firstWhere((CheckInPackModel k) => k.hemId.toString().toLowerCase() == hem, orElse: () => null);
-
-                if (hasher != null) {
-                  if (hasher.hemUpdatedAt.toString() != indicatorRsvpUpdating[hem]) {
-                    removeList.add('hem:' + hem.toLowerCase());
-                  }
-                }
-              } else {
-                final String hid = key.substring(4);
-
-                final CheckInPackModel hasher = packList.firstWhere((CheckInPackModel k) => k.hasherId.toLowerCase() == hid, orElse: () => null);
-
-                if (hasher != null) {
-                  if (hasher.hemUpdatedAt.toString() != indicatorRsvpUpdating[hid]) {
-                    removeList.add('hid:' + hid.toLowerCase());
-                  }
-                }
-              }
-            }
-
-            removeList.forEach(indicatorRsvpUpdating.remove);
-            removeList.clear();
-
-            for (String key in indicatorAttendenceUpdating.keys) {
-              if (key.startsWith('hem:')) {
-                final String hem = key.substring(4);
-
-                final CheckInPackModel hasher = packList.firstWhere((CheckInPackModel k) => k.hemId.toString().toLowerCase() == hem, orElse: () => null);
-
-                if (hasher != null) {
-                  if (hasher.hemUpdatedAt.toString() != indicatorAttendenceUpdating[hem]) {
-                    removeList.add('hem:' + hem.toLowerCase());
-                  }
-                }
-              } else {
-                final String hid = key.substring(4);
-
-                final CheckInPackModel hasher = packList.firstWhere((CheckInPackModel k) => k.hasherId.toString().toLowerCase() == hid, orElse: () => null);
-
-                if (hasher != null) {
-                  if (hasher.hemUpdatedAt.toString() != indicatorAttendenceUpdating[hid]) {
-                    removeList.add('hid:' + hid.toLowerCase());
-                  }
-                }
-              }
-            }
-
-            removeList.forEach(indicatorAttendenceUpdating.remove);
-
-            removeList.clear();
-            for (String key in indicatorPaidUpdating.keys) {
-              if (key.startsWith('hem:')) {
-                final String hem = key.substring(4);
-
-                final CheckInPackModel hasher = packList.firstWhere((CheckInPackModel k) => k.hemId.toString().toLowerCase() == hem, orElse: () => null);
-
-                if (hasher != null) {
-                  if (hasher.hemUpdatedAt.toString() != indicatorPaidUpdating[hem]) {
-                    removeList.add('hem:' + hem.toLowerCase());
-                  }
-                }
-              } else {
-                final String hid = key.substring(4);
-
-                final CheckInPackModel hasher = packList.firstWhere((CheckInPackModel k) => k.hasherId.toString().toLowerCase() == hid, orElse: () => null);
-
-                if (hasher != null) {
-                  if (hasher.hemUpdatedAt.toString() != indicatorPaidUpdating[hid]) {
-                    removeList.add('hid:' + hid.toLowerCase());
-                  }
-                }
-              }
-            }
-
-            removeList.forEach(indicatorPaidUpdating.remove);
-
-            setState(() {
-              if (forceRefresh) {
-                _isLoading = false;
-              }
-            });
+      setState(() {
+        if (results.isNotEmpty) {
+          packList = <CheckInPackModel>[];
+          for (int i = 0; i < results.length; i++) {
+            final CheckInPackModel item = CheckInPackModel.fromMap(results[i]);
+            packList.add(item);
           }
 
-          print('Pack records retreived @ ${DateTime.now().millisecondsSinceEpoch}');
+          // this code is here to manage the "loading indicator" for RSVPs.
+          // There's got to be a better way to do this, I just can't figure
+          // it out!
+          final List<String> removeList = <String>[];
 
-          filterPackListResults();
-        });
+          for (String key in indicatorRsvpUpdating.keys) {
+            if (key.startsWith('hem:')) {
+              final String hem = key.substring(4);
+
+              final CheckInPackModel hasher = packList.firstWhere((CheckInPackModel k) => k.hemId.toString().toLowerCase() == hem, orElse: () => null);
+
+              if (hasher != null) {
+                if (hasher.hemUpdatedAt.toString() != indicatorRsvpUpdating[hem]) {
+                  removeList.add('hem:' + hem.toLowerCase());
+                }
+              }
+            } else {
+              final String hid = key.substring(4);
+
+              final CheckInPackModel hasher = packList.firstWhere((CheckInPackModel k) => k.hasherId.toLowerCase() == hid, orElse: () => null);
+
+              if (hasher != null) {
+                if (hasher.hemUpdatedAt.toString() != indicatorRsvpUpdating[hid]) {
+                  removeList.add('hid:' + hid.toLowerCase());
+                }
+              }
+            }
+          }
+
+          removeList.forEach(indicatorRsvpUpdating.remove);
+          removeList.clear();
+
+          for (String key in indicatorAttendenceUpdating.keys) {
+            if (key.startsWith('hem:')) {
+              final String hem = key.substring(4);
+
+              final CheckInPackModel hasher = packList.firstWhere((CheckInPackModel k) => k.hemId.toString().toLowerCase() == hem, orElse: () => null);
+
+              if (hasher != null) {
+                if (hasher.hemUpdatedAt.toString() != indicatorAttendenceUpdating[hem]) {
+                  removeList.add('hem:' + hem.toLowerCase());
+                }
+              }
+            } else {
+              final String hid = key.substring(4);
+
+              final CheckInPackModel hasher = packList.firstWhere((CheckInPackModel k) => k.hasherId.toString().toLowerCase() == hid, orElse: () => null);
+
+              if (hasher != null) {
+                if (hasher.hemUpdatedAt.toString() != indicatorAttendenceUpdating[hid]) {
+                  removeList.add('hid:' + hid.toLowerCase());
+                }
+              }
+            }
+          }
+
+          removeList.forEach(indicatorAttendenceUpdating.remove);
+
+          removeList.clear();
+          for (String key in indicatorPaidUpdating.keys) {
+            if (key.startsWith('hem:')) {
+              final String hem = key.substring(4);
+
+              final CheckInPackModel hasher = packList.firstWhere((CheckInPackModel k) => k.hemId.toString().toLowerCase() == hem, orElse: () => null);
+
+              if (hasher != null) {
+                if (hasher.hemUpdatedAt.toString() != indicatorPaidUpdating[hem]) {
+                  removeList.add('hem:' + hem.toLowerCase());
+                }
+              }
+            } else {
+              final String hid = key.substring(4);
+
+              final CheckInPackModel hasher = packList.firstWhere((CheckInPackModel k) => k.hasherId.toString().toLowerCase() == hid, orElse: () => null);
+
+              if (hasher != null) {
+                if (hasher.hemUpdatedAt.toString() != indicatorPaidUpdating[hid]) {
+                  removeList.add('hid:' + hid.toLowerCase());
+                }
+              }
+            }
+          }
+
+          removeList.forEach(indicatorPaidUpdating.remove);
+
+          setState(() {
+            if (forceRefresh) {
+              _isLoading = false;
+            }
+          });
+        }
+
+        print('Pack records retreived @ ${DateTime.now().millisecondsSinceEpoch}');
+
+        filterPackListResults();
       });
     } catch (e) {
       print(e);
@@ -471,19 +463,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         });
       });
     }
-
-    // if (showSnackbar) {
-
-    //   // _scaffoldKey.currentState.showSnackBar(SnackBar(
-    //   //   content: const Text(
-    //   //     'Ignoring all filters and searching all Hashers',
-    //   //     textAlign: TextAlign.center,
-    //   //     style: TextStyle(color: Colors.white, fontSize: 16.0, fontFamily: 'WorkSansSemiBold'),
-    //   //   ),
-    //   //   backgroundColor: Colors.blue,
-    //   //   duration: const Duration(seconds: 60),
-    //   // ));
-    // }
   }
 
   Future<void> _refreshCounters(bool forceRefresh) async {
@@ -546,7 +525,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     });
   }
 
-  void showVirginVisitorPopup() {
+  void showVirginVisitorPopup(BuildContext parentContext) {
+    int scrollIndex = -1;
+
     const AddVisitorVirginPopup addVirginVisitorPopup = AddVisitorVirginPopup();
 
     final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
@@ -572,19 +553,44 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           _isLoading = true;
         });
         final HasherEventMapService hemSrv = HasherEventMapService();
-        final Future<void> retVal = hemSrv.joinEventAsVisitor(widget.eventAggregate.event.eventId, HasherEventMapTableType.eventAdmin, name, evv.value, attendenceUnknown.value, email, phoneNumber);
+        final Future<List<dynamic>> retVal = hemSrv.joinEventAsVisitor(widget.eventAggregate.event.eventId, HasherEventMapTableType.eventAdmin, name, evv.value, attendenceUnknown.value, email, phoneNumber);
 
-        retVal.then((void dummy) {
+        retVal.then((List<dynamic> adHocData) {
           _refreshPackListFromTables(false).then((void dummy) {
             _refreshCounters(true);
-            if (name?.isNotEmpty ?? false) {
-              searchText = name;
-              searchController.text = searchText;
-              filterPackListResults();
-            }
+            // if (name?.isNotEmpty ?? false) {
+            //   searchText = name;
+            //   searchController.text = searchText;
+            //   filterPackListResults();
+            // }
+
             setState(() {
               _isLoading = false;
             });
+
+            if (((widget.eventAggregate.extensions.mismanagementRoleFlags ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) {
+              if ((adHocData != null) && (adHocData.isNotEmpty)) {
+                final String hem = adHocData[0]['hasherEventMapId'].toString().toLowerCase();
+                scrollIndex = packList.indexWhere((CheckInPackModel k) => k.hemId.toString().toLowerCase() == hem);
+                if ((scrollIndex ?? -1) >= 0) {
+                  final CheckInPackModel hasher = packList[scrollIndex];
+                  if (hasher != null) {
+                    final SnackBar snackBar = buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState, hasher);
+
+                    _scaffoldKey.currentState.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+                    _scaffoldKey.currentState.showSnackBar(snackBar).closed.then((SnackBarClosedReason reason) {
+                      setState(() {
+                        if ((scrollIndex ?? -1) >= 0) {
+                          if (scrollController.hasClients) {
+                            scrollController.animateTo(scrollIndex * LIST_ITEM_HEIGHT, duration: const Duration(seconds: 1), curve: Curves.ease);
+                          }
+                        }
+                      });
+                    });
+                  }
+                }
+              }
+            }
           });
         });
       }
@@ -956,7 +962,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             backgroundColor: Colors.blue,
             label: 'Add Virgin / Visitor',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () => showVirginVisitorPopup(),
+            onTap: () => showVirginVisitorPopup(context),
           ),
           // SpeedDialChild(
           //   child: const Icon(MaterialCommunityIcons.account_search),
@@ -1007,15 +1013,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   ? Positioned(top: (filterPanelAnimation.value.dy * 120) + 125, left: 0, right: 0, child: getAddHasherBlock())
                   : PositionedTransition(
                       rect: hasherListAnimation,
-                      child: Container(
-                        key: packListBox,
-                        height: 300,
-                        child: RefreshIndicator(
-                            onRefresh: () async {
-                              _refreshSqlTablesFromBackend(true);
-                            },
-                            child: buildPackListView()),
-                      ),
+                      child: Container(key: packListBox, height: 300, child: buildPackListView()),
                     ),
               SlideTransition(position: filterPanelAnimation, child: filterBar()),
               Positioned(top: 0, child: searchBar()),
@@ -1041,17 +1039,17 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     return snackbar;
   }
 
-  SnackBar buildRsvpAndPaymentSnackbar(BuildContext context, CheckInPackModel packMember) {
+  SnackBar buildRsvpAndPaymentSnackbar(BuildContext context, ScaffoldState scaffoldState, CheckInPackModel packMember) {
     final SnackBar snackbar = PaymentSnackBar(
       context: context,
       eventAggregate: widget.eventAggregate,
       packMember: packMember,
       onRsvpCallback: (CheckInPackModel packMember, {int rsvpState = -1, int attendenceState = -1, int isHare = -1}) {
-        Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+        scaffoldState.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
         updateRsvpState(packMember, rsvpState, attendenceState, isHare);
       },
       onPaidCallback: (CheckInPackModel packMember, int paymentType, {num otherAmount = -1}) {
-        Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+        scaffoldState.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
         payForEvent(packMember, paymentType, otherAmount: otherAmount).then((List<dynamic> results) {
           _refreshPackListFromTables(false).then((void dummy) {
             _refreshCounters(true);
@@ -1069,10 +1067,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       onTap: () {
         searchFocusNode.unfocus();
         if (((widget.eventAggregate.extensions.mismanagementRoleFlags ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) {
-          final SnackBar snackBar = buildRsvpAndPaymentSnackbar(context, packMember);
+          final SnackBar snackBar = buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState, packMember);
 
-          Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-          Scaffold.of(context).showSnackBar(snackBar);
+          _scaffoldKey.currentState.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+          _scaffoldKey.currentState.showSnackBar(snackBar);
         }
       },
       child: Container(
@@ -1097,19 +1095,19 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                     errorWidget: (BuildContext context, String url, Object error) => const Icon(Icons.error),
                     //fadeOutDuration:  Duration(seconds: 1),
                     fadeInDuration: const Duration(milliseconds: 0),
-                    width: 70.0,
-                    height: 70.0,
+                    width: LIST_ITEM_HEIGHT,
+                    height: LIST_ITEM_HEIGHT,
                     fit: BoxFit.fill)
                 : packMember.photo.startsWith('bundle')
                     ? Image(
-                        width: 70.0,
-                        height: 70.0,
+                        width: LIST_ITEM_HEIGHT,
+                        height: LIST_ITEM_HEIGHT,
                         fit: BoxFit.fill,
                         image: AssetImage(('images/avatars/' + packMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.png').toLowerCase()),
                       )
                     : Image(
-                        width: 70.0,
-                        height: 70.0,
+                        width: LIST_ITEM_HEIGHT,
+                        height: LIST_ITEM_HEIGHT,
                         fit: BoxFit.fill,
                         image: const AssetImage('images/avatars/avatar-2.png'),
                       ),
@@ -1344,144 +1342,150 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     print('buildPackListView: ${DateTime.now().millisecondsSinceEpoch.toString()}');
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification scrollNotification) {
-        if (scrollNotification is UserScrollNotification)
-        {
-           searchFocusNode.unfocus();
-           _scaffoldKey.currentState.hideCurrentSnackBar();
+        if (scrollNotification is UserScrollNotification) {
+          searchFocusNode.unfocus();
+          _scaffoldKey.currentState.hideCurrentSnackBar();
         }
         return true;
       },
-      child: ListView.separated(
-        separatorBuilder: (BuildContext context, int index) => const Divider(
-          height: 1.0,
-          color: Colors.black45,
-        ),
-        physics: const AlwaysScrollableScrollPhysics(),
-        //controller: scrollController,
-        itemCount: (filteredList?.length ?? 0) + (searchController.text.isNotEmpty ? 1 : 0),
-        itemBuilder: (BuildContext context, int index) {
-          if ((index == (filteredList?.length ?? 0)) && (searchController.text.isNotEmpty)) {
-            return getAddHasherBlock();
-          } else {
-            final CheckInPackModel packMember = filteredList[index];
-            final Key key = Key(index.toString());
-            return Dismissible(
-              child: listItem(context, packMember),
-              key: key,
-              confirmDismiss: (DismissDirection direction) {
-                if (packMember.isPaid != 1) {
-                  print(direction.toString() + ' ' + index.toString());
-                  payForEvent(packMember, direction == DismissDirection.endToStart ? 3 : 4).then((List<dynamic> results) {
-                    _refreshPackListFromTables(false).then((void dummy) {
-                      _refreshCounters(true);
-                      BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, context, packMember.nameForDisplay, packMember.isMember, -1);
-                    });
-                  });
-                } else {
-                  if (direction == DismissDirection.endToStart) {
-                    updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
-                  }
-                }
-                return Future<bool>.value(false);
-              },
-              background: packMember.isPaid == 1
-                  ? Container(
-                      color: Colors.grey,
-                      child: Row(
-                        children: const <Widget>[
-                          Padding(
-                            padding: EdgeInsets.only(left: 15.0),
-                            child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(left: 15.0),
-                            child: Text(
-                              'Already paid',
-                              style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : Container(
-                      color: Colors.blue,
-                      child: Row(
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(left: 15.0),
-                            child: Image.asset('images/icons/payment_type_4.png', height: 30.0, width: 30.0, color: Colors.white),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 15.0),
-                            child: Text('${Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Bank Transfer',
-                                style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
-                          ),
-                        ],
-                      ),
-                    ),
-              secondaryBackground: packMember.isPaid == 1
-                  ? packMember.attendenceState >= attendenceOnIn.value
-                      ? Container(
-                          color: Colors.grey,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: const <Widget>[
-                              Padding(
-                                padding: EdgeInsets.only(right: 15.0),
-                                child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(right: 15.0),
-                                child: Text(
-                                  'Already marked On-In',
-                                  style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : Container(
-                          color: Colors.amber[800],
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: const <Widget>[
-                              Padding(
-                                padding: EdgeInsets.only(right: 15.0),
-                                child: Icon(Ionicons.ios_beer, size: 35.0, color: Colors.white),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(right: 15.0),
-                                child: Text(
-                                  'Record as On-In',
-                                  style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                  : Container(
-                      color: Colors.green,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(right: 15.0),
-                            child: Image.asset('images/icons/payment_type_3.png', height: 30.0, width: 30.0, color: Colors.white),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 15.0),
-                            child: Text('${Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Cash',
-                                style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
-                          ),
-                        ],
-                      ),
-                    ),
-              onDismissed: (DismissDirection direction) {
-                print(direction.toString() + ' NOTE: We should never reach this point');
-              },
-            );
-          }
+      child: RefreshIndicator(
+        displacement: 120,
+        onRefresh: () async {
+          _refreshSqlTablesFromBackend(true);
         },
+        child: ListView.separated(
+          separatorBuilder: (BuildContext context, int index) => const Divider(
+            height: 1.0,
+            color: Colors.black45,
+          ),
+          physics: const AlwaysScrollableScrollPhysics(),
+          scrollDirection: Axis.vertical,
+          controller: scrollController,
+          itemCount: (filteredList?.length ?? 0) + (searchController.text.isNotEmpty ? 1 : 0),
+          itemBuilder: (BuildContext context, int index) {
+            if ((index == (filteredList?.length ?? 0)) && (searchController.text.isNotEmpty)) {
+              return getAddHasherBlock();
+            } else {
+              final CheckInPackModel packMember = filteredList[index];
+              final Key key = Key(index.toString());
+              return Dismissible(
+                child: listItem(context, packMember),
+                key: key,
+                confirmDismiss: (DismissDirection direction) {
+                  if (packMember.isPaid != 1) {
+                    print(direction.toString() + ' ' + index.toString());
+                    payForEvent(packMember, direction == DismissDirection.endToStart ? 3 : 4).then((List<dynamic> results) {
+                      _refreshPackListFromTables(false).then((void dummy) {
+                        _refreshCounters(true);
+                        BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, context, packMember.nameForDisplay, packMember.isMember, -1);
+                      });
+                    });
+                  } else {
+                    if (direction == DismissDirection.endToStart) {
+                      updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
+                    }
+                  }
+                  return Future<bool>.value(false);
+                },
+                background: packMember.isPaid == 1
+                    ? Container(
+                        color: Colors.grey,
+                        child: Row(
+                          children: const <Widget>[
+                            Padding(
+                              padding: EdgeInsets.only(left: 15.0),
+                              child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(left: 15.0),
+                              child: Text(
+                                'Already paid',
+                                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Container(
+                        color: Colors.blue,
+                        child: Row(
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(left: 15.0),
+                              child: Image.asset('images/icons/payment_type_4.png', height: 30.0, width: 30.0, color: Colors.white),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 15.0),
+                              child: Text('${Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Bank Transfer',
+                                  style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+                            ),
+                          ],
+                        ),
+                      ),
+                secondaryBackground: packMember.isPaid == 1
+                    ? packMember.attendenceState >= attendenceOnIn.value
+                        ? Container(
+                            color: Colors.grey,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: const <Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(right: 15.0),
+                                  child: Icon(FontAwesome.check_circle, size: 35.0, color: Colors.white),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(right: 15.0),
+                                  child: Text(
+                                    'Already marked On-In',
+                                    style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : Container(
+                            color: Colors.amber[800],
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: const <Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(right: 15.0),
+                                  child: Icon(Ionicons.ios_beer, size: 35.0, color: Colors.white),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(right: 15.0),
+                                  child: Text(
+                                    'Record as On-In',
+                                    style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                    : Container(
+                        color: Colors.green,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(right: 15.0),
+                              child: Image.asset('images/icons/payment_type_3.png', height: 30.0, width: 30.0, color: Colors.white),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 15.0),
+                              child: Text('${Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Cash',
+                                  style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
+                            ),
+                          ],
+                        ),
+                      ),
+                onDismissed: (DismissDirection direction) {
+                  print(direction.toString() + ' NOTE: We should never reach this point');
+                },
+              );
+            }
+          },
+        ),
       ),
     );
   }

@@ -495,17 +495,17 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   if (item.attendenceState < attendenceAtHash.value) {
                                     item.isLoading = true;
                                     final HasherEventMapService hemSrv = HasherEventMapService();
-                                    final Future<void> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value);
+                                    final Future<List<dynamic>> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value);
 
-                                    retVal.then((void dummy) {
+                                    retVal.then((List<dynamic> adHocData) {
                                       refreshRunHistoryFromTable(true).then((void dummy) {});
                                     });
                                   } else {
                                     item.isLoading = true;
                                     final HasherEventMapService hemSrv = HasherEventMapService();
-                                    final Future<void> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: item.isHare == 1 ? isHareNo.value : isHareYes.value);
+                                    final Future<List<dynamic>> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: item.isHare == 1 ? isHareNo.value : isHareYes.value);
 
-                                    retVal.then((void dummy) {
+                                    retVal.then((List<dynamic> adHocData) {
                                       refreshRunHistoryFromTable(true).then((void dummy) {});
                                     });
                                   }
@@ -514,9 +514,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   // indicate that the hasher did
                                   // not participate in this event
                                   final HasherEventMapService hemSrv = HasherEventMapService();
-                                  final Future<void> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpState: rsvpNo.value, attendenceState: attendenceNo.value, isHare: isHareNo.value);
+                                  final Future<List<dynamic>> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpState: rsvpNo.value, attendenceState: attendenceNo.value, isHare: isHareNo.value);
 
-                                  retVal.then((void dummy) {
+                                  retVal.then((List<dynamic> adHocData) {
                                     refreshRunHistoryFromTable(true).then((void dummy) {});
                                   });
                                 }

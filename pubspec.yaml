@@ -1,6 +1,6 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 0.8.32+182
+version: 0.8.41+186
 
 environment:
   sdk: ">=2.4.0 <3.0.0"
@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
 
   # last checked 20 Feb 2019
-  # one incompatibility with permission_handler (see below) 
+  # one incompatibility with permission_handler (see below)    
   audioplayers: ^0.13.1 # updated from ^0.10.0 on 29 Jul
   auto_size_text: ^2.0.2+1 #updated from ^1.1.2 on 29 Jul
   cached_network_image: ^1.1.1 # upgraded from 0.8.0 on 28 Jul
