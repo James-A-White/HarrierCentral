@@ -10,11 +10,12 @@ import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 
-enum EnumMemberPopupActions { addOneMonth, addSixMonths, subtractOneMonth, subtractSixMonths, cancelMembership, toggleHomeKennel }
+enum EnumMemberPopupActions { addOneMonth, addSixMonths, subtractOneMonth, subtractSixMonths, cancelMembership, toggleHomeKennel, setHomeKennel, clearHomeKennel }
 
 class KennelMemberListItem extends StatelessWidget {
-  const KennelMemberListItem({@required this.kennelMember, @required this.modifyMembershipCallback});
+  const KennelMemberListItem({@required this.kennelId, @required this.kennelMember, @required this.modifyMembershipCallback});
 
+  final String kennelId;
   final KennelMembersResults kennelMember;
   final Function modifyMembershipCallback;
 
@@ -206,7 +207,13 @@ class KennelMemberListItem extends StatelessWidget {
                           ? <String, dynamic>{
                               'title': 'Set home kennel',
                               'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size:23)],
-                              'returnValue': EnumMemberPopupActions.toggleHomeKennel,
+                              'returnValue': EnumMemberPopupActions.setHomeKennel,
+                            }
+                          : kennelId == kennelMember.homeKennelId ?
+                          <String, dynamic>{
+                              'title': 'Clear home kennel',
+                              'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size:23)],
+                              'returnValue': EnumMemberPopupActions.clearHomeKennel,
                             }
                           : <String, dynamic>{ 
                               'title': '', // NOTE: Because the title is empty, this button will not be displayed

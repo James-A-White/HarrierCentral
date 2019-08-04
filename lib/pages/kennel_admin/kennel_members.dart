@@ -29,7 +29,7 @@ class KennelMembersList extends StatefulWidget {
 
 class KennelMembersResults {
   KennelMembersResults(
-      {this.hasherId, this.dispName, this.photo, this.isMember, this.following, this.kennelId, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.membershipDurationInMonths, this.isLoading = false, this.kennelShortName, this.homeKennelName, this.homeKennelBeingUpdated = false, this.membershipDateBeingUpdated = false});
+      {this.hasherId, this.dispName, this.photo, this.isMember, this.following, this.kennelId, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.membershipDurationInMonths, this.isLoading = false, this.kennelShortName, this.homeKennelName, this.homeKennelId, this.homeKennelBeingUpdated = false, this.membershipDateBeingUpdated = false});
 
   final String hasherId;
   String dispName;
@@ -46,6 +46,7 @@ class KennelMembersResults {
   bool homeKennelBeingUpdated;
   String kennelShortName;
   String homeKennelName;
+  String homeKennelId;
 
   static KennelMembersResults fromMap(Map<String, dynamic> map) {
     final KennelMembersResults item = KennelMembersResults(
@@ -56,6 +57,7 @@ class KennelMembersResults {
       following: map['following'],
       kennelShortName: map['kennelShortName'],
       homeKennelName: map['homeKennelName'],
+      homeKennelId: map['homeKennelId'],
       kennelId: map['kennelId'],
       dateOfLastRun: (map['dateOfLastRun'] == null) ? null : DateTime.parse(map['dateOfLastRun'].toString().substring(0, 19)),
       membershipExpirationDate: (map['membershipExpirationDate'] == null) ? null : DateTime.parse(map['membershipExpirationDate'].toString().substring(0, 19)),
@@ -129,7 +131,8 @@ class KennelMemberListState extends State<KennelMembersList> {
           k.membershipDurationInMonths,
           k.kennelShortName,
           k.kennelId,
-          hk.kennelName as homeKennelName
+          hk.kennelName as homeKennelName,
+          hk.kennelId as homeKennelId
           FROM hasherKennelMapForKennelAdmin hkm
           INNER JOIN kennels k on k.kennelId = hkm.kennelId
           INNER JOIN hashers h on h.hasherId = hkm.userId
@@ -362,6 +365,7 @@ class KennelMemberListState extends State<KennelMembersList> {
                                           print(direction.toString() + ' NOTE: We should never reach this point');
                                         },
                                         child: KennelMemberListItem(
+                                          kennelId: widget.kennel.kennel.kennelId,
                                           kennelMember: kennelMemberList[index],
                                           modifyMembershipCallback: (EnumMemberPopupActions retVal) {
                                             switch (retVal) {
@@ -382,6 +386,12 @@ class KennelMemberListState extends State<KennelMembersList> {
                                                 break;
                                               case EnumMemberPopupActions.toggleHomeKennel:
                                                 setAsHomeKennel(kennelMemberList[index], 1);
+                                                break;
+                                              case EnumMemberPopupActions.setHomeKennel:
+                                                setAsHomeKennel(kennelMemberList[index], 1);
+                                                break;
+                                              case EnumMemberPopupActions.clearHomeKennel:
+                                                setAsHomeKennel(kennelMemberList[index], 0);
                                                 break;
                                             }
                                           },
