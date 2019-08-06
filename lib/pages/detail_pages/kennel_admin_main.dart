@@ -90,504 +90,548 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               ),
             ),
           ),
-          body: _isLoading ? const Center(
-      child: HcCircularProgressIndicator(),
-    ) :
-          
-          Container(
-            height: MediaQuery.of(context).size.height,
-            decoration: Backgrounds.defaultHcBackground(),
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 20, right: 20, top: 30.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  children: <Widget>[
-                    !isAdmin
-                        ? Container()
-                        : Column(
-                            children: <Widget>[
-                              Text(
-                                'Kennel Admin Functions',
-                                style: headingStyle,
-                                textAlign: TextAlign.center,
-                              ),
-                              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                                Container(
-                                  margin: const EdgeInsets.only(top: 20, bottom: 15),
-                                  width: 110,
-                                  height: 110,
-                                  child: Utilities.styleForConnected(
-                                    RaisedButton(
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-                                      padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
-                                      child: Column(children: <Widget>[
-                                        Padding(
-                                          padding: const EdgeInsets.only(right: 2.0),
-                                          child: Image.asset('images/icons/excel.png', height: 50.0, width: 50.0),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(left: 10, right: 10, top: 8),
-                                          child: Text(
-                                            'Email run stats',
-                                            textAlign: TextAlign.center,
-                                            style: buttonLabelStyleSmall,
+          body: _isLoading
+              ? const Center(
+                  child: HcCircularProgressIndicator(),
+                )
+              : Container(
+                  height: MediaQuery.of(context).size.height,
+                  decoration: Backgrounds.defaultHcBackground(),
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 20, right: 20, top: 30.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          !isAdmin
+                              ? Container()
+                              : Column(
+                                  children: <Widget>[
+                                    Text(
+                                      'Kennel Admin Functions',
+                                      style: headingStyle,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+                                      Container(
+                                        margin: const EdgeInsets.only(top: 20, bottom: 15),
+                                        width: 110,
+                                        height: 110,
+                                        child: Utilities.styleForConnected(
+                                          RaisedButton(
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                                            padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
+                                            child: Column(children: <Widget>[
+                                              Padding(
+                                                padding: const EdgeInsets.only(right: 2.0),
+                                                child: Image.asset('images/icons/excel.png', height: 50.0, width: 50.0),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(left: 10, right: 10, top: 8),
+                                                child: Text(
+                                                  'Email run stats',
+                                                  textAlign: TextAlign.center,
+                                                  style: buttonLabelStyleSmall,
+                                                ),
+                                              ),
+                                            ]),
+                                            textColor: Colors.white,
+                                            onPressed: () {
+                                              if (Utilities.checkForConnection(context)) {
+                                                final EmailReportsService svc = EmailReportsService();
+                                                svc
+                                                    .sendKennelRunStatsReportByEmail(
+                                                        kennelId: widget.kennelAggregateItem.kennel.kennelId,
+                                                        kennelName: widget.kennelAggregateItem.kennel.kennelName,
+                                                        digitsAfterDecimal: widget.kennelAggregateItem.extensions.digitsAfterDecimal,
+                                                        currencySymbol: widget.kennelAggregateItem.extensions.currencySymbol)
+                                                    .then((Map<String, String> result) {
+                                                  _scaffoldKey.currentState?.hideCurrentSnackBar();
+
+                                                  if (result['result'].toLowerCase().startsWith('success')) {
+                                                    Utilities.showAlert(context, 'E-mail successfully sent', 'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+                                                  }
+                                                });
+
+                                                Utilities.showInSnackBar(context, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 10);
+                                              }
+                                            },
                                           ),
                                         ),
-                                      ]),
-                                      textColor: Colors.white,
-                                      onPressed: () {
-                                        if (Utilities.checkForConnection(context)) {
-                                          final EmailReportsService svc = EmailReportsService();
-                                          svc
-                                              .sendKennelRunStatsReportByEmail(
-                                                  kennelId: widget.kennelAggregateItem.kennel.kennelId,
-                                                  kennelName: widget.kennelAggregateItem.kennel.kennelName,
-                                                  digitsAfterDecimal: widget.kennelAggregateItem.extensions.digitsAfterDecimal,
-                                                  currencySymbol: widget.kennelAggregateItem.extensions.currencySymbol)
-                                              .then((Map<String, String> result) {
-                                            _scaffoldKey.currentState?.hideCurrentSnackBar();
-
-                                            if (result['result'].toLowerCase().startsWith('success')) {
-                                              Utilities.showAlert(context, 'E-mail successfully sent', 'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
-                                            }
-                                          });
-
-                                          Utilities.showInSnackBar(context, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 10);
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                        child: Container(
+                                          width: 110,
+                                          height: 110,
+                                          child: Utilities.styleForConnected(
+                                            RaisedButton(
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                                              padding: const EdgeInsets.only(top: 2.0, left: 0, bottom: 8.0),
+                                              child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                                const Padding(
+                                                  padding: EdgeInsets.only(left: 0),
+                                                  child: Icon(Ionicons.md_people, color: Colors.white, size: 60),
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.only(left: 10, right: 10, top: 4),
+                                                  child: Text(
+                                                    'Manage Members',
+                                                    textAlign: TextAlign.center,
+                                                    style: buttonLabelStyleSmall,
+                                                  ),
+                                                ),
+                                              ]),
+                                              textColor: Colors.white,
+                                              onPressed: () {
+                                                if (Utilities.checkForConnection(context)) {
+                                                  kennelMembersList = KennelMembersList(kennel: widget.kennelAggregateItem);
+                                                  Navigator.push<dynamic>(
+                                                    context,
+                                                    MaterialPageRoute<dynamic>(
+                                                      builder: (BuildContext context) => kennelMembersList,
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ]),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                      children: <Widget>[
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                          child: Container(
+                                            width: 110,
+                                            height: 110,
+                                            child: Utilities.styleForConnected(
+                                              RaisedButton(
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                                                padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 8.0),
+                                                child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                                  const Padding(
+                                                    padding: EdgeInsets.only(left: 0),
+                                                    child: Icon(MaterialCommunityIcons.playlist_edit, color: Colors.white, size: 60),
+                                                  ),
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
+                                                    child: Text(
+                                                      'Past\r\nevents',
+                                                      textAlign: TextAlign.center,
+                                                      style: buttonLabelStyleSmall,
+                                                    ),
+                                                  ),
+                                                ]),
+                                                textColor: Colors.white,
+                                                onPressed: () {
+                                                  if (Utilities.checkForConnection(context)) {
+                                                    Navigator.push<dynamic>(
+                                                      context,
+                                                      MaterialPageRoute<dynamic>(
+                                                        builder: (BuildContext context) => FilterEventsPage(kennel: widget.kennelAggregateItem, pageType: FilterEventsPageType.past,),
+                                                      ),
+                                                    );
+                                                  }
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                          child: Container(
+                                            width: 110,
+                                            height: 110,
+                                            child: Utilities.styleForConnected(
+                                              RaisedButton(
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                                                padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 8.0),
+                                                child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                                  const Padding(
+                                                    padding: EdgeInsets.only(left: 0),
+                                                    child: Icon(MaterialCommunityIcons.run_fast, color: Colors.white, size: 60),
+                                                  ),
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
+                                                    child: Text(
+                                                      'Upcoming\r\nevents',
+                                                      textAlign: TextAlign.center,
+                                                      style: buttonLabelStyleSmall,
+                                                    ),
+                                                  ),
+                                                ]),
+                                                textColor: Colors.white,
+                                                onPressed: () {
+                                                  if (Utilities.checkForConnection(context)) {
+                                                    Navigator.push<dynamic>(
+                                                      context,
+                                                      MaterialPageRoute<dynamic>(
+                                                        builder: (BuildContext context) => FilterEventsPage(kennel: widget.kennelAggregateItem, pageType: FilterEventsPageType.future,),
+                                                      ),
+                                                    );
+                                                  }
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                      children: <Widget>[
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                          child: Container(
+                                            width: 110,
+                                            height: 110,
+                                            child: Utilities.styleForConnected(
+                                              RaisedButton(
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                                                padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 8.0),
+                                                child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                                  const Padding(
+                                                    padding: EdgeInsets.only(left: 0, top: 4),
+                                                    child: Icon(MaterialCommunityIcons.qrcode, color: Colors.white, size: 55),
+                                                  ),
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(left: 10, right: 10, top: 7),
+                                                    child: Text(
+                                                      'Print QR codes',
+                                                      textAlign: TextAlign.center,
+                                                      style: buttonLabelStyleSmall,
+                                                    ),
+                                                  ),
+                                                ]),
+                                                textColor: Colors.white,
+                                                onPressed: () {
+                                                  Navigator.push<dynamic>(
+                                                      context,
+                                                      MaterialPageRoute<dynamic>(
+                                                          builder: (BuildContext context) => EventQrCodePage(
+                                                              kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
+                                                              qrContent: widget.kennelAggregateItem.kennel.kennelId,
+                                                              runEndPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_END,
+                                                              runStartPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_START,
+                                                              title: 'Any ' + widget.kennelAggregateItem.kennel.kennelShortName + ' run')));
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const Padding(
+                                      padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
+                                      child: FancyDivider(innerColor: Colors.white),
+                                    ),
+                                  ],
+                                ),
+                          ((widget.kennelAggregateItem.kennel.kennelCoverPhoto ?? '').isNotEmpty && widget.kennelAggregateItem.kennel.kennelCoverPhoto.startsWith('http'))
+                              ? Column(mainAxisSize: MainAxisSize.max, children: <Widget>[
+                                  // Row(mainAxisAlignment: MainAxisAlignment.start, mainAxisSize: MainAxisSize.max, children: <Widget>[
+                                  //   KennelLogo(
+                                  //     kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
+                                  //     kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
+                                  //     logoHeight: 80.0,
+                                  //     leftPadding: 0.0,
+                                  //   ),
+                                  //   Container(width: MediaQuery.of(context).size.width - 120, padding: const EdgeInsets.only(left: 15.0), child: Text(widget.kennelAggregateItem.kennel.kennelName, maxLines: 3, style: smallTitleStyle))
+                                  //   //Container(width: MediaQuery.of(context).size.width - 120, padding: const EdgeInsets.only(left: 15.0), child: Text('Test of a long hash name that will span several lines and then keep going until we get an elipsis', maxLines: 3, overflow:TextOverflow.ellipsis, style: smallTitleStyle))
+                                  // ]),
+                                  Container(margin: const EdgeInsets.only(bottom: 20.0), width: MediaQuery.of(context).size.width - 40, child: Text(widget.kennelAggregateItem.kennel.kennelName, textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
+                                  //Container(width: MediaQuery.of(context).size.width - 40, child: Text('this is a test of what a long kennel name might look like', textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
+                                  KennelLogo(
+                                    kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
+                                    kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
+                                    logoHeight: 200.0,
+                                    leftPadding: 0.0,
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 45.0, bottom: 15.0),
+                                    child: FancyDivider(innerColor: Colors.white),
+                                  ),
+                                  Padding(
+                                      padding: const EdgeInsets.only(top: 20, bottom: 5),
+                                      child: CachedNetworkImage(
+                                        imageUrl: widget.kennelAggregateItem.kennel.kennelCoverPhoto,
+                                        // errorWidget:
+                                        //     (BuildContext context, String url, Exception error) =>
+                                        //         const  Icon(Icons.error),
+                                      )
+                                      //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
+                                      ),
+                                ])
+                              : Column(
+                                  children: <Widget>[
+                                    Container(margin: const EdgeInsets.only(bottom: 20.0), width: MediaQuery.of(context).size.width - 40, child: Text(widget.kennelAggregateItem.kennel.kennelName, textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
+                                    //Container(width: MediaQuery.of(context).size.width - 40, child: Text('this is a test of what a long kennel name might look like', textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
+                                    KennelLogo(
+                                      kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
+                                      kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
+                                      logoHeight: 200.0,
+                                      leftPadding: 0.0,
+                                    ),
+                                  ],
+                                ),
+                          const Padding(
+                            padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
+                            child: FancyDivider(innerColor: Colors.white),
+                          ),
+                          (widget.kennelAggregateItem.kennel.kennelDescription ?? '').isNotEmpty
+                              ? Column(
+                                  children: <Widget>[
+                                    Linkify(
+                                      text: widget.kennelAggregateItem.kennel.kennelDescription.toString().replaceAll('\r\n', '\n'),
+                                      style: bodyStyle,
+                                      linkStyle: bodyStyleYellow,
+                                      humanize: true,
+                                      onOpen: (LinkableElement link) async {
+                                        if (await canLaunch(link.url)) {
+                                          await launch(link.url);
+                                        } else {
+                                          Utilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                                         }
                                       },
                                     ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 15, bottom: 15),
-                                  child: Container(
-                                    width: 110,
-                                    height: 110,
-                                    child: Utilities.styleForConnected(
-                                      RaisedButton(
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-                                        padding: const EdgeInsets.only(top: 2.0, left: 0, bottom: 8.0),
-                                        child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                                          const Padding(
-                                            padding: EdgeInsets.only(left: 0),
-                                            child: Icon(Ionicons.md_people, color: Colors.white, size: 60),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(left: 10, right: 10, top: 4),
-                                            child: Text(
-                                              'Manage Members',
-                                              textAlign: TextAlign.center,
-                                              style: buttonLabelStyleSmall,
+                                    const Padding(
+                                      padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
+                                      child: FancyDivider(innerColor: Colors.white),
+                                    ),
+                                  ],
+                                )
+                              : Container(),
+                          Column(
+                            children: <Widget>[
+                              Container(
+                                width: MediaQuery.of(context).size.width,
+                                height: 300,
+                                //padding: const EdgeInsets.all(20.0),
+                                child: Center(
+                                  // Map
+                                  child: FlutterMap(
+                                    mapController: mapController,
+                                    options: MapOptions(
+                                      interactive: false,
+                                      center: LatLng(widget.kennelAggregateItem.kennel.kennelLatitude, widget.kennelAggregateItem.kennel.kennelLongitude),
+                                      zoom: sliderValue,
+                                    ),
+                                    layers: <LayerOptions>[
+                                      TileLayerOptions(
+                                          urlTemplate:
+                                              //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                              'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                                          //subdomains: ['a', 'b', 'c']),
+                                          subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
+                                      MarkerLayerOptions(
+                                        markers: <Marker>[
+                                          Marker(
+                                            width: 240.0,
+                                            height: 240.0,
+                                            point: LatLng(widget.kennelAggregateItem.kennel.kennelLatitude, widget.kennelAggregateItem.kennel.kennelLongitude),
+                                            builder: (BuildContext ctx) => GestureDetector(
+                                              onTap: () => _launchMaps(widget.kennelAggregateItem.kennel.kennelLatitude, widget.kennelAggregateItem.kennel.kennelLongitude),
+                                              child: Container(
+                                                margin: const EdgeInsets.only(bottom: 110.0),
+                                                child: Stack(alignment: AlignmentDirectional.topCenter, children: <Widget>[
+                                                  Image.asset('images/icons/grey_square_pin.png'),
+                                                  Positioned(
+                                                    top: 14,
+                                                    child: KennelLogo(
+                                                      kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
+                                                      kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
+                                                      logoHeight: 60.0,
+                                                      leftPadding: 0.0,
+                                                    ),
+                                                  ),
+                                                ]
+                                                    //child: FlutterLogo(colors: Colors.purple),
+                                                    ),
+                                              ),
                                             ),
                                           ),
-                                        ]),
-                                        textColor: Colors.white,
-                                        onPressed: () {
-                                          if (Utilities.checkForConnection(context)) {
-                                            kennelMembersList = KennelMembersList(kennel: widget.kennelAggregateItem);
-                                            Navigator.push<dynamic>(
-                                              context,
-                                              MaterialPageRoute<dynamic>(
-                                                builder: (BuildContext context) => kennelMembersList,
-                                              ),
-                                            );
-                                          }
-                                        },
-                                      ),
-                                    ),
+                                        ],
+                                      )
+                                    ],
                                   ),
                                 ),
-                              ]),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.only(top: 10.0),
+                                child: Slider(
+                                    value: sliderValue,
+                                    activeColor: Colors.yellow,
+                                    inactiveColor: Colors.grey,
+                                    min: 1.0,
+                                    max: 20.0,
+                                    onChanged: (double val) {
+                                      // setState(() {
+                                      if (mapController != null) {
+                                        mapController.move(LatLng(widget.kennelAggregateItem.kennel.kennelLatitude, widget.kennelAggregateItem.kennel.kennelLongitude), val);
+                                      }
+                                      setState(() {
+                                        sliderValue = val;
+                                      });
+
+                                      //});
+                                    }),
+                              ),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
                                 children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 15, bottom: 15),
-                                    child: Container(
-                                      width: 110,
-                                      height: 110,
+                                  Expanded(
+                                    child: Text(
+                                      'Location:',
+                                      style: listLabelStyle,
+                                      textAlign: TextAlign.right,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    flex: flexLeft,
+                                  ),
+                                  Expanded(
+                                      child: Text(
+                                        '  ' + widget.kennelAggregateItem.extensions.location ?? '',
+                                        style: listValueStyle,
+                                        textAlign: TextAlign.left,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      flex: flexRight),
+                                ],
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Text(
+                                      'Last run:',
+                                      style: listLabelStyle,
+                                      textAlign: TextAlign.right,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    flex: flexLeft,
+                                  ),
+                                  Expanded(
+                                      child: Text(
+                                        widget.kennelAggregateItem.extensions.lastRunDate != null ? '  ' + DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennelAggregateItem.extensions.lastRunDate.substring(0, 19))) : '  <no run found>',
+                                        style: listValueStyle,
+                                        textAlign: TextAlign.left,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      flex: flexRight),
+                                ],
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Text(
+                                      'Next run:',
+                                      style: listLabelStyle,
+                                      textAlign: TextAlign.right,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    flex: flexLeft,
+                                  ),
+                                  Expanded(
+                                      child: Text(
+                                        widget.kennelAggregateItem.extensions.nextRunDate != null ? '  ' + DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennelAggregateItem.extensions.nextRunDate.substring(0, 19))) : '  <no run found>',
+                                        style: listValueStyle,
+                                        textAlign: TextAlign.left,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      flex: flexRight),
+                                ],
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Text(
+                                      'Hash cash:',
+                                      style: listLabelStyle,
+                                      textAlign: TextAlign.right,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    flex: flexLeft,
+                                  ),
+                                  Expanded(
+                                      child: Text(
+                                        widget.kennelAggregateItem.kennel.defaultPriceForMembers == null
+                                            ? '  <not provided>'
+                                            : '  ${Utilities.getFormattedMoney(widget.kennelAggregateItem.kennel.defaultPriceForMembers, widget.kennelAggregateItem.extensions.digitsAfterDecimal, widget.kennelAggregateItem.extensions.currencySymbol)}    (members)',
+                                        style: listValueStyle,
+                                        textAlign: TextAlign.left,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      flex: flexRight),
+                                ],
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Text(
+                                      '',
+                                      style: listLabelStyle,
+                                      textAlign: TextAlign.right,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    flex: flexLeft,
+                                  ),
+                                  Expanded(
+                                      child: Text(
+                                        widget.kennelAggregateItem.kennel.defaultPriceForNonMembers == null
+                                            ? '  <not provided>'
+                                            : '  ${Utilities.getFormattedMoney(widget.kennelAggregateItem.kennel.defaultPriceForNonMembers, widget.kennelAggregateItem.extensions.digitsAfterDecimal, widget.kennelAggregateItem.extensions.currencySymbol)}    (non-members)',
+                                        style: listValueStyle,
+                                        textAlign: TextAlign.left,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      flex: flexRight),
+                                ],
+                              ),
+                              ((widget.kennelAggregateItem.kennel.kennelWebsiteUrl == null) || (widget.kennelAggregateItem.kennel.kennelWebsiteUrl.trim().isEmpty))
+                                  ? Container()
+                                  : Container(
+                                      padding: const EdgeInsets.only(top: 30),
+                                      margin: const EdgeInsets.only(bottom: 20),
+                                      width: 180,
                                       child: Utilities.styleForConnected(
                                         RaisedButton(
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-                                          padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 8.0),
-                                          child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                          padding: const EdgeInsets.only(top: 8.0, left: 8.0, bottom: 8.0),
+                                          child: Row(children: <Widget>[
+                                            Stack(
+                                                alignment: AlignmentDirectional.center,
+                                                children: <Widget>[Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.blue[800], shape: BoxShape.circle)), const Positioned(bottom: 1.4, child: Icon(SimpleLineIcons.globe, color: Colors.white))]),
                                             const Padding(
-                                              padding: EdgeInsets.only(left: 0),
-                                              child: Icon(MaterialCommunityIcons.playlist_edit, color: Colors.white, size: 60),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
-                                              child: Text(
-                                                'Edit\r\nevents',
-                                                textAlign: TextAlign.center,
-                                                style: buttonLabelStyleSmall,
-                                              ),
+                                              padding: EdgeInsets.only(left: 20, right: 0),
+                                              child: Text('Open website'),
                                             ),
                                           ]),
                                           textColor: Colors.white,
                                           onPressed: () {
                                             if (Utilities.checkForConnection(context)) {
-                                              Navigator.push<dynamic>(
-                                                context,
-                                                MaterialPageRoute<dynamic>(
-                                                  builder: (BuildContext context) => FilterEventsPage(kennel: widget.kennelAggregateItem),
-                                                ),
-                                              );
+                                              launch(widget.kennelAggregateItem.kennel.kennelWebsiteUrl);
                                             }
                                           },
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 15, bottom: 15),
-                                    child: Container(
-                                      width: 110,
-                                      height: 110,
-                                      child: Utilities.styleForConnected(
-                                        RaisedButton(
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-                                          padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 8.0),
-                                          child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                                            const Padding(
-                                              padding: EdgeInsets.only(left: 0, top: 4),
-                                              child: Icon(MaterialCommunityIcons.qrcode, color: Colors.white, size: 55),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(left: 10, right: 10, top: 7),
-                                              child: Text(
-                                                'Print QR codes',
-                                                textAlign: TextAlign.center,
-                                                style: buttonLabelStyleSmall,
-                                              ),
-                                            ),
-                                          ]),
-                                          textColor: Colors.white,
-                                          onPressed: () {
-                                            Navigator.push<dynamic>(
-                                                context,
-                                                MaterialPageRoute<dynamic>(
-                                                    builder: (BuildContext context) => EventQrCodePage(
-                                                        kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
-                                                        qrContent: widget.kennelAggregateItem.kennel.kennelId,
-                                                        runEndPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_END,
-                                                        runStartPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_START,
-                                                        title: 'Any ' + widget.kennelAggregateItem.kennel.kennelShortName + ' run')));
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
-                                child: FancyDivider(innerColor: Colors.white),
-                              ),
                             ],
                           ),
-                    ((widget.kennelAggregateItem.kennel.kennelCoverPhoto ?? '').isNotEmpty && widget.kennelAggregateItem.kennel.kennelCoverPhoto.startsWith('http'))
-                        ? Column(mainAxisSize: MainAxisSize.max, children: <Widget>[
-                            // Row(mainAxisAlignment: MainAxisAlignment.start, mainAxisSize: MainAxisSize.max, children: <Widget>[
-                            //   KennelLogo(
-                            //     kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
-                            //     kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
-                            //     logoHeight: 80.0,
-                            //     leftPadding: 0.0,
-                            //   ),
-                            //   Container(width: MediaQuery.of(context).size.width - 120, padding: const EdgeInsets.only(left: 15.0), child: Text(widget.kennelAggregateItem.kennel.kennelName, maxLines: 3, style: smallTitleStyle))
-                            //   //Container(width: MediaQuery.of(context).size.width - 120, padding: const EdgeInsets.only(left: 15.0), child: Text('Test of a long hash name that will span several lines and then keep going until we get an elipsis', maxLines: 3, overflow:TextOverflow.ellipsis, style: smallTitleStyle))
-                            // ]),
-                            Container(margin: const EdgeInsets.only(bottom: 20.0), width: MediaQuery.of(context).size.width - 40, child: Text(widget.kennelAggregateItem.kennel.kennelName, textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
-                            //Container(width: MediaQuery.of(context).size.width - 40, child: Text('this is a test of what a long kennel name might look like', textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
-                            KennelLogo(
-                              kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
-                              kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
-                              logoHeight: 200.0,
-                              leftPadding: 0.0,
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.only(top: 45.0, bottom: 15.0),
-                              child: FancyDivider(innerColor: Colors.white),
-                            ),
-                            Padding(
-                                padding: const EdgeInsets.only(top: 20, bottom: 5),
-                                child: CachedNetworkImage(
-                                  imageUrl: widget.kennelAggregateItem.kennel.kennelCoverPhoto,
-                                  // errorWidget:
-                                  //     (BuildContext context, String url, Exception error) =>
-                                  //         const  Icon(Icons.error),
-                                )
-                                //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
-                                ),
-                          ])
-                        : Column(
-                            children: <Widget>[
-                              Container(margin: const EdgeInsets.only(bottom: 20.0), width: MediaQuery.of(context).size.width - 40, child: Text(widget.kennelAggregateItem.kennel.kennelName, textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
-                              //Container(width: MediaQuery.of(context).size.width - 40, child: Text('this is a test of what a long kennel name might look like', textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
-                              KennelLogo(
-                                kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
-                                kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
-                                logoHeight: 200.0,
-                                leftPadding: 0.0,
-                              ),
-                            ],
-                          ),
-                    const Padding(
-                      padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
-                      child: FancyDivider(innerColor: Colors.white),
+                        ],
+                      ),
                     ),
-                    (widget.kennelAggregateItem.kennel.kennelDescription ?? '').isNotEmpty
-                        ? Column(
-                            children: <Widget>[
-                              Linkify(
-                                text: widget.kennelAggregateItem.kennel.kennelDescription.toString().replaceAll('\r\n', '\n'),
-                                style: bodyStyle,
-                                linkStyle: bodyStyleYellow,
-                                humanize: true,
-                                onOpen: (LinkableElement link) async {
-                                  if (await canLaunch(link.url)) {
-                                    await launch(link.url);
-                                  } else {
-                                    Utilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
-                                  }
-                                },
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
-                                child: FancyDivider(innerColor: Colors.white),
-                              ),
-                            ],
-                          )
-                        : Container(),
-                    Column(
-                      children: <Widget>[
-                        Container(
-                          width: MediaQuery.of(context).size.width,
-                          height: 300,
-                          //padding: const EdgeInsets.all(20.0),
-                          child: Center(
-                            // Map
-                            child: FlutterMap(
-                              mapController: mapController,
-                              options: MapOptions(
-                                interactive: false,
-                                center: LatLng(widget.kennelAggregateItem.kennel.kennelLatitude, widget.kennelAggregateItem.kennel.kennelLongitude),
-                                zoom: sliderValue,
-                              ),
-                              layers: <LayerOptions>[
-                                TileLayerOptions(
-                                    urlTemplate:
-                                        //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                        'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                                    //subdomains: ['a', 'b', 'c']),
-                                    subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
-                                MarkerLayerOptions(
-                                  markers: <Marker>[
-                                    Marker(
-                                      width: 240.0,
-                                      height: 240.0,
-                                      point: LatLng(widget.kennelAggregateItem.kennel.kennelLatitude, widget.kennelAggregateItem.kennel.kennelLongitude),
-                                      builder: (BuildContext ctx) => GestureDetector(
-                                            onTap: () => _launchMaps(widget.kennelAggregateItem.kennel.kennelLatitude, widget.kennelAggregateItem.kennel.kennelLongitude),
-                                            child: Container(
-                                              margin: const EdgeInsets.only(bottom: 110.0),
-                                              child: Stack(alignment: AlignmentDirectional.topCenter, children: <Widget>[
-                                                Image.asset('images/icons/grey_square_pin.png'),
-                                                Positioned(
-                                                  top: 14,
-                                                  child: KennelLogo(
-                                                    kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
-                                                    kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
-                                                    logoHeight: 60.0,
-                                                    leftPadding: 0.0,
-                                                  ),
-                                                ),
-                                              ]
-                                                  //child: FlutterLogo(colors: Colors.purple),
-                                                  ),
-                                            ),
-                                          ),
-                                    ),
-                                  ],
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.only(top: 10.0),
-                          child: Slider(
-                              value: sliderValue,
-                              activeColor: Colors.yellow,
-                              inactiveColor: Colors.grey,
-                              min: 1.0,
-                              max: 20.0,
-                              onChanged: (double val) {
-                                // setState(() {
-                                if (mapController != null) {
-                                  mapController.move(LatLng(widget.kennelAggregateItem.kennel.kennelLatitude, widget.kennelAggregateItem.kennel.kennelLongitude), val);
-                                }
-                                setState(() {
-                                  sliderValue = val;
-                                });
-
-                                //});
-                              }),
-                        ),
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Text(
-                                'Location:',
-                                style: listLabelStyle,
-                                textAlign: TextAlign.right,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              flex: flexLeft,
-                            ),
-                            Expanded(
-                                child: Text(
-                                  '  ' + widget.kennelAggregateItem.extensions.location ?? '',
-                                  style: listValueStyle,
-                                  textAlign: TextAlign.left,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                flex: flexRight),
-                          ],
-                        ),
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Text(
-                                'Last run:',
-                                style: listLabelStyle,
-                                textAlign: TextAlign.right,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              flex: flexLeft,
-                            ),
-                            Expanded(
-                                child: Text(
-                                  widget.kennelAggregateItem.extensions.lastRunDate != null ? '  ' + DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennelAggregateItem.extensions.lastRunDate.substring(0, 19))) : '  <no run found>',
-                                  style: listValueStyle,
-                                  textAlign: TextAlign.left,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                flex: flexRight),
-                          ],
-                        ),
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Text(
-                                'Next run:',
-                                style: listLabelStyle,
-                                textAlign: TextAlign.right,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              flex: flexLeft,
-                            ),
-                            Expanded(
-                                child: Text(
-                                  widget.kennelAggregateItem.extensions.nextRunDate != null ? '  ' + DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennelAggregateItem.extensions.nextRunDate.substring(0, 19))) : '  <no run found>',
-                                  style: listValueStyle,
-                                  textAlign: TextAlign.left,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                flex: flexRight),
-                          ],
-                        ),
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Text(
-                                'Hash cash:',
-                                style: listLabelStyle,
-                                textAlign: TextAlign.right,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              flex: flexLeft,
-                            ),
-                            Expanded(
-                                child: Text(
-                                  widget.kennelAggregateItem.kennel.defaultPriceForMembers == null
-                                      ? '  <not provided>'
-                                      : '  ${Utilities.getFormattedMoney(widget.kennelAggregateItem.kennel.defaultPriceForMembers, widget.kennelAggregateItem.extensions.digitsAfterDecimal, widget.kennelAggregateItem.extensions.currencySymbol)}    (members)',
-                                  style: listValueStyle,
-                                  textAlign: TextAlign.left,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                flex: flexRight),
-                          ],
-                        ),
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Text(
-                                '',
-                                style: listLabelStyle,
-                                textAlign: TextAlign.right,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              flex: flexLeft,
-                            ),
-                            Expanded(
-                                child: Text(
-                                  widget.kennelAggregateItem.kennel.defaultPriceForNonMembers == null
-                                      ? '  <not provided>'
-                                      : '  ${Utilities.getFormattedMoney(widget.kennelAggregateItem.kennel.defaultPriceForNonMembers, widget.kennelAggregateItem.extensions.digitsAfterDecimal, widget.kennelAggregateItem.extensions.currencySymbol)}    (non-members)',
-                                  style: listValueStyle,
-                                  textAlign: TextAlign.left,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                flex: flexRight),
-                          ],
-                        ),
-                        ((widget.kennelAggregateItem.kennel.kennelWebsiteUrl == null) || (widget.kennelAggregateItem.kennel.kennelWebsiteUrl.trim().isEmpty))
-                            ? Container()
-                            : Container(
-                                padding: const EdgeInsets.only(top: 30),
-                                margin: const EdgeInsets.only(bottom: 20),
-                                width: 180,
-                                child: Utilities.styleForConnected(
-                                  RaisedButton(
-                                    padding: const EdgeInsets.only(top: 8.0, left: 8.0, bottom: 8.0),
-                                    child: Row(children: <Widget>[
-                                      Stack(
-                                          alignment: AlignmentDirectional.center, children: <Widget>[Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.blue[800], shape: BoxShape.circle)), const Positioned(bottom: 1.4, child: Icon(SimpleLineIcons.globe, color: Colors.white))]),
-                                      const Padding(
-                                        padding: EdgeInsets.only(left: 20, right: 0),
-                                        child: Text('Open website'),
-                                      ),
-                                    ]),
-                                    textColor: Colors.white,
-                                    onPressed: () {
-                                      if (Utilities.checkForConnection(context)) {
-                                        launch(widget.kennelAggregateItem.kennel.kennelWebsiteUrl);
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ),
         ),
       ),
       const OfflineModeRibbon(),

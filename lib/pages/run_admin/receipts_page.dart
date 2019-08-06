@@ -62,8 +62,10 @@ class ReceiptsListState extends State<ReceiptsList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        key: _scaffoldKey,
         appBar: AppBar(
           centerTitle: true,
+        
           backgroundColor: themeAppBarBackground,
           title: Text(
             '${widget.eventAggregate.event.eventName} receipts',

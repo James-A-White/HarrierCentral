@@ -20,10 +20,13 @@ import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/filter_event_list_item.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 
+enum FilterEventsPageType { past, future }
+
 class FilterEventsPage extends StatefulWidget {
-  const FilterEventsPage({Key key, @required this.kennel}) : super(key: key);
+  const FilterEventsPage({Key key, @required this.kennel, @required this.pageType}) : super(key: key);
 
   final KennelListAggregate kennel;
+  final FilterEventsPageType pageType;
 
   @override
   FilterEventsPageState createState() => FilterEventsPageState();
@@ -60,12 +63,16 @@ class FilterEventsPageState extends State<FilterEventsPage> {
   List<Map<String, dynamic>> events = <Map<String, dynamic>>[];
 
   Future<void> _refreshEventFromTables(bool forceRefresh) async {
+    final String sortOrder = widget.pageType == FilterEventsPageType.future ? 'ASC' : 'DESC';
+    final String dateComparer = widget.pageType == FilterEventsPageType.future ? '>=' : '<=';
+    final String dateOffset = widget.pageType == FilterEventsPageType.future ? '-1 day' : '+1 day';
+
     final String userId = getStringPref(StringPrefsEnum.userId);
     final Database db = await DBProvider.db.database;
     try {
       final String sql = ''' 
 
-          SELECT 
+          SELECT
             evt.eventId,
             evt.isVisible,
             evt.isCountedRun,
@@ -80,20 +87,15 @@ class FilterEventsPageState extends State<FilterEventsPage> {
           FROM ${NarrowEventsTableHelper.tableName} evt
           INNER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on hkm.kennelId = "${widget.kennel.kennel.kennelId}" and hkm.userId = "$userId"
           WHERE evt.kennelId = "${widget.kennel.kennel.kennelId}"
-          ORDER BY evt.eventStartDatetime desc
+          AND date(evt.eventStartDatetime,"$dateOffset") $dateComparer date("now")
+          ORDER BY evt.eventStartDatetime $sortOrder
         
           ''';
 
       db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
+        events = results;
         setState(() {
-          if (results.isNotEmpty) {
-            events = results;
-            setState(() {
-              if (forceRefresh) {
-                _isLoading = false;
-              }
-            });
-          }
+          _isLoading = false;
         });
       });
     } catch (e) {
@@ -222,8 +224,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
 
   Widget _buildListView() {
     int publishedRunCount = 0;
-    if (events.isNotEmpty)
-    {
+    if (events.isNotEmpty) {
       publishedRunCount = events[0]['publishedRunCount'];
     }
 
@@ -231,7 +232,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
       decoration: Backgrounds.defaultHcBackgroundLight(),
       padding: const EdgeInsets.only(top: 0.0),
       child: events.isEmpty
-          ? const Center(child: Text('No Kennels available.'))
+          ? Center(child: Text('No events found', style: headingStyleBlack)) 
           : RefreshIndicator(
               onRefresh: () => _handleRefresh(),
               displacement: 130.0,
@@ -257,7 +258,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
- Container(
+                        Container(
                           height: 75,
                           child: KennelLogo(
                             kennelLogoUrl: widget.kennel.kennel.kennelLogo,
@@ -267,39 +268,40 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                           ),
                         ),
                         Expanded(
-                          flex:1,
-                        child:Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Container(
-                              child: AutoSizeText(
-                                '${widget.kennel.kennel.kennelName}',
-                                //'Super fucking long text thats sure to overflow and more',
-                                //'999',
-                                overflow: TextOverflow.ellipsis,
-                                minFontSize: 18.0,
-                                maxLines: 1,
-                                style: numberStyle,
-                                textAlign: TextAlign.left,
+                          flex: 1,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Container(
+                                child: AutoSizeText(
+                                  '${widget.kennel.kennel.kennelName}',
+                                  //'Super fucking long text thats sure to overflow and more',
+                                  //'999',
+                                  overflow: TextOverflow.ellipsis,
+                                  minFontSize: 18.0,
+                                  maxLines: 1,
+                                  style: numberStyle,
+                                  textAlign: TextAlign.left,
+                                ),
+                                //color: Colors.green,
                               ),
-                              //color: Colors.green,
-                            ),
-                            Container(
-                              child: AutoSizeText(
-                                'Published run count: ${publishedRunCount.toString()}',
-                                //'Super fucking long text thats sure to overflow and more',
-                                //'999',
-                                overflow: TextOverflow.ellipsis,
-                                minFontSize: 18.0,
-                                maxLines: 1,
-                                style: numberStyle,
-                                textAlign: TextAlign.left,
+                              Container(
+                                child: AutoSizeText(
+                                  'Published run count: ${publishedRunCount.toString()}',
+                                  //'Super fucking long text thats sure to overflow and more',
+                                  //'999',
+                                  overflow: TextOverflow.ellipsis,
+                                  minFontSize: 18.0,
+                                  maxLines: 1,
+                                  style: numberStyle,
+                                  textAlign: TextAlign.left,
+                                ),
+                                //color: Colors.green,
                               ),
-                              //color: Colors.green,
-                            ),
-                          ],
-                        ),),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -309,9 +311,9 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                       itemCount: events.length,
                       padding: const EdgeInsets.only(top: 5),
                       separatorBuilder: (BuildContext context, int index) => const Divider(
-                            height: 1.0,
-                            color: Colors.black45,
-                          ),
+                        height: 1.0,
+                        color: Colors.black45,
+                      ),
                       //itemExtent: 58.0,
                       //shrinkWrap: true,
                       itemBuilder: (BuildContext context, int index) {
@@ -371,23 +373,23 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                             event: event,
                             kennelShortName: widget.kennel.kennel.kennelShortName,
                             updateEvent: (dynamic retVal) {
-                              final EnumEventFilterType<int> ft =  retVal;
-                              switch(ft) {
+                              final EnumEventFilterType<int> ft = retVal;
+                              switch (ft) {
                                 case eventFilterType_showEvent:
-                                updateEvent(event,isVisible: true);
-                                break;
+                                  updateEvent(event, isVisible: true);
+                                  break;
                                 case eventFilterType_hideEvent:
-                                updateEvent(event,isVisible: false);
-                                break;
+                                  updateEvent(event, isVisible: false);
+                                  break;
                                 case eventFilterType_countEvent:
-                                updateEvent(event,isCountedRun: true);
-                                break;
+                                  updateEvent(event, isCountedRun: true);
+                                  break;
                                 case eventFilterType_doNotCountEvent:
-                                updateEvent(event,isCountedRun: false);
-                                break;
+                                  updateEvent(event, isCountedRun: false);
+                                  break;
                                 case eventFilterType_setRunNumber:
-                                setRunNumber(event,context);
-                                break;
+                                  setRunNumber(event, context);
+                                  break;
                               }
                             },
                           ),
@@ -411,9 +413,8 @@ class FilterEventsPageState extends State<FilterEventsPage> {
     );
   }
 
-  void setRunNumber(
-      Map<String,dynamic> event, BuildContext context) {
-    final RunNumberPopup otherPaymentPopup = RunNumberPopup(runNumber:event['absoluteEventNumber']);
+  void setRunNumber(Map<String, dynamic> event, BuildContext context) {
+    final RunNumberPopup otherPaymentPopup = RunNumberPopup(runNumber: event['absoluteEventNumber']);
 
     final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
         context: context,
@@ -425,20 +426,16 @@ class FilterEventsPageState extends State<FilterEventsPage> {
     dlg.then((Map<String, String> x) {
       final String runNumber = x['runNumber'];
 
-      if ((runNumber != null) && (runNumber != 'cancel'))
-      {
-         int rn = -1;
-         if (runNumber == 'auto')
-         {
-           rn = 0;
-         } else {
-           rn = int.parse(runNumber);
-         }
+      if ((runNumber != null) && (runNumber != 'cancel')) {
+        int rn = -1;
+        if (runNumber == 'auto') {
+          rn = 0;
+        } else {
+          rn = int.parse(runNumber);
+        }
 
-         updateEvent(event,asboluteEventNumber: rn);
-
+        updateEvent(event, asboluteEventNumber: rn);
       }
-      
 
       // if (type != 'cancel') {
       //   final num v = num.tryParse(amount);
@@ -452,7 +449,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
     });
   }
 
-  Future<void> updateEvent(Map<String, dynamic> event,{bool isVisible,bool isCountedRun,int asboluteEventNumber}) async {
+  Future<void> updateEvent(Map<String, dynamic> event, {bool isVisible, bool isCountedRun, int asboluteEventNumber}) async {
     DBProvider.db.database.then((Database db) async {
       await db.transaction<dynamic>((Transaction txn) async {
         final int guidFlag = isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
@@ -462,7 +459,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
         _refreshEventFromTables(true);
       });
     });
-    
+
     final NarrowEventsService nSvc = NarrowEventsService();
     nSvc.updateEventDetails(event['eventId'], isVisible: isVisible, isCountedRun: isCountedRun, absoluteEventNumber: asboluteEventNumber).then((void dummy) {
       _refreshEventFromTables(true).then((void dummy) {

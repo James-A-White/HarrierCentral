@@ -44,7 +44,23 @@ class KennelListItemState extends State<KennelsListItem> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Container(
+                        InkWell(
+              onTap: () {
+                // NOTE: leave this comment in for now. Ideally we would navigate
+                // from here to the next page, but there was an intermittent bug
+                // where the selected Kennel would change unexpectedly. This "hack" of
+                // navigating from the parent is my attempt to fix it
+                //
+                // Navigator.of(context).push<dynamic>(
+                //   MaterialPageRoute<dynamic>(
+                //     builder: (BuildContext context)
+                //       => KennelAdminMainPage(kennel: widget.kennel)
+                //     ,
+                //   ),
+                // );
+                widget.kennelSelected();
+              },
+              child: Container(
                 child: IconButton(
                   icon: Utilities.styleForConnected(Icon(
                       widget.kennelItem.extensions.followingRequested != -1 ? delayIcon : widget.kennelItem.hkm.following == 1 ? const Icon(FontAwesome.check_circle).icon : widget.kennelItem.hkm.following == 2 ? const Icon(FontAwesome.times_circle).icon : const Icon(FontAwesome.star).icon,
@@ -71,7 +87,7 @@ class KennelListItemState extends State<KennelsListItem> {
                   },
                 ),
                 alignment: Alignment.topCenter,
-              ),
+              ),),
               widget.kennelItem.extensions.isHomeKennel == 0
                   ? Container()
                   : Container(
@@ -80,7 +96,23 @@ class KennelListItemState extends State<KennelsListItem> {
                       padding: const EdgeInsets.only(right: 5.0, bottom: 2.0),
                     ),
               Expanded(
-                child: Container(
+                child:           InkWell(
+              onTap: () {
+                // NOTE: leave this comment in for now. Ideally we would navigate
+                // from here to the next page, but there was an intermittent bug
+                // where the selected Kennel would change unexpectedly. This "hack" of
+                // navigating from the parent is my attempt to fix it
+                //
+                // Navigator.of(context).push<dynamic>(
+                //   MaterialPageRoute<dynamic>(
+                //     builder: (BuildContext context)
+                //       => KennelAdminMainPage(kennel: widget.kennel)
+                //     ,
+                //   ),
+                // );
+                widget.kennelSelected();
+              },
+              child: Container(
                   width: MediaQuery.of(context).size.width - 70,
                   padding: const EdgeInsets.only(left: 5.0, bottom: 2.0, right: 5.0),
                   child: AutoSizeText(
@@ -92,7 +124,7 @@ class KennelListItemState extends State<KennelsListItem> {
                     minFontSize: 18,
                     overflow: TextOverflow.ellipsis,
                   ),
-                ),
+                ),),
               ),
               Container(
                 padding: const EdgeInsets.only(right: 10),

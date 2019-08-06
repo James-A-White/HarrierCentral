@@ -42,6 +42,12 @@ TextStyle headingStyle20 = const TextStyle(fontFamily: 'AvenirNextRegular', font
 TextStyle headingStyle20italic = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.italic, color: Colors.yellow, fontSize: 20.0, height: 1.0);
 
 
+TextStyle headingStyleBlack = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 24.0, height: 1.0);
+TextStyle headingStyle20Black = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 20.0, height: 1.0);
+TextStyle headingStyle20italicBlack = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.italic, color: Colors.black, fontSize: 20.0, height: 1.0);
+
+
+
 TextStyle headingStyleOnLightBg = TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.blue[800], fontSize: 24.0, height: 1.0);
 
 TextStyle smallHeadingStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 20.0, height: 1.0);
