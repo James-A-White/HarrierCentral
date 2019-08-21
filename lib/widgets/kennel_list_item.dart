@@ -350,14 +350,14 @@ class KennelListItemState extends State<KennelsListItem> {
         buttonPress: (dynamic retVal) {
           if ((retVal == notificationsOn) || (retVal == notificationsOff)) {
             {
-              if (Utilities.checkForConnection(context, message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
+              if (Utilities.checkForConnection(context, message: 'Setting Kennel notifications is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
                 final HasherKennelMapService srv = HasherKennelMapService();
                 final int notificationStatus = retVal.value;
                 widget.kennelItem.extensions.notificationsRequested = notificationStatus;
                 setState(() {});
                 srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, notificationState: notificationStatus).then((List<dynamic> queryResults) {
                   setState(() {
-                    widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference']);
+                    widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],queryResults[0]['isHomeKennel']);
                     final NotificationSupport notifications = NotificationSupport();
                     notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
                   });

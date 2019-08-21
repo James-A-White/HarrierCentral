@@ -77,7 +77,9 @@ class NotificationsTableHelper {
   }
 
   static Future<void> recordNotificationStatus(Database db, String notificationType, String notificationTag, int status) async {
-    final String sql = 'INSERT INTO $tableName ($colNotificationType, $colNotificationTag, $colNotificationStatus, $colUpdatedAtInt) VALUES ("$notificationType","$notificationTag",$status,${DateTime.now().millisecondsSinceEpoch}) ON CONFLICT($colNotificationTag) DO UPDATE SET $colNotificationStatus = $status, $colUpdatedAtInt = ${DateTime.now().millisecondsSinceEpoch};';
+    //final String sql = 'INSERT INTO $tableName ($colNotificationType, $colNotificationTag, $colNotificationStatus, $colUpdatedAtInt) VALUES ("$notificationType","$notificationTag",$status,${DateTime.now().millisecondsSinceEpoch}) ON CONFLICT($colNotificationTag) DO UPDATE SET $colNotificationStatus = $status, $colUpdatedAtInt = ${DateTime.now().millisecondsSinceEpoch};';
+    final String sql = 'INSERT OR REPLACE INTO $tableName ($colNotificationType, $colNotificationTag, $colNotificationStatus, $colUpdatedAtInt) VALUES ("$notificationType","$notificationTag",$status,${DateTime.now().millisecondsSinceEpoch});';
+    //print(sql);
     db.rawQuery(sql);
   }
 }
