@@ -18,7 +18,7 @@ import 'package:harrier_central/util/enums.dart';
 
 class HasherKennelMapModel {
   HasherKennelMapModel(
-      {this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.isHomeKennel, this.kennelNotificationPreference, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.historicalCountIsEstimate, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.removed, this.updatedAt});
+      {this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.isHomeKennel, this.kennelNotificationPreference, this.kennelEmailPreference, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.historicalCountIsEstimate, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.removed, this.updatedAt});
 
   final String hkmId;
   final String userId;
@@ -27,6 +27,7 @@ class HasherKennelMapModel {
   final int isMember;
   final int isHomeKennel;
   int kennelNotificationPreference;
+  int kennelEmailPreference;
   final int mismanagementRoleFlags;
   final int userRoleFlags;
   final int appAccessFlags;
@@ -54,6 +55,7 @@ class HasherKennelMapModel {
           isMember: jsonItem['isMember'],
           isHomeKennel: jsonItem['isHomeKennel'],
           kennelNotificationPreference: jsonItem['kennelNotificationPreference'],
+          kennelEmailPreference: jsonItem['kennelEmailPreference'],
           mismanagementRoleFlags: jsonItem['mismanagementRoleFlags'] ?? 0,
           userRoleFlags: jsonItem['userRoleFlags'],
           appAccessFlags: jsonItem['appAccessFlags'],
@@ -105,6 +107,7 @@ class HasherKennelMapTableHelper {
   static const String colIsMember = 'isMember';
   static const String colIsHomeKennel = 'isHomeKennel';
   static const String colKennelNotificationPreference = 'kennelNotificationPreference';
+  static const String colKennelEmailPreference= 'kennelEmailPreference';
   static const String colMismanagementRoleFlags = 'mismanagementRoleFlags';
   static const String colUserRoleFlags = 'userRoleFlags';
   static const String colAppAccessFlags = 'appAccessFlags';
@@ -159,6 +162,7 @@ class HasherKennelMapTableHelper {
             $colIsMember INT,
             $colIsHomeKennel INT,
             $colKennelNotificationPreference INT,
+            $colKennelEmailPreference INT,
             $colMismanagementRoleFlags INT,
             $colUserRoleFlags INT,
             $colAppAccessFlags INT,
@@ -189,6 +193,7 @@ class HasherKennelMapTableHelper {
       HasherKennelMapTableHelper.colIsMember: item.isMember,
       HasherKennelMapTableHelper.colIsHomeKennel: item.isHomeKennel,
       HasherKennelMapTableHelper.colKennelNotificationPreference: item.kennelNotificationPreference,
+      HasherKennelMapTableHelper.colKennelEmailPreference: item.kennelEmailPreference,
       HasherKennelMapTableHelper.colMismanagementRoleFlags: item.mismanagementRoleFlags,
       HasherKennelMapTableHelper.colUserRoleFlags: item.userRoleFlags,
       HasherKennelMapTableHelper.colAppAccessFlags: item.appAccessFlags,
@@ -214,6 +219,7 @@ class HasherKennelMapTableHelper {
       isMember: map[HasherKennelMapTableHelper.colIsMember],
       isHomeKennel: map[HasherKennelMapTableHelper.colIsHomeKennel],
       kennelNotificationPreference: map[HasherKennelMapTableHelper.colKennelNotificationPreference],
+      kennelEmailPreference: map[HasherKennelMapTableHelper.colKennelEmailPreference],
       mismanagementRoleFlags: map[HasherKennelMapTableHelper.colMismanagementRoleFlags],
       userRoleFlags: map[HasherKennelMapTableHelper.colUserRoleFlags],
       appAccessFlags: map[HasherKennelMapTableHelper.colAppAccessFlags],
@@ -332,7 +338,7 @@ class HasherKennelMapService {
 
   //=================  Domain specific functions ================
 
-  Future<List<dynamic>> updateHasherKennelStatus(String kennelId, HasherKennelMapTableType tblType, {int monthsToAddToMembership, String targetUserId, int notificationState = -1, int followingState = -1, int isHomeKennel = -1}) async {
+  Future<List<dynamic>> updateHasherKennelStatus(String kennelId, HasherKennelMapTableType tblType, {int monthsToAddToMembership, String targetUserId, int notificationState = -1, int emailAlertState = -1, int followingState = -1, int isHomeKennel = -1}) async {
 
     List<dynamic> adHocData;
 
@@ -370,6 +376,7 @@ class HasherKennelMapService {
       'isFollowing': followingState,
       'isHomeKennel' : isHomeKennel,
       'notificationState': notificationState,
+      'emailAlertState' : emailAlertState,
       'monthsToAddToMembership' : monthsToAddToMembership,
       'hasherKennelMapUpdatedAfter' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
       'kennelsUpdatedAfter' : kennelsUpdatedAfter.toString().substring(0, 19),

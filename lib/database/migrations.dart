@@ -8,6 +8,7 @@ import 'package:sqflite/sqflite.dart';
 //import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 //import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 //import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
+import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 
 class MigrationsModel {
@@ -111,13 +112,20 @@ class MigrationsTableHelper {
   ///
   ///
 
-  static int dbVersion = 221;
+  static int dbVersion = 222;
 
   static List<MigrationsModel> migrationList = <MigrationsModel>[
 
-    // MIGRATION 190
+    // MIGRATION 221
     MigrationsModel(migrationNumber: 221, migrationText: '''
             ALTER TABLE ${HashersTableHelper.tableName} ADD COLUMN ${HashersTableHelper.colHomeKennelId} TEXT;
+         '''),
+      
+    // MIGRATION 222
+    MigrationsModel(migrationNumber: 222, migrationText: '''
+            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} ADD COLUMN ${HasherKennelMapTableHelper.colKennelEmailPreference} TEXT;
+            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colKennelEmailPreference} TEXT;
+            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colKennelEmailPreference} TEXT;
          '''),
   ];
 }

@@ -70,6 +70,17 @@ const EnumNotificationState<int> notificationsOn = EnumNotificationState<int>(1)
 const EnumNotificationState<int> notificationsOff = EnumNotificationState<int>(2);
 
 //////////////////////////
+///
+class EnumEmailAlertState<int> extends Enum<int> {
+  const EnumEmailAlertState(int val) : super(val);
+}
+
+const EnumEmailAlertState<int> emailAlertsUnchanged = EnumEmailAlertState<int>(-1);
+const EnumEmailAlertState<int> emailAlertsAuto = EnumEmailAlertState<int>(0);
+const EnumEmailAlertState<int> emailAlertsOn = EnumEmailAlertState<int>(1);
+const EnumEmailAlertState<int> emailAlertsOff = EnumEmailAlertState<int>(2);
+
+//////////////////////////
 
 class EnumRsvpState<int> extends Enum<int> {
   const EnumRsvpState(int val) : super(val);

@@ -44,50 +44,51 @@ class KennelListItemState extends State<KennelsListItem> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-                        InkWell(
-              onTap: () {
-                // NOTE: leave this comment in for now. Ideally we would navigate
-                // from here to the next page, but there was an intermittent bug
-                // where the selected Kennel would change unexpectedly. This "hack" of
-                // navigating from the parent is my attempt to fix it
-                //
-                // Navigator.of(context).push<dynamic>(
-                //   MaterialPageRoute<dynamic>(
-                //     builder: (BuildContext context)
-                //       => KennelAdminMainPage(kennel: widget.kennel)
-                //     ,
-                //   ),
-                // );
-                widget.kennelSelected();
-              },
-              child: Container(
-                child: IconButton(
-                  icon: Utilities.styleForConnected(Icon(
-                      widget.kennelItem.extensions.followingRequested != -1 ? delayIcon : widget.kennelItem.hkm.following == 1 ? const Icon(FontAwesome.check_circle).icon : widget.kennelItem.hkm.following == 2 ? const Icon(FontAwesome.times_circle).icon : const Icon(FontAwesome.star).icon,
-                      color: widget.kennelItem.extensions.followingRequested != -1 ? Colors.blue : widget.kennelItem.hkm.following == 1 ? Colors.green : widget.kennelItem.hkm.following == 2 ? Colors.red : Colors.yellow[800])),
-                  tooltip: 'Select to follow a Kennel',
-                  iconSize: 35.0,
-                  alignment: Alignment.topCenter,
-                  splashColor: Colors.greenAccent,
-                  onPressed: () {
-                    if (Utilities.checkForConnection(context, message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
-                      final HasherKennelMapService srv = HasherKennelMapService();
-                      int followingRequested = widget.kennelItem.hkm.following + 1;
-                      if (followingRequested > 2) {
-                        followingRequested = 0;
-                      }
-                      widget.kennelItem.extensions.followingRequested = followingRequested;
-                      setState(() {});
-                      srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, followingState: followingRequested).then((List<dynamic> queryResults) {
-                        setState(() {
-                          widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['isHomeKennel']);
+              InkWell(
+                onTap: () {
+                  // NOTE: leave this comment in for now. Ideally we would navigate
+                  // from here to the next page, but there was an intermittent bug
+                  // where the selected Kennel would change unexpectedly. This "hack" of
+                  // navigating from the parent is my attempt to fix it
+                  //
+                  // Navigator.of(context).push<dynamic>(
+                  //   MaterialPageRoute<dynamic>(
+                  //     builder: (BuildContext context)
+                  //       => KennelAdminMainPage(kennel: widget.kennel)
+                  //     ,
+                  //   ),
+                  // );
+                  widget.kennelSelected();
+                },
+                child: Container(
+                  child: IconButton(
+                    icon: Utilities.styleForConnected(Icon(
+                        widget.kennelItem.extensions.followingRequested != -1 ? delayIcon : widget.kennelItem.hkm.following == 1 ? const Icon(FontAwesome.check_circle).icon : widget.kennelItem.hkm.following == 2 ? const Icon(FontAwesome.times_circle).icon : const Icon(FontAwesome.star).icon,
+                        color: widget.kennelItem.extensions.followingRequested != -1 ? Colors.blue : widget.kennelItem.hkm.following == 1 ? Colors.green : widget.kennelItem.hkm.following == 2 ? Colors.red : Colors.yellow[800])),
+                    tooltip: 'Select to follow a Kennel',
+                    iconSize: 35.0,
+                    alignment: Alignment.topCenter,
+                    splashColor: Colors.greenAccent,
+                    onPressed: () {
+                      if (Utilities.checkForConnection(context, message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
+                        final HasherKennelMapService srv = HasherKennelMapService();
+                        int followingRequested = widget.kennelItem.hkm.following + 1;
+                        if (followingRequested > 2) {
+                          followingRequested = 0;
+                        }
+                        widget.kennelItem.extensions.followingRequested = followingRequested;
+                        setState(() {});
+                        srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, followingState: followingRequested).then((List<dynamic> queryResults) {
+                          setState(() {
+                            widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],queryResults[0]['kennelEmailPreference'], queryResults[0]['isHomeKennel']);
+                          });
                         });
-                      });
-                    }
-                  },
+                      }
+                    },
+                  ),
+                  alignment: Alignment.topCenter,
                 ),
-                alignment: Alignment.topCenter,
-              ),),
+              ),
               widget.kennelItem.extensions.isHomeKennel == 0
                   ? Container()
                   : Container(
@@ -96,35 +97,52 @@ class KennelListItemState extends State<KennelsListItem> {
                       padding: const EdgeInsets.only(right: 5.0, bottom: 2.0),
                     ),
               Expanded(
-                child:           InkWell(
-              onTap: () {
-                // NOTE: leave this comment in for now. Ideally we would navigate
-                // from here to the next page, but there was an intermittent bug
-                // where the selected Kennel would change unexpectedly. This "hack" of
-                // navigating from the parent is my attempt to fix it
-                //
-                // Navigator.of(context).push<dynamic>(
-                //   MaterialPageRoute<dynamic>(
-                //     builder: (BuildContext context)
-                //       => KennelAdminMainPage(kennel: widget.kennel)
-                //     ,
-                //   ),
-                // );
-                widget.kennelSelected();
-              },
-              child: Container(
-                  width: MediaQuery.of(context).size.width - 70,
-                  padding: const EdgeInsets.only(left: 5.0, bottom: 2.0, right: 5.0),
-                  child: AutoSizeText(
-                    '${widget.kennelItem.kennel.kennelName}',
-                    //'An extremely long kennel name for testing purposes',
-                    style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
-                    textAlign: TextAlign.left,
-                    maxLines: 1,
-                    minFontSize: 18,
-                    overflow: TextOverflow.ellipsis,
+                child: InkWell(
+                  onTap: () {
+                    // NOTE: leave this comment in for now. Ideally we would navigate
+                    // from here to the next page, but there was an intermittent bug
+                    // where the selected Kennel would change unexpectedly. This "hack" of
+                    // navigating from the parent is my attempt to fix it
+                    //
+                    // Navigator.of(context).push<dynamic>(
+                    //   MaterialPageRoute<dynamic>(
+                    //     builder: (BuildContext context)
+                    //       => KennelAdminMainPage(kennel: widget.kennel)
+                    //     ,
+                    //   ),
+                    // );
+                    widget.kennelSelected();
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width - 70,
+                    padding: const EdgeInsets.only(left: 5.0, bottom: 2.0, right: 5.0),
+                    child: AutoSizeText(
+                      '${widget.kennelItem.kennel.kennelName}',
+                      //'An extremely long kennel name for testing purposes',
+                      style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
+                      textAlign: TextAlign.left,
+                      maxLines: 1,
+                      minFontSize: 18,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.only(right: 10),
+                child: GestureDetector(
+                  onTap: () {
+                    showEmailPopup(context);
+                  },
+                  child: widget.kennelItem.extensions.emailAlertRequested != -1
+                      ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
+                      : Image(
+                          width: 24.0,
+                          height: 24.0,
+                          fit: BoxFit.fill,
+                          image: widget.kennelItem.hkm.kennelEmailPreference == 1 ? const AssetImage('images/icons/envelope_gold_50px.png') : const AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
+                        ),
+                ),
               ),
               Container(
                 padding: const EdgeInsets.only(right: 10),
@@ -277,7 +295,7 @@ class KennelListItemState extends State<KennelsListItem> {
 
                                   srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, followingState: retVal.value, isHomeKennel: isHomeKennel).then((List<dynamic> queryResults) {
                                     setState(() {
-                                      widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['isHomeKennel']);
+                                      widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],queryResults[0]['kennelEmailPreference'], queryResults[0]['isHomeKennel']);
                                     });
                                   });
                                 }
@@ -357,7 +375,7 @@ class KennelListItemState extends State<KennelsListItem> {
                 setState(() {});
                 srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, notificationState: notificationStatus).then((List<dynamic> queryResults) {
                   setState(() {
-                    widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],queryResults[0]['isHomeKennel']);
+                    widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],queryResults[0]['kennelEmailPreference'], queryResults[0]['isHomeKennel']);
                     final NotificationSupport notifications = NotificationSupport();
                     notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
                   });
@@ -374,4 +392,84 @@ class KennelListItemState extends State<KennelsListItem> {
           return popup;
         });
   }
+
+    void showEmailPopup(BuildContext context) {
+    final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+      <String, dynamic>{
+        'title': 'Turn email alerts on',
+        'icon': <Widget>[
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Positioned(
+            left: 3,
+            top: 1.5,
+            child: Image(
+              width: 25.0,
+              height: 25.0,
+              fit: BoxFit.fill,
+              image: const AssetImage('images/icons/envelope_gold_50px.png'),
+            ),
+          )
+        ],
+        'returnValue': emailAlertsOn,
+      },
+      <String, dynamic>{
+        'title': 'Turn email alerts off',
+        'icon': <Widget>[
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Positioned(
+            left: 3,
+            top: 1.5,
+            child: Image(
+              width: 25.0,
+              height: 25.0,
+              fit: BoxFit.fill,
+              image: const AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
+            ),
+          )
+        ],
+        'returnValue': emailAlertsOff,
+      },
+      // <String, dynamic>{
+      //   'title': 'Set notifications to auto',
+      //   'icon':  <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(left:3,top:1.5,child:Icon(MaterialCommunityIcons.bell_off, size:25, color: Colors.red[800]))],
+      //   'returnValue': EnumNotificationPopupActions.notificationsAuto,
+      // },
+    ];
+
+    final MultipleChoicePopup popup = MultipleChoicePopup(
+        title: 'Email options for this Kennel',
+        buttons: buttons,
+        cancelButtonTitle: 'Cancel',
+        buttonPress: (dynamic retVal) {
+          if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff)) {
+            {
+              if (Utilities.checkForConnection(context, message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
+                final HasherKennelMapService srv = HasherKennelMapService();
+                final int emailAlertStatus = retVal.value;
+                widget.kennelItem.extensions.emailAlertRequested = emailAlertStatus;
+                setState(() {});
+                srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, emailAlertState: emailAlertStatus).then((List<dynamic> queryResults) {
+                  setState(() {
+                    widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailPreference'], queryResults[0]['isHomeKennel']);
+                    // final NotificationSupport notifications = NotificationSupport();
+                    // notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
+                  });
+                });
+              }
+            }
+          }
+        });
+
+    showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return popup;
+        });
+  }
+
+
+
+
+
 }

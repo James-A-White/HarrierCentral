@@ -35,6 +35,7 @@ class KennelListQueryExtenstions {
 
   int followingRequested;
   int notificationsRequested;
+  int emailAlertRequested;
 
   static KennelListQueryExtenstions fromMap(Map<String, dynamic> map) {
     final KennelListQueryExtenstions item = KennelListQueryExtenstions(location: map['location'], distToKennel: map['distToKennel'], nextRunDate: map['nextRunDate'], lastRunDate: map['lastRunDate'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'],isHomeKennel: map['isHomeKennel']);
@@ -124,6 +125,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                   extensionsItem.distToKennel = dist;
                   extensionsItem.followingRequested = -1;
                   extensionsItem.notificationsRequested = -1;
+                  extensionsItem.emailAlertRequested = -1;
 
                   final KennelListAggregate item = KennelListAggregate(kennel: kennelItem, extensions: extensionsItem, hkm: hkmItem);
 
@@ -167,15 +169,17 @@ class KennelsListPageState extends State<KennelsListPage> {
                           return 
                               KennelsListItem(
                                 kennelItem: globalKennelMainPageList[index],
-                                kennelFollowingUpdated: (int following,int notificationStatus,int isHomeKennel){
+                                kennelFollowingUpdated: (int following,int notificationStatus,int emailAlertStatus,int isHomeKennel){
                                   for (int i = 0; i < globalKennelMainPageList.length; i++)
                                   {
                                     globalKennelMainPageList[i].extensions.isHomeKennel = 0;
                                   }
                                   globalKennelMainPageList[index].extensions.followingRequested = -1;
                                   globalKennelMainPageList[index].extensions.notificationsRequested = -1;
+                                  globalKennelMainPageList[index].extensions.emailAlertRequested = -1;
                                   globalKennelMainPageList[index].hkm.following = following;
                                   globalKennelMainPageList[index].hkm.kennelNotificationPreference = notificationStatus;
+                                  globalKennelMainPageList[index].hkm.kennelEmailPreference = emailAlertStatus;
                                   globalKennelMainPageList[index].extensions.isHomeKennel = isHomeKennel;
                                   setState(() {
                                     
