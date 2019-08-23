@@ -61,24 +61,43 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Stack(
+          Row(
             children: <Widget>[
+              Expanded(
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  padding: const EdgeInsets.only(top: 5.0, left: 20.0),
+                  child: Text(
+                    widget.futureRun.event.eventName,
+                    style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 17.0, color: Colors.black, height: 1.0),
+                    textAlign: TextAlign.left,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
               Container(
-                width: MediaQuery.of(context).size.width,
-                padding: const EdgeInsets.only(top: 5.0, left: 20.0, right: 20.0),
-                child: Text(
-                  widget.futureRun.event.eventName,
-                  style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 17.0, color: Colors.black, height: 1.0),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                padding: const EdgeInsets.only(right: 10),
+                child: GestureDetector(
+                  onTap: () {
+                    showEmailAlertPopup(context);
+                  },
+                  child: widget.futureRun.extensions.emailAlertPreference == -1
+                      ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
+                      : Image(
+                          width: 24.0,
+                          height: 24.0,
+                          fit: BoxFit.fill,
+                          image: widget.futureRun.extensions.emailAlertPreference == 1
+                              ? const AssetImage('images/icons/envelope_gold_50px.png')
+                              : widget.futureRun.extensions.emailAlertPreference == 2 ? const AssetImage('images/icons/envelope_silver_strike_out_50px.png') : const AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
+                        ),
                 ),
               ),
               widget.futureRun.event.eventStartDatetime.isAfter(DateTime.now().add(const Duration(days: NOTIFICATION_DAYS_IN_FUTURE)))
                   ? Container()
-                  : Positioned(
-                      right: 5,
-                      top: 6,
+                  : Container(
+                      padding: const EdgeInsets.only(right: 10),
                       child: GestureDetector(
                         onTap: () {
                           showNotificationPopup(context);
@@ -91,7 +110,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                 fit: BoxFit.fill,
                                 image: widget.futureRun.extensions.notificationPreference == 1
                                     ? const AssetImage('images/icons/bell_gold_50px.png')
-                                    : widget.futureRun.extensions.notificationPreference == 2 ? const AssetImage('images/icons/bell_silver_strike_out_50px.png') : const AssetImage('images/icons/bell_silver_50px.png'),
+                                    : widget.futureRun.extensions.notificationPreference == 2 ? const AssetImage('images/icons/bell_silver_strike_out_50px.png') : const AssetImage('images/icons/bell_silver_strike_out_50px.png'),
                               ),
                       ),
                     ),
@@ -297,6 +316,97 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                 // TODO(James): Fix this to reflect true value of what is in the DB not just the value
                 // provided to the function
                 widget.futureRun.extensions.notificationPreference = results[0]['notificationPreference'] ?? 0;
+              });
+            });
+          }
+
+          // modifyMembershipCallback(retVal);
+        });
+
+    showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return popup;
+        });
+  }
+
+  void showEmailAlertPopup(BuildContext context) {
+    final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+      <String, dynamic>{
+        'title': 'Turn email messages on',
+        'icon': <Widget>[
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Positioned(
+            left: 3,
+            top: 1.5,
+            child: Image(
+              width: 25.0,
+              height: 25.0,
+              fit: BoxFit.fill,
+              image: const AssetImage('images/icons/envelope_gold_50px.png'),
+            ),
+          )
+        ],
+        'returnValue': emailAlertsOn,
+      },
+      <String, dynamic>{
+        'title': 'Turn email messages off',
+        'icon': <Widget>[
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Positioned(
+            left: 3,
+            top: 1.5,
+            child: Image(
+              width: 25.0,
+              height: 25.0,
+              fit: BoxFit.fill,
+              image: const AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
+            ),
+          )
+        ],
+        'returnValue': emailAlertsOff,
+      },
+      <String, dynamic>{
+        'title': 'Use Kennel setting',
+        'icon': <Widget>[
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          Positioned(
+            left: 3,
+            top: 1.5,
+            child: Image(
+              width: 25.0,
+              height: 25.0,
+              fit: BoxFit.fill,
+              image: const AssetImage('images/icons/envelope_silver_50px.png'),
+            ),
+          )
+        ],
+        'returnValue': emailAlertsAuto,
+      },
+      // <String, dynamic>{
+      //   'title': 'Set notifications to auto',
+      //   'icon':  <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(left:3,top:1.5,child:Icon(MaterialCommunityIcons.bell_off, size:25, color: Colors.red[800]))],
+      //   'returnValue': EnumNotificationPopupActions.notificationsAuto,
+      // },
+    ];
+
+    final MultipleChoicePopup popup = MultipleChoicePopup(
+        title: 'Email options for this run',
+        buttons: buttons,
+        cancelButtonTitle: 'Cancel',
+        buttonPress: (dynamic retVal) {
+          if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff) || (retVal == emailAlertsAuto)) {
+            final String userId = getStringPref(StringPrefsEnum.userId);
+            final HasherEventMapService hemSrv = HasherEventMapService();
+            final EnumEmailAlertState<int> nState = retVal;
+            setState(() {
+              widget.futureRun.extensions.emailAlertPreference = -1;
+            });
+
+            hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.user, userId, null, emailAlertState: nState.value).then((List<dynamic> results) {
+              setState(() {
+                widget.futureRun.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;
               });
             });
           }

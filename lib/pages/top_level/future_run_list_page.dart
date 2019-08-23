@@ -23,7 +23,7 @@ class FutureRunsListPage extends StatefulWidget {
 }
 
 class FutureRunQueryExtenstions {
-  FutureRunQueryExtenstions({this.daysUntilEvent, this.distToEvent, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isHare, this.following, this.notificationPreference});
+  FutureRunQueryExtenstions({this.daysUntilEvent, this.distToEvent, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isHare, this.following, this.notificationPreference, this.emailAlertPreference});
 
   final num daysUntilEvent;
   num distToEvent;
@@ -34,9 +34,10 @@ class FutureRunQueryExtenstions {
   final int isHare;
   final int following;
   int notificationPreference;
+  int emailAlertPreference;
 
   static FutureRunQueryExtenstions fromMap(Map<String, dynamic> map) {
-    final FutureRunQueryExtenstions item = FutureRunQueryExtenstions(daysUntilEvent: map['daysUntilEvent'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'], mismanagementRoleFlags: map['mismanagementRoleFlags'], following: map['following'], notificationPreference: map['notificationPreference']);
+    final FutureRunQueryExtenstions item = FutureRunQueryExtenstions(daysUntilEvent: map['daysUntilEvent'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'], mismanagementRoleFlags: map['mismanagementRoleFlags'], following: map['following'], notificationPreference: map['notificationPreference'],emailAlertPreference: map['emailAlertPreference']);
     return item;
   }
 }
@@ -102,6 +103,7 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
           coalesce(hem.rsvpState,0) as rsvpState,
           coalesce(hem.isHare,0) as isHare,
           coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) as notificationPreference,
+          coalesce(hem.eventEmailAlertPreference,hkm.kennelEmailAlertPreference,0) as emailAlertPreference,
           n.digitsAfterDecimal,
           n.currencySymbol,
           CAST(julianday(evt.eventStartDatetime) AS INT) - CAST(julianday('now','localtime') AS INT) as daysUntilEvent

@@ -179,7 +179,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                                   globalKennelMainPageList[index].extensions.emailAlertRequested = -1;
                                   globalKennelMainPageList[index].hkm.following = following;
                                   globalKennelMainPageList[index].hkm.kennelNotificationPreference = notificationStatus;
-                                  globalKennelMainPageList[index].hkm.kennelEmailPreference = emailAlertStatus;
+                                  globalKennelMainPageList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
                                   globalKennelMainPageList[index].extensions.isHomeKennel = isHomeKennel;
                                   setState(() {
                                     

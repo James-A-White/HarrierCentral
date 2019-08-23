@@ -9,6 +9,7 @@ import 'package:sqflite/sqflite.dart';
 //import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 //import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
+import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 
 class MigrationsModel {
@@ -112,7 +113,7 @@ class MigrationsTableHelper {
   ///
   ///
 
-  static int dbVersion = 222;
+  static int dbVersion = 223;
 
   static List<MigrationsModel> migrationList = <MigrationsModel>[
 
@@ -123,9 +124,15 @@ class MigrationsTableHelper {
       
     // MIGRATION 222
     MigrationsModel(migrationNumber: 222, migrationText: '''
-            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} ADD COLUMN ${HasherKennelMapTableHelper.colKennelEmailPreference} TEXT;
-            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colKennelEmailPreference} TEXT;
-            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colKennelEmailPreference} TEXT;
+            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} ADD COLUMN ${HasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
+            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
+            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
+         '''),
+
+    // MIGRATION 223
+    MigrationsModel(migrationNumber: 223, migrationText: '''
+            ALTER TABLE ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user)} ADD COLUMN ${HasherEventMapTableHelper.colEventEmailAlertPreference} INT;
+            ALTER TABLE ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
          '''),
   ];
 }

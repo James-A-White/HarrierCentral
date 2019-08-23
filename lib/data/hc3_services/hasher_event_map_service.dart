@@ -16,7 +16,7 @@ import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 
 class HasherEventMapModel {
   HasherEventMapModel(
-      {this.hemId, this.userId, this.eventId, this.userStartEvent, this.userEndEvent, this.rsvpState, this.attendenceState, this.isHare, this.eventNotificationPreference, this.eventCountOverride, this.virginVisitorType, this.displayName, this.email, this.phoneNumber, this.removed, this.updatedAt});
+      {this.hemId, this.userId, this.eventId, this.userStartEvent, this.userEndEvent, this.rsvpState, this.attendenceState, this.isHare, this.eventNotificationPreference, this.eventEmailAlertPreference, this.eventCountOverride, this.virginVisitorType, this.displayName, this.email, this.phoneNumber, this.removed, this.updatedAt});
 
   final String hemId;
   final String userId;
@@ -27,6 +27,7 @@ class HasherEventMapModel {
   final int attendenceState;
   int isHare;
   int eventNotificationPreference;
+  int eventEmailAlertPreference;
   final num eventCountOverride;
   final num virginVisitorType;
   final String displayName;
@@ -53,6 +54,7 @@ class HasherEventMapModel {
             attendenceState: jsonItem['attendenceState'],
             isHare: jsonItem['isHare'],
             eventNotificationPreference: jsonItem['eventNotificationPreference'],
+            eventEmailAlertPreference: jsonItem['eventEmailAlertPreference'],
             eventCountOverride: jsonItem['eventCountOverride'],
             virginVisitorType: jsonItem['virginVisitorType'],
             displayName: jsonItem['displayName'],
@@ -100,6 +102,7 @@ class HasherEventMapTableHelper {
   static const String colAttendenceState = 'attendenceState';
   static const String colIsHare = 'isHare';
   static const String colEventNotificationPreference = 'eventNotificationPreference';
+  static const String colEventEmailAlertPreference= 'eventEmailAlertPreference';
   static const String colEventCountOverride = 'eventCountOverride';
   static const String colVirginVisitorType = 'virginVisitorType';
   static const String colDisplayName = 'displayName';
@@ -150,6 +153,7 @@ class HasherEventMapTableHelper {
             $colAttendenceState INT,
             $colIsHare INT,
             $colEventNotificationPreference INT,
+            $colEventEmailAlertPreference INT,
             $colEventCountOverride NUM,
             $colVirginVisitorType NUM,
             $colDisplayName TEXT,
@@ -178,6 +182,7 @@ class HasherEventMapTableHelper {
       HasherEventMapTableHelper.colAttendenceState: item.attendenceState,
       HasherEventMapTableHelper.colIsHare: item.isHare,
       HasherEventMapTableHelper.colEventNotificationPreference: item.eventNotificationPreference,
+      HasherEventMapTableHelper.colEventEmailAlertPreference: item.eventEmailAlertPreference,
       HasherEventMapTableHelper.colEventCountOverride: item.eventCountOverride,
       HasherEventMapTableHelper.colVirginVisitorType: item.virginVisitorType,
       HasherEventMapTableHelper.colDisplayName: item.displayName,
@@ -202,6 +207,7 @@ class HasherEventMapTableHelper {
       attendenceState: map[HasherEventMapTableHelper.colAttendenceState],
       isHare: map[HasherEventMapTableHelper.colIsHare],
       eventNotificationPreference: map[HasherEventMapTableHelper.colEventNotificationPreference],
+      eventEmailAlertPreference: map[HasherEventMapTableHelper.colEventEmailAlertPreference],
       eventCountOverride: map[HasherEventMapTableHelper.colEventCountOverride],
       virginVisitorType: map[HasherEventMapTableHelper.colVirginVisitorType],
       displayName: map[HasherEventMapTableHelper.colDisplayName],
@@ -336,7 +342,7 @@ class HasherEventMapService {
     return <String, String>{'result': 'No valid email address found', 'email': ''};
   }
 
-  Future<List<dynamic>> joinEvent(String eventId, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, {int rsvpState = -1, int attendenceState = -1, int isHare = -1, int virginVisitorType = 0, int notificationState = -1}) async {
+  Future<List<dynamic>> joinEvent(String eventId, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, {int rsvpState = -1, int attendenceState = -1, int isHare = -1, int virginVisitorType = 0, int notificationState = -1,int emailAlertState = -1}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return null;
       // TODO(James): fix this so we can return a bool
@@ -363,6 +369,7 @@ class HasherEventMapService {
       'attendenceState': attendenceState,
       'virginVisitorType': virginVisitorType,
       'notificationState': notificationState,
+      'emailAlertState': emailAlertState,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString()
     });

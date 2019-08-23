@@ -18,7 +18,7 @@ import 'package:harrier_central/util/enums.dart';
 
 class HasherKennelMapModel {
   HasherKennelMapModel(
-      {this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.isHomeKennel, this.kennelNotificationPreference, this.kennelEmailPreference, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.historicalCountIsEstimate, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.removed, this.updatedAt});
+      {this.hkmId, this.userId, this.kennelId, this.following, this.isMember, this.isHomeKennel, this.kennelNotificationPreference, this.kennelEmailAlertPreference, this.mismanagementRoleFlags, this.userRoleFlags, this.appAccessFlags, this.historicalPackRunCount, this.historicalHaringCount, this.historicalCountIsEstimate, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.removed, this.updatedAt});
 
   final String hkmId;
   final String userId;
@@ -27,7 +27,7 @@ class HasherKennelMapModel {
   final int isMember;
   final int isHomeKennel;
   int kennelNotificationPreference;
-  int kennelEmailPreference;
+  int kennelEmailAlertPreference;
   final int mismanagementRoleFlags;
   final int userRoleFlags;
   final int appAccessFlags;
@@ -55,7 +55,7 @@ class HasherKennelMapModel {
           isMember: jsonItem['isMember'],
           isHomeKennel: jsonItem['isHomeKennel'],
           kennelNotificationPreference: jsonItem['kennelNotificationPreference'],
-          kennelEmailPreference: jsonItem['kennelEmailPreference'],
+          kennelEmailAlertPreference: jsonItem['kennelEmailAlertPreference'],
           mismanagementRoleFlags: jsonItem['mismanagementRoleFlags'] ?? 0,
           userRoleFlags: jsonItem['userRoleFlags'],
           appAccessFlags: jsonItem['appAccessFlags'],
@@ -107,7 +107,7 @@ class HasherKennelMapTableHelper {
   static const String colIsMember = 'isMember';
   static const String colIsHomeKennel = 'isHomeKennel';
   static const String colKennelNotificationPreference = 'kennelNotificationPreference';
-  static const String colKennelEmailPreference= 'kennelEmailPreference';
+  static const String colKennelEmailAlertPreference= 'kennelEmailAlertPreference';
   static const String colMismanagementRoleFlags = 'mismanagementRoleFlags';
   static const String colUserRoleFlags = 'userRoleFlags';
   static const String colAppAccessFlags = 'appAccessFlags';
@@ -162,7 +162,7 @@ class HasherKennelMapTableHelper {
             $colIsMember INT,
             $colIsHomeKennel INT,
             $colKennelNotificationPreference INT,
-            $colKennelEmailPreference INT,
+            $colKennelEmailAlertPreference INT,
             $colMismanagementRoleFlags INT,
             $colUserRoleFlags INT,
             $colAppAccessFlags INT,
@@ -193,7 +193,7 @@ class HasherKennelMapTableHelper {
       HasherKennelMapTableHelper.colIsMember: item.isMember,
       HasherKennelMapTableHelper.colIsHomeKennel: item.isHomeKennel,
       HasherKennelMapTableHelper.colKennelNotificationPreference: item.kennelNotificationPreference,
-      HasherKennelMapTableHelper.colKennelEmailPreference: item.kennelEmailPreference,
+      HasherKennelMapTableHelper.colKennelEmailAlertPreference: item.kennelEmailAlertPreference,
       HasherKennelMapTableHelper.colMismanagementRoleFlags: item.mismanagementRoleFlags,
       HasherKennelMapTableHelper.colUserRoleFlags: item.userRoleFlags,
       HasherKennelMapTableHelper.colAppAccessFlags: item.appAccessFlags,
@@ -219,7 +219,7 @@ class HasherKennelMapTableHelper {
       isMember: map[HasherKennelMapTableHelper.colIsMember],
       isHomeKennel: map[HasherKennelMapTableHelper.colIsHomeKennel],
       kennelNotificationPreference: map[HasherKennelMapTableHelper.colKennelNotificationPreference],
-      kennelEmailPreference: map[HasherKennelMapTableHelper.colKennelEmailPreference],
+      kennelEmailAlertPreference: map[HasherKennelMapTableHelper.colKennelEmailAlertPreference],
       mismanagementRoleFlags: map[HasherKennelMapTableHelper.colMismanagementRoleFlags],
       userRoleFlags: map[HasherKennelMapTableHelper.colUserRoleFlags],
       appAccessFlags: map[HasherKennelMapTableHelper.colAppAccessFlags],
