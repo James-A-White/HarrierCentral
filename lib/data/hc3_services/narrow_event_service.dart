@@ -414,4 +414,34 @@ class NarrowEventsService {
 
     return;
   }
+
+  static Future<Map<String, String>> sendRunDetailsByEmail({
+    String eventId,
+  }) async {
+
+      final String body = jsonEncode(<String, String>{
+        'eventId': eventId,
+      });
+
+      final http.Response response = await http
+          .post(EMAIL_RUN_DETAILS_TO_PACK_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body
+              // Send authorization headers to your backend
+              //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+              )
+          .catchError(
+        (dynamic error) {
+          return <String, String>{'result': 'error', 'email': ''};
+        },
+      );
+
+      return <String, String>{'result': response.body};
+    
+  }
+
+
+
+
+
+
+
 }

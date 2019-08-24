@@ -92,6 +92,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           k.*, 
           hkm.hkmId, 
           hkm.kennelNotificationPreference,
+          hkm.kennelEmailAlertPreference,
           COALESCE(hkm.following,0) as following,
           COALESCE(hkm.mismanagementRoleFlags,0) as mismanagementRoleFlags,
           c.cityName || ', ' || CASE WHEN n.showRegion = 1 THEN r.regionName || ', ' ELSE '' END || n.countryName as location,

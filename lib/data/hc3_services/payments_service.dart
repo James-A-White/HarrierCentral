@@ -451,4 +451,5 @@ class PaymentsService {
     }
     return <String, String>{'result': 'No valid email address found', 'email': ''};
   }
+
 }

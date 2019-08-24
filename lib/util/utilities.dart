@@ -265,7 +265,7 @@ static bool checkForConnection(BuildContext context,{String title, String messag
   return globalConnectionStatus == connectionStatus_connected;
 }
 
-  static Future<bool> showAlert(BuildContext context, String title, String body, String buttonText) async {
+  static Future<bool> showAlert(BuildContext context, String title, String body, String buttonText, {bool showCancelButton = false}) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -284,6 +284,12 @@ static bool checkForConnection(BuildContext context,{String title, String messag
             ),
           ),
           actions: <Widget>[
+            showCancelButton == true ? FlatButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ) : Container(),
             FlatButton(
               child: Text(buttonText),
               onPressed: () {

@@ -16,6 +16,7 @@ import 'package:harrier_central/data/hc3_services/countries_service.dart';
 import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/util/preferences.dart';
 
@@ -44,8 +45,7 @@ class RunAdminQueryExtensions {
   bool isLoading = false;
 
   static RunAdminQueryExtensions fromMap(Map<String, dynamic> map) {
-    final RunAdminQueryExtensions item =
-        RunAdminQueryExtensions(mismanagementRoleFlags: map['mismanagementRoleFlags'], digAfterDec: map['digAfterDec'], curSym: map['curSym'],curCode: map['curCode'], memberPrice: map['memberPrice'], nonMemberPrice: map['nonMemberPrice']);
+    final RunAdminQueryExtensions item = RunAdminQueryExtensions(mismanagementRoleFlags: map['mismanagementRoleFlags'], digAfterDec: map['digAfterDec'], curSym: map['curSym'], curCode: map['curCode'], memberPrice: map['memberPrice'], nonMemberPrice: map['nonMemberPrice']);
     return item;
   }
 }
@@ -112,10 +112,10 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
         db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
           setState(() {
             if (results.isNotEmpty) {
-                final NarrowEventsModel eventItem = NarrowEventsTableHelper.fromMap(results[0]);
-                final RunAdminQueryExtensions extensions = RunAdminQueryExtensions.fromMap(results[0]);
-                final KennelsModel kennel = KennelsTableHelper.fromMap(results[0]);
-                eventAggregate = RunAdminAggregate(event: eventItem, extensions: extensions,kennel: kennel);
+              final NarrowEventsModel eventItem = NarrowEventsTableHelper.fromMap(results[0]);
+              final RunAdminQueryExtensions extensions = RunAdminQueryExtensions.fromMap(results[0]);
+              final KennelsModel kennel = KennelsTableHelper.fromMap(results[0]);
+              eventAggregate = RunAdminAggregate(event: eventItem, extensions: extensions, kennel: kennel);
             }
           });
         });
@@ -125,9 +125,12 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
     });
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
@@ -217,9 +220,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                   Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => CheckInScannerPage(
-                            eventAggregate: eventAggregate
-                          ),
+                      builder: (BuildContext context) => CheckInScannerPage(eventAggregate: eventAggregate),
                     ),
                   );
                 },
@@ -261,8 +262,8 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                   context,
                   MaterialPageRoute<dynamic>(
                     builder: (BuildContext context) => PaymentReportPage(
-                          eventAggregate: eventAggregate,
-                        ),
+                      eventAggregate: eventAggregate,
+                    ),
                   ),
                 );
               },
@@ -297,8 +298,8 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                   context,
                   MaterialPageRoute<dynamic>(
                     builder: (BuildContext context) => ReceiptsList(
-                          eventAggregate: eventAggregate,
-                        ),
+                      eventAggregate: eventAggregate,
+                    ),
                   ),
                 );
               },
@@ -308,38 +309,89 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
       ],
     ));
 
-    kiddies.add(Padding(
-      padding: const EdgeInsets.only(top: 15, bottom: 15),
-      child: Container(
-        width: 110,
-        height: 110,
-        child: RaisedButton(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-          padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(left: 3, top: 5),
-              child: Image.asset('images/icons/print_qr_icon.png', height: 55.0, width: 55.0),
+    kiddies.add(Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(top: 15, bottom: 15),
+          child: Container(
+            width: 110,
+            height: 110,
+            child: RaisedButton(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+              padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 3, top: 5),
+                  child: Image.asset('images/icons/print_qr_icon.png', height: 55.0, width: 55.0),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+                  child: Text(
+                    'Print QR codes',
+                    style: buttonLabelStyleSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ]),
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => EventQrCodePage(
+                            kennelShortName: eventAggregate.kennel.kennelShortName,
+                            qrContent: eventAggregate.event.eventId,
+                            title: eventAggregate.event.eventName,
+                            runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
+                            runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
+                            eventStartDatetime: eventAggregate.event.eventStartDatetime)));
+              },
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
-              child: Text(
-                'Print QR codes',
-                style: buttonLabelStyleSmall,
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ]),
-          textColor: Colors.white,
-          onPressed: () {
-            Navigator.push<dynamic>(
-                context,
-                MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) =>
-                        EventQrCodePage(kennelShortName: eventAggregate.kennel.kennelShortName, qrContent: eventAggregate.event.eventId, title: eventAggregate.event.eventName, runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START, runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END, eventStartDatetime: eventAggregate.event.eventStartDatetime)));
-          },
+          ),
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.only(top: 15, bottom: 15),
+          child: Container(
+            width: 110,
+            height: 110,
+            child: RaisedButton(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+              padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 3, top: 5),
+                  child: Image.asset('images/icons/email_icon.png', height: 55.0, width: 55.0),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+                  child: Text(
+                    'Email Run Details',
+                    style: buttonLabelStyleSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ]),
+              textColor: Colors.white,
+              onPressed: () {
+                Utilities.showAlert(context, 'Email run details', 'Would you like to e-mail the run details to hashers who have signed up for e-mail notifications?', 'OK', showCancelButton: true).then((bool result) {
+                  if (result) {
+                    NarrowEventsService.sendRunDetailsByEmail(eventId: widget.eventId).then((Map<String, String> result) {
+                      _scaffoldKey.currentState?.hideCurrentSnackBar();
+                      if (result['result'].toLowerCase().startsWith('success')) {
+                        Utilities.showAlert(context, 'E-mails successfully sent', 'Emails have been successfully sent to ${result['emailCount']} hashers', 'OK');
+                      } else {
+                        Utilities.showAlert(context, 'Error sending emails', 'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
+                      }
+                    });
+                    Utilities.showInSnackBar(context, _scaffoldKey, 'Run detail emails being sent ..', durationInSeconds: 10);
+                  }
+                });
+              },
+            ),
+          ),
+        ),
+      ],
     ));
 
     return kiddies;
