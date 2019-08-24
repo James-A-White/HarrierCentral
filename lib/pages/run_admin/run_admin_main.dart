@@ -379,7 +379,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
                     NarrowEventsService.sendRunDetailsByEmail(eventId: widget.eventId).then((Map<String, String> result) {
                       _scaffoldKey.currentState?.hideCurrentSnackBar();
                       if (result['result'].toLowerCase().startsWith('success')) {
-                        Utilities.showAlert(context, 'E-mails successfully sent', 'Emails have been successfully sent to ${result['emailCount']} hashers', 'OK');
+                        Utilities.showAlert(context, 'E-mails successfully sent', result['result'], 'OK');
                       } else {
                         Utilities.showAlert(context, 'Error sending emails', 'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
                       }

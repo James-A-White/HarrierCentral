@@ -150,9 +150,9 @@ class NarrowEventsTableHelper {
   static const String colLocationCity = 'locationCity';
   static const String colLocationStreet = 'locationStreet';
   static const String colHares = 'hares';
-  static const String colEventPaymentUrl= 'eventPaymentUrl';
-  static const String colEventPaymentUrlExpires= 'eventPaymentUrlExpires';
-  static const String colUnconfirmedBankXferCount= 'unconfirmedBankXferCount';
+  static const String colEventPaymentUrl = 'eventPaymentUrl';
+  static const String colEventPaymentUrlExpires = 'eventPaymentUrlExpires';
+  static const String colUnconfirmedBankXferCount = 'unconfirmedBankXferCount';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -418,30 +418,28 @@ class NarrowEventsService {
   static Future<Map<String, String>> sendRunDetailsByEmail({
     String eventId,
   }) async {
+    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String accessToken = Utilities.generateToken(userId, 'rptApi_emailRunDetails',paramString: eventId);
 
-      final String body = jsonEncode(<String, String>{
+    final String body = jsonEncode(<String, String>{
+        'userId': userId,
+        'accessToken': accessToken,
         'eventId': eventId,
-      });
+    });
 
-      final http.Response response = await http
-          .post(EMAIL_RUN_DETAILS_TO_PACK_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body
-              // Send authorization headers to your backend
-              //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-              )
-          .catchError(
-        (dynamic error) {
-          return <String, String>{'result': 'error', 'email': ''};
-        },
-      );
+    print(body);
 
-      return <String, String>{'result': response.body};
-    
+    final http.Response response = await http
+        .post(EMAIL_RUN_DETAILS_TO_PACK_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body
+            // Send authorization headers to your backend
+            //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+            )
+        .catchError(
+      (dynamic error) {
+        return <String, String>{'result': 'error', 'email': ''};
+      },
+    );
+
+    return <String, String>{'result': response.body};
   }
-
-
-
-
-
-
-
 }
