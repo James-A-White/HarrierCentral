@@ -12,6 +12,7 @@ import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
 import 'package:harrier_central/widgets/kennel_member_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
@@ -29,7 +30,23 @@ class KennelMembersList extends StatefulWidget {
 
 class KennelMembersResults {
   KennelMembersResults(
-      {this.hasherId, this.dispName, this.photo, this.isMember, this.following, this.kennelId, this.dateOfLastRun, this.membershipExpirationDate, this.memberSince, this.membershipDurationInMonths, this.isLoading = false, this.kennelShortName, this.homeKennelName, this.homeKennelId, this.homeKennelBeingUpdated = false, this.membershipDateBeingUpdated = false});
+      {this.hasherId,
+      this.dispName,
+      this.photo,
+      this.isMember,
+      this.following,
+      this.kennelId,
+      this.dateOfLastRun,
+      this.kennelEmailAlertPreference,
+      this.membershipExpirationDate,
+      this.memberSince,
+      this.membershipDurationInMonths,
+      this.isLoading = false,
+      this.kennelShortName,
+      this.homeKennelName,
+      this.homeKennelId,
+      this.homeKennelBeingUpdated = false,
+      this.membershipDateBeingUpdated = false});
 
   final String hasherId;
   String dispName;
@@ -38,6 +55,7 @@ class KennelMembersResults {
   final int following;
   final String kennelId;
   final DateTime dateOfLastRun;
+  int kennelEmailAlertPreference;
   final DateTime membershipExpirationDate;
   final DateTime memberSince;
   final int membershipDurationInMonths;
@@ -60,6 +78,7 @@ class KennelMembersResults {
       homeKennelId: map['homeKennelId'],
       kennelId: map['kennelId'],
       dateOfLastRun: (map['dateOfLastRun'] == null) ? null : DateTime.parse(map['dateOfLastRun'].toString().substring(0, 19)),
+      kennelEmailAlertPreference: map['kennelEmailAlertPreference'],
       membershipExpirationDate: (map['membershipExpirationDate'] == null) ? null : DateTime.parse(map['membershipExpirationDate'].toString().substring(0, 19)),
       memberSince: (map['memberSince'] == null) ? null : DateTime.parse(map['memberSince'].toString().substring(0, 19)),
       membershipDurationInMonths: map['membershipDurationInMonths'],
@@ -93,9 +112,7 @@ class KennelMemberListState extends State<KennelMembersList> {
       ),
     );
     refreshKennelMembersFromTable(true).then((void dummy) {
-      setState(() {
-        
-      });
+      setState(() {});
     });
     setSortBySpeedDial();
     super.initState();
@@ -126,6 +143,7 @@ class KennelMemberListState extends State<KennelMembersList> {
           hkm.isMember,
           hkm.following,
           hkm.dateOfLastRun,
+          hkm.kennelEmailAlertPreference,
           hkm.membershipExpirationDate,
           hkm.memberSince,
           k.membershipDurationInMonths,
@@ -206,9 +224,9 @@ class KennelMemberListState extends State<KennelMembersList> {
           curve: Curves.bounceIn,
           overlayColor: Colors.black,
           overlayOpacity: 0.5,
-              onOpen: () {
-                _scaffoldKey.currentState.hideCurrentSnackBar();
-              },
+          onOpen: () {
+            _scaffoldKey.currentState.hideCurrentSnackBar();
+          },
           onClose: () => print('DIAL CLOSED'),
           tooltip: 'Speed Dial',
           heroTag: 'speed-dial-hero-tag',
@@ -365,37 +383,52 @@ class KennelMemberListState extends State<KennelMembersList> {
                                           print(direction.toString() + ' NOTE: We should never reach this point');
                                         },
                                         child: KennelMemberListItem(
-                                          kennelId: widget.kennel.kennel.kennelId,
-                                          kennelMember: kennelMemberList[index],
-                                          modifyMembershipCallback: (EnumMemberPopupActions retVal) {
-                                            switch (retVal) {
-                                              case EnumMemberPopupActions.addOneMonth:
-                                                modifyMembership(kennelMemberList[index], 1);
-                                                break;
-                                              case EnumMemberPopupActions.addSixMonths:
-                                                modifyMembership(kennelMemberList[index], 6);
-                                                break;
-                                              case EnumMemberPopupActions.subtractOneMonth:
-                                                modifyMembership(kennelMemberList[index], -1);
-                                                break;
-                                              case EnumMemberPopupActions.subtractSixMonths:
-                                                modifyMembership(kennelMemberList[index], -6);
-                                                break;
-                                              case EnumMemberPopupActions.cancelMembership:
-                                                modifyMembership(kennelMemberList[index], -9999);
-                                                break;
-                                              case EnumMemberPopupActions.toggleHomeKennel:
-                                                setAsHomeKennel(kennelMemberList[index], 1);
-                                                break;
-                                              case EnumMemberPopupActions.setHomeKennel:
-                                                setAsHomeKennel(kennelMemberList[index], 1);
-                                                break;
-                                              case EnumMemberPopupActions.clearHomeKennel:
-                                                setAsHomeKennel(kennelMemberList[index], 0);
-                                                break;
-                                            }
-                                          },
-                                        ),
+                                            kennelId: widget.kennel.kennel.kennelId,
+                                            kennelMember: kennelMemberList[index],
+                                            modifyMembershipCallback: (EnumMemberPopupActions retVal) {
+                                              switch (retVal) {
+                                                case EnumMemberPopupActions.addOneMonth:
+                                                  modifyMembership(kennelMemberList[index], 1);
+                                                  break;
+                                                case EnumMemberPopupActions.addSixMonths:
+                                                  modifyMembership(kennelMemberList[index], 6);
+                                                  break;
+                                                case EnumMemberPopupActions.subtractOneMonth:
+                                                  modifyMembership(kennelMemberList[index], -1);
+                                                  break;
+                                                case EnumMemberPopupActions.subtractSixMonths:
+                                                  modifyMembership(kennelMemberList[index], -6);
+                                                  break;
+                                                case EnumMemberPopupActions.cancelMembership:
+                                                  modifyMembership(kennelMemberList[index], -9999);
+                                                  break;
+                                                case EnumMemberPopupActions.toggleHomeKennel:
+                                                  setAsHomeKennel(kennelMemberList[index], 1);
+                                                  break;
+                                                case EnumMemberPopupActions.setHomeKennel:
+                                                  setAsHomeKennel(kennelMemberList[index], 1);
+                                                  break;
+                                                case EnumMemberPopupActions.clearHomeKennel:
+                                                  setAsHomeKennel(kennelMemberList[index], 0);
+                                                  break;
+                                              }
+                                            },
+                                            toggleEmailPreferenceCallback: () {
+                                              if (Utilities.checkForConnection(context, message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
+                                                final HasherKennelMapService srv = HasherKennelMapService();
+                                                final int emailAlertStatus = kennelMemberList[index].kennelEmailAlertPreference != 1 ? 1 : 2;
+                                                kennelMemberList[index].kennelEmailAlertPreference = -1;
+                                                setState(() {});
+                                                srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, HasherKennelMapTableType.kennelAdmin, emailAlertState: emailAlertStatus, targetUserId: kennelMemberList[index].hasherId).then((List<dynamic> queryResults) {
+                                                  setState(() {
+                                                    if ((queryResults != null) && (queryResults.isNotEmpty))
+                                                    {
+                                                      kennelMemberList[index].kennelEmailAlertPreference = queryResults[0]['kennelEmailAlertPreference'];
+                                                    }
+                                                  });
+                                                });
+                                              }
+                                            }),
                                       );
                                     },
                                   ),
@@ -420,7 +453,7 @@ class KennelMemberListState extends State<KennelMembersList> {
     refreshKennelMembersFromTable(true);
   }
 
-    void modifyMembership(KennelMembersResults item, int monthsToAddToMembership) {
+  void modifyMembership(KennelMembersResults item, int monthsToAddToMembership) {
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennel.extensions.followingRequested = -1;
     item.membershipDateBeingUpdated = true;

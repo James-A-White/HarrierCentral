@@ -9,15 +9,17 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
+import 'package:harrier_central/util/styles.dart';
 
 enum EnumMemberPopupActions { addOneMonth, addSixMonths, subtractOneMonth, subtractSixMonths, cancelMembership, toggleHomeKennel, setHomeKennel, clearHomeKennel }
 
 class KennelMemberListItem extends StatelessWidget {
-  const KennelMemberListItem({@required this.kennelId, @required this.kennelMember, @required this.modifyMembershipCallback});
+  const KennelMemberListItem({@required this.kennelId, @required this.kennelMember, @required this.modifyMembershipCallback, @required this.toggleEmailPreferenceCallback});
 
   final String kennelId;
   final KennelMembersResults kennelMember;
   final Function modifyMembershipCallback;
+  final Function toggleEmailPreferenceCallback;
 
   static const num PROFILE_PIC_SIZE = 92.0;
 
@@ -90,11 +92,17 @@ class KennelMemberListItem extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(
-                        '${kennelMember.dispName}',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontFamily: kennelMember.isMember == 1 ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensed', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
-                        textAlign: TextAlign.left,
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Text(
+                              '${kennelMember.dispName}',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontFamily: kennelMember.isMember == 1 ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensed', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
+                              textAlign: TextAlign.left,
+                            ),
+                          ),
+                        ],
                       ),
                       kennelMember.homeKennelBeingUpdated ?? false
                           ? const Text(
@@ -102,13 +110,12 @@ class KennelMemberListItem extends StatelessWidget {
                               style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0, color: Colors.blue),
                               textAlign: TextAlign.center,
                             )
-                          : 
-                      Text(
-                        '${kennelMember.homeKennelName ?? '<no home hash>'}',
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0),
-                        textAlign: TextAlign.left,
-                      ),
+                          : Text(
+                              '${kennelMember.homeKennelName ?? '<no home hash>'}',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0),
+                              textAlign: TextAlign.left,
+                            ),
                       kennelMember.dateOfLastRun == null
                           ? Container()
                           : Text(
@@ -137,114 +144,134 @@ class KennelMemberListItem extends StatelessWidget {
                                 ),
                     ],
                   )),
-              Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  icon: const Icon(MaterialCommunityIcons.dots_vertical),
-                  iconSize: Theme.of(context).iconTheme.size,
-                  color: Colors.black54,
-                  splashColor: Theme.of(context).highlightColor,
-                  onPressed: () {
-                    //
-
-                    final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
-                      <String, dynamic>{
-                        'title': 'Add one month',
-                        'icon': <Widget>[
-                          Container(
-                            height: 30,
-                            width: 30,
-                            child: const Icon(MaterialCommunityIcons.numeric_1_circle, color: Colors.yellow),
+              Column(children: <Widget>[
+                Container(
+                  padding: const EdgeInsets.only(right: 0),
+                  child: GestureDetector(
+                    onTap: () {
+                      toggleEmailPreferenceCallback();
+                    },
+                    child: kennelMember.kennelEmailAlertPreference == -1
+                        ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
+                        : Image(
+                            width: 24.0,
+                            height: 24.0,
+                            fit: BoxFit.fill,
+                            image: kennelMember.kennelEmailAlertPreference == 1
+                                ? const AssetImage('images/icons/envelope_gold_50px.png')
+                                : kennelMember.kennelEmailAlertPreference == 2 ? const AssetImage('images/icons/envelope_silver_strike_out_50px.png') : const AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
                           ),
-                        ],
-                        'returnValue': EnumMemberPopupActions.addOneMonth,
-                      },
-                      <String, dynamic>{
-                        'title': 'Add six months',
-                        'icon': <Widget>[
-                          Container(
-                            height: 30,
-                            width: 30,
-                            child: const Icon(MaterialCommunityIcons.numeric_6_circle, color: Colors.yellow),
-                          ),
-                        ],
-                        'returnValue': EnumMemberPopupActions.addSixMonths,
-                      },
-                      <String, dynamic>{
-                        'title': 'Subtract one month',
-                        'icon': <Widget>[
-                          Container(
-                            height: 30,
-                            width: 30,
-                            child: const Icon(MaterialCommunityIcons.numeric_1_circle_outline, color: Colors.yellow),
-                          ),
-                        ],
-                        'returnValue': EnumMemberPopupActions.subtractOneMonth,
-                      },
-                      <String, dynamic>{
-                        'title': 'Subtract six months',
-                        'icon': <Widget>[
-                          Container(
-                            height: 30,
-                            width: 30,
-                            child: const Icon(MaterialCommunityIcons.numeric_6_circle_outline, color: Colors.yellow),
-                          ),
-                        ],
-                        'returnValue': EnumMemberPopupActions.subtractSixMonths,
-                      },
-                      <String, dynamic>{
-                        'title': 'Cancel membership',
-                        'icon': <Widget>[
-                          Container(
-                            height: 30,
-                            width: 30,
-                            child: Icon(FontAwesome.times_circle, color: Colors.red[200]),
-                          ),
-                        ],
-                        'returnValue': EnumMemberPopupActions.cancelMembership,
-                      },
-                      kennelMember.homeKennelName == null
-                          ? <String, dynamic>{
-                              'title': 'Set home kennel',
-                              'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size:23)],
-                              'returnValue': EnumMemberPopupActions.setHomeKennel,
-                            }
-                          : kennelId == kennelMember.homeKennelId ?
-                          <String, dynamic>{
-                              'title': 'Clear home kennel',
-                              'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size:23)],
-                              'returnValue': EnumMemberPopupActions.clearHomeKennel,
-                            }
-                          : <String, dynamic>{ 
-                              'title': '', // NOTE: Because the title is empty, this button will not be displayed
-                              'icon': <Widget>[
-                                Container(
-                                  height: 30,
-                                  width: 30,
-                                  child: Icon(FontAwesome.times_circle, color: Colors.red[200]),
-                                ),
-                              ],
-                              'returnValue': EnumMemberPopupActions.cancelMembership,
-                            },
-                    ];
-
-                    final MultipleChoicePopup popup = MultipleChoicePopup(
-                        title: 'Membership options',
-                        buttons: buttons,
-                        cancelButtonTitle: 'Cancel',
-                        buttonPress: (dynamic retVal) {
-                          modifyMembershipCallback(retVal);
-                        });
-
-                    showDialog<void>(
-                        context: context,
-                        barrierDismissible: false, // user must tap button!
-                        builder: (BuildContext context) {
-                          return popup;
-                        });
-                  },
+                  ),
                 ),
-              ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    icon: const Icon(MaterialCommunityIcons.dots_vertical),
+                    iconSize: Theme.of(context).iconTheme.size,
+                    color: Colors.black54,
+                    splashColor: Theme.of(context).highlightColor,
+                    onPressed: () {
+                      //
+
+                      final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+                        <String, dynamic>{
+                          'title': 'Add one month',
+                          'icon': <Widget>[
+                            Container(
+                              height: 30,
+                              width: 30,
+                              child: const Icon(MaterialCommunityIcons.numeric_1_circle, color: Colors.yellow),
+                            ),
+                          ],
+                          'returnValue': EnumMemberPopupActions.addOneMonth,
+                        },
+                        <String, dynamic>{
+                          'title': 'Add six months',
+                          'icon': <Widget>[
+                            Container(
+                              height: 30,
+                              width: 30,
+                              child: const Icon(MaterialCommunityIcons.numeric_6_circle, color: Colors.yellow),
+                            ),
+                          ],
+                          'returnValue': EnumMemberPopupActions.addSixMonths,
+                        },
+                        <String, dynamic>{
+                          'title': 'Subtract one month',
+                          'icon': <Widget>[
+                            Container(
+                              height: 30,
+                              width: 30,
+                              child: const Icon(MaterialCommunityIcons.numeric_1_circle_outline, color: Colors.yellow),
+                            ),
+                          ],
+                          'returnValue': EnumMemberPopupActions.subtractOneMonth,
+                        },
+                        <String, dynamic>{
+                          'title': 'Subtract six months',
+                          'icon': <Widget>[
+                            Container(
+                              height: 30,
+                              width: 30,
+                              child: const Icon(MaterialCommunityIcons.numeric_6_circle_outline, color: Colors.yellow),
+                            ),
+                          ],
+                          'returnValue': EnumMemberPopupActions.subtractSixMonths,
+                        },
+                        <String, dynamic>{
+                          'title': 'Cancel membership',
+                          'icon': <Widget>[
+                            Container(
+                              height: 30,
+                              width: 30,
+                              child: Icon(FontAwesome.times_circle, color: Colors.red[200]),
+                            ),
+                          ],
+                          'returnValue': EnumMemberPopupActions.cancelMembership,
+                        },
+                        kennelMember.homeKennelName == null
+                            ? <String, dynamic>{
+                                'title': 'Set home kennel',
+                                'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size: 23)],
+                                'returnValue': EnumMemberPopupActions.setHomeKennel,
+                              }
+                            : kennelId == kennelMember.homeKennelId
+                                ? <String, dynamic>{
+                                    'title': 'Clear home kennel',
+                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size: 23)],
+                                    'returnValue': EnumMemberPopupActions.clearHomeKennel,
+                                  }
+                                : <String, dynamic>{
+                                    'title': '', // NOTE: Because the title is empty, this button will not be displayed
+                                    'icon': <Widget>[
+                                      Container(
+                                        height: 30,
+                                        width: 30,
+                                        child: Icon(FontAwesome.times_circle, color: Colors.red[200]),
+                                      ),
+                                    ],
+                                    'returnValue': EnumMemberPopupActions.cancelMembership,
+                                  },
+                      ];
+
+                      final MultipleChoicePopup popup = MultipleChoicePopup(
+                          title: 'Membership options',
+                          buttons: buttons,
+                          cancelButtonTitle: 'Cancel',
+                          buttonPress: (dynamic retVal) {
+                            modifyMembershipCallback(retVal);
+                          });
+
+                      showDialog<void>(
+                          context: context,
+                          barrierDismissible: false, // user must tap button!
+                          builder: (BuildContext context) {
+                            return popup;
+                          });
+                    },
+                  ),
+                ),
+              ]),
             ],
           ),
         ),

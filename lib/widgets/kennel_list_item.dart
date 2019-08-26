@@ -80,7 +80,7 @@ class KennelListItemState extends State<KennelsListItem> {
                         setState(() {});
                         srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, followingState: followingRequested).then((List<dynamic> queryResults) {
                           setState(() {
-                            widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+                            widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
                           });
                         });
                       }
@@ -295,7 +295,7 @@ class KennelListItemState extends State<KennelsListItem> {
 
                                   srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, followingState: retVal.value, isHomeKennel: isHomeKennel).then((List<dynamic> queryResults) {
                                     setState(() {
-                                      widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+                                      widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
                                     });
                                   });
                                 }
@@ -375,7 +375,7 @@ class KennelListItemState extends State<KennelsListItem> {
                 setState(() {});
                 srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, notificationState: notificationStatus).then((List<dynamic> queryResults) {
                   setState(() {
-                    widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+                    widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
                     final NotificationSupport notifications = NotificationSupport();
                     notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
                   });
@@ -393,7 +393,7 @@ class KennelListItemState extends State<KennelsListItem> {
         });
   }
 
-    void showEmailPopup(BuildContext context) {
+  void showEmailPopup(BuildContext context) {
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
         'title': 'Turn email alerts on',
@@ -442,20 +442,18 @@ class KennelListItemState extends State<KennelsListItem> {
         cancelButtonTitle: 'Cancel',
         buttonPress: (dynamic retVal) {
           if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff)) {
-            {
-              if (Utilities.checkForConnection(context, message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
-                final HasherKennelMapService srv = HasherKennelMapService();
-                final int emailAlertStatus = retVal.value;
-                widget.kennelItem.extensions.emailAlertRequested = emailAlertStatus;
-                setState(() {});
-                srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, emailAlertState: emailAlertStatus).then((List<dynamic> queryResults) {
-                  setState(() {
-                    widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
-                    // final NotificationSupport notifications = NotificationSupport();
-                    // notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
-                  });
+            if (Utilities.checkForConnection(context, message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
+              final HasherKennelMapService srv = HasherKennelMapService();
+              final int emailAlertStatus = retVal.value;
+              widget.kennelItem.extensions.emailAlertRequested = emailAlertStatus;
+              setState(() {});
+              srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, emailAlertState: emailAlertStatus).then((List<dynamic> queryResults) {
+                setState(() {
+                  widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+                  // final NotificationSupport notifications = NotificationSupport();
+                  // notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
                 });
-              }
+              });
             }
           }
         });
@@ -467,9 +465,4 @@ class KennelListItemState extends State<KennelsListItem> {
           return popup;
         });
   }
-
-
-
-
-
 }
