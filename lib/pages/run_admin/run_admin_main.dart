@@ -7,6 +7,7 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
 import 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
 import 'package:harrier_central/pages/run_admin/payment_report.dart';
+import 'package:harrier_central/pages/run_admin/email_editor_page.dart';
 import 'package:harrier_central/pages/run_admin/receipts_page.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
@@ -16,7 +17,6 @@ import 'package:harrier_central/data/hc3_services/countries_service.dart';
 import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/util/preferences.dart';
 
@@ -374,19 +374,14 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
               ]),
               textColor: Colors.white,
               onPressed: () {
-                Utilities.showAlert(context, 'Email run details', 'Would you like to e-mail the run details to hashers who have signed up for e-mail notifications?', 'OK', showCancelButton: true).then((bool result) {
-                  if (result) {
-                    NarrowEventsService.sendRunDetailsByEmail(eventId: widget.eventId).then((Map<String, String> result) {
-                      _scaffoldKey.currentState?.hideCurrentSnackBar();
-                      if (result['result'].toLowerCase().startsWith('success')) {
-                        Utilities.showAlert(context, 'E-mails successfully sent', result['result'], 'OK');
-                      } else {
-                        Utilities.showAlert(context, 'Error sending emails', 'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
-                      }
-                    });
-                    Utilities.showInSnackBar(context, _scaffoldKey, 'Run detail emails being sent ..', durationInSeconds: 10);
-                  }
-                });
+                Navigator.push<dynamic>(
+                  context,
+                  MaterialPageRoute<dynamic>(
+                    builder: (BuildContext context) => EmailEditorPage(
+                      eventId: widget.eventId,
+                    ),
+                  ),
+                );
               },
             ),
           ),
