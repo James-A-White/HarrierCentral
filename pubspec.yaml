@@ -40,6 +40,7 @@ dependencies:
   image_picker: ^0.6.0+17 #updated from +10 on 29 Jul # updated from 0.6.0+4 on 8 Jun 19, updated from 0.6.0+8 on July 5
   intro_slider: ^2.2.5 # upgraded from ^1.2.3 Jul 29
   # location_permissions: ^2.0.1
+  keyboard_avoider: ^0.1.2
   meta: ^1.1.6  # Geolocator Dependency.
   package_info: ^0.4.0+6 # updated from +4 on 29 Jul # updated from 0.4.0+3 on 8 Jun 19
   permission_handler: ^3.2.1+1 #updated from ^3.1.0 on 29 Jul # updated from 2.2.0 on 8 Jun 19

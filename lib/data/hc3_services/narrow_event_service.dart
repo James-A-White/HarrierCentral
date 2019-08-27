@@ -416,7 +416,7 @@ class NarrowEventsService {
   }
 
   static Future<Map<String, String>> sendRunDetailsByEmail({
-    String eventId,
+    String eventId, String emailBody = ''
   }) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId, 'rptApi_emailRunDetails',paramString: eventId);
@@ -425,6 +425,7 @@ class NarrowEventsService {
         'userId': userId,
         'accessToken': accessToken,
         'eventId': eventId,
+        'emailBody': emailBody
     });
 
     print(body);
