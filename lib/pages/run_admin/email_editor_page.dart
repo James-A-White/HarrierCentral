@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:harrier_central/util/preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
@@ -46,6 +47,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
 
   @override
   void initState() {
+    bodyController.text = getStringPref(StringPrefsEnum.customEmailBody) ?? '';
     super.initState();
   }
 
@@ -82,6 +84,11 @@ class EmailEditorPageState extends State<EmailEditorPage> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  Future<bool> _requestPop() {
+    setStringPref(StringPrefsEnum.customEmailBody, bodyController.text);
+    return Future<bool>.value(true);
+  }
+
   @override
   Widget build(BuildContext context) {
     final AppBar appBar = AppBar(
@@ -94,7 +101,9 @@ class EmailEditorPageState extends State<EmailEditorPage> {
         ),
       ),
     );
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: _requestPop,
+      child: Scaffold(
         key: _scaffoldKey,
         resizeToAvoidBottomInset: false,
         appBar: appBar,
@@ -225,6 +234,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                       const SizedBox(height: 20),
                       RaisedButton(
                         onPressed: () {
+                          setStringPref(StringPrefsEnum.customEmailBody, bodyController.text);
                           sendEmail(context, bodyController.text);
                         },
                         child: Text('Send Email', style: buttonTextStyle),
@@ -299,13 +309,15 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                     ],
                   ),
                 ),
-              ));
+              ),
+      ),
+    );
   }
 
   void sendEmail(BuildContext context, String emailBody) {
     Utilities.showAlert(context, 'Email run details', 'Would you like to e-mail the run details to hashers who have signed up for e-mail notifications?', 'OK', showCancelButton: true).then((bool result) {
       if (result) {
-        NarrowEventsService.sendRunDetailsByEmail(eventId: widget.eventId,emailBody: emailBody).then((Map<String, String> result) {
+        NarrowEventsService.sendRunDetailsByEmail(eventId: widget.eventId, emailBody: emailBody).then((Map<String, String> result) {
           _scaffoldKey.currentState?.hideCurrentSnackBar();
           if (result['result'].toLowerCase().startsWith('success')) {
             Utilities.showAlert(context, 'E-mails successfully sent', result['result'], 'OK');
