@@ -19,32 +19,19 @@ class FilterEventListItem extends StatelessWidget {
   final String kennelShortName;
   final Function updateEvent;
 
+  
+
   @override
   Widget build(BuildContext context) {
-    // const num textWidth = 55.0;
-
-    // const TextStyle numberStyle = TextStyle(
-    //   fontFamily: 'AvenirNextCondensedDemiBold',
-    //   fontStyle: FontStyle.normal,
-    //   fontSize: 22.0,
-    // );
-
-    return listItem(context);
-  }
-
-  //   MaterialPageRoute<dynamic>(
-  //   builder: (BuildContext context) => RunAdminMainPage(
-  //         eventId: futureRun.eventId
-  //       ),
-  // ),
-
-  Widget listItem(BuildContext context) {
     const double iconSize = 45;
-    return GestureDetector(
+    return  GestureDetector(
       onTap: () {
         Navigator.push<void>(
           context,
           MaterialPageRoute<num>(
+
+            
+
             builder: (BuildContext context) => RunAdminMainPage(eventId: event['eventId']),
           ),
         ).then((void dummy) {
@@ -187,5 +174,7 @@ class FilterEventListItem extends StatelessWidget {
         ),
       ),
     );
+  
   }
+
 }

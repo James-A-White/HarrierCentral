@@ -22,8 +22,8 @@ class FutureRunsListPage extends StatefulWidget {
   FutureRunListPageState createState() => FutureRunListPageState();
 }
 
-class FutureRunQueryExtenstions {
-  FutureRunQueryExtenstions({this.daysUntilEvent, this.distToEvent, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isHare, this.following, this.notificationPreference, this.emailAlertPreference});
+class RunDetailsQueryExtensions {
+  RunDetailsQueryExtensions({this.daysUntilEvent, this.distToEvent, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isHare, this.following, this.notificationPreference, this.emailAlertPreference});
 
   final num daysUntilEvent;
   num distToEvent;
@@ -36,14 +36,14 @@ class FutureRunQueryExtenstions {
   int notificationPreference;
   int emailAlertPreference;
 
-  static FutureRunQueryExtenstions fromMap(Map<String, dynamic> map) {
-    final FutureRunQueryExtenstions item = FutureRunQueryExtenstions(daysUntilEvent: map['daysUntilEvent'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'], mismanagementRoleFlags: map['mismanagementRoleFlags'], following: map['following'], notificationPreference: map['notificationPreference'],emailAlertPreference: map['emailAlertPreference']);
+  static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map) {
+    final RunDetailsQueryExtensions item = RunDetailsQueryExtensions(daysUntilEvent: map['daysUntilEvent'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'], mismanagementRoleFlags: map['mismanagementRoleFlags'], following: map['following'], notificationPreference: map['notificationPreference'],emailAlertPreference: map['emailAlertPreference']);
     return item;
   }
 }
 
-class FutureRunAggregate {
-  FutureRunAggregate({
+class RunDetailsAggregate {
+  RunDetailsAggregate({
     this.event,
     this.kennel,
     this.extensions,
@@ -51,7 +51,7 @@ class FutureRunAggregate {
 
   final NarrowEventsModel event;
   final KennelsModel kennel;
-  final FutureRunQueryExtenstions extensions;
+  final RunDetailsQueryExtensions extensions;
 }
 
 class FutureRunListPageState extends State<FutureRunsListPage>  {
@@ -61,7 +61,7 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
   // bool get wantKeepAlive => true;
 
   int pageIndex = 1;
-  List<FutureRunAggregate> futureRunsList;
+  List<RunDetailsAggregate> futureRunsList;
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +106,9 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
           coalesce(hem.eventEmailAlertPreference,hkm.kennelEmailAlertPreference,0) as emailAlertPreference,
           n.digitsAfterDecimal,
           n.currencySymbol,
-          CAST(julianday(evt.eventStartDatetime) AS INT) - CAST(julianday('now','localtime') AS INT) as daysUntilEvent
+          CAST(julianday(evt.eventStartDatetime) AS INT) - CAST(julianday('now','localtime') AS INT) as daysUntilEvent,
+          julianday(evt.eventStartDatetime) as eventJulian,
+          julianday('now','localtime') as nowJulian
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
           INNER JOIN countries n on n.countryId = k.countryId
@@ -121,20 +123,26 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
           ORDER BY evt.eventStartDatetime
           ''';
 
-          futureRunsList = <FutureRunAggregate>[];
+          futureRunsList = <RunDetailsAggregate>[];
           try {
             db.rawQuery(query).then((List<Map<String, dynamic>> results) {
               for (int i = 0; i < results.length; i++) {
                 locator.distanceBetween(ll.latitude, ll.longitude, results[i]['narrowEventLatitude'], results[i]['narrowEventLongitude']).then((num dist) {
                   final NarrowEventsModel eventItem = NarrowEventsTableHelper.fromMap(results[i]);
                   final KennelsModel kennelItem = KennelsTableHelper.fromMap(results[i]);
-                  final FutureRunQueryExtenstions extensionsItem = FutureRunQueryExtenstions.fromMap(results[i]);
+                  final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i]);
                   extensionsItem.distToEvent = dist;
                   // extensionsItem.currencySymbol = '€^';
                   // extensionsItem.digitsAfterDecimal = 2;
 
+                  num julianNow = results[i]['nowJulian'];
+                  num eventJulian = results[i]['eventJulian'];
+
+                  print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+                  
+
                   if ((extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < 50000))) {
-                    final FutureRunAggregate item = FutureRunAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem);
+                    final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem);
                     futureRunsList.add(item);
                   }
                   if (i == results.length - 1) {

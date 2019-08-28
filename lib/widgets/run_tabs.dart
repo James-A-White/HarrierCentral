@@ -33,7 +33,7 @@ import 'package:harrier_central/widgets/zoomable_image_page.dart';
 class RunTabs extends StatefulWidget {
   const RunTabs({Key key, @required this.futureRun}) : super(key: key);
 
-  final FutureRunAggregate futureRun;
+  final RunDetailsAggregate futureRun;
 
   @override
   State<RunTabs> createState() {

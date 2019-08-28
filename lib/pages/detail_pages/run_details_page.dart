@@ -12,7 +12,7 @@ import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 class RunDetailsPage extends StatelessWidget { 
   const RunDetailsPage({Key key, @required this.futureRun}) : super(key: key);
 
-  final FutureRunAggregate futureRun;
+  final RunDetailsAggregate futureRun;
 
   @override
   Widget build(BuildContext context) {

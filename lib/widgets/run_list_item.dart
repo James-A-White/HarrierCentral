@@ -23,7 +23,7 @@ import 'package:harrier_central/notifications/notification_support.dart';
 class RunListItem extends StatefulWidget {
   const RunListItem({Key key, @required this.futureRun}) : super(key: key);
 
-  final FutureRunAggregate futureRun;
+  final RunDetailsAggregate futureRun;
 
   @override
   _RunListItemState createState() => _RunListItemState();
