@@ -237,6 +237,39 @@ class NarrowEventsTableHelper {
     return map;
   }
 
+  static Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    final Map<String, dynamic> outputMap = <String, dynamic>{
+      NarrowEventsTableHelper.colEventId: inputMap[NarrowEventsTableHelper.colEventId],
+      NarrowEventsTableHelper.colEventStartDatetime: inputMap[NarrowEventsTableHelper.colEventStartDatetime],
+      NarrowEventsTableHelper.colKennelId: inputMap[NarrowEventsTableHelper.colKennelId],
+      NarrowEventsTableHelper.colIsVisible: inputMap[NarrowEventsTableHelper.colIsVisible],
+      NarrowEventsTableHelper.colIsCountedRun: inputMap[NarrowEventsTableHelper.colIsCountedRun],
+      NarrowEventsTableHelper.colEventNumber: inputMap[NarrowEventsTableHelper.colEventNumber],
+      NarrowEventsTableHelper.colEventName: inputMap[NarrowEventsTableHelper.colEventName],
+      NarrowEventsTableHelper.colNarrowEventLatitude: inputMap[NarrowEventsTableHelper.colNarrowEventLatitude],
+      NarrowEventsTableHelper.colNarrowEventLongitude: inputMap[NarrowEventsTableHelper.colNarrowEventLongitude],
+      NarrowEventsTableHelper.colEventPriceForMembers: inputMap[NarrowEventsTableHelper.colEventPriceForMembers],
+      NarrowEventsTableHelper.colEventPriceForNonMembers: inputMap[NarrowEventsTableHelper.colEventPriceForNonMembers],
+      NarrowEventsTableHelper.colEventFacebookId: inputMap[NarrowEventsTableHelper.colEventFacebookId],
+      NarrowEventsTableHelper.colAbsoluteEventNumber: inputMap[NarrowEventsTableHelper.colAbsoluteEventNumber],
+      NarrowEventsTableHelper.colCanEditRunAttendence: inputMap[NarrowEventsTableHelper.colCanEditRunAttendence],
+      NarrowEventsTableHelper.colEventImage: inputMap[NarrowEventsTableHelper.colEventImage],
+      NarrowEventsTableHelper.colEventDescription: inputMap[NarrowEventsTableHelper.colEventDescription],
+      NarrowEventsTableHelper.colLocationOneLineDesc: inputMap[NarrowEventsTableHelper.colLocationOneLineDesc],
+      NarrowEventsTableHelper.colLocationPostCode: inputMap[NarrowEventsTableHelper.colLocationPostCode],
+      NarrowEventsTableHelper.colLocationCity: inputMap[NarrowEventsTableHelper.colLocationCity],
+      NarrowEventsTableHelper.colLocationStreet: inputMap[NarrowEventsTableHelper.colLocationStreet],
+      NarrowEventsTableHelper.colHares: inputMap[NarrowEventsTableHelper.colHares],
+      NarrowEventsTableHelper.colEventPaymentUrl: inputMap[NarrowEventsTableHelper.colEventPaymentUrl],
+      NarrowEventsTableHelper.colEventPaymentUrlExpires: inputMap[NarrowEventsTableHelper.colEventPaymentUrlExpires],
+      NarrowEventsTableHelper.colUnconfirmedBankXferCount: inputMap[NarrowEventsTableHelper.colUnconfirmedBankXferCount],
+      NarrowEventsTableHelper.colUpdatedAt: inputMap[NarrowEventsTableHelper.colUpdatedAt],
+      NarrowEventsTableHelper.colRemoved: inputMap[NarrowEventsTableHelper.colRemoved],
+    };
+
+    return outputMap;
+  }
+
   static NarrowEventsModel fromMap(Map<String, dynamic> map) {
     final NarrowEventsModel item = NarrowEventsModel(
       eventId: map[NarrowEventsTableHelper.colEventId],
@@ -315,6 +348,8 @@ class NarrowEventsService {
     int updateCounter = 0;
     int insertCounter = 0;
 
+    bool doNormalizeMap;
+
     final List<dynamic> jsonResultSets = json.decode(rawResults);
 
     final int len = jsonResultSets.length;
@@ -327,6 +362,11 @@ class NarrowEventsService {
 
       for (int j = 0; j < jsonResults.length; j++) {
         final Map<String, dynamic> jsonItem = jsonResults[j];
+
+        if (doNormalizeMap == null) {
+          final Map<String, dynamic> testMap = NarrowEventsTableHelper.normalizeMap(jsonItem);
+          doNormalizeMap = testMap.length != jsonItem.length;
+        }
 
         final int percentage = (100 * (j / jsonResults.length)).round();
         if ((percentage != lastPercentage) && (informUser != null)) {
@@ -345,7 +385,7 @@ class NarrowEventsService {
           //print(table.length.toString());
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.insert(NarrowEventsTableHelper.tableName, jsonItem);
+            await txn.insert(NarrowEventsTableHelper.tableName, doNormalizeMap ? NarrowEventsTableHelper.normalizeMap(jsonItem) : jsonItem);
             insertCounter++;
             // print(result.toString() +
             //     ' inserted into to the ${NarrowEventsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -355,7 +395,7 @@ class NarrowEventsService {
 
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.update(NarrowEventsTableHelper.tableName, jsonItem, where: 'id = $rowId');
+            await txn.update(NarrowEventsTableHelper.tableName, doNormalizeMap ? NarrowEventsTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
             updateCounter++;
             // print(result.toString() +
             //     ' update to the ${NarrowEventsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -415,18 +455,11 @@ class NarrowEventsService {
     return;
   }
 
-  static Future<Map<String, String>> sendRunDetailsByEmail({
-    String eventId, String emailBody = ''
-  }) async {
+  static Future<Map<String, String>> sendRunDetailsByEmail({String eventId, String emailBody = ''}) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken = Utilities.generateToken(userId, 'rptApi_emailRunDetails',paramString: eventId);
+    final String accessToken = Utilities.generateToken(userId, 'rptApi_emailRunDetails', paramString: eventId);
 
-    final String body = jsonEncode(<String, String>{
-        'userId': userId,
-        'accessToken': accessToken,
-        'eventId': eventId,
-        'emailBody': emailBody
-    });
+    final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'eventId': eventId, 'emailBody': emailBody});
 
     print(body);
 

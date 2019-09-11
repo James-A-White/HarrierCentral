@@ -16,7 +16,23 @@ import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 
 class HasherEventMapModel {
   HasherEventMapModel(
-      {this.hemId, this.userId, this.eventId, this.userStartEvent, this.userEndEvent, this.rsvpState, this.attendenceState, this.isHare, this.eventNotificationPreference, this.eventEmailAlertPreference, this.eventCountOverride, this.virginVisitorType, this.displayName, this.email, this.phoneNumber, this.removed, this.updatedAt});
+      {this.hemId,
+      this.userId,
+      this.eventId,
+      this.userStartEvent,
+      this.userEndEvent,
+      this.rsvpState,
+      this.attendenceState,
+      this.isHare,
+      this.eventNotificationPreference,
+      this.eventEmailAlertPreference,
+      this.eventCountOverride,
+      this.virginVisitorType,
+      this.displayName,
+      this.email,
+      this.phoneNumber,
+      this.removed,
+      this.updatedAt});
 
   final String hemId;
   final String userId;
@@ -102,7 +118,7 @@ class HasherEventMapTableHelper {
   static const String colAttendenceState = 'attendenceState';
   static const String colIsHare = 'isHare';
   static const String colEventNotificationPreference = 'eventNotificationPreference';
-  static const String colEventEmailAlertPreference= 'eventEmailAlertPreference';
+  static const String colEventEmailAlertPreference = 'eventEmailAlertPreference';
   static const String colEventCountOverride = 'eventCountOverride';
   static const String colVirginVisitorType = 'virginVisitorType';
   static const String colDisplayName = 'displayName';
@@ -196,6 +212,30 @@ class HasherEventMapTableHelper {
     return map;
   }
 
+  static Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    final Map<String, dynamic> outputMap = <String, dynamic>{
+      HasherEventMapTableHelper.colHemId: inputMap[HasherEventMapTableHelper.colHemId],
+      HasherEventMapTableHelper.colUserId: inputMap[HasherEventMapTableHelper.colUserId],
+      HasherEventMapTableHelper.colEventId: inputMap[HasherEventMapTableHelper.colEventId],
+      HasherEventMapTableHelper.colUserStartEvent: inputMap[HasherEventMapTableHelper.colUserStartEvent],
+      HasherEventMapTableHelper.colUserEndEvent: inputMap[HasherEventMapTableHelper.colUserEndEvent],
+      HasherEventMapTableHelper.colRsvpState: inputMap[HasherEventMapTableHelper.colRsvpState],
+      HasherEventMapTableHelper.colAttendenceState: inputMap[HasherEventMapTableHelper.colAttendenceState],
+      HasherEventMapTableHelper.colIsHare: inputMap[HasherEventMapTableHelper.colIsHare],
+      HasherEventMapTableHelper.colEventNotificationPreference: inputMap[HasherEventMapTableHelper.colEventNotificationPreference],
+      HasherEventMapTableHelper.colEventEmailAlertPreference: inputMap[HasherEventMapTableHelper.colEventEmailAlertPreference],
+      HasherEventMapTableHelper.colEventCountOverride: inputMap[HasherEventMapTableHelper.colEventCountOverride],
+      HasherEventMapTableHelper.colVirginVisitorType: inputMap[HasherEventMapTableHelper.colVirginVisitorType],
+      HasherEventMapTableHelper.colDisplayName: inputMap[HasherEventMapTableHelper.colDisplayName],
+      HasherEventMapTableHelper.colEmail: inputMap[HasherEventMapTableHelper.colEmail],
+      HasherEventMapTableHelper.colPhoneNumber: inputMap[HasherEventMapTableHelper.colPhoneNumber],
+      HasherEventMapTableHelper.colUpdatedAt: inputMap[HasherEventMapTableHelper.colUpdatedAt],
+      HasherEventMapTableHelper.colRemoved: inputMap[HasherEventMapTableHelper.colRemoved],
+    };
+
+    return outputMap;
+  }
+
   static HasherEventMapModel fromMap(Map<String, dynamic> map) {
     final HasherEventMapModel item = HasherEventMapModel(
       hemId: map[HasherEventMapTableHelper.colHemId],
@@ -265,6 +305,8 @@ class HasherEventMapService {
     int updateCounter = 0;
     int insertCounter = 0;
 
+    bool doNormalizeMap;
+
     final List<dynamic> jsonResultSets = json.decode(rawResults);
 
     final int len = jsonResultSets.length;
@@ -277,6 +319,11 @@ class HasherEventMapService {
 
       for (int j = 0; j < jsonResults.length; j++) {
         final Map<String, dynamic> jsonItem = jsonResults[j];
+
+        if (doNormalizeMap == null) {
+          final Map<String, dynamic> testMap = HasherEventMapTableHelper.normalizeMap(jsonItem);
+          doNormalizeMap = testMap.length != jsonItem.length;
+        }
 
         final int percentage = (100 * (j / jsonResults.length)).round();
         if ((percentage != lastPercentage) && (informUser != null)) {
@@ -293,7 +340,8 @@ class HasherEventMapService {
           //print(table.length.toString());
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.insert(HasherEventMapTableHelper.getTableName(tblType), jsonItem);
+
+            await txn.insert(HasherEventMapTableHelper.getTableName(tblType), doNormalizeMap ? HasherEventMapTableHelper.normalizeMap(jsonItem) : jsonItem);
             insertCounter++;
             // print(result.toString() +
             //     ' inserted into to the ${HasherEventMapTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -303,8 +351,8 @@ class HasherEventMapService {
 
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.update(HasherEventMapTableHelper.getTableName(tblType), jsonItem, where: 'id = $rowId');
-            
+            await txn.update(HasherEventMapTableHelper.getTableName(tblType), doNormalizeMap ? HasherEventMapTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
+
             updateCounter++;
             // print(result.toString() +
             //     ' update to the ${HasherEventMapTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -342,7 +390,7 @@ class HasherEventMapService {
     return <String, String>{'result': 'No valid email address found', 'email': ''};
   }
 
-  Future<List<dynamic>> joinEvent(String eventId, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, {int rsvpState = -1, int attendenceState = -1, int isHare = -1, int virginVisitorType = 0, int notificationState = -1,int emailAlertState = -1}) async {
+  Future<List<dynamic>> joinEvent(String eventId, HasherEventMapTableType tblType, String hasherId, String hasherEventMapId, {int rsvpState = -1, int attendenceState = -1, int isHare = -1, int virginVisitorType = 0, int notificationState = -1, int emailAlertState = -1}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return null;
       // TODO(James): fix this so we can return a bool

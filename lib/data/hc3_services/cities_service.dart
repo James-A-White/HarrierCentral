@@ -6,19 +6,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
 
-
 class CitiesModel {
-  CitiesModel(
-      {this.cityId,
-      this.cityName,
-      this.regionId,
-      this.latitude,
-      this.longitude,
-      this.cityAscii,
-      this.flagFile,
-      this.removed,
-      this.updatedAt});
-
+  CitiesModel({this.cityId, this.cityName, this.regionId, this.latitude, this.longitude, this.cityAscii, this.flagFile, this.removed, this.updatedAt});
 
   final String cityId;
   final String cityName;
@@ -38,16 +27,15 @@ class CitiesModel {
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
         item = CitiesModel(
-          cityId: jsonItem['cityId'].toString(),
-          cityName: jsonItem['cityName'],
-          regionId: jsonItem['regionId'].toString(),
-          latitude: jsonItem['latitude'],
-          longitude: jsonItem['longitude'],
-          cityAscii: jsonItem['cityAscii'],
-          flagFile: jsonItem['flagFile'],
-          updatedAt: DateTime.parse(jsonItem['updatedAt']),
-          removed: jsonItem['removed']
-        );
+            cityId: jsonItem['cityId'].toString(),
+            cityName: jsonItem['cityName'],
+            regionId: jsonItem['regionId'].toString(),
+            latitude: jsonItem['latitude'],
+            longitude: jsonItem['longitude'],
+            cityAscii: jsonItem['cityAscii'],
+            flagFile: jsonItem['flagFile'],
+            updatedAt: DateTime.parse(jsonItem['updatedAt']),
+            removed: jsonItem['removed']);
 
         items.add(item);
       },
@@ -61,7 +49,6 @@ class CitiesModel {
   }
 }
 
-
 class CitiesTableHelper {
   CitiesTableHelper._privateConstructor();
 
@@ -71,8 +58,7 @@ class CitiesTableHelper {
   static const num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
 
   static const IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateCitiesData;
-  static const IntPrefsEnum lastCacheClearKey =
-      IntPrefsEnum.lastCacheClearCitiesData;
+  static const IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearCitiesData;
 
   static const String colId = 'id';
   static const String colCityId = 'cityId';
@@ -89,8 +75,7 @@ class CitiesTableHelper {
 
   // make this a singleton class
 
-  static final CitiesTableHelper instance =
-      CitiesTableHelper._privateConstructor();
+  static final CitiesTableHelper instance = CitiesTableHelper._privateConstructor();
 
   // SQL code to create the database table
   static Future<dynamic> createTable(Database db, int version) async {
@@ -113,10 +98,8 @@ class CitiesTableHelper {
           ''');
 
     await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute(
-        'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
+    await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
-
 
   static Map<String, dynamic> toMap(CitiesModel item) {
     final Map<String, dynamic> map = <String, dynamic>{
@@ -128,12 +111,27 @@ class CitiesTableHelper {
       CitiesTableHelper.colCityAscii: item.cityAscii,
       CitiesTableHelper.colFlagFile: item.flagFile,
       CitiesTableHelper.colUpdatedAt: item.updatedAt.toString(),
-      CitiesTableHelper.colUpdatedAtValue:
-          item.updatedAt.millisecondsSinceEpoch,
+      CitiesTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       CitiesTableHelper.colRemoved: item.removed
     };
 
     return map;
+  }
+
+  static Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    final Map<String, dynamic> outputMap = <String, dynamic>{
+      CitiesTableHelper.colCityId: inputMap[CitiesTableHelper.colCityId],
+      CitiesTableHelper.colCityName: inputMap[CitiesTableHelper.colCityName],
+      CitiesTableHelper.colRegionId: inputMap[CitiesTableHelper.colRegionId],
+      CitiesTableHelper.colLatitude: inputMap[CitiesTableHelper.colLatitude],
+      CitiesTableHelper.colLongitude: inputMap[CitiesTableHelper.colLongitude],
+      CitiesTableHelper.colCityAscii: inputMap[CitiesTableHelper.colCityAscii],
+      CitiesTableHelper.colFlagFile: inputMap[CitiesTableHelper.colFlagFile],
+      CitiesTableHelper.colUpdatedAt: inputMap[CitiesTableHelper.colUpdatedAt],
+      CitiesTableHelper.colRemoved: inputMap[CitiesTableHelper.colRemoved],
+    };
+
+    return outputMap;
   }
 
   static CitiesModel fromMap(Map<String, dynamic> map) {
@@ -154,16 +152,12 @@ class CitiesTableHelper {
 }
 
 class CitiesService {
-  static final CitiesTableHelper instance =
-      CitiesTableHelper._privateConstructor();
+  static final CitiesTableHelper instance = CitiesTableHelper._privateConstructor();
 
   Future<void> clearTable() async {
     final Database db = await DBProvider.db.database;
-    await db
-        .rawDelete('DELETE FROM ${CitiesTableHelper.tableName}')
-        .then((void dummy) {
-      setIntPref(CitiesTableHelper.lastCacheClearKey,
-          DateTime.now().millisecondsSinceEpoch);
+    await db.rawDelete('DELETE FROM ${CitiesTableHelper.tableName}').then((void dummy) {
+      setIntPref(CitiesTableHelper.lastCacheClearKey, DateTime.now().millisecondsSinceEpoch);
     });
   }
 
@@ -173,31 +167,28 @@ class CitiesService {
     for (int i = 0; i < items?.length ?? 0; i++) {
       final Map<String, dynamic> row = CitiesTableHelper.toMap(items[i]);
 
-      final List<Map<String, dynamic>> table = await db.rawQuery(
-          'SELECT * FROM ${CitiesTableHelper.tableName} WHERE ${CitiesTableHelper.remoteDbId} = "${items[i].cityId}"');
+      final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${CitiesTableHelper.tableName} WHERE ${CitiesTableHelper.remoteDbId} = "${items[i].cityId}"');
       if ((table == null) || (table.isEmpty)) {
         await db.transaction<dynamic>((Transaction txn) async {
           final int result = await txn.insert(CitiesTableHelper.tableName, row);
-          print(result.toString() +
-              ' inserted into to the ${CitiesTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch}');
+          print(result.toString() + ' inserted into to the ${CitiesTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch}');
         });
       } else {
         final String rowId = table.first['id'].toString();
 
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.update(CitiesTableHelper.tableName, row,
-              where: 'id = $rowId');
-          print(result.toString() +
-              ' update to the ${CitiesTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch}');
+          final int result = await txn.update(CitiesTableHelper.tableName, row, where: 'id = $rowId');
+          print(result.toString() + ' update to the ${CitiesTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch}');
         });
       }
     }
   }
 
-
   Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser) async {
     int updateCounter = 0;
     int insertCounter = 0;
+
+    bool doNormalizeMap;
 
     final List<dynamic> jsonResultSets = json.decode(rawResults);
     print('City result sets received from cloud = ${jsonResultSets.length}');
@@ -210,28 +201,30 @@ class CitiesService {
 
       for (int j = 0; j < jsonResults.length; j++) {
         final Map<String, dynamic> jsonItem = jsonResults[j];
-        final int percentage = (100 * (j/jsonResults.length)).round();
 
-        if ((percentage !=lastPercentage) && (informUser != null))
-        {
-          lastPercentage =percentage;
-          informUser('Loading city data\r\n$percentage% complete');   
+        if (doNormalizeMap == null) {
+          final Map<String, dynamic> testMap = CitiesTableHelper.normalizeMap(jsonItem);
+          doNormalizeMap = testMap.length != jsonItem.length;
+        }
+
+        final int percentage = (100 * (j / jsonResults.length)).round();
+
+        if ((percentage != lastPercentage) && (informUser != null)) {
+          lastPercentage = percentage;
+          informUser('Loading city data\r\n$percentage% complete');
         }
 
         jsonItem.addAll(<String, dynamic>{
-          'updatedAtValue':
-              DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19))
-                  .millisecondsSinceEpoch,
+          'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch,
         });
 
-        final String query =
-            'SELECT * FROM ${CitiesTableHelper.tableName} WHERE ${CitiesTableHelper.remoteDbId} = "${jsonItem['cityId']}"';
+        final String query = 'SELECT * FROM ${CitiesTableHelper.tableName} WHERE ${CitiesTableHelper.remoteDbId} = "${jsonItem['cityId']}"';
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
 
         if ((table == null) || (table.isEmpty)) {
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.insert(CitiesTableHelper.tableName, jsonItem);
+            await txn.insert(CitiesTableHelper.tableName, doNormalizeMap ? CitiesTableHelper.normalizeMap(jsonItem) : jsonItem);
             insertCounter++;
             // print(result.toString() +
             //     ' inserted into to the ${RegionsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -241,8 +234,7 @@ class CitiesService {
 
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.update(CitiesTableHelper.tableName, jsonItem,
-                where: 'id = $rowId');
+            await txn.update(CitiesTableHelper.tableName, doNormalizeMap ? CitiesTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
             updateCounter++;
             // print(result.toString() +
             //     ' update to the ${RegionsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -251,9 +243,7 @@ class CitiesService {
       }
     }
 
-    print(
-        '$insertCounter city records inserted, $updateCounter city records updated');
+    print('$insertCounter city records inserted, $updateCounter city records updated');
     return insertCounter;
   }
-
 }

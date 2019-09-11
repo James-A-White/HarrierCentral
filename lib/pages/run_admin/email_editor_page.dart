@@ -1,27 +1,17 @@
 import 'dart:async';
-import 'dart:io' as platform;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+//import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
-import 'package:image_cropper/image_cropper.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:keyboard_avoider/keyboard_avoider.dart';
 
-import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
-import 'package:harrier_central/widgets/zoomable_image_page.dart';
-import 'package:harrier_central/data/hc3_services/receipts_service.dart';
+
 
 // import 'package:harrier_central/widgets/user_details_ui.dart';
 // import 'package:harrier_central/widgets/fancy_divider.dart';
@@ -43,7 +33,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  bool _isLoading = false;
+  //final bool _isLoading = false;
 
   @override
   void initState() {
@@ -53,28 +43,28 @@ class EmailEditorPageState extends State<EmailEditorPage> {
 
   TextEditingController bodyController = TextEditingController();
 
-  Widget _buildCircularProgressIndicator() {
-    return Center(
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-        Text(
-          'Uploading receipt details',
-          style: headingStyle,
-          textAlign: TextAlign.center,
-        ),
-        Container(height: 30),
-        SpinKitCircle(
-          size: 75.0,
-          itemBuilder: (_, int index) {
-            return DecoratedBox(
-              decoration: BoxDecoration(
-                color: index.isEven ? Colors.grey[50] : Theme.of(context).accentColor,
-              ),
-            );
-          },
-        ),
-      ]),
-    );
-  }
+  // Widget _buildCircularProgressIndicator() {
+  //   return Center(
+  //     child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+  //       Text(
+  //         'Uploading receipt details',
+  //         style: headingStyle,
+  //         textAlign: TextAlign.center,
+  //       ),
+  //       Container(height: 30),
+  //       SpinKitCircle(
+  //         size: 75.0,
+  //         itemBuilder: (_, int index) {
+  //           return DecoratedBox(
+  //             decoration: BoxDecoration(
+  //               color: index.isEven ? Colors.grey[50] : Theme.of(context).accentColor,
+  //             ),
+  //           );
+  //         },
+  //       ),
+  //     ]),
+  //   );
+  // }
 
   TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 22.0, height: 1.0);
 
@@ -107,9 +97,12 @@ class EmailEditorPageState extends State<EmailEditorPage> {
         key: _scaffoldKey,
         resizeToAvoidBottomInset: false,
         appBar: appBar,
-        body: _isLoading
-            ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
-            : Container(
+        body:
+        //  _isLoading
+        //     ? Container(height: MediaQuery.of(context).size.height - appBar.preferredSize.height, decoration: Backgrounds.defaultHcBackground(), child: _buildCircularProgressIndicator())
+        //     : 
+            
+            Container(
                 decoration: Backgrounds.defaultHcBackground(),
                 height: MediaQuery.of(context).size.height,
                 child: KeyboardAvoider(

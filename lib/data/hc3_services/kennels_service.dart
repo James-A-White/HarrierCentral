@@ -162,16 +162,16 @@ class KennelsTableHelper {
   static const String colDefaultPriceForNonMembers = 'defaultPriceForNonMembers';
   static const String colMembershipDurationInMonths = 'membershipDurationInMonths';
   static const String colDefaultRunStartTime = 'defaultRunStartTime';
-  static const String colCurrencyCode= 'currencyCode';
-  static const String colPrimaryCultureCode= 'primaryCultureCode';
-  static const String colCurrencySymbol= 'currencySymbol';
-  static const String colDigitsAfterDecimal= 'digitsAfterDecimal';
-  static const String colBankScheme= 'bankScheme';
-  static const String colBankAccountNumber= 'bankAccountNumber';
-  static const String colBankBic= 'bankBic';
-  static const String colBankBeneficiary= 'bankBeneficiary';
-  static const String colKennelPaymentUrl= 'kennelPaymentUrl';
-  static const String colKennelPaymentUrlExpires= 'kennelPaymentUrlExpires';
+  static const String colCurrencyCode = 'currencyCode';
+  static const String colPrimaryCultureCode = 'primaryCultureCode';
+  static const String colCurrencySymbol = 'currencySymbol';
+  static const String colDigitsAfterDecimal = 'digitsAfterDecimal';
+  static const String colBankScheme = 'bankScheme';
+  static const String colBankAccountNumber = 'bankAccountNumber';
+  static const String colBankBic = 'bankBic';
+  static const String colBankBeneficiary = 'bankBeneficiary';
+  static const String colKennelPaymentUrl = 'kennelPaymentUrl';
+  static const String colKennelPaymentUrlExpires = 'kennelPaymentUrlExpires';
   static const String colRunCountStartDate = 'runCountStartDate';
   static const String colUpdatedAt = 'updatedAt';
   static const String colRemoved = 'removed';
@@ -268,6 +268,45 @@ class KennelsTableHelper {
     return map;
   }
 
+  static Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    final Map<String, dynamic> outputMap = <String, dynamic>{
+      KennelsTableHelper.colKennelId: inputMap[KennelsTableHelper.colKennelId],
+      KennelsTableHelper.colCityId: inputMap[KennelsTableHelper.colCityId],
+      KennelsTableHelper.colRegionId: inputMap[KennelsTableHelper.colRegionId],
+      KennelsTableHelper.colCountryId: inputMap[KennelsTableHelper.colCountryId],
+      KennelsTableHelper.colKennelName: inputMap[KennelsTableHelper.colKennelName],
+      KennelsTableHelper.colKennelShortName: inputMap[KennelsTableHelper.colKennelShortName],
+      KennelsTableHelper.colKennelDescription: inputMap[KennelsTableHelper.colKennelDescription],
+      KennelsTableHelper.colKennelLogo: inputMap[KennelsTableHelper.colKennelLogo],
+      KennelsTableHelper.colKennelCoverPhoto: inputMap[KennelsTableHelper.colKennelCoverPhoto],
+      KennelsTableHelper.colKennelWebsiteUrl: inputMap[KennelsTableHelper.colKennelWebsiteUrl],
+      KennelsTableHelper.colDefaultEventCurrencyType: inputMap[KennelsTableHelper.colDefaultEventCurrencyType],
+      KennelsTableHelper.colKennelStatus: inputMap[KennelsTableHelper.colKennelStatus],
+      KennelsTableHelper.colAllowNegativeCredit: inputMap[KennelsTableHelper.colAllowNegativeCredit],
+      KennelsTableHelper.colKennelLatitude: inputMap[KennelsTableHelper.colKennelLatitude],
+      KennelsTableHelper.colKennelLongitude: inputMap[KennelsTableHelper.colKennelLongitude],
+      KennelsTableHelper.colDefaultPriceForMembers: inputMap[KennelsTableHelper.colDefaultPriceForMembers],
+      KennelsTableHelper.colDefaultPriceForNonMembers: inputMap[KennelsTableHelper.colDefaultPriceForNonMembers],
+      KennelsTableHelper.colMembershipDurationInMonths: inputMap[KennelsTableHelper.colMembershipDurationInMonths],
+      KennelsTableHelper.colDefaultRunStartTime: inputMap[KennelsTableHelper.colDefaultRunStartTime],
+      KennelsTableHelper.colCurrencyCode: inputMap[KennelsTableHelper.colCurrencyCode],
+      KennelsTableHelper.colPrimaryCultureCode: inputMap[KennelsTableHelper.colPrimaryCultureCode],
+      KennelsTableHelper.colCurrencySymbol: inputMap[KennelsTableHelper.colCurrencySymbol],
+      KennelsTableHelper.colDigitsAfterDecimal: inputMap[KennelsTableHelper.colDigitsAfterDecimal],
+      KennelsTableHelper.colBankScheme: inputMap[KennelsTableHelper.colBankScheme],
+      KennelsTableHelper.colBankAccountNumber: inputMap[KennelsTableHelper.colBankAccountNumber],
+      KennelsTableHelper.colBankBic: inputMap[KennelsTableHelper.colBankBic],
+      KennelsTableHelper.colBankBeneficiary: inputMap[KennelsTableHelper.colBankBeneficiary],
+      KennelsTableHelper.colKennelPaymentUrl: inputMap[KennelsTableHelper.colKennelPaymentUrl],
+      KennelsTableHelper.colKennelPaymentUrlExpires: inputMap[KennelsTableHelper.colKennelPaymentUrlExpires],
+      KennelsTableHelper.colRunCountStartDate: inputMap[KennelsTableHelper.colRunCountStartDate],
+      KennelsTableHelper.colUpdatedAt: inputMap[KennelsTableHelper.colUpdatedAt],
+      KennelsTableHelper.colRemoved: inputMap[KennelsTableHelper.colRemoved],
+    };
+
+    return outputMap;
+  }
+
   static KennelsModel fromMap(Map<String, dynamic> map) {
     final KennelsModel item = KennelsModel(
       kennelId: map[KennelsTableHelper.colKennelId],
@@ -352,6 +391,8 @@ class KennelsService {
     int updateCounter = 0;
     int insertCounter = 0;
 
+    bool doNormalizeMap;
+
     final List<dynamic> jsonResultSets = json.decode(rawResults);
 
     final int len = jsonResultSets.length;
@@ -364,6 +405,11 @@ class KennelsService {
 
       for (int j = 0; j < jsonResults.length; j++) {
         final Map<String, dynamic> jsonItem = jsonResults[j];
+
+        if (doNormalizeMap == null) {
+          final Map<String, dynamic> testMap = KennelsTableHelper.normalizeMap(jsonItem);
+          doNormalizeMap = testMap.length != jsonItem.length;
+        }
 
         final int percentage = (100 * (j / jsonResults.length)).round();
         if ((percentage != lastPercentage) && (informUser != null)) {
@@ -382,7 +428,7 @@ class KennelsService {
           //print(table.length.toString());
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.insert(KennelsTableHelper.tableName, jsonItem);
+            await txn.insert(KennelsTableHelper.tableName, doNormalizeMap ? KennelsTableHelper.normalizeMap(jsonItem) : jsonItem);
             insertCounter++;
             // print(result.toString() +
             //     ' inserted into to the ${KennelsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -392,7 +438,7 @@ class KennelsService {
 
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.update(KennelsTableHelper.tableName, jsonItem, where: 'id = $rowId');
+            await txn.update(KennelsTableHelper.tableName, doNormalizeMap ? KennelsTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
             updateCounter++;
             // print(result.toString() +
             //     ' update to the ${KennelsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');

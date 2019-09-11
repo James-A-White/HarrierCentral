@@ -106,9 +106,9 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
           coalesce(hem.eventEmailAlertPreference,hkm.kennelEmailAlertPreference,0) as emailAlertPreference,
           n.digitsAfterDecimal,
           n.currencySymbol,
-          CAST(julianday(evt.eventStartDatetime) AS INT) - CAST(julianday('now','localtime') AS INT) as daysUntilEvent,
-          julianday(evt.eventStartDatetime) as eventJulian,
-          julianday('now','localtime') as nowJulian
+          CAST(julianday(evt.eventStartDatetime) + 0.5 AS INT) - CAST(julianday('now','localtime') + 0.5 AS INT) as daysUntilEvent,
+          julianday(evt.eventStartDatetime) + 0.5 as eventJulian,
+          julianday('now','localtime') + 0.5 as nowJulian
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
           INNER JOIN countries n on n.countryId = k.countryId
@@ -135,8 +135,8 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
                   // extensionsItem.currencySymbol = '€^';
                   // extensionsItem.digitsAfterDecimal = 2;
 
-                  num julianNow = results[i]['nowJulian'];
-                  num eventJulian = results[i]['eventJulian'];
+                  final num julianNow = results[i]['nowJulian'];
+                  final num eventJulian = results[i]['eventJulian'];
 
                   print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
                   

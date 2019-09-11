@@ -180,7 +180,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     allHashers = <CheckInPackModel>[];
     final Database db = await DBProvider.db.database;
     try {
-      final String sql = ''' 
+      const String sql = ''' 
 
           SELECT 
             -- get all hashers

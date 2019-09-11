@@ -64,7 +64,7 @@ class KennelCreditsTableHelper {
   static const String colUserId = 'userId';
   static const String colKennelId = 'kennelId';
   static const String colCurrentBalance = 'currentBalance';
-  static const String colBalanceAsOfEventId= 'balanceAsOfEventId';
+  static const String colBalanceAsOfEventId = 'balanceAsOfEventId';
   static const String colUpdatedAt = 'updatedAt';
   static const String colRemoved = 'removed';
   static const String colUpdatedAtValue = 'updatedAtValue';
@@ -108,6 +108,20 @@ class KennelCreditsTableHelper {
     };
 
     return map;
+  }
+
+  static Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    final Map<String, dynamic> outputMap = <String, dynamic>{
+      KennelCreditsTableHelper.colKennelCreditId: inputMap[KennelCreditsTableHelper.colKennelCreditId],
+      KennelCreditsTableHelper.colUserId: inputMap[KennelCreditsTableHelper.colUserId],
+      KennelCreditsTableHelper.colKennelId: inputMap[KennelCreditsTableHelper.colKennelId],
+      KennelCreditsTableHelper.colCurrentBalance: inputMap[KennelCreditsTableHelper.colCurrentBalance],
+      KennelCreditsTableHelper.colBalanceAsOfEventId: inputMap[KennelCreditsTableHelper.colBalanceAsOfEventId],
+      KennelCreditsTableHelper.colUpdatedAt: inputMap[KennelCreditsTableHelper.colUpdatedAt],
+      KennelCreditsTableHelper.colRemoved: inputMap[KennelCreditsTableHelper.colRemoved],
+    };
+
+    return outputMap;
   }
 
   static KennelCreditsModel fromMap(Map<String, dynamic> map) {
@@ -169,6 +183,8 @@ class KennelCreditsService {
     int updateCounter = 0;
     int insertCounter = 0;
 
+    bool doNormalizeMap;
+
     final List<dynamic> jsonResultSets = json.decode(rawResults);
 
     final int len = jsonResultSets.length;
@@ -181,6 +197,11 @@ class KennelCreditsService {
 
       for (int j = 0; j < jsonResults.length; j++) {
         final Map<String, dynamic> jsonItem = jsonResults[j];
+
+        if (doNormalizeMap == null) {
+          final Map<String, dynamic> testMap = KennelCreditsTableHelper.normalizeMap(jsonItem);
+          doNormalizeMap = testMap.length != jsonItem.length;
+        }
 
         final int percentage = (100 * (j / jsonResults.length)).round();
         if ((percentage != lastPercentage) && (informUser != null)) {
@@ -199,7 +220,7 @@ class KennelCreditsService {
           //print(table.length.toString());
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.insert(KennelCreditsTableHelper.tableName, jsonItem);
+            await txn.insert(KennelCreditsTableHelper.tableName, doNormalizeMap ? KennelCreditsTableHelper.normalizeMap(jsonItem) : jsonItem);
             insertCounter++;
             // print(result.toString() +
             //     ' inserted into to the ${KennelCreditsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -209,7 +230,7 @@ class KennelCreditsService {
 
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.update(KennelCreditsTableHelper.tableName, jsonItem, where: 'id = $rowId');
+            await txn.update(KennelCreditsTableHelper.tableName, doNormalizeMap ? KennelCreditsTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
             updateCounter++;
             // print(result.toString() +
             //     ' update to the ${KennelCreditsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');

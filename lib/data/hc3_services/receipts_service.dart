@@ -154,6 +154,28 @@ class ReceiptsTableHelper {
     return map;
   }
 
+  static Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    final Map<String, dynamic> outputMap = <String, dynamic>{
+      ReceiptsTableHelper.colReceiptId: inputMap[ReceiptsTableHelper.colReceiptId],
+      ReceiptsTableHelper.colEventId: inputMap[ReceiptsTableHelper.colEventId],
+      ReceiptsTableHelper.colUserId: inputMap[ReceiptsTableHelper.colUserId],
+      ReceiptsTableHelper.colReceiptAmount: inputMap[ReceiptsTableHelper.colReceiptAmount],
+      ReceiptsTableHelper.colCostCategory: inputMap[ReceiptsTableHelper.colCostCategory],
+      ReceiptsTableHelper.colDateUploaded: inputMap[ReceiptsTableHelper.colDateUploaded],
+      ReceiptsTableHelper.colImageUrl: inputMap[ReceiptsTableHelper.colImageUrl],
+      ReceiptsTableHelper.colReceiptShortDescription: inputMap[ReceiptsTableHelper.colReceiptShortDescription],
+      ReceiptsTableHelper.colNotes: inputMap[ReceiptsTableHelper.colNotes],
+      ReceiptsTableHelper.colReimbursedBy: inputMap[ReceiptsTableHelper.colReimbursedBy],
+      ReceiptsTableHelper.colReimbursedOn: inputMap[ReceiptsTableHelper.colReimbursedOn],
+      ReceiptsTableHelper.colReimbursedAmount: inputMap[ReceiptsTableHelper.colReimbursedAmount],
+      ReceiptsTableHelper.colReimbursedNotes: inputMap[ReceiptsTableHelper.colReimbursedNotes],
+      ReceiptsTableHelper.colUpdatedAt: inputMap[ReceiptsTableHelper.colUpdatedAt],
+      ReceiptsTableHelper.colRemoved: inputMap[ReceiptsTableHelper.colRemoved],
+    };
+
+    return outputMap;
+  }
+
   static String toQueryBody(String userId, String accessToken, ReceiptsModel item, String receiptsUploadedAfter) {
     final String map = jsonEncode(<String, Object>{
       'userId': userId,
@@ -168,8 +190,7 @@ class ReceiptsTableHelper {
       ReceiptsTableHelper.colReimbursedAmount: item.reimbursedAmount,
       ReceiptsTableHelper.colReimbursedNotes: item.reimbursedNotes,
       ReceiptsTableHelper.colImageUrl: item.imageUrl,
-      'receiptsUpdatedAfter' : receiptsUploadedAfter,
-
+      'receiptsUpdatedAfter': receiptsUploadedAfter,
       ReceiptsTableHelper.colRemoved: item.removed
     });
     return map;
@@ -199,7 +220,6 @@ class ReceiptsTableHelper {
 }
 
 class ReceiptsService {
-
   static Future<num> getLastUpdatedTime() async {
     final Database db = await DBProvider.db.database;
     final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${ReceiptsTableHelper.colUpdatedAtValue}) AS maxDate FROM ${ReceiptsTableHelper.tableName}');
@@ -241,6 +261,8 @@ class ReceiptsService {
     int updateCounter = 0;
     int insertCounter = 0;
 
+    bool doNormalizeMap;
+
     final List<dynamic> jsonResultSets = json.decode(rawResults);
 
     final int len = jsonResultSets.length;
@@ -253,6 +275,11 @@ class ReceiptsService {
 
       for (int j = 0; j < jsonResults.length; j++) {
         final Map<String, dynamic> jsonItem = jsonResults[j];
+
+        if (doNormalizeMap == null) {
+          final Map<String, dynamic> testMap = ReceiptsTableHelper.normalizeMap(jsonItem);
+          doNormalizeMap = testMap.length != jsonItem.length;
+        }
 
         final int percentage = (100 * (j / jsonResults.length)).round();
         if ((percentage != lastPercentage) && (informUser != null)) {
@@ -271,7 +298,7 @@ class ReceiptsService {
           //print(table.length.toString());
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.insert(ReceiptsTableHelper.tableName, jsonItem);
+            await txn.insert(ReceiptsTableHelper.tableName, doNormalizeMap ? ReceiptsTableHelper.normalizeMap(jsonItem) : jsonItem);
             insertCounter++;
             // print(result.toString() +
             //     ' inserted into to the ${ReceiptssTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -281,7 +308,7 @@ class ReceiptsService {
 
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.update(ReceiptsTableHelper.tableName, jsonItem, where: 'id = $rowId');
+            await txn.update(ReceiptsTableHelper.tableName, doNormalizeMap ? ReceiptsTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
             updateCounter++;
             // print(result.toString() +
             //     ' update to the ${ReceiptssTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -307,5 +334,4 @@ class ReceiptsService {
 
     return responseBody;
   }
-
 }

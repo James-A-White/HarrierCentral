@@ -98,6 +98,19 @@ class RegionsTableHelper {
     return map;
   }
 
+  static Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    final Map<String, dynamic> outputMap = <String, dynamic>{
+      RegionsTableHelper.colRegionId: inputMap[RegionsTableHelper.colRegionId],
+      RegionsTableHelper.colRegionName: inputMap[RegionsTableHelper.colRegionName],
+      RegionsTableHelper.colCountryId: inputMap[RegionsTableHelper.colCountryId],
+      RegionsTableHelper.colFlagFile: inputMap[RegionsTableHelper.colFlagFile],
+      RegionsTableHelper.colUpdatedAt: inputMap[RegionsTableHelper.colUpdatedAt],
+      RegionsTableHelper.colRemoved: inputMap[RegionsTableHelper.colRemoved],
+    };
+
+    return outputMap;
+  }
+
   static RegionsModel fromMap(Map<String, dynamic> map) {
     final RegionsModel item = RegionsModel(
       regionId: map[RegionsTableHelper.colRegionId],
@@ -149,6 +162,8 @@ class RegionsService {
     int updateCounter = 0;
     int insertCounter = 0;
 
+    bool doNormalizeMap;
+
     final List<dynamic> jsonResultSets = json.decode(rawResults);
 
     final int len = jsonResultSets.length;
@@ -161,6 +176,11 @@ class RegionsService {
 
       for (int j = 0; j < jsonResults.length; j++) {
         final Map<String, dynamic> jsonItem = jsonResults[j];
+
+        if (doNormalizeMap == null) {
+          final Map<String, dynamic> testMap = RegionsTableHelper.normalizeMap(jsonItem);
+          doNormalizeMap = testMap.length != jsonItem.length;
+        }
 
         final int percentage = (100 * (j / jsonResults.length)).round();
         if ((percentage != lastPercentage) && (informUser != null)) {
@@ -179,7 +199,7 @@ class RegionsService {
           //print(table.length.toString());
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.insert(RegionsTableHelper.tableName, jsonItem);
+            await txn.insert(RegionsTableHelper.tableName, doNormalizeMap ? RegionsTableHelper.normalizeMap(jsonItem) : jsonItem);
             insertCounter++;
             // print(result.toString() +
             //     ' inserted into to the ${RegionsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -189,7 +209,7 @@ class RegionsService {
 
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.update(RegionsTableHelper.tableName, jsonItem, where: 'id = $rowId');
+            await txn.update(RegionsTableHelper.tableName, doNormalizeMap ? RegionsTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
             updateCounter++;
             // print(result.toString() +
             //     ' update to the ${RegionsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');

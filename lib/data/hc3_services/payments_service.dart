@@ -14,29 +14,28 @@ import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart'
 import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/util/enums.dart';
 
-
 class PaymentsModel {
-  PaymentsModel(
-      {this.paymentId,
-      this.kennelId,
-      this.paidBy,
-      this.hemId,
-      this.eventId,
-      this.paidTo,
-      this.creditAmount,
-      this.debitAmount,
-      this.paidDate,
-      this.paymentType,
-      this.productType,
-      this.cancelledDate,
-      this.cancelledBy,
-      this.confirmedDate,
-      this.confirmedBy, 
-      this.paymentReference,
-      this.notes,
-      this.removed,
-      this.updatedAt,
-      });
+  PaymentsModel({
+    this.paymentId,
+    this.kennelId,
+    this.paidBy,
+    this.hemId,
+    this.eventId,
+    this.paidTo,
+    this.creditAmount,
+    this.debitAmount,
+    this.paidDate,
+    this.paymentType,
+    this.productType,
+    this.cancelledDate,
+    this.cancelledBy,
+    this.confirmedDate,
+    this.confirmedBy,
+    this.paymentReference,
+    this.notes,
+    this.removed,
+    this.updatedAt,
+  });
 
   final String paymentId;
   final String kennelId;
@@ -125,8 +124,8 @@ class PaymentsTableHelper {
   static const String colProductType = 'productType';
   static const String colCancelledDate = 'cancelledDate';
   static const String colCancelledBy = 'cancelledBy';
-  static const String colConfirmedDate= 'confirmedDate';
-  static const String colConfirmedBy= 'confirmedBy';
+  static const String colConfirmedDate = 'confirmedDate';
+  static const String colConfirmedBy = 'confirmedBy';
   static const String colPaymentReference = 'paymentReference';
   static const String colNotes = 'notes';
 
@@ -197,6 +196,32 @@ class PaymentsTableHelper {
     };
 
     return map;
+  }
+
+  static Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    final Map<String, dynamic> outputMap = <String, dynamic>{
+      PaymentsTableHelper.colPaymentId: inputMap[PaymentsTableHelper.colPaymentId],
+      PaymentsTableHelper.colKennelId: inputMap[PaymentsTableHelper.colKennelId],
+      PaymentsTableHelper.colPaidBy: inputMap[PaymentsTableHelper.colPaidBy],
+      PaymentsTableHelper.colHemId: inputMap[PaymentsTableHelper.colHemId],
+      PaymentsTableHelper.colEventId: inputMap[PaymentsTableHelper.colEventId],
+      PaymentsTableHelper.colPaidTo: inputMap[PaymentsTableHelper.colPaidTo],
+      PaymentsTableHelper.colCreditAmount: inputMap[PaymentsTableHelper.colCreditAmount],
+      PaymentsTableHelper.colDebitAmount: inputMap[PaymentsTableHelper.colDebitAmount],
+      PaymentsTableHelper.colPaidDate: inputMap[PaymentsTableHelper.colPaidDate],
+      PaymentsTableHelper.colPaymentType: inputMap[PaymentsTableHelper.colPaymentType],
+      PaymentsTableHelper.colProductType: inputMap[PaymentsTableHelper.colProductType],
+      PaymentsTableHelper.colCancelledDate: inputMap[PaymentsTableHelper.colCancelledDate],
+      PaymentsTableHelper.colCancelledBy: inputMap[PaymentsTableHelper.colCancelledBy],
+      PaymentsTableHelper.colConfirmedDate: inputMap[PaymentsTableHelper.colConfirmedDate],
+      PaymentsTableHelper.colConfirmedBy: inputMap[PaymentsTableHelper.colConfirmedBy],
+      PaymentsTableHelper.colPaymentReference: inputMap[PaymentsTableHelper.colPaymentReference],
+      PaymentsTableHelper.colNotes: inputMap[PaymentsTableHelper.colNotes],
+      PaymentsTableHelper.colUpdatedAt: inputMap[PaymentsTableHelper.colUpdatedAt],
+      PaymentsTableHelper.colRemoved: inputMap[PaymentsTableHelper.colRemoved],
+    };
+
+    return outputMap;
   }
 
   static List<PaymentsModel> listFromMap(List<Map<String, dynamic>> mapList) {
@@ -288,6 +313,8 @@ class PaymentsService {
     int updateCounter = 0;
     int insertCounter = 0;
 
+    bool doNormalizeMap;
+
     final List<dynamic> jsonResultSets = json.decode(rawResults);
 
     final int len = jsonResultSets.length;
@@ -300,6 +327,11 @@ class PaymentsService {
 
       for (int j = 0; j < jsonResults.length; j++) {
         final Map<String, dynamic> jsonItem = jsonResults[j];
+
+        if (doNormalizeMap == null) {
+          final Map<String, dynamic> testMap = PaymentsTableHelper.normalizeMap(jsonItem);
+          doNormalizeMap = testMap.length != jsonItem.length;
+        }
 
         final int percentage = (100 * (j / jsonResults.length)).round();
         if ((percentage != lastPercentage) && (informUser != null)) {
@@ -318,7 +350,7 @@ class PaymentsService {
           //print(table.length.toString());
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.insert(PaymentsTableHelper.tableName, jsonItem);
+            await txn.insert(PaymentsTableHelper.tableName, doNormalizeMap ? PaymentsTableHelper.normalizeMap(jsonItem) : jsonItem);
             insertCounter++;
             // print(result.toString() +
             //     ' inserted into to the ${PaymentsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -328,7 +360,7 @@ class PaymentsService {
 
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.update(PaymentsTableHelper.tableName, jsonItem, where: 'id = $rowId');
+            await txn.update(PaymentsTableHelper.tableName, doNormalizeMap ? PaymentsTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
             updateCounter++;
             // print(result.toString() +
             //     ' update to the ${PaymentsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -351,11 +383,9 @@ class PaymentsService {
     num paymentAmount,
     int minimumAttendenceValue,
   ) async {
-
     List<dynamic> results;
 
-    if (globalConnectionStatus == connectionStatus_notConnected)
-    {
+    if (globalConnectionStatus == connectionStatus_notConnected) {
       return results;
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -377,7 +407,7 @@ class PaymentsService {
 
     final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.eventAdmin);
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
-    
+
     final num _paymentsLastUpdated = await PaymentsService.getLastUpdatedTime();
     final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
 
@@ -451,5 +481,4 @@ class PaymentsService {
     }
     return <String, String>{'result': 'No valid email address found', 'email': ''};
   }
-
 }

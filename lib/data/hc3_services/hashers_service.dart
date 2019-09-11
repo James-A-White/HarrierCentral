@@ -91,7 +91,7 @@ class HashersTableHelper {
   static const String colPhoto = 'photo';
   static const String colDispPref = 'dispPref';
   static const String colResetCode = 'resetCode';
-  static const String colQrCode= 'qrCode';
+  static const String colQrCode = 'qrCode';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -148,6 +148,26 @@ class HashersTableHelper {
     };
 
     return map;
+  }
+
+  static Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    final Map<String, dynamic> outputMap = <String, dynamic>{
+      HashersTableHelper.colHasherId: inputMap[HashersTableHelper.colHasherId],
+      HashersTableHelper.colHomeKennelId: inputMap[HashersTableHelper.colHomeKennelId],
+      HashersTableHelper.colFirstName: inputMap[HashersTableHelper.colFirstName],
+      HashersTableHelper.colLastName: inputMap[HashersTableHelper.colLastName],
+      HashersTableHelper.colDispName: inputMap[HashersTableHelper.colDispName],
+      HashersTableHelper.colHashName: inputMap[HashersTableHelper.colHashName],
+      HashersTableHelper.colEmail: inputMap[HashersTableHelper.colEmail],
+      HashersTableHelper.colPhoto: inputMap[HashersTableHelper.colPhoto],
+      HashersTableHelper.colDispPref: inputMap[HashersTableHelper.colDispPref],
+      HashersTableHelper.colResetCode: inputMap[HashersTableHelper.colResetCode],
+      HashersTableHelper.colQrCode: inputMap[HashersTableHelper.colQrCode],
+      HashersTableHelper.colUpdatedAt: inputMap[HashersTableHelper.colUpdatedAt],
+      HashersTableHelper.colRemoved: inputMap[HashersTableHelper.colRemoved],
+    };
+
+    return outputMap;
   }
 
   static HashersModel fromMap(Map<String, dynamic> map) {
@@ -233,6 +253,8 @@ class HashersService {
     int updateCounter = 0;
     int insertCounter = 0;
 
+    bool doNormalizeMap;
+
     final List<dynamic> jsonResultSets = json.decode(rawResults);
 
     final int len = jsonResultSets.length;
@@ -245,6 +267,11 @@ class HashersService {
 
       for (int j = 0; j < jsonResults.length; j++) {
         final Map<String, dynamic> jsonItem = jsonResults[j];
+
+        if (doNormalizeMap == null) {
+          final Map<String, dynamic> testMap = HashersTableHelper.normalizeMap(jsonItem);
+          doNormalizeMap = testMap.length != jsonItem.length;
+        }
 
         final int percentage = (100 * (j / jsonResults.length)).round();
         if ((percentage != lastPercentage) && (informUser != null)) {
@@ -263,7 +290,7 @@ class HashersService {
           //print(table.length.toString());
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.insert(HashersTableHelper.tableName, jsonItem);
+            await txn.insert(HashersTableHelper.tableName, doNormalizeMap ? HashersTableHelper.normalizeMap(jsonItem) : jsonItem);
             insertCounter++;
             // print(result.toString() +
             //     ' inserted into to the ${HashersTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -273,7 +300,7 @@ class HashersService {
 
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.update(HashersTableHelper.tableName, jsonItem, where: 'id = $rowId');
+            await txn.update(HashersTableHelper.tableName, doNormalizeMap ? HashersTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
             updateCounter++;
             // print(result.toString() +
             //     ' update to the ${HashersTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -340,10 +367,10 @@ class HashersService {
       'photo': photo,
       'eventId': eventId,
       'kennelId': kennelId,
-      'historicalPackRunCount':historicalPackRunCount,
-      'historicalHaringCount':historicalHaringCount,
+      'historicalPackRunCount': historicalPackRunCount,
+      'historicalHaringCount': historicalHaringCount,
       'historicalCountIsEstimate': (historicalCountIsEstimate ?? false) ? '1' : '0',
-      'followKennelOnAddNewUser' : followKennelOnAddNewUser == null ? null : followKennelOnAddNewUser.toString()
+      'followKennelOnAddNewUser': followKennelOnAddNewUser == null ? null : followKennelOnAddNewUser.toString()
     });
 
     final http.Response response = await http
