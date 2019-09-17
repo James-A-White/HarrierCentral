@@ -11,6 +11,7 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
+import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 
@@ -19,6 +20,7 @@ class HasherEventMapModel {
       {this.hemId,
       this.userId,
       this.eventId,
+      this.hasherOwnEventId,
       this.userStartEvent,
       this.userEndEvent,
       this.rsvpState,
@@ -37,6 +39,7 @@ class HasherEventMapModel {
   final String hemId;
   final String userId;
   final String eventId;
+  final String hasherOwnEventId;
   final String userStartEvent;
   final String userEndEvent;
   int rsvpState;
@@ -64,6 +67,7 @@ class HasherEventMapModel {
             hemId: jsonItem['hemId'],
             userId: jsonItem['userId'],
             eventId: jsonItem['eventId'],
+            hasherOwnEventId: jsonItem['hasherOwnEventId'],
             userStartEvent: jsonItem['userStartEvent'],
             userEndEvent: jsonItem['userEndEvent'],
             rsvpState: jsonItem['rsvpState'],
@@ -112,6 +116,7 @@ class HasherEventMapTableHelper {
   static const String colHemId = 'hemId';
   static const String colUserId = 'userId';
   static const String colEventId = 'eventId';
+  static const String colHasherOwnEventId= 'hasherOwnEventId';
   static const String colUserStartEvent = 'userStartEvent';
   static const String colUserEndEvent = 'userEndEvent';
   static const String colRsvpState = 'rsvpState';
@@ -162,7 +167,8 @@ class HasherEventMapTableHelper {
 
             $colHemId TEXT NOT NULL,
             $colUserId TEXT NOT NULL,
-            $colEventId TEXT NOT NULL,
+            $colEventId TEXT,
+            $colHasherOwnEventId TEXT,
             $colUserStartEvent TEXT,
             $colUserEndEvent TEXT,
             $colRsvpState INT,
@@ -192,6 +198,7 @@ class HasherEventMapTableHelper {
       HasherEventMapTableHelper.colHemId: item.hemId,
       HasherEventMapTableHelper.colUserId: item.userId,
       HasherEventMapTableHelper.colEventId: item.eventId,
+      HasherEventMapTableHelper.colHasherOwnEventId: item.hasherOwnEventId,
       HasherEventMapTableHelper.colUserStartEvent: item.userStartEvent,
       HasherEventMapTableHelper.colUserEndEvent: item.userEndEvent,
       HasherEventMapTableHelper.colRsvpState: item.rsvpState,
@@ -217,6 +224,7 @@ class HasherEventMapTableHelper {
       HasherEventMapTableHelper.colHemId: inputMap[HasherEventMapTableHelper.colHemId],
       HasherEventMapTableHelper.colUserId: inputMap[HasherEventMapTableHelper.colUserId],
       HasherEventMapTableHelper.colEventId: inputMap[HasherEventMapTableHelper.colEventId],
+      HasherEventMapTableHelper.colHasherOwnEventId: inputMap[HasherEventMapTableHelper.colHasherOwnEventId],
       HasherEventMapTableHelper.colUserStartEvent: inputMap[HasherEventMapTableHelper.colUserStartEvent],
       HasherEventMapTableHelper.colUserEndEvent: inputMap[HasherEventMapTableHelper.colUserEndEvent],
       HasherEventMapTableHelper.colRsvpState: inputMap[HasherEventMapTableHelper.colRsvpState],
@@ -241,6 +249,7 @@ class HasherEventMapTableHelper {
       hemId: map[HasherEventMapTableHelper.colHemId],
       userId: map[HasherEventMapTableHelper.colUserId],
       eventId: map[HasherEventMapTableHelper.colEventId],
+      hasherOwnEventId: map[HasherEventMapTableHelper.colHasherOwnEventId],
       userStartEvent: map[HasherEventMapTableHelper.colUserStartEvent],
       userEndEvent: map[HasherEventMapTableHelper.colUserEndEvent],
       rsvpState: map[HasherEventMapTableHelper.colRsvpState],
@@ -401,9 +410,11 @@ class HasherEventMapService {
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEvent');
 
     final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.eventAdmin);
+    final num _hasherKennelMapLastUpdated = await HasherKennelMapService.getLastUpdatedTime(HasherKennelMapTableType.eventAdmin);
     final num _paymentsLastUpdated = await PaymentsService.getLastUpdatedTime();
 
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+    final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
     final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
 
     final String body = jsonEncode(<String, Object>{
@@ -419,6 +430,7 @@ class HasherEventMapService {
       'notificationState': notificationState,
       'emailAlertState': emailAlertState,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
+      'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString()
     });
 

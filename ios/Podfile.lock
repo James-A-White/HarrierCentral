@@ -66,7 +66,7 @@ PODS:
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
   - FMDB/standard (2.7.5)
-  - "geolocator (5.1.1+1)":
+  - geolocator (5.1.3):
     - Flutter
   - google_api_availability (2.0.1):
     - Flutter
@@ -99,8 +99,6 @@ PODS:
     - TOCropViewController (~> 2.5.0)
   - image_picker (0.0.1):
     - Flutter
-  - intro_slider (0.0.1):
-    - Flutter
   - location_permissions (2.0.2):
     - Flutter
   - Mantle (2.1.0):
@@ -115,7 +113,7 @@ PODS:
     - Flutter
   - path_provider (0.0.1):
     - Flutter
-  - "permission_handler (3.2.1+1)":
+  - permission_handler (3.2.2):
     - Flutter
   - Protobuf (3.8.0)
   - screen (0.0.1):
@@ -136,7 +134,7 @@ DEPENDENCIES:
   - device_info (from `.symlinks/plugins/device_info/ios`)
   - fast_qr_reader_view (from `.symlinks/plugins/fast_qr_reader_view/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
-  - Flutter (from `.symlinks/flutter/ios-release`)
+  - Flutter (from `.symlinks/flutter/ios`)
   - flutter_facebook_login (from `.symlinks/plugins/flutter_facebook_login/ios`)
   - flutter_full_pdf_viewer (from `.symlinks/plugins/flutter_full_pdf_viewer/ios`)
   - flutter_image_compress (from `.symlinks/plugins/flutter_image_compress/ios`)
@@ -144,7 +142,6 @@ DEPENDENCIES:
   - google_api_availability (from `.symlinks/plugins/google_api_availability/ios`)
   - image_cropper (from `.symlinks/plugins/image_cropper/ios`)
   - image_picker (from `.symlinks/plugins/image_picker/ios`)
-  - intro_slider (from `.symlinks/plugins/intro_slider/ios`)
   - location_permissions (from `.symlinks/plugins/location_permissions/ios`)
   - package_info (from `.symlinks/plugins/package_info/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
@@ -184,7 +181,7 @@ EXTERNAL SOURCES:
   firebase_messaging:
     :path: ".symlinks/plugins/firebase_messaging/ios"
   Flutter:
-    :path: ".symlinks/flutter/ios-release"
+    :path: ".symlinks/flutter/ios"
   flutter_facebook_login:
     :path: ".symlinks/plugins/flutter_facebook_login/ios"
   flutter_full_pdf_viewer:
@@ -199,8 +196,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/image_cropper/ios"
   image_picker:
     :path: ".symlinks/plugins/image_picker/ios"
-  intro_slider:
-    :path: ".symlinks/plugins/intro_slider/ios"
   location_permissions:
     :path: ".symlinks/plugins/location_permissions/ios"
   package_info:
@@ -228,30 +223,29 @@ SPEC CHECKSUMS:
   FBSDKCoreKit: f442aa96179cc9b382bb4abeb7e340a47cca8f91
   FBSDKLoginKit: c3079d9a4db27c492287b1eed7a4272b28cf8a59
   Firebase: 5965bac23e7fcb5fa6d926ed429c9ecef8a2014e
-  firebase_messaging: 049d2d722cb4c48d62be7f7a8020fc4d7b2b9e0a
+  firebase_messaging: acdcd2edbe7270bae6c3a93cf6c60e86538b3064
   FirebaseAnalytics: 629301c2b9925f3537d4093a17a72751ae5b7084
   FirebaseAnalyticsInterop: efbe45c8385ec626e29f9525e5ebd38520dfb6c1
   FirebaseCore: b0f0262acebfa540e5f97b3832dbb13186980822
   FirebaseInstanceID: cdb3827746d53ece7ae87a5c51c25c3055443366
   FirebaseMessaging: 20b6626c41be7840aed7a3dd9a14003efae3d588
-  Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   flutter_facebook_login: be61e24a4b7d621515353c6b4583d1981bdaa3d6
-  flutter_full_pdf_viewer: 8a6723fa44d3e421520b70ca95fa38155a68eccf
+  flutter_full_pdf_viewer: 1b65139fc3236cde300ba6bea2a72669cb07f2e6
   flutter_image_compress: f69d0e0e078ce52b4810695593bc861ee319ae7d
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
-  geolocator: 9041fddc3646e5144b49c9843632365ef78d6ac2
+  geolocator: 2d5da6891d865c0f1b4f851683eed890dd9c8bc1
   google_api_availability: 163b30f802e6148c67f092aa4501c90ddd8eec8d
   GoogleAppMeasurement: 51d8d9ea48f0ca44484d29cfbdef976fbd4fc336
   GoogleUtilities: 996e0db07153674fd1b54b220fda3a3dc3547cba
   image_cropper: f25bdfbf1ef970c9a0a0f78306fb6a0aaac7229e
   image_picker: 16e5fec1fbc87fd3b297c53e4048521eaf17cd06
-  intro_slider: 85847639533bfd8e898d76844e0aa2cf412ee190
   location_permissions: 67cfaff583afbb027a9f9248196f4b79c40f3cdc
   Mantle: 2fa750afa478cd625a94230fbf1c13462f29395b
   nanopb: 2901f78ea1b7b4015c860c2fdd1ea2fee1a18d48
   package_info: 78cabb3c322943c55d39676f4a5bfc748c01d055
   path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
-  permission_handler: 6a1b2f94f866da8bd19fa67f3c8f4b9f38580efb
+  permission_handler: d59f41439f5bc6c4d1005f3355e98f05ddc68ece
   Protobuf: 3f617b9a6e73605565086864c9bc26b2bf2dd5a3
   screen: abd91ca7bf3426e1cc3646d27e9b2358d6bf07b0
   shared_preferences: 1feebfa37bb57264736e16865e7ffae7fc99b523

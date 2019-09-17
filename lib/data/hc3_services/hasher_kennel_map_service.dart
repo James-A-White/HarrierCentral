@@ -29,6 +29,8 @@ class HasherKennelMapModel {
       this.mismanagementRoleFlags,
       this.userRoleFlags,
       this.appAccessFlags,
+      this.currentPackRunCount,
+      this.currentHaringCount,
       this.historicalPackRunCount,
       this.historicalHaringCount,
       this.historicalCountIsEstimate,
@@ -49,6 +51,8 @@ class HasherKennelMapModel {
   final int mismanagementRoleFlags;
   final int userRoleFlags;
   final int appAccessFlags;
+  final int currentPackRunCount;
+  final int currentHaringCount;
   final int historicalPackRunCount;
   final int historicalHaringCount;
   final int historicalCountIsEstimate;
@@ -77,6 +81,8 @@ class HasherKennelMapModel {
           mismanagementRoleFlags: jsonItem['mismanagementRoleFlags'] ?? 0,
           userRoleFlags: jsonItem['userRoleFlags'],
           appAccessFlags: jsonItem['appAccessFlags'],
+          currentPackRunCount: jsonItem['currentPackRunCount'],
+          currentHaringCount: jsonItem['currentHaringCount'],
           historicalPackRunCount: jsonItem['historicalPackRunCount'],
           historicalHaringCount: jsonItem['historicalHaringCount'],
           historicalCountIsEstimate: jsonItem['historicalCountIsEstimate'],
@@ -125,6 +131,8 @@ class HasherKennelMapTableHelper {
   static const String colMismanagementRoleFlags = 'mismanagementRoleFlags';
   static const String colUserRoleFlags = 'userRoleFlags';
   static const String colAppAccessFlags = 'appAccessFlags';
+  static const String colCurrentPackRunCount= 'currentPackRunCount';
+  static const String colCurrentHaringCount= 'currentHaringCount';
   static const String colHistoricalPackRunCount = 'historicalPackRunCount';
   static const String colHistoricalHaringCount = 'historicalHaringCount';
   static const String colHistoricalCountIsEstimate = 'historicalCountIsEstimate';
@@ -180,6 +188,8 @@ class HasherKennelMapTableHelper {
             $colMismanagementRoleFlags INT,
             $colUserRoleFlags INT,
             $colAppAccessFlags INT,
+            $colCurrentPackRunCount INT,
+            $colCurrentHaringCount INT,
             $colHistoricalPackRunCount INT,
             $colHistoricalHaringCount INT,
             $colHistoricalCountIsEstimate INT,
@@ -212,6 +222,8 @@ class HasherKennelMapTableHelper {
       HasherKennelMapTableHelper.colMismanagementRoleFlags: item.mismanagementRoleFlags,
       HasherKennelMapTableHelper.colUserRoleFlags: item.userRoleFlags,
       HasherKennelMapTableHelper.colAppAccessFlags: item.appAccessFlags,
+      HasherKennelMapTableHelper.colCurrentPackRunCount: item.currentPackRunCount,
+      HasherKennelMapTableHelper.colCurrentHaringCount: item.currentHaringCount,
       HasherKennelMapTableHelper.colHistoricalPackRunCount: item.historicalPackRunCount,
       HasherKennelMapTableHelper.colHistoricalHaringCount: item.historicalHaringCount,
       HasherKennelMapTableHelper.colHistoricalCountIsEstimate: item.historicalCountIsEstimate,
@@ -238,6 +250,8 @@ class HasherKennelMapTableHelper {
       HasherKennelMapTableHelper.colMismanagementRoleFlags: inputMap[HasherKennelMapTableHelper.colMismanagementRoleFlags],
       HasherKennelMapTableHelper.colUserRoleFlags: inputMap[HasherKennelMapTableHelper.colUserRoleFlags],
       HasherKennelMapTableHelper.colAppAccessFlags: inputMap[HasherKennelMapTableHelper.colAppAccessFlags],
+      HasherKennelMapTableHelper.colCurrentPackRunCount: inputMap[HasherKennelMapTableHelper.colCurrentPackRunCount],
+      HasherKennelMapTableHelper.colCurrentHaringCount: inputMap[HasherKennelMapTableHelper.colCurrentHaringCount],
       HasherKennelMapTableHelper.colHistoricalPackRunCount: inputMap[HasherKennelMapTableHelper.colHistoricalPackRunCount],
       HasherKennelMapTableHelper.colHistoricalHaringCount: inputMap[HasherKennelMapTableHelper.colHistoricalHaringCount],
       HasherKennelMapTableHelper.colHistoricalCountIsEstimate: inputMap[HasherKennelMapTableHelper.colHistoricalCountIsEstimate],
@@ -264,6 +278,8 @@ class HasherKennelMapTableHelper {
       mismanagementRoleFlags: map[HasherKennelMapTableHelper.colMismanagementRoleFlags],
       userRoleFlags: map[HasherKennelMapTableHelper.colUserRoleFlags],
       appAccessFlags: map[HasherKennelMapTableHelper.colAppAccessFlags],
+      currentPackRunCount: map[HasherKennelMapTableHelper.colCurrentPackRunCount],
+      currentHaringCount: map[HasherKennelMapTableHelper.colCurrentHaringCount],
       historicalPackRunCount: map[HasherKennelMapTableHelper.colHistoricalPackRunCount],
       historicalHaringCount: map[HasherKennelMapTableHelper.colHistoricalHaringCount],
       historicalCountIsEstimate: map[HasherKennelMapTableHelper.colHistoricalCountIsEstimate],

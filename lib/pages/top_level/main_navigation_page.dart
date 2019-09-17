@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/database/migrations.dart';
@@ -15,6 +16,7 @@ import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
+import 'package:harrier_central/pages/history_sub_pages/add_user_run_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);
@@ -117,9 +119,53 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
           child: Scaffold(
+            floatingActionButton: 
+            currentPage != 2 ?
+            Container():
+            
+            SpeedDial(
+              // both default to 16
+              marginRight: 18,
+              marginBottom: 30,
+              animatedIcon: AnimatedIcons.menu_close,
+              animatedIconTheme: const IconThemeData(size: 22.0),
+              // this is ignored if animatedIcon is non null
+              // child:const  Icon(Icons.add),
+              visible: true,
+              curve: Curves.bounceIn,
+              overlayColor: Colors.black,
+              overlayOpacity: 0.5,
+              onOpen: () {
+                //_scaffoldKey.currentState.hideCurrentSnackBar();
+              },
+              onClose: () => print('DIAL CLOSED'),
+              tooltip: 'Speed Dial',
+              heroTag: 'speed-dial-hero-tag',
+              backgroundColor: Theme.of(context).accentColor,
+              foregroundColor: Colors.white,
+              elevation: 8.0,
+              shape: CircleBorder(),
+              children: <SpeedDialChild>[
+                SpeedDialChild(
+                  child: const Icon(MaterialCommunityIcons.email),
+                  backgroundColor: Colors.teal[800],
+                  label: 'Add Hash run',
+                  labelStyle: const TextStyle(fontSize: 18.0),
+                  onTap: () => Navigator.push<dynamic>(
+                            context,
+                            MaterialPageRoute<dynamic>(builder: (BuildContext context) => const AddUserRunPage(pageType: EnumAddUserRunType.addUserRun)),
+                          ),
+                ),
+
+              ],
+            ),
+
+
             appBar: AppBar(
               backgroundColor: themeAppBarBackground,
               title: Text(appBarText),
+              
+                        
             ),
             body: Container(
               decoration: const BoxDecoration(color: Colors.white),
