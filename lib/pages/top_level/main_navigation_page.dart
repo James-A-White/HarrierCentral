@@ -119,53 +119,55 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
           child: Scaffold(
-            floatingActionButton: 
-            currentPage != 2 ?
-            Container():
-            
-            SpeedDial(
-              // both default to 16
-              marginRight: 18,
-              marginBottom: 30,
-              animatedIcon: AnimatedIcons.menu_close,
-              animatedIconTheme: const IconThemeData(size: 22.0),
-              // this is ignored if animatedIcon is non null
-              // child:const  Icon(Icons.add),
-              visible: true,
-              curve: Curves.bounceIn,
-              overlayColor: Colors.black,
-              overlayOpacity: 0.5,
-              onOpen: () {
-                //_scaffoldKey.currentState.hideCurrentSnackBar();
-              },
-              onClose: () => print('DIAL CLOSED'),
-              tooltip: 'Speed Dial',
-              heroTag: 'speed-dial-hero-tag',
-              backgroundColor: Theme.of(context).accentColor,
-              foregroundColor: Colors.white,
-              elevation: 8.0,
-              shape: CircleBorder(),
-              children: <SpeedDialChild>[
-                SpeedDialChild(
-                  child: const Icon(MaterialCommunityIcons.email),
-                  backgroundColor: Colors.teal[800],
-                  label: 'Add Hash run',
-                  labelStyle: const TextStyle(fontSize: 18.0),
-                  onTap: () => Navigator.push<dynamic>(
-                            context,
-                            MaterialPageRoute<dynamic>(builder: (BuildContext context) => const AddUserRunPage(pageType: EnumAddUserRunType.addUserRun)),
-                          ),
-                ),
+            // floatingActionButton: currentPage != 2
+            //     ? Container()
+            //     : SpeedDial(
+            //         // both default to 16
+            //         marginRight: 18,
+            //         marginBottom: 30,
+            //         animatedIcon: AnimatedIcons.menu_close,
+            //         animatedIconTheme: const IconThemeData(size: 22.0),
+            //         // this is ignored if animatedIcon is non null
+            //         // child:const  Icon(Icons.add),
+            //         visible: true,
+            //         curve: Curves.bounceIn,
+            //         overlayColor: Colors.black,
+            //         overlayOpacity: 0.5,
+            //         onOpen: () {
+            //           //_scaffoldKey.currentState.hideCurrentSnackBar();
+            //         },
+            //         onClose: () => print('DIAL CLOSED'),
+            //         tooltip: 'Speed Dial',
+            //         heroTag: 'speed-dial-hero-tag',
+            //         backgroundColor: Theme.of(context).accentColor,
+            //         foregroundColor: Colors.white,
+            //         elevation: 8.0,
+            //         shape: CircleBorder(),
+            //         children: <SpeedDialChild>[
+            //           SpeedDialChild(
+            //             child: const Icon(MaterialCommunityIcons.plus_circle),
+            //             backgroundColor: Colors.blue[400],
+            //             label: 'Add current run',
+            //             labelStyle: const TextStyle(fontSize: 18.0),
+            //             onTap: () {
 
-              ],
-            ),
-
-
+            //             },
+            //           ),
+            //           SpeedDialChild(
+            //             child: const Icon(MaterialCommunityIcons.plus_circle),
+            //             backgroundColor: Colors.red[400],
+            //             label: 'Add past run',
+            //             labelStyle: const TextStyle(fontSize: 18.0),
+            //             onTap: () => Navigator.push<dynamic>(
+            //               context,
+            //               MaterialPageRoute<dynamic>(builder: (BuildContext context) => const AddUserRunPage(pageType: EnumAddUserRunType.addUserRun)),
+            //             ),
+            //           ),
+            //         ],
+            //       ),
             appBar: AppBar(
               backgroundColor: themeAppBarBackground,
               title: Text(appBarText),
-              
-                        
             ),
             body: Container(
               decoration: const BoxDecoration(color: Colors.white),
