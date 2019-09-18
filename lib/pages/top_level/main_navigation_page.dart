@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+//import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/database/migrations.dart';
@@ -16,7 +16,7 @@ import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
-import 'package:harrier_central/pages/history_sub_pages/add_user_run_page.dart';
+//import 'package:harrier_central/pages/history_sub_pages/add_user_run_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);
