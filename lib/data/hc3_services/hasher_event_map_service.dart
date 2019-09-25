@@ -336,7 +336,7 @@ class HasherEventMapService {
           doNormalizeMap = (testMap.length - 1) != jsonItem.length;
           if (doNormalizeMap)
           {
-            print('Normalize map called for $thisTable, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}' );
+            print('Normalize map called for ${HasherEventMapTableHelper.getTableName(tblType)}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}' );
           }
         }
 

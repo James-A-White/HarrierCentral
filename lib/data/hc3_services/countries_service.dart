@@ -239,7 +239,11 @@ class CountriesService {
 
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = CountriesTableHelper.normalizeMap(jsonItem);
-          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
+                    doNormalizeMap = (testMap.length - 1) != jsonItem.length;
+          if (doNormalizeMap)
+          {
+            print('Normalize map called for ${CountriesTableHelper.tableName}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}' );
+          }
         }
 
         final int percentage = (100 * (j / jsonResults.length)).round();
