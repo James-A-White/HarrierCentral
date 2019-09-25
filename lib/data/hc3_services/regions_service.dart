@@ -105,6 +105,7 @@ class RegionsTableHelper {
       RegionsTableHelper.colCountryId: inputMap[RegionsTableHelper.colCountryId],
       RegionsTableHelper.colFlagFile: inputMap[RegionsTableHelper.colFlagFile],
       RegionsTableHelper.colUpdatedAt: inputMap[RegionsTableHelper.colUpdatedAt],
+      RegionsTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[RegionsTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       RegionsTableHelper.colRemoved: inputMap[RegionsTableHelper.colRemoved],
     };
 
@@ -169,7 +170,7 @@ class RegionsService {
     final int len = jsonResultSets.length;
     int lastPercentage = 0;
 
-    print('Region records received from cloud = $len');
+    print('Region recordsets received from cloud = $len');
 
     for (int i = 0; i < jsonResultSets.length; i++) {
       final List<dynamic> jsonResults = jsonResultSets[i];
@@ -179,7 +180,7 @@ class RegionsService {
 
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = RegionsTableHelper.normalizeMap(jsonItem);
-          doNormalizeMap = testMap.length != jsonItem.length;
+          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
         }
 
         final int percentage = (100 * (j / jsonResults.length)).round();

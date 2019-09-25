@@ -158,12 +158,13 @@ class HashersTableHelper {
       HashersTableHelper.colLastName: inputMap[HashersTableHelper.colLastName],
       HashersTableHelper.colDispName: inputMap[HashersTableHelper.colDispName],
       HashersTableHelper.colHashName: inputMap[HashersTableHelper.colHashName],
-      HashersTableHelper.colEmail: inputMap[HashersTableHelper.colEmail],
+      //HashersTableHelper.colEmail: inputMap[HashersTableHelper.colEmail],  // we don't pull eMail from the server for privacy reasons
       HashersTableHelper.colPhoto: inputMap[HashersTableHelper.colPhoto],
       HashersTableHelper.colDispPref: inputMap[HashersTableHelper.colDispPref],
       HashersTableHelper.colResetCode: inputMap[HashersTableHelper.colResetCode],
       HashersTableHelper.colQrCode: inputMap[HashersTableHelper.colQrCode],
       HashersTableHelper.colUpdatedAt: inputMap[HashersTableHelper.colUpdatedAt],
+      HashersTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[HashersTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       HashersTableHelper.colRemoved: inputMap[HashersTableHelper.colRemoved],
     };
 
@@ -260,7 +261,7 @@ class HashersService {
     final int len = jsonResultSets.length;
     int lastPercentage = 0;
 
-    print('Hasher records received from cloud = $len');
+    print('Hasher recordsets received from cloud = $len');
 
     for (int i = 0; i < jsonResultSets.length; i++) {
       final List<dynamic> jsonResults = jsonResultSets[i];
@@ -270,7 +271,7 @@ class HashersService {
 
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = HashersTableHelper.normalizeMap(jsonItem);
-          doNormalizeMap = testMap.length != jsonItem.length;
+          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
         }
 
         final int percentage = (100 * (j / jsonResults.length)).round();

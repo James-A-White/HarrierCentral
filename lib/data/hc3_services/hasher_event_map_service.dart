@@ -238,6 +238,7 @@ class HasherEventMapTableHelper {
       HasherEventMapTableHelper.colEmail: inputMap[HasherEventMapTableHelper.colEmail],
       HasherEventMapTableHelper.colPhoneNumber: inputMap[HasherEventMapTableHelper.colPhoneNumber],
       HasherEventMapTableHelper.colUpdatedAt: inputMap[HasherEventMapTableHelper.colUpdatedAt],
+      HasherEventMapTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[HasherEventMapTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       HasherEventMapTableHelper.colRemoved: inputMap[HasherEventMapTableHelper.colRemoved],
     };
 
@@ -321,7 +322,7 @@ class HasherEventMapService {
     final int len = jsonResultSets.length;
     int lastPercentage = 0;
 
-    print('Hasher event map records received from cloud = $len');
+    print('Hasher event map recordsets received from cloud = $len');
 
     for (int i = 0; i < jsonResultSets.length; i++) {
       final List<dynamic> jsonResults = jsonResultSets[i];
@@ -331,7 +332,7 @@ class HasherEventMapService {
 
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = HasherEventMapTableHelper.normalizeMap(jsonItem);
-          doNormalizeMap = testMap.length != jsonItem.length;
+          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
         }
 
         final int percentage = (100 * (j / jsonResults.length)).round();

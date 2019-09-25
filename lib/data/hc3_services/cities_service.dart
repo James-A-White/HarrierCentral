@@ -128,6 +128,7 @@ class CitiesTableHelper {
       CitiesTableHelper.colCityAscii: inputMap[CitiesTableHelper.colCityAscii],
       CitiesTableHelper.colFlagFile: inputMap[CitiesTableHelper.colFlagFile],
       CitiesTableHelper.colUpdatedAt: inputMap[CitiesTableHelper.colUpdatedAt],
+      CitiesTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[CitiesTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       CitiesTableHelper.colRemoved: inputMap[CitiesTableHelper.colRemoved],
     };
 
@@ -204,7 +205,7 @@ class CitiesService {
 
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = CitiesTableHelper.normalizeMap(jsonItem);
-          doNormalizeMap = testMap.length != jsonItem.length;
+          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
         }
 
         final int percentage = (100 * (j / jsonResults.length)).round();

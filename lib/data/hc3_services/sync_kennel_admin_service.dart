@@ -33,18 +33,16 @@ class SyncKennelAdminService {
   }
 
   Future<void> getLastUpdatedTimes(Database db, int flags) async {
-    _kennelLastUpdated = (flags & flagKennelTable) == 0 ? 0 : await getLastUpdatedTime(db, KennelsTableHelper.colUpdatedAtValue, KennelsTableHelper.tableName);
-    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? 0 : await getLastUpdatedTime(db, HashersTableHelper.colUpdatedAtValue, HashersTableHelper.tableName);
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? 0 : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin));
+    _kennelLastUpdated = (flags & flagKennelTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, KennelsTableHelper.colUpdatedAtValue, KennelsTableHelper.tableName);
+    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, HashersTableHelper.colUpdatedAtValue, HashersTableHelper.tableName);
+    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin));
   }
 
   Future<bool> updateFromBackend(Database db, int flags, bool forceRefresh, String kennelId, {Function informUser}) async {
-    
-    if (globalConnectionStatus == connectionStatus_notConnected)
-    {
+    if (globalConnectionStatus == connectionStatus_notConnected) {
       return false;
     }
-  
+
     if (getStringPref(StringPrefsEnum.adminKennelId) != kennelId) {
       final HasherKennelMapService hkm2srv = HasherKennelMapService();
 
@@ -54,15 +52,16 @@ class SyncKennelAdminService {
       await setStringPref(StringPrefsEnum.adminKennelId, kennelId);
     }
 
-    final int kennelsLastUpdate = (flags & flagKennelTable) == 0 ? null : getIntPref(KennelsTableHelper.lastUpdatedKey) ?? 0;
-    final int hashersLastUpdate = (flags & flagHashersTable) == 0 ? null : getIntPref(HashersTableHelper.lastUpdatedKey) ?? 0;
-    final int hasherKennelMapLastUpdate = (flags & flagHasherKennelMapTable) == 0 ? null : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(HasherKennelMapTableType.kennelAdmin)) ?? 0;
+    // final int kennelsLastUpdate = (flags & flagKennelTable) == 0 ? null : getIntPref(KennelsTableHelper.lastUpdatedKey) ?? 0;
+    // final int hashersLastUpdate = (flags & flagHashersTable) == 0 ? null : getIntPref(HashersTableHelper.lastUpdatedKey) ?? 0;
+    // final int hasherKennelMapLastUpdate = (flags & flagHasherKennelMapTable) == 0 ? null : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(HasherKennelMapTableType.kennelAdmin)) ?? 0;
 
-    if (forceRefresh ||
-        ((kennelsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - kennelsLastUpdate) > KennelsTableHelper.forceRequeryInterval) ||
-        ((hashersLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hashersLastUpdate) > HashersTableHelper.forceRequeryInterval) ||
-        ((hasherKennelMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherKennelMapLastUpdate) > HasherKennelMapTableHelper.forceRequeryInterval)
-        ) {
+    if (forceRefresh || true)
+    // ((kennelsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - kennelsLastUpdate) > KennelsTableHelper.forceRequeryInterval) ||
+    // ((hashersLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hashersLastUpdate) > HashersTableHelper.forceRequeryInterval) ||
+    // ((hasherKennelMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherKennelMapLastUpdate) > HasherKennelMapTableHelper.forceRequeryInterval)
+    // )
+    {
       // check to see if we need to clear the cache
       //int lastCacheClear = getIntPref(CitiesTableHelper.lastCacheClearKey);
 
@@ -87,9 +86,9 @@ class SyncKennelAdminService {
       // the table and add one second to it
       await getLastUpdatedTimes(db, flags);
 
-      final DateTime kennelsUpdatedAfter = _kennelLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelLastUpdated + 1000);
-      final DateTime hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
-      final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+      final DateTime kennelsUpdatedAfter = _kennelLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_kennelLastUpdated + 1000);
+      final DateTime hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
+      final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
@@ -123,12 +122,11 @@ class SyncKennelAdminService {
     return true;
   }
 
-  static Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Database db,Function informUser}) async {
-    
+  static Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Database db, Function informUser}) async {
     List<dynamic> adHocData;
 
     db ??= await DBProvider.db.database;
-    
+
     if (jsonResults.startsWith('[[')) {
       jsonResults = jsonResults.substring(1, jsonResults.length - 1);
     }
@@ -144,7 +142,6 @@ class SyncKennelAdminService {
         print('kennels updated');
       }
 
-
       if (ms.startsWith(r'[{"hasherId"')) {
         final HashersService hSrv = HashersService();
         await hSrv.bulkUpdateDatabase('[$ms]', db, informUser);
@@ -158,7 +155,7 @@ class SyncKennelAdminService {
       }
 
       if (ms.startsWith(r'[{"adHocDataId"')) {
-        final List<dynamic> adHocItems = jsonDecode('$ms'); 
+        final List<dynamic> adHocItems = jsonDecode('$ms');
         if ((adHocItems != null) && (adHocItems.isNotEmpty)) {
           adHocData = adHocItems;
         }

@@ -218,6 +218,7 @@ class PaymentsTableHelper {
       PaymentsTableHelper.colPaymentReference: inputMap[PaymentsTableHelper.colPaymentReference],
       PaymentsTableHelper.colNotes: inputMap[PaymentsTableHelper.colNotes],
       PaymentsTableHelper.colUpdatedAt: inputMap[PaymentsTableHelper.colUpdatedAt],
+      PaymentsTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[PaymentsTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       PaymentsTableHelper.colRemoved: inputMap[PaymentsTableHelper.colRemoved],
     };
 
@@ -320,7 +321,7 @@ class PaymentsService {
     final int len = jsonResultSets.length;
     int lastPercentage = 0;
 
-    print('Payment records received from cloud = $len');
+    print('Payment recordsets received from cloud = $len');
 
     for (int i = 0; i < jsonResultSets.length; i++) {
       final List<dynamic> jsonResults = jsonResultSets[i];
@@ -330,7 +331,7 @@ class PaymentsService {
 
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = PaymentsTableHelper.normalizeMap(jsonItem);
-          doNormalizeMap = testMap.length != jsonItem.length;
+          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
         }
 
         final int percentage = (100 * (j / jsonResults.length)).round();

@@ -157,6 +157,7 @@ class CountriesTableHelper {
       CountriesTableHelper.colCurrencySymbol: inputMap[CountriesTableHelper.colCurrencySymbol],
       CountriesTableHelper.colDigitsAfterDecimal: inputMap[CountriesTableHelper.colDigitsAfterDecimal],
       CountriesTableHelper.colUpdatedAt: inputMap[CountriesTableHelper.colUpdatedAt],
+      CountriesTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[CountriesTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       CountriesTableHelper.colRemoved: inputMap[CountriesTableHelper.colRemoved],
     };
 
@@ -238,7 +239,7 @@ class CountriesService {
 
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = CountriesTableHelper.normalizeMap(jsonItem);
-          doNormalizeMap = testMap.length != jsonItem.length;
+          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
         }
 
         final int percentage = (100 * (j / jsonResults.length)).round();

@@ -301,6 +301,7 @@ class KennelsTableHelper {
       KennelsTableHelper.colKennelPaymentUrlExpires: inputMap[KennelsTableHelper.colKennelPaymentUrlExpires],
       KennelsTableHelper.colRunCountStartDate: inputMap[KennelsTableHelper.colRunCountStartDate],
       KennelsTableHelper.colUpdatedAt: inputMap[KennelsTableHelper.colUpdatedAt],
+      KennelsTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[KennelsTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       KennelsTableHelper.colRemoved: inputMap[KennelsTableHelper.colRemoved],
     };
 
@@ -398,7 +399,7 @@ class KennelsService {
     final int len = jsonResultSets.length;
     int lastPercentage = 0;
 
-    print('Kennel records received from cloud = $len');
+    print('Kennel recordsets received from cloud = $len');
 
     for (int i = 0; i < jsonResultSets.length; i++) {
       final List<dynamic> jsonResults = jsonResultSets[i];
@@ -408,7 +409,7 @@ class KennelsService {
 
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = KennelsTableHelper.normalizeMap(jsonItem);
-          doNormalizeMap = testMap.length != jsonItem.length;
+          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
         }
 
         final int percentage = (100 * (j / jsonResults.length)).round();

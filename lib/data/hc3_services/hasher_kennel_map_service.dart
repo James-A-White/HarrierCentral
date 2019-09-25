@@ -259,6 +259,7 @@ class HasherKennelMapTableHelper {
       HasherKennelMapTableHelper.colMembershipExpirationDate: inputMap[HasherKennelMapTableHelper.colMembershipExpirationDate],
       HasherKennelMapTableHelper.colMemberSince: inputMap[HasherKennelMapTableHelper.colMemberSince],
       HasherKennelMapTableHelper.colUpdatedAt: inputMap[HasherKennelMapTableHelper.colUpdatedAt],
+      HasherKennelMapTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[HasherKennelMapTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       HasherKennelMapTableHelper.colRemoved: inputMap[HasherKennelMapTableHelper.colRemoved],
     };
 
@@ -345,7 +346,7 @@ class HasherKennelMapService {
     final int len = jsonResultSets.length;
     int lastPercentage = 0;
 
-    print('Kennel records received from cloud = $len');
+    print('Hasher Kennel Map recordsets received from cloud = $len');
 
     for (int i = 0; i < jsonResultSets.length; i++) {
       final List<dynamic> jsonResults = jsonResultSets[i];
@@ -355,7 +356,7 @@ class HasherKennelMapService {
 
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = HasherKennelMapTableHelper.normalizeMap(jsonItem);
-          doNormalizeMap = testMap.length != jsonItem.length;
+          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
         }
 
         final int percentage = (100 * (j / jsonResults.length)).round();

@@ -264,6 +264,7 @@ class NarrowEventsTableHelper {
       NarrowEventsTableHelper.colEventPaymentUrlExpires: inputMap[NarrowEventsTableHelper.colEventPaymentUrlExpires],
       NarrowEventsTableHelper.colUnconfirmedBankXferCount: inputMap[NarrowEventsTableHelper.colUnconfirmedBankXferCount],
       NarrowEventsTableHelper.colUpdatedAt: inputMap[NarrowEventsTableHelper.colUpdatedAt],
+      NarrowEventsTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[NarrowEventsTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       NarrowEventsTableHelper.colRemoved: inputMap[NarrowEventsTableHelper.colRemoved],
     };
 
@@ -355,7 +356,7 @@ class NarrowEventsService {
     final int len = jsonResultSets.length;
     int lastPercentage = 0;
 
-    print('Event records received from cloud = $len');
+    print('Event recordsets received from cloud = $len');
 
     for (int i = 0; i < jsonResultSets.length; i++) {
       final List<dynamic> jsonResults = jsonResultSets[i];
@@ -365,7 +366,7 @@ class NarrowEventsService {
 
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = NarrowEventsTableHelper.normalizeMap(jsonItem);
-          doNormalizeMap = testMap.length != jsonItem.length;
+          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
         }
 
         final int percentage = (100 * (j / jsonResults.length)).round();

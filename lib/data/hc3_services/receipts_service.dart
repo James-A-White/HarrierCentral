@@ -170,6 +170,7 @@ class ReceiptsTableHelper {
       ReceiptsTableHelper.colReimbursedAmount: inputMap[ReceiptsTableHelper.colReimbursedAmount],
       ReceiptsTableHelper.colReimbursedNotes: inputMap[ReceiptsTableHelper.colReimbursedNotes],
       ReceiptsTableHelper.colUpdatedAt: inputMap[ReceiptsTableHelper.colUpdatedAt],
+      ReceiptsTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[ReceiptsTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       ReceiptsTableHelper.colRemoved: inputMap[ReceiptsTableHelper.colRemoved],
     };
 
@@ -268,7 +269,7 @@ class ReceiptsService {
     final int len = jsonResultSets.length;
     int lastPercentage = 0;
 
-    print('Receipt records received from cloud = $len');
+    print('Receipt recordsets received from cloud = $len');
 
     for (int i = 0; i < jsonResultSets.length; i++) {
       final List<dynamic> jsonResults = jsonResultSets[i];
@@ -278,7 +279,7 @@ class ReceiptsService {
 
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = ReceiptsTableHelper.normalizeMap(jsonItem);
-          doNormalizeMap = testMap.length != jsonItem.length;
+          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
         }
 
         final int percentage = (100 * (j / jsonResults.length)).round();
