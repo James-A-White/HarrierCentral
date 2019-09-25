@@ -1,6 +1,6 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 0.8.65+210
+version: 0.8.66+211
 
 environment:
   sdk: ">=2.4.0 <3.0.0"
