@@ -355,7 +355,7 @@ class PaymentSnackBar extends SnackBar {
                                 },
                               ),
                               Text(
-                                'Paid ${formatMoney(packMember.isMember != 1 ? eventAggregate.extensions.memberPrice : eventAggregate.extensions.nonMemberPrice)} cash',
+                                'Paid ${formatMoney(packMember.isMember != 0 ? eventAggregate.extensions.memberPrice : eventAggregate.extensions.nonMemberPrice)} cash',
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   fontFamily: 'AvenirNextCondensedDemiBold',
@@ -421,7 +421,7 @@ class PaymentSnackBar extends SnackBar {
                                   fontFamily: 'AvenirNextCondensedDemiBold',
                                   fontStyle: FontStyle.normal,
                                   fontSize: 15.0,
-                                  height: 0.7,
+                                  height: 0.9,
                                 ),
                               ),
                             ],
@@ -456,12 +456,14 @@ class PaymentSnackBar extends SnackBar {
                                   fontFamily: 'AvenirNextCondensedDemiBold',
                                   fontStyle: FontStyle.normal,
                                   fontSize: 15.0,
-                                  height: 0.7,
+                                  height: 0.9,
                                 ),
                               ),
                             ],
                           ),
                         ),
+                        
+                        (packMember.isMember == 0) ? Container() : 
                         Expanded(
                           flex: 1,
                           child: Column(
@@ -484,7 +486,7 @@ class PaymentSnackBar extends SnackBar {
                                   fontFamily: 'AvenirNextCondensedDemiBold',
                                   fontStyle: FontStyle.normal,
                                   fontSize: 15.0,
-                                  height: 0.7,
+                                  height: 0.9,
                                 ),
                               ),
                             ],
@@ -515,7 +517,7 @@ class PaymentSnackBar extends SnackBar {
                                   fontFamily: 'AvenirNextCondensedDemiBold',
                                   fontStyle: FontStyle.normal,
                                   fontSize: 15.0,
-                                  height: 0.7,
+                                  height: 0.9,
                                 ),
                               ),
                             ],
