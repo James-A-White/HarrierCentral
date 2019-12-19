@@ -50,7 +50,7 @@ const String QR_PREFIX_USER_RESET_CODE = 'URC:';
 const int mmAuthIsGm = 0x40000000;                // TODO(James): Needs implementation
 const int mmAuthCanGrantPermissions = 0x20000000; // TODO(James): Needs implementation
 
-const int mmAuthAllowEditRsvpFlag = 0x00000001;
+const int mmAuthAccessKennelAdmin = 0x00000001; // TODO(James): Needs implementation
 const int mmAuthAllowCheckInAndOutFlag = 0x00000002;
 const int mmAuthAllowHashCashFlag = 0x00000004;
 const int mmAuthAllowAddNewMemberFlag = 0x00000008; 
@@ -58,7 +58,7 @@ const int mmAuthAllowEnableDisableFacebookEvents = 0x00000010; // TODO(James): N
 const int mmAuthEditRuns = 0x00000020; // TODO(James): Needs implementation
 const int mmAuthGenerateRunQrCodes = 0x00000040; // TODO(James): Needs implementation
 const int mmAuthManageMembers = 0x00000080; // TODO(James): Needs implementation
-const int mmAuthAccessKennelAdmin = 0x00000100; // TODO(James): Needs implementation
+const int mmAuthAllowEditRsvpFlag = 0x00000100;
 const int mmAuthCanEditRunVisibility = 0x00000200; // TODO(James): Needs implementation
 
 const int cacheDurationAllHashers = 60 * 86400000; // 60 days cache duration
