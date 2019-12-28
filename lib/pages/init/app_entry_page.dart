@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -194,6 +195,10 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    deviceWidthScaleFactor ??= MediaQuery.of(context).size.width / BASE_DEVICE_WIDTH;
+    deviceHeightScaleFactor ??= MediaQuery.of(context).size.height / BASE_DEVICE_HEIGHT;
+    deviceMaxScaleFactor ??= max(deviceWidthScaleFactor,deviceHeightScaleFactor);
+    deviceMinScaleFactor ??= min(deviceWidthScaleFactor,deviceHeightScaleFactor);
     return Image.asset('images/init/splash_screen.jpg');
   }
 }

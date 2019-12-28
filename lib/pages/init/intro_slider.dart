@@ -2,6 +2,7 @@ import 'dart:core';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:harrier_central/util/globals.dart';
 
 import 'package:intro_slider/intro_slider.dart';
 import 'package:intro_slider/slide_object.dart';
@@ -19,25 +20,24 @@ class IntroSliderPage extends StatefulWidget {
 class _IntroSliderPageState extends State<IntroSliderPage> {
   List<Slide> slides = <Slide>[];
 
-  TextStyle titleStyle = const TextStyle(
-      color: Colors.black, fontSize: 36.0, fontFamily: 'AvenirNextRegular');
+  TextStyle titleStyle;
+  TextStyle descriptionStyle;
 
-  TextStyle descriptionStyle = const TextStyle(
-      color: Colors.black, fontSize: 28.0, fontFamily: 'AvenirNextRegular');
-
-    TextStyle navStyle = TextStyle(
-      color: themeAppBarBackground, fontSize: 20.0, fontFamily: 'AvenirNextDemiBold');
+    TextStyle navStyle;
 
 
   @override
   void initState() {
     super.initState();
-
-    addSlides();
   }
 
 
   void addSlides() {
+
+    descriptionStyle = TextStyle(color: Colors.black, fontSize: 24.0 * deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
+    titleStyle = TextStyle(color: Colors.black, fontSize: 32.0 * deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
+    navStyle = TextStyle(color: themeAppBarBackground, fontSize: 18.0 * deviceWidthScaleFactor, fontFamily: 'AvenirNextDemiBold');
+    
     slides.add(
       Slide(
         title: 'Welcome to Harrier Central',
@@ -46,8 +46,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         description: 'The World\'s Best Way to Manage Your Hash Life',
         styleDescription: descriptionStyle,
         pathImage: 'images/other/hc_app_icon.png',
-        //widthImage: 150,
-        heightImage: 150,
+        heightImage: 120 * deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 227, 227, 227),
         colorEnd: const Color.fromARGB(255, 227, 227, 227),
         directionColorBegin: Alignment.topRight,
@@ -63,7 +62,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
             'Instantly Find Hash Runs Around the Corner or Across the Globe!',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_map.png',
-        heightImage: 200,
+        heightImage: 120 * deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 172, 255, 161),
         colorEnd: const Color.fromARGB(255, 172, 255, 161),
         directionColorBegin: Alignment.topRight,
@@ -78,7 +77,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         description: 'Track Your Run Counts Across all Hash Kennels',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_run_counts.png',
-        heightImage: 270,
+        heightImage: 170 * deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 234, 195, 255),
         colorEnd: const Color.fromARGB(255, 234, 195, 255),
         directionColorBegin: Alignment.topRight,
@@ -94,7 +93,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
             'With new ways to pay for the Hash, you\'ll never fumble for cash again',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_cash.png',
-        heightImage: 220,
+        heightImage: 140 * deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 255, 244, 210),
         colorEnd: const Color.fromARGB(255, 255, 244, 210),
         directionColorBegin: Alignment.topRight,
@@ -110,7 +109,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
             'Powerful Tools Designed to Make It Easier to Manage Your Kennel',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_admin_tools.png',
-        heightImage: 180,
+        heightImage: 100 * deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 200, 200, 255),
         colorEnd: const Color.fromARGB(255, 200, 200, 255),
         directionColorBegin: Alignment.topRight,
@@ -126,7 +125,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
             'We don\'t Share Your Data with *Anyone* Outside of Harrier Central',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_data_security.png',
-        heightImage: 220,
+        heightImage: 140 * deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 255, 190, 180),
         colorEnd: const Color.fromARGB(255, 255, 190, 180),
         directionColorBegin: Alignment.topRight,
@@ -142,7 +141,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
             'There are dozens more features designed just for the Hash coming soon!',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_rocket.png',
-        heightImage: 260,
+        heightImage: 150 * deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 143, 234, 255),
         colorEnd: const Color.fromARGB(255, 143, 234, 255),
         directionColorBegin: Alignment.topRight,
@@ -158,21 +157,21 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
             'Now We Need Just a Bit of Information to Create Your Custom Harrier Central Experience!',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_info_sign.png',
-        //widthImage: 250,
-        heightImage: 180,
+        heightImage: 100 * deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 227, 227, 227),
         colorEnd: const Color.fromARGB(255, 227, 227, 227),
         directionColorBegin: Alignment.topRight,
         directionColorEnd: Alignment.bottomLeft,
       ),
     );
+    
 
   }
 
   Future<void> onDonePress() async {
     
     Navigator.of(context)
-        .pushReplacementNamed(RouteNames.PERMISSION_LOCATION_SLIDER.toString());
+        .pushReplacementNamed(RouteNames.PERMISSIONS_SLIDER.toString());
 
   }
 
@@ -220,6 +219,10 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (slides.isEmpty)
+    {
+      addSlides();
+    }
     return IntroSlider(
       // List slides
       slides: slides,
@@ -242,7 +245,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
       // Dot indicator
       colorDot: themeAppBarBackground40,
       colorActiveDot: themeAppBarBackground,
-      sizeDot: 9.0,
+      sizeDot: 6.5,
 
       // Show or hide status bar
       shouldHideStatusBar: true,

@@ -11,6 +11,7 @@ import 'package:harrier_central/util/routes.dart';
 
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   //debugPaintSizeEnabled=true;
 
   //timeDilation = 4.0;
@@ -21,10 +22,7 @@ void main() {
     //DeviceOrientation.landscapeRight
     ]);
 
-
   runApp(
-      
-
     MaterialApp(
       debugShowCheckedModeBanner: false,
         localizationsDelegates: const <LocalizationsDelegate<dynamic>> [

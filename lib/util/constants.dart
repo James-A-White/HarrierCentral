@@ -3,6 +3,9 @@
 const double DEFAULT_LATITUDE = 51.5033;
 const double DEFAULT_LONGITUDE = 0.1195;
 
+const num BASE_DEVICE_WIDTH = 320;
+const num BASE_DEVICE_HEIGHT = 576;
+
 const int LOGIN_TIMEOUT = 10;
 const int DEFAULT_HTTP_TIMEOUT = 10;
 
