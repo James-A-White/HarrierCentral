@@ -6,6 +6,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
@@ -20,8 +21,6 @@ class KennelMemberListItem extends StatelessWidget {
   final KennelMembersResults kennelMember;
   final Function modifyMembershipCallback;
   final Function toggleEmailPreferenceCallback;
-
-  static const num PROFILE_PIC_SIZE = 92.0;
 
   @override
   Widget build(BuildContext context) {

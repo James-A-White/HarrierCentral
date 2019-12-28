@@ -14,6 +14,10 @@ const num ALLOW_CHECKIN_SCAN_HOURS_AFTER_EVENT = 6;
 
 const int NOTIFICATION_DAYS_IN_FUTURE = 90;
 
+const num PROFILE_PIC_SIZE = 92.0;
+
+const num PROFILE_PIC_SIZE2 = 60.0;
+
 const int SPLASH_SCREEN_DISPLAY_TIME = 1;
 
 const String BASE_API_URL = 'https://harrier.azurewebsites.net/api/';

@@ -22,6 +22,11 @@ TextStyle bodyStyle = const TextStyle(color: Colors.white, fontFamily: 'AvenirNe
 
 TextStyle bodyStyleYellow = const TextStyle(color: Colors.yellow, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0);
 
+
+TextStyle bodyStyleSc = const TextStyle(color: Colors.white, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 12.0, height: 1.0);
+
+
+
 // TextStyle titleStyle = const TextStyle(
 //     color: Colors.white,
 //     fontFamily: 'AvenirNextRegular',
@@ -36,6 +41,10 @@ TextStyle textStyleDisabledButton = TextStyle(fontFamily: 'AvenirNextDemiBold', 
 TextStyle smallTitleStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0);
 
 TextStyle titleStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 24.0, height: 1.0);
+
+TextStyle largeTitleStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 32.0, height: 1.0);
+
+
 
 TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 24.0, height: 1.0);
 TextStyle headingStyle20 = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 20.0, height: 1.0);

@@ -4,6 +4,7 @@ import 'package:harrier_central/pages/facebook_login.dart';
 import 'package:harrier_central/pages/init/login_page.dart';
 import 'package:harrier_central/pages/init/avatar_icons_page.dart';
 import 'package:harrier_central/pages/init/intro_slider.dart';
+import 'package:harrier_central/pages/init/new_account.dart';
 import 'package:harrier_central/pages/init/permissions_slider.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
@@ -26,7 +27,7 @@ final Map<String, WidgetBuilder> routes = <String, WidgetBuilder>{
   RouteNames.MAIN_LANDING_PAGE.toString(): (BuildContext context) =>
       const MainNavigationPage(),
   RouteNames.NEW_ACCOUNT.toString(): (BuildContext context) =>
-      const LoginPage(),
+      const NewAccountPage(),
   RouteNames.INTRO_SLIDER.toString(): (BuildContext context) =>
       const IntroSliderPage(),
   RouteNames.PERMISSIONS_SLIDER.toString(): (BuildContext context) =>
