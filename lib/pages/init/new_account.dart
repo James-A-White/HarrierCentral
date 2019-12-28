@@ -60,7 +60,6 @@ class NewAccountPageContent extends StatefulWidget {
 
 class _NewAccountPageContentState extends State<NewAccountPageContent> {
 
-
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
@@ -70,7 +69,9 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
       final TextStyle localBodyStyle = bodyStyleSc.copyWith(fontSize: newFontSize, color: Colors.black);
       newFontSize = headingStyle.fontSize * deviceWidthScaleFactor;
 
-      final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize,);
+      final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize,height: 1.2);
+
+      final num spaceBetweenElements = (12.0 * deviceHeightScaleFactor) + ((deviceHeightScaleFactor - 1) * 45);
 
       return 
       Container(
@@ -80,9 +81,9 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
         mainAxisAlignment: MainAxisAlignment.start,
 
         children: <Widget>[
-          const SizedBox(height: 20,width: 20),
-          Text('Select an option',style: localHeadingStyle),
-          const SizedBox(height: 20,width: 20),
+          SizedBox(height: spaceBetweenElements,width: 20),
+          Text('Select an option to configure Harrier Central',style: localHeadingStyle,textAlign: TextAlign.center,),
+          SizedBox(height: spaceBetweenElements,width: 20),
           Container(
             padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -99,7 +100,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                   width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
                   height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
                   fit: BoxFit.fill,
-                  image: const AssetImage('images/avatars/avatar-2.png'),
+                  image: const AssetImage('images/icons/inviteCode.png'),
                 ),
                 const SizedBox(height: 1, width: 10),
                 Expanded(
@@ -115,7 +116,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
               ],
             ),
           ),
-          const SizedBox(height: 20,width: 20),
+          SizedBox(height: spaceBetweenElements,width: 20),
           Container(
             padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -132,7 +133,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                   width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
                   height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
                   fit: BoxFit.fill,
-                  image: const AssetImage('images/avatars/avatar-2.png'),
+                  image: const AssetImage('images/icons/facebookLogoCircle.png'),
                 ),
                 const SizedBox(height: 1, width: 10),
                 Expanded(
@@ -148,7 +149,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
               ],
             ),
           ),
-          const SizedBox(height: 20,width: 20),
+           SizedBox(height: spaceBetweenElements,width: 20),
           Container(
             padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -165,7 +166,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                   width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
                   height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
                   fit: BoxFit.fill,
-                  image: const AssetImage('images/avatars/avatar-2.png'),
+                  image: const AssetImage('images/icons/qrPhone.png'),
                 ),
                 const SizedBox(height: 1, width: 10),
                 Expanded(
@@ -181,7 +182,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
               ],
             ),
           ),
-          const SizedBox(height: 20,width: 20),
+           SizedBox(height: spaceBetweenElements,width: 20),
           Container(
             padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -198,7 +199,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                   width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
                   height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
                   fit: BoxFit.fill,
-                  image: const AssetImage('images/avatars/avatar-2.png'),
+                  image: const AssetImage('images/icons/pencil.png'),
                 ),
                 const SizedBox(height: 1, width: 10),
                 Expanded(
