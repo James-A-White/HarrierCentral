@@ -233,7 +233,7 @@ class KennelMemberListState extends State<KennelMembersList> {
           backgroundColor: Theme.of(context).accentColor,
           foregroundColor: Colors.white,
           elevation: 8.0,
-          shape: CircleBorder(),
+          shape: const CircleBorder(),
           children: <SpeedDialChild>[
             SpeedDialChild(
                 child: Icon(sortBySpeedDialIcon),

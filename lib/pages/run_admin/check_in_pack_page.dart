@@ -698,9 +698,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               Container(
                 height: 60,
                 margin: const EdgeInsets.only(left: 3, right: 10),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   border: Border(
-                    left: const BorderSide(color: Colors.black, width: 1.0),
+                    left: BorderSide(color: Colors.black, width: 1.0),
                   ),
                 ),
               ),
@@ -964,7 +964,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         backgroundColor: Theme.of(context).accentColor,
         foregroundColor: Colors.white,
         elevation: 8.0,
-        shape: CircleBorder(),
+        shape: const CircleBorder(),
         children: <SpeedDialChild>[
           SpeedDialChild(
             child: const Icon(Icons.filter_list),
@@ -1146,11 +1146,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                         fit: BoxFit.fill,
                         image: AssetImage(('images/avatars/' + packMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.png').toLowerCase()),
                       )
-                    : Image(
+                    : const Image(
                         width: LIST_ITEM_HEIGHT,
                         height: LIST_ITEM_HEIGHT,
                         fit: BoxFit.fill,
-                        image: const AssetImage('images/avatars/avatar-2.png'),
+                        image: AssetImage('images/avatars/avatar-2.png'),
                       ),
 
             Positioned(

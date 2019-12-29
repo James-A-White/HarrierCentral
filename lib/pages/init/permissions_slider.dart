@@ -223,7 +223,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
       shouldHideStatusBar: true,
 
       refFuncGoToTab: (dynamic refFunc) {
-        this.goToTab = refFunc;
+        goToTab = refFunc;
       },
     );
   }

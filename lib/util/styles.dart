@@ -91,7 +91,7 @@ TextStyle mediumTextBlack = const TextStyle(fontFamily: 'AvenirNextDemiBold', fo
 
 class Backgrounds {
   static BoxDecoration defaultHcBackground() {
-    return BoxDecoration(
+    return const BoxDecoration(
         image: DecorationImage(
       image: ExactAssetImage('images/backgrounds/hash_foot_background.png'),
       fit: BoxFit.cover,
@@ -99,7 +99,7 @@ class Backgrounds {
   }
 
   static BoxDecoration defaultHcBackgroundLight() {
-    return BoxDecoration(
+    return const BoxDecoration(
         image: DecorationImage(
       image: ExactAssetImage('images/backgrounds/hash_foot_background_light.png'),
       fit: BoxFit.cover,

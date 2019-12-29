@@ -166,7 +166,7 @@ class FindHasherPageState extends State<FindHasherPage> {
         backgroundColor: Theme.of(context).accentColor,
         foregroundColor: Colors.white,
         elevation: 8.0,
-        shape: CircleBorder(),
+        shape: const CircleBorder(),
         children: <SpeedDialChild>[
           SpeedDialChild(
             child: const Icon(FontAwesome.heart),
@@ -330,11 +330,11 @@ class HasherListView extends StatelessWidget {
                         fit: BoxFit.fill,
                         image: AssetImage(('images/avatars/' + hasherList[index].photo.toLowerCase().replaceFirst('bundle://', '') + '.png').toLowerCase()),
                       )
-                    : Image(
+                    : const Image(
                         width: 70.0,
                         height: 70.0,
                         fit: BoxFit.fill,
-                        image: const AssetImage('images/avatars/avatar-2.png'),
+                        image: AssetImage('images/avatars/avatar-2.png'),
                       ),
 
             Positioned(

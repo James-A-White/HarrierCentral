@@ -919,11 +919,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                               fit: BoxFit.fill,
                                               image: AssetImage(('images/avatars/' + thePackList[index].hasher.photo.toLowerCase().replaceFirst('bundle://', '') + '.png').toLowerCase()),
                                             )
-                                          : Image(
+                                          : const Image(
                                               width: 300.0,
                                               height: 300.0,
                                               fit: BoxFit.fill,
-                                              image: const AssetImage('images/avatars/avatar-2.png'),
+                                              image: AssetImage('images/avatars/avatar-2.png'),
                                             ),
                                   const Positioned(
                                     right: 1.0,
@@ -1060,7 +1060,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           backgroundColor: Theme.of(context).accentColor,
           foregroundColor: Colors.white,
           elevation: 8.0,
-          shape: CircleBorder(),
+          shape: const CircleBorder(),
           children: <SpeedDialChild>[
             SpeedDialChild(
               child: const Icon(Feather.x),

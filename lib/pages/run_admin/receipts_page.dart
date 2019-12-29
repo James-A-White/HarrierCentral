@@ -95,7 +95,7 @@ class ReceiptsListState extends State<ReceiptsList> {
           backgroundColor: Theme.of(context).accentColor,
           foregroundColor: Colors.white,
           elevation: 8.0,
-          shape: CircleBorder(),
+          shape: const CircleBorder(),
           children: <SpeedDialChild>[
             SpeedDialChild(
                 child: const Icon(MaterialCommunityIcons.playlist_plus),

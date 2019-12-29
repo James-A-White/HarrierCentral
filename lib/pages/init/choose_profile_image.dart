@@ -121,7 +121,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                 padding: const EdgeInsets.only(right: 5),
                                 child: RaisedButton(
                                   color: imageTypeSelection == _SelectedImageTypeEnum.fromCamera ? TinyColor(Theme.of(context).accentColor).lighten(15).color : Theme.of(context).accentColor,
-                                  shape: RoundedRectangleBorder(borderRadius: const BorderRadius.only(topLeft: Radius.circular(30.0))),
+                                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(30.0))),
                                   child: Container(
                                     padding: const EdgeInsets.only(top: 10, bottom: 10),
                                     width: 120,
@@ -156,7 +156,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                 padding: const EdgeInsets.only(left: 5),
                                 child: RaisedButton(
                                   color: imageTypeSelection == _SelectedImageTypeEnum.fromGallery ? TinyColor(Theme.of(context).accentColor).lighten(15).color : Theme.of(context).accentColor,
-                                  shape: RoundedRectangleBorder(borderRadius: const BorderRadius.only(topRight: Radius.circular(30.0))),
+                                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(30.0))),
                                   child: Container(
                                     padding: const EdgeInsets.only(top: 10, bottom: 10),
                                     width: 120,
@@ -199,7 +199,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                 padding: const EdgeInsets.only(right: 5),
                                 child: RaisedButton(
                                   color: imageTypeSelection == _SelectedImageTypeEnum.avatar ? TinyColor(Theme.of(context).accentColor).lighten(15).color : Theme.of(context).accentColor,
-                                  shape: RoundedRectangleBorder(borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(30.0))),
+                                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30.0))),
                                   child: Container(
                                     padding: const EdgeInsets.only(top: 10, bottom: 10),
                                     width: 120,
@@ -234,7 +234,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                 padding: const EdgeInsets.only(left: 5),
                                 child: RaisedButton(
                                   color: facebookProfileImage == null ? Colors.grey : imageTypeSelection == _SelectedImageTypeEnum.facebookProfilePic ? TinyColor(Theme.of(context).accentColor).lighten(15).color : Theme.of(context).accentColor,
-                                  shape: RoundedRectangleBorder(borderRadius: const BorderRadius.only(bottomRight: Radius.circular(30.0))),
+                                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(bottomRight: Radius.circular(30.0))),
                                   child: Container(
                                     padding: const EdgeInsets.only(top: 10, bottom: 10),
                                     width: 120,

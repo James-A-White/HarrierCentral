@@ -324,14 +324,14 @@ class KennelListItemState extends State<KennelsListItem> {
         'title': 'Turn notifications on',
         'icon': <Widget>[
           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-          Positioned(
+          const Positioned(
             left: 3,
             top: 1.5,
             child: Image(
               width: 25.0,
               height: 25.0,
               fit: BoxFit.fill,
-              image: const AssetImage('images/icons/bell_gold_50px.png'),
+              image: AssetImage('images/icons/bell_gold_50px.png'),
             ),
           )
         ],
@@ -341,14 +341,14 @@ class KennelListItemState extends State<KennelsListItem> {
         'title': 'Turn notifications off',
         'icon': <Widget>[
           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-          Positioned(
+          const Positioned(
             left: 3,
             top: 1.5,
             child: Image(
               width: 25.0,
               height: 25.0,
               fit: BoxFit.fill,
-              image: const AssetImage('images/icons/bell_silver_strike_out_50px.png'),
+              image: AssetImage('images/icons/bell_silver_strike_out_50px.png'),
             ),
           )
         ],
@@ -399,14 +399,14 @@ class KennelListItemState extends State<KennelsListItem> {
         'title': 'Turn email alerts on',
         'icon': <Widget>[
           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-          Positioned(
+          const Positioned(
             left: 3,
             top: 1.5,
             child: Image(
               width: 25.0,
               height: 25.0,
               fit: BoxFit.fill,
-              image: const AssetImage('images/icons/envelope_gold_50px.png'),
+              image: AssetImage('images/icons/envelope_gold_50px.png'),
             ),
           )
         ],
@@ -416,14 +416,14 @@ class KennelListItemState extends State<KennelsListItem> {
         'title': 'Turn email alerts off',
         'icon': <Widget>[
           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-          Positioned(
+          const Positioned(
             left: 3,
             top: 1.5,
             child: Image(
               width: 25.0,
               height: 25.0,
               fit: BoxFit.fill,
-              image: const AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
+              image: AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
             ),
           )
         ],

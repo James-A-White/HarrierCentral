@@ -76,11 +76,11 @@ class KennelMemberListItem extends StatelessWidget {
                             fit: BoxFit.fill,
                             image: AssetImage(('images/avatars/' + kennelMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.png').toLowerCase()),
                           )
-                        : Image(
+                        : const Image(
                             width: PROFILE_PIC_SIZE,
                             height: PROFILE_PIC_SIZE,
                             fit: BoxFit.fill,
-                            image: const AssetImage('images/avatars/avatar-2.png'),
+                            image: AssetImage('images/avatars/avatar-2.png'),
                           ),
               ),
               Container(

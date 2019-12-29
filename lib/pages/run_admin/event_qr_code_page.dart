@@ -150,36 +150,36 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
   Color left = Colors.white;
   Color right = Colors.white;
 
-  Future<bool> _displayInstructions(BuildContext context) async {
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('About your QR Scanner'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: const <Widget>[
-                Text(
-                  'You can print out these codes and place them somewhere convenient for Hashers to scan at the beginning and end of the runs. This is especially good for large Hash groups.',
-                  textAlign: TextAlign.justify,
-                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
-                )
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: const Text('OK, Got it!'),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // Future<bool> _displayInstructions(BuildContext context) async {
+  //   return showDialog<bool>(
+  //     context: context,
+  //     barrierDismissible: false, // user must tap button!
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('About your QR Scanner'),
+  //         content: SingleChildScrollView(
+  //           child: ListBody(
+  //             children: const <Widget>[
+  //               Text(
+  //                 'You can print out these codes and place them somewhere convenient for Hashers to scan at the beginning and end of the runs. This is especially good for large Hash groups.',
+  //                 textAlign: TextAlign.justify,
+  //                 style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+  //               )
+  //             ],
+  //           ),
+  //         ),
+  //         actions: <Widget>[
+  //           FlatButton(
+  //             child: const Text('OK, Got it!'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(true);
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   void _initTabs() {
     if (tabs.isEmpty) {
