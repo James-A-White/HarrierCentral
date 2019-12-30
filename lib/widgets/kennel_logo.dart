@@ -29,7 +29,7 @@ class KennelLogo extends StatelessWidget {
                         ? 'images/avatars/'
                         : 'images/generic_logos/') +
                             kennelLogoUrl.replaceAll('bundle://', '') +
-                            '.png')
+                            '.jpg')
                     .toLowerCase()),
                 Padding(
                   padding: EdgeInsets.only(

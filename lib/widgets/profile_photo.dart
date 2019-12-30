@@ -20,7 +20,7 @@ class ProfilePhoto extends StatelessWidget {
               )
             : profilePhotoUrl.contains('bundle://')
                 ? Stack(alignment: Alignment.center, children: <Widget>[
-                    Image.asset(('images/avatars/' + profilePhotoUrl.replaceAll('bundle://', '') + '.png').toLowerCase()),
+                    Image.asset(('images/avatars/' + profilePhotoUrl.replaceAll('bundle://', '') + '.jpg').toLowerCase()),
                   ])
                 : CachedNetworkImage(
                     imageUrl: profilePhotoUrl,

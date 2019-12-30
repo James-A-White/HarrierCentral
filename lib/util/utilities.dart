@@ -20,8 +20,6 @@ class LatLon {
 }
 
 class Utilities {
-
-
   static const int qrScanTypeFlag_user = 0x00000001;
   static const int qrScanTypeFlag_userSecretCode = 0x00000002;
   static const int qrScanTypeFlag_runStart = 0x00000004;
@@ -30,15 +28,14 @@ class Utilities {
   static const int qrScanTypeFlag_kennelRunEnd = 0x00000020;
   static const int qrScanTypeFlag_resetCode = 0x00000040;
 
-  static Map<String,String> validateScan(String scanText, int allowedScanTypes) {
-
-    Map<String,String> result;
+  static Map<String, String> validateScan(String scanText, int allowedScanTypes) {
+    Map<String, String> result;
 
     final int colonOffset = scanText.indexOf(':');
     if (colonOffset != 3) {
-      result = <String,String>{'validScan':false.toString(), 'prefix':'','content':''};
+      result = <String, String>{'validScan': false.toString(), 'prefix': '', 'content': ''};
     } else {
-      final String prefix = scanText.substring(0, colonOffset+1);
+      final String prefix = scanText.substring(0, colonOffset + 1);
       final String content = scanText.substring(4);
 
       int scanType = 0;
@@ -67,19 +64,17 @@ class Utilities {
           scanType = qrScanTypeFlag_kennelRunEnd;
           break;
         default:
-         validHcQr = false;
-         break;
+          validHcQr = false;
+          break;
       }
 
       final bool scanAllowed = (scanType & allowedScanTypes) != 0;
 
-      result = <String,String>{'validScan':scanAllowed.toString(), 'prefix':prefix,'content':content, 'validHcQr':validHcQr.toString()};
+      result = <String, String>{'validScan': scanAllowed.toString(), 'prefix': prefix, 'content': content, 'validHcQr': validHcQr.toString()};
     }
 
-   return result;
+    return result;
   }
-
-
 
   static Future<LatLon> getLatLong() async {
     Position position;
@@ -244,26 +239,50 @@ class Utilities {
     ));
   }
 
-  static Widget styleForConnected(Widget w) {
-  return Container(
-    foregroundDecoration: globalConnectionStatus == connectionStatus_connected
-        ? const BoxDecoration()
-        : const BoxDecoration(
-            color: Colors.grey,
-            backgroundBlendMode: BlendMode.saturation,
-          ),
-    child: Opacity(opacity: globalConnectionStatus == connectionStatus_connected ? 1.0 : 0.5, child: w),
-  );
-}
-
-static bool checkForConnection(BuildContext context,{String title, String message})
-{
-  if (globalConnectionStatus ==connectionStatus_notConnected)
-  {
-     Utilities.showAlert(context, title ?? 'Offline mode', message ?? 'This feature is not available in offline mode. Please connect to the internet to use this feature' , 'OK');
+  static Widget styleForConnected(Widget w, {num borderRadius = 0.0}) {
+    return Container(
+      foregroundDecoration: globalConnectionStatus == connectionStatus_connected
+          ? const BoxDecoration()
+          : BoxDecoration(
+              borderRadius: BorderRadius.circular(borderRadius),
+              color: Colors.grey,
+              backgroundBlendMode: BlendMode.lighten,
+            ),
+      child: Container(
+        foregroundDecoration: globalConnectionStatus == connectionStatus_connected
+            ? const BoxDecoration()
+            : const BoxDecoration(
+                color: Colors.grey,
+                backgroundBlendMode: BlendMode.saturation,
+              ),
+        child: w,
+      ),
+    );
   }
-  return globalConnectionStatus == connectionStatus_connected;
-}
+
+  static Widget styleForDisabled(Widget w, {num borderRadius = 0.0}) {
+    return Container(
+      foregroundDecoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        color: Colors.grey,
+        backgroundBlendMode: BlendMode.lighten,
+      ),
+      child: Container(
+        foregroundDecoration: const BoxDecoration(
+          color: Colors.grey,
+          backgroundBlendMode: BlendMode.saturation,
+        ),
+        child: w,
+      ),
+    );
+  }
+
+  static bool checkForConnection(BuildContext context, {String title, String message}) {
+    if (globalConnectionStatus == connectionStatus_notConnected) {
+      Utilities.showAlert(context, title ?? 'Offline mode', message ?? 'This feature is not available in offline mode. Please connect to the internet to use this feature', 'OK');
+    }
+    return globalConnectionStatus == connectionStatus_connected;
+  }
 
   static Future<bool> showAlert(BuildContext context, String title, String body, String buttonText, {bool showCancelButton = false, String cancelButtonText = 'Cancel'}) async {
     return showDialog<bool>(
@@ -284,12 +303,14 @@ static bool checkForConnection(BuildContext context,{String title, String messag
             ),
           ),
           actions: <Widget>[
-            showCancelButton == true ? FlatButton(
-              child: Text(cancelButtonText),
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-            ) : Container(),
+            showCancelButton == true
+                ? FlatButton(
+                    child: Text(cancelButtonText),
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                  )
+                : Container(),
             FlatButton(
               child: Text(buttonText),
               onPressed: () {

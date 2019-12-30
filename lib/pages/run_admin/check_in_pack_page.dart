@@ -1144,13 +1144,13 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                         width: LIST_ITEM_HEIGHT,
                         height: LIST_ITEM_HEIGHT,
                         fit: BoxFit.fill,
-                        image: AssetImage(('images/avatars/' + packMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.png').toLowerCase()),
+                        image: AssetImage(('images/avatars/' + packMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
                       )
                     : const Image(
                         width: LIST_ITEM_HEIGHT,
                         height: LIST_ITEM_HEIGHT,
                         fit: BoxFit.fill,
-                        image: AssetImage('images/avatars/avatar-2.png'),
+                        image: AssetImage('images/avatars/avatar-2.jpg'),
                       ),
 
             Positioned(

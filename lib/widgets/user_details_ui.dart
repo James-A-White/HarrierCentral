@@ -4,25 +4,26 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:email_validator/email_validator.dart';
 
 class UserDetailsUi extends StatefulWidget {
-  UserDetailsUi(
-      {Key key, this.firstName, this.lastName, this.email, this.hashName})
-      : super(key: key);
+  UserDetailsUi({Key key, this.firstName, this.lastName, this.email, this.hashName}) : super(key: key);
 
   String firstName;
   String lastName;
   String email;
   String hashName;
   Function updateUi;
+  Function validateForm;
 
   @override
   _UserDetailsUiState createState() => _UserDetailsUiState();
 }
 
-class _UserDetailsUiState extends State<UserDetailsUi>
-    with WidgetsBindingObserver {
+class _UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserver {
   _UserDetailsUiState();
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final FocusNode myFocusNodeHashName = FocusNode();
   final FocusNode myFocusNodeEmail = FocusNode();
@@ -43,6 +44,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
     signupHashNameController.text = widget.hashName;
     WidgetsBinding.instance.addObserver(this);
     widget.updateUi = updateUi;
+    widget.validateForm = validateForm;
   }
 
   void updateUi(String firstName, String lastName, String email) {
@@ -63,6 +65,11 @@ class _UserDetailsUiState extends State<UserDetailsUi>
     super.dispose();
   }
 
+  bool validateForm()
+  {
+    return _formKey.currentState.validate();
+  }
+
   @override
   Widget build(BuildContext context) {
     // return IntrinsicWidth(
@@ -75,130 +82,138 @@ class _UserDetailsUiState extends State<UserDetailsUi>
       ),
       child: Container(
         width: 300.0,
-        height: 205.0,
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(
-                  top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
-              child: TextField(
-                focusNode: myFocusNodeFirstName,
-                controller: signupFirstNameController,
-                onChanged: (String text) {
-                  widget.firstName = text;
-                },
-                keyboardType: TextInputType.text,
-                textCapitalization: TextCapitalization.words,
-                style: const TextStyle(
-                    fontFamily: 'WorkSansSemiBold',
-                    fontSize: 16.0,
-                    color: Colors.black),
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  icon: Icon(
-                    FontAwesome.user,
-                    color: Colors.black,
+        //height: 225.0,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
+                child: TextFormField(
+                  focusNode: myFocusNodeFirstName,
+                  controller: signupFirstNameController,
+                  onChanged: (String text) {
+                    widget.firstName = text;
+                  },
+                  keyboardType: TextInputType.text,
+                  validator: (String val) {
+                    if (val.isEmpty) {
+                      return 'Please provide a first name';
+                    } else {
+                      return null;
+                    }
+                  },
+                  textCapitalization: TextCapitalization.words,
+                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    icon: Icon(
+                      FontAwesome.user,
+                      color: Colors.black,
+                    ),
+                    hintText: 'First Name',
+                    hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                   ),
-                  hintText: 'First Name',
-                  hintStyle:
-                      TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                 ),
               ),
-            ),
-            Container(
-              width: 250.0,
-              height: 1.0,
-              color: Colors.grey[400],
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                  top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
-              child: TextField(
-                onChanged: (String text) {
-                  widget.lastName = text;
-                },
-                focusNode: myFocusNodeLastName,
-                controller: signupLastNameController,
-                keyboardType: TextInputType.text,
-                textCapitalization: TextCapitalization.words,
-                style: const TextStyle(
-                    fontFamily: 'WorkSansSemiBold',
-                    fontSize: 16.0,
-                    color: Colors.black),
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  icon: Icon(
-                    FontAwesome.user,
-                    color: Colors.black,
+              Container(
+                width: 250.0,
+                height: 1.0,
+                color: Colors.grey[400],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
+                child: TextFormField(
+                  onChanged: (String text) {
+                    widget.lastName = text;
+                  },
+                  focusNode: myFocusNodeLastName,
+                  controller: signupLastNameController,
+                  validator: (String val) {
+                    if (val.isEmpty) {
+                      return 'Please provide a last name';
+                    } else {
+                      return null;
+                    }
+                  },
+                  keyboardType: TextInputType.text,
+                  textCapitalization: TextCapitalization.words,
+                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    icon: Icon(
+                      FontAwesome.user,
+                      color: Colors.black,
+                    ),
+                    hintText: 'Last Name',
+                    hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                   ),
-                  hintText: 'Last Name',
-                  hintStyle:
-                      TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                 ),
               ),
-            ),
-            Container(
-              width: 250.0,
-              height: 1.0,
-              color: Colors.grey[400],
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                  top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
-              child: TextField(
-                onChanged: (String text) {
-                  widget.email = text;
-                },
-                focusNode: myFocusNodeEmail,
-                controller: signupEmailController,
-                keyboardType: TextInputType.emailAddress,
-                style: const TextStyle(
-                    fontFamily: 'WorkSansSemiBold',
-                    fontSize: 16.0,
-                    color: Colors.black),
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  icon: Icon(
-                    FontAwesome.envelope,
-                    color: Colors.black,
+              Container(
+                width: 250.0,
+                height: 1.0,
+                color: Colors.grey[400],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
+                child: TextFormField(
+                  onChanged: (String text) {
+                    widget.email = text;
+                  },
+                  focusNode: myFocusNodeEmail,
+                  controller: signupEmailController,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (String val) {
+                    if (val.isEmpty) {
+                      return 'Please provide an email address';
+                    } else {
+                      if (EmailValidator.validate(val)) {
+                        return null;
+                      } else {
+                        return 'Please provide a valid email address';
+                      }
+                    }
+                  },
+                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    icon: Icon(
+                      FontAwesome.envelope,
+                      color: Colors.black,
+                    ),
+                    hintText: 'Email Address',
+                    hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                   ),
-                  hintText: 'Email Address',
-                  hintStyle:
-                      TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                 ),
               ),
-            ),
-            Container(
-              width: 250.0,
-              height: 1.0,
-              color: Colors.grey[400],
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                  top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
-              child: TextField(
-                onChanged: (String text) {
-                  widget.hashName = text;
-                },
-                focusNode: myFocusNodeHashName,
-                controller: signupHashNameController,
-                style: const TextStyle(
-                    fontFamily: 'WorkSansSemiBold',
-                    fontSize: 16.0,
-                    color: Colors.black),
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  icon: Icon(
-                    MaterialCommunityIcons.rabbit,
-                    color: Colors.black,
+              Container(
+                width: 250.0,
+                height: 1.0,
+                color: Colors.grey[400],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
+                child: TextFormField(
+                  onChanged: (String text) {
+                    widget.hashName = text;
+                  },
+                  focusNode: myFocusNodeHashName,
+                  controller: signupHashNameController,
+                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    icon: Icon(
+                      MaterialCommunityIcons.rabbit,
+                      color: Colors.black,
+                    ),
+                    hintText: 'Hash Name (optional)',
+                    hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                   ),
-                  hintText: 'Hash Name (optional)',
-                  hintStyle:
-                      TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

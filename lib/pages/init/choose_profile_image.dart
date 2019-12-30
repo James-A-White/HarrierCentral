@@ -510,7 +510,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     switch (imageTypeSelection) {
       case _SelectedImageTypeEnum.avatar:
         returnWidget = Image.asset(
-          'images/avatars/avatar-$_selectedAvatarIcon.png',
+          'images/avatars/avatar-$_selectedAvatarIcon.jpg',
           width: _previewImageSize,
           height: _previewImageSize,
         );

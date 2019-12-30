@@ -63,7 +63,7 @@ class KennelMemberListItem extends StatelessWidget {
                         // placeholder: (BuildContext context,String url) => const HcCircularProgressIndicator(),
 
                         // TODO(James): Replace avatar icon with missing image icon
-                        errorWidget: (BuildContext context, String url, Object error) => Image.asset('images/avatars/avatar-2.png', height: 80, width: 80, fit: BoxFit.fill),
+                        errorWidget: (BuildContext context, String url, Object error) => Image.asset('images/avatars/avatar-2.jpg', height: 80, width: 80, fit: BoxFit.fill),
                         //fadeOutDuration:  Duration(seconds: 1),
                         fadeInDuration: const Duration(milliseconds: 0),
                         width: PROFILE_PIC_SIZE,
@@ -74,13 +74,13 @@ class KennelMemberListItem extends StatelessWidget {
                             width: PROFILE_PIC_SIZE,
                             height: PROFILE_PIC_SIZE,
                             fit: BoxFit.fill,
-                            image: AssetImage(('images/avatars/' + kennelMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.png').toLowerCase()),
+                            image: AssetImage(('images/avatars/' + kennelMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
                           )
                         : const Image(
                             width: PROFILE_PIC_SIZE,
                             height: PROFILE_PIC_SIZE,
                             fit: BoxFit.fill,
-                            image: AssetImage('images/avatars/avatar-2.png'),
+                            image: AssetImage('images/avatars/avatar-2.jpg'),
                           ),
               ),
               Container(

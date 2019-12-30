@@ -88,7 +88,6 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
-
       final num newFontSize = headingStyle.fontSize * deviceWidthScaleFactor;
 
       final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
@@ -99,36 +98,106 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'Please enter your\r\ninvite code',
-              style: localHeadingStyle,
-              textAlign: TextAlign.center,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                SizedBox(
+                  width: 46,
+                  height: 10,
+                ),
+                Text(
+                  'Please enter your\r\ninvite code',
+                  style: localHeadingStyle,
+                  textAlign: TextAlign.center,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    Utilities.showAlert(
+                        context,
+                        'What is an "Invite Code"?',
+                        'An Invite Code is a six character code that allows you to connect to an existing account in Harrier Central.\r\n\r\nTypically you will receive an invite code from your home Kennel when they have already created an account for you in order to track your run counts.\r\n\r\nIf you do not have an Invite Code, please go back to the previous screen and select the option to Create a New Account.',
+                        'OK');
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.only(left: 20),
+                    height: 26,
+                    child: Image.asset('images/icons/more_info_button.png'),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 35, width: 10),
             Form(
               key: _formKey,
               child: Container(
-                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.only(left:15,right:15),
+                padding: const EdgeInsets.only(left:15,right:15,top:15,bottom:5),
                 color: Colors.yellow[100],
-                child: TextFormField(
-                  autocorrect: false,
-                  textCapitalization: TextCapitalization.characters,
-                  controller: inviteCodeTextController,
-                  focusNode: inviteCodeFocusNode,
-                  decoration: inviteCodeDecoration,
-                  validator: (String val) {
-                    if (val.length != 6) {
-                      return 'Invite codes are six characters';
-                    } else {
-                      return null;
-                    }
-                  },
-                  keyboardType: TextInputType.text,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontFamily: 'Poppins', fontSize: 24.0, color: Theme.of(context).accentColor),
+                child: Column(
+                  children: <Widget>[
+                    TextFormField(
+                      autocorrect: false,
+                      textCapitalization: TextCapitalization.characters,
+                      controller: inviteCodeTextController,
+                      focusNode: inviteCodeFocusNode,
+                      decoration: inviteCodeDecoration,
+                      validator: (String val) {
+                        if (val.length != 6) {
+                          return 'Invite codes are six characters';
+                        } else {
+                          return null;
+                        }
+                      },
+                      keyboardType: TextInputType.text,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontFamily: 'Poppins', fontSize: 24.0, color: Theme.of(context).accentColor),
+                    ),
+                    const SizedBox(height: 20, width: 10),
+                    Row(
+                      children: <Widget>[
+                        Container(
+                          margin: const EdgeInsets.only(right: 10),
+                          height: 25,
+                          width: 25,
+                          color: Colors.yellow[100],
+                          child: Checkbox(
+                            value: true,
+                            onChanged: (bool value) {
+                              setState(() {
+                                // historicalCountIsEstimate = value;
+                                // checkDirty();
+                              });
+                            },
+                          ),
+                        ),
+                        const Text(
+                          'Include me in Global Hash Directory',
+                          //style: headingStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Utilities.showAlert(
+                                context,
+                                'What is the Global Hash Directory?',
+                                'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
+                                'OK');
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.only(left: 20),
+                            height: 26,
+                            child: Image.asset('images/icons/more_info_button.png'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8, width: 10),
+                  ],
                 ),
               ),
             ),
+
+
             const SizedBox(height: 35, width: 10),
             FlatButton(
               color: Colors.red,
@@ -138,165 +207,30 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                 if (_formKey.currentState.validate()) {
                   // If the form is valid, display a snackbar. In the real world,
                   // you'd often call a server or save the information in a database.
-                                                    isLoading = true;
+                  isLoading = true;
 
-                                  final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                                  final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + inviteCodeTextController.text.toUpperCase());
-                                  apiCall.then((Map<String, String> result) {
-                                    setState(() {
-                                      isLoading = false;
-                                    });
+                  final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                  final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + inviteCodeTextController.text.toUpperCase());
+                  apiCall.then((Map<String, String> result) {
+                    setState(() {
+                      isLoading = false;
+                    });
 
-                                    if (result['result'] != 'failed') {
-                                      final String userName = getStringPref(StringPrefsEnum.displayName);
+                    if (result['result'] != 'failed') {
+                      final String userName = getStringPref(StringPrefsEnum.displayName);
 
-                                      Utilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully loaded for $userName.', 'OK').then((void dummy) {
-                                        Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
-                                      });
-                                    } else {
-                                      // TODO(James): Do something here if the auth device fails
-                                    }
-                                  });
+                      Utilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully loaded for $userName.', 'OK').then((void dummy) {
+                        Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+                      });
+                    } else {
+                      // TODO(James): Do something here if the auth device fails
+                    }
+                  });
                 }
               },
             ),
             const SizedBox(height: 50, width: 10),
-            // GestureDetector(
-            //   onTap: (){
-            //     //  Navigator.push<dynamic>(
-            //     //             context,
-            //     //             MaterialPageRoute<dynamic>(builder: (BuildContext context) => PDFScreen()),
-            //     //           ),
-            //   },
-            //   child: Container(
-            //     padding: const EdgeInsets.all(10),
-            //     decoration: BoxDecoration(
-            //       borderRadius: BorderRadius.circular(20.0),
-            //       color: Colors.white,
-            //       border: Border.all(
-            //         color: Theme.of(context).accentColor,
-            //         width: 2, //                   <--- border width here
-            //       ),
-            //     ),
-            //     child: Row(
-            //       children: <Widget>[
-            //         Image(
-            //           width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-            //           height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-            //           fit: BoxFit.fill,
-            //           image: const AssetImage('images/icons/inviteCode.png'),
-            //         ),
-            //         const SizedBox(height: 1, width: 10),
-            //         Expanded(
-            //           child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-            //             Text('Use Invite Code', style: localTitleStyle),
-            //             Text(
-            //               'Use the invite code provided by your kennel to create or reconnect to your Harrier Central account',
-            //               style: localBodyStyle,
-            //               //softWrap: true,
-            //             ),
-            //           ]),
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ),
-            // Container(
-            //   padding: const EdgeInsets.all(10),
-            //   decoration: BoxDecoration(
-            //     borderRadius: BorderRadius.circular(20.0),
-            //     color: Colors.white,
-            //     border: Border.all(
-            //       color: Theme.of(context).accentColor,
-            //       width: 2, //                   <--- border width here
-            //     ),
-            //   ),
-            //   child: Row(
-            //     children: <Widget>[
-            //       Image(
-            //         width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-            //         height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-            //         fit: BoxFit.fill,
-            //         image: const AssetImage('images/icons/facebookLogoCircle.png'),
-            //       ),
-            //       const SizedBox(height: 1, width: 10),
-            //       Expanded(
-            //         child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-            //           Text('Use Facebook', style: localTitleStyle),
-            //           Text(
-            //             'Create a new Harrier Central account or connect to your existing account using your Facebook login',
-            //             style: localBodyStyle,
-            //             //softWrap: true,
-            //           ),
-            //         ]),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            // Container(
-            //   padding: const EdgeInsets.all(10),
-            //   decoration: BoxDecoration(
-            //     borderRadius: BorderRadius.circular(20.0),
-            //     color: Colors.white,
-            //     border: Border.all(
-            //       color: Theme.of(context).accentColor,
-            //       width: 2, //                   <--- border width here
-            //     ),
-            //   ),
-            //   child: Row(
-            //     children: <Widget>[
-            //       Image(
-            //         width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-            //         height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-            //         fit: BoxFit.fill,
-            //         image: const AssetImage('images/icons/qrPhone.png'),
-            //       ),
-            //       const SizedBox(height: 1, width: 10),
-            //       Expanded(
-            //         child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-            //           Text('Transfer app', style: localTitleStyle),
-            //           Text(
-            //             'Use a QR code to transfer your Harrier Central account to this phone from another phone',
-            //             style: localBodyStyle,
-            //             //softWrap: true,
-            //           ),
-            //         ]),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            // Container(
-            //   padding: EdgeInsets.all(10),
-            //   decoration: BoxDecoration(
-            //     borderRadius: BorderRadius.circular(20.0),
-            //     color: Colors.white,
-            //     border: Border.all(
-            //       color: Theme.of(context).accentColor,
-            //       width: 2, //                   <--- border width here
-            //     ),
-            //   ),
-            //   child: Row(
-            //     children: <Widget>[
-            //       Image(
-            //         width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-            //         height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-            //         fit: BoxFit.fill,
-            //         image: const AssetImage('images/icons/pencil.png'),
-            //       ),
-            //       const SizedBox(height: 1, width: 10),
-            //       Expanded(
-            //         child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-            //           Text('Create New Account', style: localTitleStyle),
-            //           Text(
-            //             'Provide information to create a new Harrier Central account if you are not already in the system',
-            //             style: localBodyStyle,
-            //             //softWrap: true,
-            //           ),
-            //         ]),
-            //       ),
-            //     ],
-            //   ),
-            // ),
+            
           ],
         ),
       );

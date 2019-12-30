@@ -50,10 +50,10 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
           gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount:
                   (MediaQuery.of(context).orientation == Orientation.portrait)
-                      ? 2
-                      : 3),
+                      ? 3
+                      : 4),
           padding: const EdgeInsets.only(top: 10.0),
-          itemCount: 4,
+          itemCount: 50,
           itemBuilder: (BuildContext bldCtx, int index) {
             return MaterialButton(
                 child: Container(
@@ -63,7 +63,7 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
                   child: Padding(
                     padding: EdgeInsets.all(imagePadding),
                     child: Image.asset(
-                      'images/avatars/avatar-${index + 1}.png',
+                      'images/avatars/avatar-${index + 1}.jpg',
                       height: iconSize,
                       width: iconSize,
                     ),

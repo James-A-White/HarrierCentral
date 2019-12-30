@@ -923,7 +923,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                               width: 300.0,
                                               height: 300.0,
                                               fit: BoxFit.fill,
-                                              image: AssetImage('images/avatars/avatar-2.png'),
+                                              image: AssetImage('images/avatars/avatar-2.jpg'),
                                             ),
                                   const Positioned(
                                     right: 1.0,

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
+import 'package:harrier_central/pages/init/create_new_account.dart';
 import 'package:harrier_central/pages/init/use_invite_code_page.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
@@ -65,10 +67,11 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
       num newFontSize = smallTitleStyle.fontSize * deviceWidthScaleFactor;
       final TextStyle localTitleStyle = smallTitleStyle.copyWith(fontSize: newFontSize, color: Colors.black);
+
       newFontSize = bodyStyleSc.fontSize * deviceWidthScaleFactor;
       final TextStyle localBodyStyle = bodyStyleSc.copyWith(fontSize: newFontSize, color: Colors.black);
-      newFontSize = headingStyle.fontSize * deviceWidthScaleFactor;
 
+      newFontSize = headingStyle.fontSize * deviceWidthScaleFactor;
       final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
 
       return Container(
@@ -83,11 +86,11 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
               textAlign: TextAlign.center,
             ),
             GestureDetector(
-              onTap: (){
-                 Navigator.push<dynamic>(
-                            context,
-                            MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()),
-                          );
+              onTap: () {
+                Navigator.push<dynamic>(
+                  context,
+                  MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()),
+                );
               },
               child: Container(
                 padding: const EdgeInsets.all(10),
@@ -122,71 +125,83 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                 ),
               ),
             ),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20.0),
-                color: Colors.white,
-                border: Border.all(
-                  color: Theme.of(context).accentColor,
-                  width: 2, //                   <--- border width here
-                ),
-              ),
-              child: Row(
-                children: <Widget>[
-                  Image(
-                    width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-                    height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-                    fit: BoxFit.fill,
-                    image: const AssetImage('images/icons/facebookLogoCircle.png'),
+            Utilities.styleForDisabled(
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20.0),
+                    color: Colors.white,
+                    border: Border.all(
+                      color: Theme.of(context).accentColor,
+                      width: 2, //                   <--- border width here
+                    ),
                   ),
-                  const SizedBox(height: 1, width: 10),
-                  Expanded(
-                    child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                      Text('Use Facebook', style: localTitleStyle),
-                      Text(
-                        'Create a new Harrier Central account or connect to your existing account using your Facebook login',
-                        style: localBodyStyle,
-                        //softWrap: true,
+                  child: Row(
+                    children: <Widget>[
+                      Image(
+                        width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
+                        height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
+                        fit: BoxFit.fill,
+                        image: const AssetImage('images/icons/facebookLogoCircle.png'),
                       ),
-                    ]),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20.0),
-                color: Colors.white,
-                border: Border.all(
-                  color: Theme.of(context).accentColor,
-                  width: 2, //                   <--- border width here
-                ),
-              ),
-              child: Row(
-                children: <Widget>[
-                  Image(
-                    width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-                    height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-                    fit: BoxFit.fill,
-                    image: const AssetImage('images/icons/qrPhone.png'),
-                  ),
-                  const SizedBox(height: 1, width: 10),
-                  Expanded(
-                    child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                      Text('Transfer app', style: localTitleStyle),
-                      Text(
-                        'Use a QR code to transfer your Harrier Central account to this phone from another phone',
-                        style: localBodyStyle,
-                        //softWrap: true,
+                      const SizedBox(height: 1, width: 10),
+                      Expanded(
+                        child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                          Text('Use Facebook', style: localTitleStyle),
+                          Text(
+                            'Create a new Harrier Central account or connect to your existing account using your Facebook login',
+                            style: localBodyStyle,
+                            //softWrap: true,
+                          ),
+                        ]),
                       ),
-                    ]),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            Container(
+                ),
+
+                borderRadius: 20.0),
+            Utilities.styleForDisabled(
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20.0),
+                    color: Colors.white,
+                    border: Border.all(
+                      color: Theme.of(context).accentColor,
+                      width: 2, //                   <--- border width here
+                    ),
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      Image(
+                        width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
+                        height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
+                        fit: BoxFit.fill,
+                        image: const AssetImage('images/icons/qrPhone.png'),
+                      ),
+                      const SizedBox(height: 1, width: 10),
+                      Expanded(
+                        child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                          Text('Transfer app', style: localTitleStyle),
+                          Text(
+                            'Use a QR code to transfer your Harrier Central account to this phone from another phone',
+                            style: localBodyStyle,
+                            //softWrap: true,
+                          ),
+                        ]),
+                      ),
+                    ],
+                  ),
+                ),
+                borderRadius: 20.0),
+            GestureDetector(
+              onTap: () {
+                Navigator.push<dynamic>(
+                  context,
+                  MaterialPageRoute<dynamic>(builder: (BuildContext context) => const CreateNewAccountPage()),
+                );
+              },
+            child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20.0),
@@ -217,7 +232,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                   ),
                 ],
               ),
-            ),
+            ),),
           ],
         ),
       );

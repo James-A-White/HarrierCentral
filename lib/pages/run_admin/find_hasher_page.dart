@@ -328,13 +328,13 @@ class HasherListView extends StatelessWidget {
                         width: 70.0,
                         height: 70.0,
                         fit: BoxFit.fill,
-                        image: AssetImage(('images/avatars/' + hasherList[index].photo.toLowerCase().replaceFirst('bundle://', '') + '.png').toLowerCase()),
+                        image: AssetImage(('images/avatars/' + hasherList[index].photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
                       )
                     : const Image(
                         width: 70.0,
                         height: 70.0,
                         fit: BoxFit.fill,
-                        image: AssetImage('images/avatars/avatar-2.png'),
+                        image: AssetImage('images/avatars/avatar-2.jpg'),
                       ),
 
             Positioned(
