@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
+import 'package:package_info/package_info.dart';
 
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -12,8 +13,7 @@ import 'package:harrier_central/data/services/service_common.dart';
 import 'package:device_info/device_info.dart';
 
 class AuthorizeDeviceService {
-  Future<Map<String, String>> authorizeDevice(
-      BuildContext context, String scanText) async {
+  Future<Map<String, String>> authorizeDevice(BuildContext context, String scanText, {num includeInGlobalHashDirectory = -1}) async {
     String deviceId = 'unknown';
 
     final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
@@ -26,34 +26,29 @@ class AuthorizeDeviceService {
       deviceId = iosInfo.identifierForVendor.toUpperCase();
     }
 
-    final String accessToken =
-        Utilities.generateToken(GUID_EMPTY, 'authorizeDevice');
+    final String accessToken = Utilities.generateToken(GUID_EMPTY, 'authorizeDevice');
 
-    final String body = jsonEncode(<String, String>{
-      'userId': GUID_EMPTY,
-      'accessToken': accessToken,
-      'scanText': scanText,
-      'deviceId': deviceId
-    });
+    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
+    if ((hcVersion ?? '').isEmpty) {
+      final PackageInfo p = await PackageInfo.fromPlatform();
+      final String hcVersion = 'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
+
+      await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
+    }
+
+    final String body = jsonEncode(<String, String>{'userId': GUID_EMPTY, 'accessToken': accessToken, 'hcVersion': getStringPref(StringPrefsEnum.harrierCentralVersion), 'scanText': scanText, 'deviceId': deviceId, 'includeInGlobalHashDirectory':includeInGlobalHashDirectory.toString()});
 
     Map<String, String> resultMap = <String, String>{};
 
     try {
-      final String responseBody =
-          await ServiceCommon.sendRequest(context, 'hc3_authorize_device', body);
+      final String responseBody = await ServiceCommon.sendRequest(context, 'hc3_authorize_device', body);
       if (responseBody == ERROR_KEY) {
-         return <String, String>{
-            'result': 'failed',
-            'message': 'Error calling authorize device'
-          };
+        return <String, String>{'result': 'failed', 'message': 'Error calling authorize device'};
       } else {
         final List<dynamic> result = json.decode(responseBody);
 
         if ((result == null) || (result.isEmpty) || (result[0].isEmpty)) {
-          resultMap = <String, String>{
-            'result': 'failed',
-            'message': 'Could not download profile. Check your QR code'
-          };
+          resultMap = <String, String>{'result': 'failed', 'message': 'Could not download profile. Check your QR code'};
         } else {
           await clearAllPrefs();
           setStringPref(StringPrefsEnum.profilePhotoUrl, result[0]['photo']);
@@ -69,17 +64,11 @@ class AuthorizeDeviceService {
           setStringPref(StringPrefsEnum.qrSecretCode, result[0]['qrSecretCode']);
           setStringPref(StringPrefsEnum.userId, result[0]['hasherId']);
 
-          resultMap = <String, String>{
-            'result': 'success',
-            'message': 'Successfully loaded profile'
-          };
+          resultMap = <String, String>{'result': 'success', 'message': 'Successfully loaded profile'};
         }
       }
     } catch (e) {
-      resultMap = <String, String>{
-        'result': 'failed',
-        'message': 'Error reading server data. Check your QR code'
-      };
+      resultMap = <String, String>{'result': 'failed', 'message': 'Error reading server data. Check your QR code'};
     }
 
     return resultMap;

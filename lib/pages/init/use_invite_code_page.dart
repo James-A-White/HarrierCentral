@@ -8,7 +8,7 @@ import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/data/services/authorize_device_service.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
+import 'package:harrier_central/pages/init/choose_profile_image.dart';
 
 class UseInviteCodePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -70,6 +70,8 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool isLoading = false;
 
+  bool includeInGlobalHashDirectory = true;
+
   @override
   void initState() {
     super.initState();
@@ -130,8 +132,8 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
             Form(
               key: _formKey,
               child: Container(
-                margin: const EdgeInsets.only(left:15,right:15),
-                padding: const EdgeInsets.only(left:15,right:15,top:15,bottom:5),
+                margin: const EdgeInsets.only(left: 15, right: 15),
+                padding: const EdgeInsets.only(left: 15, right: 15, top: 15, bottom: 5),
                 color: Colors.yellow[100],
                 child: Column(
                   children: <Widget>[
@@ -161,19 +163,21 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                           width: 25,
                           color: Colors.yellow[100],
                           child: Checkbox(
-                            value: true,
+                            value: includeInGlobalHashDirectory,
                             onChanged: (bool value) {
                               setState(() {
-                                // historicalCountIsEstimate = value;
+                                includeInGlobalHashDirectory = value;
                                 // checkDirty();
                               });
                             },
                           ),
                         ),
-                        const Text(
-                          'Include me in Global Hash Directory',
-                          //style: headingStyle,
-                          textAlign: TextAlign.center,
+                        const Expanded(
+                          child: Text(
+                            'Include me in Global Hash Directory',
+                            //style: headingStyle,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                         GestureDetector(
                           onTap: () {
@@ -196,11 +200,9 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                 ),
               ),
             ),
-
-
             const SizedBox(height: 35, width: 10),
             FlatButton(
-              color: Colors.red,
+              color: Theme.of(context).accentColor,
               child: const Text('Get Started!'),
               textColor: Colors.white,
               onPressed: () {
@@ -210,7 +212,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                   isLoading = true;
 
                   final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                  final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + inviteCodeTextController.text.toUpperCase());
+                  final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + inviteCodeTextController.text.toUpperCase(),includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
                   apiCall.then((Map<String, String> result) {
                     setState(() {
                       isLoading = false;
@@ -219,8 +221,17 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                     if (result['result'] != 'failed') {
                       final String userName = getStringPref(StringPrefsEnum.displayName);
 
-                      Utilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully loaded for $userName.', 'OK').then((void dummy) {
-                        Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+                      Utilities.showAlert(context, 'Success!', 'The app has been successfully set up for $userName.', 'OK').then((void dummy) {
+                        Navigator.pushReplacement<dynamic, dynamic>(
+                            context,
+                            MaterialPageRoute<dynamic>(
+                              builder: (BuildContext context) => ChooseProfileImage(
+                                isForThisDevice: true,
+                                fileNamePrefix: getStringPref(StringPrefsEnum.supportCode),
+                                currentProfileImage: getStringPref(StringPrefsEnum.profilePhotoUrl),
+                                popToCaller: false,
+                              ),
+                            ));
                       });
                     } else {
                       // TODO(James): Do something here if the auth device fails
@@ -230,7 +241,6 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
               },
             ),
             const SizedBox(height: 50, width: 10),
-            
           ],
         ),
       );

@@ -320,7 +320,7 @@ class HashersService {
 
   // ============ Functions go here =============
 
-  Future<String> addEditUser({String targetUserId, String firstName, String lastName, String email, String hashName, String photo, String eventId, String kennelId, String historicalPackRunCount, String historicalHaringCount, bool historicalCountIsEstimate, int followKennelOnAddNewUser}) async {
+  Future<String> addEditUser({String targetUserId, String firstName, String lastName, String email, String hashName, String photo, String eventId, String kennelId, String historicalPackRunCount, String historicalHaringCount, bool historicalCountIsEstimate, int followKennelOnAddNewUser, int includeInGlobalHashDirectory = -1}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return '';
       // TODO(James): fix this so we can return a bool
@@ -370,6 +370,7 @@ class HashersService {
       'lastName': lastName,
       'hashName': hashName,
       'photo': photo,
+      'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString(),
       'eventId': eventId,
       'kennelId': kennelId,
       'historicalPackRunCount': historicalPackRunCount,
