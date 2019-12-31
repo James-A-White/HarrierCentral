@@ -94,7 +94,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
 
       final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
 
-      return Container(
+      return SingleChildScrollView(
         padding: const EdgeInsets.all(15),
         child: Column(
           mainAxisSize: MainAxisSize.max,
@@ -103,7 +103,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                SizedBox(
+                const SizedBox(
                   width: 46,
                   height: 10,
                 ),

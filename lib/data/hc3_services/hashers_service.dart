@@ -409,4 +409,58 @@ class HashersService {
 
     return response.body;
   }
+
+
+  Future<String> changeProfilePicture({String targetUserId, String photo}) async {
+    if (globalConnectionStatus == connectionStatus_notConnected) {
+      return '';
+      // TODO(James): fix this so we can return a bool
+      //return false;
+    }
+
+    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
+    String userId = getStringPref(StringPrefsEnum.userId);
+    if ((userId == null) || (userId.isEmpty)) {
+      userId = GUID_EMPTY;
+    }
+
+    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'addEditUser', paramString: targetUserId.toUpperCase());
+
+    final String body = jsonEncode(<String, String>{
+      'userId': userId,
+      'accessToken': accessToken,
+      'hcVersion': hcVersion,
+      'hashersUpdatedAfter': 'ignore',
+      'hasherEventMapUpdatedAfter': 'ignore',
+      'hasherKennelMapUpdatedAfter': 'ignore',
+      'targetUserId': targetUserId,
+      'email': '',
+      'firstName': '',
+      'lastName': '',
+      'hashName': '',
+      'photo': photo,
+      'includeInGlobalHashDirectory': '-1',
+      'eventId': GUID_EMPTY,
+      'kennelId': GUID_EMPTY,
+      'historicalPackRunCount': '-1',
+      'historicalHaringCount': '-1',
+      'historicalCountIsEstimate': '-1',
+      'followKennelOnAddNewUser':  null
+    });
+
+    final http.Response response = await http
+        .post(BASE_API_URL + 'hc3_add_edit_user', headers: <String, String>{'content-type': 'application/json'}, body: body
+            // Send authorization headers to your backend
+            //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+            )
+        .catchError(
+      (dynamic error) {
+        return false;
+      },
+    );
+
+    return response.body;
+  }
+
+
 }

@@ -7,7 +7,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -315,7 +314,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                         // Positioned(
                         //   top: 280,
                         //   child:
-                        SizedBox(
+                        const SizedBox(
                           height: 10,
                           width: 10,
                         ),
@@ -480,8 +479,11 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
       final HashersService srv = HashersService();
 
-      final Future<dynamic> apiCall =
-          srv.addEditUser(targetUserId: userId, firstName: '', lastName: '', email: '', hashName: '', photo: profileImageUrl, eventId: GUID_EMPTY, kennelId: GUID_EMPTY, historicalPackRunCount: '', historicalHaringCount: '', historicalCountIsEstimate: false, followKennelOnAddNewUser: 0);
+      // final Future<dynamic> apiCall =
+      //     srv.addEditUser(targetUserId: userId, firstName: '', lastName: '', email: '', hashName: '', photo: profileImageUrl, eventId: GUID_EMPTY, kennelId: GUID_EMPTY, historicalPackRunCount: '', historicalHaringCount: '', historicalCountIsEstimate: false, followKennelOnAddNewUser: 0);
+
+     final Future<dynamic> apiCall =
+          srv.changeProfilePicture(targetUserId: userId,  photo: profileImageUrl);
 
       apiCall.then((void dummy) async {
         setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
@@ -489,7 +491,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
         Navigator.pushReplacement<dynamic, dynamic>(
             context,
             MaterialPageRoute<dynamic>(
-              builder: (BuildContext context) => MainNavigationPage(),
+              builder: (BuildContext context) => const MainNavigationPage(),
             ));
       });
     }
@@ -600,7 +602,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           final Future<platform.File> img = ImageCropper.cropImage(
             sourcePath: image.path,
             aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
-            aspectRatioPresets: [CropAspectRatioPreset.square],
+            aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
             maxWidth: 512,
             maxHeight: 512,
           );

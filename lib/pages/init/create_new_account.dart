@@ -140,7 +140,7 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                   // ),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 30,
                 width: 30,
               ),
@@ -151,7 +151,7 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                 child: Column(
                   children: <Widget>[
                     userDetailsUi,
-                    SizedBox(
+                    const SizedBox(
                       height: 30,
                       width: 30,
                     ),
