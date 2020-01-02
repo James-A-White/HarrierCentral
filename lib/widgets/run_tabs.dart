@@ -1187,7 +1187,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                           indicatorHeight: 30.0,
                           indicatorColor: Theme.of(context).buttonColor,
                           tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                          indicatorRadius: 10.0,
+                          indicatorRadius: 20.0,
                           // bubblePadding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
                           // insets: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 10.0),
                         ),

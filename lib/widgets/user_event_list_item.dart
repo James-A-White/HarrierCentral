@@ -71,7 +71,7 @@ class UserEventListItem extends StatelessWidget {
                         fontFamily: 'AvenirNextCondensedDemiBold',
                         fontStyle: FontStyle.normal,
                         fontSize: 18.0,
-                        height: 0.85),
+                        height: 1.0),
                     textAlign: TextAlign.left,
                   ),
                   Text(
@@ -86,7 +86,7 @@ class UserEventListItem extends StatelessWidget {
                         fontFamily: 'AvenirNextCondensedDemiBold',
                         fontStyle: FontStyle.normal,
                         fontSize: 18.0,
-                        height: 0.85),
+                        height: 1.0),
                     textAlign: TextAlign.left,
                   ),
                   item.attendenceState < attendenceAtHash.value
@@ -102,7 +102,7 @@ class UserEventListItem extends StatelessWidget {
                                   fontFamily: 'AvenirNextCondensedDemiBold',
                                   fontStyle: FontStyle.normal,
                                   fontSize: 18.0,
-                                  height: 0.85),
+                                  height: 1.0),
                               textAlign: TextAlign.left,
                             ),
                             item.isHare ==isHareNo.value ? Container() :
@@ -115,7 +115,7 @@ class UserEventListItem extends StatelessWidget {
                                   fontFamily: 'AvenirNextCondensedDemiBold',
                                   fontStyle: FontStyle.normal,
                                   fontSize: 18.0,
-                                  height: 0.85),
+                                  height: 1.0),
                               textAlign: TextAlign.left,
                             ),
                           ],

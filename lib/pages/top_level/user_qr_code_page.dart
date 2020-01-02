@@ -13,10 +13,10 @@ import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart'
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
-
 
 class UserQrCodePage extends StatefulWidget {
   const UserQrCodePage({Key key}) : super(key: key);
@@ -79,12 +79,13 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
                     isScrollable: false,
                     unselectedLabelColor: Colors.black,
                     labelColor: Colors.white,
+                    labelPadding: EdgeInsets.only(top:5, left:20, right:20),
                     indicatorSize: TabBarIndicatorSize.tab,
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
                       indicatorColor: Theme.of(context).buttonColor,
                       tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                      indicatorRadius: 10.0,
+                      indicatorRadius: 20.0,
                     ),
                     tabs: tabs,
                     controller: _tabController,
@@ -325,50 +326,46 @@ class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixi
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Expanded(
-              child: Stack(
-                alignment: AlignmentDirectional.center,
-                children: <Widget>[
-                  Positioned(
-                    top: 0,
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    child: const Text(
-                      'Use this code to check in at the beginning and end of runs. Your friends can also scan this code to add you to their friend list. ',
-                      textAlign: TextAlign.justify,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'AvenirNextDemiBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 16.0,
-                        height: 0.8,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 80,
-                    child: AutoSizeText(
-                      'QR for: $userName',
-                      //'QR Code for xxx',
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 24.0, height: 1.0),
-                    ),
-                  ),
-                  // Positioned(
-                  //   top: 127,
+            SizedBox(width: 10,height:((deviceWidthScaleFactor-1)*90),),
+            Container(
+              padding: const EdgeInsets.only(top: 0, bottom: 30, right: 25, left: 25),
+              child: Text(
+                'Use this code to check in at the beginning and end of runs. Your friends can also scan this code to add you to their friend list. ',
+                textAlign: TextAlign.justify,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'AvenirNextDemiBold',
+                  fontStyle: FontStyle.normal,
+                  fontSize: 16.0 * deviceWidthScaleFactor,
+                  height: 1.0,
+                ),
+              ),
+            ),
 
-                  //   child: Container(
-                  //                       color: Colors.white,
-                  //     height: MediaQuery.of(context).size.width * 0.8,
-                  //     width: MediaQuery.of(context).size.width * 0.8,
-                  //   ),
-                  // ),
-                  Positioned(
-                    top: 127,
-                    //bottom: 50,
-                    child: Container(
-                      height: math.min(constraints.maxHeight, constraints.maxWidth) * 0.65,
-                      child: QrImage(
+            AutoSizeText(
+              'QR for: $userName',
+              //'QR Code for xxx',
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 24.0 * deviceWidthScaleFactor, height: 1.0),
+            ),
+
+            // Positioned(
+            //   top: 127,
+
+            //   child: Container(
+            //                       color: Colors.white,
+            //     height: MediaQuery.of(context).size.width * 0.8,
+            //     width: MediaQuery.of(context).size.width * 0.8,
+            //   ),
+            // ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 20, bottom: 10, left:30, right: 30),
+                child: Stack(alignment: AlignmentDirectional.center,
+                    //height: math.min(constraints.maxHeight, constraints.maxWidth) * 0.65,
+                    children: <Widget>[
+                      QrImage(
                           backgroundColor: Colors.white,
                           padding: const EdgeInsets.all(10.0),
                           data: userQrCode,
@@ -376,22 +373,18 @@ class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixi
                           version: 2,
                           //size: 200.0,
                           errorCorrectionLevel: 3),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 20,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 0.0, right: 0.0),
-                      child: FlatButton(
-                        textColor: Colors.white,
-                        child: const Text('Learn more about this feature'),
-                        onPressed: () {
-                          _displayInstructions(context);
-                        },
-                      ),
-                    ),
-                  ),
-                ],
+                    ]),
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.only(left: 0.0, right: 0.0),
+              child: FlatButton(
+                textColor: Colors.white,
+                child: const Text('Learn more about this feature'),
+                onPressed: () {
+                  _displayInstructions(context);
+                },
               ),
             ),
           ],
@@ -490,13 +483,12 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
           final num hoursUntilNextEvent = num.tryParse(eventId);
           setState(() {
             if (hoursUntilNextEvent > 24) {
-              onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent/24)} days';
+              onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent / 24)} days';
             } else {
-              if (hoursUntilNextEvent >= 2)
-              {
-               onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('##').format(hoursUntilNextEvent)} hours';
+              if (hoursUntilNextEvent >= 2) {
+                onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('##').format(hoursUntilNextEvent)} hours';
               } else {
-                onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent*60)} minute' + NumberFormat('###').format(hoursUntilNextEvent*60) != '1' ? 's':'' ;
+                onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent * 60)} minute' + NumberFormat('###').format(hoursUntilNextEvent * 60) != '1' ? 's' : '';
               }
             }
           });
@@ -532,8 +524,6 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
 
     // return Future<void>(() {});(() {});
   }
-
-
 
   Future<dynamic> stopScanning() async {
     controller.stopScanning();
@@ -634,108 +624,67 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
       // mainAxisSize: MainAxisSize.min,
       // crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        // Padding(
-        //   padding: const EdgeInsets.only(top: 70.0, left: 24.0, right: 24.0),
-        //   child: Text(
-        //     'Use to scan the QR code from a fixed muster point location or the QR code from the phone of someone who has already mustered.',
-        //     textAlign: TextAlign.center,
-        //     style: const TextStyle(
-        //         color: Colors.white,
-        //         fontFamily: 'AvenirNextDemiBold',
-        //         fontStyle: FontStyle.normal,
-        //         fontSize: 22.0,
-        //         height: 1.0),
-        //   ),
-        // ),
-        // Expanded(
-        //   child: const Padding(
-        //     padding: const EdgeInsets.all(100),
-        //     child: Container(
-        //       color: Colors.yellow,
-        //       // height: 200,
-        //       // width: 200,
-        //     ),
-        //   ),
-        // ),
-
-        Expanded(
-          child: Stack(
-            alignment: AlignmentDirectional.center,
-            children: <Widget>[
-              Positioned(
-                top: 0,
-                width: MediaQuery.of(context).size.width * 0.86,
-                child: const AutoSizeText(
-                  'Use this scanner to either scan in at the beginning or end of runs or to scan the QR codes of other Hashers who you want to add to your friend list.',
-                  textAlign: TextAlign.justify,
-                  maxLines: 4,
-                  style: TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 0.8),
-                ),
-              ),
-              Positioned(
-                  top: 80,
-                  bottom: 180,
-                  //width:150,
-                  //height:150,
-                  child: _cameraPreviewWidget()
-                  // child:Container(
-                  //   child: _cameraPreviewWidget(), width: 200.0, height: 200.0),
-                  ),
-              Positioned(
-                bottom: 120.0,
-                child: Container(
-                  //margin: const EdgeInsets.all(20.0),
-                  width: 280.0,
-                  child: Utilities.styleForConnected(
-                    RaisedButton(
-                        child: Text(
-                          controller == null ? 'Start Scanning' : 'Stop Scanning',
-                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', color: Colors.white, fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
-                        ),
-                        onPressed: () {
-                          if (Utilities.checkForConnection(context)) {
-                            scanUserBarcode();
-                          }
-                        }),
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: 40.0,
-                width: MediaQuery.of(context).size.width - 40,
-                child: Container(
-                  //color:Colors.yellow,
-                  height: 80,
-                  child: Center(
-                    child: AutoSizeText(
-                      onScreenMessage,
-                      //'This is a test of how ',
-                      //'This is a test of how this works with 2 lines ',
-                      //'this is a test of how 3 lines will fit Ill need a lot more text than that to make it work',
-                      textAlign: TextAlign.center,
-                      maxLines: 3,
-                      style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 26.0, height: 0.9),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: 0.0,
-                // left: 30,
-                // right: 30,
-                child: FlatButton(
-                  textColor: Colors.white,
-                  child: const Text('Learn more about this feature'),
-                  onPressed: () {
-                    _displayInstructions(context);
-                  },
-                ),
-              ),
-            ],
+        SizedBox(width: 10,height:((deviceWidthScaleFactor-1)*90),),
+        Container(
+          padding: const EdgeInsets.only(left: 20, right: 20),
+          child: AutoSizeText(
+            'Use this scanner to either scan in at the beginning or end of runs or to scan the QR codes of other Hashers who you want to add to your friend list.',
+            textAlign: TextAlign.justify,
+            maxLines: 4,
+            style: TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * deviceMaxScaleFactor, height: 1.0),
           ),
         ),
 
-        // ),
+        //_cameraPreviewWidget(),
+        Expanded(child:Container(
+          padding:  EdgeInsets.all(10 * (deviceMaxScaleFactor * 1.5)),
+        child:(controller == null) ? Image.asset(
+          'images/other/qr_scanner.png',
+        ) : QRReaderPreview(controller),),),
+        // // child:Container(
+        // //   child: _cameraPreviewWidget(), width: 200.0, height: 200.0),
+
+        Container(
+          //margin: const EdgeInsets.all(20.0),
+          width: 280.0,
+          child: Utilities.styleForConnected(
+            RaisedButton(
+                child: Text(
+                  controller == null ? 'Start Scanning' : 'Stop Scanning',
+                  style: const TextStyle(fontFamily: 'AvenirNextDemiBold', color: Colors.white, fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
+                ),
+                onPressed: () {
+                  if (Utilities.checkForConnection(context)) {
+                    scanUserBarcode();
+                  }
+                }),
+          ),
+        ),
+
+        Container(
+          //color:Colors.yellow,
+          //height: 80,
+          padding: EdgeInsets.only(top:20,bottom:0),
+          child: Center(
+            child: AutoSizeText(
+              onScreenMessage,
+              //'This is a test of how ',
+              //'This is a test of how this works with 2 lines ',
+              //'this is a test of how 3 lines will fit Ill need a lot more text than that to make it work',
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 26.0, height: 0.9),
+            ),
+          ),
+        ),
+
+        FlatButton(
+          textColor: Colors.white,
+          child: const Text('Learn more about this feature'),
+          onPressed: () {
+            _displayInstructions(context);
+          },
+        ),
       ],
     );
   }

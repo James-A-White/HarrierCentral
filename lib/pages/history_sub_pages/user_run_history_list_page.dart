@@ -11,6 +11,7 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -170,7 +171,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                 SpeedDialChild(
                   child: const Icon(MaterialCommunityIcons.email),
                   backgroundColor: Colors.teal[800],
-                  label: 'Email run counts (this kennel)',
+                  label: 'Email run counts\r\n(this kennel)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
                     HasherEventMapService.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelInfo.kennelName).then((Map<String, String> result) {
@@ -185,7 +186,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                 SpeedDialChild(
                   child: const Icon(MaterialCommunityIcons.email_plus),
                   backgroundColor: Colors.blue[900],
-                  label: 'Email run counts (all kennels)',
+                  label: 'Email run counts\r\n(all kennels)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
                     HasherEventMapService.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
@@ -319,11 +320,11 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //   //model.notifyListeners();
   // }
 
-  static const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
+  static const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0);
 
-  static const TextStyle numberStyle = TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85);
+  static TextStyle numberStyle = TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * deviceWidthScaleFactor, height: 1.0);
 
-  static const TextStyle boldTitleStyle = TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85);
+  static TextStyle boldTitleStyle = TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 16.0 * deviceWidthScaleFactor, height: 1.0);
 
   int myRunCount = 0;
   int myHaringCount = 0;
@@ -383,7 +384,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                         child: KennelLogo(
                           kennelLogoUrl: widget.kennelInfo.kennelLogo,
                           kennelShortName: widget.kennelInfo.kennelShortName,
-                          logoHeight: 80.0,
+                          logoHeight: 60.0 * deviceWidthScaleFactor,
                           leftPadding: 5.0,
                         ),
                       ),
@@ -411,7 +412,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                 //'Super fucking long text thats sure to overflow and more',
                                 //'999',
                                 overflow: TextOverflow.ellipsis,
-                                minFontSize: 18.0,
+                                minFontSize: 12.0,
                                 maxLines: 1,
                                 style: numberStyle,
                                 textAlign: TextAlign.center,
@@ -424,7 +425,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                 //'Super fucking long text thats sure to overflow and more',
                                 //'999',
                                 overflow: TextOverflow.ellipsis,
-                                minFontSize: 18.0,
+                                minFontSize: 12.0,
                                 maxLines: 1,
                                 style: numberStyle,
                                 textAlign: TextAlign.center,

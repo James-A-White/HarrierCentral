@@ -94,7 +94,7 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
                       indicatorHeight: 35.0,
                       indicatorColor: Theme.of(context).buttonColor,
                       tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                      indicatorRadius: 10.0,
+                      indicatorRadius: 20.0,
                     ),
                     tabs: tabs,
                     controller: _tabController,

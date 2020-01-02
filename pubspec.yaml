@@ -64,6 +64,7 @@ dependencies:
   # # qr_mobile_vision: ^0.1.0
   # # polygon_clipper 1.0.2
   # # country_pickers 1.1.0
+  # # dash_chat 1.0.10 - great chat implementation!
 
 
 dev_dependencies:
