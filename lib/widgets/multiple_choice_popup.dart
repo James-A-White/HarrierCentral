@@ -3,6 +3,7 @@ import 'dart:core';
 import 'package:flutter/material.dart';
 
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/globals.dart';
 
 class MultipleChoicePopup extends StatefulWidget {
   const MultipleChoicePopup({
@@ -70,9 +71,9 @@ class _MultipleChoicePopupState extends State<MultipleChoicePopup> {
       }
       final Widget w = Container(
         width: 350,
-        padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+        padding: EdgeInsets.only(top: 4.0 * deviceHeightScaleFactor, bottom: 4.0 * deviceHeightScaleFactor),
         child: FlatButton(
-          padding: const EdgeInsets.only(top: 8.0, left: 8.0, bottom: 8.0),
+          padding: EdgeInsets.only(top: 6.0 * deviceHeightScaleFactor, left: 8.0, bottom: 6.0 * deviceHeightScaleFactor),
           color: Colors.blue[900],
           child: Row(children: <Widget>[
             Stack(alignment: AlignmentDirectional.center, children: btnDef['icon']),

@@ -7,6 +7,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 
 class EventQrCodePage extends StatefulWidget {
@@ -44,7 +45,7 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
         backgroundColor: themeAppBarBackground,
         title: const Text(
           'QRs for start & end of Hash',
-          style:  TextStyle(
+          style: TextStyle(
             color: Colors.white,
           ),
         ),
@@ -88,10 +89,12 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
                     unselectedLabelColor: Colors.black,
                     labelColor: Colors.white,
                     indicatorSize: TabBarIndicatorSize.tab,
+                    labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
                       indicatorColor: Theme.of(context).buttonColor,
                       tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                      indicatorRadius: 10.0,
                     ),
                     tabs: tabs,
                     controller: _tabController,
@@ -183,8 +186,8 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
 
   void _initTabs() {
     if (tabs.isEmpty) {
-      tabs.add(const Tab(text: 'Code for Run Start'));
-      tabs.add(const Tab(text: 'Code for Run End'));
+      tabs.add(const Tab(text: 'Run Start'));
+      tabs.add(const Tab(text: 'Run End'));
     }
   }
 }
@@ -280,65 +283,59 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
 
   Key tabKey;
 
+  num spacer = 12.0 + (deviceMaxScaleFactor * 30);
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
 
-    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
-      print('Height = ${constraints.maxHeight}');
-      print('Width = ${constraints.maxWidth}');
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Expanded(
-              child: Stack(
-                alignment: AlignmentDirectional.center,
-                children: <Widget>[
-                  Positioned(
-                    top: 0,
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    child: const Text(
-                      'Print this code and make it available for Hashers to scan at the beginning and end of runs',
-                      textAlign: TextAlign.justify,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'AvenirNextDemiBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 16.0,
-                        height: 0.8,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 75,
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    child: AutoSizeText(
-                      //widget.eventName,
-                      widget.isRunStart ? 'QR code for run start at:' : 'QR code for run end at:',
-                      maxLines: 1,
-                      minFontSize: 22.0,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 24.0, height: 0.8),
-                    ),
-                  ),
-                  Positioned(
-                    top: 110,
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    child: AutoSizeText(
-                      widget.title,
-                     // 'This is a fake hash run name that needs to be very long so we can see how it fits on the page when it overflows three lines',
-                      maxLines: 3,
-                      minFontSize: 22.0,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 24.0, height: 0.8),
-                    ),
-                  ),
+    return Container(
+      padding: EdgeInsets.only(left: 20, right: 20),
+      child: Column(
+        //alignment: AlignmentDirectional.center,
+        children: <Widget>[
+          SizedBox(
+            width: spacer / 3,
+            height: spacer / 3,
+          ),
+          Text(
+            'Print this code and make it available for Hashers to scan at the beginning and end of runs',
+            textAlign: TextAlign.justify,
+            style: TextStyle(
+              color: Colors.white,
+              fontFamily: 'AvenirNextDemiBold',
+              fontStyle: FontStyle.normal,
+              fontSize: 14.0 * deviceWidthScaleFactor,
+              height: 1.0,
+            ),
+          ),
+          SizedBox(
+            width: spacer,
+            height: spacer,
+          ),
+          AutoSizeText(
+            //widget.eventName,
+            widget.isRunStart ? 'QR code for run start at:' : 'QR code for run end at:',
+            maxLines: 1,
+            minFontSize: 22.0,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 24.0, height: 0.8),
+          ),
+          SizedBox(
+            width: spacer / 3,
+            height: spacer / 3,
+          ),
+          AutoSizeText(
+            widget.title,
+            // 'This is a fake hash run name that needs to be very long so we can see how it fits on the page when it overflows three lines',
+            maxLines: 3,
+            minFontSize: 22.0,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 24.0, height: 1.0),
+          ),
 
-                  //               Text(
+          //               Text(
 //                 eventName,
 //                 textAlign: TextAlign.center,
 //                 style: const TextStyle(
@@ -358,50 +355,47 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
 //                     fontSize: 20.0,
 //                     height: 1.0),
 //               ),
-                  // Positioned(
-                  //   top: 127,
+          // Positioned(
+          //   top: 127,
 
-                  //   child: Container(
-                  //                       color: Colors.white,
-                  //     height: MediaQuery.of(context).size.width * 0.8,
-                  //     width: MediaQuery.of(context).size.width * 0.8,
-                  //   ),
-                  // ),
-                  Positioned(
-
-                    bottom: 70,
-                    child: Container(
-                      height: math.min(constraints.maxHeight, constraints.maxWidth) * 0.65,
-                      child: QrImage(
-                          backgroundColor: Colors.white,
-                          padding: const EdgeInsets.all(10.0),
-                          data: widget.qrPrefix + widget.qrContent.toUpperCase(),
-                          // data: (widget.isRunStart ? 'EVTSTART:' : 'EVTEND:') + widget.qrContent.toUpperCase(),
-                          //data: 'testing123',
-                          version: 4,
-                          //size: 200.0,
-                          errorCorrectionLevel: 3),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 20,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 0.0, right: 0.0),
-                      child: FlatButton(
-                        textColor: Colors.white,
-                        child: const Text('Learn more about this feature'),
-                        onPressed: () {
-                          _displayInstructions(context);
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+          //   child: Container(
+          //                       color: Colors.white,
+          //     height: MediaQuery.of(context).size.width * 0.8,
+          //     width: MediaQuery.of(context).size.width * 0.8,
+          //   ),
+          // ),
+          SizedBox(
+            width: spacer/3,
+            height: spacer/3,
+          ),
+          Expanded(
+            child: Stack(
+              children: <Widget>[
+                QrImage(
+                    backgroundColor: Colors.white,
+                    padding: const EdgeInsets.all(15.0),
+                    data: widget.qrPrefix + widget.qrContent.toUpperCase(),
+                    // data: (widget.isRunStart ? 'EVTSTART:' : 'EVTEND:') + widget.qrContent.toUpperCase(),
+                    //data: 'testing123',
+                    version: 4,
+                    //size: 200.0,
+                    errorCorrectionLevel: 3),
+              ],
             ),
-          ],
-        ),
-      );
-    });
+          ),
+          SizedBox(
+            width: spacer/3,
+            height: spacer/3,
+          ),
+          FlatButton(
+            textColor: Colors.white,
+            child: const Text('Learn more about this feature'),
+            onPressed: () {
+              _displayInstructions(context);
+            },
+          ),
+        ],
+      ),
+    );
   }
 }

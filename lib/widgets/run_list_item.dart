@@ -11,6 +11,7 @@ import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
@@ -140,7 +141,6 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
           ),
           Stack(
             children: <Widget>[
-              (widget.futureRun.event.hares ?? '') == '' ? const Positioned(right: 20, top: 10, child: Image(width: 70.0, height: 70.0, fit: BoxFit.fill, image: AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
               Row(
                 children: <Widget>[
                   Expanded(
@@ -171,7 +171,6 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                             rightPadding: 7.0,
                           ),
                           Expanded(
-                            flex: 75,
                             child: Padding(
                               padding: const EdgeInsets.only(top: 3.0, left: 10.0),
                               child: Column(
@@ -186,31 +185,37 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                                 : widget.futureRun.extensions.daysUntilEvent <= 365
                                                     ? 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 30.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months')
                                                     : 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 365.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years')),
-                                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
+                                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                     textAlign: TextAlign.left,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                   Text(
                                     DateFormat("E, MMM d 'at' h:mm a").format(widget.futureRun.event.eventStartDatetime),
-                                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
+                                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                     textAlign: TextAlign.left,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                   Text(
                                     (widget.futureRun.event.hares ?? '') == '' ? 'RSVP to sign up to Hare!' : 'Hares: ' + widget.futureRun.event.hares,
-                                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
+                                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                     textAlign: TextAlign.left,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   widget.futureRun.extensions.distToEvent >= 0
                                       ? Text(
                                           Utilities.getDistance(widget.futureRun.extensions.distToEvent, context) + ' from here',
-                                          style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 0.85),
+                                          style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                           textAlign: TextAlign.left,
+                                          overflow: TextOverflow.ellipsis,
                                         )
                                       : const Text(''),
                                 ],
                               ),
                             ),
                           ),
+                          (widget.futureRun.event.hares ?? '') == '' ? Container(
+                            padding: const EdgeInsets.only(top:15),
+                            child:Image(width: 40.0 * deviceWidthScaleFactor, height: 40.0 * deviceWidthScaleFactor, fit: BoxFit.fill, image: AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
                         ],
                       ),
                     ),
@@ -239,7 +244,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   void showNotificationPopup(BuildContext context) {
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
-        'title': 'Turn notifications on',
+        'title': 'Turn notifications\r\non',
         'icon': <Widget>[
           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
@@ -256,7 +261,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         'returnValue': notificationsOn,
       },
       <String, dynamic>{
-        'title': 'Turn notifications off',
+        'title': 'Turn notifications\r\noff',
         'icon': <Widget>[
           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
@@ -334,7 +339,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   void showEmailAlertPopup(BuildContext context) {
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
-        'title': 'Turn email messages on',
+        'title': 'Turn email\r\nmessages on',
         'icon': <Widget>[
           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
@@ -351,7 +356,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         'returnValue': emailAlertsOn,
       },
       <String, dynamic>{
-        'title': 'Turn email messages off',
+        'title': 'Turn email\r\nmessages off',
         'icon': <Widget>[
           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
           const Positioned(

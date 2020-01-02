@@ -427,9 +427,9 @@ class NarrowEventsService {
     final String accessToken = Utilities.generateToken(userId, 'addEditEvent');
 
     final num _eventsLastUpdated = await NarrowEventsService.getLastUpdatedTime();
-    final DateTime hasherEventMapUpdatedAfter = _eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_eventsLastUpdated + 1000);
+    final DateTime eventUpdatedAfter = _eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_eventsLastUpdated + 1000);
 
-    final Map<String, String> bodyMap = <String, String>{'userId': userId, 'accessToken': accessToken, 'narrowEventsUpdatedAfter': hasherEventMapUpdatedAfter.toString(), 'eventId': eventId};
+    final Map<String, String> bodyMap = <String, String>{'userId': userId, 'accessToken': accessToken, 'narrowEventsUpdatedAfter': eventUpdatedAfter.toString(), 'eventId': eventId};
     if (isVisible != null) {
       bodyMap.addAll(<String, String>{'isVisible': isVisible ? '1' : '0'});
     }

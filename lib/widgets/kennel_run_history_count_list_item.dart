@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 
-
 import 'package:harrier_central/pages/top_level/history_list_page.dart';
 import 'package:harrier_central/pages/history_sub_pages/user_run_history_list_page.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 
-
 import 'package:auto_size_text/auto_size_text.dart';
 
 class KennelRunHistoryCountListItem extends StatelessWidget {
-  const KennelRunHistoryCountListItem({@required this.kennelInfo,@required this.refreshCounters});
+  const KennelRunHistoryCountListItem({@required this.kennelInfo, @required this.refreshCounters});
 
   final HistoryListResults kennelInfo;
   final Function refreshCounters;
@@ -45,7 +43,7 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                 },
               ),
             ).then((void dummy) {
-                refreshCounters();
+              refreshCounters();
             });
           },
           child: Row(
@@ -54,51 +52,59 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(left: 20.0),
-                child: (kennelInfo.kennelLogo == null || kennelInfo.kennelLogo.length < 5) ? Container(height:80, width:80):
-                KennelLogo(
-                  kennelLogoUrl: kennelInfo.kennelLogo,
-                  kennelShortName: kennelInfo.kennelShortName,
-                  logoHeight: 80.0,
-                  leftPadding: 0.0,
-                ),
+                child: (kennelInfo.kennelLogo == null || kennelInfo.kennelLogo.length < 5)
+                    ? Container(height: 80, width: 80)
+                    : KennelLogo(
+                        kennelLogoUrl: kennelInfo.kennelLogo,
+                        kennelShortName: kennelInfo.kennelShortName,
+                        logoHeight: 80.0,
+                        leftPadding: 0.0,
+                      ),
               ),
-              Container(
-                width: 250,
-                child: Row(
-                  children: <Widget>[
-                    Container(
-                      child: AutoSizeText(
-                        '  =  ' +  (kennelInfo.historicalCountIsEstimate != 0 ? '~' : '') + '${kennelInfo.totalRunsThisKennel.toString()}',
+              Expanded(
+                child: Container(
+                  //width: 250,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      const SizedBox(
+                        height: 28,
+                        width: 20,
+                      ),
+
+                      Text(
+                        '  =  ' + (kennelInfo.historicalCountIsEstimate != 0 ? '~' : '') + '${kennelInfo.totalRunsThisKennel.toString()}',
                         //'   =   9999',
                         //'Super fucking long text thats sure to overflow and more',
                         //'999',
                         overflow: TextOverflow.ellipsis,
-                        minFontSize: 22.0,
                         maxLines: 1,
-                        style: numberStyle,
+
+                        style: numberStyle.copyWith(height: 0.6),
                         textAlign: TextAlign.left,
                       ),
                       //color: Colors.green,
-                    ),
-                    kennelInfo.totalHaringThisKennel <= 0
-                        ? Container(width: 120)
-                        : Container(
-                            padding: const EdgeInsets.only(left: 10.0),
-                            width: 120,
-                            child: AutoSizeText(
-                              '(${kennelInfo.totalHaringThisKennel.toString()} times hared)',
-                              //=='   =   22',
-                              //'Super fucking long text thats sure to overflow and more',
-                              //'999',
-                              overflow: TextOverflow.ellipsis,
-                              minFontSize: 14.0,
-                              maxLines: 1,
-                              style: numberStyle,
-                              textAlign: TextAlign.left,
+
+                      kennelInfo.totalHaringThisKennel <= 0
+                          ? Container(width: 120)
+                          : Container(
+                              padding: const EdgeInsets.only(left: 45.0),
+
+                              child: Text(
+                                '(${kennelInfo.totalHaringThisKennel.toString()} times hared)',
+
+                                //=='   =   22',
+                                //'Super fucking long text thats sure to overflow and more',
+                                //'999',
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: numberStyle.copyWith(fontSize: 18.0),
+                                textAlign: TextAlign.left,
+                              ),
+                              //color: Colors.green,
                             ),
-                            //color: Colors.green,
-                          ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               // Container(

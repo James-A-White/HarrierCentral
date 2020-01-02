@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:intl/intl.dart';
 
 import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
@@ -23,15 +24,12 @@ class FilterEventListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double iconSize = 45;
+    final double iconSize = 45 * deviceWidthScaleFactor;
     return  GestureDetector(
       onTap: () {
         Navigator.push<void>(
           context,
           MaterialPageRoute<num>(
-
-            
-
             builder: (BuildContext context) => RunAdminMainPage(eventId: event['eventId']),
           ),
         ).then((void dummy) {
@@ -70,14 +68,14 @@ class FilterEventListItem extends StatelessWidget {
                       '${event['eventName']}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: event['isVisible'] == 1 ? Colors.black87 : Colors.grey, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85),
+                      style: TextStyle(color: event['isVisible'] == 1 ? Colors.black87 : Colors.grey, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 14.0 * deviceWidthScaleFactor, height: 1.0),
                       textAlign: TextAlign.left,
                     ),
                     Text(
                       '${DateTime.parse(event['eventStartDatetime']).year != DateTime.now().year ? DateFormat("E, MMM d, yyyy \'at\' h:mm a").format(DateTime.parse(event['eventStartDatetime'])) : DateFormat("E, MMM d \'at\' h:mm a").format(DateTime.parse(event['eventStartDatetime']))}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: event['isVisible'] == 1 ? Colors.black87 : Colors.grey, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85),
+                      style: TextStyle(color: event['isVisible'] == 1 ? Colors.black87 : Colors.grey, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 14.0 * deviceWidthScaleFactor, height: 1.0),
                       textAlign: TextAlign.left,
                     ),
                     ((event['isVisible'] == 1) && (event['isCountedRun'] == 1))
@@ -92,7 +90,7 @@ class FilterEventListItem extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            style: TextStyle(color: event['isVisible'] == 1 ? Colors.black87 : Colors.grey, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85),
+                            style: TextStyle(color: event['isVisible'] == 1 ? Colors.black87 : Colors.grey, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 14.0 * deviceWidthScaleFactor, height: 1.0),
                             textAlign: TextAlign.left,
                           )
                         : Container()

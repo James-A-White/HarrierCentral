@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -224,6 +225,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       checkDirty();
     });
     super.initState();
+
+    final num avatarNumber = Random.secure().nextInt(49)+1;
+    newPhoto = 'bundle://avatar-$avatarNumber';
+    
   }
 
   void checkDirty() {
@@ -723,8 +728,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         Positioned(
             bottom: 0,
             child: Container(
-                padding: const EdgeInsets.fromLTRB(220, 10, 10, 10),
+                padding: const EdgeInsets.only(top:10,right:20,bottom:10,left:20),
+                
                 child: Utilities.styleForConnected(
+
                   RaisedButton(
                     color: _isDirty ? Theme.of(context).accentColor : Colors.grey,
                     onPressed: () {

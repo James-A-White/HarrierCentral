@@ -6,6 +6,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
@@ -112,33 +113,33 @@ class KennelMemberListItem extends StatelessWidget {
                           : Text(
                               '${kennelMember.homeKennelName ?? '<no home hash>'}',
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0),
+                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceWidthScaleFactor, height: 1.0),
                               textAlign: TextAlign.left,
                             ),
                       kennelMember.dateOfLastRun == null
                           ? Container()
                           : Text(
                               'Last run: ${DateFormat('MMM dd, yyyy').format(kennelMember.dateOfLastRun)}',
-                              style: const TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0),
+                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceWidthScaleFactor, height: 1.0),
                               textAlign: TextAlign.center,
                             ),
                       kennelMember.membershipDateBeingUpdated ?? false
-                          ? const Text(
+                          ? Text(
                               '<Updating membership>',
-                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0, color: Colors.blue),
+                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceWidthScaleFactor, height: 1.0, color: Colors.blue),
                               textAlign: TextAlign.center,
                             )
                           : kennelMember.membershipExpirationDate == null
                               ? kennelMember.following != 1
                                   ? Container()
-                                  : const Text(
+                                  : Text(
                                       '(following this Kennel)',
-                                      style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0),
+                                      style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceWidthScaleFactor, height: 1.0),
                                       textAlign: TextAlign.center,
                                     )
                               : Text(
                                   'Valid until: ${DateFormat('MMM dd, yyyy').format(kennelMember.membershipExpirationDate)}',
-                                  style: const TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0),
+                                  style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceWidthScaleFactor, height: 1.0),
                                   textAlign: TextAlign.center,
                                 ),
                     ],

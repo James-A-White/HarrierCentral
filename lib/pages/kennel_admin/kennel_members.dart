@@ -190,17 +190,17 @@ class KennelMemberListState extends State<KennelMembersList> {
   void setSortBySpeedDial() {
     switch (_sortBy) {
       case EnumSortByType.sortByName:
-        sortBySpeedDialLabel = 'Date of last run';
+        sortBySpeedDialLabel = 'Sort by Date\r\nof last run';
         sortBySpeedDialType = EnumSortByType.sortByLastRunDate;
         sortBySpeedDialIcon = FontAwesome.sort_numeric_desc;
         break;
       case EnumSortByType.sortByLastRunDate:
-        sortBySpeedDialLabel = 'Date membership expires';
+        sortBySpeedDialLabel = 'Sort by Date\r\nmembership expires';
         sortBySpeedDialType = EnumSortByType.sortByMembershipExpirationDate;
         sortBySpeedDialIcon = FontAwesome.sort_numeric_desc;
         break;
       case EnumSortByType.sortByMembershipExpirationDate:
-        sortBySpeedDialLabel = 'Name';
+        sortBySpeedDialLabel = 'Sort by Name';
         sortBySpeedDialType = EnumSortByType.sortByName;
         sortBySpeedDialIcon = FontAwesome.sort_alpha_asc;
         break;
@@ -280,7 +280,7 @@ class KennelMemberListState extends State<KennelMembersList> {
             SpeedDialChild(
                 child: const Icon(Icons.person_add),
                 backgroundColor: Colors.green,
-                label: 'Add Hasher to Harrier Central',
+                label: 'Add new Hasher\r\nto Harrier Central',
                 labelStyle: const TextStyle(fontSize: 18.0),
                 onTap: () {
                   Navigator.push<HashersModel>(

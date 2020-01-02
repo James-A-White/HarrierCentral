@@ -84,6 +84,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
                       indicatorHeight: 35.0,
                       indicatorColor: Theme.of(context).buttonColor,
                       tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                      indicatorRadius: 10.0,
                     ),
                     tabs: tabs,
                     controller: _tabController,

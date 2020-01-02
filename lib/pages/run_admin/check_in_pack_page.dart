@@ -23,6 +23,7 @@ import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
 import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
@@ -156,6 +157,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   static const String searchAllHashers = 'Searching all Hashers';
   bool highlightSearchType = false;
 
+  TextStyle localFootnoteSmallRed = footnoteSmallRed.copyWith(fontSize: 12 * deviceWidthScaleFactor);
+  TextStyle localFootnoteSmall = footnoteSmall.copyWith(fontSize: 12 * deviceWidthScaleFactor);
+  
   @override
   void initState() {
     searchTypeText = searchKennel;
@@ -729,7 +733,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                         hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                       ),
                     ),
-                    Text(searchTypeText, style: highlightSearchType ? footnoteSmallRed : footnoteSmall)
+                    Text(searchTypeText, style: highlightSearchType ? localFootnoteSmallRed : localFootnoteSmall)
                   ],
                 ),
               ),
@@ -1161,14 +1165,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             Positioned(
               left: LIST_ITEM_LEFT_MARGIN + 2.0,
               top: 32.0,
-              child: Text(packMember.homeKennelName ?? '', style: footnoteMedium),
+              child: Text(packMember.homeKennelName ?? '', style: footnoteMedium, overflow: TextOverflow.ellipsis,),
             ),
             // this widget is here to grow the contents of the cell to a size that fills nearly the whole cell
             // in order to give plenty of room for the tap gesture.
             Positioned(
               left: LIST_ITEM_LEFT_MARGIN,
               top: 0,
-              child: Container(width: MediaQuery.of(context).size.width - 80, height: 65, color: Colors.transparent),
+              child: Container(width: MediaQuery.of(context).size.width - 200, height: 65, color: Colors.transparent),
             ),
 
             Positioned(
@@ -1261,14 +1265,20 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                                     ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.red)
                                     : packMember.isPaid == isPaidYes.value ? Image.asset('images/icons/payment_type_${packMember.paymentType}.png', height: 24.0, width: 24.0, color: Colors.green) : Container()),
 
-            // Payment icons
 
+            (packMember.currentHaringCount == null) || (packMember.currentHaringCount == 0)
+                ? Container()
+                : Positioned(
+                    right: 4,
+                    bottom: 17,
+                    child: Text('Hared = ${packMember.currentHaringCount}' , style:getRunLabelStyle(packMember.currentPackRunCount+packMember.currentHaringCount,packMember.attendenceState)),
+                  ),
             packMember.currentPackRunCount == null
                 ? Container()
                 : Positioned(
-                    right: 10,
-                    bottom: 7,
-                    child: Text('Runs = ${packMember.currentPackRunCount + packMember.currentHaringCount}' + (packMember.currentHaringCount == 0 ? '' : ', Hared = ${packMember.currentHaringCount}'), style:getRunLabelStyle(packMember.currentPackRunCount+packMember.currentHaringCount,packMember.attendenceState)),
+                    right: 4,
+                    bottom: 1,
+                    child: Text('Runs = ${packMember.currentPackRunCount + packMember.currentHaringCount}', style:getRunLabelStyle(packMember.currentPackRunCount+packMember.currentHaringCount,packMember.attendenceState)),
                   ),
             //packMember.currentPackRunCount == null ? Container() : Positioned(right: 20, bottom: 1, child: Text('Times hared = ${packMember.currentHaringCount}')),
           ],

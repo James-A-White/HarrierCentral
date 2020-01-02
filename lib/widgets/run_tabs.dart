@@ -11,6 +11,7 @@ import 'package:flutter_linkify/flutter_linkify.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -193,6 +194,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   int flexLeft = 27;
   int flexRight = 73;
 
+  num spaceBetweenColumns = 11.0;
+  num spaceBetweenRows = 23.0;
+
   Container buildRunDetailsView() {
     String paymentLinkUrl = '';
 
@@ -253,7 +257,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                 children: <Widget>[
                   Expanded(
                     child: Text(
-                      'Run:',
+                      'Run #:',
                       style: listLabelStyle,
                       textAlign: TextAlign.right,
                       maxLines: 1,
@@ -261,9 +265,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
+                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
                   Expanded(
                       child: Text(
-                        '  # ${widget.futureRun.event.eventNumber}',
+                        '${widget.futureRun.event.eventNumber}',
                         style: listValueStyle,
                         textAlign: TextAlign.left,
                         maxLines: 1,
@@ -284,9 +289,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
+                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
                   Expanded(
                       child: Text(
-                        DateFormat('  E, MMM d').format(widget.futureRun.event.eventStartDatetime),
+                        DateFormat('E, MMM d').format(widget.futureRun.event.eventStartDatetime),
                         style: listValueStyle,
                         textAlign: TextAlign.left,
                         maxLines: 1,
@@ -307,9 +313,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
+                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
                   Expanded(
                       child: Text(
-                        DateFormat('  h:mm a').format(widget.futureRun.event.eventStartDatetime),
+                        DateFormat('h:mm a').format(widget.futureRun.event.eventStartDatetime),
                         style: listValueStyle,
                         textAlign: TextAlign.left,
                         maxLines: 1,
@@ -330,10 +337,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
+                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
                   Expanded(
                       child: Text(
                         ((widget.futureRun.event.eventPriceForMembers ?? widget.futureRun.kennel.defaultPriceForMembers ?? 0) > 0)
-                            ? '  ${Utilities.getFormattedMoney(widget.futureRun.event.eventPriceForMembers ?? widget.futureRun.kennel.defaultPriceForMembers ?? 0, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol)} (members)'
+                            ? '${Utilities.getFormattedMoney(widget.futureRun.event.eventPriceForMembers ?? widget.futureRun.kennel.defaultPriceForMembers ?? 0, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol)} (members)'
                             : '',
                         style: listValueStyle,
                         textAlign: TextAlign.left,
@@ -355,10 +363,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
+                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
                   Expanded(
                       child: Text(
                         ((widget.futureRun.event.eventPriceForNonMembers ?? widget.futureRun.kennel.defaultPriceForNonMembers ?? 0) > 0)
-                            ? '  ${Utilities.getFormattedMoney(widget.futureRun.event.eventPriceForNonMembers ?? widget.futureRun.kennel.defaultPriceForNonMembers ?? 0, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol)} (non-members)'
+                            ? '${Utilities.getFormattedMoney(widget.futureRun.event.eventPriceForNonMembers ?? widget.futureRun.kennel.defaultPriceForNonMembers ?? 0, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol)} (non-members)'
                             : '',
                         style: listValueStyle,
                         textAlign: TextAlign.left,
@@ -380,9 +389,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
+                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
                   Expanded(
                       child: Text(
-                        '  Unknown',
+                        'Unknown',
                         style: listValueStyle,
                         textAlign: TextAlign.left,
                         maxLines: 1,
@@ -403,9 +413,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
+                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
                   Expanded(
                       child: Text(
-                        '  ' + (widget.futureRun.event.hares ?? ''),
+                        widget.futureRun.event.hares ?? '',
                         style: listValueStyle,
                         textAlign: TextAlign.left,
                         maxLines: 1,
@@ -426,9 +437,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
+                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
                   Expanded(
                       child: Text(
-                        '  ' + (widget.futureRun.extensions.distToEvent >= 0 ? Utilities.getDistance(widget.futureRun.extensions.distToEvent, context) + ' from here' : '<unknown>'),
+                        widget.futureRun.extensions.distToEvent >= 0 ? Utilities.getDistance(widget.futureRun.extensions.distToEvent, context) + ' from here' : '<unknown>',
                         style: listValueStyle,
                         textAlign: TextAlign.left,
                         maxLines: 1,
@@ -449,9 +461,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
+                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
                   Expanded(
                       child: Text(
-                        '  ' + (widget.futureRun.event.locationStreet ?? ''),
+                        widget.futureRun.event.locationStreet ?? '',
                         style: listValueStyle,
                         textAlign: TextAlign.left,
                         maxLines: 1,
@@ -472,9 +485,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
+                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
                   Expanded(
                       child: Text(
-                        '  ' + ((((widget.futureRun.event.locationPostCode == null) || (widget.futureRun.event.locationPostCode.isEmpty)) ? '' : widget.futureRun.event.locationPostCode + ' ') + (widget.futureRun.event.locationCity ?? '')),
+                        (((widget.futureRun.event.locationPostCode == null) || (widget.futureRun.event.locationPostCode.isEmpty)) ? '' : widget.futureRun.event.locationPostCode + ' ') + (widget.futureRun.event.locationCity ?? ''),
                         style: listValueStyle,
                         textAlign: TextAlign.left,
                         maxLines: 1,
@@ -484,6 +498,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                 ],
               ),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Expanded(
                     child: Text(
@@ -491,17 +506,19 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                       style: listLabelStyle,
                       textAlign: TextAlign.right,
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      
                     ),
                     flex: flexLeft,
                   ),
+                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
                   Expanded(
                       child: Text(
-                        '  ' + (widget.futureRun.event.locationOneLineDesc ?? ''),
+                        widget.futureRun.event.locationOneLineDesc ?? '',
                         style: listValueStyle,
                         textAlign: TextAlign.left,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+
+                        //maxLines: ,
+                        //overflow: TextOverflow.ellipsis,
                       ),
                       flex: flexRight),
                 ],
@@ -558,7 +575,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     );
   }
 
-  TextStyle rsvpTitlesView = const TextStyle(color: Colors.white, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 17.0, height: 0.85);
+  TextStyle rsvpTitlesView = TextStyle(color: Colors.white, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0 * deviceWidthScaleFactor, height: 1);
 
   EnumRsvpState<int> rsvpRequested = rsvpUnknown;
 
@@ -570,7 +587,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           child: Column(
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.only(top: 17.0, bottom: 8.0),
+            padding: const EdgeInsets.only(top: 0.0, bottom: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
@@ -579,7 +596,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                   child: Column(
                     children: <Widget>[
                       Text(
-                        'Going: ' + ((packCount['rsvpYesCount'] ?? 0) >= 0 ? (packCount['rsvpYesCount'] ?? 0).toString() : ''),
+                        'Going',
                         style: rsvpTitlesView,
                       ),
                       Stack(
@@ -624,6 +641,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                           ),
                         ],
                       ),
+                      Text(
+                        (packCount['rsvpYesCount'] ?? 0) >= 0 ? (packCount['rsvpYesCount'] ?? 0).toString() : '',
+                        style: rsvpTitlesView,
+                      ),
+                       
+
+
                     ],
                   ),
                 ),
@@ -633,7 +657,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     children: <Widget>[
                       Text(
                         //'Maybe: ' + (widget.futureRun.rsvpMaybeCount >= 0 ? widget.futureRun.rsvpMaybeCount.toString() : ''),
-                        'Maybe: ' + ((packCount['rsvpMaybeCount'] ?? 0) >= 0 ? (packCount['rsvpMaybeCount'] ?? 0).toString() : ''),
+                        'Maybe',
                         style: rsvpTitlesView,
                       ),
                       Stack(
@@ -664,6 +688,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                           ),
                         ],
                       ),
+                                            Text(
+                        (packCount['rsvpMaybeCount'] ?? 0) >= 0 ? (packCount['rsvpMaybeCount'] ?? 0).toString() : '',
+                        style: rsvpTitlesView,
+                      ),
                       // Text(
                       //   widget.futureRun.maybeAttendingEvent >= 0
                       //       ? widget.futureRun.maybeAttendingEvent
@@ -685,7 +713,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     children: <Widget>[
                       Text(
                           //'Not go: ' + (widget.futureRun.rsvpNoCount >= 0 ? widget.futureRun.rsvpNoCount.toString() : ''),
-                          'Not go: ' + ((packCount['rsvpNoCount'] ?? 0) >= 0 ? (packCount['rsvpNoCount'] ?? 0).toString() : ''),
+                          'Not go',
                           style: rsvpTitlesView),
                       Stack(
                         alignment: AlignmentDirectional.center,
@@ -715,6 +743,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                           ),
                         ],
                       ),
+                                                                  Text(
+                        (packCount['rsvpNoCount'] ?? 0) >= 0 ? (packCount['rsvpNoCount'] ?? 0).toString() : '',
+                        style: rsvpTitlesView,
+                      ),
+                      
                       // Text(
                       //   widget.futureRun.notAttendingEvent >= 0
                       //       ? widget.futureRun.notAttendingEvent
@@ -735,7 +768,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     children: <Widget>[
                       Text(
                           // 'Hares: ' + (widget.futureRun.haresCount >= 0 ? widget.futureRun.haresCount.toString() : ''),
-                          'Hares: ' + ((packCount['isHareCount'] ?? 0) >= 0 ? (packCount['isHareCount'] ?? 0).toString() : ''),
+                          'Hares',
                           style: rsvpTitlesView),
                       Stack(
                         alignment: AlignmentDirectional.center,
@@ -794,6 +827,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                           ),
                         ],
                       ),
+                                                                                        Text(
+                        (packCount['isHareCount'] ?? 0) >= 0 ? (packCount['isHareCount'] ?? 0).toString() : '',
+                        style: rsvpTitlesView,
+                      ),
+                      
                       // Text(
                       //   widget.futureRun.haresCount >= 0
                       //       ? widget.futureRun.haresCount.toString()
@@ -917,7 +955,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                               width: 300.0,
                                               height: 300.0,
                                               fit: BoxFit.fill,
-                                              image: AssetImage(('images/avatars/' + thePackList[index].hasher.photo.toLowerCase().replaceFirst('bundle://', '') + '.png').toLowerCase()),
+                                              image: AssetImage(('images/avatars/' + thePackList[index].hasher.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
                                             )
                                           : const Image(
                                               width: 300.0,
@@ -1141,13 +1179,17 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
                         unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
                         isScrollable: true,
+                        labelPadding: EdgeInsets.only(top:5, left:20, right:20),
                         unselectedLabelColor: Colors.black,
                         labelColor: Colors.white,
                         indicatorSize: TabBarIndicatorSize.tab,
                         indicator: BubbleTabIndicator(
-                          indicatorHeight: 40.0,
+                          indicatorHeight: 30.0,
                           indicatorColor: Theme.of(context).buttonColor,
                           tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                          indicatorRadius: 10.0,
+                          // bubblePadding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+                          // insets: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 10.0),
                         ),
                         tabs: tabs,
                         controller: _tabController,

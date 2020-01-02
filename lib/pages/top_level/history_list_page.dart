@@ -197,17 +197,17 @@ class HistoryListPageState extends State<HistoryListPage> {
                     Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                       const Text(
                         'My total run counts',
-                        style: TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85),
+                        style: TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
                         textAlign: TextAlign.center,
                       ),
                       Text(
                         'Total runs: ' + _totalRuns.toString(),
-                        style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85),
+                        style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
                         textAlign: TextAlign.left,
                       ),
                       Text(
                         'Total times hared: ' + _totalHaring.toString(),
-                        style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 0.85),
+                        style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
                         textAlign: TextAlign.left,
                       ),
                     ])
