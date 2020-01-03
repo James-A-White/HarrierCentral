@@ -157,6 +157,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         previousRunCountController.text = (hkmData?.historicalPackRunCount ?? 0).toString();
         previousHaringCountController.text = (hkmData?.historicalHaringCount ?? 0).toString();
         historicalCountIsEstimate = (hkmData?.historicalCountIsEstimate ?? 0) == 1;
+        _distancePreference = hasher.preferences & 0x00000003;
       }
 
       setState(() {
@@ -177,9 +178,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   @override
   void initState() {
-
-    if (widget.hashNameFromSearch.isNotEmpty)
-    {
+    if (widget.hashNameFromSearch.isNotEmpty) {
       hashNameController.text = widget.hashNameFromSearch;
     }
     // print('initState called from hasher_profile_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
@@ -226,9 +225,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     });
     super.initState();
 
-    final num avatarNumber = Random.secure().nextInt(49)+1;
+    final num avatarNumber = Random.secure().nextInt(49) + 1;
     newPhoto = 'bundle://avatar-$avatarNumber';
-    
   }
 
   void checkDirty() {
@@ -257,9 +255,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     if (previousHaringCountController.text != (hkmData?.historicalHaringCount ?? 0).toString()) {
       isDirty = true;
     }
+    if (historicalCountIsEstimate != ((hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
+      isDirty = true;
+    }
 
-    if (historicalCountIsEstimate != ((hkmData?.historicalCountIsEstimate ?? 0) == 1))
+    if ((hasher.preferences & 0x00000003) != _distancePreference)
     {
+      isDirty = true;
+    }
+
+    if (historicalCountIsEstimate != ((hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
       isDirty = true;
     }
 
@@ -317,6 +322,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             historicalPackRunCount: previousRunCountController.text,
             historicalHaringCount: previousHaringCountController.text,
             historicalCountIsEstimate: historicalCountIsEstimate,
+            preferences: _distancePreference,
             followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0);
 
         apiCall.then((void dummy) async {
@@ -329,6 +335,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                 setStringPref(StringPrefsEnum.firstName, hasher.firstName);
                 setStringPref(StringPrefsEnum.hashName, hasher.hashName);
                 setStringPref(StringPrefsEnum.lastName, hasher.lastName);
+                setIntPref(IntPrefsEnum.hasherPreferences, hasher.preferences);
               }
               _isLoading = false;
               checkDirty();
@@ -431,7 +438,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             hasher.firstName = val;
           },
         ),
-                const SizedBox(
+        const SizedBox(
           height: 15.0,
         ),
         Row(
@@ -479,13 +486,22 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   AppBar appBar;
 
+  int _distancePreference;
+
+  void _handleRadioValueChange1(int value) {
+    setState(() {
+      _distancePreference = value;
+      checkDirty();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    num scrollHeight = 740.0;
+    num scrollHeight = 1040.0;
     if ((widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_inviteCode) != 0) {
-      scrollHeight = 1510.0;
+      scrollHeight = 1810.0;
     } else if (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_followKennel != 0) {
-      scrollHeight = 860.0;
+      scrollHeight = 1160.0;
     }
 
     return Stack(
@@ -593,10 +609,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   context,
                                                                   MaterialPageRoute<String>(
                                                                     builder: (BuildContext context) => ChooseProfileImage(
-                                                                          isForThisDevice: widget.pageType == EnumMyProfilePageType.myProfile,
-                                                                          fileNamePrefix: photoPrefix,
-                                                                          currentProfileImage: hasher?.photo ?? newPhoto,
-                                                                        ),
+                                                                      isForThisDevice: widget.pageType == EnumMyProfilePageType.myProfile,
+                                                                      fileNamePrefix: photoPrefix,
+                                                                      currentProfileImage: hasher?.photo ?? newPhoto,
+                                                                    ),
                                                                   ),
                                                                 ).then((String result) {
                                                                   if ((result != null) && (result.toString().isNotEmpty)) {
@@ -611,6 +627,67 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             child: Text('Update Profile Image', style: buttonTextStyle),
                                                           ),
                                                         ),
+
+                                                        const FancyDivider(
+                                                          innerColor: Colors.white,
+                                                          topMargin: 30.0,
+                                                          bottomMargin: 20.0,
+                                                        ),
+Container(
+  decoration: BoxDecoration(
+                                                            color: Colors.yellow[100],
+                                                            borderRadius: BorderRadius.circular(5.0),
+                                                          ),
+                 
+                                                        child:Column(
+                                                          children: <Widget>[
+                                                            SizedBox(height: 10,width: 10,),
+                                                            Text(
+                                                                  'Distance Measurements',
+                                                                  style: TextStyle(fontSize: 16.0),
+                                                                ),
+                                                            SizedBox(height: 10,width: 10,),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                Radio(
+                                                                  value: 0,
+                                                                  groupValue: _distancePreference,
+                                                                  onChanged: _handleRadioValueChange1,
+                                                                ),
+                                                                Text(
+                                                                  'Auto',
+                                                                  style: new TextStyle(fontSize: 16.0),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                Radio(
+                                                                  value: 2,
+                                                                  groupValue: _distancePreference,
+                                                                  onChanged: _handleRadioValueChange1,
+                                                                ),
+                                                                Text(
+                                                                  'Kilometers',
+                                                                  style: new TextStyle(fontSize: 16.0),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                Radio(
+                                                                  value: 3,
+                                                                  groupValue: _distancePreference,
+                                                                  onChanged: _handleRadioValueChange1,
+                                                                ),
+                                                                Text(
+                                                                  'Miles',
+                                                                  style: new TextStyle(fontSize: 16.0),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),),
                                                       ],
                                                     ),
                                                   ),
@@ -728,10 +805,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         Positioned(
             bottom: 0,
             child: Container(
-                padding: const EdgeInsets.only(top:10,right:20,bottom:10,left:20),
-                
+                padding: const EdgeInsets.only(top: 10, right: 20, bottom: 10, left: 20),
                 child: Utilities.styleForConnected(
-
                   RaisedButton(
                     color: _isDirty ? Theme.of(context).accentColor : Colors.grey,
                     onPressed: () {

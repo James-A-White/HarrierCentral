@@ -132,7 +132,7 @@ class MigrationsTableHelper {
   ///
   ///
 
-  static int dbVersion = 224;
+  static int dbVersion = 225;
 
   static List<MigrationsModel> migrationList = <MigrationsModel>[
 
@@ -169,6 +169,13 @@ class MigrationsTableHelper {
             ALTER TABLE ${HashersTableHelper.tableName} ADD COLUMN ${HashersTableHelper.colIncludeInGlobalHashDirectory} INT;
             ALTER TABLE ${CountriesTableHelper.tableName} ADD COLUMN ${CountriesTableHelper.colDistancePreference} INT NOT NULL DEFAULT 0;
          '''),
+
+  // MIGRATION 225
+    MigrationsModel(migrationNumber: 225, migrationText: '''
+        ALTER TABLE ${HashersTableHelper.tableName} ADD COLUMN ${HashersTableHelper.colPreferences} INT;
+         '''),
+
+         
 
 
 

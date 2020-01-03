@@ -203,7 +203,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                   ),
                                   widget.futureRun.extensions.distToEvent >= 0
                                       ? Text(
-                                          Utilities.getDistance(widget.futureRun.extensions.distToEvent, context) + ' from here',
+                                          Utilities.getDistance(widget.futureRun.extensions.distToEvent, context,isMetric: widget.futureRun.extensions.distancePreference == 0 ) + ' from here',
                                           style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                           textAlign: TextAlign.left,
                                           overflow: TextOverflow.ellipsis,

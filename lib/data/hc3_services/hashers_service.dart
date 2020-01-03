@@ -30,6 +30,7 @@ class HashersModel {
       this.resetCode, 
       this.qrCode, 
       this.includeInGlobalHashDirectory,
+      this.preferences,
       this.removed, 
       this.updatedAt});
 
@@ -44,7 +45,8 @@ class HashersModel {
   int dispPref;
   String resetCode;
   String qrCode;
-  final int includeInGlobalHashDirectory;
+  int includeInGlobalHashDirectory;
+  int preferences;
 
   final int removed;
   final DateTime updatedAt;
@@ -69,6 +71,7 @@ class HashersModel {
             resetCode: jsonItem['resetCode'],
             qrCode: jsonItem['qrCode'],
             includeInGlobalHashDirectory: jsonItem['includeInGlobalHashDirectory'],
+            preferences: jsonItem['preferences'],
 
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
@@ -111,6 +114,7 @@ class HashersTableHelper {
   static const String colResetCode = 'resetCode';
   static const String colQrCode = 'qrCode';
   static const String colIncludeInGlobalHashDirectory= 'includeInGlobalHashDirectory';
+  static const String colPreferences= 'preferences';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -138,6 +142,7 @@ class HashersTableHelper {
             $colResetCode TEXT,
             $colQrCode TEXT,
             $colIncludeInGlobalHashDirectory INT,
+            $colPreferences INT,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
@@ -163,6 +168,7 @@ class HashersTableHelper {
       HashersTableHelper.colResetCode: item.resetCode,
       HashersTableHelper.colQrCode: item.qrCode,
       HashersTableHelper.colIncludeInGlobalHashDirectory: item.includeInGlobalHashDirectory,
+      HashersTableHelper.colPreferences: item.preferences,
 
       HashersTableHelper.colUpdatedAt: item.updatedAt.toString(),
       HashersTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
@@ -186,6 +192,7 @@ class HashersTableHelper {
       HashersTableHelper.colResetCode: inputMap[HashersTableHelper.colResetCode],
       HashersTableHelper.colQrCode: inputMap[HashersTableHelper.colQrCode],
       HashersTableHelper.colIncludeInGlobalHashDirectory: inputMap[HashersTableHelper.colIncludeInGlobalHashDirectory],
+      HashersTableHelper.colPreferences: inputMap[HashersTableHelper.colPreferences],
 
       HashersTableHelper.colUpdatedAt: inputMap[HashersTableHelper.colUpdatedAt],
       HashersTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[HashersTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
@@ -209,6 +216,7 @@ class HashersTableHelper {
       resetCode: map[HashersTableHelper.colResetCode],
       qrCode: map[HashersTableHelper.colQrCode],
       includeInGlobalHashDirectory: map[HashersTableHelper.colIncludeInGlobalHashDirectory],
+      preferences: map[HashersTableHelper.colPreferences],
       
       updatedAt: DateTime.parse(map[HashersTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[HashersTableHelper.colRemoved],
@@ -346,7 +354,7 @@ class HashersService {
 
   // ============ Functions go here =============
 
-  Future<String> addEditUser({String targetUserId, String firstName, String lastName, String email, String hashName, String photo, String eventId, String kennelId, String historicalPackRunCount, String historicalHaringCount, bool historicalCountIsEstimate, int followKennelOnAddNewUser, int includeInGlobalHashDirectory = -1}) async {
+  Future<String> addEditUser({String targetUserId, String firstName, String lastName, String email, String hashName, String photo, String eventId, String kennelId, String historicalPackRunCount, String historicalHaringCount, bool historicalCountIsEstimate, int followKennelOnAddNewUser, int includeInGlobalHashDirectory = -1, int preferences = -1}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return '';
       // TODO(James): fix this so we can return a bool
@@ -397,6 +405,7 @@ class HashersService {
       'hashName': hashName,
       'photo': photo,
       'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString(),
+      'preferences': preferences.toString(),
       'eventId': eventId,
       'kennelId': kennelId,
       'historicalPackRunCount': historicalPackRunCount,

@@ -149,8 +149,7 @@ class Utilities {
     return finalStr;
   }
 
-  static String getDistance(num meters, BuildContext context) {
-    const bool isMetric = true;
+  static String getDistance(num meters, BuildContext context,{bool isMetric = true}) {
     String result = '';
 
     if (isMetric) {

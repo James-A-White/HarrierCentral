@@ -23,7 +23,7 @@ class FutureRunsListPage extends StatefulWidget {
 }
 
 class RunDetailsQueryExtensions {
-  RunDetailsQueryExtensions({this.daysUntilEvent, this.distToEvent, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isHare, this.following, this.notificationPreference, this.emailAlertPreference});
+  RunDetailsQueryExtensions({this.daysUntilEvent, this.distToEvent, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isHare, this.following, this.notificationPreference, this.emailAlertPreference, this.distancePreference});
 
   final num daysUntilEvent;
   num distToEvent;
@@ -35,9 +35,10 @@ class RunDetailsQueryExtensions {
   final int following;
   int notificationPreference;
   int emailAlertPreference;
+  int distancePreference;
 
   static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map) {
-    final RunDetailsQueryExtensions item = RunDetailsQueryExtensions(daysUntilEvent: map['daysUntilEvent'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'], mismanagementRoleFlags: map['mismanagementRoleFlags'], following: map['following'], notificationPreference: map['notificationPreference'],emailAlertPreference: map['emailAlertPreference']);
+    final RunDetailsQueryExtensions item = RunDetailsQueryExtensions(daysUntilEvent: map['daysUntilEvent'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'], mismanagementRoleFlags: map['mismanagementRoleFlags'], following: map['following'], notificationPreference: map['notificationPreference'],emailAlertPreference: map['emailAlertPreference'],distancePreference: map['distancePreference']);
     return item;
   }
 }
@@ -108,10 +109,12 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
           n.currencySymbol,
           CAST(julianday(evt.eventStartDatetime) + 0.5 AS INT) - CAST(julianday('now','localtime') + 0.5 AS INT) as daysUntilEvent,
           julianday(evt.eventStartDatetime) + 0.5 as eventJulian,
-          julianday('now','localtime') + 0.5 as nowJulian
+          julianday('now','localtime') + 0.5 as nowJulian,
+          CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,n.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
           INNER JOIN countries n on n.countryId = k.countryId
+          INNER JOIN hashers h on h.hasherId = "$userId"
           LEFT OUTER JOIN hasherKennelMap hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
           LEFT OUTER JOIN hasherEventMap hem on hem.eventId = evt.eventId and hem.userId = "$userId"
           WHERE evt.eventStartDatetime > datetime('now','localtime','-4 hours') and evt.isVisible = 1

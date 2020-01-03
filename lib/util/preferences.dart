@@ -29,6 +29,7 @@ enum DoublePrefsEnum { latitude, longitude }
 enum IntPrefsEnum {
   databaseVersion,
 
+  hasherPreferences,
 
   lastUpdateAllHasherData,
   lastCacheClearAllHasherData,
