@@ -7,7 +7,22 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
 
 class CountriesModel {
-  CountriesModel({this.countryId, this.countryCode, this.latitude, this.longitude, this.countryName, this.continentCode, this.flagFile, this.currencyCode, this.primaryCultureCode, this.showRegion, this.currencySymbol, this.digitsAfterDecimal, this.removed, this.updatedAt});
+  CountriesModel({
+    this.countryId, 
+    this.countryCode, 
+    this.latitude, 
+    this.longitude, 
+    this.countryName, 
+    this.continentCode, 
+    this.flagFile, 
+    this.currencyCode, 
+    this.primaryCultureCode, 
+    this.showRegion, 
+    this.currencySymbol, 
+    this.digitsAfterDecimal, 
+    this.distancePreference,
+    this.removed, 
+    this.updatedAt});
 
   final String countryId;
   final String countryCode;
@@ -21,6 +36,8 @@ class CountriesModel {
   final int showRegion;
   final String currencySymbol;
   final int digitsAfterDecimal;
+  final int distancePreference;
+
   final int removed;
   final DateTime updatedAt;
 
@@ -44,6 +61,8 @@ class CountriesModel {
             showRegion: jsonItem['showRegion'],
             currencySymbol: jsonItem['currencySymbol'],
             digitsAfterDecimal: jsonItem['digitsAfterDecimal'],
+            distancePreference: jsonItem['distancePreference'],
+
             updatedAt: DateTime.parse(jsonItem['updatedAt']),
             removed: jsonItem['removed']);
         items.add(item);
@@ -83,6 +102,8 @@ class CountriesTableHelper {
   static const String colShowRegion = 'showRegion';
   static const String colCurrencySymbol = 'currencySymbol';
   static const String colDigitsAfterDecimal = 'digitsAfterDecimal';
+  static const String colDistancePreference= 'distancePreference';
+
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
   static const String colUpdatedAtValue = 'updatedAtValue';
@@ -109,6 +130,7 @@ class CountriesTableHelper {
             $colShowRegion NUM,
             $colCurrencySymbol TEXT,
             $colDigitsAfterDecimal NUM,
+            $colDistancePreference INT,
             
             $colRemoved NUM,
             $colUpdatedAt TEXT,
@@ -134,6 +156,8 @@ class CountriesTableHelper {
       CountriesTableHelper.colShowRegion: item.showRegion,
       CountriesTableHelper.colCurrencySymbol: item.currencySymbol,
       CountriesTableHelper.colDigitsAfterDecimal: item.digitsAfterDecimal,
+      CountriesTableHelper.colDistancePreference: item.distancePreference,
+
       CountriesTableHelper.colUpdatedAt: item.updatedAt.toString(),
       CountriesTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       CountriesTableHelper.colRemoved: item.removed
@@ -156,6 +180,8 @@ class CountriesTableHelper {
       CountriesTableHelper.colShowRegion: inputMap[CountriesTableHelper.colShowRegion],
       CountriesTableHelper.colCurrencySymbol: inputMap[CountriesTableHelper.colCurrencySymbol],
       CountriesTableHelper.colDigitsAfterDecimal: inputMap[CountriesTableHelper.colDigitsAfterDecimal],
+      CountriesTableHelper.colDistancePreference: inputMap[CountriesTableHelper.colDistancePreference],
+
       CountriesTableHelper.colUpdatedAt: inputMap[CountriesTableHelper.colUpdatedAt],
       CountriesTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[CountriesTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       CountriesTableHelper.colRemoved: inputMap[CountriesTableHelper.colRemoved],
@@ -178,6 +204,8 @@ class CountriesTableHelper {
       showRegion: map[CountriesTableHelper.colShowRegion],
       currencySymbol: map[CountriesTableHelper.colCurrencySymbol],
       digitsAfterDecimal: map[CountriesTableHelper.colDigitsAfterDecimal],
+      distancePreference: map[CountriesTableHelper.colDistancePreference],
+      
       updatedAt: DateTime.parse(map[CountriesTableHelper.colUpdatedAt]),
       removed: map[CountriesTableHelper.colRemoved],
     );

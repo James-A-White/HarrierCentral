@@ -65,6 +65,7 @@ dependencies:
   # # polygon_clipper 1.0.2
   # # country_pickers 1.1.0
   # # dash_chat 1.0.10 - great chat implementation!
+  # # flutter_slidable 0.5.4
 
 
 dev_dependencies:

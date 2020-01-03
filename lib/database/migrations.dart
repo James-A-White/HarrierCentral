@@ -4,9 +4,10 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 
 //import 'package:harrier_central/database/database.dart';
-//import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
+import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
+import 'package:harrier_central/data/hc3_services/countries_service.dart';
 //import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
-//import 'package:harrier_central/data/hc3_services/kennels_service.dart';
+import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 //import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
@@ -96,8 +97,26 @@ class MigrationsTableHelper {
           continue;
         }
         final String sql = mm.migrationText.trim();
-        await db.execute(sql);
-        print('Migration ${mm.migrationNumber.toString()} succeeded');
+        final List<String> statements = sql.split(';');
+
+        int line = 1;
+
+        for(String statement in statements)
+        {
+            statement = statement.trim();
+            if (statement.isEmpty) 
+            {
+              continue;
+            }
+
+            statement = statement + ';';
+
+            print('Migration #: ${mm.migrationNumber.toString()}, statement #$line');
+            print('Migration sql: $statement');
+            await db.execute(statement);
+            print('Migration ${mm.migrationNumber.toString()}, statement #$line succeeded');
+            line++;
+        }
       }
     } catch (e) {
       migrationsSuccessful = false;
@@ -113,7 +132,7 @@ class MigrationsTableHelper {
   ///
   ///
 
-  static int dbVersion = 223;
+  static int dbVersion = 224;
 
   static List<MigrationsModel> migrationList = <MigrationsModel>[
 
@@ -134,5 +153,24 @@ class MigrationsTableHelper {
             ALTER TABLE ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user)} ADD COLUMN ${HasherEventMapTableHelper.colEventEmailAlertPreference} INT;
             ALTER TABLE ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
          '''),
+
+
+    // MIGRATION 224
+    MigrationsModel(migrationNumber: 224, migrationText: '''
+            ALTER TABLE ${NarrowEventsTableHelper.tableName} ADD COLUMN ${NarrowEventsTableHelper.colEventPriceForExtras} NUM;
+            ALTER TABLE ${NarrowEventsTableHelper.tableName} ADD COLUMN ${NarrowEventsTableHelper.colExtrasDescription} TEXT;
+            ALTER TABLE ${NarrowEventsTableHelper.tableName} ADD COLUMN ${NarrowEventsTableHelper.colDoTrackHashCash} INT;
+            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colKennelMismanagementTeam} TEXT;
+            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colDistancePreference} INT;
+            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colIsKennelFollowing} INT;
+            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colMismanagementRoles} INT;
+            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} ADD COLUMN ${HasherKennelMapTableHelper.colIsKennelFollowing} INT;
+            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} ADD COLUMN ${HasherKennelMapTableHelper.colMismanagementRoles} INT;
+            ALTER TABLE ${HashersTableHelper.tableName} ADD COLUMN ${HashersTableHelper.colIncludeInGlobalHashDirectory} INT;
+            ALTER TABLE ${CountriesTableHelper.tableName} ADD COLUMN ${CountriesTableHelper.colDistancePreference} INT NOT NULL DEFAULT 0;
+         '''),
+
+
+
   ];
 }

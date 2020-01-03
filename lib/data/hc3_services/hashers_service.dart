@@ -17,7 +17,21 @@ import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart'
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 
 class HashersModel {
-  HashersModel({this.hasherId, this.homeKennelId, this.firstName, this.lastName, this.dispName, this.hashName, this.email, this.photo, this.dispPref, this.resetCode, this.qrCode, this.removed, this.updatedAt});
+  HashersModel({
+      this.hasherId, 
+      this.homeKennelId, 
+      this.firstName, 
+      this.lastName, 
+      this.dispName, 
+      this.hashName, 
+      this.email, 
+      this.photo, 
+      this.dispPref, 
+      this.resetCode, 
+      this.qrCode, 
+      this.includeInGlobalHashDirectory,
+      this.removed, 
+      this.updatedAt});
 
   final String hasherId;
   final String homeKennelId;
@@ -30,6 +44,8 @@ class HashersModel {
   int dispPref;
   String resetCode;
   String qrCode;
+  final int includeInGlobalHashDirectory;
+
   final int removed;
   final DateTime updatedAt;
 
@@ -52,6 +68,8 @@ class HashersModel {
             dispPref: jsonItem['dispPref'],
             resetCode: jsonItem['resetCode'],
             qrCode: jsonItem['qrCode'],
+            includeInGlobalHashDirectory: jsonItem['includeInGlobalHashDirectory'],
+
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
 
@@ -92,6 +110,7 @@ class HashersTableHelper {
   static const String colDispPref = 'dispPref';
   static const String colResetCode = 'resetCode';
   static const String colQrCode = 'qrCode';
+  static const String colIncludeInGlobalHashDirectory= 'includeInGlobalHashDirectory';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -118,6 +137,7 @@ class HashersTableHelper {
             $colDispPref INT,
             $colResetCode TEXT,
             $colQrCode TEXT,
+            $colIncludeInGlobalHashDirectory INT,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
@@ -142,6 +162,8 @@ class HashersTableHelper {
       HashersTableHelper.colDispPref: item.dispPref,
       HashersTableHelper.colResetCode: item.resetCode,
       HashersTableHelper.colQrCode: item.qrCode,
+      HashersTableHelper.colIncludeInGlobalHashDirectory: item.includeInGlobalHashDirectory,
+
       HashersTableHelper.colUpdatedAt: item.updatedAt.toString(),
       HashersTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       HashersTableHelper.colRemoved: item.removed
@@ -163,6 +185,8 @@ class HashersTableHelper {
       HashersTableHelper.colDispPref: inputMap[HashersTableHelper.colDispPref],
       HashersTableHelper.colResetCode: inputMap[HashersTableHelper.colResetCode],
       HashersTableHelper.colQrCode: inputMap[HashersTableHelper.colQrCode],
+      HashersTableHelper.colIncludeInGlobalHashDirectory: inputMap[HashersTableHelper.colIncludeInGlobalHashDirectory],
+
       HashersTableHelper.colUpdatedAt: inputMap[HashersTableHelper.colUpdatedAt],
       HashersTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[HashersTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       HashersTableHelper.colRemoved: inputMap[HashersTableHelper.colRemoved],
@@ -184,6 +208,8 @@ class HashersTableHelper {
       dispPref: map[HashersTableHelper.colDispPref],
       resetCode: map[HashersTableHelper.colResetCode],
       qrCode: map[HashersTableHelper.colQrCode],
+      includeInGlobalHashDirectory: map[HashersTableHelper.colIncludeInGlobalHashDirectory],
+      
       updatedAt: DateTime.parse(map[HashersTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[HashersTableHelper.colRemoved],
     );

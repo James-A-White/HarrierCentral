@@ -37,6 +37,9 @@ class HasherKennelMapModel {
       this.dateOfLastRun,
       this.membershipExpirationDate,
       this.memberSince,
+      this.isKennelFollowing,
+      this.mismanagementRoles,
+
       this.removed,
       this.updatedAt});
 
@@ -59,6 +62,9 @@ class HasherKennelMapModel {
   final DateTime dateOfLastRun;
   final DateTime membershipExpirationDate;
   final DateTime memberSince;
+  final int isKennelFollowing;
+  final int mismanagementRoles;
+
   final DateTime updatedAt;
   final int removed;
 
@@ -89,6 +95,9 @@ class HasherKennelMapModel {
           dateOfLastRun: jsonItem['dateOfLastRun'] == null ? null : DateTime.parse(jsonItem['dateOfLastRun'].toString().substring(0, 19)),
           membershipExpirationDate: jsonItem['membershipExpirationDate'] == null ? null : DateTime.parse(jsonItem['membershipExpirationDate'].toString().substring(0, 19)),
           memberSince: jsonItem['memberSince'] == null ? null : DateTime.parse(jsonItem['memberSince'].toString().substring(0, 19)),
+          isKennelFollowing: jsonItem['isKennelFollowing'],
+          mismanagementRoles: jsonItem['mismanagementRoles'],
+
           updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
           removed: jsonItem['removed'],
         );
@@ -139,9 +148,11 @@ class HasherKennelMapTableHelper {
   static const String colDateOfLastRun = 'dateOfLastRun';
   static const String colMembershipExpirationDate = 'membershipExpirationDate';
   static const String colMemberSince = 'memberSince';
+  static const String colIsKennelFollowing= 'isKennelFollowing';
+  static const String colMismanagementRoles= 'mismanagementRoles';
+
   static const String colUpdatedAt = 'updatedAt';
   static const String colRemoved = 'removed';
-
   static const String colUpdatedAtValue = 'updatedAtValue';
 
   // make this a singleton class
@@ -196,9 +207,11 @@ class HasherKennelMapTableHelper {
             $colDateOfLastRun TEXT,
             $colMembershipExpirationDate TEXT,
             $colMemberSince TEXT,
+            $colIsKennelFollowing INT,
+            $colMismanagementRoles INT,
+
             $colRemoved INT,
             $colUpdatedAt TEXT,
-
             $colUpdatedAtValue NUM NULL
           )
           ''');
@@ -230,6 +243,9 @@ class HasherKennelMapTableHelper {
       HasherKennelMapTableHelper.colDateOfLastRun: item.dateOfLastRun,
       HasherKennelMapTableHelper.colMembershipExpirationDate: item.membershipExpirationDate,
       HasherKennelMapTableHelper.colMemberSince: item.memberSince,
+      HasherKennelMapTableHelper.colIsKennelFollowing: item.isKennelFollowing,
+      HasherKennelMapTableHelper.colMismanagementRoles: item.mismanagementRoles,
+
       HasherKennelMapTableHelper.colUpdatedAt: item.updatedAt,
       HasherKennelMapTableHelper.colRemoved: item.removed,
     };
@@ -258,6 +274,9 @@ class HasherKennelMapTableHelper {
       HasherKennelMapTableHelper.colDateOfLastRun: inputMap[HasherKennelMapTableHelper.colDateOfLastRun],
       HasherKennelMapTableHelper.colMembershipExpirationDate: inputMap[HasherKennelMapTableHelper.colMembershipExpirationDate],
       HasherKennelMapTableHelper.colMemberSince: inputMap[HasherKennelMapTableHelper.colMemberSince],
+      HasherKennelMapTableHelper.colIsKennelFollowing: inputMap[HasherKennelMapTableHelper.colIsKennelFollowing],
+      HasherKennelMapTableHelper.colMismanagementRoles: inputMap[HasherKennelMapTableHelper.colMismanagementRoles],
+
       HasherKennelMapTableHelper.colUpdatedAt: inputMap[HasherKennelMapTableHelper.colUpdatedAt],
       HasherKennelMapTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[HasherKennelMapTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       HasherKennelMapTableHelper.colRemoved: inputMap[HasherKennelMapTableHelper.colRemoved],
@@ -287,6 +306,9 @@ class HasherKennelMapTableHelper {
       dateOfLastRun: (map[HasherKennelMapTableHelper.colDateOfLastRun] == null) ? null : DateTime.parse(map[HasherKennelMapTableHelper.colDateOfLastRun].toString().substring(0, 19)),
       membershipExpirationDate: (map[HasherKennelMapTableHelper.colMembershipExpirationDate] == null) ? null : DateTime.parse(map[HasherKennelMapTableHelper.colMembershipExpirationDate].toString().substring(0, 19)),
       memberSince: (map[HasherKennelMapTableHelper.colMemberSince] == null) ? null : DateTime.parse(map[HasherKennelMapTableHelper.colMemberSince].toString().substring(0, 19)),
+      isKennelFollowing: map[HasherKennelMapTableHelper.colIsKennelFollowing],
+      mismanagementRoles: map[HasherKennelMapTableHelper.colMismanagementRoles],
+
       updatedAt: DateTime.parse(map[HasherKennelMapTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[HasherKennelMapTableHelper.colRemoved],
     );

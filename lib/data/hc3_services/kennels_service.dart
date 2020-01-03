@@ -38,6 +38,8 @@ class KennelsModel {
       this.kennelPaymentUrl,
       this.kennelPaymentUrlExpires,
       this.runCountStartDate,
+      this.kennelMismanagementTeam,
+      this.distancePreference,
       this.updatedAt,
       this.removed});
 
@@ -71,6 +73,8 @@ class KennelsModel {
   final String kennelPaymentUrl;
   final DateTime kennelPaymentUrlExpires;
   final DateTime runCountStartDate;
+  final String kennelMismanagementTeam;
+  final int distancePreference;
   final DateTime updatedAt;
   final int removed;
 
@@ -112,6 +116,8 @@ class KennelsModel {
           kennelPaymentUrl: jsonItem['kennelPaymentUrl'],
           kennelPaymentUrlExpires: jsonItem['kennelPaymentUrlExpires'], // TODO(James): Investigate why this isn't being converted to a DateTime?
           runCountStartDate: DateTime.parse(jsonItem['runCountStartDate'].toString().substring(0, 19)),
+          kennelMismanagementTeam: jsonItem['kennelMismanagementTeam'],
+          distancePreference: jsonItem['distancePreference'],
           updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
           removed: jsonItem['removed'],
         );
@@ -173,6 +179,8 @@ class KennelsTableHelper {
   static const String colKennelPaymentUrl = 'kennelPaymentUrl';
   static const String colKennelPaymentUrlExpires = 'kennelPaymentUrlExpires';
   static const String colRunCountStartDate = 'runCountStartDate';
+  static const String colKennelMismanagementTeam= 'kennelMismanagementTeam';
+  static const String colDistancePreference= 'distancePreference';
   static const String colUpdatedAt = 'updatedAt';
   static const String colRemoved = 'removed';
 
@@ -218,6 +226,8 @@ class KennelsTableHelper {
             $colKennelPaymentUrl TEXT,
             $colKennelPaymentUrlExpires TEXT,
             $colRunCountStartDate TEXT,
+            $colKennelMismanagementTeam TEXT,
+            $colDistancePreference INT,
             $colUpdatedAt TEXT,
             $colRemoved INT,
 
@@ -261,6 +271,9 @@ class KennelsTableHelper {
       KennelsTableHelper.colKennelPaymentUrl: item.kennelPaymentUrl,
       KennelsTableHelper.colKennelPaymentUrlExpires: item.kennelPaymentUrlExpires.toString(),
       KennelsTableHelper.colRunCountStartDate: item.runCountStartDate.toString(),
+      KennelsTableHelper.colKennelMismanagementTeam: item.kennelMismanagementTeam,
+      KennelsTableHelper.colDistancePreference: item.distancePreference,
+
       KennelsTableHelper.colUpdatedAt: item.updatedAt.toString(),
       KennelsTableHelper.colRemoved: item.removed,
     };
@@ -300,6 +313,8 @@ class KennelsTableHelper {
       KennelsTableHelper.colKennelPaymentUrl: inputMap[KennelsTableHelper.colKennelPaymentUrl],
       KennelsTableHelper.colKennelPaymentUrlExpires: inputMap[KennelsTableHelper.colKennelPaymentUrlExpires],
       KennelsTableHelper.colRunCountStartDate: inputMap[KennelsTableHelper.colRunCountStartDate],
+      KennelsTableHelper.colKennelMismanagementTeam: inputMap[KennelsTableHelper.colKennelMismanagementTeam],
+      KennelsTableHelper.colDistancePreference: inputMap[KennelsTableHelper.colDistancePreference],
       KennelsTableHelper.colUpdatedAt: inputMap[KennelsTableHelper.colUpdatedAt],
       KennelsTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[KennelsTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       KennelsTableHelper.colRemoved: inputMap[KennelsTableHelper.colRemoved],
@@ -340,6 +355,9 @@ class KennelsTableHelper {
       kennelPaymentUrl: map[KennelsTableHelper.colKennelPaymentUrl],
       kennelPaymentUrlExpires: DateTime.parse((map[KennelsTableHelper.colKennelPaymentUrlExpires] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
       runCountStartDate: map[KennelsTableHelper.colRunCountStartDate] == null ? null : DateTime.parse(map[KennelsTableHelper.colRunCountStartDate].toString().substring(0, 19)),
+      kennelMismanagementTeam: map[KennelsTableHelper.colKennelMismanagementTeam],
+      distancePreference: map[KennelsTableHelper.colDistancePreference],
+
       updatedAt: DateTime.parse(map[KennelsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[KennelsTableHelper.colRemoved],
     );

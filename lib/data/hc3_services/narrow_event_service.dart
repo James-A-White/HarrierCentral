@@ -38,6 +38,9 @@ class NarrowEventsModel {
       this.eventPaymentUrl,
       this.eventPaymentUrlExpires,
       this.unconfirmedBankXferCount,
+      this.eventPriceForExtras,
+      this.extrasDescription,
+      this.doTrackHashCash,
       this.removed,
       this.updatedAt});
 
@@ -65,6 +68,9 @@ class NarrowEventsModel {
   final String eventPaymentUrl;
   final DateTime eventPaymentUrlExpires;
   final int unconfirmedBankXferCount;
+  final num eventPriceForExtras;
+  final String extrasDescription;
+  final int doTrackHashCash;
   final int removed;
   final DateTime updatedAt;
 
@@ -100,6 +106,9 @@ class NarrowEventsModel {
             eventPaymentUrl: jsonItem['eventPaymentUrl'],
             eventPaymentUrlExpires: jsonItem['eventPaymentUrlExpires'],
             unconfirmedBankXferCount: jsonItem['unconfirmedBankXferCount'],
+            eventPriceForExtras: jsonItem['eventPriceForExtras'],
+            extrasDescription: jsonItem['extrasDescription'],
+            doTrackHashCash: jsonItem['doTrackHashCash'],
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
 
@@ -153,6 +162,9 @@ class NarrowEventsTableHelper {
   static const String colEventPaymentUrl = 'eventPaymentUrl';
   static const String colEventPaymentUrlExpires = 'eventPaymentUrlExpires';
   static const String colUnconfirmedBankXferCount = 'unconfirmedBankXferCount';
+  static const String colEventPriceForExtras= 'eventPriceForExtras';
+  static const String colExtrasDescription= 'extrasDescription';
+  static const String colDoTrackHashCash= 'doTrackHashCash';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -192,6 +204,9 @@ class NarrowEventsTableHelper {
             $colEventPaymentUrl TEXT,
             $colEventPaymentUrlExpires TEXT,
             $colUnconfirmedBankXferCount INT,
+            $colEventPriceForExtras NUM,
+            $colExtrasDescription TEXT,
+            $colDoTrackHashCash INT,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
@@ -229,6 +244,9 @@ class NarrowEventsTableHelper {
       NarrowEventsTableHelper.colEventPaymentUrl: item.eventPaymentUrl,
       NarrowEventsTableHelper.colEventPaymentUrlExpires: item.eventPaymentUrlExpires.toString(),
       NarrowEventsTableHelper.colUnconfirmedBankXferCount: item.unconfirmedBankXferCount,
+      NarrowEventsTableHelper.colEventPriceForExtras: item.eventPriceForExtras,
+      NarrowEventsTableHelper.colExtrasDescription: item.extrasDescription,
+      NarrowEventsTableHelper.colDoTrackHashCash: item.doTrackHashCash,
       NarrowEventsTableHelper.colUpdatedAt: item.updatedAt.toString(),
       NarrowEventsTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       NarrowEventsTableHelper.colRemoved: item.removed
@@ -263,6 +281,10 @@ class NarrowEventsTableHelper {
       NarrowEventsTableHelper.colEventPaymentUrl: inputMap[NarrowEventsTableHelper.colEventPaymentUrl],
       NarrowEventsTableHelper.colEventPaymentUrlExpires: inputMap[NarrowEventsTableHelper.colEventPaymentUrlExpires],
       NarrowEventsTableHelper.colUnconfirmedBankXferCount: inputMap[NarrowEventsTableHelper.colUnconfirmedBankXferCount],
+      NarrowEventsTableHelper.colEventPriceForExtras: inputMap[NarrowEventsTableHelper.colEventPriceForExtras],
+      NarrowEventsTableHelper.colExtrasDescription: inputMap[NarrowEventsTableHelper.colExtrasDescription],
+      NarrowEventsTableHelper.colDoTrackHashCash: inputMap[NarrowEventsTableHelper.colDoTrackHashCash],
+      
       NarrowEventsTableHelper.colUpdatedAt: inputMap[NarrowEventsTableHelper.colUpdatedAt],
       NarrowEventsTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[NarrowEventsTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       NarrowEventsTableHelper.colRemoved: inputMap[NarrowEventsTableHelper.colRemoved],
@@ -297,6 +319,9 @@ class NarrowEventsTableHelper {
       eventPaymentUrl: map[NarrowEventsTableHelper.colEventPaymentUrl],
       eventPaymentUrlExpires: DateTime.parse((map[NarrowEventsTableHelper.colEventPaymentUrlExpires] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
       unconfirmedBankXferCount: map[NarrowEventsTableHelper.colUnconfirmedBankXferCount],
+      eventPriceForExtras: map[NarrowEventsTableHelper.colEventPriceForExtras],
+      extrasDescription: map[NarrowEventsTableHelper.colExtrasDescription],
+      doTrackHashCash: map[NarrowEventsTableHelper.colDoTrackHashCash],
       updatedAt: DateTime.parse(map[NarrowEventsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[NarrowEventsTableHelper.colRemoved],
     );
