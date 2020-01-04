@@ -10,6 +10,12 @@ import 'package:harrier_central/database/database.dart';
 
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
+import 'package:harrier_central/data/hc3_services/countries_service.dart';
+import 'package:harrier_central/data/hc3_services/regions_service.dart';
+import 'package:harrier_central/data/hc3_services/cities_service.dart';
+import 'package:harrier_central/data/hc3_services/kennels_service.dart';
+import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
+
 import 'package:harrier_central/widgets/kennel_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
@@ -17,13 +23,8 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
 
-
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-
-
 class KennelListQueryExtenstions {
-  KennelListQueryExtenstions({this.location,this.distToKennel,this.nextRunDate,this.lastRunDate,this.digitsAfterDecimal,this.currencySymbol, this.isHomeKennel});
+  KennelListQueryExtenstions({this.location,this.distToKennel,this.nextRunDate,this.lastRunDate,this.digitsAfterDecimal,this.currencySymbol, this.isHomeKennel, this.distancePreference});
 
   final String location;
   num distToKennel;
@@ -32,13 +33,14 @@ class KennelListQueryExtenstions {
   final int digitsAfterDecimal;
   final String currencySymbol;
   int isHomeKennel;
+  int distancePreference;
 
   int followingRequested;
   int notificationsRequested;
   int emailAlertRequested;
 
   static KennelListQueryExtenstions fromMap(Map<String, dynamic> map) {
-    final KennelListQueryExtenstions item = KennelListQueryExtenstions(location: map['location'], distToKennel: map['distToKennel'], nextRunDate: map['nextRunDate'], lastRunDate: map['lastRunDate'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'],isHomeKennel: map['isHomeKennel']);
+    final KennelListQueryExtenstions item = KennelListQueryExtenstions(location: map['location'], distToKennel: map['distToKennel'], nextRunDate: map['nextRunDate'], lastRunDate: map['lastRunDate'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'],isHomeKennel: map['isHomeKennel'],distancePreference: map['distancePreference']);
     return item;
   }
 }
@@ -100,14 +102,14 @@ class KennelsListPageState extends State<KennelsListPage> {
           (SELECT max(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime <= datetime('now','localtime') ) as lastRunDate,
           n.digitsAfterDecimal,
           n.currencySymbol,
-          case when h.hasherId is not null then 1 else 0 end as isHomeKennel
-          FROM kennels k
-          INNER JOIN cities c on c.cityId = k.cityId
-          INNER JOIN regions r on r.regionId = k.regionId
-          INNER JOIN countries n on n.countryId = k.countryId
-          LEFT OUTER JOIN hasherKennelMap hkm on hkm.kennelId = k.kennelId 
-          LEFT OUTER JOIN ${HashersTableHelper.tableName} h on h.homeKennelId = k.kennelId AND h.hasherId = "$hasherId"
-          
+          CASE WHEN ((h.homeKennelId IS NOT NULL) AND (h.homeKennelId = k.kennelId)) then 1 else 0 end as isHomeKennel,
+          CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,n.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference
+          FROM ${KennelsTableHelper.tableName} k
+          INNER JOIN ${CitiesTableHelper.tableName} c on c.cityId = k.cityId
+          INNER JOIN ${RegionsTableHelper.tableName} r on r.regionId = k.regionId
+          INNER JOIN ${CountriesTableHelper.tableName} n on n.countryId = k.countryId
+          INNER JOIN ${HashersTableHelper.tableName} h on h.hasherId = "$hasherId"
+          LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on hkm.kennelId = k.kennelId 
           ''';
 
           globalKennelMainPageList = <KennelListAggregate>[];
@@ -116,10 +118,6 @@ class KennelsListPageState extends State<KennelsListPage> {
               for (int i = 0; i < results.length; i++) {
                 locator.distanceBetween(ll.latitude, ll.longitude, results[i]['kennelLatitude'], results[i]['kennelLongitude']).then((num dist) {
 
-                  // final Map<String, dynamic> item = <String, dynamic>{};
-                  // item.addAll(<String, dynamic>{'distance': dist.round()});
-                  // item.addAll(<String, dynamic>{'followingRequested': -1});
-                  // item.addAll(results[i]);
                   final KennelsModel kennelItem = KennelsTableHelper.fromMap(results[i]);
                   final HasherKennelMapModel hkmItem = HasherKennelMapTableHelper.fromMap(results[i]);
                   final KennelListQueryExtenstions extensionsItem = KennelListQueryExtenstions.fromMap(results[i]);

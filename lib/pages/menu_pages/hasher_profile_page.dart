@@ -259,8 +259,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       isDirty = true;
     }
 
-    if ((hasher.preferences & 0x00000003) != _distancePreference)
-    {
+    if ((hasher.preferences & 0x00000003) != _distancePreference) {
       isDirty = true;
     }
 
@@ -633,61 +632,67 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           topMargin: 30.0,
                                                           bottomMargin: 20.0,
                                                         ),
-Container(
-  decoration: BoxDecoration(
+                                                        Container(
+                                                          decoration: BoxDecoration(
                                                             color: Colors.yellow[100],
                                                             borderRadius: BorderRadius.circular(5.0),
                                                           ),
-                 
-                                                        child:Column(
-                                                          children: <Widget>[
-                                                            SizedBox(height: 10,width: 10,),
-                                                            Text(
-                                                                  'Distance Measurements',
-                                                                  style: TextStyle(fontSize: 16.0),
-                                                                ),
-                                                            SizedBox(height: 10,width: 10,),
-                                                            Row(
-                                                              children: <Widget>[
-                                                                Radio(
-                                                                  value: 0,
-                                                                  groupValue: _distancePreference,
-                                                                  onChanged: _handleRadioValueChange1,
-                                                                ),
-                                                                Text(
-                                                                  'Auto',
-                                                                  style: new TextStyle(fontSize: 16.0),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: <Widget>[
-                                                                Radio(
-                                                                  value: 2,
-                                                                  groupValue: _distancePreference,
-                                                                  onChanged: _handleRadioValueChange1,
-                                                                ),
-                                                                Text(
-                                                                  'Kilometers',
-                                                                  style: new TextStyle(fontSize: 16.0),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: <Widget>[
-                                                                Radio(
-                                                                  value: 3,
-                                                                  groupValue: _distancePreference,
-                                                                  onChanged: _handleRadioValueChange1,
-                                                                ),
-                                                                Text(
-                                                                  'Miles',
-                                                                  style: new TextStyle(fontSize: 16.0),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),),
+                                                          child: Column(
+                                                            children: <Widget>[
+                                                              const SizedBox(
+                                                                height: 10,
+                                                                width: 10,
+                                                              ),
+                                                              Text(
+                                                                'Distance Preference',
+                                                                style: headingStyle20Black,
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 10,
+                                                                width: 10,
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: 0,
+                                                                    groupValue: _distancePreference,
+                                                                    onChanged: _handleRadioValueChange1,
+                                                                  ),
+                                                                  const Text(
+                                                                    'Auto',
+                                                                    style: TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: 2,
+                                                                    groupValue: _distancePreference,
+                                                                    onChanged: _handleRadioValueChange1,
+                                                                  ),
+                                                                  const Text(
+                                                                    'Kilometers',
+                                                                    style: TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: 3,
+                                                                    groupValue: _distancePreference,
+                                                                    onChanged: _handleRadioValueChange1,
+                                                                  ),
+                                                                  const Text(
+                                                                    'Miles',
+                                                                    style: TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
                                                       ],
                                                     ),
                                                   ),

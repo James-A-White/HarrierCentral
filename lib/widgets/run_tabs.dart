@@ -440,7 +440,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                   SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
                   Expanded(
                       child: Text(
-                        widget.futureRun.extensions.distToEvent >= 0 ? Utilities.getDistance(widget.futureRun.extensions.distToEvent, context) + ' from here' : '<unknown>',
+                        widget.futureRun.extensions.distToEvent >= 0 ? Utilities.getDistance(widget.futureRun.extensions.distToEvent, context,isMetric: widget.futureRun.extensions.distancePreference == 0 ) + ' from here' : '<unknown>',
                         style: listValueStyle,
                         textAlign: TextAlign.left,
                         maxLines: 1,
@@ -1179,7 +1179,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
                         unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
                         isScrollable: true,
-                        labelPadding: EdgeInsets.only(top:5, left:20, right:20),
+                        labelPadding: const EdgeInsets.only(top:5, left:20, right:20),
                         unselectedLabelColor: Colors.black,
                         labelColor: Colors.white,
                         indicatorSize: TabBarIndicatorSize.tab,

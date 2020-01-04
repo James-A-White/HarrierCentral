@@ -4,8 +4,6 @@ import 'package:harrier_central/pages/top_level/history_list_page.dart';
 import 'package:harrier_central/pages/history_sub_pages/user_run_history_list_page.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 
-import 'package:auto_size_text/auto_size_text.dart';
-
 class KennelRunHistoryCountListItem extends StatelessWidget {
   const KennelRunHistoryCountListItem({@required this.kennelInfo, @required this.refreshCounters});
 

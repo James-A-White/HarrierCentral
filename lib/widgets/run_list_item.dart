@@ -215,7 +215,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                           ),
                           (widget.futureRun.event.hares ?? '') == '' ? Container(
                             padding: const EdgeInsets.only(top:15),
-                            child:Image(width: 40.0 * deviceWidthScaleFactor, height: 40.0 * deviceWidthScaleFactor, fit: BoxFit.fill, image: AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
+                            child:Image(width: 40.0 * deviceWidthScaleFactor, height: 40.0 * deviceWidthScaleFactor, fit: BoxFit.fill, image: const AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
                         ],
                       ),
                     ),

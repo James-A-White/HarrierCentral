@@ -212,7 +212,7 @@ class KennelListItemState extends State<KennelsListItem> {
                             style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                           ),
                           Text(
-                            '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel, context)}',
+                            '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel, context, isMetric: widget.kennelItem.extensions.distancePreference == 0 )}',
                             style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                           ),
                           // const Text(
