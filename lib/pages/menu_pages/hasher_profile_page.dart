@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -45,6 +46,7 @@ class HasherProfilePage extends StatefulWidget {
 
   static const int flagUiElement_followKennel = 0x00000001;
   static const int flagUiElement_inviteCode = 0x00000002;
+  static const int flagUiElement_distancePref = 0x00000004;
 
   @override
   HasherProfilePageState createState() => HasherProfilePageState();
@@ -496,13 +498,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    num scrollHeight = 1040.0;
-    if ((widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_inviteCode) != 0) {
-      scrollHeight = 1810.0;
-    } else if (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_followKennel != 0) {
-      scrollHeight = 1160.0;
-    }
-
     return Stack(
       children: <Widget>[
         Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
@@ -525,108 +520,86 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                         FocusScope.of(context).requestFocus(FocusNode());
                       },
                       child: SingleChildScrollView(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                              //minHeight: viewportConstraints.maxHeight,
-                              ),
-                          child: IntrinsicHeight(
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: <Widget>[
-                                  // TODO(James): Bring this back eventually
-                                  // UserDetailsUi(firstName: firstName, lastName: lastName, email: email, hashName: hashName,),
-                                  // const FancyDivider(innerColor: Colors.white),
-                                  Container(
-                                    width: MediaQuery.of(context).size.width,
-                                    child: IntrinsicHeight(
-                                      child: Stack(
-                                        fit: StackFit.expand,
-                                        alignment: AlignmentDirectional.center,
-                                        children: <Widget>[
-                                          Container(height: scrollHeight),
-                                          Positioned(
-                                            top: 10,
-                                            left: 0,
-                                            right: 0,
-                                            child: Text(
-                                              widget.pageType == EnumMyProfilePageType.myProfile ? 'My Profile Information' : 'Hasher Profile Information',
-                                              style: headingStyle,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Positioned(
-                                              top: 40,
-                                              //bottom: 20,
-                                              width: MediaQuery.of(context).size.width,
-                                              child: Container(
-                                                padding: const EdgeInsets.all(30.0),
-                                                child: Container(
-                                                  child: Center(
-                                                    child: Column(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              Container(
+                                width: MediaQuery.of(context).size.width,
+                                child: Column(
+                                  children: <Widget>[
+                                    Text(
+                                      widget.pageType == EnumMyProfilePageType.myProfile ? 'My Profile Information' : 'Hasher Profile Information',
+                                      style: headingStyle,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.only(top: 30.0, left: (deviceWidthScaleFactor - 1) * 30, right: (deviceWidthScaleFactor - 1) * 30),
+                                      child: Container(
+                                        child: Center(
+                                          child: Column(
+                                            children: <Widget>[
+                                              Container(
+                                                padding: const EdgeInsets.all(10.0),
+                                                margin: const EdgeInsets.only(bottom: 45),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.yellow[100],
+                                                  borderRadius: BorderRadius.circular(5.0),
+                                                ),
+                                                child: Form(
+                                                  key: _profileFormKey,
+                                                  autovalidate: _autoValidate,
+                                                  child: profileFormUi(),
+                                                ),
+                                              ),
+                                              const FancyDivider(innerColor: Colors.white),
+                                              Container(
+                                                height: 220,
+                                                color: Colors.white,
+                                                padding: const EdgeInsets.all(10.0),
+                                                margin: const EdgeInsets.only(top: 20, bottom: 30),
+                                                child: newPhoto.isEmpty
+                                                    ? Image.asset(
+                                                        'images/icons/create_profile_photo.png',
+                                                      )
+                                                    : ProfilePhoto(
+                                                        profilePhotoUrl: newPhoto,
+                                                        photoHeight: 200.0,
+                                                        leftPadding: 0.0,
+                                                      ),
+                                              ),
+                                              Utilities.styleForConnected(
+                                                RaisedButton(
+                                                  onPressed: () {
+                                                    if (Utilities.checkForConnection(context)) {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute<String>(
+                                                          builder: (BuildContext context) => ChooseProfileImage(
+                                                            isForThisDevice: widget.pageType == EnumMyProfilePageType.myProfile,
+                                                            fileNamePrefix: photoPrefix,
+                                                            currentProfileImage: hasher?.photo ?? newPhoto,
+                                                          ),
+                                                        ),
+                                                      ).then((String result) {
+                                                        if ((result != null) && (result.toString().isNotEmpty)) {
+                                                          setState(() {
+                                                            newPhoto = result;
+                                                            checkDirty();
+                                                          });
+                                                        }
+                                                      });
+                                                    }
+                                                  },
+                                                  child: Text('Update Profile Image', style: buttonTextStyle),
+                                                ),
+                                              ),
+                                              (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_distancePref == 0)
+                                                  ? Container()
+                                                  : Column(
                                                       children: <Widget>[
-                                                        Container(
-                                                          padding: const EdgeInsets.all(10.0),
-                                                          margin: const EdgeInsets.only(bottom: 45),
-                                                          decoration: BoxDecoration(
-                                                            color: Colors.yellow[100],
-                                                            borderRadius: BorderRadius.circular(5.0),
-                                                          ),
-                                                          child: Form(
-                                                            key: _profileFormKey,
-                                                            autovalidate: _autoValidate,
-                                                            child: profileFormUi(),
-                                                          ),
-                                                        ),
-
-                                                        const FancyDivider(innerColor: Colors.white),
-
-                                                        //SizedBox(height: 30),
-                                                        Container(
-                                                          height: 220,
-                                                          color: Colors.white,
-                                                          padding: const EdgeInsets.all(10.0),
-                                                          margin: const EdgeInsets.only(top: 20, bottom: 30),
-                                                          child: newPhoto.isEmpty
-                                                              ? Image.asset(
-                                                                  'images/icons/create_profile_photo.png',
-                                                                )
-                                                              : ProfilePhoto(
-                                                                  profilePhotoUrl: newPhoto,
-                                                                  photoHeight: 200.0,
-                                                                  leftPadding: 0.0,
-                                                                ),
-                                                        ),
-
-                                                        Utilities.styleForConnected(
-                                                          RaisedButton(
-                                                            onPressed: () {
-                                                              if (Utilities.checkForConnection(context)) {
-                                                                Navigator.push(
-                                                                  context,
-                                                                  MaterialPageRoute<String>(
-                                                                    builder: (BuildContext context) => ChooseProfileImage(
-                                                                      isForThisDevice: widget.pageType == EnumMyProfilePageType.myProfile,
-                                                                      fileNamePrefix: photoPrefix,
-                                                                      currentProfileImage: hasher?.photo ?? newPhoto,
-                                                                    ),
-                                                                  ),
-                                                                ).then((String result) {
-                                                                  if ((result != null) && (result.toString().isNotEmpty)) {
-                                                                    setState(() {
-                                                                      newPhoto = result;
-                                                                      checkDirty();
-                                                                    });
-                                                                  }
-                                                                });
-                                                              }
-                                                            },
-                                                            child: Text('Update Profile Image', style: buttonTextStyle),
-                                                          ),
-                                                        ),
-
                                                         const FancyDivider(
                                                           innerColor: Colors.white,
                                                           topMargin: 30.0,
@@ -695,111 +668,121 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         ),
                                                       ],
                                                     ),
-                                                  ),
-                                                ),
-                                              )),
-                                          Positioned(top: 740, left: 30, right: 30, child: (widget.uiElementsToDisplay & (HasherProfilePage.flagUiElement_followKennel | HasherProfilePage.flagUiElement_inviteCode) == 0) ? Container() : const FancyDivider(innerColor: Colors.white)),
-                                          Positioned(
-                                            top: 760,
-                                            child: (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_followKennel == 0)
-                                                ? Container()
-                                                : Container(
-                                                    padding: const EdgeInsets.all(10.0),
-                                                    margin: const EdgeInsets.only(bottom: 45),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.yellow[100],
-                                                      borderRadius: BorderRadius.circular(5.0),
-                                                    ),
-                                                    child: Row(
-                                                      children: <Widget>[
-                                                        Container(
-                                                          margin: const EdgeInsets.only(right: 10),
-                                                          height: 25,
-                                                          width: 25,
-                                                          color: Colors.yellow[100],
-                                                          child: Checkbox(
-                                                            value: _addAsKennelFollower,
-                                                            onChanged: (bool value) {
-                                                              setState(() {
-                                                                _addAsKennelFollower = value;
-                                                              });
-                                                            },
-                                                          ),
-                                                        ),
-                                                        const Text(
-                                                          'Follow this Kennel',
-                                                          //style: headingStyle,
-                                                          textAlign: TextAlign.center,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
+                                              const SizedBox(
+                                                height: 40,
+                                                width: 40,
+                                              )
+                                            ],
                                           ),
-                                          Positioned(
-                                            top: 760,
-                                            left: 30,
-                                            right: 30,
-                                            child: (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_inviteCode == 0)
-                                                ? Container()
-                                                : Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                                    children: <Widget>[
-                                                      Text(
-                                                        'Previous run count:',
-                                                        style: headingStyle,
-                                                        textAlign: TextAlign.center,
-                                                      ),
-                                                      Text(
-                                                        'Number of runs with ${widget.kennelShortName} that are not listed in Harrier Central',
-                                                        style: headingStyle20italic,
-                                                        textAlign: TextAlign.center,
-                                                      ),
-                                                      Container(
-                                                        padding: const EdgeInsets.all(10.0),
-                                                        margin: const EdgeInsets.only(top: 20, bottom: 40),
-                                                        // width: 100,
-                                                        // height: 50,
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.yellow[100],
-                                                          borderRadius: BorderRadius.circular(5.0),
-                                                        ),
-                                                        child: Form(key: _runCountFormKey, autovalidate: _autoValidate, child: runCountUi()),
-                                                      ),
-                                                      const FancyDivider(innerColor: Colors.white),
-                                                      Text(
-                                                        'Invite code:',
-                                                        style: headingStyle,
-                                                        textAlign: TextAlign.center,
-                                                      ),
-                                                      Text(
-                                                        (hasher?.resetCode ?? '').replaceAll(QR_PREFIX_USER_RESET_CODE, ''),
-                                                        style: largeText,
-                                                        textAlign: TextAlign.center,
-                                                      ),
-                                                      Container(
-                                                        margin: const EdgeInsets.only(top: 20),
-                                                        // height: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
-                                                        // width: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
-                                                        child: QrImage(
-                                                            backgroundColor: Colors.white,
-                                                            padding: const EdgeInsets.all(20.0),
-                                                            data: hasher?.resetCode ?? '',
-                                                            //data: 'testing123',
-                                                            version: 4,
-                                                            //size: 200.0,
-                                                            errorCorrectionLevel: 3),
-                                                      ),
-                                                    ],
-                                                  ),
-                                          ),
-                                        ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  Container(width: 40, height: 40),
-                                ],
+                                    (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_followKennel == 0)
+                                        ? Container()
+                                        : Column(
+                                            children: <Widget>[
+                                              const FancyDivider(innerColor: Colors.white, bottomMargin: 20.0,),
+                                              Container(
+                                                padding: const EdgeInsets.all(10.0),
+                                                margin: const EdgeInsets.only(bottom: 45),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.yellow[100],
+                                                  borderRadius: BorderRadius.circular(5.0),
+                                                ),
+                                                child: Row(
+                                                  children: <Widget>[
+                                                    Container(
+                                                      margin: const EdgeInsets.only(right: 10),
+                                                      height: 25,
+                                                      width: 25,
+                                                      color: Colors.yellow[100],
+                                                      child: Checkbox(
+                                                        value: _addAsKennelFollower,
+                                                        onChanged: (bool value) {
+                                                          setState(() {
+                                                            _addAsKennelFollower = value;
+                                                          });
+                                                        },
+                                                      ),
+                                                    ),
+                                                    const Text(
+                                                      'Follow this Kennel',
+                                                      //style: headingStyle,
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                    (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_inviteCode == 0)
+                                        ? Container()
+                                        : Column(
+                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                            children: <Widget>[
+                                              const FancyDivider(
+                                                innerColor: Colors.white,
+                                                bottomMargin: 20.0,
+                                              ),
+                                              Text(
+                                                'Previous run count:',
+                                                style: headingStyle,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              Text(
+                                                'Number of runs with ${widget.kennelShortName} that are not listed in Harrier Central',
+                                                style: headingStyle20italic,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              Container(
+                                                padding: const EdgeInsets.all(10.0),
+                                                margin: const EdgeInsets.only(top: 20, bottom: 40),
+                                                // width: 100,
+                                                // height: 50,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.yellow[100],
+                                                  borderRadius: BorderRadius.circular(5.0),
+                                                ),
+                                                child: Form(key: _runCountFormKey, autovalidate: _autoValidate, child: runCountUi()),
+                                              ),
+                                              const FancyDivider(
+                                                innerColor: Colors.white,
+                                                bottomMargin: 20.0,
+                                              ),
+                                              Text(
+                                                'Invite code:',
+                                                style: headingStyle,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              const SizedBox(
+                                                height: 10,
+                                                width: 10,
+                                              ),
+                                              Text(
+                                                (hasher?.resetCode ?? '').replaceAll(QR_PREFIX_USER_RESET_CODE, ''),
+                                                style: largeText,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              Container(
+                                                margin: const EdgeInsets.only(top: 20),
+                                                // height: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
+                                                // width: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
+                                                child: QrImage(
+                                                    backgroundColor: Colors.white,
+                                                    padding: const EdgeInsets.all(20.0),
+                                                    data: hasher?.resetCode ?? '',
+                                                    //data: 'testing123',
+                                                    version: 4,
+                                                    //size: 200.0,
+                                                    errorCorrectionLevel: 3),
+                                              ),
+                                            ],
+                                          ),
+                                  ],
+                                ),
                               ),
-                            ),
+                              Container(width: 70, height: 70),
+                            ],
                           ),
                         ),
                       ),

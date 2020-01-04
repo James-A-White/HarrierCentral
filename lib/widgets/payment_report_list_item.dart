@@ -40,16 +40,17 @@ class PaymentReportListItem extends StatelessWidget {
                 ),
                 Positioned(
                   left: 10.0,
-                  top: 7.0,
+                  top: 11.5,
                   child: Text(
                     '${paymentReportItem.extensions.paidByName}',
+                    //'xxxx xxxx xxx xxx xxxx xxxx xxxx xxxx',
                     style: TextStyle(fontFamily: (paymentReportItem.extensions.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
                     textAlign: TextAlign.center,
                   ),
                 ),
                 Positioned(
                   right: 50.0,
-                  top: 7.0,
+                  top: 14.0,
                   child: Text(
                     '$amountPaid',
                     style: TextStyle(

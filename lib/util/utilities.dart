@@ -93,11 +93,11 @@ class Utilities {
     if (position != null) {
       latLon.latitude = position.latitude;
       latLon.longitude = position.longitude;
-      setDoublePref(DoublePrefsEnum.latitude, latLon.latitude);
-      setDoublePref(DoublePrefsEnum.longitude, latLon.longitude);
+      setNumPref(NumPrefsEnum.latitude, latLon.latitude);
+      setNumPref(NumPrefsEnum.longitude, latLon.longitude);
     } else {
-      latLon.latitude = getDoublePref(DoublePrefsEnum.latitude) ?? DEFAULT_LATITUDE;
-      latLon.longitude = getDoublePref(DoublePrefsEnum.longitude) ?? DEFAULT_LONGITUDE;
+      latLon.latitude = getNumPref(NumPrefsEnum.latitude) ?? DEFAULT_LATITUDE;
+      latLon.longitude = getNumPref(NumPrefsEnum.longitude) ?? DEFAULT_LONGITUDE;
     }
 
     return latLon;
@@ -161,7 +161,7 @@ class Utilities {
         result = '${NumberFormat('#####').format(meters / 1000.0)} ${AppLocalizations.of(context).kilometers}';
       }
     } else {
-      final double miles = meters * 0.0006;
+      final num miles = meters * METERS_TO_MILES;
 
       if (miles < 3) {
         result = '${NumberFormat('#####.00').format(miles)} ${AppLocalizations.of(context).miles}';

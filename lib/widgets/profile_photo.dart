@@ -5,8 +5,8 @@ class ProfilePhoto extends StatelessWidget {
   const ProfilePhoto({@required this.profilePhotoUrl, this.photoHeight, this.leftPadding});
 
   final String profilePhotoUrl;
-  final double photoHeight;
-  final double leftPadding;
+  final num photoHeight;
+  final num leftPadding;
 
   @override
   Widget build(BuildContext context) {

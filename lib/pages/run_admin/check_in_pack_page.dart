@@ -197,7 +197,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         _refreshCounters(true);
       });
     });
-  }
+  } 
 
   Future<void> _getAllHashers() async {
     allHashers = <CheckInPackModel>[];
@@ -649,7 +649,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
       title: Text(
-        '$title Check In',
+        '$title',
         style: const TextStyle(
           color: Colors.white,
         ),
@@ -1046,7 +1046,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 ),
               ])),
       ),
-      appBar: getAppBar((_isLoading || (widget?.eventAggregate?.kennel?.kennelName == null)) ? '... Loading' : widget?.eventAggregate?.kennel?.kennelName),
+      appBar: getAppBar((_isLoading || (widget?.eventAggregate?.event?.eventName == null)) ? '... Loading' : (widget?.eventAggregate?.event?.eventName ?? '') + ' Check In'),
       body: _isLoading
           ? const HcCircularProgressIndicator()
           : Stack(fit: StackFit.loose, alignment: AlignmentDirectional.topStart, children: <Widget>[

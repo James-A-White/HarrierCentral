@@ -1,7 +1,7 @@
 
 // lat lon of London Eye
-const double DEFAULT_LATITUDE = 51.5033;
-const double DEFAULT_LONGITUDE = 0.1195;
+const num DEFAULT_LATITUDE = 51.5033;
+const num DEFAULT_LONGITUDE = 0.1195;
 
 const num BASE_DEVICE_WIDTH = 320;
 const num BASE_DEVICE_HEIGHT = 576;
@@ -17,6 +17,8 @@ const int NOTIFICATION_DAYS_IN_FUTURE = 90;
 const num PROFILE_PIC_SIZE = 92.0;
 
 const num PROFILE_PIC_SIZE2 = 60.0;
+
+const num METERS_TO_MILES = 0.000621371;
 
 const int SPLASH_SCREEN_DISPLAY_TIME = 1;
 

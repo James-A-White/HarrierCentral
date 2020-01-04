@@ -191,7 +191,7 @@ class HistoryListPageState extends State<HistoryListPage> {
                 width: MediaQuery.of(context).size.width,
                 child: Row(
                   children: <Widget>[
-                    ProfilePhoto(leftPadding: 20, photoHeight: 80, profilePhotoUrl: _photo),
+                    ProfilePhoto(leftPadding: 20.0, photoHeight: 80.0, profilePhotoUrl: _photo),
                     const SizedBox(width: 20),
                     (runCountsList == null || runCountsList.isEmpty) ? Container() :
                     Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[

@@ -28,15 +28,15 @@ class BubbleTabIndicator extends Decoration {
         assert(bubblePadding != null),
         assert(insets != null);
 
-  final double indicatorHeight;
+  final num indicatorHeight;
   final Color indicatorColor;
-  final double indicatorRadius;
+  final num indicatorRadius;
   final EdgeInsetsGeometry bubblePadding;
   final EdgeInsetsGeometry insets;
   final TabBarIndicatorSize tabBarIndicatorSize;
 
   @override
-  Decoration lerpFrom(Decoration a, double t) {
+  Decoration lerpFrom(Decoration a, num t) {
     if (a is BubbleTabIndicator) {
       return BubbleTabIndicator(
         bubblePadding:
@@ -48,7 +48,7 @@ class BubbleTabIndicator extends Decoration {
   }
 
   @override
-  Decoration lerpTo(Decoration b, double t) {
+  Decoration lerpTo(Decoration b, num t) {
     if (b is BubbleTabIndicator) {
       return BubbleTabIndicator(
         bubblePadding:
@@ -72,9 +72,9 @@ class _BubblePainter extends BoxPainter {
 
   final BubbleTabIndicator decoration;
 
-  double get indicatorHeight => decoration.indicatorHeight;
+  num get indicatorHeight => decoration.indicatorHeight;
   Color get indicatorColor => decoration.indicatorColor;
-  double get indicatorRadius => decoration.indicatorRadius;
+  num get indicatorRadius => decoration.indicatorRadius;
   EdgeInsetsGeometry get padding => decoration.bubblePadding;
   EdgeInsetsGeometry get insets => decoration.insets;
   TabBarIndicatorSize get tabBarIndicatorSize => decoration.tabBarIndicatorSize;

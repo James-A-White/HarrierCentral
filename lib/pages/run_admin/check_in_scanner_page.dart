@@ -8,6 +8,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:harrier_central/database/common_queries.dart';
 import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
@@ -93,9 +94,29 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                         bottom: 215,
                         //width:150,
                         //height:150,
-                        child: _cameraPreviewWidget()
-                        // child:Container(
-                        //   child: _cameraPreviewWidget(), width: 200.0, height: 200.0),
+                        child: 
+
+Container(
+            padding: EdgeInsets.all(10 * (deviceMaxScaleFactor * 1.5)),
+            child: Stack(
+              alignment: AlignmentDirectional.center,
+              children: <Widget>[
+                Image.asset(
+                  'images/other/qr_scanner.png',
+                ),
+                (controller == null)
+                    ? Container()
+                    : Container(
+                        padding: const EdgeInsets.all(11.0),
+                        child: AspectRatio(
+                          aspectRatio: 1.0,
+                          child: QRReaderPreview(controller),
+                        ),
+                      ),
+              ],
+            ),
+          ),
+
                         ),
                     Positioned(
                       bottom: 140.0,
@@ -476,23 +497,23 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
     controller = null;
   }
 
-  Widget _cameraPreviewWidget() {
-    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraint) {
-      return Stack(children: <Widget>[
-        Image.asset(
-          'images/other/qr_scanner.png',
-        ),
-        Container(
-          padding: const EdgeInsets.all(9.0),
-          height: constraint.biggest.height,
-          width: constraint.biggest.height,
-          child: (controller == null) ? Container() : QRReaderPreview(controller),
-        )
-      ]);
-    });
+  // Widget _cameraPreviewWidget() {
+  //   return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraint) {
+  //     return Stack(children: <Widget>[
+  //       Image.asset(
+  //         'images/other/qr_scanner.png',
+  //       ),
+  //       Container(
+  //         padding: const EdgeInsets.all(9.0),
+  //         height: constraint.biggest.height,
+  //         width: constraint.biggest.height,
+  //         child: (controller == null) ? Container() : QRReaderPreview(controller),
+  //       )
+  //     ]);
+  //   });
 
-    // ;
-  }
+  //   // ;
+  // }
 
   Future<void> onNewCameraSelected(CameraDescription cameraDescription) async {
     if (controller != null) {

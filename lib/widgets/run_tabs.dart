@@ -1472,7 +1472,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   //   );
   // }
 
-  Future<void> _launchMaps(double lat, double lon) async {
+  Future<void> _launchMaps(num lat, num lon) async {
     final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$lat,$lon';
     //String googleAppUrl = 'comgooglemaps://maps.google.com/maps/place/<name>/@<lat>,<long>,15z/data=<mode-value>';
     final String googleAppUrl = 'comgooglemaps://?q=$lat,$lon';
@@ -1578,8 +1578,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 class RectClipper extends CustomClipper<Rect> {
   RectClipper({@required this.width, @required this.height});
 
-  double width;
-  double height;
+  num width;
+  num height;
 
   @override
   Rect getClip(Size size) {

@@ -100,7 +100,12 @@ class DrawerMenuState extends State<DrawerMenu> {
                       settings: const RouteSettings(),
 
                       builder: (BuildContext context) {
-                        return HasherProfilePage(dataContext: EnumDataContext.user, pageType: EnumMyProfilePageType.myProfile, hasherId: userId);
+                        return HasherProfilePage(
+                          dataContext: EnumDataContext.user, 
+                          pageType: EnumMyProfilePageType.myProfile, 
+                          hasherId: userId,
+                          uiElementsToDisplay: HasherProfilePage.flagUiElement_distancePref,
+                          );
                       },
                     ),
                   );
@@ -237,46 +242,4 @@ class DrawerMenuState extends State<DrawerMenu> {
   }
 }
 
-// class ScaleRoute extends PageRouteBuilder<dynamic> {
-//   final Widget widget;
-//   ScaleRoute({this.widget})
-//     : super(
-//         pageBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
-//           return widget;
-//         },
-//         transitionsBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
 
-//           return ScaleTransition(
-//             scale: Tween<double>(
-//               begin: 0.0,
-//               end: 1.0,
-//             ).animate(
-//                 CurvedAnimation(
-//                   parent: animation,
-//                   curve: Interval(
-//                     0.00,
-//                     0.50,
-//                     curve: Curves.linear,
-//                   ),
-//                 ),
-//               ),
-//             child: ScaleTransition(
-//                      scale: Tween<double>(
-//                        begin: 1.5,
-//                        end: 1.0,
-//                      ).animate(
-//                        CurvedAnimation(
-//                          parent: animation,
-//                          curve: Interval(
-//                            0.50,
-//                            1.00,
-//                            curve: Curves.linear,
-//                          ),
-//                        ),
-//                      ),
-//                      child: child,
-//                    ),
-//            );
-//          }
-//       );
-// }

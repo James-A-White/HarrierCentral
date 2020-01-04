@@ -132,7 +132,7 @@ class MigrationsTableHelper {
   ///
   ///
 
-  static int dbVersion = 225;
+  static int dbVersion = 226;
 
   static List<MigrationsModel> migrationList = <MigrationsModel>[
 
@@ -173,6 +173,12 @@ class MigrationsTableHelper {
   // MIGRATION 225
     MigrationsModel(migrationNumber: 225, migrationText: '''
         ALTER TABLE ${HashersTableHelper.tableName} ADD COLUMN ${HashersTableHelper.colPreferences} INT;
+         '''),
+
+             // MIGRATION 226
+    MigrationsModel(migrationNumber: 226, migrationText: '''
+            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colIsKennelFollowing} INT;
+            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colMismanagementRoles} INT;
          '''),
 
          

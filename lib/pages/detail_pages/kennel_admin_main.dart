@@ -467,7 +467,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     inactiveColor: Colors.grey,
                                     min: 1.0,
                                     max: 20.0,
-                                    onChanged: (double val) {
+                                    onChanged: (num val) {
                                       // setState(() {
                                       if (mapController != null) {
                                         mapController.move(LatLng(widget.kennelAggregateItem.kennel.kennelLatitude, widget.kennelAggregateItem.kennel.kennelLongitude), val);
@@ -638,7 +638,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     ]);
   }
 
-  Future<void> _launchMaps(double lat, double lon) async {
+  Future<void> _launchMaps(num lat, num lon) async {
     final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$lat,$lon';
     //String googleAppUrl = 'comgooglemaps://maps.google.com/maps/place/<name>/@<lat>,<long>,15z/data=<mode-value>';
     final String googleAppUrl = 'comgooglemaps://?q=$lat,$lon';

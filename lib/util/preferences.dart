@@ -24,7 +24,7 @@ enum StringPrefsEnum {
   customEmailBody
 }
 
-enum DoublePrefsEnum { latitude, longitude }
+enum NumPrefsEnum { latitude, longitude }
 
 enum IntPrefsEnum {
   databaseVersion,
@@ -90,12 +90,12 @@ Future<bool> setStringPref(StringPrefsEnum key, String value) async {
   return _sharedPreferences.setString(key.toString(), value);
 }
 
-num getDoublePref(DoublePrefsEnum key) {
-  final String test = key.toString();
-  return _sharedPreferences.getDouble(test);
+num getNumPref(NumPrefsEnum key) {
+  final String val = key.toString();
+  return _sharedPreferences.getDouble(val);
 }
 
-Future<bool> setDoublePref(DoublePrefsEnum key, double value) async {
+Future<bool> setNumPref(NumPrefsEnum key, num value) async {
   return _sharedPreferences.setDouble(key.toString(), value);
 }
 

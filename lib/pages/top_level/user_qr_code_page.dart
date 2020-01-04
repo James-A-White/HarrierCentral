@@ -79,7 +79,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
                     isScrollable: false,
                     unselectedLabelColor: Colors.black,
                     labelColor: Colors.white,
-                    labelPadding: const EdgeInsets.only(top:5, left:20, right:20),
+                    labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
                     indicatorSize: TabBarIndicatorSize.tab,
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
@@ -235,10 +235,10 @@ class TabIndicationPainter extends CustomPainter {
   }
 
   Paint painter;
-  final double dxTarget;
-  final double dxEntry;
-  final double radius;
-  final double dy;
+  final num dxTarget;
+  final num dxEntry;
+  final num radius;
+  final num dy;
   BuildContext context;
 
   final PageController pageController;
@@ -246,9 +246,9 @@ class TabIndicationPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final ScrollPosition pos = pageController.position;
-    final double fullExtent = pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
+    final num fullExtent = pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
 
-    final double pageOffset = pos.extentBefore / fullExtent;
+    final num pageOffset = pos.extentBefore / fullExtent;
 
     final bool left2right = dxEntry < dxTarget;
     final Offset entry = Offset(left2right ? dxEntry : dxTarget, dy);
@@ -326,7 +326,10 @@ class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixi
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            SizedBox(width: 10,height:(deviceWidthScaleFactor-1)*90,),
+            SizedBox(
+              width: 10,
+              height: (deviceWidthScaleFactor - 1) * 90,
+            ),
             Container(
               padding: const EdgeInsets.only(top: 0, bottom: 30, right: 25, left: 25),
               child: Text(
@@ -361,7 +364,7 @@ class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixi
             // ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(top: 20, bottom: 10, left:30, right: 30),
+                padding: const EdgeInsets.only(top: 20, bottom: 10, left: 30, right: 30),
                 child: Stack(alignment: AlignmentDirectional.center,
                     //height: math.min(constraints.maxHeight, constraints.maxWidth) * 0.65,
                     children: <Widget>[
@@ -531,23 +534,16 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
     controller = null;
   }
 
-  // Widget _cameraPreviewWidget() {
-  //   return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraint) {
-  //     return Stack(children: <Widget>[
-  //       Image.asset(
-  //         'images/other/qr_scanner.png',
-  //       ),
-  //       Container(
-  //         padding: const EdgeInsets.all(9.0),
-  //         height: constraint.biggest.height,
-  //         width: constraint.biggest.height,
-  //         child: (controller == null) ? Container() : QRReaderPreview(controller),
-  //       )
-  //     ]);
-  //   });
-
-  //   // ;
-  // }
+  Widget _cameraPreviewWidget() {
+    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraint) {
+      return Container(
+        padding: const EdgeInsets.all(9.0),
+        height: constraint.biggest.height,
+        width: constraint.biggest.height,
+        child: (controller == null) ? Container() : QRReaderPreview(controller),
+      );
+    });
+  }
 
   Future<void> onNewCameraSelected(CameraDescription cameraDescription) async {
     if (controller != null) {
@@ -624,7 +620,10 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
       // mainAxisSize: MainAxisSize.min,
       // crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        SizedBox(width: 10,height:(deviceWidthScaleFactor-1)*90,),
+        SizedBox(
+          width: 10,
+          height: (deviceWidthScaleFactor - 1) * 90,
+        ),
         Container(
           padding: const EdgeInsets.only(left: 20, right: 20),
           child: AutoSizeText(
@@ -636,11 +635,28 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
         ),
 
         //_cameraPreviewWidget(),
-        Expanded(child:Container(
-          padding:  EdgeInsets.all(10 * (deviceMaxScaleFactor * 1.5)),
-        child:(controller == null) ? Image.asset(
-          'images/other/qr_scanner.png',
-        ) : QRReaderPreview(controller),),),
+        Expanded(
+          child: Container(
+            padding: EdgeInsets.all(10 * (deviceMaxScaleFactor * 1.5)),
+            child: Stack(
+              alignment: AlignmentDirectional.center,
+              children: <Widget>[
+                Image.asset(
+                  'images/other/qr_scanner.png',
+                ),
+                (controller == null)
+                    ? Container()
+                    : Container(
+                        padding: const EdgeInsets.all(11.0),
+                        child: AspectRatio(
+                          aspectRatio: 1.0,
+                          child: QRReaderPreview(controller),
+                        ),
+                      ),
+              ],
+            ),
+          ),
+        ),
         // // child:Container(
         // //   child: _cameraPreviewWidget(), width: 200.0, height: 200.0),
 
@@ -664,7 +680,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
         Container(
           //color:Colors.yellow,
           //height: 80,
-          padding: const EdgeInsets.only(top:20,bottom:0),
+          padding: const EdgeInsets.only(top: 20, bottom: 0),
           child: Center(
             child: AutoSizeText(
               onScreenMessage,

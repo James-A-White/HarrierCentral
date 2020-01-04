@@ -13,9 +13,9 @@ class KennelLogo extends StatelessWidget {
 
   final String kennelLogoUrl;
   final String kennelShortName;
-  final double logoHeight;
-  final double leftPadding;
-  final double rightPadding;
+  final num logoHeight;
+  final num leftPadding;
+  final num rightPadding;
 
   @override
   Widget build(BuildContext context) {

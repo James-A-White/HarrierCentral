@@ -200,10 +200,10 @@ class TabIndicationPainter extends CustomPainter {
   }
 
   Paint painter;
-  final double dxTarget;
-  final double dxEntry;
-  final double radius;
-  final double dy;
+  final num dxTarget;
+  final num dxEntry;
+  final num radius;
+  final num dy;
   BuildContext context;
 
   final PageController pageController;
@@ -211,9 +211,9 @@ class TabIndicationPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final ScrollPosition pos = pageController.position;
-    final double fullExtent = pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
+    final num fullExtent = pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
 
-    final double pageOffset = pos.extentBefore / fullExtent;
+    final num pageOffset = pos.extentBefore / fullExtent;
 
     final bool left2right = dxEntry < dxTarget;
     final Offset entry = Offset(left2right ? dxEntry : dxTarget, dy);

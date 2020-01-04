@@ -24,7 +24,7 @@ class FilterEventListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double iconSize = 45 * deviceWidthScaleFactor;
+    final num iconSize = 45 * deviceWidthScaleFactor;
     return  GestureDetector(
       onTap: () {
         Navigator.push<void>(

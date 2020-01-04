@@ -86,6 +86,15 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
     super.initState();
   }
 
+  num unInt(num n)
+  {
+    if (n == n.toInt()) 
+    {
+      n+=0.00000001;
+    }
+    return n;
+  }
+
   void refreshFromTable(bool forceRefresh) {
     if (forceRefresh || (futureRunsList == null)|| (futureRunsList.isEmpty)) {
       final Geolocator locator = Geolocator();
@@ -130,7 +139,7 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
           try {
             db.rawQuery(query).then((List<Map<String, dynamic>> results) {
               for (int i = 0; i < results.length; i++) {
-                locator.distanceBetween(ll.latitude, ll.longitude, results[i]['narrowEventLatitude'], results[i]['narrowEventLongitude']).then((num dist) {
+                locator.distanceBetween(unInt(ll.latitude), unInt(ll.longitude), unInt(results[i]['narrowEventLatitude']), unInt(results[i]['narrowEventLongitude'])).then((num dist) {
                   final NarrowEventsModel eventItem = NarrowEventsTableHelper.fromMap(results[i]);
                   final KennelsModel kennelItem = KennelsTableHelper.fromMap(results[i]);
                   final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i]);
@@ -164,6 +173,7 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
 
   Widget _buildListView() {
     return Container(
+      
       decoration: Backgrounds.defaultHcBackground(),
       child: futureRunsList.isEmpty
           ? const Center(child: Text('No Runs available.'))
@@ -171,6 +181,7 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
               onRefresh: () => _handleRefresh(),
               displacement: 40.0,
               child: ListView.builder(
+                padding: const EdgeInsets.only(top:10,bottom:50),
                 physics: const AlwaysScrollableScrollPhysics(),
                 //padding: const EdgeInsets.only( bottom: 40.0),
                 itemCount: futureRunsList.length,

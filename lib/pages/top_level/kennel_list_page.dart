@@ -77,6 +77,15 @@ class KennelsListPageState extends State<KennelsListPage> {
     super.initState();
   }
 
+  num unInt(num n)
+  {
+    if (n == n.toInt()) 
+    {
+      n+=0.00000001;
+    }
+    return n;
+  }
+
   void refreshFromTable(bool forceRefresh) {
     if (forceRefresh || (globalKennelMainPageList == null)|| (globalKennelMainPageList.isEmpty)) {
       final Geolocator locator = Geolocator();
@@ -116,7 +125,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           try {
             db.rawQuery(query).then((List<Map<String, dynamic>> results) {
               for (int i = 0; i < results.length; i++) {
-                locator.distanceBetween(ll.latitude, ll.longitude, results[i]['kennelLatitude'], results[i]['kennelLongitude']).then((num dist) {
+                locator.distanceBetween(unInt(ll.latitude), unInt(ll.longitude), unInt(results[i]['kennelLatitude']), unInt(results[i]['kennelLongitude'])).then((num dist) {
 
                   final KennelsModel kennelItem = KennelsTableHelper.fromMap(results[i]);
                   final HasherKennelMapModel hkmItem = HasherKennelMapTableHelper.fromMap(results[i]);

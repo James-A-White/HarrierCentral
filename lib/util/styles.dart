@@ -10,9 +10,9 @@ Color themeLearnMoreLink = Colors.yellow;
 
 IconData delayIcon = Ionicons.md_clock;
 
-const double detailsFontSize = 16.0;
-const double detailLineSpace = 1.0;
-const double detailLineSpaceForBold = 1.0;
+const num detailsFontSize = 16.0;
+const num detailLineSpace = 1.0;
+const num detailLineSpaceForBold = 1.0;
 
 TextStyle listLabelStyle = const TextStyle(color: Colors.yellow, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: detailsFontSize, height: detailLineSpace);
 
