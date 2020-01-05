@@ -1033,14 +1033,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 SpeedDialChild(
                   child: const Icon(MaterialCommunityIcons.bank),
                   backgroundColor: Colors.purple,
-                  label: 'Bank Transfer (Member)',
+                  label: 'Bank Transfer\r\n(Member)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () => BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, true),
                 ),
                 SpeedDialChild(
                   child: const Icon(MaterialCommunityIcons.bank),
                   backgroundColor: Colors.purple,
-                  label: 'Bank Transfer (Non-Member)',
+                  label: 'Bank Transfer\r\n(Non-Member)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () => BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, false),
                 ),

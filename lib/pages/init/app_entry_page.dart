@@ -44,6 +44,11 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     final ApproveLoginService svc = ApproveLoginService();
     final ApproveLoginModel loginResult = await svc.approveLogin(context);
 
+    if (loginResult != null) {
+      setStringPref(StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);
+      setStringPref(StringPrefsEnum.androidDownloadLink, loginResult.androidDownloadLink);
+    }
+
     if ((loginResult == null) && ((userId == null) || (userId.isEmpty))) {
       // we get here if we are disconnected and the app has never been run before
       // we can't operate in offline mode because there is no data in the cache
@@ -77,7 +82,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
               final int installedDbVersion = getIntPref(IntPrefsEnum.databaseVersion) ?? 0;
               if ((installedDbVersion != MigrationsTableHelper.dbVersion) && ((installedDbVersion + 9) < MigrationsTableHelper.dbVersion)) {
                 // the installed DB version is not up to date
-                // if the version numbers are greater than 10 apart, 
+                // if the version numbers are greater than 10 apart,
                 // reload the entire DB.
 
                 final String resetCode = getStringPref(StringPrefsEnum.resetCode);
@@ -197,8 +202,8 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     deviceWidthScaleFactor ??= MediaQuery.of(context).size.width / BASE_DEVICE_WIDTH;
     deviceHeightScaleFactor ??= MediaQuery.of(context).size.height / BASE_DEVICE_HEIGHT;
-    deviceMaxScaleFactor ??= max(deviceWidthScaleFactor,deviceHeightScaleFactor);
-    deviceMinScaleFactor ??= min(deviceWidthScaleFactor,deviceHeightScaleFactor);
+    deviceMaxScaleFactor ??= max(deviceWidthScaleFactor, deviceHeightScaleFactor);
+    deviceMinScaleFactor ??= min(deviceWidthScaleFactor, deviceHeightScaleFactor);
     return Image.asset('images/init/splash_screen.jpg');
   }
 }

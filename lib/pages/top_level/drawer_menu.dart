@@ -7,6 +7,7 @@ import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 import 'package:harrier_central/pages/menu_pages/imprint_page.dart';
 import 'package:harrier_central/pages/menu_pages/legal_page.dart';
 import 'package:harrier_central/pages/menu_pages/faq_page.dart';
+import 'package:harrier_central/pages/menu_pages/app_download_page.dart';
 import 'package:harrier_central/pages/menu_pages/support_page.dart';
 import 'package:harrier_central/pages/menu_pages/privacy_policy_page.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -200,6 +201,8 @@ class DrawerMenuState extends State<DrawerMenu> {
                   );
                 },
               ),
+
+
               ListTile(
                 leading: const Icon(MaterialCommunityIcons.shield_lock,
                     color: textColor),
@@ -217,6 +220,27 @@ class DrawerMenuState extends State<DrawerMenu> {
                   );
                 },
               ),
+            
+                          
+              ListTile(
+                leading: const Icon(MaterialCommunityIcons.cloud_download,
+                    color: textColor),
+                title: Text('App Download Links', style: style),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      settings: const RouteSettings(),
+                      builder: (BuildContext context) {
+                        return const AppDownloadPage();
+                      },
+                    ),
+                  );
+                },
+              ),
+            
+            
               ListTile(
                 leading: const Icon(FontAwesome.support, color: textColor),
                 title: Text('Support', style: style),

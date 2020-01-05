@@ -21,7 +21,9 @@ enum StringPrefsEnum {
   facebookProfilePhoto,
   adminEventId,
   adminKennelId,
-  customEmailBody
+  customEmailBody,
+  iosDownloadLink,
+  androidDownloadLink
 }
 
 enum NumPrefsEnum { latitude, longitude }

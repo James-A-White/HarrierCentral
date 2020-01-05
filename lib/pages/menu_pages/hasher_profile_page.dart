@@ -261,9 +261,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       isDirty = true;
     }
 
-    if ((hasher.preferences & 0x00000003) != _distancePreference) {
-      isDirty = true;
+    if (hasher != null)
+    {
+       hasher.preferences ??= 0;
+      if ((hasher.preferences & 0x00000003) != _distancePreference)
+      {
+        isDirty = true;
+      }
     }
+
+
 
     if (historicalCountIsEstimate != ((hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
       isDirty = true;
@@ -487,7 +494,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   AppBar appBar;
 
-  int _distancePreference;
+  int _distancePreference = 0;
 
   void _handleRadioValueChange1(int value) {
     setState(() {
