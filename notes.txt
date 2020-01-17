@@ -7,4 +7,4 @@ Kennel > distancePreference
 HasherKennelMap > isKennelFollowing
 HasherKennelMap > mismanagementRoles
 Hasher > includeInGlobalHashDirectory
-Country > distancePreference
+Country > distancePreference test

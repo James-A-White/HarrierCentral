@@ -238,6 +238,15 @@ class Utilities {
     ));
   }
 
+  static num unInt(num n)
+  {
+    if (n == n.toInt()) 
+    {
+      n+=0.00000001;
+    }
+    return n;
+  }
+
   static Widget styleForConnected(Widget w, {num borderRadius = 0.0}) {
     return Container(
       foregroundDecoration: globalConnectionStatus == connectionStatus_connected
@@ -321,4 +330,6 @@ class Utilities {
       },
     );
   }
+
+
 }

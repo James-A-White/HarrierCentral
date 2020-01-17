@@ -79,6 +79,11 @@ Future<void> initPrefs() async {
   _sharedPreferences ??= await SharedPreferences.getInstance();
 }
 
+Future<bool> clearPrefs() async {
+  _sharedPreferences ??= await SharedPreferences.getInstance();
+  return _sharedPreferences.clear();
+}
+
 String getStringPref(StringPrefsEnum key) {
   final String test = key.toString();
   return _sharedPreferences.getString(test);

@@ -13,6 +13,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
+import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 
 class FutureRunsListPage extends StatefulWidget {
@@ -72,6 +73,24 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
   Future<void> _handleRefresh() async {
     final Database db = await DBProvider.db.database;
 
+    setState(() {
+      futureRunsList = null;
+    });
+    
+    String query = 'DELETE FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user)}';
+    try {
+      await db.rawQuery(query);
+    } catch (e) {
+      print(e);
+    }
+
+    query = 'DELETE FROM ${NarrowEventsTableHelper.tableName}';
+    try {
+      await db.rawQuery(query);
+    } catch (e) {
+      print(e);
+    }
+
     final SyncUserDataService cSrv = SyncUserDataService();
     cSrv.updateFromBackend(db, SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable, false).then((bool result) {
       refreshFromTable(true);
@@ -84,15 +103,6 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
   void initState() {
     refreshFromTable(false);
     super.initState();
-  }
-
-  num unInt(num n)
-  {
-    if (n == n.toInt()) 
-    {
-      n+=0.00000001;
-    }
-    return n;
   }
 
   void refreshFromTable(bool forceRefresh) {
@@ -139,7 +149,7 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
           try {
             db.rawQuery(query).then((List<Map<String, dynamic>> results) {
               for (int i = 0; i < results.length; i++) {
-                locator.distanceBetween(unInt(ll.latitude), unInt(ll.longitude), unInt(results[i]['narrowEventLatitude']), unInt(results[i]['narrowEventLongitude'])).then((num dist) {
+                locator.distanceBetween(Utilities.unInt(ll.latitude), Utilities.unInt(ll.longitude), Utilities.unInt(results[i]['narrowEventLatitude']), Utilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
                   final NarrowEventsModel eventItem = NarrowEventsTableHelper.fromMap(results[i]);
                   final KennelsModel kennelItem = KennelsTableHelper.fromMap(results[i]);
                   final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i]);

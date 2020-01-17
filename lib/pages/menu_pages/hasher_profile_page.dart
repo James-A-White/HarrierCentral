@@ -819,4 +819,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       ],
     );
   }
+
+
 }
+
+

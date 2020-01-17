@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -24,7 +25,7 @@ import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
 
 class KennelListQueryExtenstions {
-  KennelListQueryExtenstions({this.location,this.distToKennel,this.nextRunDate,this.lastRunDate,this.digitsAfterDecimal,this.currencySymbol, this.isHomeKennel, this.distancePreference});
+  KennelListQueryExtenstions({this.location, this.distToKennel, this.nextRunDate, this.lastRunDate, this.digitsAfterDecimal, this.currencySymbol, this.isHomeKennel, this.distancePreference, this.cityLat, this.cityLon});
 
   final String location;
   num distToKennel;
@@ -34,13 +35,26 @@ class KennelListQueryExtenstions {
   final String currencySymbol;
   int isHomeKennel;
   int distancePreference;
+  num cityLat;
+  num cityLon;
 
   int followingRequested;
   int notificationsRequested;
   int emailAlertRequested;
 
+
   static KennelListQueryExtenstions fromMap(Map<String, dynamic> map) {
-    final KennelListQueryExtenstions item = KennelListQueryExtenstions(location: map['location'], distToKennel: map['distToKennel'], nextRunDate: map['nextRunDate'], lastRunDate: map['lastRunDate'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'],isHomeKennel: map['isHomeKennel'],distancePreference: map['distancePreference']);
+    final KennelListQueryExtenstions item = KennelListQueryExtenstions(
+        location: map['location'],
+        distToKennel: map['distToKennel'],
+        nextRunDate: map['nextRunDate'],
+        lastRunDate: map['lastRunDate'],
+        digitsAfterDecimal: map['digitsAfterDecimal'],
+        currencySymbol: map['currencySymbol'],
+        isHomeKennel: map['isHomeKennel'],
+        distancePreference: map['distancePreference'],
+        cityLat: map['cityLat'],
+        cityLon: map['cityLon']);
     return item;
   }
 }
@@ -77,17 +91,8 @@ class KennelsListPageState extends State<KennelsListPage> {
     super.initState();
   }
 
-  num unInt(num n)
-  {
-    if (n == n.toInt()) 
-    {
-      n+=0.00000001;
-    }
-    return n;
-  }
-
   void refreshFromTable(bool forceRefresh) {
-    if (forceRefresh || (globalKennelMainPageList == null)|| (globalKennelMainPageList.isEmpty)) {
+    if (forceRefresh || (globalKennelMainPageList == null) || (globalKennelMainPageList.isEmpty)) {
       final Geolocator locator = Geolocator();
       if (globalKennelMainPageList != null) {
         globalKennelMainPageList.clear();
@@ -111,6 +116,8 @@ class KennelsListPageState extends State<KennelsListPage> {
           (SELECT max(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime <= datetime('now','localtime') ) as lastRunDate,
           n.digitsAfterDecimal,
           n.currencySymbol,
+          coalesce(k.${KennelsTableHelper.colKennelLatitude},c.${CitiesTableHelper.colLatitude},$DEFAULT_LATITUDE) as cityLat,
+          coalesce(k.${KennelsTableHelper.colKennelLongitude},c.${CitiesTableHelper.colLongitude},$DEFAULT_LONGITUDE) as cityLon,
           CASE WHEN ((h.homeKennelId IS NOT NULL) AND (h.homeKennelId = k.kennelId)) then 1 else 0 end as isHomeKennel,
           CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,n.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference
           FROM ${KennelsTableHelper.tableName} k
@@ -125,8 +132,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           try {
             db.rawQuery(query).then((List<Map<String, dynamic>> results) {
               for (int i = 0; i < results.length; i++) {
-                locator.distanceBetween(unInt(ll.latitude), unInt(ll.longitude), unInt(results[i]['kennelLatitude']), unInt(results[i]['kennelLongitude'])).then((num dist) {
-
+                locator.distanceBetween(Utilities.unInt(ll.latitude), Utilities.unInt(ll.longitude), Utilities.unInt(results[i]['cityLat']), Utilities.unInt(results[i]['cityLon'])).then((num dist) {
                   final KennelsModel kennelItem = KennelsTableHelper.fromMap(results[i]);
                   final HasherKennelMapModel hkmItem = HasherKennelMapTableHelper.fromMap(results[i]);
                   final KennelListQueryExtenstions extensionsItem = KennelListQueryExtenstions.fromMap(results[i]);
@@ -174,43 +180,40 @@ class KennelsListPageState extends State<KennelsListPage> {
                         itemCount: globalKennelMainPageList.length,
                         itemBuilder: (BuildContext context, int index) {
                           //print('buildListView called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-                          return 
-                              KennelsListItem(
-                                kennelItem: globalKennelMainPageList[index],
-                                kennelFollowingUpdated: (int following,int notificationStatus,int emailAlertStatus,int isHomeKennel){
-                                  for (int i = 0; i < globalKennelMainPageList.length; i++)
-                                  {
-                                    globalKennelMainPageList[i].extensions.isHomeKennel = 0;
-                                  }
-                                  globalKennelMainPageList[index].extensions.followingRequested = -1;
-                                  globalKennelMainPageList[index].extensions.notificationsRequested = -1;
-                                  globalKennelMainPageList[index].extensions.emailAlertRequested = -1;
-                                  globalKennelMainPageList[index].hkm.following = following;
-                                  globalKennelMainPageList[index].hkm.kennelNotificationPreference = notificationStatus;
-                                  globalKennelMainPageList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
-                                  globalKennelMainPageList[index].extensions.isHomeKennel = isHomeKennel;
-                                  setState(() {
-                                    
-                                  });
-
-                                },
-                                kennelSelected: () {
-                                  final KennelListAggregate kennel = globalKennelMainPageList[index];
-                                  // // this is a bit of a hack where we clear the list before navigating to the
-                                  // // next page. When state changes occurred in child pages further down the
-                                  // // route tree, the list would get refreshed, which I think was causing 
-                                  // // a bug where the selected Kennel itself would occasioinall change.
-                                  // // By deleting the list, I'm hoping that this bug will be fixed.
-                                  globalKennelMainPageList.clear();
-                                  Navigator.of(context).push<dynamic>(
-                                    MaterialPageRoute<dynamic>(
-                                      builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
-                                    ),
-                                  ).then((void dummy){
-                                    refreshFromTable(true);
-                                  });
-                                },
-                              );
+                          return KennelsListItem(
+                            kennelItem: globalKennelMainPageList[index],
+                            kennelFollowingUpdated: (int following, int notificationStatus, int emailAlertStatus, int isHomeKennel) {
+                              for (int i = 0; i < globalKennelMainPageList.length; i++) {
+                                globalKennelMainPageList[i].extensions.isHomeKennel = 0;
+                              }
+                              globalKennelMainPageList[index].extensions.followingRequested = -1;
+                              globalKennelMainPageList[index].extensions.notificationsRequested = -1;
+                              globalKennelMainPageList[index].extensions.emailAlertRequested = -1;
+                              globalKennelMainPageList[index].hkm.following = following;
+                              globalKennelMainPageList[index].hkm.kennelNotificationPreference = notificationStatus;
+                              globalKennelMainPageList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
+                              globalKennelMainPageList[index].extensions.isHomeKennel = isHomeKennel;
+                              setState(() {});
+                            },
+                            kennelSelected: () {
+                              final KennelListAggregate kennel = globalKennelMainPageList[index];
+                              // // this is a bit of a hack where we clear the list before navigating to the
+                              // // next page. When state changes occurred in child pages further down the
+                              // // route tree, the list would get refreshed, which I think was causing
+                              // // a bug where the selected Kennel itself would occasioinall change.
+                              // // By deleting the list, I'm hoping that this bug will be fixed.
+                              globalKennelMainPageList.clear();
+                              Navigator.of(context)
+                                  .push<dynamic>(
+                                MaterialPageRoute<dynamic>(
+                                  builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
+                                ),
+                              )
+                                  .then((void dummy) {
+                                refreshFromTable(true);
+                              });
+                            },
+                          );
                         },
                       ),
                     ),
@@ -220,6 +223,24 @@ class KennelsListPageState extends State<KennelsListPage> {
 
   Future<void> _handleRefresh() async {
     final Database db = await DBProvider.db.database;
+
+    setState(() {
+      globalKennelMainPageList = null;
+    });
+    
+    String query = 'DELETE FROM ${KennelsTableHelper.tableName}';
+    try {
+      await db.rawQuery(query);
+    } catch (e) {
+      print(e);
+    }
+
+    query = 'DELETE FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)}';
+    try {
+      await db.rawQuery(query);
+    } catch (e) {
+      print(e);
+    }
 
     final SyncUserDataService cSrv = SyncUserDataService();
     cSrv.updateFromBackend(db, SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable, false).then((bool result) {

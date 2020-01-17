@@ -10,6 +10,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 
+
 class GetResetCodePopup extends StatefulWidget {
   const GetResetCodePopup();
 
@@ -68,6 +69,14 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
         // Container(
         //   width: 60.0,
         //child:
+
+        FlatButton(
+            color: Colors.blue,
+            child: const Text('Reset'),
+            textColor: Colors.white,
+            onPressed: () {
+                clearPrefs();
+            }),
 
         FlatButton(
             color: Colors.blue,

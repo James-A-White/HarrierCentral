@@ -416,7 +416,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     mapController: mapController,
                                     options: MapOptions(
                                       interactive: false,
-                                      center: LatLng(widget.kennelAggregateItem.kennel.kennelLatitude, widget.kennelAggregateItem.kennel.kennelLongitude),
+                                      center: LatLng(
+                                        Utilities.unInt(widget.kennelAggregateItem.extensions.cityLat), 
+                                        Utilities.unInt(widget.kennelAggregateItem.extensions.cityLon)),
                                       zoom: sliderValue,
                                     ),
                                     layers: <LayerOptions>[
@@ -431,9 +433,12 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           Marker(
                                             width: 240.0,
                                             height: 240.0,
-                                            point: LatLng(widget.kennelAggregateItem.kennel.kennelLatitude, widget.kennelAggregateItem.kennel.kennelLongitude),
+                                            point: LatLng(
+                                              Utilities.unInt(widget.kennelAggregateItem.extensions.cityLat), 
+                                              Utilities.unInt(widget.kennelAggregateItem.extensions.cityLon)
+                                            ),
                                             builder: (BuildContext ctx) => GestureDetector(
-                                              onTap: () => _launchMaps(widget.kennelAggregateItem.kennel.kennelLatitude, widget.kennelAggregateItem.kennel.kennelLongitude),
+                                              onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat, widget.kennelAggregateItem.extensions.cityLat),
                                               child: Container(
                                                 margin: const EdgeInsets.only(bottom: 110.0),
                                                 child: Stack(alignment: AlignmentDirectional.topCenter, children: <Widget>[
@@ -470,7 +475,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     onChanged: (num val) {
                                       // setState(() {
                                       if (mapController != null) {
-                                        mapController.move(LatLng(widget.kennelAggregateItem.kennel.kennelLatitude, widget.kennelAggregateItem.kennel.kennelLongitude), val);
+                                        mapController.move(LatLng(
+                                          Utilities.unInt(widget.kennelAggregateItem.extensions.cityLat), 
+                                          Utilities.unInt(widget.kennelAggregateItem.extensions.cityLon)), 
+                                        val);
                                       }
                                       setState(() {
                                         sliderValue = val;
