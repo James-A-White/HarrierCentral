@@ -125,7 +125,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           INNER JOIN ${RegionsTableHelper.tableName} r on r.regionId = k.regionId
           INNER JOIN ${CountriesTableHelper.tableName} n on n.countryId = k.countryId
           INNER JOIN ${HashersTableHelper.tableName} h on h.hasherId = "$hasherId"
-          LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on hkm.kennelId = k.kennelId 
+          LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on hkm.kennelId = k.kennelId and hkm.${HasherKennelMapTableHelper.colUserId} = "$hasherId"
           ''';
 
           globalKennelMainPageList = <KennelListAggregate>[];

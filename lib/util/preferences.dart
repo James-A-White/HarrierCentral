@@ -69,6 +69,8 @@ enum IntPrefsEnum {
 
   lastSuccessfulUserDataSync,
 
+  hasLocationPermissions,
+
   dbCreated,
 
 }

@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:harrier_central/pages/init/create_new_account.dart';
 import 'package:harrier_central/pages/init/use_invite_code_page.dart';
+import 'package:harrier_central/pages/init/facebook_login.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/globals.dart';
@@ -125,7 +126,15 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                 ),
               ),
             ),
-            Utilities.styleForDisabled(
+                
+                           GestureDetector(
+              onTap: () {
+                Navigator.push<dynamic>(
+                  context,
+                  MaterialPageRoute<dynamic>(builder: (BuildContext context) => FbLoginPage()),
+                );
+              },
+              child: 
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
@@ -157,9 +166,8 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                       ),
                     ],
                   ),
-                ),
+                ),),
 
-                borderRadius: 20.0),
             Utilities.styleForDisabled(
                 Container(
                   padding: const EdgeInsets.all(10),

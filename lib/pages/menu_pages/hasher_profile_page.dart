@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:io' show Platform;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:harrier_central/util/globals.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -15,6 +16,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/profile_photo.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
@@ -261,16 +263,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       isDirty = true;
     }
 
-    if (hasher != null)
-    {
-       hasher.preferences ??= 0;
-      if ((hasher.preferences & 0x00000003) != _distancePreference)
-      {
+    if (hasher != null) {
+      hasher.preferences ??= 0;
+      if ((hasher.preferences & 0x00000003) != _distancePreference) {
         isDirty = true;
       }
     }
-
-
 
     if (historicalCountIsEstimate != ((hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
       isDirty = true;
@@ -673,6 +671,30 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             ],
                                                           ),
                                                         ),
+                                                        hasLocationPermissions
+                                                            ? Container()
+                                                            : Padding(
+                                                                padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
+                                                                child: RaisedButton(
+                                                                  onPressed: () {
+                                                                    if (Platform.isIOS) {
+                                                                      PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.locationWhenInUse]).then((Map<PermissionGroup, PermissionStatus> e) {
+                                                                        setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                        hasLocationPermissions = true;
+                                                                        Utilities.getLatLong();
+
+                                                                      });
+                                                                    } else {
+                                                                      PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.location]).then((Map<PermissionGroup, PermissionStatus> e) {
+                                                                        setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                        hasLocationPermissions = true;
+                                                                        Utilities.getLatLong();
+                                                                      });;
+                                                                    }
+                                                                  },
+                                                                  child: Text('Enable Location Svcs', style: buttonTextStyle),
+                                                                ),
+                                                              ),
                                                       ],
                                                     ),
                                               const SizedBox(
@@ -688,7 +710,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         ? Container()
                                         : Column(
                                             children: <Widget>[
-                                              const FancyDivider(innerColor: Colors.white, bottomMargin: 20.0,),
+                                              const FancyDivider(
+                                                innerColor: Colors.white,
+                                                bottomMargin: 20.0,
+                                              ),
                                               Container(
                                                 padding: const EdgeInsets.all(10.0),
                                                 margin: const EdgeInsets.only(bottom: 45),
@@ -819,8 +844,4 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       ],
     );
   }
-
-
 }
-
-

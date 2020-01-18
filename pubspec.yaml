@@ -25,7 +25,7 @@ dependencies:
   email_validator: ^1.0.4
   fancy_bottom_navigation: ^0.3.2
   firebase_messaging: ^5.1.8 # upgraded Nov 10 from ^5.1.5 # updated on 11 Sep from 5.1.2 # upgraded from 5.0.4 on 28 Jul #upgraded from 5.0.3 on 5 Jul 19
-  flutter_facebook_login: ^2.0.1 # upgraded from 2.0.0 8 Jun 19 
+  flutter_facebook_login: ^3.0.0 # upgraded from 2.0.1 17 Jan # upgraded from 2.0.0 8 Jun 19 
   flutter_full_pdf_viewer: ^1.0.6 # upgraded Nov 10 from ^1.0.5 # updated on 11 Sep from 1.0.4
   flutter_image: ^3.0.0 # upgraded Dec 19 from ^2.0.1 # upgraded Nov 10 from ^2.0.0c
   flutter_image_compress: ^0.6.3 # upgraded from 0.4.0 on 28 Jul
@@ -42,6 +42,7 @@ dependencies:
   image_picker: ^0.6.2+3 # upgraded Dec 19 from ^0.6.1+11 # upgraded Nov 10 from ^0.6.1+4 # updated on 11 Sep from 0.6.0+17 #updated from +10 on 29 Jul # updated from 0.6.0+4 on 8 Jun 19, updated from 0.6.0+8 on July 5
   intro_slider: ^2.2.8 # updated on 11 Sep from 2.2.5 # upgraded from ^1.2.3 Jul 29
   # location_permissions: ^2.0.1
+  location_permissions: ^2.0.4+1
   keyboard_avoider: ^0.1.2
   meta: ^1.1.6  # Geolocator Dependency.
   package_info: ^0.4.0+13 # upgraded Dec 19 from ^0.4.0+10 # upgraded Nov 10 from ^0.4.0+6 # updated from +4 on 29 Jul # updated from 0.4.0+3 on 8 Jun 19

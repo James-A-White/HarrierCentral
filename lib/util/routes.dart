@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/pages/facebook_login.dart';
+import 'package:harrier_central/pages/init/facebook_login.dart';
 import 'package:harrier_central/pages/init/avatar_icons_page.dart';
 import 'package:harrier_central/pages/init/intro_slider.dart';
 import 'package:harrier_central/pages/init/new_account.dart';

@@ -189,7 +189,7 @@ packages:
       name: flutter_facebook_login
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.1"
+    version: "3.0.0"
   flutter_full_pdf_viewer:
     dependency: "direct main"
     description:
@@ -402,12 +402,12 @@ packages:
     source: hosted
     version: "1.0.1"
   location_permissions:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: location_permissions
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.3"
+    version: "2.0.4+1"
   logging:
     dependency: transitive
     description:

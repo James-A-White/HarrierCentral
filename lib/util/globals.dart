@@ -10,3 +10,5 @@ num deviceWidthScaleFactor;
 num deviceHeightScaleFactor;
 num deviceMaxScaleFactor;
 num deviceMinScaleFactor;
+
+bool hasLocationPermissions = false;

@@ -265,7 +265,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
+                  SizedBox(
+                    height: spaceBetweenRows,
+                    width: spaceBetweenColumns,
+                  ),
                   Expanded(
                       child: Text(
                         '${widget.futureRun.event.eventNumber}',
@@ -289,7 +292,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
+                  SizedBox(
+                    height: spaceBetweenRows,
+                    width: spaceBetweenColumns,
+                  ),
                   Expanded(
                       child: Text(
                         DateFormat('E, MMM d').format(widget.futureRun.event.eventStartDatetime),
@@ -313,7 +319,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
+                  SizedBox(
+                    height: spaceBetweenRows,
+                    width: spaceBetweenColumns,
+                  ),
                   Expanded(
                       child: Text(
                         DateFormat('h:mm a').format(widget.futureRun.event.eventStartDatetime),
@@ -337,7 +346,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
+                  SizedBox(
+                    height: spaceBetweenRows,
+                    width: spaceBetweenColumns,
+                  ),
                   Expanded(
                       child: Text(
                         ((widget.futureRun.event.eventPriceForMembers ?? widget.futureRun.kennel.defaultPriceForMembers ?? 0) > 0)
@@ -363,7 +375,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
+                  SizedBox(
+                    height: spaceBetweenRows,
+                    width: spaceBetweenColumns,
+                  ),
                   Expanded(
                       child: Text(
                         ((widget.futureRun.event.eventPriceForNonMembers ?? widget.futureRun.kennel.defaultPriceForNonMembers ?? 0) > 0)
@@ -389,7 +404,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
+                  SizedBox(
+                    height: spaceBetweenRows,
+                    width: spaceBetweenColumns,
+                  ),
                   Expanded(
                       child: Text(
                         'Unknown',
@@ -413,7 +431,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
+                  SizedBox(
+                    height: spaceBetweenRows,
+                    width: spaceBetweenColumns,
+                  ),
                   Expanded(
                       child: Text(
                         widget.futureRun.event.hares ?? '',
@@ -425,11 +446,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                       flex: flexRight),
                 ],
               ),
+              hasLocationPermissions
+                          ? 
               Row(
                 children: <Widget>[
                   Expanded(
                     child: Text(
-                      'Run start:',
+                      'Distance:',
                       style: listLabelStyle,
                       textAlign: TextAlign.right,
                       maxLines: 1,
@@ -437,18 +460,22 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
+                  SizedBox(
+                    height: spaceBetweenRows,
+                    width: spaceBetweenColumns,
+                  ),
                   Expanded(
                       child: Text(
-                        widget.futureRun.extensions.distToEvent >= 0 ? Utilities.getDistance(widget.futureRun.extensions.distToEvent, context,isMetric: widget.futureRun.extensions.distancePreference == 0 ) + ' from here' : '<unknown>',
-                        style: listValueStyle,
-                        textAlign: TextAlign.left,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      flex: flexRight),
+                              hasLocationPermissions ? widget.futureRun.extensions.distToEvent >= 0 ? Utilities.getDistance(widget.futureRun.extensions.distToEvent, context, isMetric: widget.futureRun.extensions.distancePreference == 0) + ' from here' : '<unknown>' : '',
+                              style: listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          ,
+                      flex: hasLocationPermissions ? flexRight : 0),
                 ],
-              ),
+              ) : Container(),
               Row(
                 children: <Widget>[
                   Expanded(
@@ -461,7 +488,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
+                  SizedBox(
+                    height: spaceBetweenRows,
+                    width: spaceBetweenColumns,
+                  ),
                   Expanded(
                       child: Text(
                         widget.futureRun.event.locationStreet ?? '',
@@ -485,7 +515,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
+                  SizedBox(
+                    height: spaceBetweenRows,
+                    width: spaceBetweenColumns,
+                  ),
                   Expanded(
                       child: Text(
                         (((widget.futureRun.event.locationPostCode == null) || (widget.futureRun.event.locationPostCode.isEmpty)) ? '' : widget.futureRun.event.locationPostCode + ' ') + (widget.futureRun.event.locationCity ?? ''),
@@ -506,11 +539,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                       style: listLabelStyle,
                       textAlign: TextAlign.right,
                       maxLines: 1,
-                      
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(height: spaceBetweenRows, width: spaceBetweenColumns,),
+                  SizedBox(
+                    height: spaceBetweenRows,
+                    width: spaceBetweenColumns,
+                  ),
                   Expanded(
                       child: Text(
                         widget.futureRun.event.locationOneLineDesc ?? '',
@@ -645,9 +680,6 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         (packCount['rsvpYesCount'] ?? 0) >= 0 ? (packCount['rsvpYesCount'] ?? 0).toString() : '',
                         style: rsvpTitlesView,
                       ),
-                       
-
-
                     ],
                   ),
                 ),
@@ -688,7 +720,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                           ),
                         ],
                       ),
-                                            Text(
+                      Text(
                         (packCount['rsvpMaybeCount'] ?? 0) >= 0 ? (packCount['rsvpMaybeCount'] ?? 0).toString() : '',
                         style: rsvpTitlesView,
                       ),
@@ -743,11 +775,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                           ),
                         ],
                       ),
-                                                                  Text(
+                      Text(
                         (packCount['rsvpNoCount'] ?? 0) >= 0 ? (packCount['rsvpNoCount'] ?? 0).toString() : '',
                         style: rsvpTitlesView,
                       ),
-                      
+
                       // Text(
                       //   widget.futureRun.notAttendingEvent >= 0
                       //       ? widget.futureRun.notAttendingEvent
@@ -827,11 +859,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                           ),
                         ],
                       ),
-                                                                                        Text(
+                      Text(
                         (packCount['isHareCount'] ?? 0) >= 0 ? (packCount['isHareCount'] ?? 0).toString() : '',
                         style: rsvpTitlesView,
                       ),
-                      
+
                       // Text(
                       //   widget.futureRun.haresCount >= 0
                       //       ? widget.futureRun.haresCount.toString()
@@ -1033,10 +1065,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         // Map
         child: FlutterMap(
           options: MapOptions(
-            center: LatLng(
-              Utilities.unInt(widget.futureRun.event.narrowEventLatitude), 
-              Utilities.unInt(widget.futureRun.event.narrowEventLongitude)
-            ),
+            center: LatLng(Utilities.unInt(widget.futureRun.event.narrowEventLatitude), Utilities.unInt(widget.futureRun.event.narrowEventLongitude)),
             zoom: 15.0,
           ),
           layers: <LayerOptions>[
@@ -1051,10 +1080,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                 Marker(
                   width: 120.0,
                   height: 120.0,
-                  point: LatLng(
-                    Utilities.unInt(widget.futureRun.event.narrowEventLatitude), 
-                    Utilities.unInt(widget.futureRun.event.narrowEventLongitude)
-                  ),
+                  point: LatLng(Utilities.unInt(widget.futureRun.event.narrowEventLatitude), Utilities.unInt(widget.futureRun.event.narrowEventLongitude)),
                   builder: (BuildContext ctx) => GestureDetector(
                     onTap: () => _launchMaps(widget.futureRun.event.narrowEventLatitude, widget.futureRun.event.narrowEventLongitude),
                     child: Container(
@@ -1185,7 +1211,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
                         unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
                         isScrollable: true,
-                        labelPadding: const EdgeInsets.only(top:5, left:20, right:20),
+                        labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
                         unselectedLabelColor: Colors.black,
                         labelColor: Colors.white,
                         indicatorSize: TabBarIndicatorSize.tab,

@@ -1,17 +1,16 @@
+import 'dart:convert';
 
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/util/routes.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:harrier_central/util/styles.dart';
 
-
-
 class FbLoginPage extends StatefulWidget {
-    @override
+  @override
   _LoginPageState createState() => _LoginPageState();
 }
-
 
 class _LoginPageState extends State<FbLoginPage> {
   bool isLoggedIn = false;
@@ -19,6 +18,19 @@ class _LoginPageState extends State<FbLoginPage> {
   String accessToken;
 
   FacebookLogin facebookLogin = FacebookLogin();
+
+  @override
+  void initState() {
+    
+    
+
+
+    super.initState();
+
+    print('FB Hash = ' + facebookLogin.hashCode.toString());
+
+  }
+  
 
   void onLoginStatusChanged(bool isLoggedIn, {dynamic profileData, String accessToken}) {
     setState(() {
@@ -30,36 +42,31 @@ class _LoginPageState extends State<FbLoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          backgroundColor: themeAppBarBackground,
-          title: const Text('Facebook Login'),
-          actions: <Widget>[
-            IconButton(
-              icon: const  Icon(
-                Icons.exit_to_app,
-                color: Colors.white,
-              ),
-              onPressed: () => facebookLogin.isLoggedIn
-                  .then<dynamic>((bool isLoggedIn) => isLoggedIn ? _logout() : null),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: themeAppBarBackground,
+        title: const Text('Facebook Login'),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(
+              Icons.exit_to_app,
+              color: Colors.white,
             ),
-          ],
-        ),
-        body: Container(
-          child: Center(
-            child: isLoggedIn
-                ? _displayUserData(profileData)
-                : _displayLoginButton(),
+            onPressed: () => facebookLogin.isLoggedIn.then<dynamic>((bool isLoggedIn) => isLoggedIn ? _logout() : null),
           ),
+        ],
+      ),
+      body: Container(
+        decoration: Backgrounds.defaultHcBackground(),
+        child: Center(
+          child: isLoggedIn ? _displayUserData(profileData) : _displayLoginButton(),
         ),
       ),
     );
   }
 
   Future<void> initiateFacebookLogin() async {
-    final FacebookLoginResult facebookLoginResult =
-        await facebookLogin.logInWithReadPermissions(<String>['email']);
+    final FacebookLoginResult facebookLoginResult = await facebookLogin.logIn(<String>['email']);
 
     switch (facebookLoginResult.status) {
       case FacebookLoginStatus.error:
@@ -69,19 +76,19 @@ class _LoginPageState extends State<FbLoginPage> {
         onLoginStatusChanged(false);
         break;
       case FacebookLoginStatus.loggedIn:
-        // dynamic graphResponse = await http.get(
-        //     'https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email,picture.height(200)&access_token=${facebookLoginResult.accessToken.token}');
+        dynamic graphResponse = await http.get(
+            'https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email,picture.height(200)&access_token=${facebookLoginResult.accessToken.token}');
 
-        // dynamic profile = json.decode(graphResponse.body);
-        // print(profile.toString());
+        dynamic profile = json.decode(graphResponse.body);
+        print(profile.toString());
 
-        // onLoginStatusChanged(true, profileData: profile, accessToken: facebookLoginResult.accessToken.token );
-        Navigator.pushReplacementNamed(context, RouteNames.MAIN_LANDING_PAGE.toString());
+        onLoginStatusChanged(true, profileData: profile, accessToken: facebookLoginResult.accessToken.token );
+        //Navigator.pushReplacementNamed(context, RouteNames.MAIN_LANDING_PAGE.toString());
         break;
     }
   }
 
- dynamic _displayUserData(dynamic profileData) {
+  dynamic _displayUserData(dynamic profileData) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
@@ -109,7 +116,7 @@ class _LoginPageState extends State<FbLoginPage> {
     );
   }
 
- dynamic _displayLoginButton() {
+  dynamic _displayLoginButton() {
     return RaisedButton(
       child: const Text('Login with Facebook'),
       onPressed: () => initiateFacebookLogin(),

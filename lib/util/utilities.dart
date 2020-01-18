@@ -149,26 +149,50 @@ class Utilities {
     return finalStr;
   }
 
-  static String getDistance(num meters, BuildContext context,{bool isMetric = true}) {
+  static String getDistance(num meters, BuildContext context, {bool isMetric = true}) {
+    if (!hasLocationPermissions) {
+      return '';
+    }
+
     String result = '';
+
+    // if (isMetric) {
+    //   if (meters < 1000) {
+    //     result = '${NumberFormat('####').format(meters)} ${AppLocalizations.of(context).meters}';
+    //   } else if (meters < 10000) {
+    //     result = '${NumberFormat('#####.0').format(meters / 1000.0)} ${AppLocalizations.of(context).kilometers}';
+    //   } else {
+    //     result = '${NumberFormat('#####').format(meters / 1000.0)} ${AppLocalizations.of(context).kilometers}';
+    //   }
+    // } else {
+    //   final num miles = meters * METERS_TO_MILES;
+
+    //   if (miles < 3) {
+    //     result = '${NumberFormat('#####.00').format(miles)} ${AppLocalizations.of(context).miles}';
+    //   } else if (miles < 10) {
+    //     result = '${NumberFormat('#####.0').format(miles)} ${AppLocalizations.of(context).miles}';
+    //   } else {
+    //     result = '${NumberFormat('#####').format(miles)} ${AppLocalizations.of(context).miles}';
+    //   }
+    // }
 
     if (isMetric) {
       if (meters < 1000) {
-        result = '${NumberFormat('####').format(meters)} ${AppLocalizations.of(context).meters}';
+        result = '${NumberFormat('####').format(meters)} meters';
       } else if (meters < 10000) {
-        result = '${NumberFormat('#####.0').format(meters / 1000.0)} ${AppLocalizations.of(context).kilometers}';
+        result = '${NumberFormat('#####.0').format(meters / 1000.0)} km';
       } else {
-        result = '${NumberFormat('#####').format(meters / 1000.0)} ${AppLocalizations.of(context).kilometers}';
+        result = '${NumberFormat('#####').format(meters / 1000.0)} km';
       }
     } else {
       final num miles = meters * METERS_TO_MILES;
 
       if (miles < 3) {
-        result = '${NumberFormat('#####.00').format(miles)} ${AppLocalizations.of(context).miles}';
+        result = '${NumberFormat('#####.00').format(miles)} miles';
       } else if (miles < 10) {
-        result = '${NumberFormat('#####.0').format(miles)} ${AppLocalizations.of(context).miles}';
+        result = '${NumberFormat('#####.0').format(miles)} miles';
       } else {
-        result = '${NumberFormat('#####').format(miles)} ${AppLocalizations.of(context).miles}';
+        result = '${NumberFormat('#####').format(miles)} miles';
       }
     }
 
@@ -238,11 +262,9 @@ class Utilities {
     ));
   }
 
-  static num unInt(num n)
-  {
-    if (n == n.toInt()) 
-    {
-      n+=0.00000001;
+  static num unInt(num n) {
+    if (n == n.toInt()) {
+      n += 0.00000001;
     }
     return n;
   }
@@ -330,6 +352,4 @@ class Utilities {
       },
     );
   }
-
-
 }

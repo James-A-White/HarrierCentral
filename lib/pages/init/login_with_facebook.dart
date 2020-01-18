@@ -16,16 +16,15 @@ import 'package:harrier_central/widgets/user_details_ui.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
 
-class CreateNewAccountPage extends StatefulWidget {
-  //final FutureRunScopedModel futureRunsModel;
+class LoginWithFacebookPage extends StatefulWidget {
 
-  const CreateNewAccountPage({Key key}) : super(key: key);
+  const LoginWithFacebookPage({Key key}) : super(key: key);
 
   @override
-  CreateNewAccountPageState createState() => CreateNewAccountPageState();
+  LoginWithFacebookPageState createState() => LoginWithFacebookPageState();
 }
 
-class CreateNewAccountPageState extends State<CreateNewAccountPage> {
+class LoginWithFacebookPageState extends State<LoginWithFacebookPage> {
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -41,7 +40,7 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
               title: const Text(
-                'Create New Account',
+                'Login with Facebook',
                 style: TextStyle(
                   color: Colors.white,
                 ),
@@ -51,7 +50,7 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
               decoration: Backgrounds.defaultHcBackground(),
               height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.width,
-              child: const CreateNewAccountPageContent(),
+              child: const LoginWithFacebookPageContent(),
             ),
           ),
         ),
@@ -61,14 +60,14 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
   }
 }
 
-class CreateNewAccountPageContent extends StatefulWidget {
-  const CreateNewAccountPageContent({Key key}) : super(key: key);
+class LoginWithFacebookPageContent extends StatefulWidget {
+  const LoginWithFacebookPageContent({Key key}) : super(key: key);
 
   @override
-  _CreateNewAccountPageContentState createState() => _CreateNewAccountPageContentState();
+  _LoginWithFacebookPageContentState createState() => _LoginWithFacebookPageContentState();
 }
 
-class _CreateNewAccountPageContentState extends State<CreateNewAccountPageContent> {
+class _LoginWithFacebookPageContentState extends State<LoginWithFacebookPageContent> {
   TextEditingController inviteCodeTextController;
   InputDecoration inviteCodeDecoration;
   final FocusNode inviteCodeFocusNode = FocusNode();
@@ -110,7 +109,7 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                 children: <Widget>[
                   //SizedBox(width: 46,height: 10,),
                   Text(
-                    'Please enter your\r\nuser details',
+                    'Click below to\r\nLogin with Facebook',
                     style: localHeadingStyle,
                     textAlign: TextAlign.center,
                   ),

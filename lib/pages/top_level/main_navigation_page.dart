@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+//import 'package:permission_handler/permission_handler.dart';
 
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
+import 'package:location_permissions/location_permissions.dart';
 //import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import 'package:harrier_central/database/database.dart';
@@ -11,6 +13,7 @@ import 'package:harrier_central/database/migrations.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/pages/top_level/history_list_page.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
@@ -70,6 +73,39 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         setIntPref(IntPrefsEnum.databaseVersion, MigrationsTableHelper.dbVersion);
       });
     });
+
+    checkLocationPermissions();
+  }
+
+  Future<void> checkLocationPermissions() async {
+    bool hasLocPermission = true;
+
+    final LocationPermissions permissions = LocationPermissions();
+
+    // ServiceStatus locationStatus = await permissions.checkServiceStatus(PermissionGroup.location);
+    // if (locationStatus != ServiceStatus.enabled) {
+    //   locationStatus = await permissions.checkServiceStatus(PermissionGroup.locationAlways);
+    //   if (locationStatus != ServiceStatus.enabled) {
+    //     locationStatus = await permissions.checkServiceStatus(PermissionGroup.locationWhenInUse);
+    //     if (locationStatus != ServiceStatus.enabled) {
+    //       hasLocPermission = false;
+    //     }
+    //   }
+    // }
+
+    PermissionStatus locationPermission = await permissions.checkPermissionStatus(level: LocationPermissionLevel.location);
+    if (locationPermission != PermissionStatus.granted) {
+      locationPermission = await permissions.checkPermissionStatus(level: LocationPermissionLevel.locationWhenInUse);
+      if (locationPermission != PermissionStatus.granted) {
+        locationPermission = await permissions.checkPermissionStatus(level: LocationPermissionLevel.locationAlways);
+        if (locationPermission != PermissionStatus.granted) {
+          hasLocPermission = false;
+        }
+      }
+    }
+
+    setIntPref(IntPrefsEnum.hasLocationPermissions, hasLocPermission ? 1 : 0);
+    hasLocationPermissions = hasLocPermission;
   }
 
   void informUser(String message) {
