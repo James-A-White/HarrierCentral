@@ -272,7 +272,7 @@
 //                                         Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
 //                                       });
 //                                     } else {
-//                                       // TODO(James): Do something here if the auth device fails
+// TODO(James): Do something here if the auth device fails
 //                                     }
 //                                   });
 //                                 });

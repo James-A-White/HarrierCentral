@@ -42,9 +42,9 @@ class _LoginPageState extends State<FbLoginPage> {
 
   void onLoginStatusChanged(bool isLoggedIn, {dynamic profileData, String accessToken}) {
     setState(() {
-      this.isLoggedIn = isLoggedIn;
-      this.profileData = profileData;
-      this.facebookAccessToken = accessToken;
+      isLoggedIn = isLoggedIn;
+      profileData = profileData;
+      facebookAccessToken = accessToken;
     });
   }
 
@@ -68,7 +68,7 @@ class _LoginPageState extends State<FbLoginPage> {
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         child: Center(
-          child: isLoading ? Center(
+          child: isLoading ? const Center(
       child: HcCircularProgressIndicator(),
     ) :
           
@@ -78,9 +78,9 @@ class _LoginPageState extends State<FbLoginPage> {
                   onTap: () {
                     initiateFacebookLogin();
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: const Image(
+                  child: const Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Image(
                       fit: BoxFit.fill,
                       image: AssetImage('images/init/facebook_login.png'),
                     ),
@@ -102,9 +102,9 @@ class _LoginPageState extends State<FbLoginPage> {
         onLoginStatusChanged(false);
         break;
       case FacebookLoginStatus.loggedIn:
-        dynamic graphResponse = await http.get('https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email,picture.height(200)&access_token=${facebookLoginResult.accessToken.token}');
+        final dynamic graphResponse = await http.get('https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email,picture.height(200)&access_token=${facebookLoginResult.accessToken.token}');
 
-        dynamic profile = json.decode(graphResponse.body);
+        final dynamic profile = json.decode(graphResponse.body);
         print(profile.toString());
 
         onLoginStatusChanged(true, profileData: profile, accessToken: facebookLoginResult.accessToken.token);
@@ -135,7 +135,7 @@ class _LoginPageState extends State<FbLoginPage> {
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.rectangle,
-                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                  borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                   image: DecorationImage(
                     fit: BoxFit.fill,
                     image: NetworkImage(
@@ -161,7 +161,7 @@ class _LoginPageState extends State<FbLoginPage> {
 
             decoration: BoxDecoration(
               shape: BoxShape.rectangle,
-              borderRadius: BorderRadius.all(Radius.circular(10.0)),
+              borderRadius: const BorderRadius.all(Radius.circular(10.0)),
               color: Colors.yellow[100],
             ),
 
@@ -289,9 +289,4 @@ class _LoginPageState extends State<FbLoginPage> {
     );
   }
 
-  dynamic _logout() async {
-    await facebookLogin.logOut();
-    onLoginStatusChanged(false);
-    print('Logged out');
-  }
 }

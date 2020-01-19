@@ -534,16 +534,16 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
     controller = null;
   }
 
-  Widget _cameraPreviewWidget() {
-    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraint) {
-      return Container(
-        padding: const EdgeInsets.all(9.0),
-        height: constraint.biggest.height,
-        width: constraint.biggest.height,
-        child: (controller == null) ? Container() : QRReaderPreview(controller),
-      );
-    });
-  }
+  // Widget _cameraPreviewWidget() {
+  //   return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraint) {
+  //     return Container(
+  //       padding: const EdgeInsets.all(9.0),
+  //       height: constraint.biggest.height,
+  //       width: constraint.biggest.height,
+  //       child: (controller == null) ? Container() : QRReaderPreview(controller),
+  //     );
+  //   });
+  // }
 
   Future<void> onNewCameraSelected(CameraDescription cameraDescription) async {
     if (controller != null) {

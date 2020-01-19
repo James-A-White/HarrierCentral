@@ -1,21 +1,12 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
-import 'package:audioplayers/audio_cache.dart';
 
-import 'package:harrier_central/database/common_queries.dart';
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 
 class AppDownloadPage extends StatefulWidget {

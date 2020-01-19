@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 
@@ -545,8 +544,6 @@ class HashersService {
         return false;
       },
     );
-
-    int xxx = 0;
 
     if (!newUserForThisDevice) {
       await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);

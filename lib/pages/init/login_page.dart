@@ -25,7 +25,8 @@
 //       body: NotificationListener<OverscrollIndicatorNotification>(
 //         onNotification: (OverscrollIndicatorNotification overscroll) {
 //           overscroll.disallowGlow();
-//           return true; // TODO(James): What shoudl the return type really be?
+// TODO(James): What shoudl the return type really be?
+//           return true; 
 //         },
 //         child: NewUserWidget(scaffoldKey: _scaffoldKey),
 //       ),

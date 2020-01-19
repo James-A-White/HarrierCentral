@@ -1,6 +1,7 @@
 import 'dart:async';
-import 'dart:math';
 import 'dart:io' show Platform;
+import 'dart:math';
+
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,6 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/widgets/profile_photo.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
@@ -576,7 +576,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           child: Container(
                                                             decoration: BoxDecoration(
                                                               shape: BoxShape.rectangle,
-                                                              borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                                              borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                                                               image: DecorationImage(
                                                                 fit: BoxFit.fill,
                                                                 image: NetworkImage(
@@ -702,7 +702,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                         hasLocationPermissions = true;
                                                                         Utilities.getLatLong();
                                                                       });
-                                                                      ;
                                                                     }
 
                                                                     Utilities.showAlert(context, 

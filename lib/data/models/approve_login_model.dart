@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:core';
 
-import 'package:harrier_central/util/preferences.dart';
 
 class ApproveLoginModel {
 
