@@ -117,7 +117,7 @@ class HasherEventMapTableHelper {
   static const String colHemId = 'hemId';
   static const String colUserId = 'userId';
   static const String colEventId = 'eventId';
-  static const String colHasherOwnEventId= 'hasherOwnEventId';
+  static const String colHasherOwnEventId = 'hasherOwnEventId';
   static const String colUserStartEvent = 'userStartEvent';
   static const String colUserEndEvent = 'userEndEvent';
   static const String colRsvpState = 'rsvpState';
@@ -289,32 +289,39 @@ class HasherEventMapService {
     });
   }
 
-  Future<void> updateDatabase(List<HasherEventMapModel> items, HasherEventMapTableType tblType) async {
-    final Database db = await DBProvider.db.database;
+  // TODO(James): If we ever need to use this, check out the logic to prevent user table records from accidentally being inserted with other users (see error below)
+  // Future<void> updateDatabase(List<HasherEventMapModel> items, HasherEventMapTableType tblType) async {
+  //   final Database db = await DBProvider.db.database;
 
-    for (int i = 0; i < items?.length ?? 0; i++) {
-      final Map<String, dynamic> row = HasherEventMapTableHelper.toMap(items[i]);
+  //   final String userId = getStringPref(StringPrefsEnum.userId);
 
-      final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${HasherEventMapTableHelper.getTableName(tblType)} WHERE ${HasherEventMapTableHelper.remoteDbId} = "${items[i].hemId}"');
-      if ((table == null) || (table.isEmpty)) {
-        await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.insert(HasherEventMapTableHelper.getTableName(tblType), row);
-          print(result.toString() + ' inserted into to the ${HasherEventMapTableHelper.getTableName(tblType)} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        });
-      } else {
-        final String rowId = table.first['id'].toString();
+  //   for (int i = 0; i < items?.length ?? 0; i++) {
+  //     final Map<String, dynamic> row = HasherEventMapTableHelper.toMap(items[i]);
 
-        await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.update(HasherEventMapTableHelper.getTableName(tblType), row, where: 'id = $rowId');
-          print(result.toString() + ' update to the ${HasherEventMapTableHelper.getTableName(tblType)} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        });
-      }
-    }
-  }
+  //     final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${HasherEventMapTableHelper.getTableName(tblType)} WHERE ${HasherEventMapTableHelper.remoteDbId} = "${items[i].hemId}"');
+  //     if ((table == null) || (table.isEmpty)) {
+  //       xxxxxx => if ((tblType != HasherEventMapTableType.user) || ((tblType == HasherEventMapTableType.user) && (userId == row['userId']))) {
+  //         await db.transaction<dynamic>((Transaction txn) async {
+  //           final int result = await txn.insert(HasherEventMapTableHelper.getTableName(tblType), row);
+  //           print(result.toString() + ' inserted into to the ${HasherEventMapTableHelper.getTableName(tblType)} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+  //         });
+  //       }
+  //     } else {
+  //       final String rowId = table.first['id'].toString();
+
+  //       await db.transaction<dynamic>((Transaction txn) async {
+  //         final int result = await txn.update(HasherEventMapTableHelper.getTableName(tblType), row, where: 'id = $rowId');
+  //         print(result.toString() + ' update to the ${HasherEventMapTableHelper.getTableName(tblType)} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+  //       });
+  //     }
+  //   }
+  // }
 
   Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser, HasherEventMapTableType tblType) async {
     int updateCounter = 0;
     int insertCounter = 0;
+
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     bool doNormalizeMap;
 
@@ -334,9 +341,8 @@ class HasherEventMapService {
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = HasherEventMapTableHelper.normalizeMap(jsonItem);
           doNormalizeMap = (testMap.length - 1) != jsonItem.length;
-          if (doNormalizeMap)
-          {
-            print('Normalize map called for ${HasherEventMapTableHelper.getTableName(tblType)}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}' );
+          if (doNormalizeMap) {
+            print('Normalize map called for ${HasherEventMapTableHelper.getTableName(tblType)}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}');
           }
         }
 
@@ -352,15 +358,16 @@ class HasherEventMapService {
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
 
         if ((table == null) || (table.isEmpty)) {
-          //print(table.length.toString());
-          await db.transaction<dynamic>((Transaction txn) async {
-            //final int result =
+          if ((tblType != HasherEventMapTableType.user) || ((tblType == HasherEventMapTableType.user) && (userId == jsonItem['userId']))) {
+            await db.transaction<dynamic>((Transaction txn) async {
+              //final int result =
 
-            await txn.insert(HasherEventMapTableHelper.getTableName(tblType), doNormalizeMap ? HasherEventMapTableHelper.normalizeMap(jsonItem) : jsonItem);
-            insertCounter++;
-            // print(result.toString() +
-            //     ' inserted into to the ${HasherEventMapTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
-          });
+              await txn.insert(HasherEventMapTableHelper.getTableName(tblType), doNormalizeMap ? HasherEventMapTableHelper.normalizeMap(jsonItem) : jsonItem);
+              insertCounter++;
+              // print(result.toString() +
+              //     ' inserted into to the ${HasherEventMapTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
+            });
+          }
         } else {
           final String rowId = table.first['id'].toString();
 

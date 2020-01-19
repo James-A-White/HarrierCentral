@@ -39,7 +39,6 @@ class HasherKennelMapModel {
       this.memberSince,
       this.isKennelFollowing,
       this.mismanagementRoles,
-
       this.removed,
       this.updatedAt});
 
@@ -97,7 +96,6 @@ class HasherKennelMapModel {
           memberSince: jsonItem['memberSince'] == null ? null : DateTime.parse(jsonItem['memberSince'].toString().substring(0, 19)),
           isKennelFollowing: jsonItem['isKennelFollowing'],
           mismanagementRoles: jsonItem['mismanagementRoles'],
-
           updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
           removed: jsonItem['removed'],
         );
@@ -140,16 +138,16 @@ class HasherKennelMapTableHelper {
   static const String colMismanagementRoleFlags = 'mismanagementRoleFlags';
   static const String colUserRoleFlags = 'userRoleFlags';
   static const String colAppAccessFlags = 'appAccessFlags';
-  static const String colCurrentPackRunCount= 'currentPackRunCount';
-  static const String colCurrentHaringCount= 'currentHaringCount';
+  static const String colCurrentPackRunCount = 'currentPackRunCount';
+  static const String colCurrentHaringCount = 'currentHaringCount';
   static const String colHistoricalPackRunCount = 'historicalPackRunCount';
   static const String colHistoricalHaringCount = 'historicalHaringCount';
   static const String colHistoricalCountIsEstimate = 'historicalCountIsEstimate';
   static const String colDateOfLastRun = 'dateOfLastRun';
   static const String colMembershipExpirationDate = 'membershipExpirationDate';
   static const String colMemberSince = 'memberSince';
-  static const String colIsKennelFollowing= 'isKennelFollowing';
-  static const String colMismanagementRoles= 'mismanagementRoles';
+  static const String colIsKennelFollowing = 'isKennelFollowing';
+  static const String colMismanagementRoles = 'mismanagementRoles';
 
   static const String colUpdatedAt = 'updatedAt';
   static const String colRemoved = 'removed';
@@ -245,7 +243,6 @@ class HasherKennelMapTableHelper {
       HasherKennelMapTableHelper.colMemberSince: item.memberSince,
       HasherKennelMapTableHelper.colIsKennelFollowing: item.isKennelFollowing,
       HasherKennelMapTableHelper.colMismanagementRoles: item.mismanagementRoles,
-
       HasherKennelMapTableHelper.colUpdatedAt: item.updatedAt,
       HasherKennelMapTableHelper.colRemoved: item.removed,
     };
@@ -276,7 +273,6 @@ class HasherKennelMapTableHelper {
       HasherKennelMapTableHelper.colMemberSince: inputMap[HasherKennelMapTableHelper.colMemberSince],
       HasherKennelMapTableHelper.colIsKennelFollowing: inputMap[HasherKennelMapTableHelper.colIsKennelFollowing],
       HasherKennelMapTableHelper.colMismanagementRoles: inputMap[HasherKennelMapTableHelper.colMismanagementRoles],
-
       HasherKennelMapTableHelper.colUpdatedAt: inputMap[HasherKennelMapTableHelper.colUpdatedAt],
       HasherKennelMapTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[HasherKennelMapTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       HasherKennelMapTableHelper.colRemoved: inputMap[HasherKennelMapTableHelper.colRemoved],
@@ -308,7 +304,6 @@ class HasherKennelMapTableHelper {
       memberSince: (map[HasherKennelMapTableHelper.colMemberSince] == null) ? null : DateTime.parse(map[HasherKennelMapTableHelper.colMemberSince].toString().substring(0, 19)),
       isKennelFollowing: map[HasherKennelMapTableHelper.colIsKennelFollowing],
       mismanagementRoles: map[HasherKennelMapTableHelper.colMismanagementRoles],
-
       updatedAt: DateTime.parse(map[HasherKennelMapTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[HasherKennelMapTableHelper.colRemoved],
     );
@@ -334,34 +329,37 @@ class HasherKennelMapService {
     });
   }
 
-  Future<void> updateDatabase(List<HasherKennelMapModel> items, HasherKennelMapTableType tblType) async {
-    final Database db = await DBProvider.db.database;
+  // TODO(James): If this is ever needed, put a check in to make sure that the user table can only hold records from this user
+  // Future<void> updateDatabase(List<HasherKennelMapModel> items, HasherKennelMapTableType tblType) async {
+  //   final Database db = await DBProvider.db.database;
 
-    for (int i = 0; i < items?.length ?? 0; i++) {
-      final Map<String, dynamic> row = HasherKennelMapTableHelper.toMap(items[i]);
+  //   for (int i = 0; i < items?.length ?? 0; i++) {
+  //     final Map<String, dynamic> row = HasherKennelMapTableHelper.toMap(items[i]);
 
-      final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${HasherKennelMapTableHelper.getTableName(tblType)} WHERE ${HasherKennelMapTableHelper.remoteDbId} = "${items[i].hkmId}"');
-      if ((table == null) || (table.isEmpty)) {
-        await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.insert(HasherKennelMapTableHelper.getTableName(tblType), row);
-          print(result.toString() + ' inserted into to the ${HasherKennelMapTableHelper.getTableName(tblType)} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        });
-      } else {
-        final String rowId = table.first['id'].toString();
+  //     final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${HasherKennelMapTableHelper.getTableName(tblType)} WHERE ${HasherKennelMapTableHelper.remoteDbId} = "${items[i].hkmId}"');
+  //     if ((table == null) || (table.isEmpty)) {
+  //       await db.transaction<dynamic>((Transaction txn) async {
+  //         final int result = await txn.insert(HasherKennelMapTableHelper.getTableName(tblType), row);
+  //         print(result.toString() + ' inserted into to the ${HasherKennelMapTableHelper.getTableName(tblType)} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+  //       });
+  //     } else {
+  //       final String rowId = table.first['id'].toString();
 
-        await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.update(HasherKennelMapTableHelper.getTableName(tblType), row, where: 'id = $rowId');
-          print(result.toString() + ' update to the ${HasherKennelMapTableHelper.getTableName(tblType)} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        });
-      }
-    }
-  }
+  //       await db.transaction<dynamic>((Transaction txn) async {
+  //         final int result = await txn.update(HasherKennelMapTableHelper.getTableName(tblType), row, where: 'id = $rowId');
+  //         print(result.toString() + ' update to the ${HasherKennelMapTableHelper.getTableName(tblType)} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+  //       });
+  //     }
+  //   }
+  // }
 
   Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser, HasherKennelMapTableType tblType) async {
     int updateCounter = 0;
     int insertCounter = 0;
 
     bool doNormalizeMap;
+
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final List<dynamic> jsonResultSets = json.decode(rawResults);
 
@@ -378,10 +376,9 @@ class HasherKennelMapService {
 
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = HasherKennelMapTableHelper.normalizeMap(jsonItem);
-                    doNormalizeMap = (testMap.length - 1) != jsonItem.length;
-          if (doNormalizeMap)
-          {
-            print('Normalize map called for ${HasherKennelMapTableHelper.getTableName(tblType)}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}' );
+          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
+          if (doNormalizeMap) {
+            print('Normalize map called for ${HasherKennelMapTableHelper.getTableName(tblType)}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}');
           }
         }
 
@@ -399,14 +396,16 @@ class HasherKennelMapService {
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
 
         if ((table == null) || (table.isEmpty)) {
-          //print(table.length.toString());
-          await db.transaction<dynamic>((Transaction txn) async {
-            //final int result =
-            await txn.insert(HasherKennelMapTableHelper.getTableName(tblType), doNormalizeMap ? HasherKennelMapTableHelper.normalizeMap(jsonItem) : jsonItem);
-            insertCounter++;
-            // print(result.toString() +
-            //     ' inserted into to the ${UserKennelsTdTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
-          });
+          // for the user table, we only want to insert kkm records for this particular user
+          if ((tblType != HasherKennelMapTableType.user) || ((tblType == HasherKennelMapTableType.user) && (userId == jsonItem['userId']))) {
+            await db.transaction<dynamic>((Transaction txn) async {
+              //final int result =
+              await txn.insert(HasherKennelMapTableHelper.getTableName(tblType), doNormalizeMap ? HasherKennelMapTableHelper.normalizeMap(jsonItem) : jsonItem);
+              insertCounter++;
+              // print(result.toString() +
+              //     ' inserted into to the ${UserKennelsTdTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
+            });
+          }
         } else {
           final String rowId = table.first['id'].toString();
 
