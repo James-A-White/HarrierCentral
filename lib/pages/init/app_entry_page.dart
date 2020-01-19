@@ -33,7 +33,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
   Future<void> handleStartup(BuildContext context) async {
     final PackageInfo p = await PackageInfo.fromPlatform();
-    final String hcVersion = 'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
+    final String hcVersion = 'HC Ver: ${p.version}, Bld: ${p.buildNumber}';
 
     await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
 

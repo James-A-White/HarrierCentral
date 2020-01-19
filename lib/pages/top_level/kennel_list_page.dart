@@ -42,7 +42,6 @@ class KennelListQueryExtenstions {
   int notificationsRequested;
   int emailAlertRequested;
 
-
   static KennelListQueryExtenstions fromMap(Map<String, dynamic> map) {
     final KennelListQueryExtenstions item = KennelListQueryExtenstions(
         location: map['location'],
@@ -145,8 +144,17 @@ class KennelsListPageState extends State<KennelsListPage> {
 
                   globalKennelMainPageList.add(item);
                   if (i == results.length - 1) {
-                    globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.distToKennel.compareTo(b.extensions.distToKennel));
+                    if (hasLocationPermissions) {
+                      globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.distToKennel.compareTo(b.extensions.distToKennel));
+                    } else {
+                      globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.kennel.kennelName.compareTo(b.kennel.kennelName));
+                    }
+
                     globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (a.hkm.following == 1 ? 0 : a.hkm.following == 2 ? 1 : 2).compareTo(b.hkm.following == 1 ? 0 : b.hkm.following == 2 ? 1 : 2));
+                    
+                    globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (b.hkm.isHomeKennel).compareTo(a.hkm.isHomeKennel));
+
+                    
                     setState(() {});
                   }
                 });
@@ -227,7 +235,7 @@ class KennelsListPageState extends State<KennelsListPage> {
     setState(() {
       globalKennelMainPageList = null;
     });
-    
+
     String query = 'DELETE FROM ${KennelsTableHelper.tableName}';
     try {
       await db.rawQuery(query);

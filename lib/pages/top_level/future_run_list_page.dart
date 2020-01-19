@@ -39,7 +39,15 @@ class RunDetailsQueryExtensions {
   int distancePreference;
 
   static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map) {
-    final RunDetailsQueryExtensions item = RunDetailsQueryExtensions(daysUntilEvent: map['daysUntilEvent'],digitsAfterDecimal: map['digitsAfterDecimal'],currencySymbol: map['currencySymbol'], mismanagementRoleFlags: map['mismanagementRoleFlags'], following: map['following'], notificationPreference: map['notificationPreference'],emailAlertPreference: map['emailAlertPreference'],distancePreference: map['distancePreference']);
+    final RunDetailsQueryExtensions item = RunDetailsQueryExtensions(
+        daysUntilEvent: map['daysUntilEvent'],
+        digitsAfterDecimal: map['digitsAfterDecimal'],
+        currencySymbol: map['currencySymbol'],
+        mismanagementRoleFlags: map['mismanagementRoleFlags'],
+        following: map['following'],
+        notificationPreference: map['notificationPreference'],
+        emailAlertPreference: map['emailAlertPreference'],
+        distancePreference: map['distancePreference']);
     return item;
   }
 }
@@ -56,7 +64,7 @@ class RunDetailsAggregate {
   final RunDetailsQueryExtensions extensions;
 }
 
-class FutureRunListPageState extends State<FutureRunsListPage>  {
+class FutureRunListPageState extends State<FutureRunsListPage> {
   // BuildContext context;
 
   // @override
@@ -70,33 +78,37 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
     return Scaffold(body: futureRunsList == null ? const HcCircularProgressIndicator() : _buildListView());
   }
 
-  Future<void> _handleRefresh() async {
+  Future<void> _handleRefresh({bool queryBackend = true, bool clearLocalTables = false}) async {
     final Database db = await DBProvider.db.database;
 
     setState(() {
       futureRunsList = null;
     });
-    
-    String query = 'DELETE FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user)}';
-    try {
-      await db.rawQuery(query);
-    } catch (e) {
-      print(e);
+
+    if (clearLocalTables) {
+      String query = 'DELETE FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user)}';
+      try {
+        await db.rawQuery(query);
+      } catch (e) {
+        print(e);
+      }
+
+      query = 'DELETE FROM ${NarrowEventsTableHelper.tableName}';
+      try {
+        await db.rawQuery(query);
+      } catch (e) {
+        print(e);
+      }
     }
 
-    query = 'DELETE FROM ${NarrowEventsTableHelper.tableName}';
-    try {
-      await db.rawQuery(query);
-    } catch (e) {
-      print(e);
+    if (queryBackend) {
+      final SyncUserDataService cSrv = SyncUserDataService();
+      cSrv.updateFromBackend(db, SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable, false).then((bool result) {
+        refreshFromTable(true);
+        final String resultStr = result ? 'successfully' : 'unsuccessfully';
+        print('Events user data synchronized $resultStr');
+      });
     }
-
-    final SyncUserDataService cSrv = SyncUserDataService();
-    cSrv.updateFromBackend(db, SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable, false).then((bool result) {
-      refreshFromTable(true);
-      final String resultStr = result ? 'successfully' : 'unsuccessfully';
-      print('Events user data synchronized $resultStr');
-    });
   }
 
   @override
@@ -106,7 +118,7 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
   }
 
   void refreshFromTable(bool forceRefresh) {
-    if (forceRefresh || (futureRunsList == null)|| (futureRunsList.isEmpty)) {
+    if (forceRefresh || (futureRunsList == null) || (futureRunsList.isEmpty)) {
       final Geolocator locator = Geolocator();
 
       final String userId = getStringPref(StringPrefsEnum.userId);
@@ -161,7 +173,6 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
                   final num eventJulian = results[i]['eventJulian'];
 
                   print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
-                  
 
                   if ((extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < 50000))) {
                     final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem);
@@ -183,15 +194,46 @@ class FutureRunListPageState extends State<FutureRunsListPage>  {
 
   Widget _buildListView() {
     return Container(
-      
       decoration: Backgrounds.defaultHcBackground(),
       child: futureRunsList.isEmpty
-          ? const Center(child: Text('No Runs available.'))
+          ? Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 25, right: 25, bottom: 30),
+                  child: Center(
+                      child: Text(
+                    'No Runs available.',
+                    style: largeTitleStyle,
+                    textAlign: TextAlign.center,
+                  )),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 25.0, right: 25.0, bottom: 30),
+                  child: Center(
+                      child: Text(
+                    'You might not be following any Kennels with upcoming runs. Check the Kennels page, select several Kennels and then return to this page and hit the "Reload runs" button below.',
+                    style: smallTitleStyle,
+                    textAlign: TextAlign.center,
+                  )),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 0.0),
+                  child: FlatButton(
+                    color: Theme.of(context).accentColor,
+                    child: Text('Reload runs', style: buttonLabelStyleMedium),
+                    onPressed: () async {
+                      _handleRefresh(queryBackend: true, clearLocalTables: false);
+                    },
+                  ),
+                ),
+              ],
+            )
           : RefreshIndicator(
-              onRefresh: () => _handleRefresh(),
+              onRefresh: () => _handleRefresh(queryBackend: true, clearLocalTables: true),
               displacement: 40.0,
               child: ListView.builder(
-                padding: const EdgeInsets.only(top:10,bottom:50),
+                padding: const EdgeInsets.only(top: 10, bottom: 50),
                 physics: const AlwaysScrollableScrollPhysics(),
                 //padding: const EdgeInsets.only( bottom: 40.0),
                 itemCount: futureRunsList.length,

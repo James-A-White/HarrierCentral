@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 
@@ -17,22 +18,7 @@ import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart'
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 
 class HashersModel {
-  HashersModel({
-      this.hasherId, 
-      this.homeKennelId, 
-      this.firstName, 
-      this.lastName, 
-      this.dispName, 
-      this.hashName, 
-      this.email, 
-      this.photo, 
-      this.dispPref, 
-      this.resetCode, 
-      this.qrCode, 
-      this.includeInGlobalHashDirectory,
-      this.preferences,
-      this.removed, 
-      this.updatedAt});
+  HashersModel({this.hasherId, this.homeKennelId, this.firstName, this.lastName, this.dispName, this.hashName, this.email, this.photo, this.dispPref, this.resetCode, this.qrCode, this.includeInGlobalHashDirectory, this.preferences, this.removed, this.updatedAt});
 
   final String hasherId;
   final String homeKennelId;
@@ -72,7 +58,6 @@ class HashersModel {
             qrCode: jsonItem['qrCode'],
             includeInGlobalHashDirectory: jsonItem['includeInGlobalHashDirectory'],
             preferences: jsonItem['preferences'],
-
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
 
@@ -113,8 +98,8 @@ class HashersTableHelper {
   static const String colDispPref = 'dispPref';
   static const String colResetCode = 'resetCode';
   static const String colQrCode = 'qrCode';
-  static const String colIncludeInGlobalHashDirectory= 'includeInGlobalHashDirectory';
-  static const String colPreferences= 'preferences';
+  static const String colIncludeInGlobalHashDirectory = 'includeInGlobalHashDirectory';
+  static const String colPreferences = 'preferences';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -169,7 +154,6 @@ class HashersTableHelper {
       HashersTableHelper.colQrCode: item.qrCode,
       HashersTableHelper.colIncludeInGlobalHashDirectory: item.includeInGlobalHashDirectory,
       HashersTableHelper.colPreferences: item.preferences,
-
       HashersTableHelper.colUpdatedAt: item.updatedAt.toString(),
       HashersTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       HashersTableHelper.colRemoved: item.removed
@@ -217,7 +201,6 @@ class HashersTableHelper {
       qrCode: map[HashersTableHelper.colQrCode],
       includeInGlobalHashDirectory: map[HashersTableHelper.colIncludeInGlobalHashDirectory],
       preferences: map[HashersTableHelper.colPreferences],
-      
       updatedAt: DateTime.parse(map[HashersTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[HashersTableHelper.colRemoved],
     );
@@ -305,10 +288,9 @@ class HashersService {
 
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = HashersTableHelper.normalizeMap(jsonItem);
-                    doNormalizeMap = (testMap.length - 1) != jsonItem.length;
-          if (doNormalizeMap)
-          {
-            print('Normalize map called for ${HashersTableHelper.tableName}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}' );
+          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
+          if (doNormalizeMap) {
+            print('Normalize map called for ${HashersTableHelper.tableName}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}');
           }
         }
 
@@ -354,7 +336,21 @@ class HashersService {
 
   // ============ Functions go here =============
 
-  Future<String> addEditUser({String targetUserId, String firstName, String lastName, String email, String hashName, String photo, String eventId, String kennelId, String historicalPackRunCount, String historicalHaringCount, bool historicalCountIsEstimate, int followKennelOnAddNewUser, int includeInGlobalHashDirectory = -1, int preferences = -1}) async {
+  Future<String> addEditUser(
+      {String targetUserId,
+      String firstName,
+      String lastName,
+      String email,
+      String hashName,
+      String photo,
+      String eventId,
+      String kennelId,
+      String historicalPackRunCount,
+      String historicalHaringCount,
+      bool historicalCountIsEstimate,
+      int followKennelOnAddNewUser,
+      int includeInGlobalHashDirectory = -1,
+      int preferences = -1}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return '';
       // TODO(James): fix this so we can return a bool
@@ -445,7 +441,6 @@ class HashersService {
     return response.body;
   }
 
-
   Future<String> changeProfilePicture({String targetUserId, String photo}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return '';
@@ -480,7 +475,7 @@ class HashersService {
       'historicalPackRunCount': '-1',
       'historicalHaringCount': '-1',
       'historicalCountIsEstimate': '-1',
-      'followKennelOnAddNewUser':  null
+      'followKennelOnAddNewUser': null
     });
 
     final http.Response response = await http
@@ -497,5 +492,66 @@ class HashersService {
     return response.body;
   }
 
+  Future<String> processFacebookLogin({String firstName, String lastName, String email, String hashName, String photo, String facebookId, String facebookAccessToken, int includeInGlobalHashDirectory = -1}) async {
+    if (globalConnectionStatus == connectionStatus_notConnected) {
+      return '';
+      // TODO(James): fix this so we can return a bool
+      //return false;
+    }
 
+    bool newUserForThisDevice = false;
+
+    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
+    String userId = getStringPref(StringPrefsEnum.userId);
+    if ((userId == null) || (userId.isEmpty)) {
+      userId = GUID_EMPTY;
+      newUserForThisDevice = true;
+    }
+
+    DateTime hashersUpdatedAfter;
+
+    if (!newUserForThisDevice) {
+      final num _hashersLastUpdated = await HashersService.getLastUpdatedTime();
+      hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
+    } else {
+      // do this to suppress any records being returned through the sync mechanism
+      hashersUpdatedAfter = DateTime(2050, 1, 1);
+    }
+
+    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'processFacebookLogin', paramString: userId.toUpperCase());
+
+    final String body = jsonEncode(<String, String>{
+      'userId': userId,
+      'accessToken': accessToken,
+      'hashersUpdatedAfter': hashersUpdatedAfter.toString(),
+      'firstName': firstName,
+      'lastName': lastName,
+      'hashName': hashName,
+      'email': email,
+      'photo': photo,
+      'facebookId': facebookId,
+      'facebookAccessToken': facebookAccessToken,
+      'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString(),
+      'hcVersion': hcVersion,
+    });
+
+    final http.Response response = await http
+        .post(BASE_API_URL + 'hc3_process_facebook_login', headers: <String, String>{'content-type': 'application/json'}, body: body
+            // Send authorization headers to your backend
+            //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+            )
+        .catchError(
+      (dynamic error) {
+        return false;
+      },
+    );
+
+    int xxx = 0;
+
+    if (!newUserForThisDevice) {
+      await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    } 
+
+    return response.body;
+  }
 }

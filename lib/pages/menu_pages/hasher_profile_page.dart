@@ -569,10 +569,23 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     ? Image.asset(
                                                         'images/icons/create_profile_photo.png',
                                                       )
-                                                    : ProfilePhoto(
-                                                        profilePhotoUrl: newPhoto,
-                                                        photoHeight: 200.0,
-                                                        leftPadding: 0.0,
+                                                    : Padding(
+                                                        padding: const EdgeInsets.only(left: 0, right: 0),
+                                                        child: AspectRatio(
+                                                          aspectRatio: 1.0,
+                                                          child: Container(
+                                                            decoration: BoxDecoration(
+                                                              shape: BoxShape.rectangle,
+                                                              borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                                              image: DecorationImage(
+                                                                fit: BoxFit.fill,
+                                                                image: NetworkImage(
+                                                                  newPhoto,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
                                                       ),
                                               ),
                                               Utilities.styleForConnected(
@@ -682,15 +695,20 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                         setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
                                                                         hasLocationPermissions = true;
                                                                         Utilities.getLatLong();
-
                                                                       });
                                                                     } else {
                                                                       PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.location]).then((Map<PermissionGroup, PermissionStatus> e) {
                                                                         setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
                                                                         hasLocationPermissions = true;
                                                                         Utilities.getLatLong();
-                                                                      });;
+                                                                      });
+                                                                      ;
                                                                     }
+
+                                                                    Utilities.showAlert(context, 
+                                                                       'Location preferences updated', 
+                                                                      'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 
+                                                                      'OK');
                                                                   },
                                                                   child: Text('Enable Location Svcs', style: buttonTextStyle),
                                                                 ),
