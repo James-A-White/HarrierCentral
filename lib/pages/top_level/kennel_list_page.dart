@@ -151,10 +151,9 @@ class KennelsListPageState extends State<KennelsListPage> {
                     }
 
                     globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (a.hkm.following == 1 ? 0 : a.hkm.following == 2 ? 1 : 2).compareTo(b.hkm.following == 1 ? 0 : b.hkm.following == 2 ? 1 : 2));
-                    
+
                     globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (b.hkm.isHomeKennel).compareTo(a.hkm.isHomeKennel));
 
-                    
                     setState(() {});
                   }
                 });
@@ -191,15 +190,19 @@ class KennelsListPageState extends State<KennelsListPage> {
                           return KennelsListItem(
                             kennelItem: globalKennelMainPageList[index],
                             kennelFollowingUpdated: (int following, int notificationStatus, int emailAlertStatus, int isHomeKennel) {
-                              for (int i = 0; i < globalKennelMainPageList.length; i++) {
-                                globalKennelMainPageList[i].extensions.isHomeKennel = 0;
-                              }
                               globalKennelMainPageList[index].extensions.followingRequested = -1;
                               globalKennelMainPageList[index].extensions.notificationsRequested = -1;
                               globalKennelMainPageList[index].extensions.emailAlertRequested = -1;
                               globalKennelMainPageList[index].hkm.following = following;
                               globalKennelMainPageList[index].hkm.kennelNotificationPreference = notificationStatus;
                               globalKennelMainPageList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
+                              // if this kennel has been set as the home kennel, clear the home kennel
+                              // flag on the rest of the kennels
+                              if (isHomeKennel != 0) {
+                                for (int i = 0; i < globalKennelMainPageList.length; i++) {
+                                  globalKennelMainPageList[i].extensions.isHomeKennel = 0;
+                                }
+                              }
                               globalKennelMainPageList[index].extensions.isHomeKennel = isHomeKennel;
                               setState(() {});
                             },

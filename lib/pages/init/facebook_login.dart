@@ -40,10 +40,10 @@ class _LoginPageState extends State<FbLoginPage> {
     hashNameTextController = TextEditingController();
   }
 
-  void onLoginStatusChanged(bool isLoggedIn, {dynamic profileData, String accessToken}) {
+  void onLoginStatusChanged(bool loggedIn, {dynamic profData, String accessToken}) {
     setState(() {
-      isLoggedIn = isLoggedIn;
-      profileData = profileData;
+      isLoggedIn = loggedIn;
+      profileData = profData;
       facebookAccessToken = accessToken;
     });
   }
@@ -68,24 +68,24 @@ class _LoginPageState extends State<FbLoginPage> {
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         child: Center(
-          child: isLoading ? const Center(
-      child: HcCircularProgressIndicator(),
-    ) :
-          
-              isLoggedIn
-              ? _displayUserData(profileData)
-              : GestureDetector(
-                  onTap: () {
-                    initiateFacebookLogin();
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.all(20.0),
-                    child: Image(
-                      fit: BoxFit.fill,
-                      image: AssetImage('images/init/facebook_login.png'),
+          child: isLoading
+              ? const Center(
+                  child: HcCircularProgressIndicator(),
+                )
+              : isLoggedIn
+                  ? _displayUserData(profileData)
+                  : GestureDetector(
+                      onTap: () {
+                        initiateFacebookLogin();
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Image(
+                          fit: BoxFit.fill,
+                          image: AssetImage('images/init/facebook_login.png'),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
         ),
       ),
     );
@@ -107,7 +107,7 @@ class _LoginPageState extends State<FbLoginPage> {
         final dynamic profile = json.decode(graphResponse.body);
         print(profile.toString());
 
-        onLoginStatusChanged(true, profileData: profile, accessToken: facebookLoginResult.accessToken.token);
+        onLoginStatusChanged(true, profData: profile, accessToken: facebookLoginResult.accessToken.token);
         //Navigator.pushReplacementNamed(context, RouteNames.MAIN_LANDING_PAGE.toString());
         break;
     }
@@ -129,7 +129,7 @@ class _LoginPageState extends State<FbLoginPage> {
 
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(left:20,right:20),
+            padding: const EdgeInsets.only(left: 20, right: 20),
             child: AspectRatio(
               aspectRatio: 1.0,
               child: Container(
@@ -252,7 +252,7 @@ class _LoginPageState extends State<FbLoginPage> {
                 setState(() {
                   isLoading = true;
                 });
-                
+
                 final HashersService hSrv = HashersService();
                 final String responseBody = await hSrv.processFacebookLogin(
                     firstName: profileData['first_name'],
@@ -288,5 +288,4 @@ class _LoginPageState extends State<FbLoginPage> {
       ],
     );
   }
-
 }

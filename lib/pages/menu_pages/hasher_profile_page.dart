@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:io' show Platform;
 import 'dart:math';
 
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:harrier_central/widgets/profile_photo.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -195,6 +195,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       }
       hasher = HashersModel(hasherId: GUID_EMPTY);
       photoPrefix = 'newHcUser_' + DateTime.now().microsecondsSinceEpoch.toString();
+
       _isLoading = false;
     }
 
@@ -573,18 +574,24 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         padding: const EdgeInsets.only(left: 0, right: 0),
                                                         child: AspectRatio(
                                                           aspectRatio: 1.0,
-                                                          child: Container(
-                                                            decoration: BoxDecoration(
-                                                              shape: BoxShape.rectangle,
-                                                              borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                                                              image: DecorationImage(
-                                                                fit: BoxFit.fill,
-                                                                image: NetworkImage(
-                                                                  newPhoto,
-                                                                ),
-                                                              ),
-                                                            ),
+                                                          child: ProfilePhoto(
+                                                            profilePhotoUrl: newPhoto,
+                                                            //photoHeight: 200.0,
+                                                            //leftPadding: 0.0,
                                                           ),
+
+                                                          // Container(
+                                                          //   decoration: BoxDecoration(
+                                                          //     shape: BoxShape.rectangle,
+                                                          //     borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                                                          //     image: DecorationImage(
+                                                          //       fit: BoxFit.fill,
+                                                          //       image: NetworkImage(
+                                                          //         newPhoto,
+                                                          //       ),
+                                                          //     ),
+                                                          //   ),
+                                                          // ),
                                                         ),
                                                       ),
                                               ),
@@ -704,10 +711,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                       });
                                                                     }
 
-                                                                    Utilities.showAlert(context, 
-                                                                       'Location preferences updated', 
-                                                                      'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 
-                                                                      'OK');
+                                                                    Utilities.showAlert(context, 'Location preferences updated', 'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 'OK');
                                                                   },
                                                                   child: Text('Enable Location Svcs', style: buttonTextStyle),
                                                                 ),

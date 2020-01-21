@@ -241,7 +241,7 @@ class KennelListItemState extends State<KennelsListItem> {
                             'returnValue': followTypeIgnore
                           },
                           <String, dynamic>{
-                            'title': 'Show when within 50km',
+                            'title': 'Show when nearby',
                             'icon': <Widget>[
                               const Icon(
                                 FontAwesome.star,
@@ -252,12 +252,12 @@ class KennelListItemState extends State<KennelsListItem> {
                           },
                           widget.kennelItem.extensions.isHomeKennel == 0
                               ? <String, dynamic>{
-                                  'title': 'Set as home kennel',
+                                  'title': 'Set home kennel',
                                   'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size: 23)],
                                   'returnValue': followTypeToggleHomeKennel
                                 }
                               : <String, dynamic>{
-                                  'title': 'Remove as home kennel',
+                                  'title': 'Clear home kennel',
                                   'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size: 23)],
                                   'returnValue': followTypeToggleHomeKennel
                                 },
