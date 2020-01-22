@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:harrier_central/widgets/fancy_divider.dart';
 
 import 'package:sqflite/sqflite.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
@@ -16,6 +19,8 @@ import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/countries_service.dart';
 import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/widgets/run_details.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -41,6 +46,9 @@ class RunAdminQueryExtensions {
   final String curCode;
   final num memberPrice;
   final num nonMemberPrice;
+  String paymentUrl;
+  num distToEvent;
+  int distancePreference;
 
   bool isLoading = false;
 
@@ -75,7 +83,6 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
         setState(() {
           final String resultStr = result ? 'successfully' : 'unsuccessfully';
           print('Event admin data synchronized $resultStr');
-          _isLoading = false;
         });
       });
     });
@@ -85,12 +92,13 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
 
   String userId = getStringPref(StringPrefsEnum.userId);
 
-  void refreshFromTables() {
-    DBProvider.db.database.then((Database db) {
-      try {
-        const String dollarSign = r'$^';
+  Future<void> refreshFromTables() async {
+    final Database db = await DBProvider.db.database;
 
-        final String sql = '''
+    try {
+      const String dollarSign = r'$^';
+
+      final String sql = '''
 
           SELECT e.*,
           k.*,
@@ -99,30 +107,57 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
           coalesce(k.digitsAfterDecimal,c.digitsAfterDecimal,2) as digAfterDec, 
           coalesce(k.currencySymbol,c.currencySymbol,"$dollarSign") as curSym,
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as memberPrice,
-          coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as nonMemberPrice
+          coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as nonMemberPrice,
+          CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,c.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference
           FROM ${NarrowEventsTableHelper.tableName} e
           INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
           LEFT OUTER JOIN ${CountriesTableHelper.tableName} c on c.countryId = k.countryId
-          LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId
+          LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId,
+          hashers h  
           WHERE e.eventId = "${widget.eventId}"
           AND hkm.userId = "$userId"
+          AND h.hasherId = "$userId"
           
           ''';
 
-        db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
-          setState(() {
-            if (results.isNotEmpty) {
-              final NarrowEventsModel eventItem = NarrowEventsTableHelper.fromMap(results[0]);
-              final RunAdminQueryExtensions extensions = RunAdminQueryExtensions.fromMap(results[0]);
-              final KennelsModel kennel = KennelsTableHelper.fromMap(results[0]);
-              eventAggregate = RunAdminAggregate(event: eventItem, extensions: extensions, kennel: kennel);
-            }
-          });
-        });
-      } catch (e) {
-        print(e);
-      }
-    });
+      final List<Map<String, dynamic>> results = await db.rawQuery(sql);
+
+      final Geolocator locator = Geolocator();
+      final LatLon ll = await Utilities.getLatLong();
+
+      num dist = await locator.distanceBetween(
+        Utilities.unInt(ll.latitude),
+        Utilities.unInt(ll.longitude),
+        Utilities.unInt(results[0]['narrowEventLatitude']),
+        Utilities.unInt(
+          results[0]['narrowEventLongitude'],
+        ),
+      );
+
+      setState(() {
+        if (results.isNotEmpty) {
+          final NarrowEventsModel eventItem = NarrowEventsTableHelper.fromMap(results[0]);
+          final RunAdminQueryExtensions extensions = RunAdminQueryExtensions.fromMap(results[0]);
+          final KennelsModel kennel = KennelsTableHelper.fromMap(results[0]);
+          String paymentLinkUrl = '';
+
+          if (((eventItem.eventPaymentUrl ?? '') != '') && (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
+            paymentLinkUrl = eventItem.eventPaymentUrl;
+          } else if (((kennel.kennelPaymentUrl ?? '') != '') && (kennel.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+            paymentLinkUrl = kennel.kennelPaymentUrl;
+          }
+
+          extensions.paymentUrl = paymentLinkUrl;
+          extensions.distToEvent = dist;
+          extensions.distancePreference = results[0]['distancePreference'];
+
+          eventAggregate = RunAdminAggregate(event: eventItem, extensions: extensions, kennel: kennel);
+        }
+        _isLoading = false;
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -142,11 +177,43 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
         ),
       ),
       body: Container(
-          decoration: Backgrounds.defaultHcBackground(),
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
-          padding: const EdgeInsets.only(left: 20, right: 20),
-          child: _isLoading ? const HcCircularProgressIndicator() : Column(mainAxisAlignment: MainAxisAlignment.start, mainAxisSize: MainAxisSize.max, children: <Widget>[]..addAll(kiddies()))),
+        decoration: Backgrounds.defaultHcBackground(),
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        padding: const EdgeInsets.only(left: 20, right: 20),
+        child: _isLoading
+            ? const HcCircularProgressIndicator()
+            : SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20, bottom: 20),
+                      child: AutoSizeText(eventAggregate.event.eventName, style: titleStyle, textAlign: TextAlign.center, maxLines: 2),
+                    ),
+                    const FancyDivider(
+                      innerColor: Colors.white,
+                      topMargin: 20.0,
+                      bottomMargin: 5.0,
+                    ),
+                    Column(mainAxisAlignment: MainAxisAlignment.start, mainAxisSize: MainAxisSize.max, children: <Widget>[]..addAll(kiddies())),
+                    const FancyDivider(
+                      innerColor: Colors.white,
+                      topMargin: 35.0,
+                      bottomMargin: 5.0,
+                    ),
+                    RunDetails(
+                      event: eventAggregate.event,
+                      kennel: eventAggregate.kennel,
+                      digitsAfterDecimal: eventAggregate.extensions.digAfterDec,
+                      currencySymbol: eventAggregate.extensions.curSym,
+                      distancePreference: eventAggregate.extensions.distancePreference,
+                      distToEvent: eventAggregate.extensions.distToEvent,
+                      paymentLinkUrl: eventAggregate.extensions.paymentUrl,
+                    ),
+                  ],
+                ),
+              ),
+      ),
     );
   }
 

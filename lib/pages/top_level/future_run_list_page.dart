@@ -53,15 +53,12 @@ class RunDetailsQueryExtensions {
 }
 
 class RunDetailsAggregate {
-  RunDetailsAggregate({
-    this.event,
-    this.kennel,
-    this.extensions,
-  });
+  RunDetailsAggregate({this.event, this.kennel, this.extensions, this.paymentUrl});
 
   final NarrowEventsModel event;
   final KennelsModel kennel;
   final RunDetailsQueryExtensions extensions;
+  final String paymentUrl;
 }
 
 class FutureRunListPageState extends State<FutureRunsListPage> {
@@ -166,8 +163,14 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   final KennelsModel kennelItem = KennelsTableHelper.fromMap(results[i]);
                   final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i]);
                   extensionsItem.distToEvent = dist;
-                  // extensionsItem.currencySymbol = '€^';
-                  // extensionsItem.digitsAfterDecimal = 2;
+
+                  String paymentLinkUrl = '';
+
+                  if (((eventItem.eventPaymentUrl ?? '') != '') && (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
+                    paymentLinkUrl = eventItem.eventPaymentUrl;
+                  } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+                    paymentLinkUrl = kennelItem.kennelPaymentUrl;
+                  }
 
                   final num julianNow = results[i]['nowJulian'];
                   final num eventJulian = results[i]['eventJulian'];
@@ -175,7 +178,12 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 
                   if ((extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < 50000))) {
-                    final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem);
+                    final RunDetailsAggregate item = RunDetailsAggregate(
+                      event: eventItem,
+                      kennel: kennelItem,
+                      extensions: extensionsItem,
+                      paymentUrl: paymentLinkUrl
+                    );
                     futureRunsList.add(item);
                   }
                   if (i == results.length - 1) {
