@@ -100,7 +100,9 @@ class FilterEventListItem extends StatelessWidget {
             ),
             Align(
               alignment: Alignment.centerRight,
-              child: IconButton(
+              child: 
+              
+              IconButton(
                 icon: const Icon(MaterialCommunityIcons.dots_vertical),
                 iconSize: Theme.of(context).iconTheme.size,
                 color: Colors.black54,
@@ -160,6 +162,8 @@ class FilterEventListItem extends StatelessWidget {
                       });
                 },
               ),
+          
+          
             ),
             // Container(
             //   //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),

@@ -23,7 +23,8 @@ enum StringPrefsEnum {
   adminKennelId,
   customEmailBody,
   iosDownloadLink,
-  androidDownloadLink
+  androidDownloadLink,
+  imageRootUrl
 }
 
 enum NumPrefsEnum { latitude, longitude }

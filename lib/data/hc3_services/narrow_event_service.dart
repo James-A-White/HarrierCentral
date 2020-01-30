@@ -58,7 +58,7 @@ class NarrowEventsModel {
   final String eventFacebookId;
   final num absoluteEventNumber;
   final num canEditRunAttendence;
-  final String eventImage;
+  String eventImage;
   final String eventDescription;
   final String locationOneLineDesc;
   final String locationPostCode;
@@ -112,6 +112,12 @@ class NarrowEventsModel {
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
 
+        // CUSTOMIZATION
+
+        if (!item.eventImage.startsWith('http')) {
+          item.eventImage = getStringPref(StringPrefsEnum.imageRootUrl) + item.eventImage;
+        }
+
         items.add(item);
       },
     );
@@ -162,9 +168,9 @@ class NarrowEventsTableHelper {
   static const String colEventPaymentUrl = 'eventPaymentUrl';
   static const String colEventPaymentUrlExpires = 'eventPaymentUrlExpires';
   static const String colUnconfirmedBankXferCount = 'unconfirmedBankXferCount';
-  static const String colEventPriceForExtras= 'eventPriceForExtras';
-  static const String colExtrasDescription= 'extrasDescription';
-  static const String colDoTrackHashCash= 'doTrackHashCash';
+  static const String colEventPriceForExtras = 'eventPriceForExtras';
+  static const String colExtrasDescription = 'extrasDescription';
+  static const String colDoTrackHashCash = 'doTrackHashCash';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -284,11 +290,14 @@ class NarrowEventsTableHelper {
       NarrowEventsTableHelper.colEventPriceForExtras: inputMap[NarrowEventsTableHelper.colEventPriceForExtras],
       NarrowEventsTableHelper.colExtrasDescription: inputMap[NarrowEventsTableHelper.colExtrasDescription],
       NarrowEventsTableHelper.colDoTrackHashCash: inputMap[NarrowEventsTableHelper.colDoTrackHashCash],
-      
       NarrowEventsTableHelper.colUpdatedAt: inputMap[NarrowEventsTableHelper.colUpdatedAt],
       NarrowEventsTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[NarrowEventsTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       NarrowEventsTableHelper.colRemoved: inputMap[NarrowEventsTableHelper.colRemoved],
     };
+
+    if (!outputMap['eventImage'].startsWith('http')) {
+      outputMap['eventImage'] = getStringPref(StringPrefsEnum.imageRootUrl) + outputMap['eventImage'];
+    }
 
     return outputMap;
   }
@@ -325,6 +334,10 @@ class NarrowEventsTableHelper {
       updatedAt: DateTime.parse(map[NarrowEventsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[NarrowEventsTableHelper.colRemoved],
     );
+
+    if (!item.eventImage.startsWith('http')) {
+      item.eventImage = getStringPref(StringPrefsEnum.imageRootUrl) + item.eventImage;
+    }
 
     return item;
   }
@@ -391,10 +404,9 @@ class NarrowEventsService {
 
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = NarrowEventsTableHelper.normalizeMap(jsonItem);
-                    doNormalizeMap = (testMap.length - 1) != jsonItem.length;
-          if (doNormalizeMap)
-          {
-            print('Normalize map called for ${NarrowEventsTableHelper.tableName}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}' );
+          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
+          if (doNormalizeMap) {
+            print('Normalize map called for ${NarrowEventsTableHelper.tableName}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}');
           }
         }
 

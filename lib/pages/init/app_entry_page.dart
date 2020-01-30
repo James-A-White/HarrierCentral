@@ -47,6 +47,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     if (loginResult != null) {
       setStringPref(StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);
       setStringPref(StringPrefsEnum.androidDownloadLink, loginResult.androidDownloadLink);
+      setStringPref(StringPrefsEnum.imageRootUrl, loginResult.imageRootUrl);
     }
 
     if ((loginResult == null) && ((userId == null) || (userId.isEmpty))) {

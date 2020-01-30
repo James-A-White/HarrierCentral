@@ -14,7 +14,8 @@ class ApproveLoginModel {
       this.messageEndDate,
       this.messageDisplayType,
       this.iosDownloadLink,
-      this.androidDownloadLink
+      this.androidDownloadLink,
+      this.imageRootUrl
     });
 
     String apiVersion;
@@ -26,6 +27,7 @@ class ApproveLoginModel {
     int messageDisplayType;
     String iosDownloadLink;
     String androidDownloadLink;
+    String imageRootUrl;
 
   static ApproveLoginModel itemFromJson(String jsonResult)
   {
@@ -45,7 +47,8 @@ class ApproveLoginModel {
           messageEndDate:DateTime.parse(jsonItem['serverStatusEndDate'] ?? '2000-01-01 19:00:00'),
           messageDisplayType: jsonItem['messageDisplayType'],
           iosDownloadLink: jsonItem['iosDownloadLink'],
-          androidDownloadLink: jsonItem['androidDownloadLink']
+          androidDownloadLink: jsonItem['androidDownloadLink'],
+          imageRootUrl: jsonItem['imageRootUrl']
         );
 
         items.add(item);
