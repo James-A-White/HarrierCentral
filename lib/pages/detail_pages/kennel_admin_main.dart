@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
@@ -41,6 +42,12 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
 
   @override
   void initState() {
+    if ((widget.kennelAggregateItem.kennel.kennelMismanagementTeam == null) || (widget.kennelAggregateItem.kennel.kennelMismanagementTeam.trim().isEmpty)) {
+      mismanagement = null;
+    } else {
+      mismanagement = widget.kennelAggregateItem.kennel.kennelMismanagementTeam.split('\r');
+    }
+
     DBProvider.db.database.then((Database db) async {
       final SyncKennelAdminService cSrv = SyncKennelAdminService();
       cSrv.updateFromBackend(db, SyncKennelAdminService.flagsAllData, false, widget.kennelAggregateItem.kennel.kennelId).then((bool result) {
@@ -68,6 +75,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   KennelMembersList kennelMembersList;
+
+  List<String> mismanagement;
 
   @override
   Widget build(BuildContext context) {
@@ -231,7 +240,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                     Navigator.push<dynamic>(
                                                       context,
                                                       MaterialPageRoute<dynamic>(
-                                                        builder: (BuildContext context) => FilterEventsPage(kennel: widget.kennelAggregateItem, pageType: FilterEventsPageType.past,),
+                                                        builder: (BuildContext context) => FilterEventsPage(
+                                                          kennel: widget.kennelAggregateItem,
+                                                          pageType: FilterEventsPageType.past,
+                                                        ),
                                                       ),
                                                     );
                                                   }
@@ -269,7 +281,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                     Navigator.push<dynamic>(
                                                       context,
                                                       MaterialPageRoute<dynamic>(
-                                                        builder: (BuildContext context) => FilterEventsPage(kennel: widget.kennelAggregateItem, pageType: FilterEventsPageType.future,),
+                                                        builder: (BuildContext context) => FilterEventsPage(
+                                                          kennel: widget.kennelAggregateItem,
+                                                          pageType: FilterEventsPageType.future,
+                                                        ),
                                                       ),
                                                     );
                                                   }
@@ -416,9 +431,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     mapController: mapController,
                                     options: MapOptions(
                                       interactive: false,
-                                      center: LatLng(
-                                        Utilities.unInt(widget.kennelAggregateItem.extensions.cityLat), 
-                                        Utilities.unInt(widget.kennelAggregateItem.extensions.cityLon)),
+                                      center: LatLng(Utilities.unInt(widget.kennelAggregateItem.extensions.cityLat), Utilities.unInt(widget.kennelAggregateItem.extensions.cityLon)),
                                       zoom: sliderValue,
                                     ),
                                     layers: <LayerOptions>[
@@ -433,10 +446,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           Marker(
                                             width: 240.0,
                                             height: 240.0,
-                                            point: LatLng(
-                                              Utilities.unInt(widget.kennelAggregateItem.extensions.cityLat), 
-                                              Utilities.unInt(widget.kennelAggregateItem.extensions.cityLon)
-                                            ),
+                                            point: LatLng(Utilities.unInt(widget.kennelAggregateItem.extensions.cityLat), Utilities.unInt(widget.kennelAggregateItem.extensions.cityLon)),
                                             builder: (BuildContext ctx) => GestureDetector(
                                               onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat, widget.kennelAggregateItem.extensions.cityLat),
                                               child: Container(
@@ -475,10 +485,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     onChanged: (num val) {
                                       // setState(() {
                                       if (mapController != null) {
-                                        mapController.move(LatLng(
-                                          Utilities.unInt(widget.kennelAggregateItem.extensions.cityLat), 
-                                          Utilities.unInt(widget.kennelAggregateItem.extensions.cityLon)), 
-                                        val);
+                                        mapController.move(LatLng(Utilities.unInt(widget.kennelAggregateItem.extensions.cityLat), Utilities.unInt(widget.kennelAggregateItem.extensions.cityLon)), val);
                                       }
                                       setState(() {
                                         sliderValue = val;
@@ -489,6 +496,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               ),
                               Row(
                                 children: <Widget>[
+                                  SizedBox(height: 25.0),
                                   Expanded(
                                     child: Text(
                                       'Location:',
@@ -512,6 +520,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               ),
                               Row(
                                 children: <Widget>[
+                                  SizedBox(height: 25.0),
                                   Expanded(
                                     child: Text(
                                       'Last run:',
@@ -535,6 +544,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               ),
                               Row(
                                 children: <Widget>[
+                                  SizedBox(height: 25.0),
                                   Expanded(
                                     child: Text(
                                       'Next run:',
@@ -558,6 +568,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               ),
                               Row(
                                 children: <Widget>[
+                                  SizedBox(height: 25.0),
                                   Expanded(
                                     child: Text(
                                       'Hash cash:',
@@ -583,6 +594,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               ),
                               Row(
                                 children: <Widget>[
+                                  SizedBox(height: 25.0),
                                   Expanded(
                                     child: Text(
                                       '',
@@ -606,35 +618,50 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       flex: flexRight),
                                 ],
                               ),
+                              ((widget.kennelAggregateItem.kennel.kennelMismanagementTeam == null) || (widget.kennelAggregateItem.kennel.kennelMismanagementTeam.trim().isEmpty))
+                                  ? Container()
+                                  : Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: <Widget>[FancyDivider(innerColor: Colors.white, topMargin: 30.0, bottomMargin: 10.0), for (var item in mismanagement) mmRow(item)],
+                                    ),
                               ((widget.kennelAggregateItem.kennel.kennelWebsiteUrl == null) || (widget.kennelAggregateItem.kennel.kennelWebsiteUrl.trim().isEmpty))
                                   ? Container()
-                                  : Container(
-                                      padding: const EdgeInsets.only(top: 30),
-                                      margin: const EdgeInsets.only(bottom: 20),
-                                      width: 180,
-                                      child: Utilities.styleForConnected(
-                                        RaisedButton(
-                                          padding: const EdgeInsets.only(top: 8.0, left: 8.0, bottom: 8.0),
-                                          child: Row(children: <Widget>[
-                                            Stack(
-                                                alignment: AlignmentDirectional.center,
-                                                children: <Widget>[Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.blue[800], shape: BoxShape.circle)), const Positioned(bottom: 1.4, child: Icon(SimpleLineIcons.globe, color: Colors.white))]),
-                                            const Padding(
-                                              padding: EdgeInsets.only(left: 20, right: 0),
-                                              child: Text('Open website'),
-                                            ),
-                                          ]),
-                                          textColor: Colors.white,
-                                          onPressed: () {
-                                            if (Utilities.checkForConnection(context)) {
-                                              launch(widget.kennelAggregateItem.kennel.kennelWebsiteUrl);
-                                            }
-                                          },
+                                  : Column(
+                                      children: <Widget>[
+                                                                                FancyDivider(
+                                          innerColor: Colors.white,
+                                          topMargin: 30.0,
+                                          bottomMargin: 15.0,
                                         ),
-                                      ),
+                                        Container(
+                                          margin: const EdgeInsets.only(bottom: 20),
+                                          width: 180,
+                                          child: Utilities.styleForConnected(
+                                            RaisedButton(
+                                              padding: const EdgeInsets.only(top: 8.0, left: 8.0, bottom: 8.0),
+                                              child: Row(children: <Widget>[
+                                                Stack(
+                                                    alignment: AlignmentDirectional.center,
+                                                    children: <Widget>[Container(height: 30, width: 30, decoration: BoxDecoration(color: Colors.blue[800], shape: BoxShape.circle)), const Positioned(bottom: 1.4, child: Icon(SimpleLineIcons.globe, color: Colors.white))]),
+                                                const Padding(
+                                                  padding: EdgeInsets.only(left: 20, right: 0),
+                                                  child: Text('Open website'),
+                                                ),
+                                              ]),
+                                              textColor: Colors.white,
+                                              onPressed: () {
+                                                if (Utilities.checkForConnection(context)) {
+                                                  launch(widget.kennelAggregateItem.kennel.kennelWebsiteUrl);
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                             ],
                           ),
+                          SizedBox(height: 25.0),
                         ],
                       ),
                     ),
@@ -644,6 +671,34 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
       ),
       const OfflineModeRibbon(),
     ]);
+  }
+
+  Row mmRow(String s) {
+    List<String> items = s.split('\t');
+    return Row(
+      children: <Widget>[
+        SizedBox(height: 25.0),
+        Expanded(
+          child: Text(
+            items[0] + ':',
+            style: listLabelStyle,
+            textAlign: TextAlign.right,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          flex: 4,
+        ),
+        Expanded(
+            child: Text(
+              ' ' + items[1],
+              style: listValueStyle,
+              textAlign: TextAlign.left,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            flex: 6),
+      ],
+    );
   }
 
   Future<void> _launchMaps(num lat, num lon) async {
