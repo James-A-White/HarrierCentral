@@ -30,7 +30,7 @@ class KennelMemberListItem extends StatelessWidget {
         Navigator.of(context)
             .push<HashersModel>(
           MaterialPageRoute<HashersModel>(
-            maintainState: false,
+            //maintainState: false,
             builder: (BuildContext context) => HasherProfilePage(
               dataContext: EnumDataContext.kennel,
               pageType: EnumMyProfilePageType.anyHasherProfile,
@@ -98,7 +98,7 @@ class KennelMemberListItem extends StatelessWidget {
                             child: Text(
                               '${kennelMember.dispName}',
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontFamily: kennelMember.isMember == 1 ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensed', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
+                              style: TextStyle(fontFamily: (kennelMember?.membershipExpirationDate ?? DateTime.parse('19900101')).isAfter(DateTime.now())  ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensed', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
                               textAlign: TextAlign.left,
                             ),
                           ),

@@ -1,6 +1,8 @@
 import 'dart:core';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:harrier_central/data/services/get_reset_code_service.dart';
@@ -9,6 +11,7 @@ import 'package:harrier_central/data/services/authorize_device_service.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/database/database.dart';
 
 
 class GetResetCodePopup extends StatefulWidget {
@@ -117,12 +120,13 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
                 color: Colors.blue,
                 child: const Text('Reset device'),
                 textColor: Colors.white,
-                onPressed: () {
+                onPressed: () async {
                   if (getResetCodeTextController.text.toUpperCase() ==
                       QR_PREFIX_USER_RESET_CODE+ 'CLEAR') {
 
                     clearAllPrefs();
-
+                    await DBProvider.db.deleteDb();
+                    
                     Utilities.showAlert(
                               context,
                               'App Cleared Successful',

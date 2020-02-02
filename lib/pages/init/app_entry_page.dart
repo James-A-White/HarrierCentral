@@ -45,9 +45,9 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     final ApproveLoginModel loginResult = await svc.approveLogin(context);
 
     if (loginResult != null) {
-      setStringPref(StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);
-      setStringPref(StringPrefsEnum.androidDownloadLink, loginResult.androidDownloadLink);
-      setStringPref(StringPrefsEnum.imageRootUrl, loginResult.imageRootUrl);
+      await setStringPref(StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);
+      await setStringPref(StringPrefsEnum.androidDownloadLink, loginResult.androidDownloadLink);
+      await setStringPref(StringPrefsEnum.imageRootUrl, loginResult.imageRootUrl);
     }
 
     if ((loginResult == null) && ((userId == null) || (userId.isEmpty))) {

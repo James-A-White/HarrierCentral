@@ -50,7 +50,8 @@ class AuthorizeDeviceService {
         if ((result == null) || (result.isEmpty) || (result[0].isEmpty)) {
           resultMap = <String, String>{'result': 'failed', 'message': 'Could not download profile. Check your QR code'};
         } else {
-          await clearAllPrefs();
+          // Do not clear prefs, because then we clear the prefs that were set by authorize login upon app launch
+          //await clearAllPrefs(); 
           setStringPref(StringPrefsEnum.profilePhotoUrl, result[0]['photo']);
           setStringPref(StringPrefsEnum.displayName, result[0]['displayName']);
           setStringPref(StringPrefsEnum.email, result[0]['email']);

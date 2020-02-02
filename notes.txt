@@ -2,7 +2,6 @@
 Event > EventPriceForExtras
 Event > ExtrasDescription
 Event > DoTrackHashCash
-Kennel > kennelMismanagementTeam
 Kennel > distancePreference
 HasherKennelMap > isKennelFollowing
 HasherKennelMap > mismanagementRoles

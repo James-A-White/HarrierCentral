@@ -157,7 +157,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         lastNameController.text = hasher.lastName;
         emailController.text = hasher.email;
         hashNameController.text = hasher.hashName;
-        newPhoto = hasher.photo;
+        newPhoto = hasher.photo; // if we have returned from the photo chooser, don't overwrite
         previousRunCountController.text = (hkmData?.historicalPackRunCount ?? 0).toString();
         previousHaringCountController.text = (hkmData?.historicalHaringCount ?? 0).toString();
         historicalCountIsEstimate = (hkmData?.historicalCountIsEstimate ?? 0) == 1;
@@ -609,11 +609,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           ),
                                                         ),
                                                       ).then((String result) {
-                                                        if ((result != null) && (result.toString().isNotEmpty)) {
-                                                          setState(() {
-                                                            newPhoto = result;
-                                                            checkDirty();
-                                                          });
+                                                        if ((result != null) && (result.isNotEmpty)) {
+                                                          newPhoto = result;
+                                                          checkDirty();
+                                                          //setState(() {});
                                                         }
                                                       });
                                                     }

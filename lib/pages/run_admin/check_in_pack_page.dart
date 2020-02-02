@@ -31,6 +31,7 @@ import 'package:harrier_central/util/bank_transfer_qr.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
+import 'package:harrier_central/widgets/filter_cell.dart';
 
 class CheckInPackModel {
   CheckInPackModel(
@@ -118,7 +119,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   //final PackScopedModel _packScopedModel = PackScopedModel();
   //final PayScopedModel _payScopedModel = PayScopedModel();
 
-  GlobalKey packListBox = GlobalKey();
+  GlobalKey packListBoxKey = GlobalKey();
 
   bool _isLoading = true;
 
@@ -152,6 +153,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   FocusNode searchFocusNode;
   TextEditingController searchController;
   String searchTypeText;
+  bool showFilter = false;
 
   static const String searchKennel = 'Searching Kennel members and RSVPs';
   static const String searchAllHashers = 'Searching all Hashers';
@@ -159,6 +161,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
   TextStyle localFootnoteSmallRed = footnoteSmallRed.copyWith(fontSize: 12 * deviceWidthScaleFactor);
   TextStyle localFootnoteSmall = footnoteSmall.copyWith(fontSize: 12 * deviceWidthScaleFactor);
+
+  List<int> filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
   
   @override
   void initState() {
@@ -657,8 +661,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     );
   }
 
-  bool showFilter = false;
-
   Container searchBar() {
     return Container(
       decoration: const BoxDecoration(
@@ -785,6 +787,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             onTap: () {
               _refreshPackListFromTables(true);
             },
+            filterValues: filterValues,
           ),
           CheckinFiltersCell(
             counter: countRsvps,
@@ -802,6 +805,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             onTap: () {
               _refreshPackListFromTables(true);
             },
+            filterValues: filterValues,
           ),
           CheckinFiltersCell(
             counter: countAtHash,
@@ -810,6 +814,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             onTap: () {
               _refreshPackListFromTables(true);
             },
+            filterValues: filterValues,
           ),
           CheckinFiltersCell(
             counter: countPaid,
@@ -818,6 +823,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             onTap: () {
               _refreshPackListFromTables(true);
             },
+            filterValues: filterValues,
           ),
           CheckinFiltersCell(
             counter: countOnIn,
@@ -826,6 +832,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             onTap: () {
               _refreshPackListFromTables(true);
             },
+            filterValues: filterValues,
           ),
         ],
       ),
@@ -1056,7 +1063,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                   ? Positioned(top: (filterPanelAnimation.value.dy * 120) + 125, left: 0, right: 0, child: getAddHasherBlock())
                   : PositionedTransition(
                       rect: hasherListAnimation,
-                      child: Container(key: packListBox, height: 300, child: buildPackListView()),
+                      child: Container(key: packListBoxKey, height: 300, child: buildPackListView()),
                     ),
               SlideTransition(position: filterPanelAnimation, child: filterBar()),
               Positioned(top: 0, child: searchBar()),
@@ -1722,61 +1729,3 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
   }
 }
 
-
-
-
-
-List<int> filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
-
-class CheckinFiltersCell extends StatelessWidget {
-  const CheckinFiltersCell({@required this.counter, @required this.index, @required this.label, @required this.onTap, this.color, this.icon, this.useTriState = true});
-
-  final IconData icon;
-  final Color color;
-  final Function onTap;
-  final num counter;
-  final String label;
-  final int index;
-  final bool useTriState;
-
-  @override
-  Widget build(BuildContext context) {
-    //final String total = (creditAmount ?? 0) <= 0 ? '' : Utilities.getFormattedMoney(creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
-
-    const TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 24.0, fontFamily: 'AvenirNextCondensedDemiBold');
-    return Container(
-      width: 50,
-      child: Column(
-        children: <Widget>[
-          Text(
-            counter < 0 ? '' : (counter ?? 0).toString(),
-            style: textStyle,
-          ),
-          IconButton(
-            padding: const EdgeInsets.all(0),
-            onPressed: () {
-              if (index >= 0) {
-                filterValues[index]++;
-                if (filterValues[index] > 1) {
-                  filterValues[index] = useTriState ? -1 : 0;
-                }
-              }
-              onTap();
-            },
-            icon: Icon(icon != null ? icon : filterValues[index] == -1 ? FontAwesome.times_circle : filterValues[index] == 0 ? FontAwesome.circle_thin : FontAwesome.check_circle,
-                size: 35, color: color != null ? color : filterValues[index] == -1 ? Colors.red : filterValues[index] == 0 ? Colors.grey[350] : Colors.green),
-          ),
-          Container(
-            child: AutoSizeText(
-              label,
-              style: textStyle,
-              maxLines: 1,
-              minFontSize: 2.0,
-            ),
-            height: 20,
-          ),
-        ],
-      ),
-    );
-  }
-}

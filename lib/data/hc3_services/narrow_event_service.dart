@@ -114,8 +114,16 @@ class NarrowEventsModel {
 
         // CUSTOMIZATION
 
-        if (!item.eventImage.startsWith('http')) {
-          item.eventImage = getStringPref(StringPrefsEnum.imageRootUrl) + item.eventImage;
+        // NOTE: Event images can either be full URLs or they can be partial URLs in the case
+        // when events have been uploaded directly to the DB using the HcWeb application.
+        // For partial URLs we need to append the root URL. The Root URL is stored in the
+        // Server settings table and copied into the string prefs on app startup.
+        if ((item.eventImage != null) && (item.eventImage.isNotEmpty) && (!item.eventImage.startsWith('http'))) {
+          String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+          if ((s != null) && (s.isNotEmpty))
+          {
+          item.eventImage = s + item.eventImage;
+          }
         }
 
         items.add(item);
@@ -295,8 +303,15 @@ class NarrowEventsTableHelper {
       NarrowEventsTableHelper.colRemoved: inputMap[NarrowEventsTableHelper.colRemoved],
     };
 
-    if (!outputMap['eventImage'].startsWith('http')) {
-      outputMap['eventImage'] = getStringPref(StringPrefsEnum.imageRootUrl) + outputMap['eventImage'];
+    // NOTE: Event images can either be full URLs or they can be partial URLs in the case
+    // when events have been uploaded directly to the DB using the HcWeb application.
+    // For partial URLs we need to append the root URL. The Root URL is stored in the
+    // Server settings table and copied into the string prefs on app startup.
+    if ((outputMap['eventImage'] != null) && (outputMap['eventImage'].isNotEmpty) && (!outputMap['eventImage'].startsWith('http'))) {
+      String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+      if ((s != null) && (s.isNotEmpty)) {
+        outputMap['eventImage'] = s + outputMap['eventImage'];
+      }
     }
 
     return outputMap;
@@ -335,8 +350,15 @@ class NarrowEventsTableHelper {
       removed: map[NarrowEventsTableHelper.colRemoved],
     );
 
-    if (!item.eventImage.startsWith('http')) {
-      item.eventImage = getStringPref(StringPrefsEnum.imageRootUrl) + item.eventImage;
+    // NOTE: Event images can either be full URLs or they can be partial URLs in the case
+    // when events have been uploaded directly to the DB using the HcWeb application.
+    // For partial URLs we need to append the root URL. The Root URL is stored in the
+    // Server settings table and copied into the string prefs on app startup.
+    if ((item.eventImage != null) && (item.eventImage.isNotEmpty) && (!item.eventImage.startsWith('http'))) {
+      String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+      if ((s != null) && (s.isNotEmpty)) {
+        item.eventImage = s + item.eventImage;
+      }
     }
 
     return item;

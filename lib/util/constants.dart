@@ -22,6 +22,8 @@ const num METERS_TO_MILES = 0.000621371;
 
 const int SPLASH_SCREEN_DISPLAY_TIME = 1;
 
+const String BASE_HCWEB_UPLOAD_URL = 'https://hcweb.azurewebsites.net/upload/';
+
 const String BASE_API_URL = 'https://harrier.azurewebsites.net/api/';
 
 const String BASE_PROFILE_PHOTOS_URL = 'https://harriercentral.blob.core.windows.net/profile-photos/';
