@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
@@ -496,7 +495,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               ),
                               Row(
                                 children: <Widget>[
-                                  SizedBox(height: 25.0),
+                                  const SizedBox(height: 25.0),
                                   Expanded(
                                     child: Text(
                                       'Location:',
@@ -520,7 +519,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               ),
                               Row(
                                 children: <Widget>[
-                                  SizedBox(height: 25.0),
+                                  const SizedBox(height: 25.0),
                                   Expanded(
                                     child: Text(
                                       'Last run:',
@@ -544,7 +543,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               ),
                               Row(
                                 children: <Widget>[
-                                  SizedBox(height: 25.0),
+                                  const SizedBox(height: 25.0),
                                   Expanded(
                                     child: Text(
                                       'Next run:',
@@ -568,7 +567,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               ),
                               Row(
                                 children: <Widget>[
-                                  SizedBox(height: 25.0),
+                                  const SizedBox(height: 25.0),
                                   Expanded(
                                     child: Text(
                                       'Hash cash:',
@@ -594,7 +593,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               ),
                               Row(
                                 children: <Widget>[
-                                  SizedBox(height: 25.0),
+                                  const SizedBox(height: 25.0),
                                   Expanded(
                                     child: Text(
                                       '',
@@ -622,13 +621,13 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                   ? Container()
                                   : Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
-                                      children: <Widget>[FancyDivider(innerColor: Colors.white, topMargin: 30.0, bottomMargin: 10.0), for (var item in mismanagement) mmRow(item)],
+                                      children: <Widget>[const FancyDivider(innerColor: Colors.white, topMargin: 30.0, bottomMargin: 10.0), for (String item in mismanagement) mmRow(item)],
                                     ),
                               ((widget.kennelAggregateItem.kennel.kennelWebsiteUrl == null) || (widget.kennelAggregateItem.kennel.kennelWebsiteUrl.trim().isEmpty))
                                   ? Container()
                                   : Column(
                                       children: <Widget>[
-                                                                                FancyDivider(
+                                                                                const FancyDivider(
                                           innerColor: Colors.white,
                                           topMargin: 30.0,
                                           bottomMargin: 15.0,
@@ -661,7 +660,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     ),
                             ],
                           ),
-                          SizedBox(height: 25.0),
+                          const SizedBox(height: 25.0),
                         ],
                       ),
                     ),
@@ -674,10 +673,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   }
 
   Row mmRow(String s) {
-    List<String> items = s.split('\t');
+    final List<String> items = s.split('\t');
     return Row(
       children: <Widget>[
-        SizedBox(height: 25.0),
+        const SizedBox(height: 25.0),
         Expanded(
           child: Text(
             items[0] + ':',

@@ -83,8 +83,8 @@ class FilterEventsPageState extends State<FilterEventsPage> {
             evt.eventStartDatetime,
             hkm.mismanagementRoleFlags,
             evt.canEditRunAttendence,
-            (SELECT COUNT(*) FROM ${NarrowEventsTableHelper.tableName} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount
-          FROM ${NarrowEventsTableHelper.tableName} evt
+            (SELECT COUNT(*) FROM ${EventTableHelper.tableName} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount
+          FROM ${EventTableHelper.tableName} evt
           INNER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on hkm.kennelId = "${widget.kennel.kennel.kennelId}" and hkm.userId = "$userId"
           WHERE evt.kennelId = "${widget.kennel.kennel.kennelId}"
           AND date(evt.eventStartDatetime,"$dateOffset") $dateComparer date("now")
@@ -453,14 +453,14 @@ class FilterEventsPageState extends State<FilterEventsPage> {
     DBProvider.db.database.then((Database db) async {
       await db.transaction<dynamic>((Transaction txn) async {
         final int guidFlag = isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
-        final String sql = 'UPDATE ${NarrowEventsTableHelper.tableName} SET canEditRunAttendence = "$guidFlag" where eventId = "${event['eventId']}"';
+        final String sql = 'UPDATE ${EventTableHelper.tableName} SET canEditRunAttendence = "$guidFlag" where eventId = "${event['eventId']}"';
         final int result = await txn.rawUpdate(sql);
         print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
         _refreshEventFromTables(true);
       });
     });
 
-    final NarrowEventsService nSvc = NarrowEventsService();
+    final EventService nSvc = EventService();
     nSvc.updateEventDetails(event['eventId'], isVisible: isVisible, isCountedRun: isCountedRun, absoluteEventNumber: asboluteEventNumber).then((void dummy) {
       _refreshEventFromTables(true).then((void dummy) {
         setState(() {});

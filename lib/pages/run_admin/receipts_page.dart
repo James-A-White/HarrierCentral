@@ -18,7 +18,7 @@ import 'package:harrier_central/data/hc3_services/receipts_service.dart';
 class ReceiptsList extends StatefulWidget {
   const ReceiptsList({Key key, @required this.eventAggregate}) : super(key: key);
 
-  final RunAdminAggregate eventAggregate;
+  final RunDetailAggregate eventAggregate;
 
   @override
   ReceiptsListState createState() => ReceiptsListState();
@@ -205,7 +205,16 @@ class ReceiptsListState extends State<ReceiptsList> {
                       itemCount: receiptsList.length,
                       itemBuilder: (BuildContext context, int index) {
                         final Map<String, dynamic> receipt = receiptsList[index];
-                        return Dismissible(
+                        return 
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        Dismissible(
                           key: Key(receipt['receiptId']),
                           confirmDismiss: (DismissDirection direction) {
                             if (direction == DismissDirection.endToStart) {

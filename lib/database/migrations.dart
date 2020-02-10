@@ -8,6 +8,7 @@ import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/countries_service.dart';
 //import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
+import 'package:harrier_central/data/hc3_services/payments_service.dart';
 //import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
@@ -132,7 +133,7 @@ class MigrationsTableHelper {
   ///
   ///
 
-  static int dbVersion = 226;
+  static int dbVersion = 228;
 
   static List<MigrationsModel> migrationList = <MigrationsModel>[
 
@@ -157,9 +158,9 @@ class MigrationsTableHelper {
 
     // MIGRATION 224
     MigrationsModel(migrationNumber: 224, migrationText: '''
-            ALTER TABLE ${NarrowEventsTableHelper.tableName} ADD COLUMN ${NarrowEventsTableHelper.colEventPriceForExtras} NUM;
-            ALTER TABLE ${NarrowEventsTableHelper.tableName} ADD COLUMN ${NarrowEventsTableHelper.colExtrasDescription} TEXT;
-            ALTER TABLE ${NarrowEventsTableHelper.tableName} ADD COLUMN ${NarrowEventsTableHelper.colDoTrackHashCash} INT;
+            ALTER TABLE ${EventTableHelper.tableName} ADD COLUMN ${EventTableHelper.colEventPriceForExtras} NUM;
+            ALTER TABLE ${EventTableHelper.tableName} ADD COLUMN ${EventTableHelper.colExtrasDescription} TEXT;
+            ALTER TABLE ${EventTableHelper.tableName} ADD COLUMN ${EventTableHelper.colDoTrackHashCash} INT;
             ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colKennelMismanagementTeam} TEXT;
             ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colDistancePreference} INT;
             ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colIsKennelFollowing} INT;
@@ -172,7 +173,7 @@ class MigrationsTableHelper {
 
   // MIGRATION 225
     MigrationsModel(migrationNumber: 225, migrationText: '''
-        ALTER TABLE ${HashersTableHelper.tableName} ADD COLUMN ${HashersTableHelper.colPreferences} INT;
+            ALTER TABLE ${HashersTableHelper.tableName} ADD COLUMN ${HashersTableHelper.colPreferences} INT;
          '''),
 
              // MIGRATION 226
@@ -181,9 +182,18 @@ class MigrationsTableHelper {
             ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colMismanagementRoles} INT;
          '''),
 
-         
 
+             // MIGRATION 227
+    MigrationsModel(migrationNumber: 227, migrationText: '''
+            ALTER TABLE ${PaymentsTableHelper.tableName} ADD COLUMN ${PaymentsTableHelper.colDoPayForExtras} INT;
+         '''),
 
+                      // MIGRATION 228
+    MigrationsModel(migrationNumber: 228, migrationText: '''
+            ALTER TABLE ${EventTableHelper.tableName} ADD COLUMN ${EventTableHelper.colTags1} INT;
+            ALTER TABLE ${EventTableHelper.tableName} ADD COLUMN ${EventTableHelper.colTags2} INT;
+            ALTER TABLE ${EventTableHelper.tableName} ADD COLUMN ${EventTableHelper.colTags3} INT;
+         '''),
 
   ];
 }

@@ -33,6 +33,7 @@ class PaymentsModel {
     this.confirmedBy,
     this.paymentReference,
     this.notes,
+    this.doPayForExtras,
     this.removed,
     this.updatedAt,
   });
@@ -54,6 +55,7 @@ class PaymentsModel {
   final String confirmedBy;
   final String paymentReference;
   final String notes;
+  final int doPayForExtras;
   final int removed;
   final DateTime updatedAt;
 
@@ -82,6 +84,7 @@ class PaymentsModel {
             confirmedBy: jsonItem['confirmedBy'],
             paymentReference: jsonItem['paymentReference'],
             notes: jsonItem['notes'],
+            doPayForExtras: jsonItem['doPayForExtras'],
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
 
@@ -128,6 +131,7 @@ class PaymentsTableHelper {
   static const String colConfirmedBy = 'confirmedBy';
   static const String colPaymentReference = 'paymentReference';
   static const String colNotes = 'notes';
+  static const String colDoPayForExtras= 'doPayForExtras';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -160,6 +164,7 @@ class PaymentsTableHelper {
             $colConfirmedBy TEXT,
             $colPaymentReference TEXT,
             $colNotes TEXT,
+            $colDoPayForExtras INT,
 
             $colRemoved INT,
             $colUpdatedAt TEXT,
@@ -190,6 +195,7 @@ class PaymentsTableHelper {
       PaymentsTableHelper.colConfirmedBy: item.confirmedBy,
       PaymentsTableHelper.colPaymentReference: item.paymentReference,
       PaymentsTableHelper.colNotes: item.notes,
+      PaymentsTableHelper.colDoPayForExtras: item.doPayForExtras,
       PaymentsTableHelper.colUpdatedAt: item.updatedAt.toString(),
       PaymentsTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       PaymentsTableHelper.colRemoved: item.removed
@@ -217,6 +223,7 @@ class PaymentsTableHelper {
       PaymentsTableHelper.colConfirmedBy: inputMap[PaymentsTableHelper.colConfirmedBy],
       PaymentsTableHelper.colPaymentReference: inputMap[PaymentsTableHelper.colPaymentReference],
       PaymentsTableHelper.colNotes: inputMap[PaymentsTableHelper.colNotes],
+      PaymentsTableHelper.colDoPayForExtras: inputMap[PaymentsTableHelper.colDoPayForExtras],
       PaymentsTableHelper.colUpdatedAt: inputMap[PaymentsTableHelper.colUpdatedAt],
       PaymentsTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[PaymentsTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       PaymentsTableHelper.colRemoved: inputMap[PaymentsTableHelper.colRemoved],
@@ -252,6 +259,7 @@ class PaymentsTableHelper {
       confirmedBy: map[PaymentsTableHelper.colConfirmedBy],
       paymentReference: map[PaymentsTableHelper.colPaymentReference],
       notes: map[PaymentsTableHelper.colNotes],
+      doPayForExtras: map[PaymentsTableHelper.colDoPayForExtras],
 
       updatedAt: (map[PaymentsTableHelper.colUpdatedAt] == null) ? null : DateTime.parse(map[PaymentsTableHelper.colUpdatedAt].toString().substring(0, 19)),
       removed: map[PaymentsTableHelper.colRemoved],
@@ -387,6 +395,7 @@ class PaymentsService {
     int paymentType,
     num paymentAmount,
     int minimumAttendenceValue,
+    EnumPayForExtras<int> doPayForExtras
   ) async {
     List<dynamic> results;
 
@@ -432,6 +441,7 @@ class PaymentsService {
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
       'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString(),
+      'doPayForExtras' : doPayForExtras.value.toString(),
     });
 
     final http.Response response = await http

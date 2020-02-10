@@ -1,8 +1,6 @@
 import 'dart:core';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
-import 'package:sqflite/sqflite.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:harrier_central/data/services/get_reset_code_service.dart';

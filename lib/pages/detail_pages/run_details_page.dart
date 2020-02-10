@@ -27,7 +27,7 @@ class RunDetailsPage extends StatelessWidget {
                       Navigator.push<dynamic>(
                 context,
                 MaterialPageRoute<dynamic>(
-                  builder: (BuildContext context) => RunAdminMainPage(
+                  builder: (BuildContext context) => RunDetailPage(
                         eventId: futureRun.event.eventId
                       ),
                 ),

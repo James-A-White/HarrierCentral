@@ -2,9 +2,10 @@ import 'dart:core';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+
 import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
-
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -15,7 +16,7 @@ class PaymentSnackBar extends SnackBar {
 
   final BuildContext context;
   final CheckInPackModel packMember;
-  final RunAdminAggregate eventAggregate;
+  final RunDetailAggregate eventAggregate;
   final Function onRsvpCallback;
   final Function onPaidCallback;
 
@@ -33,8 +34,10 @@ class PaymentSnackBar extends SnackBar {
   Widget get content => Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Text(
+          AutoSizeText(
             packMember.nameForDisplay,
+            maxLines: 1,
+            minFontSize: 12.0,
             style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 35.0, height: 1.0),
           ),
           !(((eventAggregate.extensions.mismanagementRoleFlags ?? 0) & mmAuthAllowEditRsvpFlag) != 0)
@@ -339,7 +342,7 @@ class PaymentSnackBar extends SnackBar {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                                                Expanded(
+                        Expanded(
                           flex: 1,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -355,7 +358,7 @@ class PaymentSnackBar extends SnackBar {
                                 },
                               ),
                               Text(
-                                'Paid ${formatMoney(packMember.isMember != 0 ? eventAggregate.extensions.memberPrice : eventAggregate.extensions.nonMemberPrice)} cash',
+                                (eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? 'Paid cash' : 'Paid ${formatMoney(packMember.isMember != 0 ? eventAggregate.extensions.memberPrice : eventAggregate.extensions.nonMemberPrice)} cash' ,
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   fontFamily: 'AvenirNextCondensedDemiBold',
@@ -367,8 +370,6 @@ class PaymentSnackBar extends SnackBar {
                             ],
                           ),
                         ),
-                     
-
                         Expanded(
                           flex: 1,
                           child: Column(
@@ -397,7 +398,6 @@ class PaymentSnackBar extends SnackBar {
                             ],
                           ),
                         ),
-                     
                         Expanded(
                           flex: 1,
                           child: Column(
@@ -427,7 +427,6 @@ class PaymentSnackBar extends SnackBar {
                             ],
                           ),
                         ),
-                     
                       ],
                     ),
                     Container(width: 100, height: 10),
@@ -450,6 +449,7 @@ class PaymentSnackBar extends SnackBar {
                                 },
                               ),
                               Text(
+                                (eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? 'Paid\r\nbank transfer' : 
                                 'Paid ${formatMoney(packMember.isMember != 1 ? eventAggregate.extensions.nonMemberPrice : eventAggregate.extensions.memberPrice)}\r\nbank transfer',
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
@@ -462,36 +462,37 @@ class PaymentSnackBar extends SnackBar {
                             ],
                           ),
                         ),
-                        
-                        (packMember.isMember == 0) ? Container() : 
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              IconButton(
-                                icon: Image.asset('images/icons/payment_type_6.png', height: 30.0, width: 30.0, color: packMember.paymentType == paymentHashCredit.value ? Colors.yellow : Colors.white),
-                                //tooltip: 'Select to follow a Kennel',
-                                iconSize: 30.0,
-                                alignment: Alignment.topCenter,
-                                splashColor: Colors.greenAccent,
-                                onPressed: () {
-                                  onPaidCallback(packMember, paymentHashCredit.value);
-                                },
-                              ),
-                              Text(
-                                'Credit ${formatMoney(packMember.isMember != 1 ? eventAggregate.extensions.nonMemberPrice : eventAggregate.extensions.memberPrice)}\r\n(${packMember.credit < 0 ? 'Owes' : 'Credit'} ${Utilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym)})',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontFamily: 'AvenirNextCondensedDemiBold',
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 15.0,
-                                  height: 0.9,
+                        (packMember.isMember == 0)
+                            ? Container()
+                            : Expanded(
+                                flex: 1,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    IconButton(
+                                      icon: Image.asset('images/icons/payment_type_6.png', height: 30.0, width: 30.0, color: packMember.paymentType == paymentHashCredit.value ? Colors.yellow : Colors.white),
+                                      //tooltip: 'Select to follow a Kennel',
+                                      iconSize: 30.0,
+                                      alignment: Alignment.topCenter,
+                                      splashColor: Colors.greenAccent,
+                                      onPressed: () {
+                                        onPaidCallback(packMember, paymentHashCredit.value);
+                                      },
+                                    ),
+                                    Text(
+                                      (eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? 'Paid credit\r\n(${packMember.credit < 0 ? 'Owes' : 'Credit'} ${Utilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym)})' : 
+                                      'Credit ${formatMoney(packMember.isMember != 1 ? eventAggregate.extensions.nonMemberPrice : eventAggregate.extensions.memberPrice)}\r\n(${packMember.credit < 0 ? 'Owes' : 'Credit'} ${Utilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym)})',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontFamily: 'AvenirNextCondensedDemiBold',
+                                        fontStyle: FontStyle.normal,
+                                        fontSize: 15.0,
+                                        height: 0.9,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
                         Expanded(
                           flex: 1,
                           child: Column(

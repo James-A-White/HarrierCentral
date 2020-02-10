@@ -105,7 +105,7 @@ class CheckInPackModel {
 class CheckInPackPage extends StatefulWidget {
   const CheckInPackPage({@required this.eventAggregate});
 
-  final RunAdminAggregate eventAggregate;
+  final RunDetailAggregate eventAggregate;
 
   @override
   State<CheckInPackPage> createState() {
@@ -163,7 +163,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   TextStyle localFootnoteSmall = footnoteSmall.copyWith(fontSize: 12 * deviceWidthScaleFactor);
 
   List<int> filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
-  
+
   @override
   void initState() {
     searchTypeText = searchKennel;
@@ -201,7 +201,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         _refreshCounters(true);
       });
     });
-  } 
+  }
 
   Future<void> _getAllHashers() async {
     allHashers = <CheckInPackModel>[];
@@ -796,6 +796,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             onTap: () {
               _refreshPackListFromTables(true);
             },
+            filterValues: filterValues,
           ),
           CheckinFiltersCell(
             counter: countComing,
@@ -1099,17 +1100,68 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         updateRsvpState(packMember, rsvpState, attendenceState, isHare);
       },
       onPaidCallback: (CheckInPackModel packMember, int paymentType, {num otherAmount = -1}) {
-        scaffoldState.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-        payForEvent(packMember, paymentType, otherAmount: otherAmount).then((List<dynamic> results) {
-          _refreshPackListFromTables(false).then((void dummy) {
-            _refreshCounters(true);
-            BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.nameForDisplay, packMember.isMember, otherAmount);
-          });
-        });
+        showExtrasDialog(context, scaffoldState, paymentType, packMember, otherAmount);
       },
     );
 
     return snackbar;
+  }
+
+  void showExtrasDialog(BuildContext context, ScaffoldState scaffoldState, int paymentType, CheckInPackModel packMember, num otherAmount) {
+     scaffoldState.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+    if (((paymentType == paymentFreeRun.value) || (paymentType == paymentCash.value) || (paymentType == paymentBankTransfer.value) || (paymentType == paymentCashOtherAmount.value) || (paymentType == paymentHashCredit.value) || (paymentType == paymentBankTransferOtherAmount.value)) &&
+        ((widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0)) {
+    
+      final num runOnlyPrice = packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
+      final num runPlusExtrasPrice = runOnlyPrice + widget.eventAggregate.event.eventPriceForExtras;
+    
+      final String runOnlyPriceStr = Utilities.getFormattedMoney(runOnlyPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+      final String runPlusExtrasPriceStr = Utilities.getFormattedMoney(runPlusExtrasPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+    
+      final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+        <String, dynamic>{
+          'title': 'Run only ($runOnlyPriceStr)',
+          'icon': <Widget>[
+            Container(),
+          ],
+          'returnValue': payForRunOnly,
+        },
+        <String, dynamic>{
+          'title': 'Run + ' + widget.eventAggregate.event.extrasDescription + ' ($runPlusExtrasPriceStr)',
+          'icon': <Widget>[
+            Container(),
+          ],
+          'returnValue': payForRunAndExtras
+        },
+      ];
+    
+      final MultipleChoicePopup popup = MultipleChoicePopup(
+          title: 'Payment options',
+          buttons: buttons,
+          cancelButtonTitle: 'Cancel',
+          buttonPress: (dynamic payForExtras) {
+            payForEvent(packMember, paymentType, otherAmount: otherAmount, doPayForExtras: payForExtras).then((List<dynamic> results) {
+              _refreshPackListFromTables(false).then((void dummy) {
+                _refreshCounters(true);
+                BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.nameForDisplay, packMember.isMember, otherAmount);
+              });
+            });
+          });
+    
+      showDialog<void>(
+          context: context,
+          barrierDismissible: false, // user must tap button!
+          builder: (BuildContext context) {
+            return popup;
+          });
+    } else {
+      payForEvent(packMember, paymentType, otherAmount: otherAmount).then((List<dynamic> results) {
+        _refreshPackListFromTables(false).then((void dummy) {
+          _refreshCounters(true);
+          BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.nameForDisplay, packMember.isMember, otherAmount);
+        });
+      });
+    }
   }
 
   static const num LIST_ITEM_LEFT_MARGIN = 88.0;
@@ -1172,7 +1224,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             Positioned(
               left: LIST_ITEM_LEFT_MARGIN + 2.0,
               top: 32.0,
-              child: Text(packMember.homeKennelName ?? '', style: footnoteMedium, overflow: TextOverflow.ellipsis,),
+              child: Text(
+                packMember.homeKennelName ?? '',
+                style: footnoteMedium,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             // this widget is here to grow the contents of the cell to a size that fills nearly the whole cell
             // in order to give plenty of room for the tap gesture.
@@ -1272,20 +1328,19 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                                     ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.red)
                                     : packMember.isPaid == isPaidYes.value ? Image.asset('images/icons/payment_type_${packMember.paymentType}.png', height: 24.0, width: 24.0, color: Colors.green) : Container()),
 
-
             (packMember.currentHaringCount == null) || (packMember.currentHaringCount == 0)
                 ? Container()
                 : Positioned(
                     right: 4,
                     bottom: 17,
-                    child: Text('Hared = ${packMember.currentHaringCount}' , style:getRunLabelStyle(packMember.currentPackRunCount+packMember.currentHaringCount,packMember.attendenceState)),
+                    child: Text('Hared = ${packMember.currentHaringCount}', style: getRunLabelStyle(packMember.currentPackRunCount + packMember.currentHaringCount, packMember.attendenceState)),
                   ),
             packMember.currentPackRunCount == null
                 ? Container()
                 : Positioned(
                     right: 4,
                     bottom: 1,
-                    child: Text('Runs = ${packMember.currentPackRunCount + packMember.currentHaringCount}', style:getRunLabelStyle(packMember.currentPackRunCount+packMember.currentHaringCount,packMember.attendenceState)),
+                    child: Text('Runs = ${packMember.currentPackRunCount + packMember.currentHaringCount}', style: getRunLabelStyle(packMember.currentPackRunCount + packMember.currentHaringCount, packMember.attendenceState)),
                   ),
             //packMember.currentPackRunCount == null ? Container() : Positioned(right: 20, bottom: 1, child: Text('Times hared = ${packMember.currentHaringCount}')),
           ],
@@ -1294,18 +1349,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     );
   }
 
-  TextStyle getRunLabelStyle(int numRuns,int attendenceState)
-  {
-    if (attendenceState >= attendenceAtHash.value)
-    {
-      if ((numRuns == 1)
-          || (numRuns == 5)
-          || (numRuns == 10)
-          || (numRuns % 25 == 0)
-          || (numRuns % 100 == 69))
-          {
-            return mediumTextRed;
-          }
+  TextStyle getRunLabelStyle(int numRuns, int attendenceState) {
+    if (attendenceState >= attendenceAtHash.value) {
+      if ((numRuns == 1) || (numRuns == 5) || (numRuns == 10) || (numRuns % 25 == 0) || (numRuns % 100 == 69)) {
+        return mediumTextRed;
+      }
     }
     return mediumText;
   }
@@ -1368,7 +1416,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     });
   }
 
-  Future<List<dynamic>> payForEvent(CheckInPackModel packMember, int paymentType, {num otherAmount = -1}) async {
+  Future<List<dynamic>> payForEvent(CheckInPackModel packMember, int paymentType, {num otherAmount = -1, EnumPayForExtras<int> doPayForExtras = payForRunOnly}) async {
     final String hemId = packMember.hemId;
     final String hasherId = packMember.hasherId;
     num amount = packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
@@ -1402,14 +1450,16 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     indicatorPaidUpdating.addAll(<String, String>{packMember.hemId != null ? 'hem:' + packMember.hemId.toString().toLowerCase() : 'hid:' + packMember.hasherId.toString().toLowerCase(): packMember.payUpdatedAt.toString() ?? ''});
 
     final PaymentsService paySrv = PaymentsService();
-    return paySrv.payForEvent(
-      widget.eventAggregate.event.eventId,
-      ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId,
-      ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId,
-      paymentType,
-      amount,
-      attendenceAtHash.value,
-    );
+    return paySrv.payForEvent(widget.eventAggregate.event.eventId, ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId, ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId, paymentType, amount, attendenceAtHash.value, doPayForExtras);
+  }
+
+  void _showSnackBar(String text) {
+    final SnackBar snackBar = SnackBar(content: Text(text));
+
+    _scaffoldKey.currentState.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+    _scaffoldKey.currentState.showSnackBar(snackBar).closed.then((SnackBarClosedReason reason) {
+      setState(() {});
+    });
   }
 
   Widget buildPackListView() {
@@ -1448,12 +1498,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                 confirmDismiss: (DismissDirection direction) {
                   if (packMember.isPaid != 1) {
                     print(direction.toString() + ' ' + index.toString());
-                    payForEvent(packMember, direction == DismissDirection.endToStart ? 3 : 4).then((List<dynamic> results) {
-                      _refreshPackListFromTables(false).then((void dummy) {
-                        _refreshCounters(true);
-                        BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, context, packMember.nameForDisplay, packMember.isMember, -1);
-                      });
-                    });
+                    showExtrasDialog(context, _scaffoldKey.currentState, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, packMember, -1);
                   } else {
                     if (direction == DismissDirection.endToStart) {
                       updateRsvpState(packMember, -1, attendenceOnIn.value, -1);
@@ -1490,7 +1535,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                             ),
                             Padding(
                               padding: const EdgeInsets.only(left: 15.0),
-                              child: Text('${Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Bank Transfer',
+                              child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Bank\r\nTransfer',
                                   style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
                             ),
                           ],
@@ -1547,7 +1592,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                             ),
                             Padding(
                               padding: const EdgeInsets.only(right: 15.0),
-                              child: Text('${Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Cash',
+                              child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Cash',
+                                  textAlign: TextAlign.right,
                                   style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
                             ),
                           ],
@@ -1728,4 +1774,3 @@ class _AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
     );
   }
 }
-

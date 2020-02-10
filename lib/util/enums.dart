@@ -140,6 +140,15 @@ const EnumPaymentType<int> paymentHashCredit = EnumPaymentType<int>(6);
 const EnumPaymentType<int> paymentBankTransferOtherAmount = EnumPaymentType<int>(7);
 const EnumPaymentType<int> paymentConfirmBankTransfer = EnumPaymentType<int>(100);
 
+//////////////////////////
+
+class EnumPayForExtras<int> extends Enum<int> {
+  const EnumPayForExtras(int val) : super(val);
+}
+
+const EnumPayForExtras<int> payForRunOnly = EnumPayForExtras<int>(0);
+const EnumPayForExtras<int> payForRunAndExtras = EnumPayForExtras<int>(1);
+
 
 //////////////////////////
 

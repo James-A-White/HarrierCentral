@@ -19,7 +19,7 @@ import 'package:harrier_central/data/hc3_services/payments_service.dart';
 class CheckInScannerPage extends StatefulWidget {
   const CheckInScannerPage({@required this.eventAggregate});
 
-  final RunAdminAggregate eventAggregate;
+  final RunDetailAggregate eventAggregate;
 
   @override
   _CheckInScannerPageState createState() => _CheckInScannerPageState();
@@ -441,6 +441,7 @@ Container(
       paymentType,
       amount,
       attendenceAtHash.value,
+      payForRunOnly
     );
     retVal.then(
       (List<dynamic> paymentResult) {

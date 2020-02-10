@@ -59,7 +59,7 @@ class SyncUserDataService {
     _kennelsLastUpdated = (flags & flagKennelsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, KennelsTableHelper.colUpdatedAtValue, KennelsTableHelper.tableName);
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user));
     _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HasherEventMapTableHelper.colUpdatedAtValue, HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user));
-    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, NarrowEventsTableHelper.colUpdatedAtValue, NarrowEventsTableHelper.tableName);
+    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, EventTableHelper.colUpdatedAtValue, EventTableHelper.tableName);
   }
 
   Future<bool> updateFromBackend(Database db, int tablesToSync, bool forceRefresh, {Function informUser}) async {
@@ -203,7 +203,7 @@ class SyncUserDataService {
       }
 
       if (ms.startsWith(r'[{"eventId"')) {
-        final NarrowEventsService eSrv = NarrowEventsService();
+        final EventService eSrv = EventService();
         await eSrv.bulkUpdateDatabase('[$ms]', db, informUser);
         print('events updated');
       }

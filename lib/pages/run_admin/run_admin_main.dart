@@ -25,20 +25,20 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/util/preferences.dart';
 
-class RunAdminAggregate {
-  RunAdminAggregate({
+class RunDetailAggregate {
+  RunDetailAggregate({
     this.event,
     this.extensions,
     this.kennel,
   });
 
-  final RunAdminQueryExtensions extensions;
-  final NarrowEventsModel event;
+  final RunDetailQueryExtensions extensions;
+  final EventModel event;
   final KennelsModel kennel;
 }
 
-class RunAdminQueryExtensions {
-  RunAdminQueryExtensions({this.mismanagementRoleFlags, this.digAfterDec, this.curSym, this.curCode, this.memberPrice, this.nonMemberPrice});
+class RunDetailQueryExtensions {
+  RunDetailQueryExtensions({this.mismanagementRoleFlags, this.digAfterDec, this.curSym, this.curCode, this.memberPrice, this.nonMemberPrice});
 
   final int mismanagementRoleFlags;
   final int digAfterDec;
@@ -52,27 +52,28 @@ class RunAdminQueryExtensions {
 
   bool isLoading = false;
 
-  static RunAdminQueryExtensions fromMap(Map<String, dynamic> map) {
-    final RunAdminQueryExtensions item = RunAdminQueryExtensions(mismanagementRoleFlags: map['mismanagementRoleFlags'], digAfterDec: map['digAfterDec'], curSym: map['curSym'], curCode: map['curCode'], memberPrice: map['memberPrice'], nonMemberPrice: map['nonMemberPrice']);
+
+  static RunDetailQueryExtensions fromMap(Map<String, dynamic> map) {
+    final RunDetailQueryExtensions item = RunDetailQueryExtensions(mismanagementRoleFlags: map['mismanagementRoleFlags'], digAfterDec: map['digAfterDec'], curSym: map['curSym'], curCode: map['curCode'], memberPrice: map['memberPrice'], nonMemberPrice: map['nonMemberPrice']);
     return item;
   }
 }
 
-class RunAdminMainPage extends StatefulWidget {
+class RunDetailPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const RunAdminMainPage({Key key, this.eventId}) : super(key: key);
+  const RunDetailPage({Key key, this.eventId}) : super(key: key);
 
   final String eventId;
 
   @override
-  RunAdminMainPageState createState() => RunAdminMainPageState();
+  RunDetailPageState createState() => RunDetailPageState();
 }
 
-class RunAdminMainPageState extends State<RunAdminMainPage> {
+class RunDetailPageState extends State<RunDetailPage> {
   bool _isLoading = true;
 
-  RunAdminAggregate eventAggregate;
+  RunDetailAggregate eventAggregate;
 
   @override
   void initState() {
@@ -109,7 +110,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as memberPrice,
           coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as nonMemberPrice,
           CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,c.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference
-          FROM ${NarrowEventsTableHelper.tableName} e
+          FROM ${EventTableHelper.tableName} e
           INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
           LEFT OUTER JOIN ${CountriesTableHelper.tableName} c on c.countryId = k.countryId
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId,
@@ -125,7 +126,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
       final Geolocator locator = Geolocator();
       final LatLon ll = await Utilities.getLatLong();
 
-      num dist = await locator.distanceBetween(
+      final num dist = await locator.distanceBetween(
         Utilities.unInt(ll.latitude),
         Utilities.unInt(ll.longitude),
         Utilities.unInt(results[0]['narrowEventLatitude']),
@@ -136,8 +137,8 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
 
       setState(() {
         if (results.isNotEmpty) {
-          final NarrowEventsModel eventItem = NarrowEventsTableHelper.fromMap(results[0]);
-          final RunAdminQueryExtensions extensions = RunAdminQueryExtensions.fromMap(results[0]);
+          final EventModel eventItem = EventTableHelper.fromMap(results[0]);
+          final RunDetailQueryExtensions extensions = RunDetailQueryExtensions.fromMap(results[0]);
           final KennelsModel kennel = KennelsTableHelper.fromMap(results[0]);
           String paymentLinkUrl = '';
 
@@ -151,7 +152,7 @@ class RunAdminMainPageState extends State<RunAdminMainPage> {
           extensions.distToEvent = dist;
           extensions.distancePreference = results[0]['distancePreference'];
 
-          eventAggregate = RunAdminAggregate(event: eventItem, extensions: extensions, kennel: kennel);
+          eventAggregate = RunDetailAggregate(event: eventItem, extensions: extensions, kennel: kennel);
         }
         _isLoading = false;
       });

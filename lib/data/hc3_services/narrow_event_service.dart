@@ -12,8 +12,8 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/util/enums.dart';
 
-class NarrowEventsModel {
-  NarrowEventsModel(
+class EventModel {
+  EventModel(
       {this.eventId,
       this.eventStartDatetime,
       this.kennelId,
@@ -41,6 +41,9 @@ class NarrowEventsModel {
       this.eventPriceForExtras,
       this.extrasDescription,
       this.doTrackHashCash,
+      this.tags1,
+      this.tags2,
+      this.tags3,
       this.removed,
       this.updatedAt});
 
@@ -71,17 +74,20 @@ class NarrowEventsModel {
   final num eventPriceForExtras;
   final String extrasDescription;
   final int doTrackHashCash;
+  final int tags1;
+  final int tags2;
+  final int tags3;
   final int removed;
   final DateTime updatedAt;
 
-  static List<NarrowEventsModel> itemsFromJson(String jsonResult) {
-    final List<NarrowEventsModel> items = <NarrowEventsModel>[];
+  static List<EventModel> itemsFromJson(String jsonResult) {
+    final List<EventModel> items = <EventModel>[];
 
-    NarrowEventsModel item;
+    EventModel item;
 
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
-        item = NarrowEventsModel(
+        item = EventModel(
             eventId: jsonItem['eventId'],
             eventStartDatetime: jsonItem['eventStartDatetime'],
             kennelId: jsonItem['kennelId'],
@@ -109,6 +115,9 @@ class NarrowEventsModel {
             eventPriceForExtras: jsonItem['eventPriceForExtras'],
             extrasDescription: jsonItem['extrasDescription'],
             doTrackHashCash: jsonItem['doTrackHashCash'],
+            tags1: jsonItem['tags1'],
+            tags2: jsonItem['tags2'],
+            tags3: jsonItem['tags3'],
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
 
@@ -119,10 +128,9 @@ class NarrowEventsModel {
         // For partial URLs we need to append the root URL. The Root URL is stored in the
         // Server settings table and copied into the string prefs on app startup.
         if ((item.eventImage != null) && (item.eventImage.isNotEmpty) && (!item.eventImage.startsWith('http'))) {
-          String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
-          if ((s != null) && (s.isNotEmpty))
-          {
-          item.eventImage = s + item.eventImage;
+          final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+          if ((s != null) && (s.isNotEmpty)) {
+            item.eventImage = s + item.eventImage;
           }
         }
 
@@ -138,8 +146,8 @@ class NarrowEventsModel {
   }
 }
 
-class NarrowEventsTableHelper {
-  NarrowEventsTableHelper._privateConstructor();
+class EventTableHelper {
+  EventTableHelper._privateConstructor();
 
   static const String tableName = 'narrowEvents';
   //static const num forceRequeryInterval = 1 * 86400000;
@@ -179,6 +187,9 @@ class NarrowEventsTableHelper {
   static const String colEventPriceForExtras = 'eventPriceForExtras';
   static const String colExtrasDescription = 'extrasDescription';
   static const String colDoTrackHashCash = 'doTrackHashCash';
+  static const String colTags1 = 'tags1';
+  static const String colTags2 = 'tags2';
+  static const String colTags3 = 'tags3';
 
   static const String colRemoved = 'removed';
   static const String colUpdatedAt = 'updatedAt';
@@ -186,7 +197,7 @@ class NarrowEventsTableHelper {
 
   // make this a singleton class
 
-  static final NarrowEventsTableHelper instance = NarrowEventsTableHelper._privateConstructor();
+  static final EventTableHelper instance = EventTableHelper._privateConstructor();
 
   // SQL code to create the database table
   static Future<dynamic> createTable(Database db, int version) async {
@@ -221,6 +232,9 @@ class NarrowEventsTableHelper {
             $colEventPriceForExtras NUM,
             $colExtrasDescription TEXT,
             $colDoTrackHashCash INT,
+            $colTags1 INT,
+            $colTags2 INT,
+            $colTags3 INT,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
@@ -232,38 +246,41 @@ class NarrowEventsTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  static Map<String, dynamic> toMap(NarrowEventsModel item) {
+  static Map<String, dynamic> toMap(EventModel item) {
     final Map<String, dynamic> map = <String, dynamic>{
-      NarrowEventsTableHelper.colEventId: item.eventId,
-      NarrowEventsTableHelper.colEventStartDatetime: item.eventStartDatetime.toString(),
-      NarrowEventsTableHelper.colKennelId: item.kennelId,
-      NarrowEventsTableHelper.colIsVisible: item.isVisible,
-      NarrowEventsTableHelper.colIsCountedRun: item.isCountedRun,
-      NarrowEventsTableHelper.colEventNumber: item.eventNumber,
-      NarrowEventsTableHelper.colEventName: item.eventName,
-      NarrowEventsTableHelper.colNarrowEventLatitude: item.narrowEventLatitude,
-      NarrowEventsTableHelper.colNarrowEventLongitude: item.narrowEventLongitude,
-      NarrowEventsTableHelper.colEventPriceForMembers: item.eventPriceForMembers,
-      NarrowEventsTableHelper.colEventPriceForNonMembers: item.eventPriceForNonMembers,
-      NarrowEventsTableHelper.colEventFacebookId: item.eventFacebookId,
-      NarrowEventsTableHelper.colAbsoluteEventNumber: item.absoluteEventNumber,
-      NarrowEventsTableHelper.colCanEditRunAttendence: item.canEditRunAttendence,
-      NarrowEventsTableHelper.colEventImage: item.eventImage,
-      NarrowEventsTableHelper.colEventDescription: item.eventDescription,
-      NarrowEventsTableHelper.colLocationOneLineDesc: item.locationOneLineDesc,
-      NarrowEventsTableHelper.colLocationPostCode: item.locationPostCode,
-      NarrowEventsTableHelper.colLocationCity: item.locationCity,
-      NarrowEventsTableHelper.colLocationStreet: item.locationStreet,
-      NarrowEventsTableHelper.colHares: item.hares,
-      NarrowEventsTableHelper.colEventPaymentUrl: item.eventPaymentUrl,
-      NarrowEventsTableHelper.colEventPaymentUrlExpires: item.eventPaymentUrlExpires.toString(),
-      NarrowEventsTableHelper.colUnconfirmedBankXferCount: item.unconfirmedBankXferCount,
-      NarrowEventsTableHelper.colEventPriceForExtras: item.eventPriceForExtras,
-      NarrowEventsTableHelper.colExtrasDescription: item.extrasDescription,
-      NarrowEventsTableHelper.colDoTrackHashCash: item.doTrackHashCash,
-      NarrowEventsTableHelper.colUpdatedAt: item.updatedAt.toString(),
-      NarrowEventsTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
-      NarrowEventsTableHelper.colRemoved: item.removed
+      EventTableHelper.colEventId: item.eventId,
+      EventTableHelper.colEventStartDatetime: item.eventStartDatetime.toString(),
+      EventTableHelper.colKennelId: item.kennelId,
+      EventTableHelper.colIsVisible: item.isVisible,
+      EventTableHelper.colIsCountedRun: item.isCountedRun,
+      EventTableHelper.colEventNumber: item.eventNumber,
+      EventTableHelper.colEventName: item.eventName,
+      EventTableHelper.colNarrowEventLatitude: item.narrowEventLatitude,
+      EventTableHelper.colNarrowEventLongitude: item.narrowEventLongitude,
+      EventTableHelper.colEventPriceForMembers: item.eventPriceForMembers,
+      EventTableHelper.colEventPriceForNonMembers: item.eventPriceForNonMembers,
+      EventTableHelper.colEventFacebookId: item.eventFacebookId,
+      EventTableHelper.colAbsoluteEventNumber: item.absoluteEventNumber,
+      EventTableHelper.colCanEditRunAttendence: item.canEditRunAttendence,
+      EventTableHelper.colEventImage: item.eventImage,
+      EventTableHelper.colEventDescription: item.eventDescription,
+      EventTableHelper.colLocationOneLineDesc: item.locationOneLineDesc,
+      EventTableHelper.colLocationPostCode: item.locationPostCode,
+      EventTableHelper.colLocationCity: item.locationCity,
+      EventTableHelper.colLocationStreet: item.locationStreet,
+      EventTableHelper.colHares: item.hares,
+      EventTableHelper.colEventPaymentUrl: item.eventPaymentUrl,
+      EventTableHelper.colEventPaymentUrlExpires: item.eventPaymentUrlExpires.toString(),
+      EventTableHelper.colUnconfirmedBankXferCount: item.unconfirmedBankXferCount,
+      EventTableHelper.colEventPriceForExtras: item.eventPriceForExtras,
+      EventTableHelper.colExtrasDescription: item.extrasDescription,
+      EventTableHelper.colDoTrackHashCash: item.doTrackHashCash,
+      EventTableHelper.colTags1: item.tags1,
+      EventTableHelper.colTags2: item.tags2,
+      EventTableHelper.colTags3: item.tags3,
+      EventTableHelper.colUpdatedAt: item.updatedAt.toString(),
+      EventTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
+      EventTableHelper.colRemoved: item.removed
     };
 
     return map;
@@ -271,36 +288,39 @@ class NarrowEventsTableHelper {
 
   static Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
     final Map<String, dynamic> outputMap = <String, dynamic>{
-      NarrowEventsTableHelper.colEventId: inputMap[NarrowEventsTableHelper.colEventId],
-      NarrowEventsTableHelper.colEventStartDatetime: inputMap[NarrowEventsTableHelper.colEventStartDatetime],
-      NarrowEventsTableHelper.colKennelId: inputMap[NarrowEventsTableHelper.colKennelId],
-      NarrowEventsTableHelper.colIsVisible: inputMap[NarrowEventsTableHelper.colIsVisible],
-      NarrowEventsTableHelper.colIsCountedRun: inputMap[NarrowEventsTableHelper.colIsCountedRun],
-      NarrowEventsTableHelper.colEventNumber: inputMap[NarrowEventsTableHelper.colEventNumber],
-      NarrowEventsTableHelper.colEventName: inputMap[NarrowEventsTableHelper.colEventName],
-      NarrowEventsTableHelper.colNarrowEventLatitude: inputMap[NarrowEventsTableHelper.colNarrowEventLatitude],
-      NarrowEventsTableHelper.colNarrowEventLongitude: inputMap[NarrowEventsTableHelper.colNarrowEventLongitude],
-      NarrowEventsTableHelper.colEventPriceForMembers: inputMap[NarrowEventsTableHelper.colEventPriceForMembers],
-      NarrowEventsTableHelper.colEventPriceForNonMembers: inputMap[NarrowEventsTableHelper.colEventPriceForNonMembers],
-      NarrowEventsTableHelper.colEventFacebookId: inputMap[NarrowEventsTableHelper.colEventFacebookId],
-      NarrowEventsTableHelper.colAbsoluteEventNumber: inputMap[NarrowEventsTableHelper.colAbsoluteEventNumber],
-      NarrowEventsTableHelper.colCanEditRunAttendence: inputMap[NarrowEventsTableHelper.colCanEditRunAttendence],
-      NarrowEventsTableHelper.colEventImage: inputMap[NarrowEventsTableHelper.colEventImage],
-      NarrowEventsTableHelper.colEventDescription: inputMap[NarrowEventsTableHelper.colEventDescription],
-      NarrowEventsTableHelper.colLocationOneLineDesc: inputMap[NarrowEventsTableHelper.colLocationOneLineDesc],
-      NarrowEventsTableHelper.colLocationPostCode: inputMap[NarrowEventsTableHelper.colLocationPostCode],
-      NarrowEventsTableHelper.colLocationCity: inputMap[NarrowEventsTableHelper.colLocationCity],
-      NarrowEventsTableHelper.colLocationStreet: inputMap[NarrowEventsTableHelper.colLocationStreet],
-      NarrowEventsTableHelper.colHares: inputMap[NarrowEventsTableHelper.colHares],
-      NarrowEventsTableHelper.colEventPaymentUrl: inputMap[NarrowEventsTableHelper.colEventPaymentUrl],
-      NarrowEventsTableHelper.colEventPaymentUrlExpires: inputMap[NarrowEventsTableHelper.colEventPaymentUrlExpires],
-      NarrowEventsTableHelper.colUnconfirmedBankXferCount: inputMap[NarrowEventsTableHelper.colUnconfirmedBankXferCount],
-      NarrowEventsTableHelper.colEventPriceForExtras: inputMap[NarrowEventsTableHelper.colEventPriceForExtras],
-      NarrowEventsTableHelper.colExtrasDescription: inputMap[NarrowEventsTableHelper.colExtrasDescription],
-      NarrowEventsTableHelper.colDoTrackHashCash: inputMap[NarrowEventsTableHelper.colDoTrackHashCash],
-      NarrowEventsTableHelper.colUpdatedAt: inputMap[NarrowEventsTableHelper.colUpdatedAt],
-      NarrowEventsTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[NarrowEventsTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
-      NarrowEventsTableHelper.colRemoved: inputMap[NarrowEventsTableHelper.colRemoved],
+      EventTableHelper.colEventId: inputMap[EventTableHelper.colEventId],
+      EventTableHelper.colEventStartDatetime: inputMap[EventTableHelper.colEventStartDatetime],
+      EventTableHelper.colKennelId: inputMap[EventTableHelper.colKennelId],
+      EventTableHelper.colIsVisible: inputMap[EventTableHelper.colIsVisible],
+      EventTableHelper.colIsCountedRun: inputMap[EventTableHelper.colIsCountedRun],
+      EventTableHelper.colEventNumber: inputMap[EventTableHelper.colEventNumber],
+      EventTableHelper.colEventName: inputMap[EventTableHelper.colEventName],
+      EventTableHelper.colNarrowEventLatitude: inputMap[EventTableHelper.colNarrowEventLatitude],
+      EventTableHelper.colNarrowEventLongitude: inputMap[EventTableHelper.colNarrowEventLongitude],
+      EventTableHelper.colEventPriceForMembers: inputMap[EventTableHelper.colEventPriceForMembers],
+      EventTableHelper.colEventPriceForNonMembers: inputMap[EventTableHelper.colEventPriceForNonMembers],
+      EventTableHelper.colEventFacebookId: inputMap[EventTableHelper.colEventFacebookId],
+      EventTableHelper.colAbsoluteEventNumber: inputMap[EventTableHelper.colAbsoluteEventNumber],
+      EventTableHelper.colCanEditRunAttendence: inputMap[EventTableHelper.colCanEditRunAttendence],
+      EventTableHelper.colEventImage: inputMap[EventTableHelper.colEventImage],
+      EventTableHelper.colEventDescription: inputMap[EventTableHelper.colEventDescription],
+      EventTableHelper.colLocationOneLineDesc: inputMap[EventTableHelper.colLocationOneLineDesc],
+      EventTableHelper.colLocationPostCode: inputMap[EventTableHelper.colLocationPostCode],
+      EventTableHelper.colLocationCity: inputMap[EventTableHelper.colLocationCity],
+      EventTableHelper.colLocationStreet: inputMap[EventTableHelper.colLocationStreet],
+      EventTableHelper.colHares: inputMap[EventTableHelper.colHares],
+      EventTableHelper.colEventPaymentUrl: inputMap[EventTableHelper.colEventPaymentUrl],
+      EventTableHelper.colEventPaymentUrlExpires: inputMap[EventTableHelper.colEventPaymentUrlExpires],
+      EventTableHelper.colUnconfirmedBankXferCount: inputMap[EventTableHelper.colUnconfirmedBankXferCount],
+      EventTableHelper.colEventPriceForExtras: inputMap[EventTableHelper.colEventPriceForExtras],
+      EventTableHelper.colExtrasDescription: inputMap[EventTableHelper.colExtrasDescription],
+      EventTableHelper.colDoTrackHashCash: inputMap[EventTableHelper.colDoTrackHashCash],
+      EventTableHelper.colTags1: inputMap[EventTableHelper.colTags1],
+      EventTableHelper.colTags2: inputMap[EventTableHelper.colTags2],
+      EventTableHelper.colTags3: inputMap[EventTableHelper.colTags3],
+      EventTableHelper.colUpdatedAt: inputMap[EventTableHelper.colUpdatedAt],
+      EventTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[EventTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
+      EventTableHelper.colRemoved: inputMap[EventTableHelper.colRemoved],
     };
 
     // NOTE: Event images can either be full URLs or they can be partial URLs in the case
@@ -308,7 +328,7 @@ class NarrowEventsTableHelper {
     // For partial URLs we need to append the root URL. The Root URL is stored in the
     // Server settings table and copied into the string prefs on app startup.
     if ((outputMap['eventImage'] != null) && (outputMap['eventImage'].isNotEmpty) && (!outputMap['eventImage'].startsWith('http'))) {
-      String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+      final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
       if ((s != null) && (s.isNotEmpty)) {
         outputMap['eventImage'] = s + outputMap['eventImage'];
       }
@@ -317,37 +337,40 @@ class NarrowEventsTableHelper {
     return outputMap;
   }
 
-  static NarrowEventsModel fromMap(Map<String, dynamic> map) {
-    final NarrowEventsModel item = NarrowEventsModel(
-      eventId: map[NarrowEventsTableHelper.colEventId],
-      eventStartDatetime: DateTime.parse(map[NarrowEventsTableHelper.colEventStartDatetime].toString().substring(0, 19)),
-      kennelId: map[NarrowEventsTableHelper.colKennelId],
-      isVisible: map[NarrowEventsTableHelper.colIsVisible],
-      isCountedRun: map[NarrowEventsTableHelper.colIsCountedRun],
-      eventNumber: map[NarrowEventsTableHelper.colEventNumber],
-      eventName: map[NarrowEventsTableHelper.colEventName],
-      narrowEventLatitude: map[NarrowEventsTableHelper.colNarrowEventLatitude],
-      narrowEventLongitude: map[NarrowEventsTableHelper.colNarrowEventLongitude],
-      eventPriceForMembers: map[NarrowEventsTableHelper.colEventPriceForMembers],
-      eventPriceForNonMembers: map[NarrowEventsTableHelper.colEventPriceForNonMembers],
-      eventFacebookId: map[NarrowEventsTableHelper.colEventFacebookId],
-      absoluteEventNumber: map[NarrowEventsTableHelper.colAbsoluteEventNumber],
-      canEditRunAttendence: map[NarrowEventsTableHelper.colCanEditRunAttendence],
-      eventImage: map[NarrowEventsTableHelper.colEventImage],
-      eventDescription: map[NarrowEventsTableHelper.colEventDescription],
-      locationOneLineDesc: map[NarrowEventsTableHelper.colLocationOneLineDesc],
-      locationPostCode: map[NarrowEventsTableHelper.colLocationPostCode],
-      locationCity: map[NarrowEventsTableHelper.colLocationCity],
-      locationStreet: map[NarrowEventsTableHelper.colLocationStreet],
-      hares: map[NarrowEventsTableHelper.colHares],
-      eventPaymentUrl: map[NarrowEventsTableHelper.colEventPaymentUrl],
-      eventPaymentUrlExpires: DateTime.parse((map[NarrowEventsTableHelper.colEventPaymentUrlExpires] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
-      unconfirmedBankXferCount: map[NarrowEventsTableHelper.colUnconfirmedBankXferCount],
-      eventPriceForExtras: map[NarrowEventsTableHelper.colEventPriceForExtras],
-      extrasDescription: map[NarrowEventsTableHelper.colExtrasDescription],
-      doTrackHashCash: map[NarrowEventsTableHelper.colDoTrackHashCash],
-      updatedAt: DateTime.parse(map[NarrowEventsTableHelper.colUpdatedAt].toString().substring(0, 19)),
-      removed: map[NarrowEventsTableHelper.colRemoved],
+  static EventModel fromMap(Map<String, dynamic> map) {
+    final EventModel item = EventModel(
+      eventId: map[EventTableHelper.colEventId],
+      eventStartDatetime: DateTime.parse(map[EventTableHelper.colEventStartDatetime].toString().substring(0, 19)),
+      kennelId: map[EventTableHelper.colKennelId],
+      isVisible: map[EventTableHelper.colIsVisible],
+      isCountedRun: map[EventTableHelper.colIsCountedRun],
+      eventNumber: map[EventTableHelper.colEventNumber],
+      eventName: map[EventTableHelper.colEventName],
+      narrowEventLatitude: map[EventTableHelper.colNarrowEventLatitude],
+      narrowEventLongitude: map[EventTableHelper.colNarrowEventLongitude],
+      eventPriceForMembers: map[EventTableHelper.colEventPriceForMembers],
+      eventPriceForNonMembers: map[EventTableHelper.colEventPriceForNonMembers],
+      eventFacebookId: map[EventTableHelper.colEventFacebookId],
+      absoluteEventNumber: map[EventTableHelper.colAbsoluteEventNumber],
+      canEditRunAttendence: map[EventTableHelper.colCanEditRunAttendence],
+      eventImage: map[EventTableHelper.colEventImage],
+      eventDescription: map[EventTableHelper.colEventDescription],
+      locationOneLineDesc: map[EventTableHelper.colLocationOneLineDesc],
+      locationPostCode: map[EventTableHelper.colLocationPostCode],
+      locationCity: map[EventTableHelper.colLocationCity],
+      locationStreet: map[EventTableHelper.colLocationStreet],
+      hares: map[EventTableHelper.colHares],
+      eventPaymentUrl: map[EventTableHelper.colEventPaymentUrl],
+      eventPaymentUrlExpires: DateTime.parse((map[EventTableHelper.colEventPaymentUrlExpires] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
+      unconfirmedBankXferCount: map[EventTableHelper.colUnconfirmedBankXferCount],
+      eventPriceForExtras: map[EventTableHelper.colEventPriceForExtras],
+      extrasDescription: map[EventTableHelper.colExtrasDescription],
+      doTrackHashCash: map[EventTableHelper.colDoTrackHashCash],
+      tags1: map[EventTableHelper.colTags1],
+      tags2: map[EventTableHelper.colTags2],
+      tags3: map[EventTableHelper.colTags3],
+      updatedAt: DateTime.parse(map[EventTableHelper.colUpdatedAt].toString().substring(0, 19)),
+      removed: map[EventTableHelper.colRemoved],
     );
 
     // NOTE: Event images can either be full URLs or they can be partial URLs in the case
@@ -355,7 +378,7 @@ class NarrowEventsTableHelper {
     // For partial URLs we need to append the root URL. The Root URL is stored in the
     // Server settings table and copied into the string prefs on app startup.
     if ((item.eventImage != null) && (item.eventImage.isNotEmpty) && (!item.eventImage.startsWith('http'))) {
-      String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+      final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
       if ((s != null) && (s.isNotEmpty)) {
         item.eventImage = s + item.eventImage;
       }
@@ -365,41 +388,41 @@ class NarrowEventsTableHelper {
   }
 }
 
-class NarrowEventsService {
-  static final NarrowEventsTableHelper instance = NarrowEventsTableHelper._privateConstructor();
+class EventService {
+  static final EventTableHelper instance = EventTableHelper._privateConstructor();
 
   static Future<num> getLastUpdatedTime() async {
     final Database db = await DBProvider.db.database;
-    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${NarrowEventsTableHelper.colUpdatedAtValue}) AS maxDate FROM ${NarrowEventsTableHelper.tableName}');
+    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${EventTableHelper.colUpdatedAtValue}) AS maxDate FROM ${EventTableHelper.tableName}');
     final num timeValue = table.first['maxDate'];
     return timeValue;
   }
 
   Future<void> clearTable() async {
     final Database db = await DBProvider.db.database;
-    await db.rawDelete('DELETE FROM ${NarrowEventsTableHelper.tableName}').then((void dummy) {
-      setIntPref(NarrowEventsTableHelper.lastCacheClearKey, DateTime.now().millisecondsSinceEpoch);
+    await db.rawDelete('DELETE FROM ${EventTableHelper.tableName}').then((void dummy) {
+      setIntPref(EventTableHelper.lastCacheClearKey, DateTime.now().millisecondsSinceEpoch);
     });
   }
 
-  Future<void> updateDatabase(List<NarrowEventsModel> items) async {
+  Future<void> updateDatabase(List<EventModel> items) async {
     final Database db = await DBProvider.db.database;
 
     for (int i = 0; i < items?.length ?? 0; i++) {
-      final Map<String, dynamic> row = NarrowEventsTableHelper.toMap(items[i]);
+      final Map<String, dynamic> row = EventTableHelper.toMap(items[i]);
 
-      final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${NarrowEventsTableHelper.tableName} WHERE ${NarrowEventsTableHelper.remoteDbId} = "${items[i].eventId}"');
+      final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${EventTableHelper.tableName} WHERE ${EventTableHelper.remoteDbId} = "${items[i].eventId}"');
       if ((table == null) || (table.isEmpty)) {
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.insert(NarrowEventsTableHelper.tableName, row);
-          print(result.toString() + ' inserted into to the ${NarrowEventsTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          final int result = await txn.insert(EventTableHelper.tableName, row);
+          print(result.toString() + ' inserted into to the ${EventTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
         });
       } else {
         final String rowId = table.first['id'].toString();
 
         await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.update(NarrowEventsTableHelper.tableName, row, where: 'id = $rowId');
-          print(result.toString() + ' update to the ${NarrowEventsTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          final int result = await txn.update(EventTableHelper.tableName, row, where: 'id = $rowId');
+          print(result.toString() + ' update to the ${EventTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
         });
       }
     }
@@ -425,10 +448,10 @@ class NarrowEventsService {
         final Map<String, dynamic> jsonItem = jsonResults[j];
 
         if (doNormalizeMap == null) {
-          final Map<String, dynamic> testMap = NarrowEventsTableHelper.normalizeMap(jsonItem);
+          final Map<String, dynamic> testMap = EventTableHelper.normalizeMap(jsonItem);
           doNormalizeMap = (testMap.length - 1) != jsonItem.length;
           if (doNormalizeMap) {
-            print('Normalize map called for ${NarrowEventsTableHelper.tableName}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}');
+            print('Normalize map called for ${EventTableHelper.tableName}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}');
           }
         }
 
@@ -442,14 +465,14 @@ class NarrowEventsService {
           'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch,
         });
 
-        final String query = 'SELECT * FROM ${NarrowEventsTableHelper.tableName} WHERE ${NarrowEventsTableHelper.remoteDbId} = "${jsonItem['eventId']}"';
+        final String query = 'SELECT * FROM ${EventTableHelper.tableName} WHERE ${EventTableHelper.remoteDbId} = "${jsonItem['eventId']}"';
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
 
         if ((table == null) || (table.isEmpty)) {
           //print(table.length.toString());
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.insert(NarrowEventsTableHelper.tableName, doNormalizeMap ? NarrowEventsTableHelper.normalizeMap(jsonItem) : jsonItem);
+            await txn.insert(EventTableHelper.tableName, doNormalizeMap ? EventTableHelper.normalizeMap(jsonItem) : jsonItem);
             insertCounter++;
             // print(result.toString() +
             //     ' inserted into to the ${NarrowEventsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -459,7 +482,7 @@ class NarrowEventsService {
 
           await db.transaction<dynamic>((Transaction txn) async {
             //final int result =
-            await txn.update(NarrowEventsTableHelper.tableName, doNormalizeMap ? NarrowEventsTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
+            await txn.update(EventTableHelper.tableName, doNormalizeMap ? EventTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
             updateCounter++;
             // print(result.toString() +
             //     ' update to the ${NarrowEventsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
@@ -485,7 +508,7 @@ class NarrowEventsService {
 
     final String accessToken = Utilities.generateToken(userId, 'addEditEvent');
 
-    final num _eventsLastUpdated = await NarrowEventsService.getLastUpdatedTime();
+    final num _eventsLastUpdated = await EventService.getLastUpdatedTime();
     final DateTime eventUpdatedAfter = _eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_eventsLastUpdated + 1000);
 
     final Map<String, String> bodyMap = <String, String>{'userId': userId, 'accessToken': accessToken, 'narrowEventsUpdatedAfter': eventUpdatedAfter.toString(), 'eventId': eventId};

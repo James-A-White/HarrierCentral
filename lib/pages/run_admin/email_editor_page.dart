@@ -310,7 +310,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
   void sendEmail(BuildContext context, String emailBody) {
     Utilities.showAlert(context, 'Email run details', 'Would you like to e-mail the run details to hashers who have signed up for e-mail notifications?', 'OK', showCancelButton: true).then((bool result) {
       if (result) {
-        NarrowEventsService.sendRunDetailsByEmail(eventId: widget.eventId, emailBody: emailBody).then((Map<String, String> result) {
+        EventService.sendRunDetailsByEmail(eventId: widget.eventId, emailBody: emailBody).then((Map<String, String> result) {
           _scaffoldKey.currentState?.hideCurrentSnackBar();
           if (result['result'].toLowerCase().startsWith('success')) {
             Utilities.showAlert(context, 'E-mails successfully sent', result['result'], 'OK');

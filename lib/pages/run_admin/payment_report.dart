@@ -24,6 +24,7 @@ import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart'
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/util/bank_transfer_qr.dart';
+import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 
 class PaymentAggregate {
   PaymentAggregate({
@@ -36,7 +37,7 @@ class PaymentAggregate {
 }
 
 class PaymentQueryExtensions {
-  PaymentQueryExtensions({this.pkHemId, this.paidByName, this.paidToName, this.isMember, this.creditAvailable, this.eventPriceForMembers, this.eventPriceForNonMembers, this.confByName});
+  PaymentQueryExtensions({this.pkHemId, this.paidByName, this.paidToName, this.isMember, this.creditAvailable, this.eventPriceForMembers, this.eventPriceForNonMembers, this.confByName, this.extrasPrice, this.extrasDescription});
 
   final String pkHemId;
   final String paidByName;
@@ -46,6 +47,8 @@ class PaymentQueryExtensions {
   final num eventPriceForMembers;
   final num eventPriceForNonMembers;
   final String confByName;
+  final num extrasPrice;
+  final String extrasDescription;
 
   bool isLoading = false;
 
@@ -58,7 +61,9 @@ class PaymentQueryExtensions {
         creditAvailable: map['creditAvailable'],
         eventPriceForMembers: map['eventPriceForMembers'],
         eventPriceForNonMembers: map['eventPriceForNonMembers'],
-        confByName: map['confByName']);
+        confByName: map['confByName'],
+        extrasDescription: map['extrasDescription'],
+        extrasPrice: map['extrasPrice']);
     return item;
   }
 }
@@ -66,7 +71,7 @@ class PaymentQueryExtensions {
 class PaymentReportPage extends StatefulWidget {
   const PaymentReportPage({Key key, @required this.eventAggregate}) : super(key: key);
 
-  final RunAdminAggregate eventAggregate;
+  final RunDetailAggregate eventAggregate;
 
   @override
   PaymentReportState createState() => PaymentReportState();
@@ -125,9 +130,11 @@ class PaymentReportState extends State<PaymentReportPage> {
           COALESCE(credits.currentBalance,0) as creditAvailable,
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as eventPriceForMembers,
           coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as eventPriceForNonMembers,
-          COALESCE(confBy.dispName,'') as confByName
+          COALESCE(confBy.dispName,'') as confByName,
+          COALESCE(e.${EventTableHelper.colExtrasDescription},'<unknown>') as extrasDescription,
+          COALESCE(e.${EventTableHelper.colEventPriceForExtras},0) as extrasPrice
           FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem
-          INNER JOIN ${NarrowEventsTableHelper.tableName} e on e.eventId = hem.eventId
+          INNER JOIN ${EventTableHelper.tableName} e on e.eventId = hem.eventId
           INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm on hkm.userId = hem.userId and hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
           LEFT OUTER JOIN ${HashersTableHelper.tableName} h on h.hasherId = hem.userId
@@ -200,16 +207,9 @@ class PaymentReportState extends State<PaymentReportPage> {
     print('Payment totals refreshed at ' + DateTime.now().millisecondsSinceEpoch.toString());
   }
 
-  Future<List<dynamic>> payForEvent(PaymentAggregate item, int paymentType, num amount) {
+  Future<List<dynamic>> payForEvent(PaymentAggregate item, int paymentType, num amount, {EnumPayForExtras<int> doPayForExtras = payForRunOnly}) {
     final PaymentsService paySrv = PaymentsService();
-    return paySrv.payForEvent(
-      widget.eventAggregate.event.eventId,
-      GUID_EMPTY,
-      item.extensions.pkHemId,
-      paymentType,
-      amount,
-      attendenceAtHash.value,
-    );
+    return paySrv.payForEvent(widget.eventAggregate.event.eventId, GUID_EMPTY, item.extensions.pkHemId, paymentType, amount, attendenceAtHash.value, doPayForExtras);
   }
 
   void applyFilter() {
@@ -427,17 +427,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                 });
                                               });
                                             } else {
-                                              payForEvent(filteredList[index], direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value,
-                                                      (filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers)
-                                                  .then((List<dynamic> results) {
-                                                _refreshListsFromTable().then((void dummy) {
-                                                  setState(() {
-                                                    refreshTotals();
-                                                    BankTransferQr.showBankTransferSnackbar(
-                                                        widget.eventAggregate, results, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, context, filteredList[index].extensions.paidByName, filteredList[index].extensions.isMember, -1);
-                                                  });
-                                                });
-                                              });
+                                              final num paymentAmount = (filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers;
+                                              showExtrasDialog(context, _scaffoldKey.currentState, direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, filteredList[index], paymentAmount);
                                             }
                                             return Future<bool>.value(false);
                                           },
@@ -464,7 +455,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                     Padding(
                                                       padding: const EdgeInsets.only(left: 15.0),
                                                       child: Text(
-                                                          '${Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Bank Transfer',
+                                                          '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Bank Transfer',
                                                           style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                     )
                                                   ])),
@@ -491,7 +482,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                     Padding(
                                                       padding: const EdgeInsets.only(right: 15.0),
                                                       child: Text(
-                                                          '${Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} Cash',
+                                                          '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Cash',
                                                           style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                     )
                                                   ])),
@@ -507,6 +498,67 @@ class PaymentReportState extends State<PaymentReportPage> {
                   ),
                 ],
               ));
+  }
+
+  void showExtrasDialog(BuildContext context, ScaffoldState scaffoldState, int paymentType, PaymentAggregate packMember, num otherAmount) {
+    scaffoldState.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+    if (((paymentType == paymentFreeRun.value) || (paymentType == paymentCash.value) || (paymentType == paymentBankTransfer.value) || (paymentType == paymentCashOtherAmount.value) || (paymentType == paymentHashCredit.value) || (paymentType == paymentBankTransferOtherAmount.value)) &&
+        ((widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0)) {
+      final num runOnlyPrice = packMember.extensions.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
+      final num runPlusExtrasPrice = runOnlyPrice + widget.eventAggregate.event.eventPriceForExtras;
+
+      final String runOnlyPriceStr = Utilities.getFormattedMoney(runOnlyPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+      final String runPlusExtrasPriceStr = Utilities.getFormattedMoney(runPlusExtrasPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+
+      final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+        <String, dynamic>{
+          'title': 'Run only ($runOnlyPriceStr)',
+          'icon': <Widget>[
+            Container(),
+          ],
+          'returnValue': payForRunOnly,
+        },
+        <String, dynamic>{
+          'title': 'Run + ' + widget.eventAggregate.event.extrasDescription + ' ($runPlusExtrasPriceStr)',
+          'icon': <Widget>[
+            Container(),
+          ],
+          'returnValue': payForRunAndExtras
+        },
+      ];
+
+      final MultipleChoicePopup popup = MultipleChoicePopup(
+          title: 'Payment options',
+          buttons: buttons,
+          cancelButtonTitle: 'Cancel',
+          buttonPress: (dynamic payForExtras) {
+            payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForExtras).then((List<dynamic> results) {
+              _refreshListsFromTable().then((void dummy) {
+                setState(() {
+                  refreshTotals();
+                  BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.extensions.paidByName, packMember.extensions.isMember, otherAmount);
+                });
+              });
+            });
+          });
+
+      showDialog<void>(
+          context: context,
+          barrierDismissible: false, // user must tap button!
+          builder: (BuildContext context) {
+            return popup;
+          });
+    } else {
+      // there are no extras so just pay for the run without any extras dialog
+      payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForRunOnly).then((List<dynamic> results) {
+        _refreshListsFromTable().then((void dummy) {
+          setState(() {
+            refreshTotals();
+            BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.extensions.paidByName, packMember.extensions.isMember, otherAmount);
+          });
+        });
+      });
+    }
   }
 
   void filterTapped(int positionFlag) {
@@ -560,14 +612,18 @@ class PaymentReportState extends State<PaymentReportPage> {
                   setState(() {
                     item.extensions.isLoading = true;
                   });
-                  payForEvent(item, paymentValue.transactionType, paymentValue.transactionValue).then((List<dynamic> results) {
-                    _refreshListsFromTable().then((void dummy) {
-                      setState(() {
-                        refreshTotals();
-                        BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentValue.transactionType, topContext, item.extensions.paidByName, item.extensions.isMember, paymentValue.transactionValue);
-                      });
-                    });
-                  });
+
+                  //final num paymentAmount = (item.extensions.isMember != 0) ? item.extensions.eventPriceForMembers : item.extensions.eventPriceForNonMembers;
+                  showExtrasDialog(context, _scaffoldKey.currentState, paymentValue.transactionType, item, paymentValue.transactionValue);
+
+                  // payForEvent(item, paymentValue.transactionType, paymentValue.transactionValue).then((List<dynamic> results) {
+                  //   _refreshListsFromTable().then((void dummy) {
+                  //     setState(() {
+                  //       refreshTotals();
+                  //       BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentValue.transactionType, topContext, item.extensions.paidByName, item.extensions.isMember, paymentValue.transactionValue);
+                  //     });
+                  //   });
+                  // });
                 }
               },
             );
@@ -646,6 +702,7 @@ class PaymentReportState extends State<PaymentReportPage> {
         const num spacer = 6.0;
 
         final String amountStr = Utilities.getFormattedMoney(item?.payment?.creditAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+        final String extrasPriceStr = Utilities.getFormattedMoney(item?.extensions?.extrasPrice ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
         return AlertDialog(
           title: const Text('Payment Detail'),
@@ -729,6 +786,48 @@ class PaymentReportState extends State<PaymentReportPage> {
                       ),
                       flex: flexRight),
                 ]),
+                item.extensions.extrasPrice == 0
+                    ? Container()
+                    : Row(children: <Widget>[
+                        const Expanded(
+                          child: Text(
+                            'Extras:',
+                            style: headingStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          flex: flexLeft,
+                        ),
+                        const SizedBox(width: spacer, height: 10.0),
+                        Expanded(
+                            child: Text(
+                              item.extensions.extrasDescription,
+                              style: bodyStyle,
+                            ),
+                            flex: flexRight),
+                      ]),
+                item.extensions.extrasPrice == 0
+                    ? Container()
+                    : Row(children: <Widget>[
+                        const Expanded(
+                          child: Text(
+                            'Ex. Paid:',
+                            style: headingStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          flex: flexLeft,
+                        ),
+                        const SizedBox(width: spacer, height: 10.0),
+                        Expanded(
+                            child: Text(
+                              item.payment.doPayForExtras == 0 ? 'No' : extrasPriceStr,
+                              style: bodyStyle,
+                            ),
+                            flex: flexRight),
+                      ]),
                 Row(children: <Widget>[
                   const Expanded(
                     child: Text(

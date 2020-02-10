@@ -3,7 +3,7 @@ import 'dart:core';
 import 'package:flutter/material.dart';
 
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/globals.dart';
+import 'package:harrier_central/util/styles.dart';
 
 class MultipleChoicePopup extends StatefulWidget {
   const MultipleChoicePopup({
@@ -30,6 +30,7 @@ class _MultipleChoicePopupState extends State<MultipleChoicePopup> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.title),
+      contentPadding: const EdgeInsets.fromLTRB(14, 20, 14, 10),
       content: Column(mainAxisSize: MainAxisSize.min, children: getButtons()
 
           //  <Widget>[
@@ -65,32 +66,42 @@ class _MultipleChoicePopupState extends State<MultipleChoicePopup> {
     final List<Widget> buttons = <Widget>[];
 
     for (Map<String, dynamic> btnDef in widget.buttons) {
-      if (btnDef['title'].toString().isEmpty)
-      {
+      if (btnDef['title'].toString().isEmpty) {
         continue;
       }
-      final Widget w = Container(
-        width: 350,
-        padding: EdgeInsets.only(top: 4.0 * deviceHeightScaleFactor, bottom: 4.0 * deviceHeightScaleFactor),
-        child: FlatButton(
-          padding: EdgeInsets.only(top: 6.0 * deviceHeightScaleFactor, left: 8.0, bottom: 6.0 * deviceHeightScaleFactor),
-          color: Colors.blue[900],
-          child: Row(children: <Widget>[
-            Stack(alignment: AlignmentDirectional.center, children: btnDef['icon']),
-            Padding(
-              padding: const EdgeInsets.only(left: 10, right: 0),
-              child: Text(btnDef['title'].toString()),
+      final Widget w = Row(children: <Widget>[
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
+              widget.buttonPress(btnDef['returnValue']);
+            },
+            child: Container(
+              //padding: EdgeInsets.only(top: 6.0 * deviceHeightScaleFactor, left: 8.0, bottom: 6.0 * deviceHeightScaleFactor),
+              color: Colors.blue[900],
+              child: Row(children: <Widget>[
+                const SizedBox(width: 8.0,),
+                Stack(alignment: AlignmentDirectional.center, children: btnDef['icon']),
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0, top: 16.0, bottom: 10.0),
+                    child: Text(
+                      btnDef['title'].toString(),
+                      maxLines: 5,
+                      overflow: TextOverflow.ellipsis,
+                      style: buttonLabelStyleSmall,
+                    ),
+                  ),
+                ),
+              ]),
+              //textColor: Colors.white,
             ),
-          ]),
-          textColor: Colors.white,
-          onPressed: () {
-            Navigator.of(context).pop();
-            widget.buttonPress(btnDef['returnValue']);
-          },
-        ),
-      );
+          ),
+        )
+      ]);
 
       buttons.add(w);
+      buttons.add(const SizedBox(height: 10.0));
     }
     buttons.add(
       FlatButton(

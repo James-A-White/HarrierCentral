@@ -765,7 +765,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           ),
           CheckinFiltersCell(
             counter: countHasRecentRuns,
-            label: 'Has runs',
+            label: 'Have runs',
             index: 3,
             useTriState: true,
             onTap: () {

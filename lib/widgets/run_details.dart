@@ -10,6 +10,7 @@ import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -21,16 +22,16 @@ import 'package:harrier_central/widgets/zoomable_image_page.dart';
 
 class RunDetails extends StatelessWidget {
   const RunDetails({
-    @required this.event, 
-    this.kennel, 
+    @required this.event,
+    this.kennel,
     this.digitsAfterDecimal,
     this.currencySymbol,
     this.distancePreference,
     this.distToEvent,
-    this.paymentLinkUrl
-    });
+    this.paymentLinkUrl,
+  });
 
-  final NarrowEventsModel event;
+  final EventModel event;
   final KennelsModel kennel;
   final int digitsAfterDecimal;
   final String currencySymbol;
@@ -92,34 +93,41 @@ class RunDetails extends StatelessWidget {
               padding: EdgeInsets.only(top: 40.0, bottom: 10.0),
               child: FancyDivider(innerColor: Colors.white),
             ),
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      'Run #:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    flex: flexLeft,
-                  ),
-                  SizedBox(
-                    height: spaceBetweenRows,
-                    width: spaceBetweenColumns,
-                  ),
-                  Expanded(
-                      child: Text(
-                        '${event.eventNumber}',
-                        style: listValueStyle,
-                        textAlign: TextAlign.left,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      flex: flexRight),
-                ],
+                          Text('Event details', style: headingStyle),
+              SizedBox(
+                height: 15.0,
               ),
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+
+              ((event.eventNumber ?? 0) == 0) || (event.isCountedRun == 0)
+                  ? Container()
+                  : Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            'Run #:',
+                            style: listLabelStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          flex: flexLeft,
+                        ),
+                        const SizedBox(
+                          height: spaceBetweenRows,
+                          width: spaceBetweenColumns,
+                        ),
+                        Expanded(
+                            child: Text(
+                              '${event.eventNumber}',
+                              style: listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            flex: flexRight),
+                      ],
+                    ),
               Row(
                 children: <Widget>[
                   Expanded(
@@ -132,7 +140,7 @@ class RunDetails extends StatelessWidget {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: spaceBetweenRows,
                     width: spaceBetweenColumns,
                   ),
@@ -159,7 +167,7 @@ class RunDetails extends StatelessWidget {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: spaceBetweenRows,
                     width: spaceBetweenColumns,
                   ),
@@ -186,15 +194,13 @@ class RunDetails extends StatelessWidget {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: spaceBetweenRows,
                     width: spaceBetweenColumns,
                   ),
                   Expanded(
                       child: Text(
-                        ((event.eventPriceForMembers ?? kennel.defaultPriceForMembers ?? 0) > 0)
-                            ? '${Utilities.getFormattedMoney(event.eventPriceForMembers ?? kennel.defaultPriceForMembers ?? 0, digitsAfterDecimal, currencySymbol)} (members)'
-                            : '',
+                        ((event.eventPriceForMembers ?? kennel.defaultPriceForMembers ?? 0) > 0) ? '${Utilities.getFormattedMoney(event.eventPriceForMembers ?? kennel.defaultPriceForMembers ?? 0, digitsAfterDecimal, currencySymbol)} (members)' : '',
                         style: listValueStyle,
                         textAlign: TextAlign.left,
                         maxLines: 1,
@@ -215,15 +221,13 @@ class RunDetails extends StatelessWidget {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 0,
                     width: spaceBetweenColumns,
                   ),
                   Expanded(
                       child: Text(
-                        ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0) > 0)
-                            ? '${Utilities.getFormattedMoney(event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0, digitsAfterDecimal, currencySymbol)} (non-members)'
-                            : '',
+                        ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0) > 0) ? '${Utilities.getFormattedMoney(event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0, digitsAfterDecimal, currencySymbol)} (non-members)' : '',
                         style: listValueStyle,
                         textAlign: TextAlign.left,
                         maxLines: 1,
@@ -232,90 +236,93 @@ class RunDetails extends StatelessWidget {
                       flex: flexRight),
                 ],
               ),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      'Bag drop:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+              (event.eventPriceForExtras ?? 0) == 0
+                  ? Container()
+                  : Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            'Extra fee:',
+                            style: listLabelStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          flex: flexLeft,
+                        ),
+                        const SizedBox(
+                          height: spaceBetweenRows,
+                          width: spaceBetweenColumns,
+                        ),
+                        Expanded(
+                            child: Text(
+                              ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0) > 0) ? '${Utilities.getFormattedMoney(event.eventPriceForExtras ?? 0, digitsAfterDecimal, currencySymbol)} (${event.extrasDescription})' : '',
+                              style: listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            flex: flexRight),
+                      ],
                     ),
-                    flex: flexLeft,
-                  ),
-                  SizedBox(
-                    height: spaceBetweenRows,
-                    width: spaceBetweenColumns,
-                  ),
-                  Expanded(
-                      child: Text(
-                        'Unknown',
-                        style: listValueStyle,
-                        textAlign: TextAlign.left,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      flex: flexRight),
-                ],
-              ),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      'Hares:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+              (event.hares ?? '') == ''
+                  ? Container()
+                  : Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            'Hares:',
+                            style: listLabelStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          flex: flexLeft,
+                        ),
+                        const SizedBox(
+                          height: spaceBetweenRows,
+                          width: spaceBetweenColumns,
+                        ),
+                        Expanded(
+                            child: Text(
+                              event.hares ?? '',
+                              style: listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            flex: flexRight),
+                      ],
                     ),
-                    flex: flexLeft,
-                  ),
-                  SizedBox(
-                    height: spaceBetweenRows,
-                    width: spaceBetweenColumns,
-                  ),
-                  Expanded(
-                      child: Text(
-                        event.hares ?? '',
-                        style: listValueStyle,
-                        textAlign: TextAlign.left,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      flex: flexRight),
-                ],
-              ),
               hasLocationPermissions
-                          ? 
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      'Distance:',
-                      style: listLabelStyle,
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    flex: flexLeft,
-                  ),
-                  SizedBox(
-                    height: spaceBetweenRows,
-                    width: spaceBetweenColumns,
-                  ),
-                  Expanded(
-                      child: Text(
+                  ? Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            'Distance:',
+                            style: listLabelStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          flex: flexLeft,
+                        ),
+                        const SizedBox(
+                          height: spaceBetweenRows,
+                          width: spaceBetweenColumns,
+                        ),
+                        Expanded(
+                            child: Text(
                               hasLocationPermissions ? distToEvent >= 0 ? Utilities.getDistance(distToEvent, context, isMetric: distancePreference == 0) + ' from here' : '<unknown>' : '',
                               style: listValueStyle,
                               textAlign: TextAlign.left,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                            )
-                          ,
-                      flex: hasLocationPermissions ? flexRight : 0),
-                ],
-              ) : Container(),
+                            ),
+                            flex: hasLocationPermissions ? flexRight : 0),
+                      ],
+                    )
+                  : Container(),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -329,7 +336,7 @@ class RunDetails extends StatelessWidget {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: spaceBetweenRows,
                     width: spaceBetweenColumns,
                   ),
@@ -356,7 +363,7 @@ class RunDetails extends StatelessWidget {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: spaceBetweenRows,
                     width: spaceBetweenColumns,
                   ),
@@ -383,7 +390,7 @@ class RunDetails extends StatelessWidget {
                     ),
                     flex: flexLeft,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: spaceBetweenRows,
                     width: spaceBetweenColumns,
                   ),
@@ -421,16 +428,50 @@ class RunDetails extends StatelessWidget {
                       child: Text('Pay for Hash', style: buttonTextStyle),
                     ),
                   ),
+            (event.tags1 ?? 0) == 0
+                ? Container()
+                : Column(
+                    children: <Widget>[
+                      const FancyDivider(
+                        innerColor: Colors.white,
+                        topMargin: 30.0,
+                        bottomMargin: 10.0,
+                      ),
+                      Text('Event tags', style: headingStyle),
+                      SizedBox(
+                        height: 15.0,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          SizedBox(width: deviceWidth), // this is required to force the column to be the full width of the device
+                          for (int i = 0; i < runTags.length; i++)
+                            ((runTags.values.elementAt(i) ?? 0) & event.tags1) == 0
+                                ? Container()
+                                : // TODO(James): Figure out how to do this without adding empty containers
+                                Container(
+                                    child: Text(
+                                      '•  ' + runTags.keys.elementAt(i),
+                                      style: listValueStyle,
+                                    ),
+                                    margin: const EdgeInsets.only(left: 30.0, bottom: 10.0),
+                                  )
+
+                          //for (dynamic tag in runTags) Text(tag.key)
+                        ],
+                      ),
+                    ],
+                  ),
             (event.eventDescription ?? '') == ''
                 ? Container()
-                : const Padding(
-                    padding: EdgeInsets.only(top: 32.0),
-                    child: FancyDivider(innerColor: Colors.white),
+                : const FancyDivider(
+                    innerColor: Colors.white,
+                    topMargin: 40.0,
                   ),
             (event.eventDescription ?? '') == ''
                 ? Container()
                 : Padding(
-                    padding: const EdgeInsets.only(top: 30.0, right: 20.0, left: 20.0, bottom: 20.0),
+                    padding: const EdgeInsets.only(top: 20.0, right: 20.0, left: 20.0, bottom: 20.0),
                     child: Linkify(
                       text: event.eventDescription.replaceAll('\r\n', '\n'),
                       style: bodyStyle,
@@ -449,7 +490,5 @@ class RunDetails extends StatelessWidget {
         ),
       ),
     );
-    
-
   }
 }

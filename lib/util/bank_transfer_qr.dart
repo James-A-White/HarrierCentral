@@ -7,7 +7,7 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class BankTransferQr {
-  static void showBankTransferSnackbar(RunAdminAggregate eventAggregate, List<dynamic> results, int paymentType, BuildContext context, String packMemberNameForDisplay, int isMember, num otherAmount) {
+  static void showBankTransferSnackbar(RunDetailAggregate eventAggregate, List<dynamic> results, int paymentType, BuildContext context, String packMemberNameForDisplay, int isMember, num otherAmount) {
     if (eventAggregate.kennel.bankBic != null) {
       String paymentReference = '';
       if ((results != null) && (results.isNotEmpty) && (results[0]['paymentReference'] != null)) {
@@ -48,7 +48,7 @@ class BankTransferQr {
     }
   }
 
-  static void showBankTransferQrCode(BuildContext context, RunAdminAggregate eventAggregate, bool member, {String remitString, num remitAmount, String packMemberNameForDisplay}) {
+  static void showBankTransferQrCode(BuildContext context, RunDetailAggregate eventAggregate, bool member, {String remitString, num remitAmount, String packMemberNameForDisplay}) {
     if (eventAggregate.kennel.bankBic != null) {
       num amount = eventAggregate.extensions.memberPrice;
 

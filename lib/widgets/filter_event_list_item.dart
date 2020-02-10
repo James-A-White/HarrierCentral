@@ -30,7 +30,7 @@ class FilterEventListItem extends StatelessWidget {
         Navigator.push<void>(
           context,
           MaterialPageRoute<num>(
-            builder: (BuildContext context) => RunAdminMainPage(eventId: event['eventId']),
+            builder: (BuildContext context) => RunDetailPage(eventId: event['eventId']),
           ),
         ).then((void dummy) {
           //updateEvent(value);

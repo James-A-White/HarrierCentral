@@ -16,7 +16,7 @@ class CommonQueries {
           SELECT e.eventId,
           e.eventName,
           (julianday(eventStartDatetime) - julianday('now','localtime')) * 24 as deltaHours
-          FROM ${NarrowEventsTableHelper.tableName} e
+          FROM ${EventTableHelper.tableName} e
           WHERE e.kennelId = "$kennelId"
           ORDER BY abs(julianday('now') - julianday(eventStartDatetime)) ASC
           

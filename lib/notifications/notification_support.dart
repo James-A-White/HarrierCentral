@@ -49,7 +49,7 @@ class NotificationSupport {
         String sql = '''
           SELECT e.eventId,e.eventName,e.eventStartDatetime,
           coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) as notificationPreference
-          FROM ${NarrowEventsTableHelper.tableName} e
+          FROM ${EventTableHelper.tableName} e
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId and hkm.userId = "$userId"
           LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user)} hem on hem.eventId = e.eventId and hem.userId = "$userId"
           WHERE e.eventStartDatetime BETWEEN datetime('now','localtime','-8 hours') AND datetime('now','localtime','+$NOTIFICATION_DAYS_IN_FUTURE days') 
@@ -77,7 +77,7 @@ class NotificationSupport {
         sql = '''
           SELECT e.eventId,e.eventName,e.eventStartDatetime,
           coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) as notificationPreference
-          FROM ${NarrowEventsTableHelper.tableName} e
+          FROM ${EventTableHelper.tableName} e
           INNER JOIN ${NotificationsTableHelper.tableName} notif on notif.${NotificationsTableHelper.colNotificationTag} = "$NOTIFICATION_PREFIX_EVENT_UPDATE" || e.eventId
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId and hkm.userId = "$userId"
           LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user)} hem on hem.eventId = e.eventId and hem.userId = "$userId"
@@ -106,7 +106,7 @@ class NotificationSupport {
         sql = '''
           SELECT notif.${NotificationsTableHelper.colNotificationTag} as topicTag FROM ${NotificationsTableHelper.tableName} notif WHERE notif.${NotificationsTableHelper.colNotificationTag} IN 
           (SELECT "$NOTIFICATION_PREFIX_EVENT_UPDATE" || e.eventId 
-          FROM ${NarrowEventsTableHelper.tableName} e
+          FROM ${EventTableHelper.tableName} e
           WHERE e.eventStartDatetime BETWEEN datetime('now','localtime','-10 years') AND datetime('now','localtime','-7 days'))
           ''';
 
@@ -124,7 +124,7 @@ class NotificationSupport {
         sql = '''
           DELETE FROM ${NotificationsTableHelper.tableName} WHERE ${NotificationsTableHelper.colNotificationTag} IN 
           (SELECT "$NOTIFICATION_PREFIX_EVENT_UPDATE" || e.eventId 
-          FROM ${NarrowEventsTableHelper.tableName} e
+          FROM ${EventTableHelper.tableName} e
           WHERE e.eventStartDatetime BETWEEN datetime('now','localtime','-10 years') AND datetime('now','localtime','-7 days'))
           ''';
 
@@ -152,7 +152,7 @@ class NotificationSupport {
         final String sql = '''
           SELECT e.eventId,e.eventName,e.eventStartDatetime,
           CASE WHEN e.eventStartDatetime < datetime('now','localtime','-1 days') THEN 2 ELSE coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) END as notificationPreference
-          FROM ${NarrowEventsTableHelper.tableName} e
+          FROM ${EventTableHelper.tableName} e
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId and hkm.userId = "$userId"
           LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user)} hem on hem.eventId = e.eventId and hem.userId = "$userId"
           WHERE e.eventId = "$eventId" OR e.kennelId = "$kennelId"

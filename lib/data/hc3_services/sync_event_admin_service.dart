@@ -47,7 +47,7 @@ class SyncEventAdminService {
   Future<void> getLastUpdatedTimes(Database db, int flags) async {
     _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HasherEventMapTableHelper.colUpdatedAtValue, HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin));
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin));
-    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, NarrowEventsTableHelper.colUpdatedAtValue, NarrowEventsTableHelper.tableName);
+    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, EventTableHelper.colUpdatedAtValue, EventTableHelper.tableName);
     _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, PaymentsTableHelper.colUpdatedAtValue, PaymentsTableHelper.tableName);
     _receiptsLastUpdated = (flags & flagReceiptsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, ReceiptsTableHelper.colUpdatedAtValue, ReceiptsTableHelper.tableName);
     _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HashersTableHelper.colUpdatedAtValue, HashersTableHelper.tableName);
@@ -201,7 +201,7 @@ class SyncEventAdminService {
       }
 
       if (ms.startsWith(r'[{"eventId"')) {
-        final NarrowEventsService eSrv = NarrowEventsService();
+        final EventService eSrv = EventService();
         await eSrv.bulkUpdateDatabase('[$ms]', db, informUser);
         print('events updated');
       }

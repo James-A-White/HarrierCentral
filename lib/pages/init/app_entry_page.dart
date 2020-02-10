@@ -205,6 +205,8 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     deviceHeightScaleFactor ??= MediaQuery.of(context).size.height / BASE_DEVICE_HEIGHT;
     deviceMaxScaleFactor ??= max(deviceWidthScaleFactor, deviceHeightScaleFactor);
     deviceMinScaleFactor ??= min(deviceWidthScaleFactor, deviceHeightScaleFactor);
+
+    deviceWidth ??= MediaQuery.of(context).size.width;
     return Image.asset('images/init/splash_screen.jpg');
   }
 }

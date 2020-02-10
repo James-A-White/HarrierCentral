@@ -1,4 +1,3 @@
-
 // lat lon of London Eye
 const num DEFAULT_LATITUDE = 51.5033;
 const num DEFAULT_LONGITUDE = 0.1195;
@@ -27,7 +26,7 @@ const String BASE_HCWEB_UPLOAD_URL = 'https://hcweb.azurewebsites.net/upload/';
 const String BASE_API_URL = 'https://harrier.azurewebsites.net/api/';
 
 const String BASE_PROFILE_PHOTOS_URL = 'https://harriercentral.blob.core.windows.net/profile-photos/';
-const String BASE_RECEIPTS_URL =       'https://harriercentral.blob.core.windows.net/receipts/';
+const String BASE_RECEIPTS_URL = 'https://harriercentral.blob.core.windows.net/receipts/';
 
 const String EMAIL_RUN_DETAILS_TO_PACK_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendRunDetailEmails';
 const String EMAIL_PAYMENT_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendPaymentReport';
@@ -41,13 +40,13 @@ const String NOTIFICATION_PREFIX_EVENT_UPDATE = 'evtUpdate_';
 const String ERROR_KEY = 'HC_ERROR';
 
 const String GUID_EMPTY = '00000000-0000-0000-0000-000000000000';
-const String GUID_8 =     '88888888-8888-8888-8888-888888888888';
-const String GUID_9 =     '99999999-9999-9999-9999-999999999999';
-const String GUID_MAX =   'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
+const String GUID_8 = '88888888-8888-8888-8888-888888888888';
+const String GUID_9 = '99999999-9999-9999-9999-999999999999';
+const String GUID_MAX = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
 
-const int IGNORE_REPLICATION_TIMESTAMP = 628387200000;  // 1990-01-01 00:00:00
+const int IGNORE_REPLICATION_TIMESTAMP = 628387200000; // 1990-01-01 00:00:00
 const int FORCE_ALL_REPLICATION_TIMESTAMP = 949276800000; // 2000-01-31 00:00:00
 
 const String QR_PREFIX_SPECIFIC_RUN_START = 'SRS:';
@@ -58,13 +57,13 @@ const String QR_PREFIX_USER_CODE = 'UQR:';
 const String QR_PREFIX_USER_SECRET_CODE = 'USC:';
 const String QR_PREFIX_USER_RESET_CODE = 'URC:';
 
-const int mmAuthIsGm = 0x40000000;                // TODO(James): Needs implementation
+const int mmAuthIsGm = 0x40000000; // TODO(James): Needs implementation
 const int mmAuthCanGrantPermissions = 0x20000000; // TODO(James): Needs implementation
 
 const int mmAuthAccessKennelAdmin = 0x00000001; // TODO(James): Needs implementation
 const int mmAuthAllowCheckInAndOutFlag = 0x00000002;
 const int mmAuthAllowHashCashFlag = 0x00000004;
-const int mmAuthAllowAddNewMemberFlag = 0x00000008; 
+const int mmAuthAllowAddNewMemberFlag = 0x00000008;
 const int mmAuthAllowEnableDisableFacebookEvents = 0x00000010; // TODO(James): Needs implementation
 const int mmAuthEditRuns = 0x00000020; // TODO(James): Needs implementation
 const int mmAuthGenerateRunQrCodes = 0x00000040; // TODO(James): Needs implementation
@@ -74,10 +73,38 @@ const int mmAuthCanEditRunVisibility = 0x00000200; // TODO(James): Needs impleme
 
 const int cacheDurationAllHashers = 60 * 86400000; // 60 days cache duration
 
-
-
-
-
-
-
+const Map<String,int> runTags = <String, int>{
+  'Normal run': 0x00000001,
+  'Red Dress run': 0x00000002,
+  'Full Moon run': 0x00000004,
+  'Harriette run': 0x00000008,
+  'Men-only Hash': 0x00000010,
+  'Woman-only Hash': 0x00000020,
+  'Kids allowed': 0x00000040,
+  'No kids allowed': 0x00000080,
+  'Bring flashlight': 0x00000100,
+  'Water on trail': 0x00000200,
+  'Walker trail': 0x00000400,
+  'Runner trail': 0x00000800,
+  'Long run trail': 0x00001000,
+  'Pub crawl': 0x00002000,
+  'On after': 0x00004000,
+  'Baby jogger friendly': 0x00008000,
+  'Shiggy run': 0x00010000,
+  'Accessible by public transport': 0x00020000,
+  'Bike Hash': 0x00040000,
+  'City run': 0x00080000,
+  'Live hare': 0x00100000,
+  'Dead hare': 0x00200000,
+  'Nighttime run': 0x00400000,
+  'Steep hills': 0x00800000,
+  'Charity event': 0x01000000,
+  'Dog friendly': 0x02000000,
+  'Pick-up Hash': 0x04000000,
+  'Catch the Hare': 0x08000000,
+  'Bring cash on trail': 0x10000000,
+  'Bag drop available': 0x20000000,
+  'AGM': 0x40000000,
+  'Multi-day event': 0x80000000,
+};
 

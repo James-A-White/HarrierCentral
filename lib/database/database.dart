@@ -77,7 +77,7 @@ class DBProvider {
         await KennelsTableHelper.createTable(db, version);
         await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.user);
         await HasherEventMapTableHelper.createTable(db, version, HasherEventMapTableType.user);
-        await NarrowEventsTableHelper.createTable(db, version);
+        await EventTableHelper.createTable(db, version);
         await NotificationsTableHelper.createTable(db, version);
         await MigrationsTableHelper.createTable(db,version);
 

@@ -55,7 +55,7 @@ class RunDetailsQueryExtensions {
 class RunDetailsAggregate {
   RunDetailsAggregate({this.event, this.kennel, this.extensions, this.paymentUrl});
 
-  final NarrowEventsModel event;
+  final EventModel event;
   final KennelsModel kennel;
   final RunDetailsQueryExtensions extensions;
   final String paymentUrl;
@@ -90,7 +90,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         print(e);
       }
 
-      query = 'DELETE FROM ${NarrowEventsTableHelper.tableName}';
+      query = 'DELETE FROM ${EventTableHelper.tableName}';
       try {
         await db.rawQuery(query);
       } catch (e) {
@@ -159,7 +159,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
             db.rawQuery(query).then((List<Map<String, dynamic>> results) {
               for (int i = 0; i < results.length; i++) {
                 locator.distanceBetween(Utilities.unInt(ll.latitude), Utilities.unInt(ll.longitude), Utilities.unInt(results[i]['narrowEventLatitude']), Utilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
-                  final NarrowEventsModel eventItem = NarrowEventsTableHelper.fromMap(results[i]);
+                  final EventModel eventItem = EventTableHelper.fromMap(results[i]);
                   final KennelsModel kennelItem = KennelsTableHelper.fromMap(results[i]);
                   final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i]);
                   extensionsItem.distToEvent = dist;
