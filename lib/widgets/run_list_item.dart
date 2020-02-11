@@ -3,6 +3,7 @@ import 'dart:core';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:intl/intl.dart';
 //import 'package:flutter_vector_icons/flutter_vector_icons.dart';
@@ -55,6 +56,9 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     // return IntrinsicWidth(
     //     child:
+
+    print(widget.futureRun.event.eventName);
+    print(widget.futureRun.extensions.notificationPreference);
     return Card(
       elevation: 4.0,
       margin: const EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
@@ -171,58 +175,200 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                             rightPadding: 7.0,
                           ),
                           Expanded(
-                            child:  Padding(
+                            child: Padding(
                               padding: const EdgeInsets.only(left: 8.0),
                               child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  //mainAxisAlignment: MainAxisAlignment.center,
-                                  //mainAxisSize: MainAxisSize.max,
-                                  children: <Widget>[
-                                    
-                                    Text(
-                                      (widget.futureRun.event.isCountedRun == 1 ? 'Run #${widget.futureRun.event.eventNumber}, ' : 'Run / Event ') +
-                                          (widget.futureRun.extensions.daysUntilEvent <= 14
-                                              ? widget.futureRun.extensions.daysUntilEvent.toInt() == 0 ? 'TODAY' : widget.futureRun.extensions.daysUntilEvent.toInt() == 1 ? 'Tomorrow' : 'in ${widget.futureRun.extensions.daysUntilEvent.toInt().toString()} days'
-                                              : (widget.futureRun.extensions.daysUntilEvent <= 30)
-                                                  ? 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 7.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks')
-                                                  : widget.futureRun.extensions.daysUntilEvent <= 365
-                                                      ? 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 30.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months')
-                                                      : 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 365.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years')),
-                                      style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
-                                      textAlign: TextAlign.left,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    Text(
-                                      DateFormat("E, MMM d 'at' h:mm a").format(widget.futureRun.event.eventStartDatetime),
-                                      style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
-                                      textAlign: TextAlign.left,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    Text(
-                                      (widget.futureRun.event.hares ?? '') == '' ? 'RSVP to sign up to Hare!' : 'Hares: ' + widget.futureRun.event.hares,
-                                      style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
-                                      textAlign: TextAlign.left,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    (widget.futureRun.extensions.distToEvent >= 0 && hasLocationPermissions)
-                                        ? Text(
-                                            Utilities.getDistance(widget.futureRun.extensions.distToEvent, context,isMetric: widget.futureRun.extensions.distancePreference == 0 ) + ' from here',
-                                            style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
-                                            textAlign: TextAlign.left,
-                                            overflow: TextOverflow.ellipsis,
-                                          )
-                                        : Container(),
-                                        //Expanded(child:Container()),
-                                  ],
-                                ),
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                //mainAxisAlignment: MainAxisAlignment.center,
+                                //mainAxisSize: MainAxisSize.max,
+                                children: <Widget>[
+                                  Text(
+                                    (widget.futureRun.event.isCountedRun == 1 ? 'Run #${widget.futureRun.event.eventNumber}, ' : 'Run / Event ') +
+                                        (widget.futureRun.extensions.daysUntilEvent <= 14
+                                            ? widget.futureRun.extensions.daysUntilEvent.toInt() == 0 ? 'TODAY' : widget.futureRun.extensions.daysUntilEvent.toInt() == 1 ? 'Tomorrow' : 'in ${widget.futureRun.extensions.daysUntilEvent.toInt().toString()} days'
+                                            : (widget.futureRun.extensions.daysUntilEvent <= 30)
+                                                ? 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 7.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks')
+                                                : widget.futureRun.extensions.daysUntilEvent <= 365
+                                                    ? 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 30.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months')
+                                                    : 'in ' + (widget.futureRun.extensions.daysUntilEvent ~/ 365.0).toString() + ((widget.futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years')),
+                                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                    textAlign: TextAlign.left,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    DateFormat("E, MMM d 'at' h:mm a").format(widget.futureRun.event.eventStartDatetime),
+                                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                    textAlign: TextAlign.left,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  (widget.futureRun.event.hares ?? '') == ''
+                                      ? Text(
+                                          'RSVP to Hare this run!',
+                                          style: TextStyle(color: Colors.red[700], fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                          textAlign: TextAlign.left,
+                                          overflow: TextOverflow.ellipsis,
+                                        )
+                                      : Text(
+                                          'Hares: ' + widget.futureRun.event.hares,
+                                          style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                          textAlign: TextAlign.left,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                  (widget.futureRun.extensions.distToEvent >= 0 && hasLocationPermissions)
+                                      ? Text(
+                                          Utilities.getDistance(widget.futureRun.extensions.distToEvent, context, isMetric: widget.futureRun.extensions.distancePreference == 0) + ' from here',
+                                          style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
+                                          textAlign: TextAlign.left,
+                                          overflow: TextOverflow.ellipsis,
+                                        )
+                                      : Container(),
+                                  //Expanded(child:Container()),
+                                ],
+                              ),
                             ),
-                            
                           ),
-                          (widget.futureRun.event.hares ?? '') == '' ? Container(
-                            padding: const EdgeInsets.only(top:15),
-                            child:Image(width: 40.0 * deviceWidthScaleFactor, height: 40.0 * deviceWidthScaleFactor, fit: BoxFit.fill, image: const AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
-                        
-                        
+
+                          IconButton(
+                            icon: Utilities.styleForConnected(const Icon(MaterialCommunityIcons.dots_vertical)),
+                            iconSize: Theme.of(context).iconTheme.size,
+                            color: Colors.black54,
+                            splashColor: Theme.of(context).highlightColor,
+                            onPressed: () {
+                              if (Utilities.checkForConnection(context, message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
+                                final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+                                  <String, dynamic>{
+                                    'title': 'I\'ll be there!',
+                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.check_circle, color: Colors.green)],
+                                    'returnValue': followTypeFollow
+                                  },
+                                  <String, dynamic>{
+                                    'title': 'I might be there',
+                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.question_circle, color: Colors.orange)],
+                                    'returnValue': followTypeIgnore
+                                  },
+                                  <String, dynamic>{
+                                    'title': 'I won\'t make it',
+                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.times_circle, color: Colors.red)],
+                                    'returnValue': followTypeIgnore
+                                  },
+                                  <String, dynamic>{
+                                    'title': 'I\'ll hare!',
+                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.deepPurple, size: 26.0)],
+                                    'returnValue': followTypeIgnore
+                                  },
+                                  widget.futureRun.extensions.notificationPreference == 2
+                                      ? <String, dynamic>{
+                                          'title': 'Notifications on',
+                                          'icon': <Widget>[
+                                            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                                            const Positioned(
+                                              left: 3,
+                                              top: 1.5,
+                                              child: Image(
+                                                width: 25.0,
+                                                height: 25.0,
+                                                fit: BoxFit.fill,
+                                                image: AssetImage('images/icons/bell_gold_50px.png'),
+                                              ),
+                                            )
+                                          ],
+                                          'returnValue': notificationsOn,
+                                        }
+                                      : <String, dynamic>{
+                                          'title': 'Notifications off',
+                                          'icon': <Widget>[
+                                            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                                            const Positioned(
+                                              left: 3,
+                                              top: 1.5,
+                                              child: Image(
+                                                width: 25.0,
+                                                height: 25.0,
+                                                fit: BoxFit.fill,
+                                                image: AssetImage('images/icons/bell_silver_strike_out_50px.png'),
+                                              ),
+                                            )
+                                          ],
+                                          'returnValue': notificationsOff,
+                                        },
+                                  widget.futureRun.extensions.emailAlertPreference == 2
+                                      ? <String, dynamic>{
+                                          'title': 'Send e-mail',
+                                          'icon': <Widget>[
+                                            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                                            const Positioned(
+                                              left: 3,
+                                              top: 1.5,
+                                              child: Image(
+                                                width: 25.0,
+                                                height: 25.0,
+                                                fit: BoxFit.fill,
+                                                image: AssetImage('images/icons/envelope_gold_50px.png'),
+                                              ),
+                                            )
+                                          ],
+                                          'returnValue': emailAlertsOn,
+                                        }
+                                      : <String, dynamic>{
+                                          'title': 'Don\'t send email',
+                                          'icon': <Widget>[
+                                            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                                            const Positioned(
+                                              left: 3,
+                                              top: 1.5,
+                                              child: Image(
+                                                width: 25.0,
+                                                height: 25.0,
+                                                fit: BoxFit.fill,
+                                                image: AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
+                                              ),
+                                            )
+                                          ],
+                                          'returnValue': emailAlertsOff,
+                                        },
+                                ];
+
+                                final MultipleChoicePopup popup = MultipleChoicePopup(
+                                    title: 'Run Options',
+                                    buttons: buttons,
+                                    cancelButtonTitle: 'Cancel',
+                                    buttonPress: (dynamic retVal) {
+                                      if (retVal is EnumEmailAlertState) {
+                                        setEmailAlertState(retVal);
+                                      } else if (retVal is EnumNotificationState) {
+                                        setNotificationState(retVal);
+                                      }
+
+                                      // if (retVal.value != -1) {
+                                      //   final HasherKennelMapService srv = HasherKennelMapService();
+                                      //   widget.kennelItem.extensions.followingRequested = retVal.value;
+                                      //   setState(() {});
+                                      //   int isHomeKennel = -1;
+                                      //   if (retVal == followTypeToggleHomeKennel) {
+                                      //     isHomeKennel = widget.kennelItem.extensions.isHomeKennel == 0 ? 1 : 0;
+                                      //   }
+
+                                      //   srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, followingState: retVal.value, isHomeKennel: isHomeKennel).then((List<dynamic> queryResults) {
+                                      //     setState(() {
+                                      //       widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+                                      //     });
+                                      //   });
+                                      // }
+                                    });
+
+                                showDialog<void>(
+                                    context: context,
+                                    barrierDismissible: false, // user must tap button!
+                                    builder: (BuildContext context) {
+                                      return popup;
+                                    });
+                              }
+                            },
+                          ),
+
+                          // (widget.futureRun.event.hares ?? '') == '' ? Container(
+                          //   padding: const EdgeInsets.only(top:15),
+                          //   child:Image(width: 40.0 * deviceWidthScaleFactor, height: 40.0 * deviceWidthScaleFactor, fit: BoxFit.fill, image: const AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
                         ],
                       ),
                     ),
@@ -313,26 +459,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
         buttonPress: (dynamic retVal) {
-          if ((retVal == notificationsOn) || (retVal == notificationsOff) || (retVal == notificationsAuto)) {
-            final String userId = getStringPref(StringPrefsEnum.userId);
-            final HasherEventMapService hemSrv = HasherEventMapService();
-            final EnumNotificationState<int> nState = retVal;
-            setState(() {
-              widget.futureRun.extensions.notificationPreference = -1;
-            });
-
-            hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.user, userId, null, notificationState: nState.value).then((List<dynamic> results) {
-              setState(() {
-                final NotificationSupport notifications = NotificationSupport();
-                notifications.setNotificationState(eventId: widget.futureRun.event.eventId);
-                // TODO(James): Fix this to reflect true value of what is in the DB not just the value
-                // provided to the function
-                widget.futureRun.extensions.notificationPreference = results[0]['notificationPreference'] ?? 0;
-              });
-            });
-          }
-
-          // modifyMembershipCallback(retVal);
+          setNotificationState(retVal);
         });
 
     showDialog<void>(
@@ -341,6 +468,27 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         builder: (BuildContext context) {
           return popup;
         });
+  }
+
+  void setNotificationState(EnumNotificationState<int> retVal) {
+    if ((retVal == notificationsOn) || (retVal == notificationsOff) || (retVal == notificationsAuto)) {
+      final String userId = getStringPref(StringPrefsEnum.userId);
+      final HasherEventMapService hemSrv = HasherEventMapService();
+      final EnumNotificationState<int> nState = retVal;
+      setState(() {
+        widget.futureRun.extensions.notificationPreference = -1;
+      });
+    
+      hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.user, userId, null, notificationState: nState.value).then((List<dynamic> results) {
+        setState(() {
+          final NotificationSupport notifications = NotificationSupport();
+          notifications.setNotificationState(eventId: widget.futureRun.event.eventId);
+          // TODO(James): Fix this to reflect true value of what is in the DB not just the value
+          // provided to the function
+          widget.futureRun.extensions.notificationPreference = results[0]['notificationPreference'] ?? 0;
+        });
+      });
+    }
   }
 
   void showEmailAlertPopup(BuildContext context) {
@@ -396,11 +544,6 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         ],
         'returnValue': emailAlertsAuto,
       },
-      // <String, dynamic>{
-      //   'title': 'Set notifications to auto',
-      //   'icon':  <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), Positioned(left:3,top:1.5,child:Icon(MaterialCommunityIcons.bell_off, size:25, color: Colors.red[800]))],
-      //   'returnValue': EnumNotificationPopupActions.notificationsAuto,
-      // },
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
@@ -408,22 +551,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
         buttonPress: (dynamic retVal) {
-          if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff) || (retVal == emailAlertsAuto)) {
-            final String userId = getStringPref(StringPrefsEnum.userId);
-            final HasherEventMapService hemSrv = HasherEventMapService();
-            final EnumEmailAlertState<int> nState = retVal;
-            setState(() {
-              widget.futureRun.extensions.emailAlertPreference = -1;
-            });
-
-            hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.user, userId, null, emailAlertState: nState.value).then((List<dynamic> results) {
-              setState(() {
-                widget.futureRun.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;
-              });
-            });
-          }
-
-          // modifyMembershipCallback(retVal);
+          setEmailAlertState(retVal);
         });
 
     showDialog<void>(
@@ -432,5 +560,22 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         builder: (BuildContext context) {
           return popup;
         });
+  }
+
+  void setEmailAlertState(EnumEmailAlertState<int> retVal) {
+    if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff) || (retVal == emailAlertsAuto)) {
+      final String userId = getStringPref(StringPrefsEnum.userId);
+      final HasherEventMapService hemSrv = HasherEventMapService();
+      final EnumEmailAlertState<int> nState = retVal;
+      setState(() {
+        widget.futureRun.extensions.emailAlertPreference = -1;
+      });
+    
+      hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.user, userId, null, emailAlertState: nState.value).then((List<dynamic> results) {
+        setState(() {
+          widget.futureRun.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;
+        });
+      });
+    }
   }
 }

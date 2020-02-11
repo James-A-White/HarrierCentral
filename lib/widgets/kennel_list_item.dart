@@ -222,6 +222,8 @@ class KennelListItemState extends State<KennelsListItem> {
                       ),
                     ),
                   ),
+
+                  
                   IconButton(
                     icon: Utilities.styleForConnected(const Icon(MaterialCommunityIcons.dots_vertical)),
                     iconSize: Theme.of(context).iconTheme.size,
@@ -294,6 +296,8 @@ class KennelListItemState extends State<KennelsListItem> {
                       }
                     },
                   ),
+             
+             
                 ],
               )),
         ],
