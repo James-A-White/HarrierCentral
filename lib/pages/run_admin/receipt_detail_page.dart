@@ -197,6 +197,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
           //   //   return null;
           // },
           onSaved: (String val) {
+            val = val.replaceAll(',', '.'); // TODO(James): Investigate how to better handle cases where numeric keyboards have commas instead of decimals
             _receiptAmount = val;
           },
         ),

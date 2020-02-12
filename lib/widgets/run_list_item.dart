@@ -37,6 +37,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    _rsvpIcon = Future<Widget>.value(getRsvpWidget(widget.futureRun.extensions.rsvpState, widget.futureRun.extensions.isHare));
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -50,6 +51,71 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     print('App lifecycle state => ' + state.toString());
     super.didChangeAppLifecycleState(state);
+  }
+
+  Future<Widget> _rsvpIcon;
+
+  Widget getRsvpWidget(int rsvpState, int willHareState) {
+    IconData rawIcon;
+    Color color;
+    switch (rsvpState) {
+      case 0:
+        break;
+      case 1:
+        rawIcon = FontAwesome.times_circle;
+        color = Colors.red;
+        break;
+      case 2:
+        rawIcon = FontAwesome.question_circle;
+        color = Colors.orange;
+        break;
+      case 3:
+        if (willHareState == 0) {
+          rawIcon = FontAwesome.check_circle;
+          color = Colors.green;
+        } else {
+          // if will hare, don't set anything. We'll handle this case below
+        }
+        break;
+      case -1:
+        rawIcon = delayIcon;
+        color = Colors.blue[800];
+        break;
+    }
+
+    if (rawIcon == null) {
+      if ((rsvpState == 3) && (willHareState == 1)) {
+        return Padding(
+          padding: const EdgeInsets.only(top:2.0,bottom:2.0,right:1.0),
+          child: Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 22.0, width: 22.0),
+        );
+      } else {
+        return Container();
+      }
+    }
+
+    return Icon(rawIcon, size: 26.0, color: color);
+  }
+
+  Future<void> setRsvpState(EnumRsvpState<int> rsvpState, bool willHare) async {
+    setState(() {
+      _rsvpIcon = Future<Widget>.value(getRsvpWidget(-1, 0));
+    });
+
+    final String userId = getStringPref(StringPrefsEnum.userId);
+    final HasherEventMapService hemSrv = HasherEventMapService();
+    final int attendenceValue = rsvpState.value <= rsvpMaybe.value ? attendenceNo.value : attendenceNoChange.value;
+    final List<dynamic> adHocData = await hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.eventAdmin, userId, null, rsvpState: rsvpState.value, attendenceState: attendenceValue, isHare: willHare ? isHareYes.value : isHareNo.value);
+
+    final int rsvpResult = adHocData[0]['rsvpState'];
+    final int willHareResult = adHocData[0]['willHareState'];
+
+    widget.futureRun.extensions.rsvpState = rsvpResult;
+    widget.futureRun.extensions.isHare = willHareResult;
+
+    setState(() {
+      _rsvpIcon = Future<Widget>.value(getRsvpWidget(rsvpResult, willHareResult));
+    });
   }
 
   @override
@@ -71,7 +137,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               Expanded(
                 child: Container(
                   width: MediaQuery.of(context).size.width,
-                  padding: const EdgeInsets.only(top: 5.0, left: 20.0),
+                  padding: const EdgeInsets.only(top: 5.0, left: 10.0),
                   child: Text(
                     widget.futureRun.event.eventName,
                     style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 17.0, color: Colors.black, height: 1.0),
@@ -79,6 +145,19 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                ),
+              ),
+              GestureDetector(
+                onTap: (){
+                  showRsvpOptionsPopup(context);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 9.0),
+                  child: FutureBuilder<Widget>(
+                      future: _rsvpIcon,
+                      builder: (BuildContext context, AsyncSnapshot<Widget> snapshot) {
+                        return snapshot?.data == null ? Container() : snapshot.data;
+                      }),
                 ),
               ),
               Container(
@@ -121,24 +200,9 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                     ),
             ],
           ),
-          // Stack(children: <Widget>[
-          //   Positioned(top:10.0,
-          //   child:FlipClock.reverseCountdown(
-          //     //startTime: DateTime.now(),
-          //     duration: widget.futureRun.eventStartDatetime
-          //         .difference(DateTime.now()),
-          //     digitColor: Colors.black,
-          //     backgroundColor: Colors.white,
-          //     digitSize: 30.0,
-          //     width: 20.0,
-          //     flipDirection: FlipDirection.down,
-          //     borderRadius: const BorderRadius.all(Radius.circular(2.0)),
-          //     //onDone: () => print('ih'),
-          //   ),),
-          // ]),
           Container(
             //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
-            margin: const EdgeInsets.only(top: 7.0, bottom: 0.0),
+            margin: const EdgeInsets.only(top: 2.0, bottom: 0.0),
             padding: const EdgeInsets.only(top: 7.0, bottom: 0.0),
             height: 1.0,
             color: Colors.grey[300],
@@ -234,135 +298,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                             color: Colors.black54,
                             splashColor: Theme.of(context).highlightColor,
                             onPressed: () {
-                              if (Utilities.checkForConnection(context, message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
-                                final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
-                                  <String, dynamic>{
-                                    'title': 'I\'ll be there!',
-                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.check_circle, color: Colors.green)],
-                                    'returnValue': followTypeFollow
-                                  },
-                                  <String, dynamic>{
-                                    'title': 'I might be there',
-                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.question_circle, color: Colors.orange)],
-                                    'returnValue': followTypeIgnore
-                                  },
-                                  <String, dynamic>{
-                                    'title': 'I won\'t make it',
-                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.times_circle, color: Colors.red)],
-                                    'returnValue': followTypeIgnore
-                                  },
-                                  <String, dynamic>{
-                                    'title': 'I\'ll hare!',
-                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.deepPurple, size: 26.0)],
-                                    'returnValue': followTypeIgnore
-                                  },
-                                  widget.futureRun.extensions.notificationPreference == 2
-                                      ? <String, dynamic>{
-                                          'title': 'Notifications on',
-                                          'icon': <Widget>[
-                                            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                                            const Positioned(
-                                              left: 3,
-                                              top: 1.5,
-                                              child: Image(
-                                                width: 25.0,
-                                                height: 25.0,
-                                                fit: BoxFit.fill,
-                                                image: AssetImage('images/icons/bell_gold_50px.png'),
-                                              ),
-                                            )
-                                          ],
-                                          'returnValue': notificationsOn,
-                                        }
-                                      : <String, dynamic>{
-                                          'title': 'Notifications off',
-                                          'icon': <Widget>[
-                                            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                                            const Positioned(
-                                              left: 3,
-                                              top: 1.5,
-                                              child: Image(
-                                                width: 25.0,
-                                                height: 25.0,
-                                                fit: BoxFit.fill,
-                                                image: AssetImage('images/icons/bell_silver_strike_out_50px.png'),
-                                              ),
-                                            )
-                                          ],
-                                          'returnValue': notificationsOff,
-                                        },
-                                  widget.futureRun.extensions.emailAlertPreference == 2
-                                      ? <String, dynamic>{
-                                          'title': 'Send e-mail',
-                                          'icon': <Widget>[
-                                            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                                            const Positioned(
-                                              left: 3,
-                                              top: 1.5,
-                                              child: Image(
-                                                width: 25.0,
-                                                height: 25.0,
-                                                fit: BoxFit.fill,
-                                                image: AssetImage('images/icons/envelope_gold_50px.png'),
-                                              ),
-                                            )
-                                          ],
-                                          'returnValue': emailAlertsOn,
-                                        }
-                                      : <String, dynamic>{
-                                          'title': 'Don\'t send email',
-                                          'icon': <Widget>[
-                                            Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                                            const Positioned(
-                                              left: 3,
-                                              top: 1.5,
-                                              child: Image(
-                                                width: 25.0,
-                                                height: 25.0,
-                                                fit: BoxFit.fill,
-                                                image: AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
-                                              ),
-                                            )
-                                          ],
-                                          'returnValue': emailAlertsOff,
-                                        },
-                                ];
-
-                                final MultipleChoicePopup popup = MultipleChoicePopup(
-                                    title: 'Run Options',
-                                    buttons: buttons,
-                                    cancelButtonTitle: 'Cancel',
-                                    buttonPress: (dynamic retVal) {
-                                      if (retVal is EnumEmailAlertState) {
-                                        setEmailAlertState(retVal);
-                                      } else if (retVal is EnumNotificationState) {
-                                        setNotificationState(retVal);
-                                      }
-
-                                      // if (retVal.value != -1) {
-                                      //   final HasherKennelMapService srv = HasherKennelMapService();
-                                      //   widget.kennelItem.extensions.followingRequested = retVal.value;
-                                      //   setState(() {});
-                                      //   int isHomeKennel = -1;
-                                      //   if (retVal == followTypeToggleHomeKennel) {
-                                      //     isHomeKennel = widget.kennelItem.extensions.isHomeKennel == 0 ? 1 : 0;
-                                      //   }
-
-                                      //   srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, followingState: retVal.value, isHomeKennel: isHomeKennel).then((List<dynamic> queryResults) {
-                                      //     setState(() {
-                                      //       widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
-                                      //     });
-                                      //   });
-                                      // }
-                                    });
-
-                                showDialog<void>(
-                                    context: context,
-                                    barrierDismissible: false, // user must tap button!
-                                    builder: (BuildContext context) {
-                                      return popup;
-                                    });
-                              }
+                              showAllOptionsPopup(context);
                             },
                           ),
 
@@ -392,6 +328,172 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         ],
       ),
     );
+  }
+
+  void showRsvpOptionsPopup(BuildContext context) {
+    if (Utilities.checkForConnection(context, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
+      final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+        <String, dynamic>{
+          'title': 'I\'ll be there!',
+          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.check_circle, color: Colors.green)],
+          'returnValue': rsvpYes
+        },
+        <String, dynamic>{
+          'title': 'I might be there',
+          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.question_circle, color: Colors.orange)],
+          'returnValue': rsvpMaybe
+        },
+        <String, dynamic>{
+          'title': 'I won\'t make it',
+          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.times_circle, color: Colors.red)],
+          'returnValue': rsvpNo
+        },
+        <String, dynamic>{
+          'title': 'I\'ll hare!',
+          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.deepPurple, size: 26.0)],
+          'returnValue': isHareYes
+        },
+      ];
+
+      final MultipleChoicePopup popup = MultipleChoicePopup(
+          title: 'Run Options',
+          buttons: buttons,
+          cancelButtonTitle: 'Cancel',
+          buttonPress: (dynamic retVal) {
+            if (retVal is EnumRsvpState) {
+              setRsvpState(retVal, false);
+            } else if (retVal is EnumIsHare) {
+              setRsvpState(rsvpYes, true);
+            }
+          });
+
+      showDialog<void>(
+          context: context,
+          barrierDismissible: false, // user must tap button!
+          builder: (BuildContext context) {
+            return popup;
+          });
+    }
+  }
+
+  void showAllOptionsPopup(BuildContext context) {
+    if (Utilities.checkForConnection(context, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
+      final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+        <String, dynamic>{
+          'title': 'I\'ll be there!',
+          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.check_circle, color: Colors.green)],
+          'returnValue': rsvpYes
+        },
+        <String, dynamic>{
+          'title': 'I might be there',
+          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.question_circle, color: Colors.orange)],
+          'returnValue': rsvpMaybe
+        },
+        <String, dynamic>{
+          'title': 'I won\'t make it',
+          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const Icon(FontAwesome.times_circle, color: Colors.red)],
+          'returnValue': rsvpNo
+        },
+        <String, dynamic>{
+          'title': 'I\'ll hare!',
+          'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)), const ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.deepPurple, size: 26.0)],
+          'returnValue': isHareYes
+        },
+        widget.futureRun.extensions.notificationPreference == 2
+            ? <String, dynamic>{
+                'title': 'Notifications on',
+                'icon': <Widget>[
+                  Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                  const Positioned(
+                    left: 3,
+                    top: 1.5,
+                    child: Image(
+                      width: 25.0,
+                      height: 25.0,
+                      fit: BoxFit.fill,
+                      image: AssetImage('images/icons/bell_gold_50px.png'),
+                    ),
+                  )
+                ],
+                'returnValue': notificationsOn,
+              }
+            : <String, dynamic>{
+                'title': 'Notifications off',
+                'icon': <Widget>[
+                  Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                  const Positioned(
+                    left: 3,
+                    top: 1.5,
+                    child: Image(
+                      width: 25.0,
+                      height: 25.0,
+                      fit: BoxFit.fill,
+                      image: AssetImage('images/icons/bell_silver_strike_out_50px.png'),
+                    ),
+                  )
+                ],
+                'returnValue': notificationsOff,
+              },
+        widget.futureRun.extensions.emailAlertPreference == 2
+            ? <String, dynamic>{
+                'title': 'Send e-mail',
+                'icon': <Widget>[
+                  Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                  const Positioned(
+                    left: 3,
+                    top: 1.5,
+                    child: Image(
+                      width: 25.0,
+                      height: 25.0,
+                      fit: BoxFit.fill,
+                      image: AssetImage('images/icons/envelope_gold_50px.png'),
+                    ),
+                  )
+                ],
+                'returnValue': emailAlertsOn,
+              }
+            : <String, dynamic>{
+                'title': 'Don\'t send email',
+                'icon': <Widget>[
+                  Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                  const Positioned(
+                    left: 3,
+                    top: 1.5,
+                    child: Image(
+                      width: 25.0,
+                      height: 25.0,
+                      fit: BoxFit.fill,
+                      image: AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
+                    ),
+                  )
+                ],
+                'returnValue': emailAlertsOff,
+              },
+      ];
+
+      final MultipleChoicePopup popup = MultipleChoicePopup(
+          title: 'Run Options',
+          buttons: buttons,
+          cancelButtonTitle: 'Cancel',
+          buttonPress: (dynamic retVal) {
+            if (retVal is EnumEmailAlertState) {
+              setEmailAlertState(retVal);
+            } else if (retVal is EnumNotificationState) {
+              setNotificationState(retVal);
+            } else if (retVal is EnumRsvpState) {
+              setRsvpState(retVal, false);
+            } else if (retVal is EnumIsHare) {
+              setRsvpState(rsvpYes, true);
+            }
+          });
+
+      showDialog<void>(
+          context: context,
+          barrierDismissible: false, // user must tap button!
+          builder: (BuildContext context) {
+            return popup;
+          });
+    }
   }
 
   void showNotificationPopup(BuildContext context) {
@@ -478,7 +580,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       setState(() {
         widget.futureRun.extensions.notificationPreference = -1;
       });
-    
+
       hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.user, userId, null, notificationState: nState.value).then((List<dynamic> results) {
         setState(() {
           final NotificationSupport notifications = NotificationSupport();
@@ -570,7 +672,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       setState(() {
         widget.futureRun.extensions.emailAlertPreference = -1;
       });
-    
+
       hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.user, userId, null, emailAlertState: nState.value).then((List<dynamic> results) {
         setState(() {
           widget.futureRun.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;

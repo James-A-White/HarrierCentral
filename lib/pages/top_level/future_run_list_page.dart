@@ -31,8 +31,8 @@ class RunDetailsQueryExtensions {
   final int mismanagementRoleFlags;
   int digitsAfterDecimal;
   String currencySymbol;
-  final int rsvpState;
-  final int isHare;
+  int rsvpState;
+  int isHare;
   final int following;
   int notificationPreference;
   int emailAlertPreference;
@@ -45,6 +45,8 @@ class RunDetailsQueryExtensions {
         currencySymbol: map['currencySymbol'],
         mismanagementRoleFlags: map['mismanagementRoleFlags'],
         following: map['following'],
+        rsvpState: map['rsvpState'],
+        isHare: map['isHare'],
         notificationPreference: map['notificationPreference'],
         emailAlertPreference: map['emailAlertPreference'],
         distancePreference: map['distancePreference']);
