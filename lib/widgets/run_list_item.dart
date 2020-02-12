@@ -109,9 +109,11 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
     final int rsvpResult = adHocData[0]['rsvpState'];
     final int willHareResult = adHocData[0]['willHareState'];
+    final String hares = adHocData[0]['hares'] ?? '';
 
     widget.futureRun.extensions.rsvpState = rsvpResult;
     widget.futureRun.extensions.isHare = willHareResult;
+    widget.futureRun.event.hares = hares;
 
     setState(() {
       _rsvpIcon = Future<Widget>.value(getRsvpWidget(rsvpResult, willHareResult));

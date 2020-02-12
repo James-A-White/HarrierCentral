@@ -67,7 +67,7 @@ class EventModel {
   final String locationPostCode;
   final String locationCity;
   final String locationStreet;
-  final String hares;
+  String hares;
   final String eventPaymentUrl;
   final DateTime eventPaymentUrlExpires;
   final int unconfirmedBankXferCount;
