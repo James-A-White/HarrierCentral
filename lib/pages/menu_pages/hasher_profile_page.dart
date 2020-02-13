@@ -145,7 +145,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       });
       final List<Map<String, dynamic>> results = await db.rawQuery(query);
       if ((results != null) && (results.isNotEmpty)) {
-        hasher = HashersTableHelper.fromMap(results[0]);
+        hasher = hashersTableHelper.fromMap(results[0]);
         if (widget.dataContext == EnumDataContext.kennel) {
           hkmData = HasherKennelMapTableHelper.fromMap(results[0]);
         }

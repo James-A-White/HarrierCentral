@@ -1,15 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'package:harrier_central/data/hc3_services/hashers_service.dart';
-import 'package:harrier_central/data/hc3_services/cities_service.dart';
-import 'package:harrier_central/data/hc3_services/countries_service.dart';
-import 'package:harrier_central/data/hc3_services/regions_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
@@ -22,6 +19,7 @@ import 'package:harrier_central/database/notifications_table.dart';
 import 'package:harrier_central/database/migrations.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/globals.dart';
 
 class DBProvider {
   DBProvider._();
@@ -70,11 +68,11 @@ class DBProvider {
       },
       onCreate: (Database db, int version) async {
         // create user tables
-        await HashersTableHelper.createTable(db, version);
-        await CitiesTableHelper.createTable(db, version);
-        await RegionsTableHelper.createTable(db, version);
-        await CountriesTableHelper.createTable(db, version);
-        await KennelsTableHelper.createTable(db, version);
+        await hashersTableHelper.createTable(db, version);
+        await citiesTableHelper.createTable(db, version);
+        await regionsTableHelper.createTable(db, version);
+        await countriesTableHelper.createTable(db, version);
+        await kennelsTableHelper.createTable(db, version);
         await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.user);
         await HasherEventMapTableHelper.createTable(db, version, HasherEventMapTableType.user);
         await EventTableHelper.createTable(db, version);
@@ -84,9 +82,9 @@ class DBProvider {
         // create event admin tables
         await HasherEventMapTableHelper.createTable(db, version, HasherEventMapTableType.eventAdmin);
         await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.eventAdmin);
-        await PaymentsTableHelper.createTable(db, version);
-        await ReceiptsTableHelper.createTable(db, version);
-        await KennelCreditsTableHelper.createTable(db, version);
+        await paymentsTableHelper.createTable(db, version);
+        await receiptsTableHelper.createTable(db, version);
+        await kennelCreditsTableHelper.createTable(db, version);
 
         // create kennel admin tables
         await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.kennelAdmin);
@@ -96,24 +94,22 @@ class DBProvider {
         }
         // first load the cities from the static text file into SQFLITE
         final String cityJson = await rootBundle.loadString('database/cities.json');
-        final CitiesService citySrv = CitiesService();
-        await citySrv.bulkUpdateDatabase(cityJson, db, informUser);
+        final BaseService citySrv = BaseService();
+        await citySrv.bulkUpdateDatabase(citiesTableHelper,cityJson, db, informUser);
 
         if (informUser != null) {
           informUser('Loading region data\r\n0% complete');
         }
         // first load the regions from the static text file into SQFLITE
         final String regionJson = await rootBundle.loadString('database/regions.json');
-        final RegionsService regionSrv = RegionsService();
-        await regionSrv.bulkUpdateDatabase(regionJson, db, informUser);
+        await baseService.bulkUpdateDatabase(regionsTableHelper,regionJson, db, informUser);
 
         if (informUser != null) {
           informUser('Loading country data\r\n0% complete');
         }
 
         final String countriesJson = await rootBundle.loadString('database/countries.json');
-        final CountriesService countriesSrv = CountriesService();
-        await countriesSrv.bulkUpdateDatabase(countriesJson, db, informUser);
+        await baseService.bulkUpdateDatabase(countriesTableHelper,countriesJson, db, informUser);
 
         final SyncUserDataService cSrv = SyncUserDataService();
         final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagsAllData, false, informUser: informUser);

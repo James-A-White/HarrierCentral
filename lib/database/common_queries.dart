@@ -2,7 +2,7 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
-import 'package:harrier_central/data/hc3_services/hashers_service.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
 
 class CommonQueries {
@@ -51,7 +51,7 @@ static Future<String> getUserIdFromUqr(String uqr) async {
       final String sql = ''' 
 
           SELECT h.hasherId
-          FROM ${HashersTableHelper.tableName} h
+          FROM ${hashersTableHelper.tableName} h
           WHERE upper(h.qrCode) = "$uqr"
           
           ''';

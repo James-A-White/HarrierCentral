@@ -15,8 +15,9 @@ import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 
-class HashersModel {
+class HashersModel implements BaseModel {
   HashersModel({this.hasherId, this.homeKennelId, this.firstName, this.lastName, this.dispName, this.hashName, this.email, this.photo, this.dispPref, this.resetCode, this.qrCode, this.includeInGlobalHashDirectory, this.preferences, this.removed, this.updatedAt});
 
   final String hasherId;
@@ -36,7 +37,8 @@ class HashersModel {
   final int removed;
   final DateTime updatedAt;
 
-  static List<HashersModel> itemsFromJson(String jsonResult) {
+  @override
+  List<HashersModel> itemsFromJson(String jsonResult) {
     final List<HashersModel> items = <HashersModel>[];
 
     HashersModel item;
@@ -72,44 +74,49 @@ class HashersModel {
   }
 }
 
-class HashersTableHelper {
-  HashersTableHelper._privateConstructor();
+class HashersTableHelper implements BaseTableHelper {
+  HashersTableHelper();
 
-  static const String tableName = 'hashers';
-  //static const num forceRequeryInterval = 1 * 86400000;
-  static const num forceRequeryInterval = 1 * 1000;
-  static const num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
+  @override
+  num forceRequeryInterval;
 
-  static const IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateHashersData;
-  static const IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearHashersData;
+  @override
+  num cacheDuration;
 
-  static const String colId = 'id';
-  static const String remoteDbId = 'hasherId';
+  @override
+  IntPrefsEnum lastUpdatedKey;
 
-  static const String colHasherId = 'hasherId';
-  static const String colHomeKennelId = 'homeKennelId';
-  static const String colFirstName = 'firstName';
-  static const String colLastName = 'lastName';
-  static const String colDispName = 'dispName';
-  static const String colHashName = 'hashName';
-  static const String colEmail = 'email';
-  static const String colPhoto = 'photo';
-  static const String colDispPref = 'dispPref';
-  static const String colResetCode = 'resetCode';
-  static const String colQrCode = 'qrCode';
-  static const String colIncludeInGlobalHashDirectory = 'includeInGlobalHashDirectory';
-  static const String colPreferences = 'preferences';
+  @override
+  IntPrefsEnum lastCacheClearKey;
 
-  static const String colRemoved = 'removed';
-  static const String colUpdatedAt = 'updatedAt';
-  static const String colUpdatedAtValue = 'updatedAtValue';
+  @override
+  String tableName = 'hashers';
 
-  // make this a singleton class
+  @override
+  String remoteDbId = 'hasherId';
 
-  static final HashersTableHelper instance = HashersTableHelper._privateConstructor();
+  final String colId = 'id';
 
-  // SQL code to create the database table
-  static Future<dynamic> createTable(Database db, int version) async {
+  final String colHasherId = 'hasherId';
+  final String colHomeKennelId = 'homeKennelId';
+  final String colFirstName = 'firstName';
+  final String colLastName = 'lastName';
+  final String colDispName = 'dispName';
+  final String colHashName = 'hashName';
+  final String colEmail = 'email';
+  final String colPhoto = 'photo';
+  final String colDispPref = 'dispPref';
+  final String colResetCode = 'resetCode';
+  final String colQrCode = 'qrCode';
+  final String colIncludeInGlobalHashDirectory = 'includeInGlobalHashDirectory';
+  final String colPreferences = 'preferences';
+
+  final String colRemoved = 'removed';
+  final String colUpdatedAt = 'updatedAt';
+  final String colUpdatedAtValue = 'updatedAtValue';
+
+  @override
+  Future<dynamic> createTable(Database db, int version) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -138,201 +145,80 @@ class HashersTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  static Map<String, dynamic> toMap(HashersModel item) {
+  @override
+  Map<String, dynamic> toMap(dynamic item) {
     final Map<String, dynamic> map = <String, dynamic>{
-      HashersTableHelper.colHasherId: item.hasherId,
-      HashersTableHelper.colHomeKennelId: item.homeKennelId,
-      HashersTableHelper.colFirstName: item.firstName,
-      HashersTableHelper.colLastName: item.lastName,
-      HashersTableHelper.colDispName: item.dispName,
-      HashersTableHelper.colHashName: item.hashName,
-      HashersTableHelper.colEmail: item.email,
-      HashersTableHelper.colPhoto: item.photo,
-      HashersTableHelper.colDispPref: item.dispPref,
-      HashersTableHelper.colResetCode: item.resetCode,
-      HashersTableHelper.colQrCode: item.qrCode,
-      HashersTableHelper.colIncludeInGlobalHashDirectory: item.includeInGlobalHashDirectory,
-      HashersTableHelper.colPreferences: item.preferences,
-      HashersTableHelper.colUpdatedAt: item.updatedAt.toString(),
-      HashersTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
-      HashersTableHelper.colRemoved: item.removed
+      colHasherId: item.hasherId,
+      colHomeKennelId: item.homeKennelId,
+      colFirstName: item.firstName,
+      colLastName: item.lastName,
+      colDispName: item.dispName,
+      colHashName: item.hashName,
+      colEmail: item.email,
+      colPhoto: item.photo,
+      colDispPref: item.dispPref,
+      colResetCode: item.resetCode,
+      colQrCode: item.qrCode,
+      colIncludeInGlobalHashDirectory: item.includeInGlobalHashDirectory,
+      colPreferences: item.preferences,
+      colUpdatedAt: item.updatedAt.toString(),
+      colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
+      colRemoved: item.removed
     };
 
     return map;
   }
 
-  static Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+  @override
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
     final Map<String, dynamic> outputMap = <String, dynamic>{
-      HashersTableHelper.colHasherId: inputMap[HashersTableHelper.colHasherId],
-      HashersTableHelper.colHomeKennelId: inputMap[HashersTableHelper.colHomeKennelId],
-      HashersTableHelper.colFirstName: inputMap[HashersTableHelper.colFirstName],
-      HashersTableHelper.colLastName: inputMap[HashersTableHelper.colLastName],
-      HashersTableHelper.colDispName: inputMap[HashersTableHelper.colDispName],
-      HashersTableHelper.colHashName: inputMap[HashersTableHelper.colHashName],
-      //HashersTableHelper.colEmail: inputMap[HashersTableHelper.colEmail],  // we don't pull eMail from the server for privacy reasons
-      HashersTableHelper.colPhoto: inputMap[HashersTableHelper.colPhoto],
-      HashersTableHelper.colDispPref: inputMap[HashersTableHelper.colDispPref],
-      HashersTableHelper.colResetCode: inputMap[HashersTableHelper.colResetCode],
-      HashersTableHelper.colQrCode: inputMap[HashersTableHelper.colQrCode],
-      HashersTableHelper.colIncludeInGlobalHashDirectory: inputMap[HashersTableHelper.colIncludeInGlobalHashDirectory],
-      HashersTableHelper.colPreferences: inputMap[HashersTableHelper.colPreferences],
+      colHasherId: inputMap[colHasherId],
+      colHomeKennelId: inputMap[colHomeKennelId],
+      colFirstName: inputMap[colFirstName],
+      colLastName: inputMap[colLastName],
+      colDispName: inputMap[colDispName],
+      colHashName: inputMap[colHashName],
+      //colEmail: inputMap[colEmail],  // we don't pull eMail from the server for privacy reasons
+      colPhoto: inputMap[colPhoto],
+      colDispPref: inputMap[colDispPref],
+      colResetCode: inputMap[colResetCode],
+      colQrCode: inputMap[colQrCode],
+      colIncludeInGlobalHashDirectory: inputMap[colIncludeInGlobalHashDirectory],
+      colPreferences: inputMap[colPreferences],
 
-      HashersTableHelper.colUpdatedAt: inputMap[HashersTableHelper.colUpdatedAt],
-      HashersTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[HashersTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
-      HashersTableHelper.colRemoved: inputMap[HashersTableHelper.colRemoved],
+      colUpdatedAt: inputMap[colUpdatedAt],
+      colUpdatedAtValue: DateTime.parse(inputMap[colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
+      colRemoved: inputMap[colRemoved],
     };
 
     return outputMap;
   }
 
-  static HashersModel fromMap(Map<String, dynamic> map) {
+  @override
+  HashersModel fromMap(Map<String, dynamic> map) {
     final HashersModel item = HashersModel(
-      hasherId: map[HashersTableHelper.colHasherId],
-      homeKennelId: map[HashersTableHelper.colHomeKennelId],
-      firstName: map[HashersTableHelper.colFirstName],
-      lastName: map[HashersTableHelper.colLastName],
-      dispName: map[HashersTableHelper.colDispName],
-      hashName: map[HashersTableHelper.colHashName],
-      email: map[HashersTableHelper.colEmail],
-      photo: map[HashersTableHelper.colPhoto],
-      dispPref: map[HashersTableHelper.colDispPref],
-      resetCode: map[HashersTableHelper.colResetCode],
-      qrCode: map[HashersTableHelper.colQrCode],
-      includeInGlobalHashDirectory: map[HashersTableHelper.colIncludeInGlobalHashDirectory],
-      preferences: map[HashersTableHelper.colPreferences],
-      updatedAt: DateTime.parse(map[HashersTableHelper.colUpdatedAt].toString().substring(0, 19)),
-      removed: map[HashersTableHelper.colRemoved],
+      hasherId: map[colHasherId],
+      homeKennelId: map[colHomeKennelId],
+      firstName: map[colFirstName],
+      lastName: map[colLastName],
+      dispName: map[colDispName],
+      hashName: map[colHashName],
+      email: map[colEmail],
+      photo: map[colPhoto],
+      dispPref: map[colDispPref],
+      resetCode: map[colResetCode],
+      qrCode: map[colQrCode],
+      includeInGlobalHashDirectory: map[colIncludeInGlobalHashDirectory],
+      preferences: map[colPreferences],
+      updatedAt: DateTime.parse(map[colUpdatedAt].toString().substring(0, 19)),
+      removed: map[colRemoved],
     );
 
     return item;
   }
 }
 
-class HashersService {
-  static final HashersTableHelper instance = HashersTableHelper._privateConstructor();
-
-  static Future<num> getLastUpdatedTime() async {
-    final Database db = await DBProvider.db.database;
-    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${HashersTableHelper.colUpdatedAtValue}) AS maxDate FROM ${HashersTableHelper.tableName}');
-    final num timeValue = table.first['maxDate'];
-    return timeValue;
-  }
-
-  Future<List<HashersModel>> selectAllFromLocalDb() async {
-    final Database db = await DBProvider.db.database;
-
-    final List<Map<String, dynamic>> result = await db.query(HashersTableHelper.tableName);
-
-    final List<HashersModel> records = <HashersModel>[];
-
-    if ((result != null) && (result.isNotEmpty)) {
-      for (int i = 0; i < result.length; i++) {
-        if (result[i]['removed'] == 0) {
-          final HashersModel record = HashersTableHelper.fromMap(result[i]);
-          records.add(record);
-        }
-      }
-    }
-    return records;
-  }
-
-  Future<void> clearTable() async {
-    final Database db = await DBProvider.db.database;
-    await db.rawDelete('DELETE FROM ${HashersTableHelper.tableName}').then((void dummy) {
-      setIntPref(HashersTableHelper.lastCacheClearKey, DateTime.now().millisecondsSinceEpoch);
-    });
-  }
-
-  Future<void> updateDatabase(List<HashersModel> items) async {
-    final Database db = await DBProvider.db.database;
-
-    for (int i = 0; i < items?.length ?? 0; i++) {
-      final Map<String, dynamic> row = HashersTableHelper.toMap(items[i]);
-
-      final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${HashersTableHelper.tableName} WHERE ${HashersTableHelper.remoteDbId} = "${items[i].hasherId}"');
-      if ((table == null) || (table.isEmpty)) {
-        await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.insert(HashersTableHelper.tableName, row);
-          print(result.toString() + ' inserted into to the ${HashersTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        });
-      } else {
-        final String rowId = table.first['id'].toString();
-
-        await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.update(HashersTableHelper.tableName, row, where: 'id = $rowId');
-          print(result.toString() + ' update to the ${HashersTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        });
-      }
-    }
-  }
-
-  Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser) async {
-    int updateCounter = 0;
-    int insertCounter = 0;
-
-    bool doNormalizeMap;
-
-    final List<dynamic> jsonResultSets = json.decode(rawResults);
-
-    final int len = jsonResultSets.length;
-    int lastPercentage = 0;
-
-    print('Hasher recordsets received from cloud = $len');
-
-    for (int i = 0; i < jsonResultSets.length; i++) {
-      final List<dynamic> jsonResults = jsonResultSets[i];
-
-      for (int j = 0; j < jsonResults.length; j++) {
-        final Map<String, dynamic> jsonItem = jsonResults[j];
-
-        if (doNormalizeMap == null) {
-          final Map<String, dynamic> testMap = HashersTableHelper.normalizeMap(jsonItem);
-          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
-          if (doNormalizeMap) {
-            print('Normalize map called for ${HashersTableHelper.tableName}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}');
-          }
-        }
-
-        final int percentage = (100 * (j / jsonResults.length)).round();
-        if ((percentage != lastPercentage) && (informUser != null)) {
-          lastPercentage = percentage;
-          informUser('Loading packs \r\n$percentage% complete');
-        }
-
-        jsonItem.addAll(<String, dynamic>{
-          'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch,
-        });
-
-        final String query = 'SELECT * FROM ${HashersTableHelper.tableName} WHERE ${HashersTableHelper.remoteDbId} = "${jsonItem['hasherId']}"';
-        final List<Map<String, dynamic>> table = await db.rawQuery(query);
-
-        if ((table == null) || (table.isEmpty)) {
-          //print(table.length.toString());
-          await db.transaction<dynamic>((Transaction txn) async {
-            //final int result =
-            await txn.insert(HashersTableHelper.tableName, doNormalizeMap ? HashersTableHelper.normalizeMap(jsonItem) : jsonItem);
-            insertCounter++;
-            // print(result.toString() +
-            //     ' inserted into to the ${HashersTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
-          });
-        } else {
-          final String rowId = table.first['id'].toString();
-
-          await db.transaction<dynamic>((Transaction txn) async {
-            //final int result =
-            await txn.update(HashersTableHelper.tableName, doNormalizeMap ? HashersTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
-            updateCounter++;
-            // print(result.toString() +
-            //     ' update to the ${HashersTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
-          });
-        }
-      }
-    }
-
-    print('$insertCounter hasher records inserted, $updateCounter hasher records updated');
-    return insertCounter;
-  }
-
+class HashersService extends BaseService {
   // ============ Functions go here =============
 
   Future<String> addEditUser(
@@ -372,7 +258,7 @@ class HashersService {
     DateTime hasherKennelMapUpdatedAfter;
 
     if (!newUserForThisDevice) {
-      final num _hashersLastUpdated = await HashersService.getLastUpdatedTime();
+      final num _hashersLastUpdated = await getLastUpdatedTime(hashersTableHelper,hashersTableHelper.colUpdatedAtValue);
       hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
 
       final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.eventAdmin);
@@ -510,7 +396,7 @@ class HashersService {
     DateTime hashersUpdatedAfter;
 
     if (!newUserForThisDevice) {
-      final num _hashersLastUpdated = await HashersService.getLastUpdatedTime();
+      final num _hashersLastUpdated = await getLastUpdatedTime(hashersTableHelper,hashersTableHelper.colUpdatedAtValue);
       hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
     } else {
       // do this to suppress any records being returned through the sync mechanism
@@ -547,7 +433,7 @@ class HashersService {
 
     if (!newUserForThisDevice) {
       await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
-    } 
+    }
 
     return response.body;
   }

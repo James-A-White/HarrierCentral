@@ -405,32 +405,33 @@ class EventService {
     });
   }
 
-  Future<void> updateDatabase(List<EventModel> items) async {
-    final Database db = await DBProvider.db.database;
+  // Future<void> updateDatabase(List<EventModel> items) async {
+  //   final Database db = await DBProvider.db.database;
 
-    for (int i = 0; i < items?.length ?? 0; i++) {
-      final Map<String, dynamic> row = EventTableHelper.toMap(items[i]);
+  //   for (int i = 0; i < items?.length ?? 0; i++) {
+  //     final Map<String, dynamic> row = EventTableHelper.toMap(items[i]);
 
-      final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${EventTableHelper.tableName} WHERE ${EventTableHelper.remoteDbId} = "${items[i].eventId}"');
-      if ((table == null) || (table.isEmpty)) {
-        await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.insert(EventTableHelper.tableName, row);
-          print(result.toString() + ' inserted into to the ${EventTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        });
-      } else {
-        final String rowId = table.first['id'].toString();
+  //     final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${EventTableHelper.tableName} WHERE ${EventTableHelper.remoteDbId} = "${items[i].eventId}"');
+  //     if ((table == null) || (table.isEmpty)) {
+  //       await db.transaction<dynamic>((Transaction txn) async {
+  //         final int result = await txn.insert(EventTableHelper.tableName, row);
+  //         print(result.toString() + ' inserted into to the ${EventTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+  //       });
+  //     } else {
+  //       final String rowId = table.first['id'].toString();
 
-        await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.update(EventTableHelper.tableName, row, where: 'id = $rowId');
-          print(result.toString() + ' update to the ${EventTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        });
-      }
-    }
-  }
+  //       await db.transaction<dynamic>((Transaction txn) async {
+  //         final int result = await txn.update(EventTableHelper.tableName, row, where: 'id = $rowId');
+  //         print(result.toString() + ' update to the ${EventTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+  //       });
+  //     }
+  //   }
+  // }
 
   Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser) async {
     int updateCounter = 0;
     int insertCounter = 0;
+    int deletedCounter = 0;
 
     bool doNormalizeMap;
 
@@ -465,13 +466,13 @@ class EventService {
           'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch,
         });
 
-        final String query = 'SELECT * FROM ${EventTableHelper.tableName} WHERE ${EventTableHelper.remoteDbId} = "${jsonItem['eventId']}"';
+        final String query = 'SELECT id FROM ${EventTableHelper.tableName} WHERE ${EventTableHelper.remoteDbId} = "${jsonItem['eventId']}"';
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
 
         if ((table == null) || (table.isEmpty)) {
           //print(table.length.toString());
           await db.transaction<dynamic>((Transaction txn) async {
-            //final int result =
+            
             await txn.insert(EventTableHelper.tableName, doNormalizeMap ? EventTableHelper.normalizeMap(jsonItem) : jsonItem);
             insertCounter++;
             // print(result.toString() +
@@ -481,7 +482,7 @@ class EventService {
           final String rowId = table.first['id'].toString();
 
           await db.transaction<dynamic>((Transaction txn) async {
-            //final int result =
+            
             await txn.update(EventTableHelper.tableName, doNormalizeMap ? EventTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
             updateCounter++;
             // print(result.toString() +
@@ -491,7 +492,13 @@ class EventService {
       }
     }
 
-    print('$insertCounter event records inserted, $updateCounter event records updated');
+
+    await db.transaction<dynamic>((Transaction txn) async {
+      
+      deletedCounter = await txn.delete(EventTableHelper.tableName, where: 'removed = 1');
+    });
+
+    print('$insertCounter event records inserted, $updateCounter event records updated, $deletedCounter event records deleted');
     return insertCounter;
   }
 

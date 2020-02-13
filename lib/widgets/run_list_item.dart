@@ -124,9 +124,6 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     // return IntrinsicWidth(
     //     child:
-
-    print(widget.futureRun.event.eventName);
-    print(widget.futureRun.extensions.notificationPreference);
     return Card(
       elevation: 4.0,
       margin: const EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),

@@ -10,6 +10,7 @@ import 'package:harrier_central/pages/run_admin/receipt_detail_page.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
@@ -48,7 +49,7 @@ class ReceiptsListState extends State<ReceiptsList> {
   void refreshFromTable() {
     DBProvider.db.database.then((Database db) {
       try {
-        db.query(ReceiptsTableHelper.tableName).then((List<Map<String, dynamic>> results) {
+        db.query(receiptsTableHelper.tableName).then((List<Map<String, dynamic>> results) {
           setState(() {
             receiptsList = results;
           });
@@ -150,7 +151,7 @@ class ReceiptsListState extends State<ReceiptsList> {
       final ReceiptsService srv = ReceiptsService();
       srv.uploadReceipt(context, item).then((String result) {
         DBProvider.db.database.then((Database db) {
-          srv.bulkUpdateDatabase(result, db, null).then((int notUsed) {
+          baseService.bulkUpdateDatabase(receiptsTableHelper,result, db, null).then((int notUsed) {
             refreshFromTable();
           });
         });
@@ -176,7 +177,7 @@ class ReceiptsListState extends State<ReceiptsList> {
       final ReceiptsService srv = ReceiptsService();
       srv.uploadReceipt(context, item).then((String result) {
         DBProvider.db.database.then((Database db) {
-          srv.bulkUpdateDatabase(result, db, null).then((int notUsed) {
+          baseService.bulkUpdateDatabase(receiptsTableHelper,result, db, null).then((int notUsed) {
             refreshFromTable();
           });
         });

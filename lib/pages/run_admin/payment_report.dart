@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:harrier_central/pages/run_admin/payment_popup.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/payment_report_list_item.dart';
@@ -37,7 +38,18 @@ class PaymentAggregate {
 }
 
 class PaymentQueryExtensions {
-  PaymentQueryExtensions({this.pkHemId, this.paidByName, this.paidToName, this.isMember, this.creditAvailable, this.eventPriceForMembers, this.eventPriceForNonMembers, this.confByName, this.extrasPrice, this.extrasDescription});
+  PaymentQueryExtensions({
+    this.pkHemId,
+    this.paidByName,
+    this.paidToName,
+    this.isMember,
+    this.creditAvailable,
+    this.eventPriceForMembers,
+    this.eventPriceForNonMembers,
+    this.confByName,
+    this.extrasPrice,
+    this.extrasDescription,
+  });
 
   final String pkHemId;
   final String paidByName;
@@ -135,13 +147,13 @@ class PaymentReportState extends State<PaymentReportPage> {
           COALESCE(e.${EventTableHelper.colEventPriceForExtras},0) as extrasPrice
           FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem
           INNER JOIN ${EventTableHelper.tableName} e on e.eventId = hem.eventId
-          INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
+          INNER JOIN ${kennelsTableHelper.tableName} k on k.kennelId = e.kennelId
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm on hkm.userId = hem.userId and hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
-          LEFT OUTER JOIN ${HashersTableHelper.tableName} h on h.hasherId = hem.userId
-          LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.CancelledBy IS NULL
-          LEFT OUTER JOIN ${HashersTableHelper.tableName} paidTo on paidTo.hasherId = pay.paidTo
-          LEFT OUTER JOIN ${KennelCreditsTableHelper.tableName} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
-          LEFT OUTER JOIN ${HashersTableHelper.tableName} confBy on confBy.hasherId = pay.confirmedBy
+          LEFT OUTER JOIN ${hashersTableHelper.tableName} h on h.hasherId = hem.userId
+          LEFT OUTER JOIN ${paymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.CancelledBy IS NULL
+          LEFT OUTER JOIN ${hashersTableHelper.tableName} paidTo on paidTo.hasherId = pay.paidTo
+          LEFT OUTER JOIN ${kennelCreditsTableHelper.tableName} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
+          LEFT OUTER JOIN ${hashersTableHelper.tableName} confBy on confBy.hasherId = pay.confirmedBy
           WHERE hem.attendenceState >= 20
           ''';
 
@@ -150,7 +162,7 @@ class PaymentReportState extends State<PaymentReportPage> {
     paymentsList.clear();
 
     for (int i = 0; i < results.length; i++) {
-      final PaymentsModel paymentItem = PaymentsTableHelper.fromMap(results[i]);
+      final PaymentsModel paymentItem = paymentsTableHelper.fromMap(results[i]);
       final PaymentQueryExtensions extensions = PaymentQueryExtensions.fromMap(results[i]);
       final PaymentAggregate item = PaymentAggregate(payment: paymentItem, extensions: extensions);
 
@@ -173,20 +185,20 @@ class PaymentReportState extends State<PaymentReportPage> {
 
           select 0 as paymentType, (SELECT COUNT(*) from ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem 
           WHERE  hem.attendenceState >= 20
-          AND hem.hemId not in (SELECT hemId from ${PaymentsTableHelper.tableName} pay3 where pay3.cancelledBy IS NULL) ) as count, 5.55 as totalCollected
+          AND hem.hemId not in (SELECT hemId from ${paymentsTableHelper.tableName} pay3 where pay3.cancelledBy IS NULL) ) as count, 5.55 as totalCollected
             
           UNION
           select paymentType, 
             (
                 SELECT COUNT(*) 
-                FROM ${PaymentsTableHelper.tableName} pay 
+                FROM ${paymentsTableHelper.tableName} pay 
                 INNER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem on hem.hemId = pay.hemId AND hem.attendenceState >= 20
                 WHERE pay.paymentType = x.paymentType AND pay.cancelledBy IS NULL
 
             ) as count,
             (
                 SELECT SUM(pay2.creditAmount) 
-                FROM ${PaymentsTableHelper.tableName} pay2 
+                FROM ${paymentsTableHelper.tableName} pay2 
                 INNER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
                 WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
             ) as totalCollected
@@ -272,7 +284,7 @@ class PaymentReportState extends State<PaymentReportPage> {
               label: 'Email me payment report',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
-                PaymentsService.sendPaymentReportByEmail(eventId: widget.eventAggregate.event.eventId, eventName: widget.eventAggregate.event.eventName).then((Map<String, String> result) {
+                paymentsService.sendPaymentReportByEmail(eventId: widget.eventAggregate.event.eventId, eventName: widget.eventAggregate.event.eventName).then((Map<String, String> result) {
                   _scaffoldKey.currentState?.hideCurrentSnackBar();
                   if (result['result'].toLowerCase().startsWith('success')) {
                     Utilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');

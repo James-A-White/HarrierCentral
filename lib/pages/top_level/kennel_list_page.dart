@@ -10,10 +10,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/database/database.dart';
 
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-import 'package:harrier_central/data/hc3_services/hashers_service.dart';
-import 'package:harrier_central/data/hc3_services/countries_service.dart';
 import 'package:harrier_central/data/hc3_services/regions_service.dart';
-import 'package:harrier_central/data/hc3_services/cities_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 
@@ -115,15 +112,15 @@ class KennelsListPageState extends State<KennelsListPage> {
           (SELECT max(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime <= datetime('now','localtime') ) as lastRunDate,
           n.digitsAfterDecimal,
           n.currencySymbol,
-          coalesce(k.${KennelsTableHelper.colKennelLatitude},c.${CitiesTableHelper.colLatitude},$DEFAULT_LATITUDE) as cityLat,
-          coalesce(k.${KennelsTableHelper.colKennelLongitude},c.${CitiesTableHelper.colLongitude},$DEFAULT_LONGITUDE) as cityLon,
+          coalesce(k.${kennelsTableHelper.colKennelLatitude},c.${citiesTableHelper.colLatitude},$DEFAULT_LATITUDE) as cityLat,
+          coalesce(k.${kennelsTableHelper.colKennelLongitude},c.${citiesTableHelper.colLongitude},$DEFAULT_LONGITUDE) as cityLon,
           CASE WHEN ((h.homeKennelId IS NOT NULL) AND (h.homeKennelId = k.kennelId)) then 1 else 0 end as isHomeKennel,
           CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,n.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference
-          FROM ${KennelsTableHelper.tableName} k
-          INNER JOIN ${CitiesTableHelper.tableName} c on c.cityId = k.cityId
-          INNER JOIN ${RegionsTableHelper.tableName} r on r.regionId = k.regionId
-          INNER JOIN ${CountriesTableHelper.tableName} n on n.countryId = k.countryId
-          INNER JOIN ${HashersTableHelper.tableName} h on h.hasherId = "$hasherId"
+          FROM ${kennelsTableHelper.tableName} k
+          INNER JOIN ${citiesTableHelper.tableName} c on c.cityId = k.cityId
+          INNER JOIN ${regionsTableHelper.tableName} r on r.regionId = k.regionId
+          INNER JOIN ${countriesTableHelper.tableName} n on n.countryId = k.countryId
+          INNER JOIN ${hashersTableHelper.tableName} h on h.hasherId = "$hasherId"
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on hkm.kennelId = k.kennelId and hkm.${HasherKennelMapTableHelper.colUserId} = "$hasherId"
           ''';
 
@@ -132,7 +129,7 @@ class KennelsListPageState extends State<KennelsListPage> {
             db.rawQuery(query).then((List<Map<String, dynamic>> results) {
               for (int i = 0; i < results.length; i++) {
                 locator.distanceBetween(Utilities.unInt(ll.latitude), Utilities.unInt(ll.longitude), Utilities.unInt(results[i]['cityLat']), Utilities.unInt(results[i]['cityLon'])).then((num dist) {
-                  final KennelsModel kennelItem = KennelsTableHelper.fromMap(results[i]);
+                  final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
                   final HasherKennelMapModel hkmItem = HasherKennelMapTableHelper.fromMap(results[i]);
                   final KennelListQueryExtenstions extensionsItem = KennelListQueryExtenstions.fromMap(results[i]);
                   extensionsItem.distToKennel = dist;
@@ -239,7 +236,7 @@ class KennelsListPageState extends State<KennelsListPage> {
       globalKennelMainPageList = null;
     });
 
-    String query = 'DELETE FROM ${KennelsTableHelper.tableName}';
+    String query = 'DELETE FROM ${kennelsTableHelper.tableName}';
     try {
       await db.rawQuery(query);
     } catch (e) {

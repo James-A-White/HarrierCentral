@@ -13,6 +13,7 @@ import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
+import 'package:harrier_central/util/globals.dart';
 
 class MigrationsModel {
   MigrationsModel({this.migrationNumber, this.migrationText, this.appliedAtInt});
@@ -139,7 +140,7 @@ class MigrationsTableHelper {
 
     // MIGRATION 221
     MigrationsModel(migrationNumber: 221, migrationText: '''
-            ALTER TABLE ${HashersTableHelper.tableName} ADD COLUMN ${HashersTableHelper.colHomeKennelId} TEXT;
+            ALTER TABLE ${hashersTableHelper.tableName} ADD COLUMN ${hashersTableHelper.colHomeKennelId} TEXT;
          '''),
       
     // MIGRATION 222
@@ -161,19 +162,19 @@ class MigrationsTableHelper {
             ALTER TABLE ${EventTableHelper.tableName} ADD COLUMN ${EventTableHelper.colEventPriceForExtras} NUM;
             ALTER TABLE ${EventTableHelper.tableName} ADD COLUMN ${EventTableHelper.colExtrasDescription} TEXT;
             ALTER TABLE ${EventTableHelper.tableName} ADD COLUMN ${EventTableHelper.colDoTrackHashCash} INT;
-            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colKennelMismanagementTeam} TEXT;
-            ALTER TABLE ${KennelsTableHelper.tableName} ADD COLUMN ${KennelsTableHelper.colDistancePreference} INT;
+            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelMismanagementTeam} TEXT;
+            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colDistancePreference} INT;
             ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colIsKennelFollowing} INT;
             ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colMismanagementRoles} INT;
             ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} ADD COLUMN ${HasherKennelMapTableHelper.colIsKennelFollowing} INT;
             ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} ADD COLUMN ${HasherKennelMapTableHelper.colMismanagementRoles} INT;
-            ALTER TABLE ${HashersTableHelper.tableName} ADD COLUMN ${HashersTableHelper.colIncludeInGlobalHashDirectory} INT;
-            ALTER TABLE ${CountriesTableHelper.tableName} ADD COLUMN ${CountriesTableHelper.colDistancePreference} INT NOT NULL DEFAULT 0;
+            ALTER TABLE ${hashersTableHelper.tableName} ADD COLUMN ${hashersTableHelper.colIncludeInGlobalHashDirectory} INT;
+            ALTER TABLE ${countriesTableHelper.tableName} ADD COLUMN ${countriesTableHelper.colDistancePreference} INT NOT NULL DEFAULT 0;
          '''),
 
   // MIGRATION 225
     MigrationsModel(migrationNumber: 225, migrationText: '''
-            ALTER TABLE ${HashersTableHelper.tableName} ADD COLUMN ${HashersTableHelper.colPreferences} INT;
+            ALTER TABLE ${hashersTableHelper.tableName} ADD COLUMN ${hashersTableHelper.colPreferences} INT;
          '''),
 
              // MIGRATION 226
@@ -185,7 +186,7 @@ class MigrationsTableHelper {
 
              // MIGRATION 227
     MigrationsModel(migrationNumber: 227, migrationText: '''
-            ALTER TABLE ${PaymentsTableHelper.tableName} ADD COLUMN ${PaymentsTableHelper.colDoPayForExtras} INT;
+            ALTER TABLE ${paymentsTableHelper.tableName} ADD COLUMN ${paymentsTableHelper.colDoPayForExtras} INT;
          '''),
 
                       // MIGRATION 228

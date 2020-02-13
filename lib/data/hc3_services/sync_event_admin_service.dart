@@ -15,7 +15,6 @@ import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart'
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/receipts_service.dart';
-import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 
 class SyncEventAdminService {
@@ -48,11 +47,11 @@ class SyncEventAdminService {
     _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HasherEventMapTableHelper.colUpdatedAtValue, HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin));
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin));
     _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, EventTableHelper.colUpdatedAtValue, EventTableHelper.tableName);
-    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, PaymentsTableHelper.colUpdatedAtValue, PaymentsTableHelper.tableName);
-    _receiptsLastUpdated = (flags & flagReceiptsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, ReceiptsTableHelper.colUpdatedAtValue, ReceiptsTableHelper.tableName);
-    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HashersTableHelper.colUpdatedAtValue, HashersTableHelper.tableName);
+    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, paymentsTableHelper.colUpdatedAtValue, paymentsTableHelper.tableName);
+    _receiptsLastUpdated = (flags & flagReceiptsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, receiptsTableHelper.colUpdatedAtValue, receiptsTableHelper.tableName);
+    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, hashersTableHelper.colUpdatedAtValue, hashersTableHelper.tableName);
     //_hashersLastUpdated = true ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HashersTableHelper.colUpdatedAtValue, HashersTableHelper.tableName);
-    _kennelCreditsLastUpdated = (flags & flagKennelCreditTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, KennelCreditsTableHelper.colUpdatedAtValue, KennelCreditsTableHelper.tableName);
+    _kennelCreditsLastUpdated = (flags & flagKennelCreditTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, kennelCreditsTableHelper.colUpdatedAtValue, kennelCreditsTableHelper.tableName);
   }
 
   Future<bool> updateFromBackend(Database db, int flags, bool forceRefresh, String eventId, {Function informUser}) async {
@@ -65,16 +64,16 @@ class SyncEventAdminService {
       final HasherEventMapService hem2srv = HasherEventMapService();
       final HasherKennelMapService hkm2srv = HasherKennelMapService();
       final ReceiptsService recSrv = ReceiptsService();
-      final KennelCreditsService creditsService = KennelCreditsService();
+
       //final HashersService hSrv = HashersService();
       // narrowEvents is not included here because all events are loaded all the time for all hashers.
       // TODO(James): create separate events table for event management
 
-      paySrv.clearTable();
+      baseService.clearTable(paymentsTableHelper);
       hem2srv.clearTable(HasherEventMapTableType.eventAdmin);
       hkm2srv.clearTable(HasherKennelMapTableType.eventAdmin);
-      recSrv.clearTable();
-      creditsService.clearTable();
+      baseService.clearTable(receiptsTableHelper);
+      baseService.clearTable(kennelCreditsTableHelper);
       // we don't want to clear the Hashers table since it is meant to be persistent and not tied to a single event
 
       await setStringPref(StringPrefsEnum.adminEventId, eventId);
@@ -183,20 +182,17 @@ class SyncEventAdminService {
       final String ms = matches.elementAt(i).group(0);
 
       if (ms.startsWith(r'[{"paymentId"')) {
-        final PaymentsService nSrv = PaymentsService();
-        await nSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        await baseService.bulkUpdateDatabase(paymentsTableHelper,'[$ms]', db, informUser);
         print('payments updated');
       }
 
       if (ms.startsWith(r'[{"hasherId"')) {
-        final HashersService hSrv = HashersService();
-        await hSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        await hashersService.bulkUpdateDatabase(hashersTableHelper,'[$ms]', db, informUser);
         print('hashers updated');
       }
 
       if (ms.startsWith(r'[{"receiptId"')) {
-        final ReceiptsService kSrv = ReceiptsService();
-        await kSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        await baseService.bulkUpdateDatabase(receiptsTableHelper,'[$ms]', db, informUser);
         print('receipts updated');
       }
 
@@ -219,8 +215,7 @@ class SyncEventAdminService {
       }
 
       if (ms.startsWith(r'[{"kennelCreditId"')) {
-        final KennelCreditsService creditSrv = KennelCreditsService();
-        await creditSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        await baseService.bulkUpdateDatabase(kennelCreditsTableHelper,'[$ms]', db, informUser);
         print('kennel credits updated');
       }
 

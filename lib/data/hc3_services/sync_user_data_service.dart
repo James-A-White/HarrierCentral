@@ -10,11 +10,8 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/data/hc3_services/cities_service.dart';
 import 'package:harrier_central/data/hc3_services/regions_service.dart';
-import 'package:harrier_central/data/hc3_services/countries_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
-import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
@@ -52,11 +49,11 @@ class SyncUserDataService {
   }
 
   Future<void> getLastUpdatedTimes(Database db, int flags) async {
-    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, HashersTableHelper.colUpdatedAtValue, HashersTableHelper.tableName);
-    _citiesLastUpdated = (flags & flagCitiesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, CitiesTableHelper.colUpdatedAtValue, CitiesTableHelper.tableName);
-    _regionsLastUpdated = (flags & flagRegionsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, RegionsTableHelper.colUpdatedAtValue, RegionsTableHelper.tableName);
-    _countriesLastUpdated = (flags & flagCountriesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, CountriesTableHelper.colUpdatedAtValue, CountriesTableHelper.tableName);
-    _kennelsLastUpdated = (flags & flagKennelsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, KennelsTableHelper.colUpdatedAtValue, KennelsTableHelper.tableName);
+    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, hashersTableHelper.colUpdatedAtValue, hashersTableHelper.tableName);
+    _citiesLastUpdated = (flags & flagCitiesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, citiesTableHelper.colUpdatedAtValue, citiesTableHelper.tableName);
+    _regionsLastUpdated = (flags & flagRegionsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, regionsTableHelper.colUpdatedAtValue, regionsTableHelper.tableName);
+    _countriesLastUpdated = (flags & flagCountriesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, countriesTableHelper.colUpdatedAtValue, countriesTableHelper.tableName);
+    _kennelsLastUpdated = (flags & flagKennelsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, kennelsTableHelper.colUpdatedAtValue, kennelsTableHelper.tableName);
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user));
     _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HasherEventMapTableHelper.colUpdatedAtValue, HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user));
     _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, EventTableHelper.colUpdatedAtValue, EventTableHelper.tableName);
@@ -173,32 +170,27 @@ class SyncUserDataService {
       final String ms = matches.elementAt(i).group(0);
 
       if (ms.startsWith(r'[{"hasherId"')) {
-        final HashersService hSrv = HashersService();
-        await hSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        await hashersService.bulkUpdateDatabase(hashersTableHelper,'[$ms]', db, informUser);
         print('hashers updated');
       }
 
       if (ms.startsWith(r'[{"cityId"')) {
-        final CitiesService cSrv = CitiesService();
-        await cSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        await baseService.bulkUpdateDatabase(citiesTableHelper,'[$ms]', db, informUser);
         print('cities updated');
       }
 
       if (ms.startsWith(r'[{"regionId"')) {
-        final RegionsService rSrv = RegionsService();
-        await rSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        await baseService.bulkUpdateDatabase(regionsTableHelper,'[$ms]', db, informUser);
         print('regions updated');
       }
 
       if (ms.startsWith(r'[{"countryId"')) {
-        final CountriesService nSrv = CountriesService();
-        await nSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        await baseService.bulkUpdateDatabase(countriesTableHelper,'[$ms]', db, informUser);
         print('countries updated');
       }
 
       if (ms.startsWith(r'[{"kennelId"')) {
-        final KennelsService kSrv = KennelsService();
-        await kSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        await baseService.bulkUpdateDatabase(kennelsTableHelper,'[$ms]', db, informUser);
         print('kennels updated');
       }
 

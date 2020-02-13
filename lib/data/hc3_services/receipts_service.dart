@@ -2,16 +2,33 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:harrier_central/util/globals.dart';
 
 import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/data/services/service_common.dart';
 
-class ReceiptsModel {
-  ReceiptsModel({this.receiptId, this.eventId, this.userId, this.receiptAmount, this.costCategory = 0, this.dateUploaded, this.imageUrl, this.receiptShortDescription, this.notes, this.reimbursedBy, this.reimbursedOn, this.reimbursedAmount, this.reimbursedNotes, this.removed, this.updatedAt});
+class ReceiptsModel implements BaseModel {
+  ReceiptsModel({
+    this.receiptId,
+    this.eventId,
+    this.userId,
+    this.receiptAmount,
+    this.costCategory = 0,
+    this.dateUploaded,
+    this.imageUrl,
+    this.receiptShortDescription,
+    this.notes,
+    this.reimbursedBy,
+    this.reimbursedOn,
+    this.reimbursedAmount,
+    this.reimbursedNotes,
+    this.removed,
+    this.updatedAt,
+  });
 
   final String receiptId;
   final String eventId;
@@ -29,7 +46,8 @@ class ReceiptsModel {
   final int removed;
   final DateTime updatedAt;
 
-  static List<ReceiptsModel> itemsFromJson(String jsonResult) {
+  @override
+  List<ReceiptsModel> itemsFromJson(String jsonResult) {
     final List<ReceiptsModel> items = <ReceiptsModel>[];
 
     ReceiptsModel item;
@@ -65,44 +83,50 @@ class ReceiptsModel {
   }
 }
 
-class ReceiptsTableHelper {
-  ReceiptsTableHelper._privateConstructor();
+class ReceiptsTableHelper implements BaseTableHelper {
+  ReceiptsTableHelper();
 
-  static const String tableName = 'receipts';
-  //static const num forceRequeryInterval = 1 * 86400000;
-  static const num forceRequeryInterval = 1 * 1000;
-  static const num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
+  @override
+  num forceRequeryInterval;
 
-  static const IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateReceiptsData;
-  static const IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearReceiptsData;
+  @override
+  num cacheDuration;
 
-  static const String colId = 'id';
-  static const String remoteDbId = 'receiptId';
+  @override
+  IntPrefsEnum lastUpdatedKey;
 
-  static const String colReceiptId = 'receiptId';
-  static const String colEventId = 'eventId';
-  static const String colUserId = 'userId';
-  static const String colReceiptAmount = 'receiptAmount';
-  static const String colCostCategory = 'costCategory';
-  static const String colDateUploaded = 'dateUploaded';
-  static const String colImageUrl = 'imageUrl';
-  static const String colReceiptShortDescription = 'receiptShortDesc';
-  static const String colNotes = 'notes';
-  static const String colReimbursedBy = 'reimbursedBy';
-  static const String colReimbursedOn = 'reimbursedOn';
-  static const String colReimbursedAmount = 'reimbursedAmount';
-  static const String colReimbursedNotes = 'reimbursedNotes';
+  @override
+  IntPrefsEnum lastCacheClearKey;
 
-  static const String colRemoved = 'removed';
-  static const String colUpdatedAt = 'updatedAt';
-  static const String colUpdatedAtValue = 'updatedAtValue';
+  @override
+  String tableName =  'receipts';
 
-  // make this a singleton class
+  @override
+  String remoteDbId = 'receiptId';
 
-  static final ReceiptsTableHelper instance = ReceiptsTableHelper._privateConstructor();
+  final String colId = 'id';
 
-  // SQL code to create the database table
-  static Future<dynamic> createTable(Database db, int version) async {
+
+  final String colReceiptId = 'receiptId';
+  final String colEventId = 'eventId';
+  final String colUserId = 'userId';
+  final String colReceiptAmount = 'receiptAmount';
+  final String colCostCategory = 'costCategory';
+  final String colDateUploaded = 'dateUploaded';
+  final String colImageUrl = 'imageUrl';
+  final String colReceiptShortDescription = 'receiptShortDesc';
+  final String colNotes = 'notes';
+  final String colReimbursedBy = 'reimbursedBy';
+  final String colReimbursedOn = 'reimbursedOn';
+  final String colReimbursedAmount = 'reimbursedAmount';
+  final String colReimbursedNotes = 'reimbursedNotes';
+
+  final String colRemoved = 'removed';
+  final String colUpdatedAt = 'updatedAt';
+  final String colUpdatedAtValue = 'updatedAtValue';
+
+  @override
+  Future<dynamic> createTable(Database db, int version) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -131,209 +155,108 @@ class ReceiptsTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  static Map<String, dynamic> toMap(ReceiptsModel item) {
+  @override
+  Map<String, dynamic> toMap(dynamic item) {
     final Map<String, dynamic> map = <String, dynamic>{
-      ReceiptsTableHelper.colReceiptId: item.receiptId,
-      ReceiptsTableHelper.colEventId: item.eventId,
-      ReceiptsTableHelper.colUserId: item.userId,
-      ReceiptsTableHelper.colReceiptAmount: item.receiptAmount,
-      ReceiptsTableHelper.colCostCategory: item.costCategory,
-      ReceiptsTableHelper.colDateUploaded: item.dateUploaded,
-      ReceiptsTableHelper.colImageUrl: item.imageUrl,
-      ReceiptsTableHelper.colReceiptShortDescription: item.receiptShortDescription,
-      ReceiptsTableHelper.colNotes: item.notes,
-      ReceiptsTableHelper.colReimbursedBy: item.reimbursedBy,
-      ReceiptsTableHelper.colReimbursedOn: item.reimbursedOn,
-      ReceiptsTableHelper.colReimbursedAmount: item.reimbursedAmount,
-      ReceiptsTableHelper.colReimbursedNotes: item.reimbursedNotes,
-      ReceiptsTableHelper.colUpdatedAt: item.updatedAt.toString(),
-      ReceiptsTableHelper.colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
-      ReceiptsTableHelper.colRemoved: item.removed
+      colReceiptId: item.receiptId,
+      colEventId: item.eventId,
+      colUserId: item.userId,
+      colReceiptAmount: item.receiptAmount,
+      colCostCategory: item.costCategory,
+      colDateUploaded: item.dateUploaded,
+      colImageUrl: item.imageUrl,
+      colReceiptShortDescription: item.receiptShortDescription,
+      colNotes: item.notes,
+      colReimbursedBy: item.reimbursedBy,
+      colReimbursedOn: item.reimbursedOn,
+      colReimbursedAmount: item.reimbursedAmount,
+      colReimbursedNotes: item.reimbursedNotes,
+      colUpdatedAt: item.updatedAt.toString(),
+      colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
+      colRemoved: item.removed
     };
 
     return map;
   }
 
-  static Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+  @override
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
     final Map<String, dynamic> outputMap = <String, dynamic>{
-      ReceiptsTableHelper.colReceiptId: inputMap[ReceiptsTableHelper.colReceiptId],
-      ReceiptsTableHelper.colEventId: inputMap[ReceiptsTableHelper.colEventId],
-      ReceiptsTableHelper.colUserId: inputMap[ReceiptsTableHelper.colUserId],
-      ReceiptsTableHelper.colReceiptAmount: inputMap[ReceiptsTableHelper.colReceiptAmount],
-      ReceiptsTableHelper.colCostCategory: inputMap[ReceiptsTableHelper.colCostCategory],
-      ReceiptsTableHelper.colDateUploaded: inputMap[ReceiptsTableHelper.colDateUploaded],
-      ReceiptsTableHelper.colImageUrl: inputMap[ReceiptsTableHelper.colImageUrl],
-      ReceiptsTableHelper.colReceiptShortDescription: inputMap[ReceiptsTableHelper.colReceiptShortDescription],
-      ReceiptsTableHelper.colNotes: inputMap[ReceiptsTableHelper.colNotes],
-      ReceiptsTableHelper.colReimbursedBy: inputMap[ReceiptsTableHelper.colReimbursedBy],
-      ReceiptsTableHelper.colReimbursedOn: inputMap[ReceiptsTableHelper.colReimbursedOn],
-      ReceiptsTableHelper.colReimbursedAmount: inputMap[ReceiptsTableHelper.colReimbursedAmount],
-      ReceiptsTableHelper.colReimbursedNotes: inputMap[ReceiptsTableHelper.colReimbursedNotes],
-      ReceiptsTableHelper.colUpdatedAt: inputMap[ReceiptsTableHelper.colUpdatedAt],
-      ReceiptsTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[ReceiptsTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
-      ReceiptsTableHelper.colRemoved: inputMap[ReceiptsTableHelper.colRemoved],
+      colReceiptId: inputMap[colReceiptId],
+      colEventId: inputMap[colEventId],
+      colUserId: inputMap[colUserId],
+      colReceiptAmount: inputMap[colReceiptAmount],
+      colCostCategory: inputMap[colCostCategory],
+      colDateUploaded: inputMap[colDateUploaded],
+      colImageUrl: inputMap[colImageUrl],
+      colReceiptShortDescription: inputMap[colReceiptShortDescription],
+      colNotes: inputMap[colNotes],
+      colReimbursedBy: inputMap[colReimbursedBy],
+      colReimbursedOn: inputMap[colReimbursedOn],
+      colReimbursedAmount: inputMap[colReimbursedAmount],
+      colReimbursedNotes: inputMap[colReimbursedNotes],
+      colUpdatedAt: inputMap[colUpdatedAt],
+      colUpdatedAtValue: DateTime.parse(inputMap[colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
+      colRemoved: inputMap[colRemoved],
     };
 
     return outputMap;
   }
 
-  static String toQueryBody(String userId, String accessToken, ReceiptsModel item, String receiptsUploadedAfter) {
-    final String map = jsonEncode(<String, Object>{
-      'userId': userId,
-      'accessToken': accessToken,
-      ReceiptsTableHelper.colReceiptId: item.receiptId,
-      ReceiptsTableHelper.colEventId: item.eventId,
-      ReceiptsTableHelper.colReceiptShortDescription: item.receiptShortDescription,
-      ReceiptsTableHelper.colReceiptAmount: item.receiptAmount,
-      ReceiptsTableHelper.colNotes: item.notes,
-      ReceiptsTableHelper.colReimbursedBy: item.reimbursedBy,
-      ReceiptsTableHelper.colReimbursedOn: item.reimbursedOn,
-      ReceiptsTableHelper.colReimbursedAmount: item.reimbursedAmount,
-      ReceiptsTableHelper.colReimbursedNotes: item.reimbursedNotes,
-      ReceiptsTableHelper.colImageUrl: item.imageUrl,
-      'receiptsUpdatedAfter': receiptsUploadedAfter,
-      ReceiptsTableHelper.colRemoved: item.removed
-    });
-    return map;
-  }
 
-  static ReceiptsModel fromMap(Map<String, dynamic> map) {
+  @override
+  ReceiptsModel fromMap(Map<String, dynamic> map) {
     final ReceiptsModel item = ReceiptsModel(
-      receiptId: map[ReceiptsTableHelper.colReceiptId],
-      eventId: map[ReceiptsTableHelper.colEventId],
-      userId: map[ReceiptsTableHelper.colUserId],
-      receiptAmount: map[ReceiptsTableHelper.colReceiptAmount],
-      costCategory: map[ReceiptsTableHelper.colCostCategory],
-      dateUploaded: DateTime.parse(map[ReceiptsTableHelper.colDateUploaded].toString().substring(0, 19)),
-      imageUrl: map[ReceiptsTableHelper.colImageUrl],
-      receiptShortDescription: map[ReceiptsTableHelper.colReceiptShortDescription],
-      notes: map[ReceiptsTableHelper.colNotes],
-      reimbursedBy: map[ReceiptsTableHelper.colReimbursedBy],
-      reimbursedOn: map[ReceiptsTableHelper.colReimbursedOn],
-      reimbursedAmount: map[ReceiptsTableHelper.colReimbursedAmount],
-      reimbursedNotes: map[ReceiptsTableHelper.colReimbursedNotes],
-      updatedAt: DateTime.parse(map[ReceiptsTableHelper.colUpdatedAt].toString().substring(0, 19)),
-      removed: map[ReceiptsTableHelper.colRemoved],
+      receiptId: map[colReceiptId],
+      eventId: map[colEventId],
+      userId: map[colUserId],
+      receiptAmount: map[colReceiptAmount],
+      costCategory: map[colCostCategory],
+      dateUploaded: DateTime.parse(map[colDateUploaded].toString().substring(0, 19)),
+      imageUrl: map[colImageUrl],
+      receiptShortDescription: map[colReceiptShortDescription],
+      notes: map[colNotes],
+      reimbursedBy: map[colReimbursedBy],
+      reimbursedOn: map[colReimbursedOn],
+      reimbursedAmount: map[colReimbursedAmount],
+      reimbursedNotes: map[colReimbursedNotes],
+      updatedAt: DateTime.parse(map[colUpdatedAt].toString().substring(0, 19)),
+      removed: map[colRemoved],
     );
 
     return item;
   }
+
+  String toQueryBody(String userId, String accessToken, ReceiptsModel item, String receiptsUploadedAfter) {
+    final String map = jsonEncode(<String, Object>{
+      'userId': userId,
+      'accessToken': accessToken,
+      colReceiptId: item.receiptId,
+      colEventId: item.eventId,
+      colReceiptShortDescription: item.receiptShortDescription,
+      colReceiptAmount: item.receiptAmount,
+      colNotes: item.notes,
+      colReimbursedBy: item.reimbursedBy,
+      colReimbursedOn: item.reimbursedOn,
+      colReimbursedAmount: item.reimbursedAmount,
+      colReimbursedNotes: item.reimbursedNotes,
+      colImageUrl: item.imageUrl,
+      'receiptsUpdatedAfter': receiptsUploadedAfter,
+      colRemoved: item.removed
+    });
+    return map;
+  }
 }
 
 class ReceiptsService {
-  static Future<num> getLastUpdatedTime() async {
-    final Database db = await DBProvider.db.database;
-    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${ReceiptsTableHelper.colUpdatedAtValue}) AS maxDate FROM ${ReceiptsTableHelper.tableName}');
-    final num timeValue = table.first['maxDate'];
-    return timeValue;
-  }
-
-  Future<void> clearTable() async {
-    final Database db = await DBProvider.db.database;
-    await db.rawDelete('DELETE FROM ${ReceiptsTableHelper.tableName}').then((void dummy) {
-      setIntPref(ReceiptsTableHelper.lastCacheClearKey, DateTime.now().millisecondsSinceEpoch);
-    });
-  }
-
-  Future<void> updateDatabase(List<ReceiptsModel> items) async {
-    final Database db = await DBProvider.db.database;
-
-    for (int i = 0; i < items?.length ?? 0; i++) {
-      final Map<String, dynamic> row = ReceiptsTableHelper.toMap(items[i]);
-
-      final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${ReceiptsTableHelper.tableName} WHERE ${ReceiptsTableHelper.remoteDbId} = "${items[i].receiptId}"');
-      if ((table == null) || (table.isEmpty)) {
-        await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.insert(ReceiptsTableHelper.tableName, row);
-          print(result.toString() + ' inserted into to the ${ReceiptsTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        });
-      } else {
-        final String rowId = table.first['id'].toString();
-
-        await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.update(ReceiptsTableHelper.tableName, row, where: 'id = $rowId');
-          print(result.toString() + ' update to the ${ReceiptsTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        });
-      }
-    }
-  }
-
-  Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser) async {
-    int updateCounter = 0;
-    int insertCounter = 0;
-
-    bool doNormalizeMap;
-
-    final List<dynamic> jsonResultSets = json.decode(rawResults);
-
-    final int len = jsonResultSets.length;
-    int lastPercentage = 0;
-
-    print('Receipt recordsets received from cloud = $len');
-
-    for (int i = 0; i < jsonResultSets.length; i++) {
-      final List<dynamic> jsonResults = jsonResultSets[i];
-
-      for (int j = 0; j < jsonResults.length; j++) {
-        final Map<String, dynamic> jsonItem = jsonResults[j];
-
-        if (doNormalizeMap == null) {
-          final Map<String, dynamic> testMap = ReceiptsTableHelper.normalizeMap(jsonItem);
-                    doNormalizeMap = (testMap.length - 1) != jsonItem.length;
-          if (doNormalizeMap)
-          {
-            print('Normalize map called for ${ReceiptsTableHelper.tableName}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}' );
-          }
-        }
-
-        final int percentage = (100 * (j / jsonResults.length)).round();
-        if ((percentage != lastPercentage) && (informUser != null)) {
-          lastPercentage = percentage;
-          informUser('Loading event data\r\n$percentage% complete');
-        }
-
-        jsonItem.addAll(<String, dynamic>{
-          'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch,
-        });
-
-        final String query = 'SELECT * FROM ${ReceiptsTableHelper.tableName} WHERE ${ReceiptsTableHelper.remoteDbId} = "${jsonItem['receiptId']}"';
-        final List<Map<String, dynamic>> table = await db.rawQuery(query);
-
-        if ((table == null) || (table.isEmpty)) {
-          //print(table.length.toString());
-          await db.transaction<dynamic>((Transaction txn) async {
-            //final int result =
-            await txn.insert(ReceiptsTableHelper.tableName, doNormalizeMap ? ReceiptsTableHelper.normalizeMap(jsonItem) : jsonItem);
-            insertCounter++;
-            // print(result.toString() +
-            //     ' inserted into to the ${ReceiptssTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
-          });
-        } else {
-          final String rowId = table.first['id'].toString();
-
-          await db.transaction<dynamic>((Transaction txn) async {
-            //final int result =
-            await txn.update(ReceiptsTableHelper.tableName, doNormalizeMap ? ReceiptsTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
-            updateCounter++;
-            // print(result.toString() +
-            //     ' update to the ${ReceiptssTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
-          });
-        }
-      }
-    }
-
-    print('$insertCounter receipt records inserted, $updateCounter receipt records updated');
-    return insertCounter;
-  }
-
   Future<String> uploadReceipt(BuildContext context, ReceiptsModel item) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
 
-    final num _receiptsLastUpdated = await ReceiptsService.getLastUpdatedTime();
+    final num _receiptsLastUpdated = await baseService.getLastUpdatedTime(receiptsTableHelper, receiptsTableHelper.colUpdatedAtValue);
     final DateTime receiptsUpdatedAfter = _receiptsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_receiptsLastUpdated + 1000);
 
-    final String body = ReceiptsTableHelper.toQueryBody(userId, accessToken, item, receiptsUpdatedAfter.toString());
+    final String body = receiptsTableHelper.toQueryBody(userId, accessToken, item, receiptsUpdatedAfter.toString());
 
     final String responseBody = await ServiceCommon.sendRequest(context, 'hc3_add_edit_receipt', body);
 

@@ -33,8 +33,8 @@ class SyncKennelAdminService {
   }
 
   Future<void> getLastUpdatedTimes(Database db, int flags) async {
-    _kennelLastUpdated = (flags & flagKennelTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, KennelsTableHelper.colUpdatedAtValue, KennelsTableHelper.tableName);
-    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, HashersTableHelper.colUpdatedAtValue, HashersTableHelper.tableName);
+    _kennelLastUpdated = (flags & flagKennelTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, kennelsTableHelper.colUpdatedAtValue, kennelsTableHelper.tableName);
+    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, hashersTableHelper.colUpdatedAtValue, hashersTableHelper.tableName);
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin));
   }
 
@@ -137,14 +137,12 @@ class SyncKennelAdminService {
       final String ms = matches.elementAt(i).group(0);
 
       if (ms.startsWith(r'[{"kennelId"')) {
-        final KennelsService kSrv = KennelsService();
-        await kSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        await baseService.bulkUpdateDatabase(kennelsTableHelper,'[$ms]', db, informUser);
         print('kennels updated');
       }
 
       if (ms.startsWith(r'[{"hasherId"')) {
-        final HashersService hSrv = HashersService();
-        await hSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        await hashersService.bulkUpdateDatabase(hashersTableHelper,'[$ms]', db, informUser);
         print('hashers updated');
       }
 

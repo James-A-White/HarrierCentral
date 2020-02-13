@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:http/http.dart' as http;
 
@@ -10,7 +9,6 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
@@ -356,6 +354,7 @@ class HasherKennelMapService {
   Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser, HasherKennelMapTableType tblType) async {
     int updateCounter = 0;
     int insertCounter = 0;
+    int deletedCounter = 0;
 
     bool doNormalizeMap;
 
@@ -392,14 +391,14 @@ class HasherKennelMapService {
           'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch,
         });
 
-        final String query = 'SELECT * FROM ${HasherKennelMapTableHelper.getTableName(tblType)} WHERE ${HasherKennelMapTableHelper.remoteDbId} = "${jsonItem['hkmId']}"';
+        final String query = 'SELECT id FROM ${HasherKennelMapTableHelper.getTableName(tblType)} WHERE ${HasherKennelMapTableHelper.remoteDbId} = "${jsonItem['hkmId']}"';
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
 
         if ((table == null) || (table.isEmpty)) {
           // for the user table, we only want to insert kkm records for this particular user
           if ((tblType != HasherKennelMapTableType.user) || ((tblType == HasherKennelMapTableType.user) && (userId == jsonItem['userId']))) {
             await db.transaction<dynamic>((Transaction txn) async {
-              //final int result =
+              
               await txn.insert(HasherKennelMapTableHelper.getTableName(tblType), doNormalizeMap ? HasherKennelMapTableHelper.normalizeMap(jsonItem) : jsonItem);
               insertCounter++;
               // print(result.toString() +
@@ -410,7 +409,7 @@ class HasherKennelMapService {
           final String rowId = table.first['id'].toString();
 
           await db.transaction<dynamic>((Transaction txn) async {
-            //final int result =
+            
             await txn.update(HasherKennelMapTableHelper.getTableName(tblType), doNormalizeMap ? HasherKennelMapTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId').then((int result) {
               print(result.toString());
             });
@@ -422,7 +421,13 @@ class HasherKennelMapService {
       }
     }
 
-    print('$insertCounter hasher kennel map records inserted, $updateCounter hasher kennel map records updated');
+
+    await db.transaction<dynamic>((Transaction txn) async {
+      
+      deletedCounter = await txn.delete(HasherKennelMapTableHelper.getTableName(tblType), where: 'removed = 1');
+    });
+
+    print('$insertCounter hasher kennel map records inserted, $updateCounter hasher kennel map records updated, $deletedCounter region records deleted');
     return insertCounter;
   }
 
@@ -445,8 +450,8 @@ class HasherKennelMapService {
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
 
     final num _hasherKennelMapLastUpdated = await HasherKennelMapService.getLastUpdatedTime(tblType);
-    final num _kennelsLastUpdated = await KennelsService.getLastUpdatedTime();
-    final num _hashersLastUpdated = await HashersService.getLastUpdatedTime();
+    final num _kennelsLastUpdated = await baseService.getLastUpdatedTime(kennelsTableHelper,kennelsTableHelper.colUpdatedAtValue);
+    final num _hashersLastUpdated = await hashersService.getLastUpdatedTime(hashersTableHelper,hashersTableHelper.colUpdatedAtValue);
 
     final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
     final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);

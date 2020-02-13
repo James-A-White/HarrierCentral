@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:harrier_central/localization.dart';
 import 'package:harrier_central/pages/init/app_entry_page.dart';
 import 'package:harrier_central/util/routes.dart';
+import 'package:harrier_central/util/globals.dart';
 
 //import 'package:flutter/scheduler.dart' show timeDilation;
 
@@ -21,6 +22,8 @@ void main() {
     //DeviceOrientation.landscapeLeft,
     //DeviceOrientation.landscapeRight
     ]);
+
+  initializeGlobals();
 
   runApp(
     MaterialApp(

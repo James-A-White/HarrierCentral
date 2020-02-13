@@ -8,8 +8,10 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 
 enum FindHasherPageType { addHasherToRun, addMember }
@@ -33,7 +35,7 @@ class FindHasherPageState extends State<FindHasherPage> {
 
   void findHasher() {
     final HashersService svc = HashersService();
-    svc.selectAllFromLocalDb().then((List<HashersModel> list) {
+    svc.selectAllFromLocalDb(hashersTableHelper).then((List<BaseModel> list) {
       hasherList = list;
       setState(() {
         if (hasherList != null) {

@@ -103,7 +103,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 
       for (int i = 0; i < results.length; i++) {
         final HasherEventMapModel packItem = HasherEventMapTableHelper.fromMap(results[i]);
-        final HashersModel hasherItem = HashersTableHelper.fromMap(results[i]);
+        final HashersModel hasherItem = hashersTableHelper.fromMap(results[i]);
         thePackList.add(PackListAggregate(hem: packItem, hasher: hasherItem));
         if (packItem.userId == userId) {
           _thisUserIndex = i;

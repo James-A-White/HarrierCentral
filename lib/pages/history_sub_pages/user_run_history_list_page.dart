@@ -224,7 +224,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
     final SyncUserDataService cSrv = SyncUserDataService();
     final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    print('Event map data synchronized $resultStr');
+    print('User data synchronized $resultStr');
     refreshRunHistoryFromTable(true);
   }
 

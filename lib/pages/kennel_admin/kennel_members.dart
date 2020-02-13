@@ -259,10 +259,10 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           SELECT 
               COUNT(CASE WHEN ${HasherKennelMapTableHelper.colFollowing} > 0 THEN 1 ELSE NULL END) as isFollowing,
               COUNT(CASE WHEN ${HasherKennelMapTableHelper.colMembershipExpirationDate} > date('now') THEN 1 ELSE NULL END) as isMember,
-              COUNT(CASE WHEN ${HasherKennelMapTableHelper.colKennelId} = ${HashersTableHelper.colHomeKennelId} THEN 1 ELSE NULL END) as isHomeKennel,
+              COUNT(CASE WHEN ${HasherKennelMapTableHelper.colKennelId} = ${hashersTableHelper.colHomeKennelId} THEN 1 ELSE NULL END) as isHomeKennel,
               COUNT(CASE WHEN ${HasherKennelMapTableHelper.colDateOfLastRun} >= date('now','-365 day') THEN 1 ELSE NULL END) as hasRecentRuns
               FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin)} hkm
-              INNER JOIN ${HashersTableHelper.tableName} h on h.${HashersTableHelper.colHasherId} = hkm.${HasherKennelMapTableHelper.colUserId}
+              INNER JOIN ${hashersTableHelper.tableName} h on h.${hashersTableHelper.colHasherId} = hkm.${HasherKennelMapTableHelper.colUserId}
   
           ''';
 
@@ -817,7 +817,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     final SyncKennelAdminService cSrv = SyncKennelAdminService();
     final bool result = await cSrv.updateFromBackend(db, SyncKennelAdminService.flagKennelTable | SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennel.kennel.kennelId);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    print('Event map data synchronized $resultStr');
+    print('Kennel member data synchronized $resultStr');
     refreshKennelMembersFromTable(true).then((void dummy) {
       _refreshCounters(true);
       setState(() {});

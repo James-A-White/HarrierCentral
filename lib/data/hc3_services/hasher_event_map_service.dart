@@ -320,6 +320,7 @@ class HasherEventMapService {
   Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser, HasherEventMapTableType tblType) async {
     int updateCounter = 0;
     int insertCounter = 0;
+    int deletedCounter = 0;
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
@@ -354,13 +355,13 @@ class HasherEventMapService {
 
         jsonItem.addAll(<String, dynamic>{'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch});
 
-        final String query = 'SELECT * FROM ${HasherEventMapTableHelper.getTableName(tblType)} WHERE ${HasherEventMapTableHelper.remoteDbId} = "${jsonItem['hemId']}"';
+        final String query = 'SELECT id FROM ${HasherEventMapTableHelper.getTableName(tblType)} WHERE ${HasherEventMapTableHelper.remoteDbId} = "${jsonItem['hemId']}"';
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
 
         if ((table == null) || (table.isEmpty)) {
           if ((tblType != HasherEventMapTableType.user) || ((tblType == HasherEventMapTableType.user) && (userId == jsonItem['userId']))) {
             await db.transaction<dynamic>((Transaction txn) async {
-              //final int result =
+              
 
               await txn.insert(HasherEventMapTableHelper.getTableName(tblType), doNormalizeMap ? HasherEventMapTableHelper.normalizeMap(jsonItem) : jsonItem);
               insertCounter++;
@@ -372,7 +373,7 @@ class HasherEventMapService {
           final String rowId = table.first['id'].toString();
 
           await db.transaction<dynamic>((Transaction txn) async {
-            //final int result =
+            
             await txn.update(HasherEventMapTableHelper.getTableName(tblType), doNormalizeMap ? HasherEventMapTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
 
             updateCounter++;
@@ -383,7 +384,13 @@ class HasherEventMapService {
       }
     }
 
-    print('$insertCounter hasher event map records inserted, $updateCounter hasher event map records updated @ ${DateTime.now().millisecondsSinceEpoch}');
+
+    await db.transaction<dynamic>((Transaction txn) async {
+      
+      deletedCounter = await txn.delete(HasherEventMapTableHelper.getTableName(tblType), where: 'removed = 1');
+    });
+
+    print('$insertCounter hasher event map records inserted, $updateCounter hasher event map records updated, $deletedCounter hasher event map records deleted @ ${DateTime.now().millisecondsSinceEpoch}');
     return insertCounter;
   }
 
@@ -424,7 +431,7 @@ class HasherEventMapService {
 
     final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.eventAdmin);
     final num _hasherKennelMapLastUpdated = await HasherKennelMapService.getLastUpdatedTime(HasherKennelMapTableType.eventAdmin);
-    final num _paymentsLastUpdated = await PaymentsService.getLastUpdatedTime();
+    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper,paymentsTableHelper.colUpdatedAtValue);
 
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
     final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
@@ -475,7 +482,7 @@ class HasherEventMapService {
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor');
 
     final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.eventAdmin);
-    final num _paymentsLastUpdated = await PaymentsService.getLastUpdatedTime();
+    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper,paymentsTableHelper.colUpdatedAtValue);
 
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
     final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);

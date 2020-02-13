@@ -3,10 +3,10 @@ import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 
-class KennelsModel {
+class KennelsModel implements BaseModel {
   KennelsModel(
       {this.kennelId,
       this.cityId,
@@ -78,7 +78,8 @@ class KennelsModel {
   final DateTime updatedAt;
   final int removed;
 
-  static List<KennelsModel> itemsFromJson(String jsonResult) {
+  @override
+  List<KennelsModel> itemsFromJson(String jsonResult) {
     final List<KennelsModel> items = <KennelsModel>[];
 
     KennelsModel item;
@@ -134,64 +135,68 @@ class KennelsModel {
   }
 }
 
-class KennelsTableHelper {
-  KennelsTableHelper._privateConstructor();
+class KennelsTableHelper implements BaseTableHelper {
 
-  static const String tableName = 'kennels';
+  @override
+  num forceRequeryInterval;
 
-  //static const num forceRequeryInterval = 1 * 86400000;
-  static const num forceRequeryInterval = 1 * 1000;
-  static const num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
+  @override
+  num cacheDuration;
 
-  static const IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateKennelData;
-  static const IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearKennelData;
+  @override
+  IntPrefsEnum lastUpdatedKey;
 
-  static const String colId = 'id';
-  static const String remoteDbId = 'kennelId';
+  @override
+  IntPrefsEnum lastCacheClearKey;
 
-  static const String colKennelId = 'kennelId';
-  static const String colCityId = 'cityId';
-  static const String colRegionId = 'regionId';
-  static const String colCountryId = 'countryId';
-  static const String colKennelName = 'kennelName';
-  static const String colKennelShortName = 'kennelShortName';
-  static const String colKennelDescription = 'kennelDescription';
-  static const String colKennelLogo = 'kennelLogo';
-  static const String colKennelCoverPhoto = 'kennelCoverPhoto';
-  static const String colKennelWebsiteUrl = 'kennelWebsiteUrl';
-  static const String colDefaultEventCurrencyType = 'defaultEventCurrencyType';
-  static const String colKennelStatus = 'kennelStatus';
-  static const String colAllowNegativeCredit = 'allowNegativeCredit';
-  static const String colKennelLatitude = 'kennelLatitude';
-  static const String colKennelLongitude = 'kennelLongitude';
-  static const String colDefaultPriceForMembers = 'defaultPriceForMembers';
-  static const String colDefaultPriceForNonMembers = 'defaultPriceForNonMembers';
-  static const String colMembershipDurationInMonths = 'membershipDurationInMonths';
-  static const String colDefaultRunStartTime = 'defaultRunStartTime';
-  static const String colCurrencyCode = 'currencyCode';
-  static const String colPrimaryCultureCode = 'primaryCultureCode';
-  static const String colCurrencySymbol = 'currencySymbol';
-  static const String colDigitsAfterDecimal = 'digitsAfterDecimal';
-  static const String colBankScheme = 'bankScheme';
-  static const String colBankAccountNumber = 'bankAccountNumber';
-  static const String colBankBic = 'bankBic';
-  static const String colBankBeneficiary = 'bankBeneficiary';
-  static const String colKennelPaymentUrl = 'kennelPaymentUrl';
-  static const String colKennelPaymentUrlExpires = 'kennelPaymentUrlExpires';
-  static const String colRunCountStartDate = 'runCountStartDate';
-  static const String colKennelMismanagementTeam= 'kennelMismanagementTeam';
-  static const String colDistancePreference= 'distancePreference';
-  static const String colUpdatedAt = 'updatedAt';
-  static const String colRemoved = 'removed';
+  @override
+  String tableName = 'kennels';
 
-  static const String colUpdatedAtValue = 'updatedAtValue';
+  @override
+  String remoteDbId = 'kennelId';
 
-  // make this a singleton class
+  final String colId = 'id';
 
-  static final KennelsTableHelper instance = KennelsTableHelper._privateConstructor();
 
-  // SQL code to create the database table
-  static Future<dynamic> createTable(Database db, int version) async {
+  final String colKennelId = 'kennelId';
+  final String colCityId = 'cityId';
+  final String colRegionId = 'regionId';
+  final String colCountryId = 'countryId';
+  final String colKennelName = 'kennelName';
+  final String colKennelShortName = 'kennelShortName';
+  final String colKennelDescription = 'kennelDescription';
+  final String colKennelLogo = 'kennelLogo';
+  final String colKennelCoverPhoto = 'kennelCoverPhoto';
+  final String colKennelWebsiteUrl = 'kennelWebsiteUrl';
+  final String colDefaultEventCurrencyType = 'defaultEventCurrencyType';
+  final String colKennelStatus = 'kennelStatus';
+  final String colAllowNegativeCredit = 'allowNegativeCredit';
+  final String colKennelLatitude = 'kennelLatitude';
+  final String colKennelLongitude = 'kennelLongitude';
+  final String colDefaultPriceForMembers = 'defaultPriceForMembers';
+  final String colDefaultPriceForNonMembers = 'defaultPriceForNonMembers';
+  final String colMembershipDurationInMonths = 'membershipDurationInMonths';
+  final String colDefaultRunStartTime = 'defaultRunStartTime';
+  final String colCurrencyCode = 'currencyCode';
+  final String colPrimaryCultureCode = 'primaryCultureCode';
+  final String colCurrencySymbol = 'currencySymbol';
+  final String colDigitsAfterDecimal = 'digitsAfterDecimal';
+  final String colBankScheme = 'bankScheme';
+  final String colBankAccountNumber = 'bankAccountNumber';
+  final String colBankBic = 'bankBic';
+  final String colBankBeneficiary = 'bankBeneficiary';
+  final String colKennelPaymentUrl = 'kennelPaymentUrl';
+  final String colKennelPaymentUrlExpires = 'kennelPaymentUrlExpires';
+  final String colRunCountStartDate = 'runCountStartDate';
+  final String colKennelMismanagementTeam= 'kennelMismanagementTeam';
+  final String colDistancePreference= 'distancePreference';
+  final String colUpdatedAt = 'updatedAt';
+  final String colRemoved = 'removed';
+
+  final String colUpdatedAtValue = 'updatedAtValue';
+
+@override
+  Future<dynamic> createTable(Database db, int version) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -239,238 +244,133 @@ class KennelsTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  static Map<String, dynamic> toMap(KennelsModel item) {
+  @override
+  Map<String, dynamic> toMap(dynamic item) {
     final Map<String, dynamic> map = <String, dynamic>{
-      KennelsTableHelper.colKennelId: item.kennelId,
-      KennelsTableHelper.colCityId: item.cityId,
-      KennelsTableHelper.colRegionId: item.regionId,
-      KennelsTableHelper.colCountryId: item.countryId,
-      KennelsTableHelper.colKennelName: item.kennelName,
-      KennelsTableHelper.colKennelShortName: item.kennelShortName,
-      KennelsTableHelper.colKennelDescription: item.kennelDescription,
-      KennelsTableHelper.colKennelLogo: item.kennelLogo,
-      KennelsTableHelper.colKennelCoverPhoto: item.kennelCoverPhoto,
-      KennelsTableHelper.colKennelWebsiteUrl: item.kennelWebsiteUrl,
-      KennelsTableHelper.colDefaultEventCurrencyType: item.defaultEventCurrencyType,
-      KennelsTableHelper.colKennelStatus: item.kennelStatus,
-      KennelsTableHelper.colAllowNegativeCredit: item.allowNegativeCredit,
-      KennelsTableHelper.colKennelLatitude: item.kennelLatitude,
-      KennelsTableHelper.colKennelLongitude: item.kennelLongitude,
-      KennelsTableHelper.colDefaultPriceForMembers: item.defaultPriceForMembers,
-      KennelsTableHelper.colDefaultPriceForNonMembers: item.defaultPriceForNonMembers,
-      KennelsTableHelper.colMembershipDurationInMonths: item.membershipDurationInMonths,
-      KennelsTableHelper.colDefaultRunStartTime: item.defaultRunStartTime,
-      KennelsTableHelper.colCurrencyCode: item.currencyCode,
-      KennelsTableHelper.colPrimaryCultureCode: item.primaryCultureCode,
-      KennelsTableHelper.colCurrencySymbol: item.currencySymbol,
-      KennelsTableHelper.colDigitsAfterDecimal: item.digitsAfterDecimal,
-      KennelsTableHelper.colBankScheme: item.bankScheme,
-      KennelsTableHelper.colBankAccountNumber: item.bankAccountNumber,
-      KennelsTableHelper.colBankBic: item.bankBic,
-      KennelsTableHelper.colBankBeneficiary: item.bankBeneficiary,
-      KennelsTableHelper.colKennelPaymentUrl: item.kennelPaymentUrl,
-      KennelsTableHelper.colKennelPaymentUrlExpires: item.kennelPaymentUrlExpires.toString(),
-      KennelsTableHelper.colRunCountStartDate: item.runCountStartDate.toString(),
-      KennelsTableHelper.colKennelMismanagementTeam: item.kennelMismanagementTeam,
-      KennelsTableHelper.colDistancePreference: item.distancePreference,
+      colKennelId: item.kennelId,
+      colCityId: item.cityId,
+      colRegionId: item.regionId,
+      colCountryId: item.countryId,
+      colKennelName: item.kennelName,
+      colKennelShortName: item.kennelShortName,
+      colKennelDescription: item.kennelDescription,
+      colKennelLogo: item.kennelLogo,
+      colKennelCoverPhoto: item.kennelCoverPhoto,
+      colKennelWebsiteUrl: item.kennelWebsiteUrl,
+      colDefaultEventCurrencyType: item.defaultEventCurrencyType,
+      colKennelStatus: item.kennelStatus,
+      colAllowNegativeCredit: item.allowNegativeCredit,
+      colKennelLatitude: item.kennelLatitude,
+      colKennelLongitude: item.kennelLongitude,
+      colDefaultPriceForMembers: item.defaultPriceForMembers,
+      colDefaultPriceForNonMembers: item.defaultPriceForNonMembers,
+      colMembershipDurationInMonths: item.membershipDurationInMonths,
+      colDefaultRunStartTime: item.defaultRunStartTime,
+      colCurrencyCode: item.currencyCode,
+      colPrimaryCultureCode: item.primaryCultureCode,
+      colCurrencySymbol: item.currencySymbol,
+      colDigitsAfterDecimal: item.digitsAfterDecimal,
+      colBankScheme: item.bankScheme,
+      colBankAccountNumber: item.bankAccountNumber,
+      colBankBic: item.bankBic,
+      colBankBeneficiary: item.bankBeneficiary,
+      colKennelPaymentUrl: item.kennelPaymentUrl,
+      colKennelPaymentUrlExpires: item.kennelPaymentUrlExpires.toString(),
+      colRunCountStartDate: item.runCountStartDate.toString(),
+      colKennelMismanagementTeam: item.kennelMismanagementTeam,
+      colDistancePreference: item.distancePreference,
 
-      KennelsTableHelper.colUpdatedAt: item.updatedAt.toString(),
-      KennelsTableHelper.colRemoved: item.removed,
+      colUpdatedAt: item.updatedAt.toString(),
+      colRemoved: item.removed,
     };
 
     return map;
   }
 
-  static Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+@override
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
     final Map<String, dynamic> outputMap = <String, dynamic>{
-      KennelsTableHelper.colKennelId: inputMap[KennelsTableHelper.colKennelId],
-      KennelsTableHelper.colCityId: inputMap[KennelsTableHelper.colCityId],
-      KennelsTableHelper.colRegionId: inputMap[KennelsTableHelper.colRegionId],
-      KennelsTableHelper.colCountryId: inputMap[KennelsTableHelper.colCountryId],
-      KennelsTableHelper.colKennelName: inputMap[KennelsTableHelper.colKennelName],
-      KennelsTableHelper.colKennelShortName: inputMap[KennelsTableHelper.colKennelShortName],
-      KennelsTableHelper.colKennelDescription: inputMap[KennelsTableHelper.colKennelDescription],
-      KennelsTableHelper.colKennelLogo: inputMap[KennelsTableHelper.colKennelLogo],
-      KennelsTableHelper.colKennelCoverPhoto: inputMap[KennelsTableHelper.colKennelCoverPhoto],
-      KennelsTableHelper.colKennelWebsiteUrl: inputMap[KennelsTableHelper.colKennelWebsiteUrl],
-      KennelsTableHelper.colDefaultEventCurrencyType: inputMap[KennelsTableHelper.colDefaultEventCurrencyType],
-      KennelsTableHelper.colKennelStatus: inputMap[KennelsTableHelper.colKennelStatus],
-      KennelsTableHelper.colAllowNegativeCredit: inputMap[KennelsTableHelper.colAllowNegativeCredit],
-      KennelsTableHelper.colKennelLatitude: inputMap[KennelsTableHelper.colKennelLatitude],
-      KennelsTableHelper.colKennelLongitude: inputMap[KennelsTableHelper.colKennelLongitude],
-      KennelsTableHelper.colDefaultPriceForMembers: inputMap[KennelsTableHelper.colDefaultPriceForMembers],
-      KennelsTableHelper.colDefaultPriceForNonMembers: inputMap[KennelsTableHelper.colDefaultPriceForNonMembers],
-      KennelsTableHelper.colMembershipDurationInMonths: inputMap[KennelsTableHelper.colMembershipDurationInMonths],
-      KennelsTableHelper.colDefaultRunStartTime: inputMap[KennelsTableHelper.colDefaultRunStartTime],
-      KennelsTableHelper.colCurrencyCode: inputMap[KennelsTableHelper.colCurrencyCode],
-      KennelsTableHelper.colPrimaryCultureCode: inputMap[KennelsTableHelper.colPrimaryCultureCode],
-      KennelsTableHelper.colCurrencySymbol: inputMap[KennelsTableHelper.colCurrencySymbol],
-      KennelsTableHelper.colDigitsAfterDecimal: inputMap[KennelsTableHelper.colDigitsAfterDecimal],
-      KennelsTableHelper.colBankScheme: inputMap[KennelsTableHelper.colBankScheme],
-      KennelsTableHelper.colBankAccountNumber: inputMap[KennelsTableHelper.colBankAccountNumber],
-      KennelsTableHelper.colBankBic: inputMap[KennelsTableHelper.colBankBic],
-      KennelsTableHelper.colBankBeneficiary: inputMap[KennelsTableHelper.colBankBeneficiary],
-      KennelsTableHelper.colKennelPaymentUrl: inputMap[KennelsTableHelper.colKennelPaymentUrl],
-      KennelsTableHelper.colKennelPaymentUrlExpires: inputMap[KennelsTableHelper.colKennelPaymentUrlExpires],
-      KennelsTableHelper.colRunCountStartDate: inputMap[KennelsTableHelper.colRunCountStartDate],
-      KennelsTableHelper.colKennelMismanagementTeam: inputMap[KennelsTableHelper.colKennelMismanagementTeam],
-      KennelsTableHelper.colDistancePreference: inputMap[KennelsTableHelper.colDistancePreference],
-      KennelsTableHelper.colUpdatedAt: inputMap[KennelsTableHelper.colUpdatedAt],
-      KennelsTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[KennelsTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
-      KennelsTableHelper.colRemoved: inputMap[KennelsTableHelper.colRemoved],
+      colKennelId: inputMap[colKennelId],
+      colCityId: inputMap[colCityId],
+      colRegionId: inputMap[colRegionId],
+      colCountryId: inputMap[colCountryId],
+      colKennelName: inputMap[colKennelName],
+      colKennelShortName: inputMap[colKennelShortName],
+      colKennelDescription: inputMap[colKennelDescription],
+      colKennelLogo: inputMap[colKennelLogo],
+      colKennelCoverPhoto: inputMap[colKennelCoverPhoto],
+      colKennelWebsiteUrl: inputMap[colKennelWebsiteUrl],
+      colDefaultEventCurrencyType: inputMap[colDefaultEventCurrencyType],
+      colKennelStatus: inputMap[colKennelStatus],
+      colAllowNegativeCredit: inputMap[colAllowNegativeCredit],
+      colKennelLatitude: inputMap[colKennelLatitude],
+      colKennelLongitude: inputMap[colKennelLongitude],
+      colDefaultPriceForMembers: inputMap[colDefaultPriceForMembers],
+      colDefaultPriceForNonMembers: inputMap[colDefaultPriceForNonMembers],
+      colMembershipDurationInMonths: inputMap[colMembershipDurationInMonths],
+      colDefaultRunStartTime: inputMap[colDefaultRunStartTime],
+      colCurrencyCode: inputMap[colCurrencyCode],
+      colPrimaryCultureCode: inputMap[colPrimaryCultureCode],
+      colCurrencySymbol: inputMap[colCurrencySymbol],
+      colDigitsAfterDecimal: inputMap[colDigitsAfterDecimal],
+      colBankScheme: inputMap[colBankScheme],
+      colBankAccountNumber: inputMap[colBankAccountNumber],
+      colBankBic: inputMap[colBankBic],
+      colBankBeneficiary: inputMap[colBankBeneficiary],
+      colKennelPaymentUrl: inputMap[colKennelPaymentUrl],
+      colKennelPaymentUrlExpires: inputMap[colKennelPaymentUrlExpires],
+      colRunCountStartDate: inputMap[colRunCountStartDate],
+      colKennelMismanagementTeam: inputMap[colKennelMismanagementTeam],
+      colDistancePreference: inputMap[colDistancePreference],
+      colUpdatedAt: inputMap[colUpdatedAt],
+      colUpdatedAtValue: DateTime.parse(inputMap[colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
+      colRemoved: inputMap[colRemoved],
     };
 
     return outputMap;
   }
 
-  static KennelsModel fromMap(Map<String, dynamic> map) {
+@override
+  KennelsModel fromMap(Map<String, dynamic> map) {
     final KennelsModel item = KennelsModel(
-      kennelId: map[KennelsTableHelper.colKennelId],
-      cityId: map[KennelsTableHelper.colCityId],
-      regionId: map[KennelsTableHelper.colRegionId],
-      countryId: map[KennelsTableHelper.colCountryId],
-      kennelName: map[KennelsTableHelper.colKennelName],
-      kennelShortName: map[KennelsTableHelper.colKennelShortName],
-      kennelDescription: map[KennelsTableHelper.colKennelDescription],
-      kennelLogo: map[KennelsTableHelper.colKennelLogo],
-      kennelCoverPhoto: map[KennelsTableHelper.colKennelCoverPhoto],
-      kennelWebsiteUrl: map[KennelsTableHelper.colKennelWebsiteUrl],
-      defaultEventCurrencyType: map[KennelsTableHelper.colDefaultEventCurrencyType],
-      kennelStatus: map[KennelsTableHelper.colKennelStatus],
-      allowNegativeCredit: map[KennelsTableHelper.colAllowNegativeCredit],
-      kennelLatitude: map[KennelsTableHelper.colKennelLatitude],
-      kennelLongitude: map[KennelsTableHelper.colKennelLongitude],
-      defaultPriceForMembers: map[KennelsTableHelper.colDefaultPriceForMembers],
-      defaultPriceForNonMembers: map[KennelsTableHelper.colDefaultPriceForNonMembers],
-      membershipDurationInMonths: map[KennelsTableHelper.colMembershipDurationInMonths],
-      defaultRunStartTime: DateTime.parse(map[KennelsTableHelper.colDefaultRunStartTime].toString().substring(0, 19)),
-      currencyCode: map[KennelsTableHelper.colCurrencyCode],
-      primaryCultureCode: map[KennelsTableHelper.colPrimaryCultureCode],
-      currencySymbol: map[KennelsTableHelper.colCurrencySymbol],
-      digitsAfterDecimal: map[KennelsTableHelper.colDigitsAfterDecimal],
-      bankScheme: map[KennelsTableHelper.colBankScheme],
-      bankAccountNumber: map[KennelsTableHelper.colBankAccountNumber],
-      bankBic: map[KennelsTableHelper.colBankBic],
-      bankBeneficiary: map[KennelsTableHelper.colBankBeneficiary],
-      kennelPaymentUrl: map[KennelsTableHelper.colKennelPaymentUrl],
-      kennelPaymentUrlExpires: DateTime.parse((map[KennelsTableHelper.colKennelPaymentUrlExpires] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
-      runCountStartDate: map[KennelsTableHelper.colRunCountStartDate] == null ? null : DateTime.parse(map[KennelsTableHelper.colRunCountStartDate].toString().substring(0, 19)),
-      kennelMismanagementTeam: map[KennelsTableHelper.colKennelMismanagementTeam],
-      distancePreference: map[KennelsTableHelper.colDistancePreference],
+      kennelId: map[colKennelId],
+      cityId: map[colCityId],
+      regionId: map[colRegionId],
+      countryId: map[colCountryId],
+      kennelName: map[colKennelName],
+      kennelShortName: map[colKennelShortName],
+      kennelDescription: map[colKennelDescription],
+      kennelLogo: map[colKennelLogo],
+      kennelCoverPhoto: map[colKennelCoverPhoto],
+      kennelWebsiteUrl: map[colKennelWebsiteUrl],
+      defaultEventCurrencyType: map[colDefaultEventCurrencyType],
+      kennelStatus: map[colKennelStatus],
+      allowNegativeCredit: map[colAllowNegativeCredit],
+      kennelLatitude: map[colKennelLatitude],
+      kennelLongitude: map[colKennelLongitude],
+      defaultPriceForMembers: map[colDefaultPriceForMembers],
+      defaultPriceForNonMembers: map[colDefaultPriceForNonMembers],
+      membershipDurationInMonths: map[colMembershipDurationInMonths],
+      defaultRunStartTime: DateTime.parse(map[colDefaultRunStartTime].toString().substring(0, 19)),
+      currencyCode: map[colCurrencyCode],
+      primaryCultureCode: map[colPrimaryCultureCode],
+      currencySymbol: map[colCurrencySymbol],
+      digitsAfterDecimal: map[colDigitsAfterDecimal],
+      bankScheme: map[colBankScheme],
+      bankAccountNumber: map[colBankAccountNumber],
+      bankBic: map[colBankBic],
+      bankBeneficiary: map[colBankBeneficiary],
+      kennelPaymentUrl: map[colKennelPaymentUrl],
+      kennelPaymentUrlExpires: DateTime.parse((map[colKennelPaymentUrlExpires] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
+      runCountStartDate: map[colRunCountStartDate] == null ? null : DateTime.parse(map[colRunCountStartDate].toString().substring(0, 19)),
+      kennelMismanagementTeam: map[colKennelMismanagementTeam],
+      distancePreference: map[colDistancePreference],
 
-      updatedAt: DateTime.parse(map[KennelsTableHelper.colUpdatedAt].toString().substring(0, 19)),
-      removed: map[KennelsTableHelper.colRemoved],
+      updatedAt: DateTime.parse(map[colUpdatedAt].toString().substring(0, 19)),
+      removed: map[colRemoved],
     );
 
     return item;
   }
 }
 
-class KennelsService {
-  static final KennelsTableHelper instance = KennelsTableHelper._privateConstructor();
-
-  static Future<num> getLastUpdatedTime() async {
-    final Database db = await DBProvider.db.database;
-    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${KennelsTableHelper.colUpdatedAtValue}) AS maxDate FROM ${KennelsTableHelper.tableName}');
-    final num timeValue = table.first['maxDate'];
-    return timeValue;
-  }
-
-  Future<void> clearTable() async {
-    final Database db = await DBProvider.db.database;
-    await db.rawDelete('DELETE FROM ${KennelsTableHelper.tableName}').then((void dummy) {
-      setIntPref(KennelsTableHelper.lastCacheClearKey, DateTime.now().millisecondsSinceEpoch);
-    });
-  }
-
-  Future<void> updateDatabase(List<KennelsModel> items) async {
-    final Database db = await DBProvider.db.database;
-
-    for (int i = 0; i < items?.length ?? 0; i++) {
-      final Map<String, dynamic> row = KennelsTableHelper.toMap(items[i]);
-
-      final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${KennelsTableHelper.tableName} WHERE ${KennelsTableHelper.remoteDbId} = "${items[i].kennelId}"');
-      if ((table == null) || (table.isEmpty)) {
-        await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.insert(KennelsTableHelper.tableName, row);
-          print(result.toString() + ' inserted into to the ${KennelsTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        });
-      } else {
-        final String rowId = table.first['id'].toString();
-
-        await db.transaction<dynamic>((Transaction txn) async {
-          final int result = await txn.update(KennelsTableHelper.tableName, row, where: 'id = $rowId');
-          print(result.toString() + ' update to the ${KennelsTableHelper.tableName} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        });
-      }
-    }
-  }
-
-  Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser) async {
-    int updateCounter = 0;
-    int insertCounter = 0;
-
-    bool doNormalizeMap;
-
-    final List<dynamic> jsonResultSets = json.decode(rawResults);
-
-    final int len = jsonResultSets.length;
-    int lastPercentage = 0;
-
-    print('Kennel recordsets received from cloud = $len');
-
-    for (int i = 0; i < jsonResultSets.length; i++) {
-      final List<dynamic> jsonResults = jsonResultSets[i];
-
-      for (int j = 0; j < jsonResults.length; j++) {
-        final Map<String, dynamic> jsonItem = jsonResults[j];
-
-        if (doNormalizeMap == null) {
-          final Map<String, dynamic> testMap = KennelsTableHelper.normalizeMap(jsonItem);
-                    doNormalizeMap = (testMap.length - 1) != jsonItem.length;
-          if (doNormalizeMap)
-          {
-            print('Normalize map called for ${KennelsTableHelper.tableName}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}' );
-          }
-        }
-
-        final int percentage = (100 * (j / jsonResults.length)).round();
-        if ((percentage != lastPercentage) && (informUser != null)) {
-          lastPercentage = percentage;
-          informUser('Loading kennel data\r\n$percentage% complete');
-        }
-
-        jsonItem.addAll(<String, dynamic>{
-          'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch,
-        });
-
-        final String query = 'SELECT * FROM ${KennelsTableHelper.tableName} WHERE ${KennelsTableHelper.remoteDbId} = "${jsonItem['kennelId']}"';
-        final List<Map<String, dynamic>> table = await db.rawQuery(query);
-
-        if ((table == null) || (table.isEmpty)) {
-          //print(table.length.toString());
-          await db.transaction<dynamic>((Transaction txn) async {
-            //final int result =
-            await txn.insert(KennelsTableHelper.tableName, doNormalizeMap ? KennelsTableHelper.normalizeMap(jsonItem) : jsonItem);
-            insertCounter++;
-            // print(result.toString() +
-            //     ' inserted into to the ${KennelsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
-          });
-        } else {
-          final String rowId = table.first['id'].toString();
-
-          await db.transaction<dynamic>((Transaction txn) async {
-            //final int result =
-            await txn.update(KennelsTableHelper.tableName, doNormalizeMap ? KennelsTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
-            updateCounter++;
-            // print(result.toString() +
-            //     ' update to the ${KennelsTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
-          });
-        }
-      }
-    }
-
-    print('$insertCounter kennel records inserted, $updateCounter kennel records updated');
-    return insertCounter;
-  }
-}

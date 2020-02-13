@@ -19,6 +19,7 @@ import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/countries_service.dart';
 import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/run_details.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -104,15 +105,15 @@ class RunDetailPageState extends State<RunDetailPage> {
           SELECT e.*,
           k.*,
           hkm.mismanagementRoleFlags,
-          coalesce(k.${KennelsTableHelper.colCurrencyCode},c.${CountriesTableHelper.colCurrencyCode},"USD") as curCode,
+          coalesce(k.${kennelsTableHelper.colCurrencyCode},c.${countriesTableHelper.colCurrencyCode},"USD") as curCode,
           coalesce(k.digitsAfterDecimal,c.digitsAfterDecimal,2) as digAfterDec, 
           coalesce(k.currencySymbol,c.currencySymbol,"$dollarSign") as curSym,
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as memberPrice,
           coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as nonMemberPrice,
           CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,c.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference
           FROM ${EventTableHelper.tableName} e
-          INNER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = e.kennelId
-          LEFT OUTER JOIN ${CountriesTableHelper.tableName} c on c.countryId = k.countryId
+          INNER JOIN ${kennelsTableHelper.tableName} k on k.kennelId = e.kennelId
+          LEFT OUTER JOIN ${countriesTableHelper.tableName} c on c.countryId = k.countryId
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId,
           hashers h  
           WHERE e.eventId = "${widget.eventId}"
@@ -139,7 +140,7 @@ class RunDetailPageState extends State<RunDetailPage> {
         if (results.isNotEmpty) {
           final EventModel eventItem = EventTableHelper.fromMap(results[0]);
           final RunDetailQueryExtensions extensions = RunDetailQueryExtensions.fromMap(results[0]);
-          final KennelsModel kennel = KennelsTableHelper.fromMap(results[0]);
+          final KennelsModel kennel = kennelsTableHelper.fromMap(results[0]);
           String paymentLinkUrl = '';
 
           if (((eventItem.eventPaymentUrl ?? '') != '') && (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {

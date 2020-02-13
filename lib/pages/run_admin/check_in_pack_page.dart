@@ -207,7 +207,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     allHashers = <CheckInPackModel>[];
     final Database db = await DBProvider.db.database;
     try {
-      const String sql = ''' 
+      String sql = ''' 
 
           SELECT 
             -- get all hashers
@@ -227,7 +227,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             null as hemUpdatedAt,
             null as payUpdatedAt,
             0 as credit
-          FROM ${HashersTableHelper.tableName} h
+          FROM ${hashersTableHelper.tableName} h
           ORDER BY nameForSort
           ''';
 
@@ -273,11 +273,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             hkm.currentPackRunCount,
             hkm.currentHaringCount
           FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm
-          INNER JOIN ${HashersTableHelper.tableName} h on h.hasherId = hkm.userId
-          LEFT OUTER JOIN ${KennelsTableHelper.tableName} k on k.kennelId = h.homeKennelId
+          INNER JOIN ${hashersTableHelper.tableName} h on h.hasherId = hkm.userId
+          LEFT OUTER JOIN ${kennelsTableHelper.tableName} k on k.kennelId = h.homeKennelId
           LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventAggregate.event.eventId}"
-          LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
-          LEFT OUTER JOIN ${KennelCreditsTableHelper.tableName} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
+          LEFT OUTER JOIN ${paymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
+          LEFT OUTER JOIN ${kennelCreditsTableHelper.tableName} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
           --WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" AND coalesce(hem.virginVisitorType,0) = 0
           WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" AND julianday(hkm.membershipExpirationDate) >= julianday('now','localtime') AND coalesce(hem.virginVisitorType,0) = 0
           UNION
@@ -303,8 +303,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             null as currentPackRunCount,
             null as currentHaringCount
             FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem2 
-            INNER JOIN ${HashersTableHelper.tableName} h2 on h2.hasherId = hem2.userId
-            LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay2 on pay2.hemId = hem2.hemId and pay2.cancelledBy IS NULL
+            INNER JOIN ${hashersTableHelper.tableName} h2 on h2.hasherId = hem2.userId
+            LEFT OUTER JOIN ${paymentsTableHelper.tableName} pay2 on pay2.hemId = hem2.hemId and pay2.cancelledBy IS NULL
             WHERE hem2.eventId = "${widget.eventAggregate.event.eventId}" and hem2.virginVisitorType != 0
           UNION
           SELECT 
@@ -329,12 +329,12 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             hkm4.currentPackRunCount,
             hkm4.currentHaringCount
             FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem3
-            INNER JOIN ${HashersTableHelper.tableName} h3 on h3.hasherId = hem3.userId
-            LEFT OUTER JOIN ${KennelsTableHelper.tableName} k3 on k3.kennelId = h3.homeKennelId
-            LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay3 on pay3.hemId = hem3.hemId and pay3.cancelledBy IS NULL
+            INNER JOIN ${hashersTableHelper.tableName} h3 on h3.hasherId = hem3.userId
+            LEFT OUTER JOIN ${kennelsTableHelper.tableName} k3 on k3.kennelId = h3.homeKennelId
+            LEFT OUTER JOIN ${paymentsTableHelper.tableName} pay3 on pay3.hemId = hem3.hemId and pay3.cancelledBy IS NULL
             LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm3 on hkm3.userId = h3.hasherId and hkm3.kennelId = "${widget.eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now','localtime')
             LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm4 on hkm4.userId = h3.hasherId and hkm4.kennelId = "${widget.eventAggregate.event.kennelId}" 
-            LEFT OUTER JOIN ${KennelCreditsTableHelper.tableName} credits3 on credits3.userId = hkm3.userId and credits3.kennelId = hkm3.kennelId
+            LEFT OUTER JOIN ${kennelCreditsTableHelper.tableName} credits3 on credits3.userId = hkm3.userId and credits3.kennelId = hkm3.kennelId
             WHERE hem3.eventId = "${widget.eventAggregate.event.eventId}" AND hem3.virginVisitorType == 0 AND hkm3.hkmId IS NULL
           ORDER BY nameForSort
             
@@ -524,7 +524,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               COUNT(CASE WHEN attendenceState >= 30 THEN 1 ELSE NULL END) as onIn,
               (SELECT COUNT(*) FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" and hkm.isMember = 1) as memberCount
           FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem
-          LEFT OUTER JOIN ${PaymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
+          LEFT OUTER JOIN ${paymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
   
           ''';
 

@@ -16,9 +16,11 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/widgets/zoomable_image_page.dart';
 import 'package:harrier_central/data/hc3_services/receipts_service.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 
 // import 'package:harrier_central/widgets/user_details_ui.dart';
 // import 'package:harrier_central/widgets/fancy_divider.dart';
@@ -153,7 +155,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
         final ReceiptsService srv = ReceiptsService();
         srv.uploadReceipt(context, item).then((String result) {
           DBProvider.db.database.then((Database db) {
-            srv.bulkUpdateDatabase(result, db, null).then((int notUsed) {
+            baseService.bulkUpdateDatabase(receiptsTableHelper,result, db, null).then((int notUsed) {
               Navigator.of(context).pop();
             });
           });
