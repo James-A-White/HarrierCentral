@@ -83,13 +83,30 @@ class HashersTableHelper implements BaseTableHelper {
   num cacheDuration;
 
   @override
-  IntPrefsEnum lastUpdatedKey;
+  IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateAllHasherData;
 
   @override
-  IntPrefsEnum lastCacheClearKey;
+  IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearHashersData;
 
   @override
   String tableName = 'hashers';
+
+  @override
+  String getTableName(TableType type) {
+    return tableName;
+  }
+
+  @override
+  IntPrefsEnum getLastUpdatedKey(TableType tblType) {
+
+    return lastUpdatedKey;
+  }
+
+  @override
+  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
+
+    return lastCacheClearKey;
+  }
 
   @override
   String remoteDbId = 'hasherId';
@@ -115,7 +132,7 @@ class HashersTableHelper implements BaseTableHelper {
   final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
-  Future<dynamic> createTable(Database db, int version) async {
+  Future<dynamic> createTable(Database db, int version,TableType tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -257,10 +274,10 @@ class HashersService extends BaseService {
     DateTime hasherKennelMapUpdatedAfter;
 
     if (!newUserForThisDevice) {
-      final num _hashersLastUpdated = await getLastUpdatedTime(hashersTableHelper,hashersTableHelper.colUpdatedAtValue);
+      final num _hashersLastUpdated = await getLastUpdatedTime(hashersTableHelper, hashersTableHelper.colUpdatedAtValue);
       hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
 
-      final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.eventAdmin);
+      final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper,hasherEventMapTableHelper.colUpdatedAtValue, tableType: TableType.hemEventAdmin);
       hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
 
       final num _hasherKennelMapLastUpdated = await HasherKennelMapService.getLastUpdatedTime(((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? HasherKennelMapTableType.eventAdmin : HasherKennelMapTableType.kennelAdmin);
@@ -395,7 +412,7 @@ class HashersService extends BaseService {
     DateTime hashersUpdatedAfter;
 
     if (!newUserForThisDevice) {
-      final num _hashersLastUpdated = await getLastUpdatedTime(hashersTableHelper,hashersTableHelper.colUpdatedAtValue);
+      final num _hashersLastUpdated = await getLastUpdatedTime(hashersTableHelper, hashersTableHelper.colUpdatedAtValue);
       hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
     } else {
       // do this to suppress any records being returned through the sync mechanism

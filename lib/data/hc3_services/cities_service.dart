@@ -60,8 +60,6 @@ class CitiesModel implements BaseModel {
   }
 }
 
-
-
 class CitiesTableHelper implements BaseTableHelper {
   CitiesTableHelper();
 
@@ -72,13 +70,30 @@ class CitiesTableHelper implements BaseTableHelper {
   num cacheDuration;
 
   @override
-  IntPrefsEnum lastUpdatedKey;
+  IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateCitiesData;
 
   @override
-  IntPrefsEnum lastCacheClearKey;
+  IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearCitiesData;
 
   @override
   String tableName = 'cities';
+
+  @override
+  String getTableName(TableType type) {
+    return tableName;
+  }
+
+  @override
+  IntPrefsEnum getLastUpdatedKey(TableType tblType) {
+
+    return lastUpdatedKey;
+  }
+
+  @override
+  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
+
+    return lastCacheClearKey;
+  }
 
   @override
   String remoteDbId = 'cityId';
@@ -96,7 +111,7 @@ class CitiesTableHelper implements BaseTableHelper {
   final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
-  Future<dynamic> createTable(Database db, int version) async {
+  Future<dynamic> createTable(Database db, int version,TableType tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,

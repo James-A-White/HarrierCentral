@@ -11,8 +11,8 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 
 class SyncUserDataService {
   static const int flagHashersTable = 0x00000001;
@@ -53,8 +53,8 @@ class SyncUserDataService {
     _countriesLastUpdated = (flags & flagCountriesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, countriesTableHelper.colUpdatedAtValue, countriesTableHelper.tableName);
     _kennelsLastUpdated = (flags & flagKennelsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, kennelsTableHelper.colUpdatedAtValue, kennelsTableHelper.tableName);
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user));
-    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HasherEventMapTableHelper.colUpdatedAtValue, HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user));
-    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, EventTableHelper.colUpdatedAtValue, EventTableHelper.tableName);
+    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, hasherEventMapTableHelper.colUpdatedAtValue, hasherEventMapTableHelper.getTableName(TableType.hemUser));
+    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, eventsTableHelper.colUpdatedAtValue, eventsTableHelper.tableName);
   }
 
   Future<bool> updateFromBackend(Database db, int tablesToSync, bool forceRefresh, {Function informUser}) async {
@@ -193,8 +193,7 @@ class SyncUserDataService {
       }
 
       if (ms.startsWith(r'[{"eventId"')) {
-        final EventService eSrv = EventService();
-        await eSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        await baseService.bulkUpdateDatabase(eventsTableHelper,'[$ms]', db, informUser);
         print('events updated');
       }
 
@@ -205,8 +204,7 @@ class SyncUserDataService {
       }
 
       if (ms.startsWith(r'[{"hemId"')) {
-        final HasherEventMapService hemSrv = HasherEventMapService();
-        await hemSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherEventMapTableType.user);
+        await baseService.bulkUpdateDatabase(hasherEventMapTableHelper, '[$ms]', db, informUser, tableType: TableType.hemUser);
         print('hasher event map updated');
       }
 

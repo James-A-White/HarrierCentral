@@ -11,7 +11,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/pages/run_admin/payment_popup.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
@@ -327,10 +327,9 @@ Container(
           onScreenMessage = 'Processing QR Scan';
         });
         final int attendenceState = isScanningAtRunStart ? attendenceAtHash.value : attendenceOnIn.value;
-        final HasherEventMapService hemSrv = HasherEventMapService();
 
         CommonQueries.getUserIdFromUqr(prefix + content).then((String hasherId) {
-          hemSrv.joinEvent(widget.eventAggregate.event.eventId, HasherEventMapTableType.eventAdmin, hasherId, null, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value, virginVisitorType: enumHasher.value).then((List<dynamic> adHocData) {
+          hasherEventMapService.joinEvent(widget.eventAggregate.event.eventId, TableType.hemEventAdmin, hasherId, null, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value, virginVisitorType: enumHasher.value).then((List<dynamic> adHocData) {
             setState(() {
               
               if ((adHocData != null) && (adHocData.isNotEmpty)) {

@@ -17,7 +17,7 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/notifications/notification_support.dart';
 
 //import 'package:flip_panel/flip_panel.dart';
@@ -103,9 +103,8 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     });
 
     final String userId = getStringPref(StringPrefsEnum.userId);
-    final HasherEventMapService hemSrv = HasherEventMapService();
     final int attendenceValue = rsvpState.value <= rsvpMaybe.value ? attendenceNo.value : attendenceNoChange.value;
-    final List<dynamic> adHocData = await hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.eventAdmin, userId, null, rsvpState: rsvpState.value, attendenceState: attendenceValue, isHare: willHare ? isHareYes.value : isHareNo.value);
+    final List<dynamic> adHocData = await hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, rsvpState: rsvpState.value, attendenceState: attendenceValue, isHare: willHare ? isHareYes.value : isHareNo.value);
 
     final int rsvpResult = adHocData[0]['rsvpState'];
     final int willHareResult = adHocData[0]['willHareState'];
@@ -574,13 +573,12 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   void setNotificationState(EnumNotificationState<int> retVal) {
     if ((retVal == notificationsOn) || (retVal == notificationsOff) || (retVal == notificationsAuto)) {
       final String userId = getStringPref(StringPrefsEnum.userId);
-      final HasherEventMapService hemSrv = HasherEventMapService();
       final EnumNotificationState<int> nState = retVal;
       setState(() {
         widget.futureRun.extensions.notificationPreference = -1;
       });
 
-      hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.user, userId, null, notificationState: nState.value).then((List<dynamic> results) {
+      hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemUser, userId, null, notificationState: nState.value).then((List<dynamic> results) {
         setState(() {
           final NotificationSupport notifications = NotificationSupport();
           notifications.setNotificationState(eventId: widget.futureRun.event.eventId);
@@ -666,13 +664,12 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   void setEmailAlertState(EnumEmailAlertState<int> retVal) {
     if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff) || (retVal == emailAlertsAuto)) {
       final String userId = getStringPref(StringPrefsEnum.userId);
-      final HasherEventMapService hemSrv = HasherEventMapService();
       final EnumEmailAlertState<int> nState = retVal;
       setState(() {
         widget.futureRun.extensions.emailAlertPreference = -1;
       });
 
-      hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.user, userId, null, emailAlertState: nState.value).then((List<dynamic> results) {
+      hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemUser, userId, null, emailAlertState: nState.value).then((List<dynamic> results) {
         setState(() {
           widget.futureRun.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;
         });

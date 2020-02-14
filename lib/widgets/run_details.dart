@@ -9,7 +9,7 @@ import 'package:flutter_linkify/flutter_linkify.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
-import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
+import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:intl/intl.dart';

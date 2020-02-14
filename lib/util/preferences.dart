@@ -47,8 +47,8 @@ enum IntPrefsEnum {
   lastCacheClearKennelData,
   lastUpdateHashersData,
   lastCacheClearHashersData,
-  lastUpdateNarrowEventsData,
-  lastCacheClearNarrowEventsData,
+  lastUpdateEventsData,
+  lastCacheClearEventsData,
   lastUpdateKennelCreditsData,
   lastCacheClearKennelCreditsData,
 

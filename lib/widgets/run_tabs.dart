@@ -24,6 +24,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 
@@ -102,7 +103,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       final List<Map<String, dynamic>> results = await db.rawQuery(query);
 
       for (int i = 0; i < results.length; i++) {
-        final HasherEventMapModel packItem = HasherEventMapTableHelper.fromMap(results[i]);
+        final HasherEventMapModel packItem = hasherEventMapTableHelper.fromMap(results[i]);
         final HashersModel hasherItem = hashersTableHelper.fromMap(results[i]);
         thePackList.add(PackListAggregate(hem: packItem, hasher: hasherItem));
         if (packItem.userId == userId) {
@@ -433,8 +434,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       }
                                     });
                                     //final String userId = getStringPref(StringPrefsEnum.userId);
-                                    final HasherEventMapService hemSrv = HasherEventMapService();
-                                    final Future<List<dynamic>> retVal = hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.eventAdmin, userId, null, rsvpState: rsvpYes.value, isHare: isHareYes.value);
+                                    
+                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, rsvpState: rsvpYes.value, isHare: isHareYes.value);
 
                                     retVal.then((List<dynamic> adHocData) async {
                                       await refreshPackListFromTable(true);
@@ -644,9 +645,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       }
     });
     //final String userId = getStringPref(StringPrefsEnum.userId);
-    final HasherEventMapService hemSrv = HasherEventMapService();
+
     final int attendenceValue = rsvpState.value <= rsvpMaybe.value ? attendenceNo.value : attendenceNoChange.value;
-    final Future<List<dynamic>> retVal = hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.eventAdmin, userId, null, rsvpState: rsvpState.value, attendenceState: attendenceValue, isHare: isHareNo.value);
+    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, rsvpState: rsvpState.value, attendenceState: attendenceValue, isHare: isHareNo.value);
 
     retVal.then((List<dynamic> adHocData) async {
       await refreshPackListFromTable(false);
@@ -771,8 +772,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                       }
                     });
                     //final String userId = getStringPref(StringPrefsEnum.userId);
-                    final HasherEventMapService hemSrv = HasherEventMapService();
-                    final Future<List<dynamic>> retVal = hemSrv.joinEvent(widget.futureRun.event.eventId, HasherEventMapTableType.eventAdmin, userId, null, rsvpState: rsvpYes.value, attendenceState: attendenceNoChange.value, isHare: isHareYes.value);
+                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, rsvpState: rsvpYes.value, attendenceState: attendenceNoChange.value, isHare: isHareYes.value);
 
                     retVal.then((List<dynamic> adHocData) async {
                       await refreshPackListFromTable(true);

@@ -3,12 +3,11 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-//import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:keyboard_avoider/keyboard_avoider.dart';
 
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 
@@ -310,7 +309,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
   void sendEmail(BuildContext context, String emailBody) {
     Utilities.showAlert(context, 'Email run details', 'Would you like to e-mail the run details to hashers who have signed up for e-mail notifications?', 'OK', showCancelButton: true).then((bool result) {
       if (result) {
-        EventService.sendRunDetailsByEmail(eventId: widget.eventId, emailBody: emailBody).then((Map<String, String> result) {
+        eventsService.sendRunDetailsByEmail(eventId: widget.eventId, emailBody: emailBody).then((Map<String, String> result) {
           _scaffoldKey.currentState?.hideCurrentSnackBar();
           if (result['result'].toLowerCase().startsWith('success')) {
             Utilities.showAlert(context, 'E-mails successfully sent', result['result'], 'OK');

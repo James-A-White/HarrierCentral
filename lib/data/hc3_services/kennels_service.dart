@@ -136,7 +136,6 @@ class KennelsModel implements BaseModel {
 }
 
 class KennelsTableHelper implements BaseTableHelper {
-
   @override
   num forceRequeryInterval;
 
@@ -144,19 +143,35 @@ class KennelsTableHelper implements BaseTableHelper {
   num cacheDuration;
 
   @override
-  IntPrefsEnum lastUpdatedKey;
+  IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateKennelData;
 
   @override
-  IntPrefsEnum lastCacheClearKey;
+  IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearKennelData;
 
   @override
   String tableName = 'kennels';
 
   @override
+  String getTableName(TableType type) {
+    return tableName;
+  }
+
+    @override
+  IntPrefsEnum getLastUpdatedKey(TableType tblType) {
+
+    return lastUpdatedKey;
+  }
+
+  @override
+  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
+
+    return lastCacheClearKey;
+  }
+
+  @override
   String remoteDbId = 'kennelId';
 
   final String colId = 'id';
-
 
   final String colKennelId = 'kennelId';
   final String colCityId = 'cityId';
@@ -188,15 +203,15 @@ class KennelsTableHelper implements BaseTableHelper {
   final String colKennelPaymentUrl = 'kennelPaymentUrl';
   final String colKennelPaymentUrlExpires = 'kennelPaymentUrlExpires';
   final String colRunCountStartDate = 'runCountStartDate';
-  final String colKennelMismanagementTeam= 'kennelMismanagementTeam';
-  final String colDistancePreference= 'distancePreference';
+  final String colKennelMismanagementTeam = 'kennelMismanagementTeam';
+  final String colDistancePreference = 'distancePreference';
   final String colUpdatedAt = 'updatedAt';
   final String colRemoved = 'removed';
 
   final String colUpdatedAtValue = 'updatedAtValue';
 
-@override
-  Future<dynamic> createTable(Database db, int version) async {
+  @override
+  Future<dynamic> createTable(Database db, int version,TableType tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -279,7 +294,6 @@ class KennelsTableHelper implements BaseTableHelper {
       colRunCountStartDate: item.runCountStartDate.toString(),
       colKennelMismanagementTeam: item.kennelMismanagementTeam,
       colDistancePreference: item.distancePreference,
-
       colUpdatedAt: item.updatedAt.toString(),
       colRemoved: item.removed,
     };
@@ -287,7 +301,7 @@ class KennelsTableHelper implements BaseTableHelper {
     return map;
   }
 
-@override
+  @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
     final Map<String, dynamic> outputMap = <String, dynamic>{
       colKennelId: inputMap[colKennelId],
@@ -330,7 +344,7 @@ class KennelsTableHelper implements BaseTableHelper {
     return outputMap;
   }
 
-@override
+  @override
   KennelsModel fromMap(Map<String, dynamic> map) {
     final KennelsModel item = KennelsModel(
       kennelId: map[colKennelId],
@@ -365,7 +379,6 @@ class KennelsTableHelper implements BaseTableHelper {
       runCountStartDate: map[colRunCountStartDate] == null ? null : DateTime.parse(map[colRunCountStartDate].toString().substring(0, 19)),
       kennelMismanagementTeam: map[colKennelMismanagementTeam],
       distancePreference: map[colDistancePreference],
-
       updatedAt: DateTime.parse(map[colUpdatedAt].toString().substring(0, 19)),
       removed: map[colRemoved],
     );
@@ -373,4 +386,3 @@ class KennelsTableHelper implements BaseTableHelper {
     return item;
   }
 }
-

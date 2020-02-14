@@ -93,19 +93,35 @@ class ReceiptsTableHelper implements BaseTableHelper {
   num cacheDuration;
 
   @override
-  IntPrefsEnum lastUpdatedKey;
+  IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateReceiptsData;
 
   @override
-  IntPrefsEnum lastCacheClearKey;
+  IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearReceiptsData;
 
   @override
-  String tableName =  'receipts';
+  String tableName = 'receipts';
+
+  @override
+  String getTableName(TableType type) {
+    return tableName;
+  }
+
+    @override
+  IntPrefsEnum getLastUpdatedKey(TableType tblType) {
+
+    return lastUpdatedKey;
+  }
+
+  @override
+  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
+
+    return lastCacheClearKey;
+  }
 
   @override
   String remoteDbId = 'receiptId';
 
   final String colId = 'id';
-
 
   final String colReceiptId = 'receiptId';
   final String colEventId = 'eventId';
@@ -126,7 +142,7 @@ class ReceiptsTableHelper implements BaseTableHelper {
   final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
-  Future<dynamic> createTable(Database db, int version) async {
+  Future<dynamic> createTable(Database db, int version,TableType tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -202,7 +218,6 @@ class ReceiptsTableHelper implements BaseTableHelper {
 
     return outputMap;
   }
-
 
   @override
   ReceiptsModel fromMap(Map<String, dynamic> map) {

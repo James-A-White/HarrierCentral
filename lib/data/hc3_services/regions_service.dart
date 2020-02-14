@@ -55,13 +55,30 @@ class RegionsTableHelper implements BaseTableHelper {
   num cacheDuration;
 
   @override
-  IntPrefsEnum lastUpdatedKey;
+  IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateRegionsData;
 
   @override
-  IntPrefsEnum lastCacheClearKey;
+  IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearRegionsData;
 
   @override
   String tableName = 'regions';
+
+  @override
+  String getTableName(TableType type) {
+    return tableName;
+  }
+
+    @override
+  IntPrefsEnum getLastUpdatedKey(TableType tblType) {
+
+    return lastUpdatedKey;
+  }
+
+  @override
+  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
+
+    return lastCacheClearKey;
+  }
 
   @override
   String remoteDbId = 'regionId';
@@ -76,7 +93,7 @@ class RegionsTableHelper implements BaseTableHelper {
   final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
-  Future<dynamic> createTable(Database db, int version) async {
+  Future<dynamic> createTable(Database db, int version,TableType tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -98,15 +115,7 @@ class RegionsTableHelper implements BaseTableHelper {
 
   @override
   Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = <String, dynamic>{
-      colRegionId: item.regionId,
-      colRegionName: item.regionName,
-      colCountryId: item.countryId,
-      colFlagFile: item.flagFile,
-      colUpdatedAt: item.updatedAt.toString(),
-      colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
-      colRemoved: item.removed
-    };
+    final Map<String, dynamic> map = <String, dynamic>{colRegionId: item.regionId, colRegionName: item.regionName, colCountryId: item.countryId, colFlagFile: item.flagFile, colUpdatedAt: item.updatedAt.toString(), colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch, colRemoved: item.removed};
 
     return map;
   }

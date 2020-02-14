@@ -11,9 +11,10 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
+import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/pages/kennel_admin/run_number_popup.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
@@ -83,8 +84,8 @@ class FilterEventsPageState extends State<FilterEventsPage> {
             evt.eventStartDatetime,
             hkm.mismanagementRoleFlags,
             evt.canEditRunAttendence,
-            (SELECT COUNT(*) FROM ${EventTableHelper.tableName} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount
-          FROM ${EventTableHelper.tableName} evt
+            (SELECT COUNT(*) FROM ${eventsTableHelper.tableName} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount
+          FROM ${eventsTableHelper.tableName} evt
           INNER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on hkm.kennelId = "${widget.kennel.kennel.kennelId}" and hkm.userId = "$userId"
           WHERE evt.kennelId = "${widget.kennel.kennel.kennelId}"
           AND date(evt.eventStartDatetime,"$dateOffset") $dateComparer date("now")
@@ -436,16 +437,6 @@ class FilterEventsPageState extends State<FilterEventsPage> {
 
         updateEvent(event, asboluteEventNumber: rn);
       }
-
-      // if (type != 'cancel') {
-      //   final num v = num.tryParse(amount);
-      //   final int t = int.tryParse(type);
-
-      //   // if ((v != null) && (t != null)) {
-      //   //   processPayment(
-      //   //       '', _packScopedModel, context, t, v);
-      //   // }
-      // }
     });
   }
 
@@ -453,14 +444,14 @@ class FilterEventsPageState extends State<FilterEventsPage> {
     DBProvider.db.database.then((Database db) async {
       await db.transaction<dynamic>((Transaction txn) async {
         final int guidFlag = isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
-        final String sql = 'UPDATE ${EventTableHelper.tableName} SET canEditRunAttendence = "$guidFlag" where eventId = "${event['eventId']}"';
+        final String sql = 'UPDATE ${eventsTableHelper.tableName} SET canEditRunAttendence = "$guidFlag" where eventId = "${event['eventId']}"';
         final int result = await txn.rawUpdate(sql);
         print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
         _refreshEventFromTables(true);
       });
     });
 
-    final EventService nSvc = EventService();
+    final EventsService nSvc = EventsService();
     nSvc.updateEventDetails(event['eventId'], isVisible: isVisible, isCountedRun: isCountedRun, absoluteEventNumber: asboluteEventNumber).then((void dummy) {
       _refreshEventFromTables(true).then((void dummy) {
         setState(() {});

@@ -13,7 +13,7 @@ import 'package:harrier_central/pages/run_admin/payment_report.dart';
 import 'package:harrier_central/pages/run_admin/email_editor_page.dart';
 import 'package:harrier_central/pages/run_admin/receipts_page.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
-import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
+import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
@@ -110,7 +110,7 @@ class RunDetailPageState extends State<RunDetailPage> {
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as memberPrice,
           coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as nonMemberPrice,
           CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,c.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference
-          FROM ${EventTableHelper.tableName} e
+          FROM ${eventsTableHelper.tableName} e
           INNER JOIN ${kennelsTableHelper.tableName} k on k.kennelId = e.kennelId
           LEFT OUTER JOIN ${countriesTableHelper.tableName} c on c.countryId = k.countryId
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId,
@@ -137,7 +137,7 @@ class RunDetailPageState extends State<RunDetailPage> {
 
       setState(() {
         if (results.isNotEmpty) {
-          final EventModel eventItem = EventTableHelper.fromMap(results[0]);
+          final EventModel eventItem = eventsTableHelper.fromMap(results[0]);
           final RunDetailQueryExtensions extensions = RunDetailQueryExtensions.fromMap(results[0]);
           final KennelsModel kennel = kennelsTableHelper.fromMap(results[0]);
           String paymentLinkUrl = '';

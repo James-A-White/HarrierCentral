@@ -13,8 +13,8 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/events_service.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 
 class FutureRunsListPage extends StatefulWidget {
@@ -86,14 +86,14 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     });
 
     if (clearLocalTables) {
-      String query = 'DELETE FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user)}';
+      String query = 'DELETE FROM ${hasherEventMapTableHelper.getTableName(TableType.hemUser)}';
       try {
         await db.rawQuery(query);
       } catch (e) {
         print(e);
       }
 
-      query = 'DELETE FROM ${EventTableHelper.tableName}';
+      query = 'DELETE FROM ${eventsTableHelper.tableName}';
       try {
         await db.rawQuery(query);
       } catch (e) {
@@ -162,7 +162,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
             db.rawQuery(query).then((List<Map<String, dynamic>> results) {
               for (int i = 0; i < results.length; i++) {
                 locator.distanceBetween(Utilities.unInt(ll.latitude), Utilities.unInt(ll.longitude), Utilities.unInt(results[i]['narrowEventLatitude']), Utilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
-                  final EventModel eventItem = EventTableHelper.fromMap(results[i]);
+                  final EventModel eventItem = eventsTableHelper.fromMap(results[i]);
                   final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
                   final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i]);
                   extensionsItem.distToEvent = dist;

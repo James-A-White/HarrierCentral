@@ -9,7 +9,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
@@ -273,7 +273,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm
           INNER JOIN ${hashersTableHelper.tableName} h on h.hasherId = hkm.userId
           LEFT OUTER JOIN ${kennelsTableHelper.tableName} k on k.kennelId = h.homeKennelId
-          LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventAggregate.event.eventId}"
+          LEFT OUTER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventAggregate.event.eventId}"
           LEFT OUTER JOIN ${paymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
           LEFT OUTER JOIN ${kennelCreditsTableHelper.tableName} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
           --WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" AND coalesce(hem.virginVisitorType,0) = 0
@@ -300,7 +300,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             0 as credit,
             null as currentPackRunCount,
             null as currentHaringCount
-            FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem2 
+            FROM ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem2 
             INNER JOIN ${hashersTableHelper.tableName} h2 on h2.hasherId = hem2.userId
             LEFT OUTER JOIN ${paymentsTableHelper.tableName} pay2 on pay2.hemId = hem2.hemId and pay2.cancelledBy IS NULL
             WHERE hem2.eventId = "${widget.eventAggregate.event.eventId}" and hem2.virginVisitorType != 0
@@ -326,7 +326,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             coalesce(credits3.currentBalance,0) as credit,
             hkm4.currentPackRunCount,
             hkm4.currentHaringCount
-            FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem3
+            FROM ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem3
             INNER JOIN ${hashersTableHelper.tableName} h3 on h3.hasherId = hem3.userId
             LEFT OUTER JOIN ${kennelsTableHelper.tableName} k3 on k3.kennelId = h3.homeKennelId
             LEFT OUTER JOIN ${paymentsTableHelper.tableName} pay3 on pay3.hemId = hem3.hemId and pay3.cancelledBy IS NULL
@@ -521,7 +521,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               COUNT(CASE WHEN rsvpState >= 2 AND attendenceState < 20 THEN 1 ELSE NULL END) as coming,
               COUNT(CASE WHEN attendenceState >= 30 THEN 1 ELSE NULL END) as onIn,
               (SELECT COUNT(*) FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" and hkm.isMember = 1) as memberCount
-          FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem
+          FROM ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem
           LEFT OUTER JOIN ${paymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
   
           ''';
@@ -557,9 +557,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       ),
     ).then((Map<String, dynamic> result) {
       if ((result != null) && (result['hasher']?.hasherId != null)) {
-        final HasherEventMapService hemSrv = HasherEventMapService();
+
         final Future<List<dynamic>> retVal =
-            hemSrv.joinEvent(widget.eventAggregate.event.eventId, HasherEventMapTableType.eventAdmin, result['hasher'].hasherId, null, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value, virginVisitorType: result['virginVisitorType']);
+            hasherEventMapService.joinEvent(widget.eventAggregate.event.eventId, TableType.hemEventAdmin, result['hasher'].hasherId, null, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value, virginVisitorType: result['virginVisitorType']);
 
         retVal.then((List<dynamic> adHocData) {
           _refreshPackListFromTables(false).then((void dummy) {
@@ -597,8 +597,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         setState(() {
           _isLoading = true;
         });
-        final HasherEventMapService hemSrv = HasherEventMapService();
-        final Future<List<dynamic>> retVal = hemSrv.joinEventAsVisitor(widget.eventAggregate.event.eventId, HasherEventMapTableType.eventAdmin, name, evv.value, attendenceUnknown.value, email, phoneNumber);
+        final Future<List<dynamic>> retVal = hasherEventMapService.joinEventAsVisitor(widget.eventAggregate.event.eventId, TableType.hemEventAdmin, name, evv.value, attendenceUnknown.value, email, phoneNumber);
 
         retVal.then((List<dynamic> adHocData) {
           _refreshPackListFromTables(false).then((void dummy) {
@@ -1404,8 +1403,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       }
     });
 
-    final HasherEventMapService hemSrv = HasherEventMapService();
-    final Future<List<dynamic>> retVal = hemSrv.joinEvent(widget.eventAggregate.event.eventId, HasherEventMapTableType.eventAdmin, hasherId, hemId, rsvpState: rsvpState, attendenceState: attendenceState, isHare: isHare, virginVisitorType: -1);
+    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.eventAggregate.event.eventId, TableType.hemEventAdmin, hasherId, hemId, rsvpState: rsvpState, attendenceState: attendenceState, isHare: isHare, virginVisitorType: -1);
 
     retVal.then((List<dynamic> adHocData) {
       _refreshPackListFromTables(false).then((void dummy) {

@@ -6,11 +6,18 @@ import 'package:sqflite/sqflite.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
 
-
 class BaseModel {
   BaseModel();
-  List<BaseModel> itemsFromJson(String jsonResult) {return null;}
+  List<BaseModel> itemsFromJson(String jsonResult) {
+    return null;
+  }
 }
+
+const String normal = 'normal';
+const String hemUserTable = 'hasherEventMap';
+const String hemAdminTable = 'hasherEventMapForRunAdmin';
+
+enum TableType { baseTable, hemUser, hemEventAdmin }
 
 class BaseTableHelper {
   BaseTableHelper();
@@ -21,6 +28,18 @@ class BaseTableHelper {
   String tableName;
   String remoteDbId;
 
+  String getTableName(TableType tableType) {
+    return null;
+  }
+
+  IntPrefsEnum getLastUpdatedKey(TableType tblType) {
+    return null;
+  }
+
+  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
+    return null;
+  }
+
   // final num forceRequeryInterval = 1 * 86400000;
   final num forceRequeryInterval = 1 * 1000;
   final num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
@@ -28,21 +47,52 @@ class BaseTableHelper {
   IntPrefsEnum lastUpdatedKey;
   IntPrefsEnum lastCacheClearKey;
 
-  Future<dynamic> createTable(Database db, int version) async {}
+  Future<dynamic> createTable(Database db, int version, TableType tableType) async {}
 
-  Map<String, dynamic> toMap(BaseModel item) {return null;}
+  Map<String, dynamic> toMap(BaseModel item) {
+    return null;
+  }
 
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {return null;}
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    return null;
+  }
 
-  BaseModel fromMap(Map<String, dynamic> map) {return null;}
+  BaseModel fromMap(Map<String, dynamic> map) {
+    return null;
+  }
 }
 
 class BaseService {
 
-  Future<List<BaseModel>> selectAllFromLocalDb(BaseTableHelper tableHelper) async {
-    final Database db = await DBProvider.db.database;
+  String getTableName(BaseTableHelper tableHelper, TableType tableType)
+  {
+    String tableName = tableHelper.tableName;
+    if (tableType != null) {
+      switch (tableType) {
+        case TableType.baseTable:
+          // don't change the string, keep it as it was initialized above
+          break;
+        case TableType.hemEventAdmin:
+          tableName = hemAdminTable;
+          break;
+        case TableType.hemUser:
+          tableName = hemUserTable;
+          break;
+        default:
+          // this will cause a SQL error and help us debug, should put a debug assert here
+          tableName = '';
+          break;
+      }
+    }
 
-    final List<Map<String, dynamic>> result = await db.query(tableHelper.tableName);
+    return tableName;
+  }
+
+  Future<List<BaseModel>> selectAllFromLocalDb(BaseTableHelper tableHelper, {TableType tableType}) async {
+    final Database db = await DBProvider.db.database;
+    final String tableName = getTableName(tableHelper, tableType); 
+
+    final List<Map<String, dynamic>> result = await db.query(tableName);
 
     final List<BaseModel> records = <BaseModel>[];
 
@@ -57,26 +107,30 @@ class BaseService {
     return records;
   }
 
-  Future<num> getLastUpdatedTime(BaseTableHelper tableHelper, String colUpdatedAtValue) async {
+  Future<num> getLastUpdatedTime(BaseTableHelper tableHelper, String colUpdatedAtValue, {TableType tableType}) async {
+    final String tableName = getTableName(tableHelper, tableType);
     final Database db = await DBProvider.db.database;
-    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX($colUpdatedAtValue) AS maxDate FROM ${tableHelper.tableName}');
+    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX($colUpdatedAtValue) AS maxDate FROM $tableName');
     final num timeValue = table.first['maxDate'];
     return timeValue;
   }
 
-  Future<void> clearTable(BaseTableHelper tableHelper) async {
+  Future<void> clearTable(BaseTableHelper tableHelper, {TableType tableType}) async {
+    final String tableName = getTableName(tableHelper, tableType);
     final Database db = await DBProvider.db.database;
-    await db.rawDelete('DELETE FROM ${tableHelper.tableName}').then((void dummy) {
+    await db.rawDelete('DELETE FROM $tableName').then((void dummy) {
       setIntPref(tableHelper.lastCacheClearKey, DateTime.now().millisecondsSinceEpoch);
     });
   }
 
-  Future<int> bulkUpdateDatabase(BaseTableHelper tableHelper, String rawResults, Database db, Function informUser) async {
+  Future<int> bulkUpdateDatabase(BaseTableHelper tableHelper, String rawResults, Database db, Function informUser, {TableType tableType}) async {
     int updateCounter = 0;
     int insertCounter = 0;
     int deletedCounter = 0;
 
     bool doNormalizeMap;
+
+    final String tableName = getTableName(tableHelper, tableType);
 
     final List<dynamic> jsonResultSets = json.decode(rawResults);
     print('City result sets received from cloud = ${jsonResultSets.length}');
@@ -94,7 +148,7 @@ class BaseService {
           final Map<String, dynamic> testMap = tableHelper.normalizeMap(jsonItem);
           doNormalizeMap = (testMap.length - 1) != jsonItem.length;
           if (doNormalizeMap) {
-            print('Normalize map called for ${tableHelper.tableName}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}');
+            print('Normalize map called for $tableName, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}');
           }
         }
 
@@ -102,26 +156,26 @@ class BaseService {
 
         if ((percentage != lastPercentage) && (informUser != null)) {
           lastPercentage = percentage;
-          informUser('Loading ${tableHelper.tableName} data\r\n$percentage% complete');
+          informUser('Loading $tableName data\r\n$percentage% complete');
         }
 
         jsonItem.addAll(<String, dynamic>{
           'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch,
         });
 
-        final String query = 'SELECT id FROM ${tableHelper.tableName} WHERE ${tableHelper.remoteDbId} = "${jsonItem[tableHelper.remoteDbId]}"';
+        final String query = 'SELECT id FROM $tableName WHERE ${tableHelper.remoteDbId} = "${jsonItem[tableHelper.remoteDbId]}"';
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
 
         if ((table == null) || (table.isEmpty)) {
           await db.transaction<dynamic>((Transaction txn) async {
-            await txn.insert(tableHelper.tableName, doNormalizeMap ? tableHelper.normalizeMap(jsonItem) : jsonItem);
+            await txn.insert(tableName, doNormalizeMap ? tableHelper.normalizeMap(jsonItem) : jsonItem);
             insertCounter++;
           });
         } else {
           final String rowId = table.first['id'].toString();
 
           await db.transaction<dynamic>((Transaction txn) async {
-            await txn.update(tableHelper.tableName, doNormalizeMap ? tableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
+            await txn.update(tableName, doNormalizeMap ? tableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
             updateCounter++;
           });
         }
@@ -129,10 +183,10 @@ class BaseService {
     }
 
     await db.transaction<dynamic>((Transaction txn) async {
-      deletedCounter = await txn.delete(tableHelper.tableName, where: 'removed = 1');
+      deletedCounter = await txn.delete(tableName, where: 'removed = 1');
     });
 
-    print('$insertCounter ${tableHelper.tableName} records inserted, $updateCounter ${tableHelper.tableName} records updated, $deletedCounter ${tableHelper.tableName} records deleted');
+    print('$insertCounter $tableName records inserted, $updateCounter $tableName records updated, $deletedCounter $tableName records deleted');
     return insertCounter;
   }
 }

@@ -9,7 +9,7 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
@@ -174,7 +174,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                   label: 'Email run counts\r\n(this kennel)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
-                    HasherEventMapService.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelInfo.kennelName).then((Map<String, String> result) {
+                    hasherEventMapService.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelInfo.kennelName).then((Map<String, String> result) {
                       _scaffoldKey.currentState?.hideCurrentSnackBar();
                       if (result['result'].toLowerCase().startsWith('success')) {
                         Utilities.showAlert(context, 'E-mail successfully sent', 'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
@@ -189,7 +189,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                   label: 'Email run counts\r\n(all kennels)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
-                    HasherEventMapService.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
+                    hasherEventMapService.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
                       _scaffoldKey.currentState?.hideCurrentSnackBar();
                       if (result['result'].toLowerCase().startsWith('success')) {
                         Utilities.showAlert(context, 'E-mail successfully sent', 'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
@@ -495,16 +495,14 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   // so assume that the person was not a hare
                                   if (item.attendenceState < attendenceAtHash.value) {
                                     item.isLoading = true;
-                                    final HasherEventMapService hemSrv = HasherEventMapService();
-                                    final Future<List<dynamic>> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value);
+                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(item.eventId, TableType.hemUser, userId, item.hemId, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value);
 
                                     retVal.then((List<dynamic> adHocData) {
                                       refreshRunHistoryFromTable(true).then((void dummy) {});
                                     });
                                   } else {
                                     item.isLoading = true;
-                                    final HasherEventMapService hemSrv = HasherEventMapService();
-                                    final Future<List<dynamic>> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: item.isHare == 1 ? isHareNo.value : isHareYes.value);
+                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(item.eventId, TableType.hemUser, userId, item.hemId, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: item.isHare == 1 ? isHareNo.value : isHareYes.value);
 
                                     retVal.then((List<dynamic> adHocData) {
                                       refreshRunHistoryFromTable(true).then((void dummy) {});
@@ -514,8 +512,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   // swipe from left to right to
                                   // indicate that the hasher did
                                   // not participate in this event
-                                  final HasherEventMapService hemSrv = HasherEventMapService();
-                                  final Future<List<dynamic>> retVal = hemSrv.joinEvent(item.eventId, HasherEventMapTableType.user, userId, item.hemId, rsvpState: rsvpNo.value, attendenceState: attendenceNo.value, isHare: isHareNo.value);
+                                  final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(item.eventId, TableType.hemUser, userId, item.hemId, rsvpState: rsvpNo.value, attendenceState: attendenceNo.value, isHare: isHareNo.value);
 
                                   retVal.then((List<dynamic> adHocData) {
                                     refreshRunHistoryFromTable(true).then((void dummy) {});

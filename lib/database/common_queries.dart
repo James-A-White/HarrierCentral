@@ -1,7 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
 
@@ -16,7 +15,7 @@ class CommonQueries {
           SELECT e.eventId,
           e.eventName,
           (julianday(eventStartDatetime) - julianday('now','localtime')) * 24 as deltaHours
-          FROM ${EventTableHelper.tableName} e
+          FROM ${eventsTableHelper.tableName} e
           WHERE e.kennelId = "$kennelId"
           ORDER BY abs(julianday('now') - julianday(eventStartDatetime)) ASC
           

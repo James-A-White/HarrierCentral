@@ -9,7 +9,7 @@ import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
 import 'package:audioplayers/audio_cache.dart';
 
 import 'package:harrier_central/database/common_queries.dart';
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
@@ -463,11 +463,10 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
 
       if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) || (prefix == QR_PREFIX_SPECIFIC_RUN_END)) {
         final int attendenceState = prefix == QR_PREFIX_SPECIFIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
-        final HasherEventMapService hemSrv = HasherEventMapService();
 
         final String userId = getStringPref(StringPrefsEnum.userId);
 
-        hemSrv.joinEvent(content, HasherEventMapTableType.user, userId, null, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value, virginVisitorType: enumHasher.value).then((List<dynamic> adHocData) {
+        hasherEventMapService.joinEvent(content, TableType.hemUser, userId, null, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value, virginVisitorType: enumHasher.value).then((List<dynamic> adHocData) {
           setState(() {
             if ((adHocData != null) && (adHocData.isNotEmpty)) {
               onScreenMessage = adHocData[0]['userMessage'];
@@ -501,10 +500,9 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
               onScreenMessage = 'There is no event for this Kennel at this time';
             });
           } else {
-            final HasherEventMapService hemSrv = HasherEventMapService();
             final String userId = getStringPref(StringPrefsEnum.userId);
 
-            hemSrv.joinEvent(eventId, HasherEventMapTableType.user, userId, null, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value).then((List<dynamic> adHocData) {
+            hasherEventMapService.joinEvent(eventId, TableType.hemUser, userId, null, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value).then((List<dynamic> adHocData) {
               setState(() {
                 if ((adHocData != null) && (adHocData.isNotEmpty)) {
                   onScreenMessage = adHocData[0]['userMessage'];

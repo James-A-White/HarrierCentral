@@ -10,9 +10,9 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 
 class SyncEventAdminService {
   static const int flagHasherEventMapTable = 0x00000001;
@@ -41,9 +41,9 @@ class SyncEventAdminService {
   }
 
   Future<void> getLastUpdatedTimes(Database db, int flags) async {
-    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HasherEventMapTableHelper.colUpdatedAtValue, HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin));
+    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, hasherEventMapTableHelper.colUpdatedAtValue, hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin));
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin));
-    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, EventTableHelper.colUpdatedAtValue, EventTableHelper.tableName);
+    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, eventsTableHelper.colUpdatedAtValue, eventsTableHelper.tableName);
     _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, paymentsTableHelper.colUpdatedAtValue, paymentsTableHelper.tableName);
     _receiptsLastUpdated = (flags & flagReceiptsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, receiptsTableHelper.colUpdatedAtValue, receiptsTableHelper.tableName);
     _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, hashersTableHelper.colUpdatedAtValue, hashersTableHelper.tableName);
@@ -57,7 +57,6 @@ class SyncEventAdminService {
     }
 
     if (getStringPref(StringPrefsEnum.adminEventId) != eventId) {
-      final HasherEventMapService hem2srv = HasherEventMapService();
       final HasherKennelMapService hkm2srv = HasherKennelMapService();
 
       //final HashersService hSrv = HashersService();
@@ -65,7 +64,7 @@ class SyncEventAdminService {
       // TODO(James): create separate events table for event management
 
       baseService.clearTable(paymentsTableHelper);
-      hem2srv.clearTable(HasherEventMapTableType.eventAdmin);
+      baseService.clearTable(hasherEventMapTableHelper, tableType: TableType.hemEventAdmin);
       hkm2srv.clearTable(HasherKennelMapTableType.eventAdmin);
       baseService.clearTable(receiptsTableHelper);
       baseService.clearTable(kennelCreditsTableHelper);
@@ -192,14 +191,12 @@ class SyncEventAdminService {
       }
 
       if (ms.startsWith(r'[{"eventId"')) {
-        final EventService eSrv = EventService();
-        await eSrv.bulkUpdateDatabase('[$ms]', db, informUser);
+        await baseService.bulkUpdateDatabase(eventsTableHelper,'[$ms]', db, informUser);
         print('events updated');
       }
 
       if (ms.startsWith(r'[{"hemId"')) {
-        final HasherEventMapService hemSrv = HasherEventMapService();
-        await hemSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherEventMapTableType.eventAdmin);
+        await baseService.bulkUpdateDatabase(hasherEventMapTableHelper,'[$ms]', db, informUser, tableType: TableType.hemEventAdmin);
         print('hasher event map for admin updated');
       }
 

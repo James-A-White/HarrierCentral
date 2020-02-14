@@ -72,13 +72,30 @@ class CountriesTableHelper implements BaseTableHelper {
   num cacheDuration;
 
   @override
-  IntPrefsEnum lastUpdatedKey;
+  IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateCountriesData;
 
   @override
-  IntPrefsEnum lastCacheClearKey;
+  IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearCountriesData;
 
   @override
   String tableName = 'countries';
+
+  @override
+  String getTableName(TableType type) {
+    return tableName;
+  }
+
+    @override
+  IntPrefsEnum getLastUpdatedKey(TableType tblType) {
+
+    return lastUpdatedKey;
+  }
+
+  @override
+  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
+
+    return lastCacheClearKey;
+  }
 
   @override
   String remoteDbId = 'countryId';
@@ -104,7 +121,7 @@ class CountriesTableHelper implements BaseTableHelper {
   final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
-  Future<dynamic> createTable(Database db, int version) async {
+  Future<dynamic> createTable(Database db, int version,TableType tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,

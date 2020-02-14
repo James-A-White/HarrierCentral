@@ -1,10 +1,10 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/globals.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/database/notifications_table.dart';
@@ -49,9 +49,9 @@ class NotificationSupport {
         String sql = '''
           SELECT e.eventId,e.eventName,e.eventStartDatetime,
           coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) as notificationPreference
-          FROM ${EventTableHelper.tableName} e
+          FROM ${eventsTableHelper.tableName} e
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId and hkm.userId = "$userId"
-          LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user)} hem on hem.eventId = e.eventId and hem.userId = "$userId"
+          LEFT OUTER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemUser)} hem on hem.eventId = e.eventId and hem.userId = "$userId"
           WHERE e.eventStartDatetime BETWEEN datetime('now','localtime','-8 hours') AND datetime('now','localtime','+$NOTIFICATION_DAYS_IN_FUTURE days') 
           AND e.isVisible <> 0 
           AND 
@@ -77,10 +77,10 @@ class NotificationSupport {
         sql = '''
           SELECT e.eventId,e.eventName,e.eventStartDatetime,
           coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) as notificationPreference
-          FROM ${EventTableHelper.tableName} e
+          FROM ${eventsTableHelper.tableName} e
           INNER JOIN ${NotificationsTableHelper.tableName} notif on notif.${NotificationsTableHelper.colNotificationTag} = "$NOTIFICATION_PREFIX_EVENT_UPDATE" || e.eventId
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId and hkm.userId = "$userId"
-          LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user)} hem on hem.eventId = e.eventId and hem.userId = "$userId"
+          LEFT OUTER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemUser)} hem on hem.eventId = e.eventId and hem.userId = "$userId"
           WHERE (
               e.eventStartDatetime BETWEEN datetime('now','localtime','-1 days') AND datetime('now','localtime','+$NOTIFICATION_DAYS_IN_FUTURE days') 
               AND coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) = 2 -- cancel any notification that's been marked for cancellation
@@ -106,7 +106,7 @@ class NotificationSupport {
         sql = '''
           SELECT notif.${NotificationsTableHelper.colNotificationTag} as topicTag FROM ${NotificationsTableHelper.tableName} notif WHERE notif.${NotificationsTableHelper.colNotificationTag} IN 
           (SELECT "$NOTIFICATION_PREFIX_EVENT_UPDATE" || e.eventId 
-          FROM ${EventTableHelper.tableName} e
+          FROM ${eventsTableHelper.tableName} e
           WHERE e.eventStartDatetime BETWEEN datetime('now','localtime','-10 years') AND datetime('now','localtime','-7 days'))
           ''';
 
@@ -124,7 +124,7 @@ class NotificationSupport {
         sql = '''
           DELETE FROM ${NotificationsTableHelper.tableName} WHERE ${NotificationsTableHelper.colNotificationTag} IN 
           (SELECT "$NOTIFICATION_PREFIX_EVENT_UPDATE" || e.eventId 
-          FROM ${EventTableHelper.tableName} e
+          FROM ${eventsTableHelper.tableName} e
           WHERE e.eventStartDatetime BETWEEN datetime('now','localtime','-10 years') AND datetime('now','localtime','-7 days'))
           ''';
 
@@ -152,9 +152,9 @@ class NotificationSupport {
         final String sql = '''
           SELECT e.eventId,e.eventName,e.eventStartDatetime,
           CASE WHEN e.eventStartDatetime < datetime('now','localtime','-1 days') THEN 2 ELSE coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) END as notificationPreference
-          FROM ${EventTableHelper.tableName} e
+          FROM ${eventsTableHelper.tableName} e
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId and hkm.userId = "$userId"
-          LEFT OUTER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.user)} hem on hem.eventId = e.eventId and hem.userId = "$userId"
+          LEFT OUTER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemUser)} hem on hem.eventId = e.eventId and hem.userId = "$userId"
           WHERE e.eventId = "$eventId" OR e.kennelId = "$kennelId"
           AND e.eventStartDatetime BETWEEN datetime('now','localtime','-7 days') AND datetime('now','localtime','+$NOTIFICATION_DAYS_IN_FUTURE days') 
           ''';

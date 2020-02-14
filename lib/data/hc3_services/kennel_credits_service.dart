@@ -17,8 +17,6 @@ class KennelCreditsModel implements BaseModel {
     this.removed,
   });
 
-
-
   final String kennelCreditId;
   final String userId;
   final String kennelId;
@@ -59,13 +57,30 @@ class KennelCreditsTableHelper implements BaseTableHelper {
   num cacheDuration;
 
   @override
-  IntPrefsEnum lastUpdatedKey;
+  IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateKennelCreditsData;
 
   @override
-  IntPrefsEnum lastCacheClearKey;
+  IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearKennelCreditsData;
 
   @override
   String tableName = 'kennelCredits';
+
+  @override
+  String getTableName(TableType type) {
+    return tableName;
+  }
+
+    @override
+  IntPrefsEnum getLastUpdatedKey(TableType tblType) {
+
+    return lastUpdatedKey;
+  }
+
+  @override
+  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
+
+    return lastCacheClearKey;
+  }
 
   @override
   String remoteDbId = 'kennelCreditId';
@@ -81,7 +96,7 @@ class KennelCreditsTableHelper implements BaseTableHelper {
   final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
-  Future<dynamic> createTable(Database db, int version) async {
+  Future<dynamic> createTable(Database db, int version,TableType tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -149,4 +164,3 @@ class KennelCreditsTableHelper implements BaseTableHelper {
     return item;
   }
 }
-

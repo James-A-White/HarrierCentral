@@ -110,13 +110,30 @@ class PaymentsTableHelper implements BaseTableHelper {
   num cacheDuration;
 
   @override
-  IntPrefsEnum lastUpdatedKey;
+  IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdatePaymentsData;
 
   @override
-  IntPrefsEnum lastCacheClearKey;
+  IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearPaymentsData;
 
   @override
-  String tableName =  'Payments';
+  String tableName = 'Payments';
+
+  @override
+  String getTableName(TableType type) {
+    return tableName;
+  }
+
+    @override
+  IntPrefsEnum getLastUpdatedKey(TableType tblType) {
+
+    return lastUpdatedKey;
+  }
+
+  @override
+  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
+
+    return lastCacheClearKey;
+  }
 
   @override
   String remoteDbId = 'paymentId';
@@ -139,14 +156,14 @@ class PaymentsTableHelper implements BaseTableHelper {
   final String colConfirmedBy = 'confirmedBy';
   final String colPaymentReference = 'paymentReference';
   final String colNotes = 'notes';
-  final String colDoPayForExtras= 'doPayForExtras';
+  final String colDoPayForExtras = 'doPayForExtras';
 
   final String colRemoved = 'removed';
   final String colUpdatedAt = 'updatedAt';
   final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
-  Future<dynamic> createTable(Database db, int version) async {
+  Future<dynamic> createTable(Database db, int version,TableType tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -209,7 +226,7 @@ class PaymentsTableHelper implements BaseTableHelper {
     return map;
   }
 
-@override
+  @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
     final Map<String, dynamic> outputMap = <String, dynamic>{
       colPaymentId: inputMap[colPaymentId],
@@ -238,7 +255,6 @@ class PaymentsTableHelper implements BaseTableHelper {
     return outputMap;
   }
 
-
   // List<PaymentsModel> listFromMap(List<Map<String, dynamic>> mapList) {
   //   final List<PaymentsModel> paymentList = <PaymentsModel>[];
   //   for (int i = 0; i < mapList.length; i++) {
@@ -247,7 +263,7 @@ class PaymentsTableHelper implements BaseTableHelper {
   //   return paymentList;
   // }
 
-@override
+  @override
   PaymentsModel fromMap(Map<String, dynamic> map) {
     final PaymentsModel item = PaymentsModel(
       paymentId: map[colPaymentId],
@@ -268,7 +284,6 @@ class PaymentsTableHelper implements BaseTableHelper {
       paymentReference: map[colPaymentReference],
       notes: map[colNotes],
       doPayForExtras: map[colDoPayForExtras],
-
       updatedAt: (map[colUpdatedAt] == null) ? null : DateTime.parse(map[colUpdatedAt].toString().substring(0, 19)),
       removed: map[colRemoved],
     );
@@ -278,16 +293,7 @@ class PaymentsTableHelper implements BaseTableHelper {
 }
 
 class PaymentsService {
-  
-  Future<List<dynamic>> payForEvent(
-    String eventId,
-    String hasherId,
-    String hasherEventMapId,
-    int paymentType,
-    num paymentAmount,
-    int minimumAttendenceValue,
-    EnumPayForExtras<int> doPayForExtras
-  ) async {
+  Future<List<dynamic>> payForEvent(String eventId, String hasherId, String hasherEventMapId, int paymentType, num paymentAmount, int minimumAttendenceValue, EnumPayForExtras<int> doPayForExtras) async {
     List<dynamic> results;
 
     if (globalConnectionStatus == connectionStatus_notConnected) {
@@ -310,13 +316,13 @@ class PaymentsService {
 
     final String accessToken = Utilities.generateToken(userId, 'processPayment', paramString: tokenParameterString);
 
-    final num _hasherEventMapLastUpdated = await HasherEventMapService.getLastUpdatedTime(HasherEventMapTableType.eventAdmin);
+    final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper,hasherEventMapTableHelper.colUpdatedAtValue, tableType: TableType.hemEventAdmin);
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
 
-    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper,paymentsTableHelper.colUpdatedAtValue);
+    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper, paymentsTableHelper.colUpdatedAtValue);
     final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
 
-    final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(kennelCreditsTableHelper,kennelCreditsTableHelper.colUpdatedAtValue);
+    final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(kennelCreditsTableHelper, kennelCreditsTableHelper.colUpdatedAtValue);
     final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
     final String body = jsonEncode(<String, String>{
@@ -332,7 +338,7 @@ class PaymentsService {
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
       'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString(),
-      'doPayForExtras' : doPayForExtras.value.toString(),
+      'doPayForExtras': doPayForExtras.value.toString(),
     });
 
     final http.Response response = await http

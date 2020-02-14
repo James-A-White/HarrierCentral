@@ -17,9 +17,8 @@ import 'package:harrier_central/widgets/payment_report_list_item.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
-import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/util/bank_transfer_qr.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
@@ -140,10 +139,10 @@ class PaymentReportState extends State<PaymentReportPage> {
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as eventPriceForMembers,
           coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as eventPriceForNonMembers,
           COALESCE(confBy.dispName,'') as confByName,
-          COALESCE(e.${EventTableHelper.colExtrasDescription},'<unknown>') as extrasDescription,
-          COALESCE(e.${EventTableHelper.colEventPriceForExtras},0) as extrasPrice
-          FROM ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem
-          INNER JOIN ${EventTableHelper.tableName} e on e.eventId = hem.eventId
+          COALESCE(e.${eventsTableHelper.colExtrasDescription},'<unknown>') as extrasDescription,
+          COALESCE(e.${eventsTableHelper.colEventPriceForExtras},0) as extrasPrice
+          FROM ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem
+          INNER JOIN ${eventsTableHelper.tableName} e on e.eventId = hem.eventId
           INNER JOIN ${kennelsTableHelper.tableName} k on k.kennelId = e.kennelId
           LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm on hkm.userId = hem.userId and hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
           LEFT OUTER JOIN ${hashersTableHelper.tableName} h on h.hasherId = hem.userId
@@ -180,7 +179,7 @@ class PaymentReportState extends State<PaymentReportPage> {
       try {
         final String sql = '''
 
-          select 0 as paymentType, (SELECT COUNT(*) from ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem 
+          select 0 as paymentType, (SELECT COUNT(*) from ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem 
           WHERE  hem.attendenceState >= 20
           AND hem.hemId not in (SELECT hemId from ${paymentsTableHelper.tableName} pay3 where pay3.cancelledBy IS NULL) ) as count, 5.55 as totalCollected
             
@@ -189,14 +188,14 @@ class PaymentReportState extends State<PaymentReportPage> {
             (
                 SELECT COUNT(*) 
                 FROM ${paymentsTableHelper.tableName} pay 
-                INNER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem on hem.hemId = pay.hemId AND hem.attendenceState >= 20
+                INNER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem on hem.hemId = pay.hemId AND hem.attendenceState >= 20
                 WHERE pay.paymentType = x.paymentType AND pay.cancelledBy IS NULL
 
             ) as count,
             (
                 SELECT SUM(pay2.creditAmount) 
                 FROM ${paymentsTableHelper.tableName} pay2 
-                INNER JOIN ${HasherEventMapTableHelper.getTableName(HasherEventMapTableType.eventAdmin)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
+                INNER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
                 WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
             ) as totalCollected
           FROM (select 1 as paymentType union values (2), (3), (4), (5), (6), (7) ) x
