@@ -80,7 +80,7 @@ class KennelCreditsTableHelper implements BaseTableHelper {
   final String colRemoved = 'removed';
   final String colUpdatedAtValue = 'updatedAtValue';
 
-  // SQL code to create the database table
+  @override
   Future<dynamic> createTable(Database db, int version) async {
     await db.execute('''
           CREATE TABLE $tableName (

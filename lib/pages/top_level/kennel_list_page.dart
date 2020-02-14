@@ -10,7 +10,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/database/database.dart';
 
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-import 'package:harrier_central/data/hc3_services/regions_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 

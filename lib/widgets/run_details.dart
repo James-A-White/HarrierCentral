@@ -94,7 +94,7 @@ class RunDetails extends StatelessWidget {
               child: FancyDivider(innerColor: Colors.white),
             ),
                           Text('Event details', style: headingStyle),
-              SizedBox(
+              const SizedBox(
                 height: 15.0,
               ),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
@@ -438,7 +438,7 @@ class RunDetails extends StatelessWidget {
                         bottomMargin: 10.0,
                       ),
                       Text('Event tags', style: headingStyle),
-                      SizedBox(
+                      const SizedBox(
                         height: 15.0,
                       ),
                       Column(

@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/enums.dart';

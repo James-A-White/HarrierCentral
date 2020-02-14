@@ -7,14 +7,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
-import 'package:harrier_central/data/hc3_services/payments_service.dart';
-import 'package:harrier_central/data/hc3_services/receipts_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/database/notifications_table.dart';
 import 'package:harrier_central/database/migrations.dart';
 import 'package:harrier_central/util/constants.dart';

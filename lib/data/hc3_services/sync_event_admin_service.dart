@@ -13,9 +13,6 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-import 'package:harrier_central/data/hc3_services/payments_service.dart';
-import 'package:harrier_central/data/hc3_services/receipts_service.dart';
-import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 
 class SyncEventAdminService {
   static const int flagHasherEventMapTable = 0x00000001;
@@ -60,10 +57,8 @@ class SyncEventAdminService {
     }
 
     if (getStringPref(StringPrefsEnum.adminEventId) != eventId) {
-      final PaymentsService paySrv = PaymentsService();
       final HasherEventMapService hem2srv = HasherEventMapService();
       final HasherKennelMapService hkm2srv = HasherKennelMapService();
-      final ReceiptsService recSrv = ReceiptsService();
 
       //final HashersService hSrv = HashersService();
       // narrowEvents is not included here because all events are loaded all the time for all hashers.

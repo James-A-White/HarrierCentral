@@ -7,13 +7,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
-import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/database/database.dart';
@@ -207,7 +205,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     allHashers = <CheckInPackModel>[];
     final Database db = await DBProvider.db.database;
     try {
-      String sql = ''' 
+      final String sql = ''' 
 
           SELECT 
             -- get all hashers
@@ -1184,19 +1182,19 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             packMember.photo.startsWith('http')
                 ? CachedNetworkImage(
                     imageUrl: packMember.photo,
-                    // placeholder: (context, url) => Container(
-                    //     child: Center(
-                    //       child: Container(
-                    //         height: 20,
-                    //         width: 20,
-                    //         child: CircularProgressIndicator(
-                    //           strokeWidth: 3.0,
-                    //         ),
-                    //       ),
-                    //     ),
-                    //     height: 70.0,
-                    //    width: 70.0),
-                    errorWidget: (BuildContext context, String url, Object error) => const Icon(Icons.error),
+                    placeholder: (BuildContext context, String url) => Container(
+                        child: Center(
+                          child: Container(
+                            height: 20,
+                            width: 20,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 3.0,
+                            ),
+                          ),
+                        ),
+                        height: LIST_ITEM_HEIGHT,
+                       width: LIST_ITEM_HEIGHT),
+                    errorWidget: (BuildContext context, String url, Object error) => const Icon(Icons.error,size:LIST_ITEM_HEIGHT,color:Colors.red),
                     //fadeOutDuration:  Duration(seconds: 1),
                     fadeInDuration: const Duration(milliseconds: 0),
                     width: LIST_ITEM_HEIGHT,
@@ -1453,14 +1451,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     return paySrv.payForEvent(widget.eventAggregate.event.eventId, ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId, ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId, paymentType, amount, attendenceAtHash.value, doPayForExtras);
   }
 
-  void _showSnackBar(String text) {
-    final SnackBar snackBar = SnackBar(content: Text(text));
-
-    _scaffoldKey.currentState.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-    _scaffoldKey.currentState.showSnackBar(snackBar).closed.then((SnackBarClosedReason reason) {
-      setState(() {});
-    });
-  }
 
   Widget buildPackListView() {
     print('buildPackListView: ${DateTime.now().millisecondsSinceEpoch.toString()}');

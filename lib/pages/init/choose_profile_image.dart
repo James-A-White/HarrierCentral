@@ -127,14 +127,15 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                   : Column(
                       //alignment: AlignmentDirectional.topCenter,
                       children: <Widget>[
-                        // Container(
-                        //     width: MediaQuery.of(context).size.width,
-                        //     height:500
-                        //     ),
-
-                        // Positioned(
-                        //   top: 0,
-                        //   child:
+                        
+                        const Padding(
+                          padding: EdgeInsets.only(top:25.0),
+                          child: Text(
+                            'Choose an image source',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.white, fontSize: 20.0, fontFamily: 'WorkSansSemiBold'),
+                          ),
+                        ),
 
                         Container(
                           margin: const EdgeInsets.only(top: 20, bottom: 5),

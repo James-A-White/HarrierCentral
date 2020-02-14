@@ -17,13 +17,10 @@ import 'package:harrier_central/widgets/payment_report_list_item.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
-import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/util/bank_transfer_qr.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 

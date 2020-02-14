@@ -20,7 +20,6 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/widgets/zoomable_image_page.dart';
 import 'package:harrier_central/data/hc3_services/receipts_service.dart';
-import 'package:harrier_central/data/hc3_services/base_service.dart';
 
 // import 'package:harrier_central/widgets/user_details_ui.dart';
 // import 'package:harrier_central/widgets/fancy_divider.dart';
@@ -366,7 +365,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: <Widget>[
                           Container(
-                            margin: EdgeInsets.only(right:15),
+                            margin: const EdgeInsets.only(right:15),
                             width: 150,
                             child: RaisedButton(
                               onPressed: _uploadReceipt,

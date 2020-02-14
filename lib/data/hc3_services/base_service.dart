@@ -9,7 +9,7 @@ import 'package:harrier_central/util/preferences.dart';
 
 class BaseModel {
   BaseModel();
-  List<BaseModel> itemsFromJson(String jsonResult) {}
+  List<BaseModel> itemsFromJson(String jsonResult) {return null;}
 }
 
 class BaseTableHelper {
@@ -28,14 +28,13 @@ class BaseTableHelper {
   IntPrefsEnum lastUpdatedKey;
   IntPrefsEnum lastCacheClearKey;
 
-  // SQL code to create the database table
   Future<dynamic> createTable(Database db, int version) async {}
 
-  Map<String, dynamic> toMap(BaseModel item) {}
+  Map<String, dynamic> toMap(BaseModel item) {return null;}
 
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {}
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {return null;}
 
-  BaseModel fromMap(Map<String, dynamic> map) {}
+  BaseModel fromMap(Map<String, dynamic> map) {return null;}
 }
 
 class BaseService {

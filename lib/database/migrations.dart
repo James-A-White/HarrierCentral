@@ -3,16 +3,9 @@ import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
 
-//import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
-import 'package:harrier_central/data/hc3_services/countries_service.dart';
-//import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
-import 'package:harrier_central/data/hc3_services/payments_service.dart';
-//import 'package:harrier_central/data/hc3_services/narrow_event_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
-import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/util/globals.dart';
 
 class MigrationsModel {
