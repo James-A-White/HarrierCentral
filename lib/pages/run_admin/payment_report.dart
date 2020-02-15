@@ -144,7 +144,7 @@ class PaymentReportState extends State<PaymentReportPage> {
           FROM ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem
           INNER JOIN ${eventsTableHelper.tableName} e on e.eventId = hem.eventId
           INNER JOIN ${kennelsTableHelper.tableName} k on k.kennelId = e.kennelId
-          LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} hkm on hkm.userId = hem.userId and hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
+          LEFT OUTER JOIN ${hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin)} hkm on hkm.userId = hem.userId and hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
           LEFT OUTER JOIN ${hashersTableHelper.tableName} h on h.hasherId = hem.userId
           LEFT OUTER JOIN ${paymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.CancelledBy IS NULL
           LEFT OUTER JOIN ${hashersTableHelper.tableName} paidTo on paidTo.hasherId = pay.paidTo

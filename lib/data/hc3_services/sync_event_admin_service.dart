@@ -10,7 +10,6 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 
@@ -42,7 +41,7 @@ class SyncEventAdminService {
 
   Future<void> getLastUpdatedTimes(Database db, int flags) async {
     _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, hasherEventMapTableHelper.colUpdatedAtValue, hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin));
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin));
+    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, hasherKennelMapTableHelper.colUpdatedAtValue, hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin));
     _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, eventsTableHelper.colUpdatedAtValue, eventsTableHelper.tableName);
     _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, paymentsTableHelper.colUpdatedAtValue, paymentsTableHelper.tableName);
     _receiptsLastUpdated = (flags & flagReceiptsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, receiptsTableHelper.colUpdatedAtValue, receiptsTableHelper.tableName);
@@ -65,7 +64,7 @@ class SyncEventAdminService {
 
       baseService.clearTable(paymentsTableHelper);
       baseService.clearTable(hasherEventMapTableHelper, tableType: TableType.hemEventAdmin);
-      hkm2srv.clearTable(HasherKennelMapTableType.eventAdmin);
+      baseService.clearTable(hasherKennelMapTableHelper, tableType: TableType.hkmEventAdmin);
       baseService.clearTable(receiptsTableHelper);
       baseService.clearTable(kennelCreditsTableHelper);
       // we don't want to clear the Hashers table since it is meant to be persistent and not tied to a single event
@@ -74,7 +73,7 @@ class SyncEventAdminService {
     }
 
     // final int hasherEventMapLastUpdate = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : getIntPref(HasherEventMapTableHelper.getLastUpdatedKey(HasherEventMapTableType.eventAdmin)) ?? 0;
-    // final int hasherKennelMapLastUpdate = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(HasherKennelMapTableType.eventAdmin)) ?? 0;
+    // final int hasherKennelMapLastUpdate = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(TableType.eventAdmin)) ?? 0;
     // final int narrowEventsLastUpdate = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : getIntPref(NarrowEventsTableHelper.lastUpdatedKey) ?? 0;
     // final int paymentsLastUpdate = (flags & flagReceiptsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : getIntPref(PaymentsTableHelper.lastUpdatedKey) ?? 0;
     // final int receiptsLastUpdate = (flags & flagReceiptsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : getIntPref(ReceiptsTableHelper.lastUpdatedKey) ?? 0;
@@ -201,8 +200,7 @@ class SyncEventAdminService {
       }
 
       if (ms.startsWith(r'[{"hkmId"')) {
-        final HasherKennelMapService hkmSrv = HasherKennelMapService();
-        await hkmSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherKennelMapTableType.eventAdmin);
+        await baseService.bulkUpdateDatabase(hasherKennelMapTableHelper,'[$ms]', db, informUser, tableType: TableType.hkmEventAdmin);
         print('hasher event map for admin updated');
       }
 

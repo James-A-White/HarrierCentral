@@ -143,29 +143,11 @@ class KennelsTableHelper implements BaseTableHelper {
   num cacheDuration;
 
   @override
-  IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateKennelData;
-
-  @override
-  IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearKennelData;
-
-  @override
   String tableName = 'kennels';
 
   @override
   String getTableName(TableType type) {
     return tableName;
-  }
-
-    @override
-  IntPrefsEnum getLastUpdatedKey(TableType tblType) {
-
-    return lastUpdatedKey;
-  }
-
-  @override
-  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
-
-    return lastCacheClearKey;
   }
 
   @override

@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/constants.dart';
 
 class BaseModel {
   BaseModel();
@@ -13,17 +14,10 @@ class BaseModel {
   }
 }
 
-const String normal = 'normal';
-const String hemUserTable = 'hasherEventMap';
-const String hemAdminTable = 'hasherEventMapForRunAdmin';
-
-enum TableType { baseTable, hemUser, hemEventAdmin }
+enum TableType { baseTable, hemUser, hemEventAdmin, hkmUser, hkmEventAdmin, hkmKennelAdmin }
 
 class BaseTableHelper {
   BaseTableHelper();
-  // CitiesTableHelper._privateConstructor();
-  //   // make this a singleton class
-  // final CitiesTableHelper instance = CitiesTableHelper._privateConstructor();
 
   String tableName;
   String remoteDbId;
@@ -32,20 +26,8 @@ class BaseTableHelper {
     return null;
   }
 
-  IntPrefsEnum getLastUpdatedKey(TableType tblType) {
-    return null;
-  }
-
-  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
-    return null;
-  }
-
-  // final num forceRequeryInterval = 1 * 86400000;
   final num forceRequeryInterval = 1 * 1000;
   final num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
-
-  IntPrefsEnum lastUpdatedKey;
-  IntPrefsEnum lastCacheClearKey;
 
   Future<dynamic> createTable(Database db, int version, TableType tableType) async {}
 
@@ -63,9 +45,7 @@ class BaseTableHelper {
 }
 
 class BaseService {
-
-  String getTableName(BaseTableHelper tableHelper, TableType tableType)
-  {
+  String getTableName(BaseTableHelper tableHelper, TableType tableType) {
     String tableName = tableHelper.tableName;
     if (tableType != null) {
       switch (tableType) {
@@ -77,6 +57,15 @@ class BaseService {
           break;
         case TableType.hemUser:
           tableName = hemUserTable;
+          break;
+        case TableType.hkmUser:
+          tableName = hkmUserTable;
+          break;
+        case TableType.hkmEventAdmin:
+          tableName = hkmEventAdminTable;
+          break;
+        case TableType.hkmKennelAdmin:
+          tableName = hkmKennelAdminTable;
           break;
         default:
           // this will cause a SQL error and help us debug, should put a debug assert here
@@ -90,7 +79,7 @@ class BaseService {
 
   Future<List<BaseModel>> selectAllFromLocalDb(BaseTableHelper tableHelper, {TableType tableType}) async {
     final Database db = await DBProvider.db.database;
-    final String tableName = getTableName(tableHelper, tableType); 
+    final String tableName = getTableName(tableHelper, tableType);
 
     final List<Map<String, dynamic>> result = await db.query(tableName);
 
@@ -119,7 +108,7 @@ class BaseService {
     final String tableName = getTableName(tableHelper, tableType);
     final Database db = await DBProvider.db.database;
     await db.rawDelete('DELETE FROM $tableName').then((void dummy) {
-      setIntPref(tableHelper.lastCacheClearKey, DateTime.now().millisecondsSinceEpoch);
+      setIntPrefStrKey(LAST_CACHE_CLEAR_KEY + tableHelper.getTableName(tableType), DateTime.now().millisecondsSinceEpoch);
     });
   }
 

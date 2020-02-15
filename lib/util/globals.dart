@@ -11,6 +11,7 @@ import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
+import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 
 List<KennelListAggregate> globalKennelMainPageList;
@@ -35,12 +36,14 @@ KennelCreditsTableHelper kennelCreditsTableHelper;
 KennelsTableHelper kennelsTableHelper;
 EventsTableHelper eventsTableHelper;
 HasherEventMapTableHelper hasherEventMapTableHelper;
+HasherKennelMapTableHelper hasherKennelMapTableHelper;
 
 BaseService baseService;
 HashersService hashersService;
 PaymentsService paymentsService;
 EventsService eventsService;
 HasherEventMapService hasherEventMapService;
+HasherKennelMapService hasherKennelMapService;
 
 void initializeGlobals() {
   citiesTableHelper = CitiesTableHelper();
@@ -53,10 +56,12 @@ void initializeGlobals() {
   kennelsTableHelper = KennelsTableHelper();
   eventsTableHelper = EventsTableHelper();
   hasherEventMapTableHelper = HasherEventMapTableHelper();
+  hasherKennelMapTableHelper = HasherKennelMapTableHelper();
 
   baseService = BaseService();
   hashersService = HashersService();
   paymentsService = PaymentsService();
   eventsService = EventsService();
   hasherEventMapService = HasherEventMapService();
+  hasherKennelMapService = HasherKennelMapService();
 }

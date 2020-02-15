@@ -70,29 +70,11 @@ class CitiesTableHelper implements BaseTableHelper {
   num cacheDuration;
 
   @override
-  IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateCitiesData;
-
-  @override
-  IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearCitiesData;
-
-  @override
   String tableName = 'cities';
 
   @override
   String getTableName(TableType type) {
     return tableName;
-  }
-
-  @override
-  IntPrefsEnum getLastUpdatedKey(TableType tblType) {
-
-    return lastUpdatedKey;
-  }
-
-  @override
-  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
-
-    return lastCacheClearKey;
   }
 
   @override

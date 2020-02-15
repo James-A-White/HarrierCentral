@@ -9,6 +9,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/notifications/notification_support.dart';
@@ -79,7 +80,7 @@ class KennelListItemState extends State<KennelsListItem> {
                         }
                         widget.kennelItem.extensions.followingRequested = followingRequested;
                         setState(() {});
-                        srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, followingState: followingRequested).then((List<dynamic> queryResults) {
+                        srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, TableType.hkmUser, followingState: followingRequested).then((List<dynamic> queryResults) {
                           setState(() {
                             widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
                           });
@@ -279,7 +280,7 @@ class KennelListItemState extends State<KennelsListItem> {
                                   isHomeKennel = widget.kennelItem.extensions.isHomeKennel == 0 ? 1 : 0;
                                 }
 
-                                srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, followingState: retVal.value, isHomeKennel: isHomeKennel).then((List<dynamic> queryResults) {
+                                srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, TableType.hkmUser, followingState: retVal.value, isHomeKennel: isHomeKennel).then((List<dynamic> queryResults) {
                                   setState(() {
                                     widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
                                   });
@@ -360,7 +361,7 @@ class KennelListItemState extends State<KennelsListItem> {
                 final int notificationStatus = retVal.value;
                 widget.kennelItem.extensions.notificationsRequested = notificationStatus;
                 setState(() {});
-                srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, notificationState: notificationStatus).then((List<dynamic> queryResults) {
+                srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, TableType.hkmUser, notificationState: notificationStatus).then((List<dynamic> queryResults) {
                   setState(() {
                     widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
                     final NotificationSupport notifications = NotificationSupport();
@@ -434,7 +435,7 @@ class KennelListItemState extends State<KennelsListItem> {
               final int emailAlertStatus = retVal.value;
               widget.kennelItem.extensions.emailAlertRequested = emailAlertStatus;
               setState(() {});
-              srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, HasherKennelMapTableType.user, emailAlertState: emailAlertStatus).then((List<dynamic> queryResults) {
+              srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, TableType.hkmUser, emailAlertState: emailAlertStatus).then((List<dynamic> queryResults) {
                 setState(() {
                   widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
                   // final NotificationSupport notifications = NotificationSupport();

@@ -10,6 +10,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 
 class SyncKennelAdminService {
@@ -33,7 +34,7 @@ class SyncKennelAdminService {
   Future<void> getLastUpdatedTimes(Database db, int flags) async {
     _kennelLastUpdated = (flags & flagKennelTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, kennelsTableHelper.colUpdatedAtValue, kennelsTableHelper.tableName);
     _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, hashersTableHelper.colUpdatedAtValue, hashersTableHelper.tableName);
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, HasherKennelMapTableHelper.colUpdatedAtValue, HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin));
+    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, hasherKennelMapTableHelper.colUpdatedAtValue, hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin));
   }
 
   Future<bool> updateFromBackend(Database db, int flags, bool forceRefresh, String kennelId, {Function informUser}) async {
@@ -42,17 +43,17 @@ class SyncKennelAdminService {
     }
 
     if (getStringPref(StringPrefsEnum.adminKennelId) != kennelId) {
-      final HasherKennelMapService hkm2srv = HasherKennelMapService();
+
 
       // NOTE: kennels and hashers are not cleared here because all kennels and all hashers are loaded all the time for all users
-      hkm2srv.clearTable(HasherKennelMapTableType.kennelAdmin);
+      baseService.clearTable(hasherKennelMapTableHelper, tableType: TableType.hkmKennelAdmin);
 
       await setStringPref(StringPrefsEnum.adminKennelId, kennelId);
     }
 
     // final int kennelsLastUpdate = (flags & flagKennelTable) == 0 ? null : getIntPref(KennelsTableHelper.lastUpdatedKey) ?? 0;
     // final int hashersLastUpdate = (flags & flagHashersTable) == 0 ? null : getIntPref(HashersTableHelper.lastUpdatedKey) ?? 0;
-    // final int hasherKennelMapLastUpdate = (flags & flagHasherKennelMapTable) == 0 ? null : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(HasherKennelMapTableType.kennelAdmin)) ?? 0;
+    // final int hasherKennelMapLastUpdate = (flags & flagHasherKennelMapTable) == 0 ? null : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(TableType.kennelAdmin)) ?? 0;
 
     if (forceRefresh || true)
     // ((kennelsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - kennelsLastUpdate) > KennelsTableHelper.forceRequeryInterval) ||
@@ -140,13 +141,12 @@ class SyncKennelAdminService {
       }
 
       if (ms.startsWith(r'[{"hasherId"')) {
-        await hashersService.bulkUpdateDatabase(hashersTableHelper,'[$ms]', db, informUser);
+        await baseService.bulkUpdateDatabase(hashersTableHelper,'[$ms]', db, informUser);
         print('hashers updated');
       }
 
       if (ms.startsWith(r'[{"hkmId"')) {
-        final HasherKennelMapService hkmSrv = HasherKennelMapService();
-        await hkmSrv.bulkUpdateDatabase('[$ms]', db, informUser, HasherKennelMapTableType.kennelAdmin);
+        await baseService.bulkUpdateDatabase(hasherKennelMapTableHelper,'[$ms]', db, informUser, tableType: TableType.hkmKennelAdmin);
         print('hasher kennel map for kennel admin updated');
       }
 

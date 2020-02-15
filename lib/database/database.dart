@@ -8,7 +8,6 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/database/notifications_table.dart';
 import 'package:harrier_central/database/migrations.dart';
@@ -68,7 +67,7 @@ class DBProvider {
         await regionsTableHelper.createTable(db, version,null);
         await countriesTableHelper.createTable(db, version,null);
         await kennelsTableHelper.createTable(db, version,null);
-        await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.user);
+        await hasherKennelMapTableHelper.createTable(db, version, TableType.hkmUser);
         await hasherEventMapTableHelper.createTable(db, version, TableType.hemUser);
         await eventsTableHelper.createTable(db, version,null);
         await NotificationsTableHelper.createTable(db, version);
@@ -76,13 +75,13 @@ class DBProvider {
 
         // create event admin tables
         await hasherEventMapTableHelper.createTable(db, version, TableType.hemEventAdmin);
-        await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.eventAdmin);
+        await hasherKennelMapTableHelper.createTable(db, version, TableType.hkmEventAdmin);
         await paymentsTableHelper.createTable(db, version,null);
         await receiptsTableHelper.createTable(db, version,null);
         await kennelCreditsTableHelper.createTable(db, version,null);
 
         // create kennel admin tables
-        await HasherKennelMapTableHelper.createTable(db, version, HasherKennelMapTableType.kennelAdmin);
+        await hasherKennelMapTableHelper.createTable(db, version, TableType.hkmKennelAdmin);
 
         if (informUser != null) {
           informUser('Loading city data\r\n0% complete');

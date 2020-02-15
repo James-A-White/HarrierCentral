@@ -157,29 +157,11 @@ class EventsTableHelper implements BaseTableHelper {
   num cacheDuration;
 
   @override
-  IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateEventsData;
-
-  @override
-  IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearEventsData;
-
-  @override
   String tableName = 'narrowEvents';
 
   @override
   String getTableName(TableType type) {
     return tableName;
-  }
-
-    @override
-  IntPrefsEnum getLastUpdatedKey(TableType tblType) {
-
-    return lastUpdatedKey;
-  }
-
-  @override
-  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
-
-    return lastCacheClearKey;
   }
 
   @override

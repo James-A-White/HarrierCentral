@@ -14,7 +14,7 @@ import 'package:harrier_central/pages/run_admin/email_editor_page.dart';
 import 'package:harrier_central/pages/run_admin/receipts_page.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 import 'package:harrier_central/util/styles.dart';
@@ -113,7 +113,7 @@ class RunDetailPageState extends State<RunDetailPage> {
           FROM ${eventsTableHelper.tableName} e
           INNER JOIN ${kennelsTableHelper.tableName} k on k.kennelId = e.kennelId
           LEFT OUTER JOIN ${countriesTableHelper.tableName} c on c.countryId = k.countryId
-          LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on e.kennelId = hkm.kennelId,
+          LEFT OUTER JOIN ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} hkm on e.kennelId = hkm.kennelId,
           hashers h  
           WHERE e.eventId = "${widget.eventId}"
           AND hkm.userId = "$userId"

@@ -93,29 +93,11 @@ class ReceiptsTableHelper implements BaseTableHelper {
   num cacheDuration;
 
   @override
-  IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateReceiptsData;
-
-  @override
-  IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearReceiptsData;
-
-  @override
   String tableName = 'receipts';
 
   @override
   String getTableName(TableType type) {
     return tableName;
-  }
-
-    @override
-  IntPrefsEnum getLastUpdatedKey(TableType tblType) {
-
-    return lastUpdatedKey;
-  }
-
-  @override
-  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
-
-    return lastCacheClearKey;
   }
 
   @override

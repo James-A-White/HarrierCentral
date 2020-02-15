@@ -10,7 +10,6 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 
@@ -95,9 +94,6 @@ class HasherEventMapModel implements BaseModel {
   }
 }
 
-final String hemTableName = 'hasherEventMap';
-final String hemAdminTableName = 'hasherEventMapForRunAdmin';
-
 class HasherEventMapTableHelper implements BaseTableHelper {
   HasherEventMapTableHelper();
 
@@ -107,46 +103,21 @@ class HasherEventMapTableHelper implements BaseTableHelper {
   @override
   num cacheDuration;
 
-
-@override
-  IntPrefsEnum lastUpdatedKey;
-
-  @override
-  IntPrefsEnum lastCacheClearKey;
-
   @override
   String tableName = '';
 
   @override
   String getTableName(TableType tblType) {
     if (tblType == TableType.hemEventAdmin) {
-      return hemAdminTableName;
+      return hemAdminTable;
     }
-    return hemTableName;
-  }
-
-@override
-    IntPrefsEnum getLastUpdatedKey(TableType tblType) {
-    if (tblType == TableType.hemEventAdmin) {
-      return IntPrefsEnum.lastUpdateAdminHasherEventMapData;
-    }
-    return IntPrefsEnum.lastUpdateHasherEventMapData;
-  }
-
-@override
-  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
-    if (tblType == TableType.hemEventAdmin) {
-      return IntPrefsEnum.lastCacheClearAdminHasherEventMapData;
-    }
-    return IntPrefsEnum.lastCacheClearHasherEventMapData;
+    return hemUserTable;
   }
 
   @override
   String remoteDbId = 'hemId';
 
   final String colId = 'id';
-
-
   final String colHemId = 'hemId';
   final String colUserId = 'userId';
   final String colEventId = 'eventId';
@@ -320,7 +291,7 @@ class HasherEventMapService {
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEvent');
 
     final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper,hasherEventMapTableHelper.colUpdatedAtValue, tableType: TableType.hemEventAdmin);
-    final num _hasherKennelMapLastUpdated = await HasherKennelMapService.getLastUpdatedTime(HasherKennelMapTableType.eventAdmin);
+    final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper,hasherKennelMapTableHelper.colUpdatedAtValue, tableType: TableType.hkmEventAdmin);
     final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper,paymentsTableHelper.colUpdatedAtValue);
 
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);

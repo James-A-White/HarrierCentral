@@ -9,8 +9,6 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
@@ -83,29 +81,11 @@ class HashersTableHelper implements BaseTableHelper {
   num cacheDuration;
 
   @override
-  IntPrefsEnum lastUpdatedKey = IntPrefsEnum.lastUpdateAllHasherData;
-
-  @override
-  IntPrefsEnum lastCacheClearKey = IntPrefsEnum.lastCacheClearHashersData;
-
-  @override
   String tableName = 'hashers';
 
   @override
   String getTableName(TableType type) {
     return tableName;
-  }
-
-  @override
-  IntPrefsEnum getLastUpdatedKey(TableType tblType) {
-
-    return lastUpdatedKey;
-  }
-
-  @override
-  IntPrefsEnum getLastCacheClearKey(TableType tblType) {
-
-    return lastCacheClearKey;
   }
 
   @override
@@ -280,7 +260,7 @@ class HashersService extends BaseService {
       final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper,hasherEventMapTableHelper.colUpdatedAtValue, tableType: TableType.hemEventAdmin);
       hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
 
-      final num _hasherKennelMapLastUpdated = await HasherKennelMapService.getLastUpdatedTime(((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? HasherKennelMapTableType.eventAdmin : HasherKennelMapTableType.kennelAdmin);
+      final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper,hasherKennelMapTableHelper.colUpdatedAtValue, tableType: ((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? TableType.hkmEventAdmin : TableType.hkmKennelAdmin);
       hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
     } else {
       // do this to suppress any records being returned through the sync mechanism

@@ -12,7 +12,7 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/widgets/kennel_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
@@ -120,7 +120,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           INNER JOIN ${regionsTableHelper.tableName} r on r.regionId = k.regionId
           INNER JOIN ${countriesTableHelper.tableName} n on n.countryId = k.countryId
           INNER JOIN ${hashersTableHelper.tableName} h on h.hasherId = "$hasherId"
-          LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} hkm on hkm.kennelId = k.kennelId and hkm.${HasherKennelMapTableHelper.colUserId} = "$hasherId"
+          LEFT OUTER JOIN ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} hkm on hkm.kennelId = k.kennelId and hkm.${hasherKennelMapTableHelper.colUserId} = "$hasherId"
           ''';
 
           globalKennelMainPageList = <KennelListAggregate>[];
@@ -129,7 +129,7 @@ class KennelsListPageState extends State<KennelsListPage> {
               for (int i = 0; i < results.length; i++) {
                 locator.distanceBetween(Utilities.unInt(ll.latitude), Utilities.unInt(ll.longitude), Utilities.unInt(results[i]['cityLat']), Utilities.unInt(results[i]['cityLon'])).then((num dist) {
                   final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
-                  final HasherKennelMapModel hkmItem = HasherKennelMapTableHelper.fromMap(results[i]);
+                  final HasherKennelMapModel hkmItem = hasherKennelMapTableHelper.fromMap(results[i]);
                   final KennelListQueryExtenstions extensionsItem = KennelListQueryExtenstions.fromMap(results[i]);
                   extensionsItem.distToKennel = dist;
                   extensionsItem.followingRequested = -1;
@@ -242,7 +242,7 @@ class KennelsListPageState extends State<KennelsListPage> {
       print(e);
     }
 
-    query = 'DELETE FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)}';
+    query = 'DELETE FROM ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)}';
     try {
       await db.rawQuery(query);
     } catch (e) {

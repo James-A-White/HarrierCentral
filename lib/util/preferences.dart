@@ -31,49 +31,10 @@ enum NumPrefsEnum { latitude, longitude }
 
 enum IntPrefsEnum {
   databaseVersion,
-
   hasherPreferences,
-
-  lastUpdateAllHasherData,
-  lastCacheClearAllHasherData,
-
-  lastUpdateCitiesData,
-  lastCacheClearCitiesData,
-  lastUpdateRegionsData,
-  lastCacheClearRegionsData,
-  lastUpdateCountriesData,
-  lastCacheClearCountriesData,
-  lastUpdateKennelData,
-  lastCacheClearKennelData,
-  lastUpdateHashersData,
-  lastCacheClearHashersData,
-  lastUpdateEventsData,
-  lastCacheClearEventsData,
-  lastUpdateKennelCreditsData,
-  lastCacheClearKennelCreditsData,
-
-  lastUpdatePaymentsData,
-  lastCacheClearPaymentsData,
-
-  lastUpdateReceiptsData,
-  lastCacheClearReceiptsData,
-
-  lastUpdateHasherKennelMaplData,
-  lastCacheClearHasherKennelMapData,
-  lastUpdateAdminHasherKennelMaplData,
-  lastCacheClearAdminHasherKennelMapData,
-
-  lastUpdateHasherEventMapData,
-  lastCacheClearHasherEventMapData,
-  lastUpdateAdminHasherEventMapData,
-  lastCacheClearAdminHasherEventMapData,
-
   lastSuccessfulUserDataSync,
-
   hasLocationPermissions,
-
   dbCreated,
-
 }
 
 SharedPreferences _sharedPreferences;
@@ -110,10 +71,17 @@ Future<bool> setNumPref(NumPrefsEnum key, num value) async {
 }
 
 num getIntPref(IntPrefsEnum key) {
-  final String test = key.toString();
-  return _sharedPreferences.getInt(test);
+  return _sharedPreferences.getInt(key.toString());
 }
 
 Future<bool> setIntPref(IntPrefsEnum key, int value) async {
   return _sharedPreferences.setInt(key.toString(), value);
+}
+
+num getIntPrefStrKey(String key) {
+  return _sharedPreferences.getInt(key);
+}
+
+Future<bool> setIntPrefStrKey(String key, int value) async {
+  return _sharedPreferences.setInt(key, value);
 }

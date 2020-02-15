@@ -21,6 +21,7 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
@@ -130,7 +131,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             hkm.historicalHaringCount,
             hkm.historicalCountIsEstimate
             FROM hashers h
-            LEFT OUTER JOIN ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin)} hkm ON hkm.kennelId = "${widget.kennelId}" AND hkm.userId = "${widget.hasherId}"
+            LEFT OUTER JOIN ${hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin)} hkm ON hkm.kennelId = "${widget.kennelId}" AND hkm.userId = "${widget.hasherId}"
             WHERE h.hasherId = "${widget.hasherId}"
           
           ''';
@@ -147,7 +148,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       if ((results != null) && (results.isNotEmpty)) {
         hasher = hashersTableHelper.fromMap(results[0]);
         if (widget.dataContext == EnumDataContext.kennel) {
-          hkmData = HasherKennelMapTableHelper.fromMap(results[0]);
+          hkmData = hasherKennelMapTableHelper.fromMap(results[0]);
         }
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
           hasher.email = getStringPref(StringPrefsEnum.email);

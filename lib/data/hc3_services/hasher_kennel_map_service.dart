@@ -4,17 +4,17 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/util/enums.dart';
 
-class HasherKennelMapModel {
+class HasherKennelMapModel implements BaseModel {
   HasherKennelMapModel(
       {this.hkmId,
       this.userId,
@@ -65,7 +65,8 @@ class HasherKennelMapModel {
   final DateTime updatedAt;
   final int removed;
 
-  static List<HasherKennelMapModel> itemsFromJson(String jsonResult) {
+  @override
+  List<HasherKennelMapModel> itemsFromJson(String jsonResult) {
     final List<HasherKennelMapModel> items = <HasherKennelMapModel>[];
 
     HasherKennelMapModel item;
@@ -110,76 +111,60 @@ class HasherKennelMapModel {
   }
 }
 
-enum HasherKennelMapTableType { user, eventAdmin, kennelAdmin }
+class HasherKennelMapTableHelper implements BaseTableHelper {
 
-const String hkmTableName = 'hasherKennelMap';
-const String hkmEventAdminTableName = 'hasherKennelMapForRunAdmin';
-const String hkmKennelAdminTableName = 'hasherKennelMapForKennelAdmin';
+  @override
+  num forceRequeryInterval;
 
-class HasherKennelMapTableHelper {
-  HasherKennelMapTableHelper._privateConstructor();
+  @override
+  num cacheDuration;
 
-  //static const num forceRequeryInterval = 1 * 86400000;
-  static const num forceRequeryInterval = 1 * 1000;
-  static const num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
+  @override
+  String tableName = '';
 
-  static const String colId = 'id';
-  static const String remoteDbId = 'hkmId';
-  static const String colHkmId = 'hkmId';
-  static const String colUserId = 'userId';
-  static const String colKennelId = 'kennelId';
-  static const String colFollowing = 'following';
-  static const String colIsMember = 'isMember';
-  static const String colIsHomeKennel = 'isHomeKennel';
-  static const String colKennelNotificationPreference = 'kennelNotificationPreference';
-  static const String colKennelEmailAlertPreference = 'kennelEmailAlertPreference';
-  static const String colMismanagementRoleFlags = 'mismanagementRoleFlags';
-  static const String colUserRoleFlags = 'userRoleFlags';
-  static const String colAppAccessFlags = 'appAccessFlags';
-  static const String colCurrentPackRunCount = 'currentPackRunCount';
-  static const String colCurrentHaringCount = 'currentHaringCount';
-  static const String colHistoricalPackRunCount = 'historicalPackRunCount';
-  static const String colHistoricalHaringCount = 'historicalHaringCount';
-  static const String colHistoricalCountIsEstimate = 'historicalCountIsEstimate';
-  static const String colDateOfLastRun = 'dateOfLastRun';
-  static const String colMembershipExpirationDate = 'membershipExpirationDate';
-  static const String colMemberSince = 'memberSince';
-  static const String colIsKennelFollowing = 'isKennelFollowing';
-  static const String colMismanagementRoles = 'mismanagementRoles';
-
-  static const String colUpdatedAt = 'updatedAt';
-  static const String colRemoved = 'removed';
-  static const String colUpdatedAtValue = 'updatedAtValue';
-
-  // make this a singleton class
-
-  static final HasherKennelMapTableHelper instance = HasherKennelMapTableHelper._privateConstructor();
-
-  static String getTableName(HasherKennelMapTableType tblType) {
-    if (tblType == HasherKennelMapTableType.eventAdmin) {
-      return hkmEventAdminTableName;
-    } else if (tblType == HasherKennelMapTableType.kennelAdmin) {
-      return hkmKennelAdminTableName;
+  @override
+  String getTableName(TableType tblType) {
+    if (tblType == TableType.hkmEventAdmin) {
+      return hkmEventAdminTable;
+    } else if (tblType == TableType.hkmKennelAdmin) {
+      return hkmKennelAdminTable;
+    } else {
+      return hkmUserTable;
     }
-    return hkmTableName;
   }
 
-  static IntPrefsEnum getLastUpdatedKey(HasherKennelMapTableType tblType) {
-    if (tblType == HasherKennelMapTableType.eventAdmin) {
-      return IntPrefsEnum.lastUpdateAdminHasherKennelMaplData;
-    }
-    return IntPrefsEnum.lastUpdateHasherKennelMaplData;
-  }
+  @override
+  String remoteDbId = 'hkmId';
 
-  static IntPrefsEnum getLastCacheClearKey(HasherKennelMapTableType tblType) {
-    if (tblType == HasherKennelMapTableType.eventAdmin) {
-      return IntPrefsEnum.lastCacheClearAdminHasherKennelMapData;
-    }
-    return IntPrefsEnum.lastCacheClearHasherKennelMapData;
-  }
+  final String colId = 'id';
+  final String colHkmId = 'hkmId';
+  final String colUserId = 'userId';
+  final String colKennelId = 'kennelId';
+  final String colFollowing = 'following';
+  final String colIsMember = 'isMember';
+  final String colIsHomeKennel = 'isHomeKennel';
+  final String colKennelNotificationPreference = 'kennelNotificationPreference';
+  final String colKennelEmailAlertPreference = 'kennelEmailAlertPreference';
+  final String colMismanagementRoleFlags = 'mismanagementRoleFlags';
+  final String colUserRoleFlags = 'userRoleFlags';
+  final String colAppAccessFlags = 'appAccessFlags';
+  final String colCurrentPackRunCount = 'currentPackRunCount';
+  final String colCurrentHaringCount = 'currentHaringCount';
+  final String colHistoricalPackRunCount = 'historicalPackRunCount';
+  final String colHistoricalHaringCount = 'historicalHaringCount';
+  final String colHistoricalCountIsEstimate = 'historicalCountIsEstimate';
+  final String colDateOfLastRun = 'dateOfLastRun';
+  final String colMembershipExpirationDate = 'membershipExpirationDate';
+  final String colMemberSince = 'memberSince';
+  final String colIsKennelFollowing = 'isKennelFollowing';
+  final String colMismanagementRoles = 'mismanagementRoles';
 
-  // SQL code to create the database table
-  static Future<dynamic> createTable(Database db, int version, HasherKennelMapTableType tblType) async {
+  final String colUpdatedAt = 'updatedAt';
+  final String colRemoved = 'removed';
+  final String colUpdatedAtValue = 'updatedAtValue';
+
+  @override
+  Future<dynamic> createTable(Database db, int version, TableType tblType) async {
     await db.execute('''
           CREATE TABLE ${getTableName(tblType)} (
             $colId INTEGER PRIMARY KEY,
@@ -218,92 +203,95 @@ class HasherKennelMapTableHelper {
     await db.execute(sql);
   }
 
-  static Map<String, dynamic> toMap(HasherKennelMapModel item) {
+  @override
+  Map<String, dynamic> toMap(dynamic item) {
     final Map<String, dynamic> map = <String, dynamic>{
-      HasherKennelMapTableHelper.colHkmId: item.hkmId,
-      HasherKennelMapTableHelper.colUserId: item.userId,
-      HasherKennelMapTableHelper.colKennelId: item.kennelId,
-      HasherKennelMapTableHelper.colFollowing: item.following,
-      HasherKennelMapTableHelper.colIsMember: item.isMember,
-      HasherKennelMapTableHelper.colIsHomeKennel: item.isHomeKennel,
-      HasherKennelMapTableHelper.colKennelNotificationPreference: item.kennelNotificationPreference,
-      HasherKennelMapTableHelper.colKennelEmailAlertPreference: item.kennelEmailAlertPreference,
-      HasherKennelMapTableHelper.colMismanagementRoleFlags: item.mismanagementRoleFlags,
-      HasherKennelMapTableHelper.colUserRoleFlags: item.userRoleFlags,
-      HasherKennelMapTableHelper.colAppAccessFlags: item.appAccessFlags,
-      HasherKennelMapTableHelper.colCurrentPackRunCount: item.currentPackRunCount,
-      HasherKennelMapTableHelper.colCurrentHaringCount: item.currentHaringCount,
-      HasherKennelMapTableHelper.colHistoricalPackRunCount: item.historicalPackRunCount,
-      HasherKennelMapTableHelper.colHistoricalHaringCount: item.historicalHaringCount,
-      HasherKennelMapTableHelper.colHistoricalCountIsEstimate: item.historicalCountIsEstimate,
-      HasherKennelMapTableHelper.colDateOfLastRun: item.dateOfLastRun,
-      HasherKennelMapTableHelper.colMembershipExpirationDate: item.membershipExpirationDate,
-      HasherKennelMapTableHelper.colMemberSince: item.memberSince,
-      HasherKennelMapTableHelper.colIsKennelFollowing: item.isKennelFollowing,
-      HasherKennelMapTableHelper.colMismanagementRoles: item.mismanagementRoles,
-      HasherKennelMapTableHelper.colUpdatedAt: item.updatedAt,
-      HasherKennelMapTableHelper.colRemoved: item.removed,
+      colHkmId: item.hkmId,
+      colUserId: item.userId,
+      colKennelId: item.kennelId,
+      colFollowing: item.following,
+      colIsMember: item.isMember,
+      colIsHomeKennel: item.isHomeKennel,
+      colKennelNotificationPreference: item.kennelNotificationPreference,
+      colKennelEmailAlertPreference: item.kennelEmailAlertPreference,
+      colMismanagementRoleFlags: item.mismanagementRoleFlags,
+      colUserRoleFlags: item.userRoleFlags,
+      colAppAccessFlags: item.appAccessFlags,
+      colCurrentPackRunCount: item.currentPackRunCount,
+      colCurrentHaringCount: item.currentHaringCount,
+      colHistoricalPackRunCount: item.historicalPackRunCount,
+      colHistoricalHaringCount: item.historicalHaringCount,
+      colHistoricalCountIsEstimate: item.historicalCountIsEstimate,
+      colDateOfLastRun: item.dateOfLastRun,
+      colMembershipExpirationDate: item.membershipExpirationDate,
+      colMemberSince: item.memberSince,
+      colIsKennelFollowing: item.isKennelFollowing,
+      colMismanagementRoles: item.mismanagementRoles,
+      colUpdatedAt: item.updatedAt,
+      colRemoved: item.removed,
     };
 
     return map;
   }
 
-  static Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+  @override
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
     final Map<String, dynamic> outputMap = <String, dynamic>{
-      HasherKennelMapTableHelper.colHkmId: inputMap[HasherKennelMapTableHelper.colHkmId],
-      HasherKennelMapTableHelper.colUserId: inputMap[HasherKennelMapTableHelper.colUserId],
-      HasherKennelMapTableHelper.colKennelId: inputMap[HasherKennelMapTableHelper.colKennelId],
-      HasherKennelMapTableHelper.colFollowing: inputMap[HasherKennelMapTableHelper.colFollowing],
-      HasherKennelMapTableHelper.colIsMember: inputMap[HasherKennelMapTableHelper.colIsMember],
-      HasherKennelMapTableHelper.colIsHomeKennel: inputMap[HasherKennelMapTableHelper.colIsHomeKennel],
-      HasherKennelMapTableHelper.colKennelNotificationPreference: inputMap[HasherKennelMapTableHelper.colKennelNotificationPreference],
-      HasherKennelMapTableHelper.colKennelEmailAlertPreference: inputMap[HasherKennelMapTableHelper.colKennelEmailAlertPreference],
-      HasherKennelMapTableHelper.colMismanagementRoleFlags: inputMap[HasherKennelMapTableHelper.colMismanagementRoleFlags],
-      HasherKennelMapTableHelper.colUserRoleFlags: inputMap[HasherKennelMapTableHelper.colUserRoleFlags],
-      HasherKennelMapTableHelper.colAppAccessFlags: inputMap[HasherKennelMapTableHelper.colAppAccessFlags],
-      HasherKennelMapTableHelper.colCurrentPackRunCount: inputMap[HasherKennelMapTableHelper.colCurrentPackRunCount],
-      HasherKennelMapTableHelper.colCurrentHaringCount: inputMap[HasherKennelMapTableHelper.colCurrentHaringCount],
-      HasherKennelMapTableHelper.colHistoricalPackRunCount: inputMap[HasherKennelMapTableHelper.colHistoricalPackRunCount],
-      HasherKennelMapTableHelper.colHistoricalHaringCount: inputMap[HasherKennelMapTableHelper.colHistoricalHaringCount],
-      HasherKennelMapTableHelper.colHistoricalCountIsEstimate: inputMap[HasherKennelMapTableHelper.colHistoricalCountIsEstimate],
-      HasherKennelMapTableHelper.colDateOfLastRun: inputMap[HasherKennelMapTableHelper.colDateOfLastRun],
-      HasherKennelMapTableHelper.colMembershipExpirationDate: inputMap[HasherKennelMapTableHelper.colMembershipExpirationDate],
-      HasherKennelMapTableHelper.colMemberSince: inputMap[HasherKennelMapTableHelper.colMemberSince],
-      HasherKennelMapTableHelper.colIsKennelFollowing: inputMap[HasherKennelMapTableHelper.colIsKennelFollowing],
-      HasherKennelMapTableHelper.colMismanagementRoles: inputMap[HasherKennelMapTableHelper.colMismanagementRoles],
-      HasherKennelMapTableHelper.colUpdatedAt: inputMap[HasherKennelMapTableHelper.colUpdatedAt],
-      HasherKennelMapTableHelper.colUpdatedAtValue: DateTime.parse(inputMap[HasherKennelMapTableHelper.colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
-      HasherKennelMapTableHelper.colRemoved: inputMap[HasherKennelMapTableHelper.colRemoved],
+      colHkmId: inputMap[colHkmId],
+      colUserId: inputMap[colUserId],
+      colKennelId: inputMap[colKennelId],
+      colFollowing: inputMap[colFollowing],
+      colIsMember: inputMap[colIsMember],
+      colIsHomeKennel: inputMap[colIsHomeKennel],
+      colKennelNotificationPreference: inputMap[colKennelNotificationPreference],
+      colKennelEmailAlertPreference: inputMap[colKennelEmailAlertPreference],
+      colMismanagementRoleFlags: inputMap[colMismanagementRoleFlags],
+      colUserRoleFlags: inputMap[colUserRoleFlags],
+      colAppAccessFlags: inputMap[colAppAccessFlags],
+      colCurrentPackRunCount: inputMap[colCurrentPackRunCount],
+      colCurrentHaringCount: inputMap[colCurrentHaringCount],
+      colHistoricalPackRunCount: inputMap[colHistoricalPackRunCount],
+      colHistoricalHaringCount: inputMap[colHistoricalHaringCount],
+      colHistoricalCountIsEstimate: inputMap[colHistoricalCountIsEstimate],
+      colDateOfLastRun: inputMap[colDateOfLastRun],
+      colMembershipExpirationDate: inputMap[colMembershipExpirationDate],
+      colMemberSince: inputMap[colMemberSince],
+      colIsKennelFollowing: inputMap[colIsKennelFollowing],
+      colMismanagementRoles: inputMap[colMismanagementRoles],
+      colUpdatedAt: inputMap[colUpdatedAt],
+      colUpdatedAtValue: DateTime.parse(inputMap[colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
+      colRemoved: inputMap[colRemoved],
     };
 
     return outputMap;
   }
 
-  static HasherKennelMapModel fromMap(Map<String, dynamic> map) {
+  @override
+  HasherKennelMapModel fromMap(Map<String, dynamic> map) {
     final HasherKennelMapModel item = HasherKennelMapModel(
-      hkmId: map[HasherKennelMapTableHelper.colHkmId],
-      userId: map[HasherKennelMapTableHelper.colUserId],
-      kennelId: map[HasherKennelMapTableHelper.colKennelId],
-      following: map[HasherKennelMapTableHelper.colFollowing],
-      isMember: map[HasherKennelMapTableHelper.colIsMember],
-      isHomeKennel: map[HasherKennelMapTableHelper.colIsHomeKennel],
-      kennelNotificationPreference: map[HasherKennelMapTableHelper.colKennelNotificationPreference],
-      kennelEmailAlertPreference: map[HasherKennelMapTableHelper.colKennelEmailAlertPreference],
-      mismanagementRoleFlags: map[HasherKennelMapTableHelper.colMismanagementRoleFlags],
-      userRoleFlags: map[HasherKennelMapTableHelper.colUserRoleFlags],
-      appAccessFlags: map[HasherKennelMapTableHelper.colAppAccessFlags],
-      currentPackRunCount: map[HasherKennelMapTableHelper.colCurrentPackRunCount],
-      currentHaringCount: map[HasherKennelMapTableHelper.colCurrentHaringCount],
-      historicalPackRunCount: map[HasherKennelMapTableHelper.colHistoricalPackRunCount],
-      historicalHaringCount: map[HasherKennelMapTableHelper.colHistoricalHaringCount],
-      historicalCountIsEstimate: map[HasherKennelMapTableHelper.colHistoricalCountIsEstimate],
-      dateOfLastRun: (map[HasherKennelMapTableHelper.colDateOfLastRun] == null) ? null : DateTime.parse(map[HasherKennelMapTableHelper.colDateOfLastRun].toString().substring(0, 19)),
-      membershipExpirationDate: (map[HasherKennelMapTableHelper.colMembershipExpirationDate] == null) ? null : DateTime.parse(map[HasherKennelMapTableHelper.colMembershipExpirationDate].toString().substring(0, 19)),
-      memberSince: (map[HasherKennelMapTableHelper.colMemberSince] == null) ? null : DateTime.parse(map[HasherKennelMapTableHelper.colMemberSince].toString().substring(0, 19)),
-      isKennelFollowing: map[HasherKennelMapTableHelper.colIsKennelFollowing],
-      mismanagementRoles: map[HasherKennelMapTableHelper.colMismanagementRoles],
-      updatedAt: DateTime.parse(map[HasherKennelMapTableHelper.colUpdatedAt].toString().substring(0, 19)),
-      removed: map[HasherKennelMapTableHelper.colRemoved],
+      hkmId: map[colHkmId],
+      userId: map[colUserId],
+      kennelId: map[colKennelId],
+      following: map[colFollowing],
+      isMember: map[colIsMember],
+      isHomeKennel: map[colIsHomeKennel],
+      kennelNotificationPreference: map[colKennelNotificationPreference],
+      kennelEmailAlertPreference: map[colKennelEmailAlertPreference],
+      mismanagementRoleFlags: map[colMismanagementRoleFlags],
+      userRoleFlags: map[colUserRoleFlags],
+      appAccessFlags: map[colAppAccessFlags],
+      currentPackRunCount: map[colCurrentPackRunCount],
+      currentHaringCount: map[colCurrentHaringCount],
+      historicalPackRunCount: map[colHistoricalPackRunCount],
+      historicalHaringCount: map[colHistoricalHaringCount],
+      historicalCountIsEstimate: map[colHistoricalCountIsEstimate],
+      dateOfLastRun: (map[colDateOfLastRun] == null) ? null : DateTime.parse(map[colDateOfLastRun].toString().substring(0, 19)),
+      membershipExpirationDate: (map[colMembershipExpirationDate] == null) ? null : DateTime.parse(map[colMembershipExpirationDate].toString().substring(0, 19)),
+      memberSince: (map[colMemberSince] == null) ? null : DateTime.parse(map[colMemberSince].toString().substring(0, 19)),
+      isKennelFollowing: map[colIsKennelFollowing],
+      mismanagementRoles: map[colMismanagementRoles],
+      updatedAt: DateTime.parse(map[colUpdatedAt].toString().substring(0, 19)),
+      removed: map[colRemoved],
     );
 
     return item;
@@ -311,129 +299,10 @@ class HasherKennelMapTableHelper {
 }
 
 class HasherKennelMapService {
-  static final HasherKennelMapTableHelper instance = HasherKennelMapTableHelper._privateConstructor();
-
-  static Future<num> getLastUpdatedTime(HasherKennelMapTableType tblType) async {
-    final Database db = await DBProvider.db.database;
-    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX(${HasherKennelMapTableHelper.colUpdatedAtValue}) AS maxDate FROM ${HasherKennelMapTableHelper.getTableName(tblType)}');
-    final num timeValue = table.first['maxDate'];
-    return timeValue;
-  }
-
-  Future<void> clearTable(HasherKennelMapTableType tblType) async {
-    final Database db = await DBProvider.db.database;
-    await db.rawDelete('DELETE FROM ${HasherKennelMapTableHelper.getTableName(tblType)}').then((void dummy) {
-      setIntPref(HasherKennelMapTableHelper.getLastCacheClearKey(tblType), DateTime.now().millisecondsSinceEpoch);
-    });
-  }
-
-  // TODO(James): If this is ever needed, put a check in to make sure that the user table can only hold records from this user
-  // Future<void> updateDatabase(List<HasherKennelMapModel> items, HasherKennelMapTableType tblType) async {
-  //   final Database db = await DBProvider.db.database;
-
-  //   for (int i = 0; i < items?.length ?? 0; i++) {
-  //     final Map<String, dynamic> row = HasherKennelMapTableHelper.toMap(items[i]);
-
-  //     final List<Map<String, dynamic>> table = await db.rawQuery('SELECT * FROM ${HasherKennelMapTableHelper.getTableName(tblType)} WHERE ${HasherKennelMapTableHelper.remoteDbId} = "${items[i].hkmId}"');
-  //     if ((table == null) || (table.isEmpty)) {
-  //       await db.transaction<dynamic>((Transaction txn) async {
-  //         final int result = await txn.insert(HasherKennelMapTableHelper.getTableName(tblType), row);
-  //         print(result.toString() + ' inserted into to the ${HasherKennelMapTableHelper.getTableName(tblType)} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-  //       });
-  //     } else {
-  //       final String rowId = table.first['id'].toString();
-
-  //       await db.transaction<dynamic>((Transaction txn) async {
-  //         final int result = await txn.update(HasherKennelMapTableHelper.getTableName(tblType), row, where: 'id = $rowId');
-  //         print(result.toString() + ' update to the ${HasherKennelMapTableHelper.getTableName(tblType)} table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-  //       });
-  //     }
-  //   }
-  // }
-
-  Future<int> bulkUpdateDatabase(String rawResults, Database db, Function informUser, HasherKennelMapTableType tblType) async {
-    int updateCounter = 0;
-    int insertCounter = 0;
-    int deletedCounter = 0;
-
-    bool doNormalizeMap;
-
-    final String userId = getStringPref(StringPrefsEnum.userId);
-
-    final List<dynamic> jsonResultSets = json.decode(rawResults);
-
-    final int len = jsonResultSets.length;
-    int lastPercentage = 0;
-
-    print('Hasher Kennel Map recordsets received from cloud = $len');
-
-    for (int i = 0; i < jsonResultSets.length; i++) {
-      final List<dynamic> jsonResults = jsonResultSets[i];
-
-      for (int j = 0; j < jsonResults.length; j++) {
-        final Map<String, dynamic> jsonItem = jsonResults[j];
-
-        if (doNormalizeMap == null) {
-          final Map<String, dynamic> testMap = HasherKennelMapTableHelper.normalizeMap(jsonItem);
-          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
-          if (doNormalizeMap) {
-            print('Normalize map called for ${HasherKennelMapTableHelper.getTableName(tblType)}, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}');
-          }
-        }
-
-        final int percentage = (100 * (j / jsonResults.length)).round();
-        if ((percentage != lastPercentage) && (informUser != null)) {
-          lastPercentage = percentage;
-          informUser('Loading kennel data\r\n$percentage% complete');
-        }
-
-        jsonItem.addAll(<String, dynamic>{
-          'updatedAtValue': DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)).millisecondsSinceEpoch,
-        });
-
-        final String query = 'SELECT id FROM ${HasherKennelMapTableHelper.getTableName(tblType)} WHERE ${HasherKennelMapTableHelper.remoteDbId} = "${jsonItem['hkmId']}"';
-        final List<Map<String, dynamic>> table = await db.rawQuery(query);
-
-        if ((table == null) || (table.isEmpty)) {
-          // for the user table, we only want to insert kkm records for this particular user
-          if ((tblType != HasherKennelMapTableType.user) || ((tblType == HasherKennelMapTableType.user) && (userId == jsonItem['userId']))) {
-            await db.transaction<dynamic>((Transaction txn) async {
-              
-              await txn.insert(HasherKennelMapTableHelper.getTableName(tblType), doNormalizeMap ? HasherKennelMapTableHelper.normalizeMap(jsonItem) : jsonItem);
-              insertCounter++;
-              // print(result.toString() +
-              //     ' inserted into to the ${UserKennelsTdTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
-            });
-          }
-        } else {
-          final String rowId = table.first['id'].toString();
-
-          await db.transaction<dynamic>((Transaction txn) async {
-            
-            await txn.update(HasherKennelMapTableHelper.getTableName(tblType), doNormalizeMap ? HasherKennelMapTableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId').then((int result) {
-              print(result.toString());
-            });
-            updateCounter++;
-            // print(result.toString() +
-            //     ' update to the ${UserKennelsTdTableHelper.table} table @ ${DateTime.now().millisecondsSinceEpoch}');
-          });
-        }
-      }
-    }
-
-
-    await db.transaction<dynamic>((Transaction txn) async {
-      
-      deletedCounter = await txn.delete(HasherKennelMapTableHelper.getTableName(tblType), where: 'removed = 1');
-    });
-
-    print('$insertCounter hasher kennel map records inserted, $updateCounter hasher kennel map records updated, $deletedCounter region records deleted');
-    return insertCounter;
-  }
 
   //=================  Domain specific functions ================
 
-  Future<List<dynamic>> updateHasherKennelStatus(String kennelId, HasherKennelMapTableType tblType, {int monthsToAddToMembership, String targetUserId, int notificationState = -1, int emailAlertState = -1, int followingState = -1, int isHomeKennel = -1}) async {
+  Future<List<dynamic>> updateHasherKennelStatus(String kennelId, TableType tblType, {int monthsToAddToMembership, String targetUserId, int notificationState = -1, int emailAlertState = -1, int followingState = -1, int isHomeKennel = -1}) async {
     List<dynamic> adHocData;
 
     if (globalConnectionStatus == connectionStatus_notConnected) {
@@ -449,9 +318,9 @@ class HasherKennelMapService {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
 
-    final num _hasherKennelMapLastUpdated = await HasherKennelMapService.getLastUpdatedTime(tblType);
-    final num _kennelsLastUpdated = await baseService.getLastUpdatedTime(kennelsTableHelper,kennelsTableHelper.colUpdatedAtValue);
-    final num _hashersLastUpdated = await hashersService.getLastUpdatedTime(hashersTableHelper,hashersTableHelper.colUpdatedAtValue);
+    final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper,hasherKennelMapTableHelper.colUpdatedAtValue, tableType: TableType.hkmEventAdmin);
+    final num _kennelsLastUpdated = await baseService.getLastUpdatedTime(kennelsTableHelper, kennelsTableHelper.colUpdatedAtValue);
+    final num _hashersLastUpdated = await hashersService.getLastUpdatedTime(hashersTableHelper, hashersTableHelper.colUpdatedAtValue);
 
     final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
     final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
@@ -480,9 +349,9 @@ class HasherKennelMapService {
       },
     );
 
-    if (tblType == HasherKennelMapTableType.eventAdmin) {
+    if (tblType == TableType.hkmEventAdmin) {
       adHocData = await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
-    } else if (tblType == HasherKennelMapTableType.kennelAdmin) {
+    } else if (tblType == TableType.hkmKennelAdmin) {
       adHocData = await SyncKennelAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else {
       adHocData = await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);

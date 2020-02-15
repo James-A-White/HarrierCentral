@@ -15,6 +15,7 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
@@ -257,12 +258,12 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
       final String sql = ''' 
 
           SELECT 
-              COUNT(CASE WHEN ${HasherKennelMapTableHelper.colFollowing} > 0 THEN 1 ELSE NULL END) as isFollowing,
-              COUNT(CASE WHEN ${HasherKennelMapTableHelper.colMembershipExpirationDate} > date('now') THEN 1 ELSE NULL END) as isMember,
-              COUNT(CASE WHEN ${HasherKennelMapTableHelper.colKennelId} = ${hashersTableHelper.colHomeKennelId} THEN 1 ELSE NULL END) as isHomeKennel,
-              COUNT(CASE WHEN ${HasherKennelMapTableHelper.colDateOfLastRun} >= date('now','-365 day') THEN 1 ELSE NULL END) as hasRecentRuns
-              FROM ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin)} hkm
-              INNER JOIN ${hashersTableHelper.tableName} h on h.${hashersTableHelper.colHasherId} = hkm.${HasherKennelMapTableHelper.colUserId}
+              COUNT(CASE WHEN ${hasherKennelMapTableHelper.colFollowing} > 0 THEN 1 ELSE NULL END) as isFollowing,
+              COUNT(CASE WHEN ${hasherKennelMapTableHelper.colMembershipExpirationDate} > date('now') THEN 1 ELSE NULL END) as isMember,
+              COUNT(CASE WHEN ${hasherKennelMapTableHelper.colKennelId} = ${hashersTableHelper.colHomeKennelId} THEN 1 ELSE NULL END) as isHomeKennel,
+              COUNT(CASE WHEN ${hasherKennelMapTableHelper.colDateOfLastRun} >= date('now','-365 day') THEN 1 ELSE NULL END) as hasRecentRuns
+              FROM ${hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin)} hkm
+              INNER JOIN ${hashersTableHelper.tableName} h on h.${hashersTableHelper.colHasherId} = hkm.${hasherKennelMapTableHelper.colUserId}
   
           ''';
 
@@ -346,7 +347,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                     final HasherKennelMapService srv = HasherKennelMapService();
                     widget.kennel.extensions.followingRequested = -1;
                     setState(() {});
-                    srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, HasherKennelMapTableType.kennelAdmin, monthsToAddToMembership: widget.kennel.kennel.membershipDurationInMonths, targetUserId: result['hasher'].hasherId).then((void dummy) {
+                    srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, TableType.hkmKennelAdmin, monthsToAddToMembership: widget.kennel.kennel.membershipDurationInMonths, targetUserId: result['hasher'].hasherId).then((void dummy) {
                       refreshKennelMembersFromTable(true).then((void dummy) {
                         _refreshCounters(true);
                       });
@@ -525,7 +526,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                   final int emailAlertStatus = snapshot.data[index].kennelEmailAlertPreference != 1 ? 1 : 2;
                                   snapshot.data[index].kennelEmailAlertPreference = -1;
                                   setState(() {});
-                                  srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, HasherKennelMapTableType.kennelAdmin, emailAlertState: emailAlertStatus, targetUserId: snapshot.data[index].hasherId).then((List<dynamic> queryResults) {
+                                  srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, TableType.hkmKennelAdmin, emailAlertState: emailAlertStatus, targetUserId: snapshot.data[index].hasherId).then((List<dynamic> queryResults) {
                                     setState(() {
                                       if ((queryResults != null) && (queryResults.isNotEmpty)) {
                                         snapshot.data[index].kennelEmailAlertPreference = queryResults[0]['kennelEmailAlertPreference'];
@@ -829,7 +830,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     widget.kennel.extensions.followingRequested = -1;
     item.membershipDateBeingUpdated = true;
     setState(() {});
-    srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, HasherKennelMapTableType.kennelAdmin, monthsToAddToMembership: monthsToAddToMembership, targetUserId: item.hasherId).then((void dummy) {
+    srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, TableType.hkmKennelAdmin, monthsToAddToMembership: monthsToAddToMembership, targetUserId: item.hasherId).then((void dummy) {
       refreshKennelMembersFromTable(true).then((void dummy) {
         item.membershipDateBeingUpdated = false;
         _refreshCounters(true);
@@ -843,7 +844,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     widget.kennel.extensions.followingRequested = -1;
     item.homeKennelBeingUpdated = true;
     setState(() {});
-    srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, HasherKennelMapTableType.kennelAdmin, targetUserId: item.hasherId, followingState: followTypeToggleHomeKennel.value, isHomeKennel: isHomeKennel).then((void dummy) {
+    srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, TableType.hkmKennelAdmin, targetUserId: item.hasherId, followingState: followTypeToggleHomeKennel.value, isHomeKennel: isHomeKennel).then((void dummy) {
       refreshKennelMembersFromTable(true).then((void dummy) {
         item.homeKennelBeingUpdated = false;
         _refreshCounters(true);

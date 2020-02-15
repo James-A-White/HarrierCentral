@@ -57,6 +57,8 @@ const String QR_PREFIX_USER_CODE = 'UQR:';
 const String QR_PREFIX_USER_SECRET_CODE = 'USC:';
 const String QR_PREFIX_USER_RESET_CODE = 'URC:';
 
+const String LAST_CACHE_CLEAR_KEY = 'lastCacheClear_';
+
 const int mmAuthIsGm = 0x40000000; // TODO(James): Needs implementation
 const int mmAuthCanGrantPermissions = 0x20000000; // TODO(James): Needs implementation
 
@@ -72,6 +74,13 @@ const int mmAuthAllowEditRsvpFlag = 0x00000100;
 const int mmAuthCanEditRunVisibility = 0x00000200; // TODO(James): Needs implementation
 
 const int cacheDurationAllHashers = 60 * 86400000; // 60 days cache duration
+
+const String normalTable = 'normal'; // this is not used, but is added to make the code more clear
+const String hemUserTable = 'hasherEventMap';
+const String hemAdminTable = 'hasherEventMapForRunAdmin';
+const String hkmUserTable = 'hasherKennelMap';
+const String hkmEventAdminTable = 'hasherKennelMapForRunAdmin';
+const String hkmKennelAdminTable = 'hasherKennelMapForKennelAdmin';
 
 const Map<String,int> runTags = <String, int>{
   'Normal run': 0x00000001,

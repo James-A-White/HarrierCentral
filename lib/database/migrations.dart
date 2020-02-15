@@ -138,15 +138,15 @@ class MigrationsTableHelper {
       
     // MIGRATION 222
     MigrationsModel(migrationNumber: 222, migrationText: '''
-            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} ADD COLUMN ${HasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
-            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
-            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
+            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} ADD COLUMN ${hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
+            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
+            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
          '''),
 
     // MIGRATION 223
     MigrationsModel(migrationNumber: 223, migrationText: '''
             ALTER TABLE ${hasherEventMapTableHelper.getTableName(TableType.hemUser)} ADD COLUMN ${hasherEventMapTableHelper.colEventEmailAlertPreference} INT;
-            ALTER TABLE ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
+            ALTER TABLE ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
          '''),
 
 
@@ -157,10 +157,10 @@ class MigrationsTableHelper {
             ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colDoTrackHashCash} INT;
             ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelMismanagementTeam} TEXT;
             ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colDistancePreference} INT;
-            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colIsKennelFollowing} INT;
-            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.kennelAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colMismanagementRoles} INT;
-            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} ADD COLUMN ${HasherKennelMapTableHelper.colIsKennelFollowing} INT;
-            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.user)} ADD COLUMN ${HasherKennelMapTableHelper.colMismanagementRoles} INT;
+            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colIsKennelFollowing} INT;
+            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colMismanagementRoles} INT;
+            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} ADD COLUMN ${hasherKennelMapTableHelper.colIsKennelFollowing} INT;
+            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} ADD COLUMN ${hasherKennelMapTableHelper.colMismanagementRoles} INT;
             ALTER TABLE ${hashersTableHelper.tableName} ADD COLUMN ${hashersTableHelper.colIncludeInGlobalHashDirectory} INT;
             ALTER TABLE ${countriesTableHelper.tableName} ADD COLUMN ${countriesTableHelper.colDistancePreference} INT NOT NULL DEFAULT 0;
          '''),
@@ -172,8 +172,8 @@ class MigrationsTableHelper {
 
              // MIGRATION 226
     MigrationsModel(migrationNumber: 226, migrationText: '''
-            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colIsKennelFollowing} INT;
-            ALTER TABLE ${HasherKennelMapTableHelper.getTableName(HasherKennelMapTableType.eventAdmin)} ADD COLUMN ${HasherKennelMapTableHelper.colMismanagementRoles} INT;
+            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colIsKennelFollowing} INT;
+            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colMismanagementRoles} INT;
          '''),
 
 
