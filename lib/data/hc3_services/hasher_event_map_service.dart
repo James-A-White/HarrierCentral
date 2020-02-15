@@ -293,10 +293,12 @@ class HasherEventMapService {
     final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper,hasherEventMapTableHelper.colUpdatedAtValue, tableType: TableType.hemEventAdmin);
     final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper,hasherKennelMapTableHelper.colUpdatedAtValue, tableType: TableType.hkmEventAdmin);
     final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper,paymentsTableHelper.colUpdatedAtValue);
+    final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(kennelCreditsTableHelper,kennelCreditsTableHelper.colUpdatedAtValue);
 
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
     final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
     final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
     final String body = jsonEncode(<String, Object>{
       'userId': userId,
@@ -312,7 +314,9 @@ class HasherEventMapService {
       'emailAlertState': emailAlertState,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
-      'paymentsUpdatedAfter': paymentsUpdatedAfter.toString()
+      'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
+      'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString()
+
     });
 
     final http.Response response = await http.post(BASE_API_URL + 'hc3_join_event', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
@@ -344,9 +348,11 @@ class HasherEventMapService {
 
     final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper, hasherEventMapTableHelper.colUpdatedAtValue, tableType: TableType.hemEventAdmin);
     final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper,paymentsTableHelper.colUpdatedAtValue);
+    final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(kennelCreditsTableHelper,kennelCreditsTableHelper.colUpdatedAtValue);
 
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
     final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
     final String body = jsonEncode(<String, Object>{
       'userId': userId,
@@ -359,6 +365,7 @@ class HasherEventMapService {
       'phoneNumber': phoneNumber,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
+      'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString()
     });
 
     final http.Response response = await http.post(BASE_API_URL + 'hc3_join_event_as_visitor', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(

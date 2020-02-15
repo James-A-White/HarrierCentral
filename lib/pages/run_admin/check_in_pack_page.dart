@@ -1012,13 +1012,13 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () => showVirginVisitorPopup(context),
           ),
-          // SpeedDialChild(
-          //   child: const Icon(MaterialCommunityIcons.account_search),
-          //   backgroundColor: Colors.blue,
-          //   label: 'Find Hasher',
-          //   labelStyle: const TextStyle(fontSize: 18.0),
-          //   onTap: () => findHasher(),
-          // ),
+          SpeedDialChild(
+            child: const Icon(MaterialCommunityIcons.account_search),
+            backgroundColor: Colors.blue,
+            label: 'Find Hasher and add',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () => findHasher(),
+          ),
           SpeedDialChild(
               child: const Icon(MaterialCommunityIcons.message_video),
               backgroundColor: Colors.deepOrange,

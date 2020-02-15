@@ -35,6 +35,7 @@ class KennelMembersResults {
   KennelMembersResults(
       {this.hasherId,
       this.dispName,
+      this.nameForSort,
       this.photo,
       this.following,
       this.kennelId,
@@ -52,6 +53,7 @@ class KennelMembersResults {
 
   final String hasherId;
   String dispName;
+  String nameForSort;
   String photo;
   final int following;
   final String kennelId;
@@ -71,6 +73,7 @@ class KennelMembersResults {
     final KennelMembersResults item = KennelMembersResults(
       hasherId: map['hasherId'],
       dispName: map['dispName'],
+      nameForSort: map['nameForSort'],
       photo: map['photo'],
       following: map['following'],
       kennelShortName: map['kennelShortName'],
@@ -96,6 +99,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
 
   Future<List<KennelMembersResults>> kennelMemberListFuture = Future<List<KennelMembersResults>>.value(<KennelMembersResults>[]);
   Future<List<KennelMembersResults>> filteredKennelMemberListFuture = Future<List<KennelMembersResults>>.value(<KennelMembersResults>[]);
+  List<KennelMembersResults> allHashers;
 
   GlobalKey packListBoxKey = GlobalKey();
 
@@ -176,6 +180,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         SELECT 
           h.hasherId,
           h.dispName,
+          lower(h.dispName || " " || h.firstName || " " || h.lastName) as nameForSort,
           h.photo,
           hkm.following,
           hkm.dateOfLastRun,
@@ -655,21 +660,14 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
 
     if (showFilter) {
       filteredList = fullList
-          .where((KennelMembersResults a) => 
-          ((filterValues[FILTER_IS_MEMBER] == 0) || (filterValues[FILTER_IS_MEMBER] == -1 && ((a.membershipExpirationDate ?? DateTime.parse('19900101')).isBefore(DateTime.now())) || (filterValues[FILTER_IS_MEMBER] == 1 && (a.membershipExpirationDate ?? DateTime.parse('19900101')).isAfter(DateTime.now()))))
-          && ((filterValues[FILTER_IS_FOLLOWING] == 0) || (filterValues[FILTER_IS_FOLLOWING] == -1 && ((a.following ?? 0) == 0)) || (filterValues[FILTER_IS_FOLLOWING] == 1 && (a.following ?? 0) == 1))
-          && ((filterValues[FILTER_IS_HOME_KENNEL] == 0) || (filterValues[FILTER_IS_HOME_KENNEL] == -1 && ((a.homeKennelId == null) || ((a.homeKennelId) != (a.kennelId)))) || (filterValues[FILTER_IS_HOME_KENNEL] == 1 && (a.homeKennelId != null) && (a.homeKennelId) == (a.kennelId)))
-          && ((filterValues[FILTER_RUNS_IN_LAST_YEAR] == 0) || (filterValues[FILTER_RUNS_IN_LAST_YEAR] == -1 && ((a.dateOfLastRun ?? DateTime.parse('19900101')).isBefore(DateTime.now().add(const Duration(days: -365)))) || (filterValues[FILTER_RUNS_IN_LAST_YEAR] == 1 && (a.dateOfLastRun ?? DateTime.parse('19900101')).isAfter(DateTime.now().add(const Duration(days:-365))))))   
-              
-              // ((filterValues[1] == 0)
-              //     //|| (filterValues[1] == -1 && ((a.attendenceState ?? 0) < 20))
-              //     ||
-              //     (filterValues[1] == 1 && (a.attendenceState ?? 0) < 20 && (a.rsvpState ?? 0) >= 2)) &&
-              // ((filterValues[2] == 0) || (filterValues[2] == -1 && ((a.attendenceState ?? 0) < 20)) || (filterValues[2] == 1 && (a.attendenceState ?? 0) >= 20)) &&
-              // ((filterValues[3] == 0) || (filterValues[3] == -1 && ((a.isPaid ?? 0) == 0)) || (filterValues[3] == 1 && (a.isPaid ?? 0) == 1)) &&
-              // ((filterValues[4] == 0) || (filterValues[4] == -1 && ((a.attendenceState ?? 0) < 30)) || (filterValues[4] == 1 && (a.attendenceState ?? 0) >= 30)) &&
-              // ((filterValues[5] == 0) || (filterValues[5] == -1 && ((a.isMember ?? 0) == 0)) || (filterValues[5] == 1 && (a.isMember ?? 0) == 1))
-              )
+          .where((KennelMembersResults a) =>
+              ((filterValues[FILTER_IS_MEMBER] == 0) ||
+                  (filterValues[FILTER_IS_MEMBER] == -1 && ((a.membershipExpirationDate ?? DateTime.parse('19900101')).isBefore(DateTime.now())) || (filterValues[FILTER_IS_MEMBER] == 1 && (a.membershipExpirationDate ?? DateTime.parse('19900101')).isAfter(DateTime.now())))) &&
+              ((filterValues[FILTER_IS_FOLLOWING] == 0) || (filterValues[FILTER_IS_FOLLOWING] == -1 && ((a.following ?? 0) == 0)) || (filterValues[FILTER_IS_FOLLOWING] == 1 && (a.following ?? 0) == 1)) &&
+              ((filterValues[FILTER_IS_HOME_KENNEL] == 0) || (filterValues[FILTER_IS_HOME_KENNEL] == -1 && ((a.homeKennelId == null) || ((a.homeKennelId) != (a.kennelId)))) || (filterValues[FILTER_IS_HOME_KENNEL] == 1 && (a.homeKennelId != null) && (a.homeKennelId) == (a.kennelId))) &&
+              ((filterValues[FILTER_RUNS_IN_LAST_YEAR] == 0) ||
+                  (filterValues[FILTER_RUNS_IN_LAST_YEAR] == -1 && ((a.dateOfLastRun ?? DateTime.parse('19900101')).isBefore(DateTime.now().add(const Duration(days: -365)))) ||
+                      (filterValues[FILTER_RUNS_IN_LAST_YEAR] == 1 && (a.dateOfLastRun ?? DateTime.parse('19900101')).isAfter(DateTime.now().add(const Duration(days: -365)))))))
           .toList();
     } else {
       filteredList = <KennelMembersResults>[];
@@ -677,13 +675,11 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     }
 
     if ((searchText != null) && (searchText.isNotEmpty)) {
-      filteredList = filteredList.where((KennelMembersResults a) => a.dispName.toLowerCase().contains(searchText.toLowerCase())).toList();
+      filteredList = filteredList.where((KennelMembersResults a) => a.nameForSort.toLowerCase().contains(searchText.toLowerCase())).toList();
       if (filteredList.isEmpty) {
-        // if (!ignoreTextFilter) {
-        //   showSnackbar = true;
-        // }
         ignoreTextFilter = true;
-        //filteredList = allHashers.where((CheckInPackModel a) => a.nameForSort.toLowerCase().contains(searchText.toLowerCase())).toList();
+        allHashers ??= await _getAllHashers();
+        filteredList = allHashers.where((KennelMembersResults a) => a.nameForSort.toLowerCase().contains(searchText.toLowerCase())).toList();
       } else {
         ignoreTextFilter = false;
         _scaffoldKey.currentState.hideCurrentSnackBar();
@@ -704,6 +700,52 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         });
       });
     }
+  }
+
+  Future<List<KennelMembersResults>> _getAllHashers() async {
+
+    final List<KennelMembersResults> hasherList = <KennelMembersResults>[];
+    final Database db = await DBProvider.db.database;
+    try {
+      final String query = ''' 
+        SELECT 
+          h.hasherId,
+          h.dispName,
+          lower(h.dispName || " " || h.firstName || " " || h.lastName) as nameForSort,
+          h.photo,
+          0 as following,
+          null as dateOfLastRun,
+          0 as kennelEmailAlertPreference,
+          null as membershipExpirationDate,
+          null as memberSince,
+          k.membershipDurationInMonths,
+          k.kennelShortName,
+          k.kennelId,
+          hk.kennelName as homeKennelName,
+          hk.kennelId as homeKennelId
+          FROM ${hashersTableHelper.tableName} h
+          LEFT OUTER JOIN kennels hk on hk.kennelId = h.homeKennelId,
+          ${kennelsTableHelper.tableName} k
+          WHERE h.${hashersTableHelper.colRemoved} = 0 and k.${kennelsTableHelper.remoteDbId} = '${widget.kennel.kennel.kennelId}'
+          ORDER BY nameForSort
+          
+          ''';
+
+      final List<Map<String, dynamic>> results = await db.rawQuery(query);
+
+      if (results.isNotEmpty) {
+        for (int i = 0; i < results.length; i++) {
+          final KennelMembersResults item = KennelMembersResults.fromMap(results[i]);
+          hasherList.add(item);
+        }
+      }
+
+      print('All hashers loaded @ ${DateTime.now().millisecondsSinceEpoch}');
+    } catch (e) {
+      print(e);
+    }
+
+    return hasherList;
   }
 
   Container filterBar() {

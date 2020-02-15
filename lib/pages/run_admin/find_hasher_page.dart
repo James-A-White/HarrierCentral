@@ -30,8 +30,8 @@ class FindHasherPage extends StatefulWidget {
 class FindHasherPageState extends State<FindHasherPage> {
   GlobalKey hasherListBox = GlobalKey();
 
-  List<HashersModel> hasherList;
-  List<HashersModel> filteredList;
+  List<dynamic> hasherList;
+  List<dynamic> filteredList;
 
   void findHasher() {
     final HashersService svc = HashersService();
@@ -39,7 +39,7 @@ class FindHasherPageState extends State<FindHasherPage> {
       hasherList = list;
       setState(() {
         if (hasherList != null) {
-          hasherList.sort((HashersModel a, HashersModel b) => (a.dispName ?? '').toLowerCase().compareTo((b.dispName ?? '').toLowerCase()));
+          hasherList.sort((dynamic a, dynamic b) => (a.dispName ?? '').toLowerCase().compareTo((b.dispName ?? '').toLowerCase()));
           filteredList = hasherList;
         } else {
           filteredList = null;
@@ -54,7 +54,7 @@ class FindHasherPageState extends State<FindHasherPage> {
         if (filterText.isEmpty) {
           filteredList = hasherList;
         } else {
-          filteredList = hasherList.where((HashersModel user) => ((user.firstName ?? '') + ' ' + (user.lastName ?? '') + ' ' + (user.dispName ?? '')).toLowerCase().contains(filterText.toLowerCase())).toList();
+          filteredList = hasherList.where((dynamic user) => ((user.firstName ?? '') + ' ' + (user.lastName ?? '') + ' ' + (user.dispName ?? '')).toLowerCase().contains(filterText.toLowerCase())).toList();
         }
       }
     });
@@ -71,134 +71,85 @@ class FindHasherPageState extends State<FindHasherPage> {
   final FocusNode searchFocusNode = FocusNode();
   TextEditingController searchController = TextEditingController();
 
-  AppBar getAppBar() {
-    return AppBar(
-      centerTitle: true,
-      backgroundColor: themeAppBarBackground,
-      title: const Text(
-        'Find Hasher',
-        style: TextStyle(
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-
   // void _onSearchTextChanged() {
   //   setState(() {
   //     print('onSearchTextChanged = ${DateTime.now().millisecondsSinceEpoch}');
   //   });
   // }
 
-  Container searchBar(num width) {
-    return Container(
-      // color: Colors.red,
-      padding: const EdgeInsets.only(left: 10, top: 10),
-      width: width,
-      height: 60,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.max,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Expanded(
-            child: TextField(
-              onChanged: (String text) {
-                //setState(() {
-                filterHasherList(text);
-                // });
-              },
-              focusNode: searchFocusNode,
-              controller: searchController,
-              keyboardType: TextInputType.text,
-              style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                icon: Icon(
-                  FontAwesome.search,
-                  color: Colors.black,
-                ),
-                hintText: 'Hash or mortal name',
-                hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-              ),
-            ),
-          ),
-          Container(
-            width: 40,
-            child: FlatButton(
-              //color: Colors.red,
-              child: const Text('X'),
-              textColor: Colors.grey[700],
-              onPressed: () {
-                // searchController.text = '';
-                // model.filterPackList('');
-                // model.forceRefresh();
-                // packList = model.filteredPackList;
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    //getPack(false);
     return Scaffold(
       key: _scaffoldKey,
-      floatingActionButton: SpeedDial(
-        // both default to 16
-        marginRight: 18,
-        marginBottom: 30,
-        animatedIcon: AnimatedIcons.menu_close,
-        animatedIconTheme: const IconThemeData(size: 22.0),
-        // this is ignored if animatedIcon is non null
-        // child:const  Icon(Icons.add),
-        visible: true,
-        curve: Curves.bounceIn,
-        overlayColor: Colors.black,
-        overlayOpacity: 0.5,
-        onOpen: ()  {
-          _scaffoldKey.currentState.hideCurrentSnackBar();
-        },
-        onClose: () => print('DIAL CLOSED'),
-        tooltip: 'Speed Dial',
-        heroTag: 'speed-dial-hero-tag',
-        backgroundColor: Theme.of(context).accentColor,
-        foregroundColor: Colors.white,
-        elevation: 8.0,
-        shape: const CircleBorder(),
-        children: <SpeedDialChild>[
-          SpeedDialChild(
-            child: const Icon(FontAwesome.heart),
-            backgroundColor: Colors.blue,
-            label: '<unused>',
-            labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {},
-          )
-        ],
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: themeAppBarBackground,
+        title: const Text(
+          'Find Hasher',
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
       ),
-      appBar: getAppBar(),
-      body: LayoutBuilder(
-        builder: (BuildContext scaffoldContext, BoxConstraints constraints) => Stack(children: <Widget>[
-              Positioned(top: 0, child: searchBar(constraints.maxWidth)),
-              Positioned(
-                top: searchBar(constraints.maxWidth).constraints.maxHeight,
-                right: 0.0,
-                left: 0.0,
-                child: (filteredList == null || filteredList.isEmpty)
-                    ? Center(child: Container(height: 50, width: 50, child: const HcCircularProgressIndicator()))
-                    : Container(
-                        key: hasherListBox,
-                        height: constraints.maxHeight - searchBar(constraints.maxWidth).constraints.maxHeight,
-                        child: HasherListView(
-                          hasherList: filteredList,
-                          pageType: widget.pageType,
-                        ),
+      body: Column(
+        children: <Widget>[
+          Container(
+            // color: Colors.red,
+            padding: const EdgeInsets.only(left: 10, top: 10),
+            height: 60,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Expanded(
+                  child: TextField(
+                    onChanged: (String text) {
+                      //setState(() {
+                      filterHasherList(text);
+                      // });
+                    },
+                    focusNode: searchFocusNode,
+                    controller: searchController,
+                    keyboardType: TextInputType.text,
+                    style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      icon: Icon(
+                        FontAwesome.search,
+                        color: Colors.black,
                       ),
-              ),
-            ]),
+                      hintText: 'Hash or mortal name',
+                      hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 40,
+                  child: FlatButton(
+                    //color: Colors.red,
+                    child: const Text('X'),
+                    textColor: Colors.grey[700],
+                    onPressed: () {
+                      // searchController.text = '';
+                      // model.filterPackList('');
+                      // model.forceRefresh();
+                      // packList = model.filteredPackList;
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: (filteredList == null || filteredList.isEmpty)
+                ? Center(child: Container(child: const HcCircularProgressIndicator()))
+                : HasherListView(
+                    hasherList: filteredList,
+                    pageType: widget.pageType,
+                  ),
+          ),
+        ],
       ),
     );
   }
@@ -210,7 +161,7 @@ class FindHasherPageState extends State<FindHasherPage> {
 class HasherListView extends StatelessWidget {
   const HasherListView({Key key, this.hasherList, this.pageType}) : super(key: key);
 
-  final List<HashersModel> hasherList;
+  final List<dynamic> hasherList;
   final FindHasherPageType pageType;
 
   Widget listItem(BuildContext context, int index) {
@@ -218,85 +169,80 @@ class HasherListView extends StatelessWidget {
       //splashColor: Colors.red,
       highlightColor: Colors.red,
       onTap: () {
-
-        if (pageType ==FindHasherPageType.addHasherToRun)
-        {
-
-
-         return showDialog<int>(
-            context: context,
-            barrierDismissible: false, // user must tap button!
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Add ${hasherList[index].dispName}?'),
-                content: SingleChildScrollView(
-                  child: ListBody(
-                    children: <Widget>[
-                      Text(
-                        'Do you want to add ${hasherList[index].dispName} to your run?',
-                        textAlign: TextAlign.justify,
-                        style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
-                      )
-                    ],
+        if (pageType == FindHasherPageType.addHasherToRun) {
+          return showDialog<int>(
+              context: context,
+              barrierDismissible: false, // user must tap button!
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  contentPadding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 20.0),
+                  title: Text('Add ${hasherList[index].dispName}?'),
+                  content: SingleChildScrollView(
+                    child: ListBody(
+                      children: <Widget>[
+                        Text(
+                          'Do you want to add ${hasherList[index].dispName} to your run?',
+                          textAlign: TextAlign.justify,
+                          style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                        )
+                      ],
+                    ),
                   ),
-                ),
-                actions: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(right: 15.0),
-                    child: Container(
-                      width: 80.0,
+                  actions: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(right: 15.0),
+                      child: Container(
+                        width: 63.0,
+                        height: 50.0,
+                        child: RaisedButton(
+                          color: Colors.red,
+                          child: const Text('Cancel'),
+                          textColor: Colors.white,
+                          onPressed: () {
+                            Navigator.of(context).pop(-1);
+                          },
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 70.0,
                       height: 50.0,
                       child: RaisedButton(
-                        color: Colors.red,
-                        child: const Text('Cancel'),
+                        child: const Text(
+                          'Add as\r\nVisitor',
+                          textAlign: TextAlign.center,
+                        ),
                         textColor: Colors.white,
                         onPressed: () {
-                          Navigator.of(context).pop(-1);
+                          Navigator.of(context).pop(enumKnownVisitor.value);
                         },
                       ),
                     ),
-                  ),
-                  Container(
-                    width: 80.0,
-                    height: 50.0,
-                    child: RaisedButton(
-                      child: const Text(
-                        'Add\r\nVisitor',
-                        textAlign: TextAlign.center,
+                    Container(
+                      width: 60.0,
+                      height: 50.0,
+                      child: RaisedButton(
+                        child: const Text(
+                          'Add',
+                          textAlign: TextAlign.center,
+                        ),
+                        textColor: Colors.white,
+                        onPressed: () {
+                          Navigator.of(context).pop(enumHasher.value);
+                        },
                       ),
-                      textColor: Colors.white,
-                      onPressed: () {
-                        Navigator.of(context).pop(enumKnownVisitor.value);
-                      },
                     ),
-                  ),
-                  Container(
-                    width: 80.0,
-                    height: 50.0,
-                    child: RaisedButton(
-                      child: const Text(
-                        'Add\r\nHasher',
-                        textAlign: TextAlign.center,
-                      ),
-                      textColor: Colors.white,
-                      onPressed: () {
-                        Navigator.of(context).pop(enumHasher.value);
-                      },
-                    ),
-                  ),
-                ],
-              );
-            }).then((int doAddHasher) {
-          if (doAddHasher != -1) {
-            final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index], 'virginVisitorType': doAddHasher};
-            Navigator.of(context).pop(result);
-          }
-        });
-
-        } else if (pageType ==FindHasherPageType.addMember)
-        {
-            final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index]};
-            Navigator.of(context).pop(result);
+                  ],
+                );
+              }).then((int doAddHasher) {
+            if (doAddHasher != -1) {
+              final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index], 'virginVisitorType': doAddHasher};
+              Navigator.of(context).pop(result);
+            }
+          });
+        } else if (pageType == FindHasherPageType.addMember) {
+          final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index]};
+          Navigator.of(context).pop(result);
         }
         return null;
       },
