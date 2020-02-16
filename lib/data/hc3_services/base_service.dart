@@ -122,13 +122,13 @@ class BaseService {
     final String tableName = getTableName(tableHelper, tableType);
 
     final List<dynamic> jsonResultSets = json.decode(rawResults);
-    print('City result sets received from cloud = ${jsonResultSets.length}');
+    print('$tableName result sets received from cloud = ${jsonResultSets.length}');
 
     int lastPercentage = 0;
 
     for (int i = 0; i < jsonResultSets.length; i++) {
       final List<dynamic> jsonResults = jsonResultSets[i];
-      print('City results received from cloud = ${jsonResults.length}');
+      print('$tableName results received from cloud = ${jsonResults.length}');
 
       for (int j = 0; j < jsonResults.length; j++) {
         final Map<String, dynamic> jsonItem = jsonResults[j];

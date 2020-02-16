@@ -16,6 +16,7 @@ import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
+import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 
 class FutureRunsListPage extends StatefulWidget {
   const FutureRunsListPage({Key key}) : super(key: key);
@@ -81,11 +82,11 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   Future<void> _handleRefresh({bool queryBackend = true, bool clearLocalTables = false}) async {
     final Database db = await DBProvider.db.database;
 
-    setState(() {
-      futureRunsList = null;
-    });
-
     if (clearLocalTables) {
+      setState(() {
+        futureRunsList = null;
+      });
+
       String query = 'DELETE FROM ${hasherEventMapTableHelper.getTableName(TableType.hemUser)}';
       try {
         await db.rawQuery(query);
@@ -181,12 +182,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 
                   if ((extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < 50000))) {
-                    final RunDetailsAggregate item = RunDetailsAggregate(
-                      event: eventItem,
-                      kennel: kennelItem,
-                      extensions: extensionsItem,
-                      paymentUrl: paymentLinkUrl
-                    );
+                    final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
                     futureRunsList.add(item);
                   }
                   if (i == results.length - 1) {
@@ -249,13 +245,21 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                 //padding: const EdgeInsets.only( bottom: 40.0),
                 itemCount: futureRunsList.length,
                 itemBuilder: (BuildContext context, int index) {
-                  //return Container();
-                  // if ((model.futureRunsList[index].daysUntilNextRun < 9999) &&
-                  //     (model.futureRunsList[index].isVisible != 0)) {
-                  return RunListItem(futureRun: futureRunsList[index]);
-                  // } else {
-                  //   return Container();
-                  // }
+                  return RunListItem(
+                    futureRun: futureRunsList[index],
+                    onItemTapped: () {
+                      Navigator.push<dynamic>(
+                        this.context,
+                        MaterialPageRoute<dynamic>(
+                          builder: (BuildContext context) => RunDetailsPage(futureRun: futureRunsList[index]),
+                        ),
+                      ).then((void dummy) {
+                        _handleRefresh(queryBackend: true, clearLocalTables: false).then((void dummy) {
+                          setState(() {});
+                        });
+                      });
+                    },
+                  );
                 },
               ),
             ),

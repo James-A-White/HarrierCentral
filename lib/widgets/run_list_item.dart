@@ -8,7 +8,6 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:intl/intl.dart';
 //import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
-import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
@@ -23,9 +22,10 @@ import 'package:harrier_central/notifications/notification_support.dart';
 //import 'package:flip_panel/flip_panel.dart';
 
 class RunListItem extends StatefulWidget {
-  const RunListItem({Key key, @required this.futureRun}) : super(key: key);
+  const RunListItem({Key key, @required this.futureRun, @required this.onItemTapped}) : super(key: key);
 
   final RunDetailsAggregate futureRun;
+  final Function onItemTapped;
 
   @override
   _RunListItemState createState() => _RunListItemState();
@@ -37,7 +37,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    _rsvpIcon = Future<Widget>.value(getRsvpWidget(widget.futureRun.extensions.rsvpState, widget.futureRun.extensions.isHare));
+    //_rsvpIcon = Future<Widget>.value(getRsvpWidget(widget.futureRun.extensions.rsvpState, widget.futureRun.extensions.isHare));
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -53,7 +53,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
   }
 
-  Future<Widget> _rsvpIcon;
+  //Future<Widget> _rsvpIcon;
 
   Widget getRsvpWidget(int rsvpState, int willHareState) {
     IconData rawIcon;
@@ -86,7 +86,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     if (rawIcon == null) {
       if ((rsvpState == 3) && (willHareState == 1)) {
         return Padding(
-          padding: const EdgeInsets.only(top:2.0,bottom:2.0,right:1.0),
+          padding: const EdgeInsets.only(top: 2.0, bottom: 2.0, right: 1.0),
           child: Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 22.0, width: 22.0),
         );
       } else {
@@ -99,7 +99,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
   Future<void> setRsvpState(EnumRsvpState<int> rsvpState, bool willHare) async {
     setState(() {
-      _rsvpIcon = Future<Widget>.value(getRsvpWidget(-1, 0));
+      widget.futureRun.extensions.rsvpState = -1;
     });
 
     final String userId = getStringPref(StringPrefsEnum.userId);
@@ -110,19 +110,15 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     final int willHareResult = adHocData[0]['willHareState'];
     final String hares = adHocData[0]['hares'] ?? '';
 
-    widget.futureRun.extensions.rsvpState = rsvpResult;
-    widget.futureRun.extensions.isHare = willHareResult;
-    widget.futureRun.event.hares = hares;
-
     setState(() {
-      _rsvpIcon = Future<Widget>.value(getRsvpWidget(rsvpResult, willHareResult));
+      widget.futureRun.extensions.rsvpState = rsvpResult;
+      widget.futureRun.extensions.isHare = willHareResult;
+      widget.futureRun.event.hares = hares;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // return IntrinsicWidth(
-    //     child:
     return Card(
       elevation: 4.0,
       margin: const EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
@@ -146,17 +142,10 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                 ),
               ),
               GestureDetector(
-                onTap: (){
+                onTap: () {
                   showRsvpOptionsPopup(context);
                 },
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 9.0),
-                  child: FutureBuilder<Widget>(
-                      future: _rsvpIcon,
-                      builder: (BuildContext context, AsyncSnapshot<Widget> snapshot) {
-                        return snapshot?.data == null ? Container() : snapshot.data;
-                      }),
-                ),
+                child: Padding(padding: const EdgeInsets.only(right: 9.0), child: getRsvpWidget(widget.futureRun.extensions.rsvpState, widget.futureRun.extensions.isHare)),
               ),
               Container(
                 padding: const EdgeInsets.only(right: 10),
@@ -215,14 +204,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                       splashColor: Theme.of(context).accentColor,
                       highlightColor: Theme.of(context).accentColor,
                       onPressed: () {
-                        Navigator.push<dynamic>(
-                          this.context,
-                          MaterialPageRoute<dynamic>(
-                            builder: (BuildContext context) => RunDetailsPage(futureRun: widget.futureRun),
-                          ),
-                        );
-                        //   },
-                        // );
+                        widget.onItemTapped();
                       },
                       padding: const EdgeInsets.only(top: 10.0, left: 4.0, right: 0.0, bottom: 10.0),
                       child: Row(
