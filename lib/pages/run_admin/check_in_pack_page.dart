@@ -10,7 +10,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/data/hc3_services/base_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
@@ -137,6 +136,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   int countPaid = 0;
   int countOnIn = 0;
   int memberCount = 0;
+  int drinkCount = 0;
 
   num snackBarButtonSize = 35.0;
   static const num LIST_ITEM_HEIGHT = 84.0;
@@ -160,7 +160,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   TextStyle localFootnoteSmallRed = footnoteSmallRed.copyWith(fontSize: 12 * deviceWidthScaleFactor);
   TextStyle localFootnoteSmall = footnoteSmall.copyWith(fontSize: 12 * deviceWidthScaleFactor);
 
-  List<int> filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
+  List<int> filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   @override
   void initState() {
@@ -474,7 +474,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               ((filterValues[2] == 0) || (filterValues[2] == -1 && ((a.attendenceState ?? 0) < 20)) || (filterValues[2] == 1 && (a.attendenceState ?? 0) >= 20)) &&
               ((filterValues[3] == 0) || (filterValues[3] == -1 && ((a.isPaid ?? 0) == 0)) || (filterValues[3] == 1 && (a.isPaid ?? 0) == 1)) &&
               ((filterValues[4] == 0) || (filterValues[4] == -1 && ((a.attendenceState ?? 0) < 30)) || (filterValues[4] == 1 && (a.attendenceState ?? 0) >= 30)) &&
-              ((filterValues[5] == 0) || (filterValues[5] == -1 && ((a.isMember ?? 0) == 0)) || (filterValues[5] == 1 && (a.isMember ?? 0) == 1)))
+              ((filterValues[5] == 0) || (filterValues[5] == -1 && ((a.isMember ?? 0) == 0)) || (filterValues[5] == 1 && (a.isMember ?? 0) == 1)) &&
+              ((filterValues[6] == 0) || (filterValues[6] == -1) || (filterValues[6] == 1 && ((a.attendenceState ?? 0) >= 20) && (checkSpecialRun((a.currentHaringCount ?? 0) + (a.currentPackRunCount ?? 0))))))
           .toList();
     } else {
       filteredList = <CheckInPackModel>[];
@@ -535,6 +536,11 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           countPaid = results[0]['paid'];
           memberCount = results[0]['memberCount'];
         }
+
+        final List<CheckInPackModel> specialRunNumbers = packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (checkSpecialRun((a.currentHaringCount ?? 0) + (a.currentPackRunCount ?? 0)))).toList();
+
+        drinkCount = specialRunNumbers.length;
+
         if (forceRefresh) {
           setState(() {
             _isLoading = false;
@@ -557,7 +563,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       ),
     ).then((Map<String, dynamic> result) {
       if ((result != null) && (result['hasher']?.hasherId != null)) {
-
         final Future<List<dynamic>> retVal =
             hasherEventMapService.joinEvent(widget.eventAggregate.event.eventId, TableType.hemEventAdmin, result['hasher'].hasherId, null, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value, virginVisitorType: result['virginVisitorType']);
 
@@ -786,15 +791,15 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             },
             filterValues: filterValues,
           ),
-          CheckinFiltersCell(
-            counter: countRsvps,
-            label: 'RSVP',
-            index: 0,
-            onTap: () {
-              _refreshPackListFromTables(true);
-            },
-            filterValues: filterValues,
-          ),
+          // CheckinFiltersCell(
+          //   counter: countRsvps,
+          //   label: 'RSVP',
+          //   index: 0,
+          //   onTap: () {
+          //     _refreshPackListFromTables(true);
+          //   },
+          //   filterValues: filterValues,
+          // ),
           CheckinFiltersCell(
             counter: countComing,
             label: 'Coming',
@@ -827,6 +832,16 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             counter: countOnIn,
             index: 4,
             label: 'On In',
+            onTap: () {
+              _refreshPackListFromTables(true);
+            },
+            filterValues: filterValues,
+          ),
+          CheckinFiltersCell(
+            counter: drinkCount,
+            index: 6,
+            useTriState: false,
+            label: 'Drink!',
             onTap: () {
               _refreshPackListFromTables(true);
             },
@@ -884,39 +899,39 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         buttonPress: (dynamic retVal) {
           switch (retVal) {
             case FilterOptions.hashersNotHereYet:
-              filterValues = <int>[0, 1, 0, 0, 0, 0, 0];
+              filterValues = <int>[0, 1, 0, 0, 0, 0, 0, 0, 0, 0];
               searchText = '';
               searchController.text = '';
               break;
             case FilterOptions.hashersNotPaid:
-              filterValues = <int>[0, 0, 1, -1, 0, 0, 0];
+              filterValues = <int>[0, 0, 1, -1, 0, 0, 0, 0, 0, 0];
               searchText = '';
               searchController.text = '';
               break;
             case FilterOptions.hashersStillOnTrail:
-              filterValues = <int>[0, 0, 1, 0, -1, 0, 0];
+              filterValues = <int>[0, 0, 1, 0, -1, 0, 0, 0, 0, 0];
               searchText = '';
               searchController.text = '';
               break;
             case FilterOptions.clearAllFilters:
-              filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
+              filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
               searchText = '';
               searchController.text = '';
               break;
             case FilterOptions.visitors:
-              filterValues = <int>[0, 0, 1, 0, 0, 0, 0];
+              filterValues = <int>[0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
               searchText = '(visitor)';
               searchController.text = '(visitor)';
               break;
             case FilterOptions.virgins:
-              filterValues = <int>[0, 0, 1, 0, 0, 0, 0];
+              filterValues = <int>[0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
               searchText = '(virgin)';
               searchController.text = '(virgin)';
               break;
             case FilterOptions.cancel:
               break;
             default:
-              filterValues = <int>[0, 0, 0, 0, 0, 0, 0];
+              filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
               searchText = '';
               searchController.text = '';
               break;
@@ -1105,16 +1120,15 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   }
 
   void showExtrasDialog(BuildContext context, ScaffoldState scaffoldState, int paymentType, CheckInPackModel packMember, num otherAmount) {
-     scaffoldState.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+    scaffoldState.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
     if (((paymentType == paymentFreeRun.value) || (paymentType == paymentCash.value) || (paymentType == paymentBankTransfer.value) || (paymentType == paymentCashOtherAmount.value) || (paymentType == paymentHashCredit.value) || (paymentType == paymentBankTransferOtherAmount.value)) &&
         ((widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0)) {
-    
       final num runOnlyPrice = packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
       final num runPlusExtrasPrice = runOnlyPrice + widget.eventAggregate.event.eventPriceForExtras;
-    
+
       final String runOnlyPriceStr = Utilities.getFormattedMoney(runOnlyPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
       final String runPlusExtrasPriceStr = Utilities.getFormattedMoney(runPlusExtrasPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
-    
+
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
           'title': 'Run only ($runOnlyPriceStr)',
@@ -1131,7 +1145,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           'returnValue': payForRunAndExtras
         },
       ];
-    
+
       final MultipleChoicePopup popup = MultipleChoicePopup(
           title: 'Payment options',
           buttons: buttons,
@@ -1144,7 +1158,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               });
             });
           });
-    
+
       showDialog<void>(
           context: context,
           barrierDismissible: false, // user must tap button!
@@ -1192,8 +1206,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                           ),
                         ),
                         height: LIST_ITEM_HEIGHT,
-                       width: LIST_ITEM_HEIGHT),
-                    errorWidget: (BuildContext context, String url, Object error) => const Icon(Icons.error,size:LIST_ITEM_HEIGHT,color:Colors.red),
+                        width: LIST_ITEM_HEIGHT),
+                    errorWidget: (BuildContext context, String url, Object error) => const Icon(Icons.error, size: LIST_ITEM_HEIGHT, color: Colors.red),
                     //fadeOutDuration:  Duration(seconds: 1),
                     fadeInDuration: const Duration(milliseconds: 0),
                     width: LIST_ITEM_HEIGHT,
@@ -1348,7 +1362,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
   TextStyle getRunLabelStyle(int numRuns, int attendenceState) {
     if (attendenceState >= attendenceAtHash.value) {
-      if ((numRuns == 1) || (numRuns == 5) || (numRuns == 10) || (numRuns % 25 == 0) || (numRuns % 100 == 69)) {
+      if (checkSpecialRun(numRuns)) {
         return mediumTextRed;
       }
     }
@@ -1449,7 +1463,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     return paySrv.payForEvent(widget.eventAggregate.event.eventId, ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId, ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId, paymentType, amount, attendenceAtHash.value, doPayForExtras);
   }
 
-
   Widget buildPackListView() {
     print('buildPackListView: ${DateTime.now().millisecondsSinceEpoch.toString()}');
     return NotificationListener<ScrollNotification>(
@@ -1523,7 +1536,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                             ),
                             Padding(
                               padding: const EdgeInsets.only(left: 15.0),
-                              child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Bank\r\nTransfer',
+                              child: Text(
+                                  '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Bank\r\nTransfer',
                                   style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
                             ),
                           ],
@@ -1580,7 +1594,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                             ),
                             Padding(
                               padding: const EdgeInsets.only(right: 15.0),
-                              child: Text('${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Cash',
+                              child: Text(
+                                  '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Cash',
                                   textAlign: TextAlign.right,
                                   style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
                             ),
