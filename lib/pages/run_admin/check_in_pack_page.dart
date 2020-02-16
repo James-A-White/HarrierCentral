@@ -95,7 +95,7 @@ class CheckInPackModel {
         rsvpState: map['rsvpState'],
         attendenceState: map['attendenceState'],
         rsvpStateIndicator: Future<int>.value(map['rsvpState']),
-        attendenceStateIndicator: map['rsvpState'] != rsvpYes.value ? Future<int>.value(0): Future<int>.value(map['attendenceState']),
+        attendenceStateIndicator: map['rsvpState'] != rsvpYes.value ? Future<int>.value(0) : Future<int>.value(map['attendenceState']),
         paidStateIndicator: map['attendenceState'] >= attendenceAtHash.value ? Future<int>.value(map['isPaid']) : Future<int>.value(-1),
         currentPackRunCount: map['currentPackRunCount'],
         currentHaringCount: map['currentHaringCount'],
@@ -357,8 +357,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             final CheckInPackModel item = CheckInPackModel.fromMap(results[i]);
             packList.add(item);
           }
-
-          
 
           setState(() {
             if (forceRefresh) {
@@ -1187,63 +1185,84 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             ),
 
             Positioned(
-              left: LIST_ITEM_LEFT_MARGIN + 1.0,
-              bottom: (packMember.rsvpState <= 0 ? 2.0 : packMember.isHare == 1 ? 5.0 : 3.5) + (packMember.homeKennelName == null ? 6.0 : 0.0),
+              left: LIST_ITEM_LEFT_MARGIN + 0.0,
+              bottom: 5.0,
               child: FutureBuilder<int>(
                   future: packMember.rsvpStateIndicator,
                   builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                    if (snapshot?.data == null) {
-                      return Icon(delayIcon, color: Colors.blue[800]);
-                    } else {
-                      return snapshot.data == 0
-                          ? Container()
-                          : snapshot.data == rsvpNo.value
-                              ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 27.0)
-                              : snapshot.data == rsvpMaybe.value
-                                  ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 27.0)
-                                  : packMember.isHare == 0 ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 27.0) : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 24.0, width: 24.0);
-                      ;
-                    }
+                    return Stack(
+                      alignment: AlignmentDirectional.center,
+                      children: <Widget>[
+                        Container(height: 30, width: 30, color: Colors.transparent),
+                        CircleAvatar(
+                          backgroundColor: ((snapshot?.data == null) || (snapshot.data == 0)) ? Colors.grey[350] : Colors.white,
+                          radius: 14.0,
+                        ),
+                        snapshot?.data == null
+                            ? Icon(delayIcon, color: Colors.blue[800])
+                            : snapshot.data == 0
+                                ? Container()
+                                : snapshot.data == rsvpNo.value
+                                    ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 27.0)
+                                    : snapshot.data == rsvpMaybe.value
+                                        ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 27.0)
+                                        : packMember.isHare == 0 ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 27.0) : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 24.0, width: 24.0)
+                      ],
+                    );
                   }),
             ),
 
             Positioned(
-              left: LIST_ITEM_LEFT_MARGIN + 42.0,
-              bottom: (packMember.attendenceState <= 0 ? 4.5 : 5.5) + (packMember.homeKennelName == null ? 6.0 : 0.0),
+              left: LIST_ITEM_LEFT_MARGIN + 35.0,
+              bottom: 5.0,
               child: FutureBuilder<int>(
                   future: packMember.attendenceStateIndicator,
                   builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                    if ((!snapshot.hasData) || (snapshot?.data == null)) {
-                      return Icon(delayIcon, color: Colors.blue[800]);
-                    } else {
-                      return snapshot.data == 0
-                          ? Container()
-                          : snapshot.data == attendenceNo.value
-                              ? Image.asset('images/icons/not_at_hash_icon.png', height: 24.0, width: 24.0, color: Colors.red[700])
-                              : snapshot.data == attendenceAtHash.value
-                                  ? Image.asset('images/icons/runner_icon.png', height: 24.0, width: 24.0, color: Colors.orange)
-                                  : snapshot.data >= attendenceOnIn.value ? Image.asset('images/icons/beer_icon.png', height: 24.0, width: 24.0, color: Colors.green) : Container();
-                    }
+                    return Stack(
+                      alignment: AlignmentDirectional.center,
+                      children: <Widget>[
+                        Container(height: 30, width: 30, color: Colors.transparent),
+                        CircleAvatar(
+                          backgroundColor: ((snapshot?.data == null) || (snapshot.data == 0)) ? Colors.grey[350] : Colors.white,
+                          radius: 14.0,
+                        ),
+                        ((!snapshot.hasData) || (snapshot?.data == null))
+                            ? Icon(delayIcon, color: Colors.blue[800])
+                            : snapshot.data == 0
+                                ? Container()
+                                : snapshot.data == attendenceNo.value
+                                    ? Image.asset('images/icons/not_at_hash_icon.png', height: 24.0, width: 24.0, color: Colors.red[700])
+                                    : snapshot.data == attendenceAtHash.value
+                                        ? Image.asset('images/icons/runner_icon.png', height: 24.0, width: 24.0, color: Colors.orange)
+                                        : snapshot.data >= attendenceOnIn.value ? Image.asset('images/icons/beer_icon.png', height: 24.0, width: 24.0, color: Colors.green) : Container()
+                      ],
+                    );
                   }),
             ),
 
             Positioned(
-              left: LIST_ITEM_LEFT_MARGIN + 82.0,
-              bottom: (packMember.attendenceState < -1 ? 4.5 : 5.5) + (packMember.homeKennelName == null ? 6.0 : 0.0),
+              left: LIST_ITEM_LEFT_MARGIN + 70.0,
+              bottom: 5.0,
               child: FutureBuilder<int>(
                   future: packMember.paidStateIndicator,
                   builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                    if (snapshot?.data == null) {
-                      return Icon(delayIcon, color: Colors.blue[800]);
-                    } else {
-                      return snapshot.data == -1
-                          ? Container()
-                          : snapshot.data == isPaidNo.value
-                              ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.red)
-                              : packMember.isPaid == isPaidYes.value ? Image.asset('images/icons/payment_type_${packMember.paymentType}.png', height: 24.0, width: 24.0, color: Colors.green) : Container();
-                    }
+                    return Stack(
+                      alignment: AlignmentDirectional.center,
+                      children: <Widget>[
+                        Container(height: 30, width: 30, color: Colors.transparent),
+                        CircleAvatar(
+                          backgroundColor: ((snapshot?.data == null) || (snapshot.data < 0)) ? Colors.grey[350] : Colors.white,
+                          radius: 14.0,
+                        ),
+                        (snapshot?.data == null) ? Icon(delayIcon, color: Colors.blue[800]) : 
+                        snapshot.data == -1
+                            ? Container()
+                            : snapshot.data == isPaidNo.value
+                                ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.red)
+                                : packMember.isPaid == isPaidYes.value ? Image.asset('images/icons/payment_type_${packMember.paymentType}.png', height: 24.0, width: 24.0, color: Colors.green) : Container()
+                      ],
+                    );
                   }),
-
             ),
 
             (packMember.currentHaringCount == null) || (packMember.currentHaringCount == 0)
