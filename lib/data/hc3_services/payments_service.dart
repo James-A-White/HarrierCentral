@@ -9,7 +9,6 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/util/enums.dart';
 

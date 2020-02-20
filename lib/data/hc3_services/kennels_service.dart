@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/data/hc3_services/base_service.dart';
-import 'package:harrier_central/util/preferences.dart';
 
 class KennelsModel implements BaseModel {
   KennelsModel(

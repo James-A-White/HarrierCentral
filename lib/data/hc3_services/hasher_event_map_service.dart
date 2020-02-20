@@ -201,6 +201,7 @@ class HasherEventMapTableHelper implements BaseTableHelper {
     return map;
   }
 
+  @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
     final Map<String, dynamic> outputMap = <String, dynamic>{
       colHemId: inputMap[colHemId],
@@ -227,6 +228,7 @@ class HasherEventMapTableHelper implements BaseTableHelper {
     return outputMap;
   }
 
+  @override
   HasherEventMapModel fromMap(Map<String, dynamic> map) {
     final HasherEventMapModel item = HasherEventMapModel(
       hemId: map[colHemId],

@@ -3,8 +3,6 @@ import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/util/globals.dart';
 

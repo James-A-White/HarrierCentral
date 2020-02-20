@@ -155,25 +155,35 @@ class BaseService {
         final String query = 'SELECT id FROM $tableName WHERE ${tableHelper.remoteDbId} = "${jsonItem[tableHelper.remoteDbId]}"';
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
 
-        if ((table == null) || (table.isEmpty)) {
-          await db.transaction<dynamic>((Transaction txn) async {
-            await txn.insert(tableName, doNormalizeMap ? tableHelper.normalizeMap(jsonItem) : jsonItem);
-            insertCounter++;
-          });
+        xxxxxx // force build to break here
+        if ((jsonResults[j].removed ?? 0) == 0) {
+
+          if (jsonResults[j].removed == null)
+          {
+            print('$tableName should implement a removed field');
+          }
+
+          if ((table == null) || (table.isEmpty)) {
+            await db.transaction<dynamic>((Transaction txn) async {
+              await txn.insert(tableName, doNormalizeMap ? tableHelper.normalizeMap(jsonItem) : jsonItem);
+              insertCounter++;
+            });
+          } else {
+            final String rowId = table.first['id'].toString();
+            await db.transaction<dynamic>((Transaction txn) async {
+              await txn.update(tableName, doNormalizeMap ? tableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
+              updateCounter++;
+            });
+          }
         } else {
           final String rowId = table.first['id'].toString();
-
           await db.transaction<dynamic>((Transaction txn) async {
-            await txn.update(tableName, doNormalizeMap ? tableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
-            updateCounter++;
+            await txn.delete(tableName, where: 'id = $rowId');
+            deletedCounter++;
           });
         }
       }
     }
-
-    await db.transaction<dynamic>((Transaction txn) async {
-      deletedCounter = await txn.delete(tableName, where: 'removed = 1');
-    });
 
     print('$insertCounter $tableName records inserted, $updateCounter $tableName records updated, $deletedCounter $tableName records deleted');
     return insertCounter;

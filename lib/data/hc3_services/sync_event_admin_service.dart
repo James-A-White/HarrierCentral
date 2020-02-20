@@ -10,7 +10,6 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 
 class SyncEventAdminService {
@@ -56,7 +55,6 @@ class SyncEventAdminService {
     }
 
     if (getStringPref(StringPrefsEnum.adminEventId) != eventId) {
-      final HasherKennelMapService hkm2srv = HasherKennelMapService();
 
       //final HashersService hSrv = HashersService();
       // narrowEvents is not included here because all events are loaded all the time for all hashers.

@@ -11,7 +11,6 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 
 class SyncKennelAdminService {
   static const int flagKennelTable = 0x00000001;
