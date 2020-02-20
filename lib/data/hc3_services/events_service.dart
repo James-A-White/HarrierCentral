@@ -147,7 +147,7 @@ class EventModel implements BaseModel {
   }
 }
 
-class EventsTableHelper implements BaseTableHelper {
+class EventsTableHelper with BaseFields implements BaseTableHelper {
   EventsTableHelper();
 
   @override
@@ -166,8 +166,6 @@ class EventsTableHelper implements BaseTableHelper {
 
   @override
   String remoteDbId = 'eventId';
-
-  final String colId = 'id';
 
   final String colEventId = 'eventId';
   final String colEventStartDatetime = 'eventStartDatetime';
@@ -199,10 +197,6 @@ class EventsTableHelper implements BaseTableHelper {
   final String colTags1 = 'tags1';
   final String colTags2 = 'tags2';
   final String colTags3 = 'tags3';
-
-  final String colRemoved = 'removed';
-  final String colUpdatedAt = 'updatedAt';
-  final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
   Future<dynamic> createTable(Database db, int version,TableType tableType) async {

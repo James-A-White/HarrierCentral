@@ -44,6 +44,13 @@ class BaseTableHelper {
   }
 }
 
+mixin BaseFields {
+  final String colId = 'id';
+    final String colRemoved = 'removed';
+  final String colUpdatedAt = 'updatedAt';
+  final String colUpdatedAtValue = 'updatedAtValue';
+}
+
 class BaseService {
   String getTableName(BaseTableHelper tableHelper, TableType tableType) {
     String tableName = tableHelper.tableName;
@@ -155,10 +162,10 @@ class BaseService {
         final String query = 'SELECT id FROM $tableName WHERE ${tableHelper.remoteDbId} = "${jsonItem[tableHelper.remoteDbId]}"';
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
 
-        xxxxxx // force build to break here
-        if ((jsonResults[j].removed ?? 0) == 0) {
+        
+        if ((jsonResults[j]['removed'] ?? 0) == 0) {
 
-          if (jsonResults[j].removed == null)
+          if (jsonResults[j]['removed']== null)
           {
             print('$tableName should implement a removed field');
           }

@@ -71,7 +71,7 @@ class HashersModel implements BaseModel {
   }
 }
 
-class HashersTableHelper implements BaseTableHelper {
+class HashersTableHelper with BaseFields implements BaseTableHelper {
   HashersTableHelper();
 
   @override
@@ -91,8 +91,6 @@ class HashersTableHelper implements BaseTableHelper {
   @override
   String remoteDbId = 'hasherId';
 
-  final String colId = 'id';
-
   final String colHasherId = 'hasherId';
   final String colHomeKennelId = 'homeKennelId';
   final String colFirstName = 'firstName';
@@ -106,10 +104,6 @@ class HashersTableHelper implements BaseTableHelper {
   final String colQrCode = 'qrCode';
   final String colIncludeInGlobalHashDirectory = 'includeInGlobalHashDirectory';
   final String colPreferences = 'preferences';
-
-  final String colRemoved = 'removed';
-  final String colUpdatedAt = 'updatedAt';
-  final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
   Future<dynamic> createTable(Database db, int version,TableType tableType) async {

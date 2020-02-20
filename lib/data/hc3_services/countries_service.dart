@@ -61,7 +61,7 @@ class CountriesModel implements BaseModel {
   }
 }
 
-class CountriesTableHelper implements BaseTableHelper {
+class CountriesTableHelper with BaseFields implements BaseTableHelper {
   CountriesTableHelper();
 
   @override
@@ -81,7 +81,6 @@ class CountriesTableHelper implements BaseTableHelper {
   @override
   String remoteDbId = 'countryId';
 
-  final String colId = 'id';
   final String colCountryId = 'countryId';
 
   final String colCountryCode = 'countryCode';
@@ -97,9 +96,6 @@ class CountriesTableHelper implements BaseTableHelper {
   final String colDigitsAfterDecimal = 'digitsAfterDecimal';
   final String colDistancePreference = 'distancePreference';
 
-  final String colRemoved = 'removed';
-  final String colUpdatedAt = 'updatedAt';
-  final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
   Future<dynamic> createTable(Database db, int version,TableType tableType) async {

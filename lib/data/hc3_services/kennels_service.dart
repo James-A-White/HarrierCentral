@@ -134,7 +134,7 @@ class KennelsModel implements BaseModel {
   }
 }
 
-class KennelsTableHelper implements BaseTableHelper {
+class KennelsTableHelper with BaseFields implements BaseTableHelper {
   @override
   num forceRequeryInterval;
 
@@ -151,8 +151,6 @@ class KennelsTableHelper implements BaseTableHelper {
 
   @override
   String remoteDbId = 'kennelId';
-
-  final String colId = 'id';
 
   final String colKennelId = 'kennelId';
   final String colCityId = 'cityId';
@@ -186,10 +184,6 @@ class KennelsTableHelper implements BaseTableHelper {
   final String colRunCountStartDate = 'runCountStartDate';
   final String colKennelMismanagementTeam = 'kennelMismanagementTeam';
   final String colDistancePreference = 'distancePreference';
-  final String colUpdatedAt = 'updatedAt';
-  final String colRemoved = 'removed';
-
-  final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
   Future<dynamic> createTable(Database db, int version,TableType tableType) async {

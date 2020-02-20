@@ -46,7 +46,7 @@ class KennelCreditsModel implements BaseModel {
   }
 }
 
-class KennelCreditsTableHelper implements BaseTableHelper {
+class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
   KennelCreditsTableHelper();
 
   @override
@@ -66,15 +66,11 @@ class KennelCreditsTableHelper implements BaseTableHelper {
   @override
   String remoteDbId = 'kennelCreditId';
 
-  final String colId = 'id';
   final String colKennelCreditId = 'kennelCreditId';
   final String colUserId = 'userId';
   final String colKennelId = 'kennelId';
   final String colCurrentBalance = 'currentBalance';
   final String colBalanceAsOfEventId = 'balanceAsOfEventId';
-  final String colUpdatedAt = 'updatedAt';
-  final String colRemoved = 'removed';
-  final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
   Future<dynamic> createTable(Database db, int version,TableType tableType) async {

@@ -83,7 +83,7 @@ class ReceiptsModel implements BaseModel {
   }
 }
 
-class ReceiptsTableHelper implements BaseTableHelper {
+class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
   ReceiptsTableHelper();
 
   @override
@@ -103,8 +103,6 @@ class ReceiptsTableHelper implements BaseTableHelper {
   @override
   String remoteDbId = 'receiptId';
 
-  final String colId = 'id';
-
   final String colReceiptId = 'receiptId';
   final String colEventId = 'eventId';
   final String colUserId = 'userId';
@@ -118,10 +116,6 @@ class ReceiptsTableHelper implements BaseTableHelper {
   final String colReimbursedOn = 'reimbursedOn';
   final String colReimbursedAmount = 'reimbursedAmount';
   final String colReimbursedNotes = 'reimbursedNotes';
-
-  final String colRemoved = 'removed';
-  final String colUpdatedAt = 'updatedAt';
-  final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
   Future<dynamic> createTable(Database db, int version,TableType tableType) async {

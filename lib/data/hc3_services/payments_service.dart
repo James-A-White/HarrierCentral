@@ -99,7 +99,7 @@ class PaymentsModel implements BaseModel {
   }
 }
 
-class PaymentsTableHelper implements BaseTableHelper {
+class PaymentsTableHelper with BaseFields implements BaseTableHelper {
   PaymentsTableHelper();
 
   @override
@@ -119,7 +119,6 @@ class PaymentsTableHelper implements BaseTableHelper {
   @override
   String remoteDbId = 'paymentId';
 
-  final String colId = 'id';
   final String colPaymentId = 'paymentId';
   final String colKennelId = 'kennelId';
   final String colPaidBy = 'paidBy';
@@ -139,9 +138,6 @@ class PaymentsTableHelper implements BaseTableHelper {
   final String colNotes = 'notes';
   final String colDoPayForExtras = 'doPayForExtras';
 
-  final String colRemoved = 'removed';
-  final String colUpdatedAt = 'updatedAt';
-  final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
   Future<dynamic> createTable(Database db, int version,TableType tableType) async {

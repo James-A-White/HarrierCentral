@@ -111,7 +111,7 @@ class HasherKennelMapModel implements BaseModel {
   }
 }
 
-class HasherKennelMapTableHelper implements BaseTableHelper {
+class HasherKennelMapTableHelper with BaseFields implements BaseTableHelper {
 
   @override
   num forceRequeryInterval;
@@ -136,7 +136,6 @@ class HasherKennelMapTableHelper implements BaseTableHelper {
   @override
   String remoteDbId = 'hkmId';
 
-  final String colId = 'id';
   final String colHkmId = 'hkmId';
   final String colUserId = 'userId';
   final String colKennelId = 'kennelId';
@@ -158,10 +157,6 @@ class HasherKennelMapTableHelper implements BaseTableHelper {
   final String colMemberSince = 'memberSince';
   final String colIsKennelFollowing = 'isKennelFollowing';
   final String colMismanagementRoles = 'mismanagementRoles';
-
-  final String colUpdatedAt = 'updatedAt';
-  final String colRemoved = 'removed';
-  final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
   Future<dynamic> createTable(Database db, int version, TableType tblType) async {

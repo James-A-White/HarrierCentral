@@ -44,7 +44,7 @@ class RegionsModel implements BaseModel {
   }
 }
 
-class RegionsTableHelper implements BaseTableHelper {
+class RegionsTableHelper with BaseFields implements BaseTableHelper {
   RegionsTableHelper();
 
   @override
@@ -64,14 +64,10 @@ class RegionsTableHelper implements BaseTableHelper {
   @override
   String remoteDbId = 'regionId';
 
-  final String colId = 'id';
   final String colRegionId = 'regionId';
   final String colRegionName = 'regionName';
   final String colCountryId = 'countryId';
   final String colFlagFile = 'flagFile';
-  final String colRemoved = 'removed';
-  final String colUpdatedAt = 'updatedAt';
-  final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
   Future<dynamic> createTable(Database db, int version,TableType tableType) async {

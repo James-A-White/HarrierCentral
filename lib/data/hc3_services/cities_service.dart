@@ -59,7 +59,8 @@ class CitiesModel implements BaseModel {
   }
 }
 
-class CitiesTableHelper implements BaseTableHelper {
+class CitiesTableHelper with BaseFields implements BaseTableHelper 
+{
   CitiesTableHelper();
 
   @override
@@ -79,7 +80,6 @@ class CitiesTableHelper implements BaseTableHelper {
   @override
   String remoteDbId = 'cityId';
 
-  final String colId = 'id';
   final String colCityId = 'cityId';
   final String colCityName = 'cityName';
   final String colRegionId = 'regionId';
@@ -87,9 +87,6 @@ class CitiesTableHelper implements BaseTableHelper {
   final String colLongitude = 'longitude';
   final String colCityAscii = 'cityAscii';
   final String colFlagFile = 'flagFile';
-  final String colRemoved = 'removed';
-  final String colUpdatedAt = 'updatedAt';
-  final String colUpdatedAtValue = 'updatedAtValue';
 
   @override
   Future<dynamic> createTable(Database db, int version,TableType tableType) async {

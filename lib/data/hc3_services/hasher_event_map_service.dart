@@ -94,7 +94,7 @@ class HasherEventMapModel implements BaseModel {
   }
 }
 
-class HasherEventMapTableHelper implements BaseTableHelper {
+class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
   HasherEventMapTableHelper();
 
   @override
@@ -117,7 +117,6 @@ class HasherEventMapTableHelper implements BaseTableHelper {
   @override
   String remoteDbId = 'hemId';
 
-  final String colId = 'id';
   final String colHemId = 'hemId';
   final String colUserId = 'userId';
   final String colEventId = 'eventId';
@@ -134,11 +133,6 @@ class HasherEventMapTableHelper implements BaseTableHelper {
   final String colDisplayName = 'displayName';
   final String colEmail = 'email';
   final String colPhoneNumber = 'phoneNumber';
-
-  final String colRemoved = 'removed';
-  final String colUpdatedAt = 'updatedAt';
-  final String colUpdatedAtValue = 'updatedAtValue';
-
 
   @override
   Future<dynamic> createTable(Database db, int version, TableType tblType) async {
