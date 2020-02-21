@@ -86,6 +86,7 @@ class EnumRsvpState<int> extends Enum<int> {
   const EnumRsvpState(int val) : super(val);
 }
 
+const EnumRsvpState<int> rsvpUpdating = EnumRsvpState<int>(-2);
 const EnumRsvpState<int> rsvpNoChange = EnumRsvpState<int>(-1);
 const EnumRsvpState<int> rsvpUnknown = EnumRsvpState<int>(0);
 const EnumRsvpState<int> rsvpNo = EnumRsvpState<int>(1);
@@ -108,6 +109,7 @@ class EnumAttendenceState<int> extends Enum<int> {
   const EnumAttendenceState(int val) : super(val);
 }
 
+const EnumAttendenceState<int> attendenceUpdating = EnumAttendenceState<int>(-2);
 const EnumAttendenceState<int> attendenceNoChange = EnumAttendenceState<int>(-1);
 const EnumAttendenceState<int> attendenceUnknown = EnumAttendenceState<int>(0);
 const EnumAttendenceState<int> attendenceNo = EnumAttendenceState<int>(10);
@@ -121,6 +123,7 @@ class EnumIsPaid<int> extends Enum<int> {
   const EnumIsPaid(int val) : super(val);
 }
 
+const EnumIsPaid<int> isPaidUpdating = EnumIsPaid<int>(-2);
 const EnumIsPaid<int> isPaidNo = EnumIsPaid<int>(0);
 const EnumIsPaid<int> isPaidYes = EnumIsPaid<int>(1);
 

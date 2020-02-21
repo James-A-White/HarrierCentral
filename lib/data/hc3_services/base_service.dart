@@ -46,7 +46,7 @@ class BaseTableHelper {
 
 mixin BaseFields {
   final String colId = 'id';
-    final String colRemoved = 'removed';
+  final String colRemoved = 'removed';
   final String colUpdatedAt = 'updatedAt';
   final String colUpdatedAtValue = 'updatedAtValue';
 }
@@ -162,11 +162,8 @@ class BaseService {
         final String query = 'SELECT id FROM $tableName WHERE ${tableHelper.remoteDbId} = "${jsonItem[tableHelper.remoteDbId]}"';
         final List<Map<String, dynamic>> table = await db.rawQuery(query);
 
-        
         if ((jsonResults[j]['removed'] ?? 0) == 0) {
-
-          if (jsonResults[j]['removed']== null)
-          {
+          if (jsonResults[j]['removed'] == null) {
             print('$tableName should implement a removed field');
           }
 
@@ -183,11 +180,16 @@ class BaseService {
             });
           }
         } else {
-          final String rowId = table.first['id'].toString();
-          await db.transaction<dynamic>((Transaction txn) async {
-            await txn.delete(tableName, where: 'id = $rowId');
-            deletedCounter++;
-          });
+          
+          if ((table != null) && (table.isNotEmpty)) {
+            final String rowId = table.first['id'].toString();
+            if ((rowId != null) && (rowId.isNotEmpty)) {
+              await db.transaction<dynamic>((Transaction txn) async {
+                await txn.delete(tableName, where: 'id = $rowId');
+                deletedCounter++;
+              });
+            }
+          }
         }
       }
     }

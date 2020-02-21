@@ -1028,14 +1028,14 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       onRsvpCallback: (CheckInPackModel packMember, {int rsvpState = -1, int attendenceState = -1, int isHare = -1}) {
         if (rsvpState != -1) {
           setState(() {
-            packMember.rsvpStateIndicator = Future<int>.value(null);
+            packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
           });
         }
 
         if (attendenceState != -1) {
           setState(() {
-            packMember.attendenceStateIndicator = Future<int>.value(null);
-            packMember.paidStateIndicator = Future<int>.value(null);
+            packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
+            packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
           });
         }
         scaffoldState.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
@@ -1043,9 +1043,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       },
       onPaidCallback: (CheckInPackModel packMember, int paymentType, {num otherAmount = -1}) {
         setState(() {
-          packMember.rsvpStateIndicator = Future<int>.value(null);
-          packMember.attendenceStateIndicator = Future<int>.value(null);
-          packMember.paidStateIndicator = Future<int>.value(null);
+          packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
+          packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
+          packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
         });
         showExtrasDialog(context, scaffoldState, paymentType, packMember, otherAmount);
       },
@@ -1198,10 +1198,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                           backgroundColor: ((snapshot?.data == null) || (snapshot.data == 0)) ? Colors.grey[350] : Colors.white,
                           radius: 14.0,
                         ),
-                        snapshot?.data == null
-                            ? Icon(delayIcon, color: Colors.blue[800])
-                            : snapshot.data == 0
-                                ? Container()
+                        ((snapshot?.data ?? 0) == 0)
+                            ? Container()
+                            : snapshot.data == rsvpUpdating.value
+                                ? Icon(delayIcon, color: Colors.blue[800])
                                 : snapshot.data == rsvpNo.value
                                     ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 27.0)
                                     : snapshot.data == rsvpMaybe.value
@@ -1226,10 +1226,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                           backgroundColor: ((snapshot?.data == null) || (snapshot.data == 0)) ? Colors.grey[350] : Colors.white,
                           radius: 14.0,
                         ),
-                        ((!snapshot.hasData) || (snapshot?.data == null))
-                            ? Icon(delayIcon, color: Colors.blue[800])
-                            : snapshot.data == 0
-                                ? Container()
+                        ((!snapshot.hasData) || ((snapshot?.data ?? 0) == 0))
+                            ? Container()
+                            : snapshot.data == attendenceUpdating.value
+                                ? Icon(delayIcon, color: Colors.blue[800])
                                 : snapshot.data == attendenceNo.value
                                     ? Image.asset('images/icons/not_at_hash_icon.png', height: 24.0, width: 24.0, color: Colors.red[700])
                                     : snapshot.data == attendenceAtHash.value
@@ -1254,12 +1254,13 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                           backgroundColor: ((snapshot?.data == null) || (snapshot.data < 0)) ? Colors.grey[350] : Colors.white,
                           radius: 14.0,
                         ),
-                        (snapshot?.data == null) ? Icon(delayIcon, color: Colors.blue[800]) : 
-                        snapshot.data == -1
+                        ((snapshot?.data ?? -1) == -1)
                             ? Container()
-                            : snapshot.data == isPaidNo.value
-                                ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.red)
-                                : packMember.isPaid == isPaidYes.value ? Image.asset('images/icons/payment_type_${packMember.paymentType}.png', height: 24.0, width: 24.0, color: Colors.green) : Container()
+                            : snapshot.data == isPaidUpdating.value
+                                ? Icon(delayIcon, color: Colors.blue[800])
+                                : snapshot.data == isPaidNo.value
+                                    ? Image.asset('images/icons/dollar_sign_icon.png', height: 24.0, width: 24.0, color: Colors.red)
+                                    : packMember.isPaid == isPaidYes.value ? Image.asset('images/icons/payment_type_${packMember.paymentType}.png', height: 24.0, width: 24.0, color: Colors.green) : Container()
                       ],
                     );
                   }),
@@ -1333,16 +1334,18 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   }
 
   Future<List<dynamic>> payForEvent(CheckInPackModel packMember, int paymentType, {num otherAmount = -1, EnumPayForExtras<int> doPayForExtras = payForRunOnly}) async {
+    setState(() {
+      packMember.rsvpStateIndicator = Future<int>.value(rsvpUpdating.value);
+      packMember.attendenceStateIndicator = Future<int>.value(attendenceUpdating.value);
+      packMember.paidStateIndicator = Future<int>.value(isPaidUpdating.value);
+    });
+
     final String hemId = packMember.hemId;
     final String hasherId = packMember.hasherId;
     num amount = packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
     if (otherAmount != -1) {
       amount = otherAmount;
     }
-
-    // setState(() {
-
-    // });
 
     final PaymentsService paySrv = PaymentsService();
     return paySrv.payForEvent(widget.eventAggregate.event.eventId, ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId, ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId, paymentType, amount, attendenceAtHash.value, doPayForExtras);
