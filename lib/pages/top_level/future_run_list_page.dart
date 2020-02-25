@@ -26,7 +26,7 @@ class FutureRunsListPage extends StatefulWidget {
 }
 
 class RunDetailsQueryExtensions {
-  RunDetailsQueryExtensions({this.daysUntilEvent, this.distToEvent, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isHare, this.following, this.notificationPreference, this.emailAlertPreference, this.distancePreference});
+  RunDetailsQueryExtensions({this.daysUntilEvent, this.distToEvent, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isHare, this.isMember, this.following, this.notificationPreference, this.emailAlertPreference, this.distancePreference});
 
   final num daysUntilEvent;
   num distToEvent;
@@ -35,6 +35,7 @@ class RunDetailsQueryExtensions {
   String currencySymbol;
   int rsvpState;
   int isHare;
+  int isMember;
   final int following;
   int notificationPreference;
   int emailAlertPreference;
@@ -49,6 +50,7 @@ class RunDetailsQueryExtensions {
         following: map['following'],
         rsvpState: map['rsvpState'],
         isHare: map['isHare'],
+        isMember: map['isMember'],
         notificationPreference: map['notificationPreference'],
         emailAlertPreference: map['emailAlertPreference'],
         distancePreference: map['distancePreference']);
@@ -135,6 +137,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           coalesce(hkm.following,0) as following,
           coalesce(hem.rsvpState,0) as rsvpState,
           coalesce(hem.isHare,0) as isHare,
+          case when ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime'))) then 1 else 0 end as isMember,
           coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) as notificationPreference,
           coalesce(hem.eventEmailAlertPreference,hkm.kennelEmailAlertPreference,0) as emailAlertPreference,
           n.digitsAfterDecimal,

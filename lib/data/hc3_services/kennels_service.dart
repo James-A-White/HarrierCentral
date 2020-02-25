@@ -20,6 +20,7 @@ class KennelsModel implements BaseModel {
       this.defaultEventCurrencyType,
       this.kennelStatus,
       this.allowNegativeCredit,
+      this.allowSelfPayment,
       this.kennelLatitude,
       this.kennelLongitude,
       this.defaultPriceForMembers,
@@ -37,12 +38,18 @@ class KennelsModel implements BaseModel {
       this.kennelPaymentScheme,
       this.kennelPaymentUrl,
       this.kennelPaymentUrlExpires,
-            this.kennelPaymentScheme2,
+      this.kennelPaymentMemberSurcharge,
+      this.kennelPaymentNonMemberSurcharge,
+      this.kennelPaymentScheme2,
       this.kennelPaymentUrl2,
       this.kennelPaymentUrlExpires2,
-            this.kennelPaymentScheme3,
+      this.kennelPaymentMemberSurcharge2,
+      this.kennelPaymentNonMemberSurcharge2,
+      this.kennelPaymentScheme3,
       this.kennelPaymentUrl3,
       this.kennelPaymentUrlExpires3,
+      this.kennelPaymentMemberSurcharge3,
+      this.kennelPaymentNonMemberSurcharge3,
       this.runCountStartDate,
       this.kennelMismanagementTeam,
       this.distancePreference,
@@ -62,6 +69,7 @@ class KennelsModel implements BaseModel {
   final String defaultEventCurrencyType;
   final int kennelStatus;
   final int allowNegativeCredit;
+  final int allowSelfPayment;
   final num kennelLatitude;
   final num kennelLongitude;
   final num defaultPriceForMembers;
@@ -79,12 +87,18 @@ class KennelsModel implements BaseModel {
   final String kennelPaymentScheme;
   final String kennelPaymentUrl;
   final DateTime kennelPaymentUrlExpires;
-    final String kennelPaymentScheme2;
+  final num kennelPaymentMemberSurcharge;
+  final num kennelPaymentNonMemberSurcharge;
+  final String kennelPaymentScheme2;
   final String kennelPaymentUrl2;
   final DateTime kennelPaymentUrlExpires2;
-    final String kennelPaymentScheme3;
+  final num kennelPaymentMemberSurcharge2;
+  final num kennelPaymentNonMemberSurcharge2;
+  final String kennelPaymentScheme3;
   final String kennelPaymentUrl3;
   final DateTime kennelPaymentUrlExpires3;
+  final num kennelPaymentMemberSurcharge3;
+  final num kennelPaymentNonMemberSurcharge3;
   final DateTime runCountStartDate;
   final String kennelMismanagementTeam;
   final int distancePreference;
@@ -113,6 +127,7 @@ class KennelsModel implements BaseModel {
           defaultEventCurrencyType: jsonItem['defaultEventCurrencyType'],
           kennelStatus: jsonItem['kennelStatus'],
           allowNegativeCredit: jsonItem['allowNegativeCredit'],
+          allowSelfPayment: jsonItem['allowSelfPayment'],
           kennelLatitude: jsonItem['kennelLatitude'],
           kennelLongitude: jsonItem['kennelLongitude'],
           defaultPriceForMembers: jsonItem['defaultPriceForMembers'],
@@ -130,12 +145,18 @@ class KennelsModel implements BaseModel {
           kennelPaymentScheme: jsonItem['kennelPaymentScheme'],
           kennelPaymentUrl: jsonItem['kennelPaymentUrl'],
           kennelPaymentUrlExpires: jsonItem['kennelPaymentUrlExpires'], // TODO(James): Investigate why this isn't being converted to a DateTime?
-        kennelPaymentScheme2: jsonItem['kennelPaymentScheme2'],
+          kennelPaymentMemberSurcharge: jsonItem['kennelPaymentSurcharge'],
+          kennelPaymentNonMemberSurcharge: jsonItem['kennelPaymentNonMemberSurcharge'],
+          kennelPaymentScheme2: jsonItem['kennelPaymentScheme2'],
           kennelPaymentUrl2: jsonItem['kennelPaymentUrl2'],
           kennelPaymentUrlExpires2: jsonItem['kennelPaymentUrlExpires2'], // TODO(James): Investigate why this isn't being converted to a DateTime?
-        kennelPaymentScheme3: jsonItem['kennelPaymentScheme3'],
+          kennelPaymentMemberSurcharge2: jsonItem['kennelPaymentSurcharge2'],
+          kennelPaymentNonMemberSurcharge2: jsonItem['kennelPaymentNonMemberSurcharge2'],
+          kennelPaymentScheme3: jsonItem['kennelPaymentScheme3'],
           kennelPaymentUrl3: jsonItem['kennelPaymentUrl3'],
           kennelPaymentUrlExpires3: jsonItem['kennelPaymentUrlExpires3'], // TODO(James): Investigate why this isn't being converted to a DateTime?
+          kennelPaymentMemberSurcharge3: jsonItem['kennelPaymentSurcharge3'],
+          kennelPaymentNonMemberSurcharge3: jsonItem['kennelPaymentNonMemberSurcharge3'],
           runCountStartDate: DateTime.parse(jsonItem['runCountStartDate'].toString().substring(0, 19)),
           kennelMismanagementTeam: jsonItem['kennelMismanagementTeam'],
           distancePreference: jsonItem['distancePreference'],
@@ -186,6 +207,7 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
   final String colDefaultEventCurrencyType = 'defaultEventCurrencyType';
   final String colKennelStatus = 'kennelStatus';
   final String colAllowNegativeCredit = 'allowNegativeCredit';
+  final String colAllowSelfPayment = 'allowSelfPayment';
   final String colKennelLatitude = 'kennelLatitude';
   final String colKennelLongitude = 'kennelLongitude';
   final String colDefaultPriceForMembers = 'defaultPriceForMembers';
@@ -203,12 +225,18 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
   final String colKennelPaymentScheme = 'kennelPaymentScheme';
   final String colKennelPaymentUrl = 'kennelPaymentUrl';
   final String colKennelPaymentUrlExpires = 'kennelPaymentUrlExpires';
-    final String colKennelPaymentScheme2 = 'kennelPaymentScheme2';
+  final String colKennelPaymentMemberSurcharge = 'kennelPaymentMemberSurcharge';
+  final String colKennelPaymentNonMemberSurcharge = 'kennelPaymentNonMemberSurcharge';
+  final String colKennelPaymentScheme2 = 'kennelPaymentScheme2';
   final String colKennelPaymentUrl2 = 'kennelPaymentUrl2';
   final String colKennelPaymentUrlExpires2 = 'kennelPaymentUrlExpires2';
-    final String colKennelPaymentScheme3 = 'kennelPaymentScheme3';
+  final String colKennelPaymentMemberSurcharge2 = 'kennelPaymentMemberSurcharge2';
+  final String colKennelPaymentNonMemberSurcharge2 = 'kennelPaymentNonMemberSurcharge2';
+  final String colKennelPaymentScheme3 = 'kennelPaymentScheme3';
   final String colKennelPaymentUrl3 = 'kennelPaymentUrl3';
   final String colKennelPaymentUrlExpires3 = 'kennelPaymentUrlExpires3';
+  final String colKennelPaymentMemberSurcharge3 = 'kennelPaymentMemberSurcharge3';
+  final String colKennelPaymentNonMemberSurcharge3 = 'kennelPaymentNonMemberSurcharge3';
   final String colRunCountStartDate = 'runCountStartDate';
   final String colKennelMismanagementTeam = 'kennelMismanagementTeam';
   final String colDistancePreference = 'distancePreference';
@@ -232,6 +260,7 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
             $colDefaultEventCurrencyType TEXT,
             $colKennelStatus INT,
             $colAllowNegativeCredit INT,
+            $colAllowSelfPayment INT,
             $colKennelLatitude NUM,
             $colKennelLongitude NUM,
             $colDefaultPriceForMembers NUM,
@@ -249,12 +278,18 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
             $colKennelPaymentScheme TEXT,
             $colKennelPaymentUrl TEXT,
             $colKennelPaymentUrlExpires TEXT,
+            $colKennelPaymentMemberSurcharge NUM,
+            $colKennelPaymentNonMemberSurcharge NUM,
             $colKennelPaymentScheme2 TEXT,
             $colKennelPaymentUrl2 TEXT,
             $colKennelPaymentUrlExpires2 TEXT,
+            $colKennelPaymentMemberSurcharge2 NUM,
+            $colKennelPaymentNonMemberSurcharge2 NUM,
             $colKennelPaymentScheme3 TEXT,
             $colKennelPaymentUrl3 TEXT,
             $colKennelPaymentUrlExpires3 TEXT,
+            $colKennelPaymentMemberSurcharge3 NUM,
+            $colKennelPaymentNonMemberSurcharge3 NUM,
             $colRunCountStartDate TEXT,
             $colKennelMismanagementTeam TEXT,
             $colDistancePreference INT,
@@ -285,6 +320,7 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
       colDefaultEventCurrencyType: item.defaultEventCurrencyType,
       colKennelStatus: item.kennelStatus,
       colAllowNegativeCredit: item.allowNegativeCredit,
+      colAllowSelfPayment: item.allowSelfPayment,
       colKennelLatitude: item.kennelLatitude,
       colKennelLongitude: item.kennelLongitude,
       colDefaultPriceForMembers: item.defaultPriceForMembers,
@@ -302,12 +338,18 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
       colKennelPaymentScheme: item.kennelPaymentScheme,
       colKennelPaymentUrl: item.kennelPaymentUrl,
       colKennelPaymentUrlExpires: item.kennelPaymentUrlExpires.toString(),
+      colKennelPaymentMemberSurcharge: item.kennelPaymentMemberSurcharge,
+      colKennelPaymentNonMemberSurcharge: item.kennelPaymentNonMemberSurcharge,
       colKennelPaymentScheme2: item.kennelPaymentScheme2,
       colKennelPaymentUrl2: item.kennelPaymentUrl2,
       colKennelPaymentUrlExpires2: item.kennelPaymentUrlExpires2.toString(),
+      colKennelPaymentMemberSurcharge2: item.kennelPaymentMemberSurcharge2,
+      colKennelPaymentNonMemberSurcharge2: item.kennelPaymentNonMemberSurcharge2,
       colKennelPaymentScheme3: item.kennelPaymentScheme3,
       colKennelPaymentUrl3: item.kennelPaymentUrl3,
       colKennelPaymentUrlExpires3: item.kennelPaymentUrlExpires3.toString(),
+      colKennelPaymentMemberSurcharge3: item.kennelPaymentMemberSurcharge3,
+      colKennelPaymentNonMemberSurcharge3: item.kennelPaymentNonMemberSurcharge3,
       colRunCountStartDate: item.runCountStartDate.toString(),
       colKennelMismanagementTeam: item.kennelMismanagementTeam,
       colDistancePreference: item.distancePreference,
@@ -334,6 +376,7 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
       colDefaultEventCurrencyType: inputMap[colDefaultEventCurrencyType],
       colKennelStatus: inputMap[colKennelStatus],
       colAllowNegativeCredit: inputMap[colAllowNegativeCredit],
+      colAllowSelfPayment: inputMap[colAllowSelfPayment],
       colKennelLatitude: inputMap[colKennelLatitude],
       colKennelLongitude: inputMap[colKennelLongitude],
       colDefaultPriceForMembers: inputMap[colDefaultPriceForMembers],
@@ -351,12 +394,18 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
       colKennelPaymentScheme: inputMap[colKennelPaymentScheme],
       colKennelPaymentUrl: inputMap[colKennelPaymentUrl],
       colKennelPaymentUrlExpires: inputMap[colKennelPaymentUrlExpires],
+      colKennelPaymentMemberSurcharge: inputMap[colKennelPaymentMemberSurcharge],
+      colKennelPaymentNonMemberSurcharge: inputMap[colKennelPaymentNonMemberSurcharge],
       colKennelPaymentScheme2: inputMap[colKennelPaymentScheme2],
       colKennelPaymentUrl2: inputMap[colKennelPaymentUrl2],
       colKennelPaymentUrlExpires2: inputMap[colKennelPaymentUrlExpires2],
+      colKennelPaymentMemberSurcharge2: inputMap[colKennelPaymentMemberSurcharge2],
+      colKennelPaymentNonMemberSurcharge2: inputMap[colKennelPaymentNonMemberSurcharge2],
       colKennelPaymentScheme3: inputMap[colKennelPaymentScheme3],
       colKennelPaymentUrl3: inputMap[colKennelPaymentUrl3],
       colKennelPaymentUrlExpires3: inputMap[colKennelPaymentUrlExpires3],
+      colKennelPaymentMemberSurcharge3: inputMap[colKennelPaymentMemberSurcharge3],
+      colKennelPaymentNonMemberSurcharge3: inputMap[colKennelPaymentNonMemberSurcharge3],
       colRunCountStartDate: inputMap[colRunCountStartDate],
       colKennelMismanagementTeam: inputMap[colKennelMismanagementTeam],
       colDistancePreference: inputMap[colDistancePreference],
@@ -384,6 +433,7 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
       defaultEventCurrencyType: map[colDefaultEventCurrencyType],
       kennelStatus: map[colKennelStatus],
       allowNegativeCredit: map[colAllowNegativeCredit],
+      allowSelfPayment: map[colAllowSelfPayment],
       kennelLatitude: map[colKennelLatitude],
       kennelLongitude: map[colKennelLongitude],
       defaultPriceForMembers: map[colDefaultPriceForMembers],
@@ -401,12 +451,18 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
       kennelPaymentScheme: map[colKennelPaymentScheme],
       kennelPaymentUrl: map[colKennelPaymentUrl],
       kennelPaymentUrlExpires: DateTime.parse((map[colKennelPaymentUrlExpires] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
+      kennelPaymentMemberSurcharge: map[colKennelPaymentMemberSurcharge],
+      kennelPaymentNonMemberSurcharge: map[colKennelPaymentNonMemberSurcharge],
       kennelPaymentScheme2: map[colKennelPaymentScheme2],
       kennelPaymentUrl2: map[colKennelPaymentUrl2],
       kennelPaymentUrlExpires2: DateTime.parse((map[colKennelPaymentUrlExpires2] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
+      kennelPaymentMemberSurcharge2: map[colKennelPaymentMemberSurcharge2],
+      kennelPaymentNonMemberSurcharge2: map[colKennelPaymentNonMemberSurcharge2],
       kennelPaymentScheme3: map[colKennelPaymentScheme3],
       kennelPaymentUrl3: map[colKennelPaymentUrl3],
       kennelPaymentUrlExpires3: DateTime.parse((map[colKennelPaymentUrlExpires3] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
+      kennelPaymentMemberSurcharge3: map[colKennelPaymentMemberSurcharge3],
+      kennelPaymentNonMemberSurcharge3: map[colKennelPaymentNonMemberSurcharge3],
       runCountStartDate: map[colRunCountStartDate] == null ? null : DateTime.parse(map[colRunCountStartDate].toString().substring(0, 19)),
       kennelMismanagementTeam: map[colKennelMismanagementTeam],
       distancePreference: map[colDistancePreference],
