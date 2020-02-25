@@ -100,18 +100,11 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     return Icon(rawIcon, size: 26.0, color: color);
   }
 
-  // Future<List<dynamic>> payForEvent(CheckInPackModel packMember, int paymentType, {num otherAmount = -1, EnumPayForExtras<int> doPayForExtras = payForRunOnly}) async {
-
-  //   final String hemId = packMember.hemId;
-  //   final String hasherId = packMember.hasherId;
-  //   num amount = widget.futureRun.extensions  ..isMember != 0 ? widget.futureRun.event.eventPriceForMembers : widget.futureRun.event.eventPriceForNonMembers;
-  //   if (otherAmount != -1) {
-  //     amount = otherAmount;
-  //   }
-
-  //   final PaymentsService paySrv = PaymentsService();
-  //   return paySrv.payForEvent(widget.futureRun.event.eventId, ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId, ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId, paymentType, amount, attendenceAtHash.value, payForRunOnly);
-  // }
+  Future<List<dynamic>> payForEvent(num amount, EnumPayForExtras<int> extras) async {
+    final String hasherId = getStringPref(StringPrefsEnum.userId);
+    final PaymentsService paySrv = PaymentsService();
+    return paySrv.payForEvent(widget.futureRun.event.eventId, hasherId, GUID_EMPTY, paymentBankTransfer.value, amount, attendenceAtHash.value, extras);
+  }
 
   Future<void> setRsvpState(EnumRsvpState<int> rsvpState, bool willHare) async {
     setState(() {
@@ -370,43 +363,35 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   }
 
   Future<dynamic> showExtrasDialog(BuildContext context, num runOnlyPrice, num extrasPrice) {
+    final String runOnlyPriceStr = Utilities.getFormattedMoney(runOnlyPrice, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol);
+    final String runPlusExtrasPriceStr = Utilities.getFormattedMoney(runOnlyPrice + extrasPrice, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol);
 
-      final String runOnlyPriceStr = Utilities.getFormattedMoney(runOnlyPrice, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol);
-      final String runPlusExtrasPriceStr = Utilities.getFormattedMoney(runOnlyPrice + extrasPrice, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol);
+    final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+      <String, dynamic>{
+        'title': 'Run only ($runOnlyPriceStr)',
+        'icon': <Widget>[
+          Container(),
+        ],
+        'returnValue': payForRunOnly,
+      },
+      <String, dynamic>{
+        'title': 'Run + ' + widget.futureRun.event.extrasDescription + ' ($runPlusExtrasPriceStr)',
+        'icon': <Widget>[
+          Container(),
+        ],
+        'returnValue': payForRunAndExtras
+      },
+    ];
 
-      final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
-        <String, dynamic>{
-          'title': 'Run only ($runOnlyPriceStr)',
-          'icon': <Widget>[
-            Container(),
-          ],
-          'returnValue': payForRunOnly,
-        },
-        <String, dynamic>{
-          'title': 'Run + ' + widget.futureRun.event.extrasDescription + ' ($runPlusExtrasPriceStr)',
-          'icon': <Widget>[
-            Container(),
-          ],
-          'returnValue': payForRunAndExtras
-        },
-      ];
+    final MultipleChoicePopup popup = MultipleChoicePopup(title: 'Payment options', buttons: buttons, cancelButtonTitle: 'Cancel', buttonPress: () {});
 
-      final MultipleChoicePopup popup = MultipleChoicePopup(
-          title: 'Payment options',
-          buttons: buttons,
-          cancelButtonTitle: 'Cancel',
-          buttonPress: (){});
-
-      return showDialog<dynamic>(
-          context: context,
-          barrierDismissible: false, // user must tap button!
-          builder: (BuildContext context) {
-            return popup;
-          });
-    } 
-  
-
-
+    return showDialog<dynamic>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return popup;
+        });
+  }
 
   Widget getPaymentIcon(String url, DateTime urlExpires, String paymentProvider, num memberSurcharge, num nonMemberSurcharge) {
     if ((url == null) || (paymentProvider == null) || (urlExpires == null)) {
@@ -447,28 +432,32 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         onTap: () {
           canLaunch(url).then((bool canLaunch) async {
             if (canLaunch) {
-              
               // OK, we have a good URL, so let's figure out how much the hasher needs to pay
 
               // start with the extras
+              EnumPayForExtras<int> didPayForExtras = payForRunOnly;
+
               String extrasStr = '';
               num extrasPrice = widget.futureRun.event.eventPriceForExtras ?? 0;
               final num surcharge = (widget.futureRun.extensions.isMember == 0 ? nonMemberSurcharge : memberSurcharge) ?? 0;
               final num eventPrice = (widget.futureRun.extensions.isMember == 0 ? widget.futureRun.event.eventPriceForNonMembers ?? widget.futureRun.kennel.defaultPriceForNonMembers : widget.futureRun.event.eventPriceForMembers ?? widget.futureRun.kennel.defaultPriceForMembers) ?? 0;
 
-              if (extrasPrice > 0)
-              {
+              if (extrasPrice > 0) {
                 // if there are extras, show the extras dialog
-                final dynamic x = await showExtrasDialog(context,eventPrice,extrasPrice);
-                if (x == payForRunOnly.value)
-                {
-                  // if the user wants to pay only for the run, don't process extras, so set the value to zero
-                  extrasPrice = 0;
+                final dynamic x = await showExtrasDialog(context, eventPrice, extrasPrice);
+                if (x == followTypeCancel) { 
+                  return;
+                } else {
+                  if (x == payForRunOnly.value) {
+                    // if the user wants to pay only for the run, don't process extras, so set the value to zero
+                    extrasPrice = 0;
+                  } else {
+                    didPayForExtras = payForRunAndExtras;
+                  }
                 }
               }
 
-              if (extrasPrice > 0)
-              {
+              if (extrasPrice > 0) {
                 // build the string if we need to
                 extrasStr = ' ,and a\r\n' + Utilities.getFormattedMoney(extrasPrice, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol) + ' charge for ${widget.futureRun.event.extrasDescription}';
               }
@@ -478,7 +467,6 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               // build the other strings for the total price and event prices
               final String totalStr = Utilities.getFormattedMoney(total, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol);
               final String eventPriceStr = Utilities.getFormattedMoney(eventPrice, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol);
-              
 
               String surchargeStr = '';
               if (surcharge > 0) {
@@ -487,18 +475,46 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               }
 
               // show the alert so the user knows how much to pay
-              Utilities.showAlert(
-                context,
-                'Please pay $totalStr',
-                'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr',
-                'OK',
-              ).then((bool result) {
+              Utilities.showAlert(context, 'Please pay $totalStr', 'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr', 'OK', showCancelButton: true, cancelButtonText: 'Cancel').then((bool result) {
                 if (result) {
                   // now launch into the payment provider
-                  launch(url).then((bool launched) {});
+                  launch(url).then((bool launched) {
+                    if (widget.futureRun.kennel.allowSelfPayment == 0) {
+                      Utilities.showAlert(context, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
+                    } else {
+                      // show the alert so the user knows how much to pay
+                      Utilities.showAlert(
+                        context,
+                        'Were you able to pay?',
+                        'Were you able to complete a payment of $totalStr using $paymentProvider',
+                        'Yes',
+                        showCancelButton: true,
+                        cancelButtonText: 'No',
+                      ).then((bool result2) {
+                        if (result2) {
+                          setState(() {
+                            widget.futureRun.extensions.rsvpState = -1;
+                          });
+                          payForEvent(total, didPayForExtras).then((List<dynamic> adHocItems) {
+                            widget.futureRun.extensions.rsvpState = adHocItems[0]['rsvpState'];
+                            widget.futureRun.extensions.isPaid = 1;
+
+                            setState(() {});
+                          });
+                        } else {
+                      Utilities.showAlert(
+                        context,
+                        'Please pay for the Hash',
+                        'Please pay the Wanker Banker for your Hash run.',
+                        'OK'
+                        );
+
+                        }
+                      });
+                    }
+                  });
                 }
               });
-
             } else {
               Utilities.showAlert(context, 'Bad payment URL', 'The payment URL provided by the Kennel is not valid. Please check with the Kennel\'s mismanagement to have them fix the problem.', 'OK');
             }
@@ -512,6 +528,10 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
   bool showPaymentIcons(RunDetailsAggregate futureRun) {
     if ((DateTime.now().isBefore(futureRun.event.eventStartDatetime.subtract(const Duration(days: 7)))) || (DateTime.now().isAfter(futureRun.event.eventStartDatetime.add(const Duration(days: 7))))) {
+      return false;
+    }
+
+    if (futureRun.extensions.isPaid != 0) {
       return false;
     }
 
