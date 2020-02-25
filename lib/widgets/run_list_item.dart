@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:intl/intl.dart';
 //import 'package:flutter_vector_icons/flutter_vector_icons.dart';
@@ -17,6 +18,7 @@ import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/notifications/notification_support.dart';
 
 //import 'package:flip_panel/flip_panel.dart';
@@ -96,6 +98,24 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
     return Icon(rawIcon, size: 26.0, color: color);
   }
+
+
+  // Future<List<dynamic>> payForEvent(CheckInPackModel packMember, int paymentType, {num otherAmount = -1, EnumPayForExtras<int> doPayForExtras = payForRunOnly}) async {
+
+
+  //   final String hemId = packMember.hemId;
+  //   final String hasherId = packMember.hasherId;
+  //   num amount = widget.futureRun.extensions  ..isMember != 0 ? widget.futureRun.event.eventPriceForMembers : widget.futureRun.event.eventPriceForNonMembers;
+  //   if (otherAmount != -1) {
+  //     amount = otherAmount;
+  //   }
+
+  //   final PaymentsService paySrv = PaymentsService();
+  //   return paySrv.payForEvent(widget.futureRun.event.eventId, ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId, ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId, paymentType, amount, attendenceAtHash.value, payForRunOnly);
+  // }
+
+
+
 
   Future<void> setRsvpState(EnumRsvpState<int> rsvpState, bool willHare) async {
     setState(() {
@@ -305,9 +325,129 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               ),
             ],
           ),
+          !showPaymentIcons(widget.futureRun)
+              ? Container()
+              : Column(
+                  children: <Widget>[
+                    Container(
+                      //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
+                      margin: const EdgeInsets.only(top: 2.0, bottom: 0.0),
+                      padding: const EdgeInsets.only(top: 7.0, bottom: 0.0),
+                      height: 1.0,
+                      color: Colors.grey[300],
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4.0, bottom: 0.0),
+                      child: Text('Pay for your run with...'),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: getPaymentIcons(),
+                    ),
+                  ],
+                )
         ],
       ),
     );
+  }
+
+  List<Widget> getPaymentIcons() {
+    final List<Widget> icons = <Widget>[];
+
+    Widget w = getPaymentIcon(widget.futureRun.kennel.kennelPaymentUrl, widget.futureRun.kennel.kennelPaymentUrlExpires, widget.futureRun.kennel.kennelPaymentScheme);
+    if (w != null) {
+      icons.add(w);
+    }
+
+    w = getPaymentIcon(widget.futureRun.kennel.kennelPaymentUrl2, widget.futureRun.kennel.kennelPaymentUrlExpires2, widget.futureRun.kennel.kennelPaymentScheme2);
+    if (w != null) {
+      icons.add(w);
+    }
+
+    w = getPaymentIcon(widget.futureRun.kennel.kennelPaymentUrl3, widget.futureRun.kennel.kennelPaymentUrlExpires3, widget.futureRun.kennel.kennelPaymentScheme3);
+    if (w != null) {
+      icons.add(w);
+    }
+    return icons;
+  }
+
+  Widget getPaymentIcon(String url, DateTime urlExpires, String paymentProvider) {
+    if ((url == null) || (paymentProvider == null) || (urlExpires == null)) {
+      return null;
+    }
+
+    if (!url.toLowerCase().startsWith('http')) {
+      return null;
+    }
+
+    if ((!urlExpires.isBefore(DateTime(2010))) && (urlExpires.isBefore(DateTime.now()))) {
+      return null;
+    }
+
+    const num imgSize = 70.0;
+
+    Widget w;
+
+    switch (paymentProvider.toLowerCase()) {
+      case 'paypal':
+        w = Image.asset('images/logos/paypal_logo.png', height: imgSize, width: imgSize);
+        break;
+      case 'zelle':
+        w = Image.asset('images/logos/zelle_logo.png', height: imgSize, width: imgSize);
+        break;
+      case 'transferwise':
+        w = Image.asset('images/logos/transferwise_logo.png', height: imgSize, width: imgSize);
+        break;
+      case 'venmo':
+        w = Image.asset('images/logos/venmo_logo.png', height: imgSize, width: imgSize);
+        break;
+      case 'tikkie':
+        w = Image.asset('images/logos/tikkie_logo.png', height: imgSize, width: imgSize);
+        break;
+    }
+
+    return GestureDetector(
+        onTap: () {
+          canLaunch(url).then((bool canLaunch) {
+            if (canLaunch) {
+              launch(url).then((bool launched) {});
+              // Utilities.showAlert(context, 'Did you pay?', 'Were you able to complete the payment using $paymentProvider?', 'Yes', showCancelButton: true, cancelButtonText: 'No').then((bool result){
+              //     if (result)
+              //     {
+
+              //     }
+              // });
+            } else {
+              Utilities.showAlert(context, 'Bad payment URL', 'The payment URL provided by the Kennel is not valid. Please check with the Kennel\'s mismanagement to have them fix the problem.', 'OK');
+            }
+          });
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: w,
+        ));
+  }
+
+  bool showPaymentIcons(RunDetailsAggregate futureRun) {
+    if ((DateTime.now().isBefore(futureRun.event.eventStartDatetime.subtract(const Duration(days: 1)))) || (DateTime.now().isAfter(futureRun.event.eventStartDatetime.add(const Duration(days: 1))))) {
+      return false;
+    }
+
+    // TODO(James): Add filter for distance to event after testing is done so we only pay when we are at an event
+
+    if ((futureRun.kennel.kennelPaymentUrl != null) && (futureRun.kennel.kennelPaymentUrl.toLowerCase().startsWith('http')) && (futureRun.kennel.kennelPaymentUrlExpires.isBefore(DateTime(2010)) || futureRun.kennel.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+      return true;
+    }
+
+    if ((futureRun.kennel.kennelPaymentUrl2 != null) && (futureRun.kennel.kennelPaymentUrl2.toLowerCase().startsWith('http')) && (futureRun.kennel.kennelPaymentUrlExpires2.isBefore(DateTime(2010)) || futureRun.kennel.kennelPaymentUrlExpires2.isAfter(DateTime.now()))) {
+      return true;
+    }
+
+    if ((futureRun.kennel.kennelPaymentUrl3 != null) && (futureRun.kennel.kennelPaymentUrl3.toLowerCase().startsWith('http')) && (futureRun.kennel.kennelPaymentUrlExpires3.isBefore(DateTime(2010)) || futureRun.kennel.kennelPaymentUrlExpires3.isAfter(DateTime.now()))) {
+      return true;
+    }
+
+    return false;
   }
 
   void showRsvpOptionsPopup(BuildContext context) {

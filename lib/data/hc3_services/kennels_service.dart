@@ -34,8 +34,15 @@ class KennelsModel implements BaseModel {
       this.bankAccountNumber,
       this.bankBic,
       this.bankBeneficiary,
+      this.kennelPaymentScheme,
       this.kennelPaymentUrl,
       this.kennelPaymentUrlExpires,
+            this.kennelPaymentScheme2,
+      this.kennelPaymentUrl2,
+      this.kennelPaymentUrlExpires2,
+            this.kennelPaymentScheme3,
+      this.kennelPaymentUrl3,
+      this.kennelPaymentUrlExpires3,
       this.runCountStartDate,
       this.kennelMismanagementTeam,
       this.distancePreference,
@@ -69,8 +76,15 @@ class KennelsModel implements BaseModel {
   final String bankAccountNumber;
   final String bankBic;
   final String bankBeneficiary;
+  final String kennelPaymentScheme;
   final String kennelPaymentUrl;
   final DateTime kennelPaymentUrlExpires;
+    final String kennelPaymentScheme2;
+  final String kennelPaymentUrl2;
+  final DateTime kennelPaymentUrlExpires2;
+    final String kennelPaymentScheme3;
+  final String kennelPaymentUrl3;
+  final DateTime kennelPaymentUrlExpires3;
   final DateTime runCountStartDate;
   final String kennelMismanagementTeam;
   final int distancePreference;
@@ -113,8 +127,15 @@ class KennelsModel implements BaseModel {
           bankAccountNumber: jsonItem['bankAccountNumber'],
           bankBic: jsonItem['bankBic'],
           bankBeneficiary: jsonItem['bankBeneficiary'],
+          kennelPaymentScheme: jsonItem['kennelPaymentScheme'],
           kennelPaymentUrl: jsonItem['kennelPaymentUrl'],
           kennelPaymentUrlExpires: jsonItem['kennelPaymentUrlExpires'], // TODO(James): Investigate why this isn't being converted to a DateTime?
+        kennelPaymentScheme2: jsonItem['kennelPaymentScheme2'],
+          kennelPaymentUrl2: jsonItem['kennelPaymentUrl2'],
+          kennelPaymentUrlExpires2: jsonItem['kennelPaymentUrlExpires2'], // TODO(James): Investigate why this isn't being converted to a DateTime?
+        kennelPaymentScheme3: jsonItem['kennelPaymentScheme3'],
+          kennelPaymentUrl3: jsonItem['kennelPaymentUrl3'],
+          kennelPaymentUrlExpires3: jsonItem['kennelPaymentUrlExpires3'], // TODO(James): Investigate why this isn't being converted to a DateTime?
           runCountStartDate: DateTime.parse(jsonItem['runCountStartDate'].toString().substring(0, 19)),
           kennelMismanagementTeam: jsonItem['kennelMismanagementTeam'],
           distancePreference: jsonItem['distancePreference'],
@@ -179,8 +200,15 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
   final String colBankAccountNumber = 'bankAccountNumber';
   final String colBankBic = 'bankBic';
   final String colBankBeneficiary = 'bankBeneficiary';
+  final String colKennelPaymentScheme = 'kennelPaymentScheme';
   final String colKennelPaymentUrl = 'kennelPaymentUrl';
   final String colKennelPaymentUrlExpires = 'kennelPaymentUrlExpires';
+    final String colKennelPaymentScheme2 = 'kennelPaymentScheme2';
+  final String colKennelPaymentUrl2 = 'kennelPaymentUrl2';
+  final String colKennelPaymentUrlExpires2 = 'kennelPaymentUrlExpires2';
+    final String colKennelPaymentScheme3 = 'kennelPaymentScheme3';
+  final String colKennelPaymentUrl3 = 'kennelPaymentUrl3';
+  final String colKennelPaymentUrlExpires3 = 'kennelPaymentUrlExpires3';
   final String colRunCountStartDate = 'runCountStartDate';
   final String colKennelMismanagementTeam = 'kennelMismanagementTeam';
   final String colDistancePreference = 'distancePreference';
@@ -218,8 +246,15 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
             $colBankAccountNumber TEXT,
             $colBankBic TEXT,
             $colBankBeneficiary TEXT,
+            $colKennelPaymentScheme TEXT,
             $colKennelPaymentUrl TEXT,
             $colKennelPaymentUrlExpires TEXT,
+            $colKennelPaymentScheme2 TEXT,
+            $colKennelPaymentUrl2 TEXT,
+            $colKennelPaymentUrlExpires2 TEXT,
+            $colKennelPaymentScheme3 TEXT,
+            $colKennelPaymentUrl3 TEXT,
+            $colKennelPaymentUrlExpires3 TEXT,
             $colRunCountStartDate TEXT,
             $colKennelMismanagementTeam TEXT,
             $colDistancePreference INT,
@@ -264,8 +299,15 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
       colBankAccountNumber: item.bankAccountNumber,
       colBankBic: item.bankBic,
       colBankBeneficiary: item.bankBeneficiary,
+      colKennelPaymentScheme: item.kennelPaymentScheme,
       colKennelPaymentUrl: item.kennelPaymentUrl,
       colKennelPaymentUrlExpires: item.kennelPaymentUrlExpires.toString(),
+      colKennelPaymentScheme2: item.kennelPaymentScheme2,
+      colKennelPaymentUrl2: item.kennelPaymentUrl2,
+      colKennelPaymentUrlExpires2: item.kennelPaymentUrlExpires2.toString(),
+      colKennelPaymentScheme3: item.kennelPaymentScheme3,
+      colKennelPaymentUrl3: item.kennelPaymentUrl3,
+      colKennelPaymentUrlExpires3: item.kennelPaymentUrlExpires3.toString(),
       colRunCountStartDate: item.runCountStartDate.toString(),
       colKennelMismanagementTeam: item.kennelMismanagementTeam,
       colDistancePreference: item.distancePreference,
@@ -306,8 +348,15 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
       colBankAccountNumber: inputMap[colBankAccountNumber],
       colBankBic: inputMap[colBankBic],
       colBankBeneficiary: inputMap[colBankBeneficiary],
+      colKennelPaymentScheme: inputMap[colKennelPaymentScheme],
       colKennelPaymentUrl: inputMap[colKennelPaymentUrl],
       colKennelPaymentUrlExpires: inputMap[colKennelPaymentUrlExpires],
+      colKennelPaymentScheme2: inputMap[colKennelPaymentScheme2],
+      colKennelPaymentUrl2: inputMap[colKennelPaymentUrl2],
+      colKennelPaymentUrlExpires2: inputMap[colKennelPaymentUrlExpires2],
+      colKennelPaymentScheme3: inputMap[colKennelPaymentScheme3],
+      colKennelPaymentUrl3: inputMap[colKennelPaymentUrl3],
+      colKennelPaymentUrlExpires3: inputMap[colKennelPaymentUrlExpires3],
       colRunCountStartDate: inputMap[colRunCountStartDate],
       colKennelMismanagementTeam: inputMap[colKennelMismanagementTeam],
       colDistancePreference: inputMap[colDistancePreference],
@@ -349,8 +398,15 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
       bankAccountNumber: map[colBankAccountNumber],
       bankBic: map[colBankBic],
       bankBeneficiary: map[colBankBeneficiary],
+      kennelPaymentScheme: map[colKennelPaymentScheme],
       kennelPaymentUrl: map[colKennelPaymentUrl],
       kennelPaymentUrlExpires: DateTime.parse((map[colKennelPaymentUrlExpires] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
+      kennelPaymentScheme2: map[colKennelPaymentScheme2],
+      kennelPaymentUrl2: map[colKennelPaymentUrl2],
+      kennelPaymentUrlExpires2: DateTime.parse((map[colKennelPaymentUrlExpires2] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
+      kennelPaymentScheme3: map[colKennelPaymentScheme3],
+      kennelPaymentUrl3: map[colKennelPaymentUrl3],
+      kennelPaymentUrlExpires3: DateTime.parse((map[colKennelPaymentUrlExpires3] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
       runCountStartDate: map[colRunCountStartDate] == null ? null : DateTime.parse(map[colRunCountStartDate].toString().substring(0, 19)),
       kennelMismanagementTeam: map[colKennelMismanagementTeam],
       distancePreference: map[colDistancePreference],

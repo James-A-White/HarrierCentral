@@ -279,8 +279,22 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           LEFT OUTER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventAggregate.event.eventId}"
           LEFT OUTER JOIN ${paymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
           LEFT OUTER JOIN ${kennelCreditsTableHelper.tableName} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
-          --WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" AND coalesce(hem.virginVisitorType,0) = 0
-          WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" AND julianday(hkm.membershipExpirationDate) >= julianday('now','localtime') AND coalesce(hem.virginVisitorType,0) = 0
+    
+          WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" 
+            AND coalesce(hem.virginVisitorType,0) = 0
+            AND (
+              hkm.isKennelFollowing = 1
+              OR 
+              (
+                hkm.isKennelFollowing = 0
+                AND 
+                (
+                  julianday(hkm.membershipExpirationDate) >= julianday('now','localtime') -- is a member
+                  OR
+                  julianday(hkm.dateOfLastRun) >= julianday('now','localtime','-2 months')
+                )
+              )
+            )
           UNION
           SELECT 
             -- now get all virgins & visitors
@@ -336,7 +350,20 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             LEFT OUTER JOIN ${hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin)} hkm3 on hkm3.userId = h3.hasherId and hkm3.kennelId = "${widget.eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now','localtime')
             LEFT OUTER JOIN ${hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin)} hkm4 on hkm4.userId = h3.hasherId and hkm4.kennelId = "${widget.eventAggregate.event.kennelId}" 
             LEFT OUTER JOIN ${kennelCreditsTableHelper.tableName} credits3 on credits3.userId = hkm3.userId and credits3.kennelId = hkm3.kennelId
-            WHERE hem3.eventId = "${widget.eventAggregate.event.eventId}" AND hem3.virginVisitorType == 0 AND hkm3.hkmId IS NULL
+            WHERE hem3.eventId = "${widget.eventAggregate.event.eventId}" 
+              AND hem3.virginVisitorType == 0 
+              AND 
+              (
+                hkm3.hkmId IS NULL -- is not a member
+                OR
+                (
+                  hkm3.hkmId IS NULL -- is not a member
+                  AND
+                  julianday(hkm4.dateOfLastRun) < julianday('now','localtime','-2 months') -- but has run in the last 2 months
+                )
+                OR
+                hkm3.isKennelFollowing = -1
+              )
           ORDER BY nameForSort
             
           

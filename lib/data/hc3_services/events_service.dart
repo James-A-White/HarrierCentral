@@ -35,6 +35,7 @@ class EventModel implements BaseModel {
       this.locationCity,
       this.locationStreet,
       this.hares,
+      this.eventPaymentScheme,
       this.eventPaymentUrl,
       this.eventPaymentUrlExpires,
       this.unconfirmedBankXferCount,
@@ -68,6 +69,7 @@ class EventModel implements BaseModel {
   final String locationCity;
   final String locationStreet;
   String hares;
+  final String eventPaymentScheme;
   final String eventPaymentUrl;
   final DateTime eventPaymentUrlExpires;
   final int unconfirmedBankXferCount;
@@ -110,6 +112,7 @@ class EventModel implements BaseModel {
             locationCity: jsonItem['locationCity'],
             locationStreet: jsonItem['locationStreet'],
             hares: jsonItem['hares'],
+            eventPaymentScheme: jsonItem['eventPaymentScheme'],
             eventPaymentUrl: jsonItem['eventPaymentUrl'],
             eventPaymentUrlExpires: jsonItem['eventPaymentUrlExpires'],
             unconfirmedBankXferCount: jsonItem['unconfirmedBankXferCount'],
@@ -188,6 +191,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
   final String colLocationCity = 'locationCity';
   final String colLocationStreet = 'locationStreet';
   final String colHares = 'hares';
+  final String colEventPaymentScheme = 'eventPaymentScheme';
   final String colEventPaymentUrl = 'eventPaymentUrl';
   final String colEventPaymentUrlExpires = 'eventPaymentUrlExpires';
   final String colUnconfirmedBankXferCount = 'unconfirmedBankXferCount';
@@ -225,6 +229,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
             $colLocationCity TEXT,
             $colLocationStreet TEXT,
             $colHares TEXT,
+            $colEventPaymentScheme TEXT,
             $colEventPaymentUrl TEXT,
             $colEventPaymentUrlExpires TEXT,
             $colUnconfirmedBankXferCount INT,
@@ -269,6 +274,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
       colLocationCity: item.locationCity,
       colLocationStreet: item.locationStreet,
       colHares: item.hares,
+      colEventPaymentScheme: item.eventPaymentScheme,
       colEventPaymentUrl: item.eventPaymentUrl,
       colEventPaymentUrlExpires: item.eventPaymentUrlExpires.toString(),
       colUnconfirmedBankXferCount: item.unconfirmedBankXferCount,
@@ -310,6 +316,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
       colLocationCity: inputMap[colLocationCity],
       colLocationStreet: inputMap[colLocationStreet],
       colHares: inputMap[colHares],
+      colEventPaymentScheme: inputMap[colEventPaymentScheme],
       colEventPaymentUrl: inputMap[colEventPaymentUrl],
       colEventPaymentUrlExpires: inputMap[colEventPaymentUrlExpires],
       colUnconfirmedBankXferCount: inputMap[colUnconfirmedBankXferCount],
@@ -362,6 +369,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
       locationCity: map[colLocationCity],
       locationStreet: map[colLocationStreet],
       hares: map[colHares],
+      eventPaymentScheme: map[colEventPaymentScheme],
       eventPaymentUrl: map[colEventPaymentUrl],
       eventPaymentUrlExpires: DateTime.parse((map[colEventPaymentUrlExpires] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
       unconfirmedBankXferCount: map[colUnconfirmedBankXferCount],

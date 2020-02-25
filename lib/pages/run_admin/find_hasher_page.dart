@@ -252,19 +252,32 @@ class HasherListView extends StatelessWidget {
             hasherList[index].photo.startsWith('http')
                 ? CachedNetworkImage(
                     imageUrl: hasherList[index].photo,
-                    // placeholder: (context, url) => Container(
-                    //     child: Center(
-                    //       child: Container(
-                    //         height: 20,
-                    //         width: 20,
-                    //         child: CircularProgressIndicator(
-                    //           strokeWidth: 3.0,
-                    //         ),
-                    //       ),
-                    //     ),
-                    //     height: 70.0,
-                    //    width: 70.0),
-                    errorWidget: (BuildContext context, String url, Object error) => const Icon(Icons.error),
+                    placeholder: (BuildContext context, String url) => Container(
+                        child: Center(
+                          child: Container(
+                            height: 20,
+                            width: 20,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 3.0,
+                            ),
+                          ),
+                        ),
+                        height: 70.0,
+                        width: 70.0),
+                    errorWidget: (BuildContext context, String url, Object error) {
+                      return Container(
+                          height: 70.0,
+                          width: 70.0,
+                          color: Colors.white,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children:  <Widget>[
+                               Text('No Image',style: mediumTextRed.copyWith(fontSize: 13, color: Colors.grey)),
+                               const Icon(Icons.error, color: Colors.grey),
+                               Text('Available', style: mediumTextRed.copyWith(fontSize: 13, color: Colors.grey))
+                            ],
+                          ));
+                    },
                     //fadeOutDuration:  Duration(seconds: 1),
                     fadeInDuration: const Duration(milliseconds: 0),
                     width: 70.0,

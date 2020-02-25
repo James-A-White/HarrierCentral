@@ -125,7 +125,7 @@ class MigrationsTableHelper {
   ///
   ///
 
-  static int dbVersion = 228;
+  static int dbVersion = 229;
 
   static List<MigrationsModel> migrationList = <MigrationsModel>[
 
@@ -185,6 +185,17 @@ class MigrationsTableHelper {
             ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colTags1} INT;
             ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colTags2} INT;
             ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colTags3} INT;
+         '''),
+
+     MigrationsModel(migrationNumber: 229, migrationText: '''
+            ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colEventPaymentScheme} TEXT;
+            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentScheme} TEXT;
+            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentScheme2} TEXT;
+            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentScheme3} TEXT;
+            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentUrl2} TEXT;
+            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentUrl3} TEXT;
+            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentUrlExpires2} TEXT;
+            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentUrlExpires3} TEXT;
          '''),
 
   ];
