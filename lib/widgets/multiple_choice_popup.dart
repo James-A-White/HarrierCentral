@@ -73,8 +73,8 @@ class _MultipleChoicePopupState extends State<MultipleChoicePopup> {
         Expanded(
           child: GestureDetector(
             onTap: () {
-              Navigator.of(context).pop<dynamic>(btnDef['returnValue'].value);
               widget.buttonPress(btnDef['returnValue']);
+              Navigator.of(context).pop<dynamic>(btnDef['returnValue'].value);
             },
             child: Container(
               //padding: EdgeInsets.only(top: 6.0 * deviceHeightScaleFactor, left: 8.0, bottom: 6.0 * deviceHeightScaleFactor),

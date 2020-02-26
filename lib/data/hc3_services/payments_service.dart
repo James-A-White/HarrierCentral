@@ -32,6 +32,8 @@ class PaymentsModel implements BaseModel {
     this.paymentReference,
     this.notes,
     this.doPayForExtras,
+    this.surcharge,
+    this.paymentProvider,
     this.removed,
     this.updatedAt,
   });
@@ -54,6 +56,8 @@ class PaymentsModel implements BaseModel {
   final String paymentReference;
   final String notes;
   final int doPayForExtras;
+  final num surcharge;
+  final String paymentProvider;
   final int removed;
   final DateTime updatedAt;
 
@@ -84,6 +88,8 @@ class PaymentsModel implements BaseModel {
             paymentReference: jsonItem['paymentReference'],
             notes: jsonItem['notes'],
             doPayForExtras: jsonItem['doPayForExtras'],
+            surcharge: jsonItem['surcharge'],
+            paymentProvider: jsonItem['paymentProvider'],
             updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
             removed: jsonItem['removed']);
 
@@ -137,6 +143,8 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
   final String colPaymentReference = 'paymentReference';
   final String colNotes = 'notes';
   final String colDoPayForExtras = 'doPayForExtras';
+  final String colSurcharge = 'surcharge';
+  final String colPaymentProvider = 'paymentProvider';
 
 
   @override
@@ -163,6 +171,8 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
             $colPaymentReference TEXT,
             $colNotes TEXT,
             $colDoPayForExtras INT,
+            $colSurcharge NUM,
+            $colPaymentProvider TEXT,
 
             $colRemoved INT,
             $colUpdatedAt TEXT,
@@ -195,6 +205,8 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
       colPaymentReference: item.paymentReference,
       colNotes: item.notes,
       colDoPayForExtras: item.doPayForExtras,
+      colSurcharge: item.surcharge,
+      colPaymentProvider: item.paymentProvider,
       colUpdatedAt: item.updatedAt.toString(),
       colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
       colRemoved: item.removed
@@ -224,6 +236,8 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
       colPaymentReference: inputMap[colPaymentReference],
       colNotes: inputMap[colNotes],
       colDoPayForExtras: inputMap[colDoPayForExtras],
+      colSurcharge: inputMap[colSurcharge],
+      colPaymentProvider: inputMap[colPaymentProvider],
       colUpdatedAt: inputMap[colUpdatedAt],
       colUpdatedAtValue: DateTime.parse(inputMap[colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
       colRemoved: inputMap[colRemoved],
@@ -261,6 +275,8 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
       paymentReference: map[colPaymentReference],
       notes: map[colNotes],
       doPayForExtras: map[colDoPayForExtras],
+      surcharge: map[colSurcharge],
+      paymentProvider: map[colPaymentProvider],
       updatedAt: (map[colUpdatedAt] == null) ? null : DateTime.parse(map[colUpdatedAt].toString().substring(0, 19)),
       removed: map[colRemoved],
     );
@@ -270,7 +286,7 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
 }
 
 class PaymentsService {
-  Future<List<dynamic>> payForEvent(String eventId, String hasherId, String hasherEventMapId, int paymentType, num paymentAmount, int minimumAttendenceValue, EnumPayForExtras<int> doPayForExtras) async {
+  Future<List<dynamic>> payForEvent(String eventId, String hasherId, String hasherEventMapId, int paymentType, num paymentAmount, int minimumAttendenceValue, EnumPayForExtras<int> doPayForExtras, {num surcharge, String paymentProvider}) async {
     List<dynamic> results;
 
     if (globalConnectionStatus == connectionStatus_notConnected) {
@@ -305,9 +321,6 @@ class PaymentsService {
     final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(kennelCreditsTableHelper, kennelCreditsTableHelper.colUpdatedAtValue);
     final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
-
-
-
     final String body = jsonEncode(<String, String>{
       'userId': userId,
       'accessToken': accessToken,
@@ -323,6 +336,8 @@ class PaymentsService {
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
       'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString(),
       'doPayForExtras': doPayForExtras.value.toString(),
+      'surcharge' : surcharge.toString(),
+      'paymentProvider' : paymentProvider ?? ''
     });
 
     final http.Response response = await http

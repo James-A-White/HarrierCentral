@@ -192,7 +192,7 @@ class PaymentReportState extends State<PaymentReportPage> {
 
             ) as count,
             (
-                SELECT SUM(pay2.creditAmount) 
+                SELECT SUM(pay2.creditAmount)
                 FROM ${paymentsTableHelper.tableName} pay2 
                 INNER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
                 WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
@@ -892,6 +892,49 @@ class PaymentReportState extends State<PaymentReportPage> {
                       ),
                       flex: flexRight),
                 ]),
+                (item.payment.surcharge ?? 0) == 0 ? Container() :
+                 Row(children: <Widget>[
+                  const Expanded(
+                    child: Text(
+                      'Surcharge:',
+                      style: headingStyle,
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    flex: flexLeft,
+                  ),
+                  const SizedBox(width: spacer, height: 10.0),
+                  Expanded(
+                      child: Text(
+                        Utilities.getFormattedMoney(item?.payment?.surcharge ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym),
+                        style: bodyStyle,
+                      ),
+                      flex: flexRight),
+                ]),
+                (item.payment.paymentProvider ?? '') == '' ? Container() :
+                 Row(children: <Widget>[
+                  const Expanded(
+                    child: Text(
+                      'Provider:',
+                      style: headingStyle,
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    flex: flexLeft,
+                  ),
+                  const SizedBox(width: spacer, height: 10.0),
+                  Expanded(
+                      child: Text(
+                        item.payment.paymentProvider,
+                        style: bodyStyle,
+                      ),
+                      flex: flexRight),
+                ]),
+
+
+
                 ((item.payment.paymentType != paymentBankTransfer.value) && (item.payment.paymentType != paymentBankTransferOtherAmount.value))
                     ? Container()
                     : Row(children: <Widget>[

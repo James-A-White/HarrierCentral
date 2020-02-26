@@ -352,6 +352,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             LEFT OUTER JOIN ${kennelCreditsTableHelper.tableName} credits3 on credits3.userId = hkm3.userId and credits3.kennelId = hkm3.kennelId
             WHERE hem3.eventId = "${widget.eventAggregate.event.eventId}" 
               AND hem3.virginVisitorType == 0 
+              AND hkm3.isKennelFollowing != 1
               AND 
               (
                 hkm3.hkmId IS NULL -- is not a member

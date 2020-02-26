@@ -100,10 +100,20 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     return Icon(rawIcon, size: 26.0, color: color);
   }
 
-  Future<List<dynamic>> payForEvent(num amount, EnumPayForExtras<int> extras) async {
+  Future<List<dynamic>> payForEvent(num amount, EnumPayForExtras<int> extras, num surcharge, String paymentProvider) async {
     final String hasherId = getStringPref(StringPrefsEnum.userId);
     final PaymentsService paySrv = PaymentsService();
-    return paySrv.payForEvent(widget.futureRun.event.eventId, hasherId, GUID_EMPTY, paymentBankTransfer.value, amount, attendenceAtHash.value, extras);
+    return paySrv.payForEvent(
+      widget.futureRun.event.eventId,
+      hasherId,
+      GUID_EMPTY,
+      paymentBankTransfer.value,
+      amount,
+      attendenceAtHash.value,
+      extras,
+      surcharge: surcharge,
+      paymentProvider: paymentProvider,
+    );
   }
 
   Future<void> setRsvpState(EnumRsvpState<int> rsvpState, bool willHare) async {
@@ -113,7 +123,15 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
     final String userId = getStringPref(StringPrefsEnum.userId);
     final int attendenceValue = rsvpState.value <= rsvpMaybe.value ? attendenceNo.value : attendenceNoChange.value;
-    final List<dynamic> adHocData = await hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, rsvpState: rsvpState.value, attendenceState: attendenceValue, isHare: willHare ? isHareYes.value : isHareNo.value);
+    final List<dynamic> adHocData = await hasherEventMapService.joinEvent(
+      widget.futureRun.event.eventId,
+      TableType.hemEventAdmin,
+      userId,
+      null,
+      rsvpState: rsvpState.value,
+      attendenceState: attendenceValue,
+      isHare: willHare ? isHareYes.value : isHareNo.value,
+    );
 
     final int rsvpResult = adHocData[0]['rsvpState'];
     final int willHareResult = adHocData[0]['willHareState'];
@@ -445,7 +463,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               if (extrasPrice > 0) {
                 // if there are extras, show the extras dialog
                 final dynamic x = await showExtrasDialog(context, eventPrice, extrasPrice);
-                if (x == followTypeCancel) { 
+                if (x == followTypeCancel) {
                   return;
                 } else {
                   if (x == payForRunOnly.value) {
@@ -495,20 +513,14 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                           setState(() {
                             widget.futureRun.extensions.rsvpState = -1;
                           });
-                          payForEvent(total, didPayForExtras).then((List<dynamic> adHocItems) {
+                          payForEvent(eventPrice + extrasPrice, didPayForExtras, surcharge, paymentProvider).then((List<dynamic> adHocItems) {
                             widget.futureRun.extensions.rsvpState = adHocItems[0]['rsvpState'];
                             widget.futureRun.extensions.isPaid = 1;
 
                             setState(() {});
                           });
                         } else {
-                      Utilities.showAlert(
-                        context,
-                        'Please pay for the Hash',
-                        'Please pay the Wanker Banker for your Hash run.',
-                        'OK'
-                        );
-
+                          Utilities.showAlert(context, 'Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
                         }
                       });
                     }
