@@ -150,15 +150,15 @@ class FilterEventListItem extends StatelessWidget {
                       title: 'Set event details',
                       buttons: buttons,
                       cancelButtonTitle: 'Cancel',
-                      buttonPress: (dynamic retVal) {
-                        updateEvent(retVal);
-                      });
+                       );
 
-                  showDialog<void>(
+                  showDialog<dynamic>(
                       context: context,
                       barrierDismissible: false, // user must tap button!
                       builder: (BuildContext context) {
                         return popup;
+                      }).then((dynamic retVal) {
+                        updateEvent(retVal);
                       });
                 },
               ),

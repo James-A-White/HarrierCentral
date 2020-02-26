@@ -270,7 +270,14 @@ class KennelListItemState extends State<KennelsListItem> {
                             title: 'Follow ${widget.kennelItem.kennel.kennelName}',
                             buttons: buttons,
                             cancelButtonTitle: 'Cancel',
-                            buttonPress: (dynamic retVal) {
+                            );
+
+                        showDialog<dynamic>(
+                            context: context,
+                            barrierDismissible: false, // user must tap button!
+                            builder: (BuildContext context) {
+                              return popup;
+                            }).then((dynamic retVal) {
                               if (retVal.value != -1) {
                                 final HasherKennelMapService srv = HasherKennelMapService();
                                 widget.kennelItem.extensions.followingRequested = retVal.value;
@@ -286,13 +293,6 @@ class KennelListItemState extends State<KennelsListItem> {
                                   });
                                 });
                               }
-                            });
-
-                        showDialog<void>(
-                            context: context,
-                            barrierDismissible: false, // user must tap button!
-                            builder: (BuildContext context) {
-                              return popup;
                             });
                       }
                     },
@@ -353,7 +353,14 @@ class KennelListItemState extends State<KennelsListItem> {
         title: 'Notification options for this Kennel',
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
-        buttonPress: (dynamic retVal) {
+         );
+
+    showDialog<dynamic>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return popup;
+        }).then((dynamic retVal) {
           if ((retVal == notificationsOn) || (retVal == notificationsOff)) {
             {
               if (Utilities.checkForConnection(context, message: 'Setting Kennel notifications is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
@@ -371,13 +378,6 @@ class KennelListItemState extends State<KennelsListItem> {
               }
             }
           }
-        });
-
-    showDialog<void>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return popup;
         });
   }
 
@@ -428,7 +428,14 @@ class KennelListItemState extends State<KennelsListItem> {
         title: 'Email options for this Kennel',
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
-        buttonPress: (dynamic retVal) {
+         );
+
+    showDialog<dynamic>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return popup;
+        }).then((dynamic retVal) {
           if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff)) {
             if (Utilities.checkForConnection(context, message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
               final HasherKennelMapService srv = HasherKennelMapService();
@@ -444,13 +451,6 @@ class KennelListItemState extends State<KennelsListItem> {
               });
             }
           }
-        });
-
-    showDialog<void>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return popup;
         });
   }
 }

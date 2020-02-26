@@ -401,7 +401,11 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       },
     ];
 
-    final MultipleChoicePopup popup = MultipleChoicePopup(title: 'Payment options', buttons: buttons, cancelButtonTitle: 'Cancel', buttonPress: () {});
+    final MultipleChoicePopup popup = MultipleChoicePopup(
+      title: 'Payment options',
+      buttons: buttons,
+      cancelButtonTitle: 'Cancel',
+    );
 
     return showDialog<dynamic>(
         context: context,
@@ -466,7 +470,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                 if (x == followTypeCancel) {
                   return;
                 } else {
-                  if (x == payForRunOnly.value) {
+                  if (x == payForRunOnly) {
                     // if the user wants to pay only for the run, don't process extras, so set the value to zero
                     extrasPrice = 0;
                   } else {
@@ -515,7 +519,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                           });
                           payForEvent(eventPrice + extrasPrice, didPayForExtras, surcharge, paymentProvider).then((List<dynamic> adHocItems) {
                             widget.futureRun.extensions.rsvpState = adHocItems[0]['rsvpState'];
-                            widget.futureRun.extensions.isPaid = 1;
+                            //widget.futureRun.extensions.isPaid = 1;
 
                             setState(() {});
                           });
@@ -539,13 +543,20 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   }
 
   bool showPaymentIcons(RunDetailsAggregate futureRun) {
-    if ((DateTime.now().isBefore(futureRun.event.eventStartDatetime.subtract(const Duration(days: 7)))) || (DateTime.now().isAfter(futureRun.event.eventStartDatetime.add(const Duration(days: 7))))) {
+    if ((DateTime.now().isBefore(futureRun.event.eventStartDatetime.subtract(const Duration(days: 1)))) || (DateTime.now().isAfter(futureRun.event.eventStartDatetime.add(const Duration(days: 1))))) {
       return false;
     }
 
-    if (futureRun.extensions.isPaid != 0) {
+    // if the event is more than 10k away, don't show the payment options
+    // TODO(James): Need to test what happens here if user doesn't allow location
+    if(futureRun.extensions.distToEvent > 10000)
+    {
       return false;
     }
+
+    // if (futureRun.extensions.isPaid != 0) {
+    //   return false;
+    // }
 
     // TODO(James): Add filter for distance to event after testing is done so we only pay when we are at an event
 
@@ -590,23 +601,23 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       ];
 
       final MultipleChoicePopup popup = MultipleChoicePopup(
-          title: 'Run Options',
-          buttons: buttons,
-          cancelButtonTitle: 'Cancel',
-          buttonPress: (dynamic retVal) {
-            if (retVal is EnumRsvpState) {
-              setRsvpState(retVal, false);
-            } else if (retVal is EnumIsHare) {
-              setRsvpState(rsvpYes, true);
-            }
-          });
+        title: 'Run Options',
+        buttons: buttons,
+        cancelButtonTitle: 'Cancel',
+      );
 
-      showDialog<void>(
+      showDialog<dynamic>(
           context: context,
           barrierDismissible: false, // user must tap button!
           builder: (BuildContext context) {
             return popup;
-          });
+          }).then((dynamic retVal) {
+        if (retVal is EnumRsvpState) {
+          setRsvpState(retVal, false);
+        } else if (retVal is EnumIsHare) {
+          setRsvpState(rsvpYes, true);
+        }
+      });
     }
   }
 
@@ -706,27 +717,27 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       ];
 
       final MultipleChoicePopup popup = MultipleChoicePopup(
-          title: 'Run Options',
-          buttons: buttons,
-          cancelButtonTitle: 'Cancel',
-          buttonPress: (dynamic retVal) {
-            if (retVal is EnumEmailAlertState) {
-              setEmailAlertState(retVal);
-            } else if (retVal is EnumNotificationState) {
-              setNotificationState(retVal);
-            } else if (retVal is EnumRsvpState) {
-              setRsvpState(retVal, false);
-            } else if (retVal is EnumIsHare) {
-              setRsvpState(rsvpYes, true);
-            }
-          });
+        title: 'Run Options',
+        buttons: buttons,
+        cancelButtonTitle: 'Cancel',
+      );
 
-      showDialog<void>(
+      showDialog<dynamic>(
           context: context,
           barrierDismissible: false, // user must tap button!
           builder: (BuildContext context) {
             return popup;
-          });
+          }).then((dynamic retVal) {
+        if (retVal is EnumEmailAlertState) {
+          setEmailAlertState(retVal);
+        } else if (retVal is EnumNotificationState) {
+          setNotificationState(retVal);
+        } else if (retVal is EnumRsvpState) {
+          setRsvpState(retVal, false);
+        } else if (retVal is EnumIsHare) {
+          setRsvpState(rsvpYes, true);
+        }
+      });
     }
   }
 
@@ -791,19 +802,19 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
-        title: 'Notification options for this run',
-        buttons: buttons,
-        cancelButtonTitle: 'Cancel',
-        buttonPress: (dynamic retVal) {
-          setNotificationState(retVal);
-        });
+      title: 'Notification options for this run',
+      buttons: buttons,
+      cancelButtonTitle: 'Cancel',
+    );
 
-    showDialog<void>(
+    showDialog<dynamic>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return popup;
-        });
+        }).then((dynamic retVal) {
+      setNotificationState(retVal);
+    });
   }
 
   void setNotificationState(EnumNotificationState<int> retVal) {
@@ -882,19 +893,19 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
-        title: 'Email options for this run',
-        buttons: buttons,
-        cancelButtonTitle: 'Cancel',
-        buttonPress: (dynamic retVal) {
-          setEmailAlertState(retVal);
-        });
+      title: 'Email options for this run',
+      buttons: buttons,
+      cancelButtonTitle: 'Cancel',
+    );
 
-    showDialog<void>(
+    showDialog<dynamic>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return popup;
-        });
+        }).then((dynamic retVal) {
+      setEmailAlertState(retVal);
+    });
   }
 
   void setEmailAlertState(EnumEmailAlertState<int> retVal) {

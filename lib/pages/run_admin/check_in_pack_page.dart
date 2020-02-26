@@ -842,7 +842,15 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         title: 'Common filter options',
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
-        buttonPress: (dynamic retVal) {
+        
+        );
+
+    showDialog<dynamic>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return popup;
+        }).then((dynamic retVal) {
           switch (retVal) {
             case FilterOptions.hashersNotHereYet:
               filterValues = <int>[0, 1, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -891,15 +899,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             }
             _refreshPackListFromTables(true);
           }
-
-          // );
-        });
-
-    showDialog<void>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return popup;
         });
   }
 
@@ -1113,20 +1112,20 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           title: 'Payment options',
           buttons: buttons,
           cancelButtonTitle: 'Cancel',
-          buttonPress: (dynamic payForExtras) {
+          );
+
+      showDialog<dynamic>(
+          context: context,
+          barrierDismissible: false, // user must tap button!
+          builder: (BuildContext context) {
+            return popup;
+          }).then((dynamic payForExtras) {
             payForEvent(packMember, paymentType, otherAmount: otherAmount, doPayForExtras: payForExtras).then((List<dynamic> results) {
               _refreshPackListFromTables(false).then((void dummy) {
                 _refreshCounters(true);
                 BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.nameForDisplay, packMember.isMember, otherAmount);
               });
             });
-          });
-
-      showDialog<void>(
-          context: context,
-          barrierDismissible: false, // user must tap button!
-          builder: (BuildContext context) {
-            return popup;
           });
     } else {
       payForEvent(packMember, paymentType, otherAmount: otherAmount).then((List<dynamic> results) {

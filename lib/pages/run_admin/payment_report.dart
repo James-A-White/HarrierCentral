@@ -538,7 +538,14 @@ class PaymentReportState extends State<PaymentReportPage> {
           title: 'Payment options',
           buttons: buttons,
           cancelButtonTitle: 'Cancel',
-          buttonPress: (dynamic payForExtras) {
+           );
+
+      showDialog<dynamic>(
+          context: context,
+          barrierDismissible: false, // user must tap button!
+          builder: (BuildContext context) {
+            return popup;
+          }).then((dynamic payForExtras) {
             payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForExtras).then((List<dynamic> results) {
               _refreshListsFromTable().then((void dummy) {
                 setState(() {
@@ -547,13 +554,6 @@ class PaymentReportState extends State<PaymentReportPage> {
                 });
               });
             });
-          });
-
-      showDialog<void>(
-          context: context,
-          barrierDismissible: false, // user must tap button!
-          builder: (BuildContext context) {
-            return popup;
           });
     } else {
       // there are no extras so just pay for the run without any extras dialog

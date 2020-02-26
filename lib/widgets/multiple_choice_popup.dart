@@ -10,13 +10,13 @@ class MultipleChoicePopup extends StatefulWidget {
     @required this.title,
     @required this.buttons,
     @required this.cancelButtonTitle,
-    @required this.buttonPress,
+    //@required this.buttonPress,
   });
 
   final String title;
   final List<Map<String, dynamic>> buttons;
   final String cancelButtonTitle;
-  final Function buttonPress;
+  //final Function buttonPress;
 
   @override
   _MultipleChoicePopupState createState() => _MultipleChoicePopupState();
@@ -73,8 +73,7 @@ class _MultipleChoicePopupState extends State<MultipleChoicePopup> {
         Expanded(
           child: GestureDetector(
             onTap: () {
-              widget.buttonPress(btnDef['returnValue']);
-              Navigator.of(context).pop<dynamic>(btnDef['returnValue'].value);
+              Navigator.of(context).pop<dynamic>(btnDef['returnValue']);
             },
             child: Container(
               //padding: EdgeInsets.only(top: 6.0 * deviceHeightScaleFactor, left: 8.0, bottom: 6.0 * deviceHeightScaleFactor),

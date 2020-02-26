@@ -258,15 +258,15 @@ class KennelMemberListItem extends StatelessWidget {
                           title: 'Membership options',
                           buttons: buttons,
                           cancelButtonTitle: 'Cancel',
-                          buttonPress: (dynamic retVal) {
-                            modifyMembershipCallback(retVal);
-                          });
+                          );
 
-                      showDialog<void>(
+                      showDialog<dynamic>(
                           context: context,
                           barrierDismissible: false, // user must tap button!
                           builder: (BuildContext context) {
                             return popup;
+                          }).then((dynamic retVal) {
+                            modifyMembershipCallback(retVal);
                           });
                     },
                   ),
