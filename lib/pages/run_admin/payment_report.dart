@@ -145,7 +145,7 @@ class PaymentReportState extends State<PaymentReportPage> {
           INNER JOIN ${kennelsTableHelper.tableName} k on k.kennelId = e.kennelId
           LEFT OUTER JOIN ${hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin)} hkm on hkm.userId = hem.userId and hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
           LEFT OUTER JOIN ${hashersTableHelper.tableName} h on h.hasherId = hem.userId
-          LEFT OUTER JOIN ${paymentsTableHelper.tableName} pay on pay.hemId = hem.hemId and pay.CancelledBy IS NULL
+          LEFT OUTER JOIN ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} pay on pay.hemId = hem.hemId and pay.CancelledBy IS NULL
           LEFT OUTER JOIN ${hashersTableHelper.tableName} paidTo on paidTo.hasherId = pay.paidTo
           LEFT OUTER JOIN ${kennelCreditsTableHelper.tableName} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
           LEFT OUTER JOIN ${hashersTableHelper.tableName} confBy on confBy.hasherId = pay.confirmedBy
@@ -180,20 +180,20 @@ class PaymentReportState extends State<PaymentReportPage> {
 
           select 0 as paymentType, (SELECT COUNT(*) from ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem 
           WHERE  hem.attendenceState >= 20
-          AND hem.hemId not in (SELECT hemId from ${paymentsTableHelper.tableName} pay3 where pay3.cancelledBy IS NULL) ) as count, 5.55 as totalCollected
+          AND hem.hemId not in (SELECT hemId from ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} pay3 where pay3.cancelledBy IS NULL) ) as count, 5.55 as totalCollected
             
           UNION
           select paymentType, 
             (
                 SELECT COUNT(*) 
-                FROM ${paymentsTableHelper.tableName} pay 
+                FROM ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} pay 
                 INNER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem on hem.hemId = pay.hemId AND hem.attendenceState >= 20
                 WHERE pay.paymentType = x.paymentType AND pay.cancelledBy IS NULL
 
             ) as count,
             (
                 SELECT SUM(pay2.creditAmount)
-                FROM ${paymentsTableHelper.tableName} pay2 
+                FROM ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} pay2 
                 INNER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
                 WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
             ) as totalCollected
@@ -216,7 +216,7 @@ class PaymentReportState extends State<PaymentReportPage> {
 
   Future<List<dynamic>> payForEvent(PaymentAggregate item, int paymentType, num amount, {EnumPayForExtras<int> doPayForExtras = payForRunOnly}) {
     final PaymentsService paySrv = PaymentsService();
-    return paySrv.payForEvent(widget.eventAggregate.event.eventId, GUID_EMPTY, item.extensions.pkHemId, paymentType, amount, attendenceAtHash.value, doPayForExtras);
+    return paySrv.payForEvent(widget.eventAggregate.event.eventId, GUID_EMPTY, item.extensions.pkHemId, paymentType, amount, attendenceAtHash.value, doPayForExtras, AppDomainType.event);
   }
 
   void applyFilter() {

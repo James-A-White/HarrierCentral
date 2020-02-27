@@ -42,7 +42,7 @@ class SyncEventAdminService {
     _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, hasherEventMapTableHelper.colUpdatedAtValue, hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin));
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, hasherKennelMapTableHelper.colUpdatedAtValue, hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin));
     _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, eventsTableHelper.colUpdatedAtValue, eventsTableHelper.tableName);
-    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, paymentsTableHelper.colUpdatedAtValue, paymentsTableHelper.tableName);
+    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, paymentsTableHelper.colUpdatedAtValue, paymentsTableHelper.getTableName(TableType.paymentsEvent));
     _receiptsLastUpdated = (flags & flagReceiptsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, receiptsTableHelper.colUpdatedAtValue, receiptsTableHelper.tableName);
     _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, hashersTableHelper.colUpdatedAtValue, hashersTableHelper.tableName);
     //_hashersLastUpdated = true ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HashersTableHelper.colUpdatedAtValue, HashersTableHelper.tableName);
@@ -173,7 +173,7 @@ class SyncEventAdminService {
       final String ms = matches.elementAt(i).group(0);
 
       if (ms.startsWith(r'[{"paymentId"')) {
-        await baseService.bulkUpdateDatabase(paymentsTableHelper,'[$ms]', db, informUser);
+        await baseService.bulkUpdateDatabase(paymentsTableHelper,'[$ms]', db, informUser, tableType: TableType.paymentsEvent);
         print('payments updated');
       }
 

@@ -111,6 +111,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       amount,
       attendenceAtHash.value,
       extras,
+      AppDomainType.user,
       surcharge: surcharge,
       paymentProvider: paymentProvider,
     );
@@ -128,6 +129,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       TableType.hemEventAdmin,
       userId,
       null,
+      AppDomainType.user ,
       rsvpState: rsvpState.value,
       attendenceState: attendenceValue,
       isHare: willHare ? isHareYes.value : isHareNo.value,
@@ -519,7 +521,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                           });
                           payForEvent(eventPrice + extrasPrice, didPayForExtras, surcharge, paymentProvider).then((List<dynamic> adHocItems) {
                             widget.futureRun.extensions.rsvpState = adHocItems[0]['rsvpState'];
-                            //widget.futureRun.extensions.isPaid = 1;
+                            widget.futureRun.extensions.isPaid = 1;
 
                             setState(() {});
                           });
@@ -543,20 +545,20 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   }
 
   bool showPaymentIcons(RunDetailsAggregate futureRun) {
-    if ((DateTime.now().isBefore(futureRun.event.eventStartDatetime.subtract(const Duration(days: 1)))) || (DateTime.now().isAfter(futureRun.event.eventStartDatetime.add(const Duration(days: 1))))) {
+    if ((DateTime.now().isBefore(futureRun.event.eventStartDatetime.subtract(const Duration(days: 7)))) || (DateTime.now().isAfter(futureRun.event.eventStartDatetime.add(const Duration(days: 7))))) {
       return false;
     }
 
     // if the event is more than 10k away, don't show the payment options
     // TODO(James): Need to test what happens here if user doesn't allow location
-    if(futureRun.extensions.distToEvent > 10000)
+    if(futureRun.extensions.distToEvent > 100000)
     {
       return false;
     }
 
-    // if (futureRun.extensions.isPaid != 0) {
-    //   return false;
-    // }
+    if (futureRun.extensions.isPaid != 0) {
+      return false;
+    }
 
     // TODO(James): Add filter for distance to event after testing is done so we only pay when we are at an event
 
@@ -825,7 +827,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         widget.futureRun.extensions.notificationPreference = -1;
       });
 
-      hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemUser, userId, null, notificationState: nState.value).then((List<dynamic> results) {
+      hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemUser, userId, null,AppDomainType.user , notificationState: nState.value).then((List<dynamic> results) {
         setState(() {
           final NotificationSupport notifications = NotificationSupport();
           notifications.setNotificationState(eventId: widget.futureRun.event.eventId);
@@ -916,7 +918,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         widget.futureRun.extensions.emailAlertPreference = -1;
       });
 
-      hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemUser, userId, null, emailAlertState: nState.value).then((List<dynamic> results) {
+      hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemUser, userId, null, AppDomainType.user ,emailAlertState: nState.value).then((List<dynamic> results) {
         setState(() {
           widget.futureRun.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;
         });

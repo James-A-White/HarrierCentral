@@ -177,7 +177,7 @@ class MigrationsTableHelper {
 
              // MIGRATION 227
     MigrationsModel(migrationNumber: 227, migrationText: '''
-            ALTER TABLE ${paymentsTableHelper.tableName} ADD COLUMN ${paymentsTableHelper.colDoPayForExtras} INT;
+            ALTER TABLE ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} ADD COLUMN ${paymentsTableHelper.colDoPayForExtras} INT;
          '''),
 
                       // MIGRATION 228
@@ -212,8 +212,8 @@ class MigrationsTableHelper {
          '''),
 
         MigrationsModel(migrationNumber: 232, migrationText: '''
-            ALTER TABLE ${paymentsTableHelper.tableName} ADD COLUMN ${paymentsTableHelper.colSurcharge} INT;
-            ALTER TABLE ${paymentsTableHelper.tableName} ADD COLUMN ${paymentsTableHelper.colPaymentProvider} INT;
+            ALTER TABLE ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} ADD COLUMN ${paymentsTableHelper.colSurcharge} INT;
+            ALTER TABLE ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} ADD COLUMN ${paymentsTableHelper.colPaymentProvider} INT;
          '''),
 
   ];

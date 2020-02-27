@@ -14,7 +14,8 @@ class BaseModel {
   }
 }
 
-enum TableType { baseTable, hemUser, hemEventAdmin, hkmUser, hkmEventAdmin, hkmKennelAdmin }
+enum AppDomainType {user,event,kennel}
+enum TableType { baseTable, hemUser, hemEventAdmin, hkmUser, hkmEventAdmin, hkmKennelAdmin, paymentsUser, paymentsEvent }
 
 class BaseTableHelper {
   BaseTableHelper();
@@ -74,6 +75,12 @@ class BaseService {
         case TableType.hkmKennelAdmin:
           tableName = hkmKennelAdminTable;
           break;
+        case TableType.paymentsEvent:
+          tableName = eventPaymentsTable;
+          break;
+        case TableType.paymentsUser:
+          tableName = userPaymentsTable;
+          break;
         default:
           // this will cause a SQL error and help us debug, should put a debug assert here
           tableName = '';
@@ -105,6 +112,10 @@ class BaseService {
 
   Future<num> getLastUpdatedTime(BaseTableHelper tableHelper, String colUpdatedAtValue, {TableType tableType}) async {
     final String tableName = getTableName(tableHelper, tableType);
+    if((tableName == null) || (tableName.isEmpty))
+    {
+      int xxx = 0;
+    }
     final Database db = await DBProvider.db.database;
     final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX($colUpdatedAtValue) AS maxDate FROM $tableName');
     final num timeValue = table.first['maxDate'];

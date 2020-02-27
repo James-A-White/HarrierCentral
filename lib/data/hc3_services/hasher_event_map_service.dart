@@ -276,7 +276,7 @@ class HasherEventMapService {
     return <String, String>{'result': 'No valid email address found', 'email': ''};
   }
 
-  Future<List<dynamic>> joinEvent(String eventId, TableType tblType, String hasherId, String hasherEventMapId, {int rsvpState = -1, int attendenceState = -1, int isHare = -1, int virginVisitorType = 0, int notificationState = -1, int emailAlertState = -1}) async {
+  Future<List<dynamic>> joinEvent(String eventId, TableType tblType, String hasherId, String hasherEventMapId, AppDomainType appDomainType, {int rsvpState = -1, int attendenceState = -1, int isHare = -1, int virginVisitorType = 0, int notificationState = -1, int emailAlertState = -1}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return null;
       // TODO(James): fix this so we can return a bool
@@ -288,7 +288,7 @@ class HasherEventMapService {
 
     final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper,hasherEventMapTableHelper.colUpdatedAtValue, tableType: TableType.hemEventAdmin);
     final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper,hasherKennelMapTableHelper.colUpdatedAtValue, tableType: TableType.hkmEventAdmin);
-    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper,paymentsTableHelper.colUpdatedAtValue);
+    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper,paymentsTableHelper.colUpdatedAtValue,tableType: appDomainType == AppDomainType.event ? TableType.paymentsEvent : TableType.paymentsUser);
     final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(kennelCreditsTableHelper,kennelCreditsTableHelper.colUpdatedAtValue);
 
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
@@ -332,7 +332,7 @@ class HasherEventMapService {
     return adHocData;
   }
 
-  Future<List<dynamic>> joinEventAsVisitor(String eventId, TableType tblType, String displayName, int virginVisitorType, int attendenceState, String email, String phoneNumber) async {
+  Future<List<dynamic>> joinEventAsVisitor(String eventId, TableType tblType, String displayName, int virginVisitorType, int attendenceState, String email, String phoneNumber, AppDomainType appDomainType) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return null;
       // TODO(James): fix this so we can return a bool
@@ -343,7 +343,7 @@ class HasherEventMapService {
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor');
 
     final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper, hasherEventMapTableHelper.colUpdatedAtValue, tableType: TableType.hemEventAdmin);
-    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper,paymentsTableHelper.colUpdatedAtValue);
+    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper,paymentsTableHelper.colUpdatedAtValue,tableType: appDomainType == AppDomainType.event ? TableType.paymentsEvent : TableType.paymentsUser);
     final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(kennelCreditsTableHelper,kennelCreditsTableHelper.colUpdatedAtValue);
 
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);

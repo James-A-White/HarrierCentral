@@ -81,6 +81,8 @@ const String hemAdminTable = 'hasherEventMapForRunAdmin';
 const String hkmUserTable = 'hasherKennelMap';
 const String hkmEventAdminTable = 'hasherKennelMapForRunAdmin';
 const String hkmKennelAdminTable = 'hasherKennelMapForKennelAdmin';
+const String eventPaymentsTable = 'Payments';
+const String userPaymentsTable = 'userPayments';
 
 const Map<String,int> runTags = <String, int>{
   'Normal run': 0x00000001,

@@ -466,7 +466,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
 
         final String userId = getStringPref(StringPrefsEnum.userId);
 
-        hasherEventMapService.joinEvent(content, TableType.hemUser, userId, null, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value, virginVisitorType: enumHasher.value).then((List<dynamic> adHocData) {
+        hasherEventMapService.joinEvent(content, TableType.hemUser, userId, null,AppDomainType.user , rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value, virginVisitorType: enumHasher.value).then((List<dynamic> adHocData) {
           setState(() {
             if ((adHocData != null) && (adHocData.isNotEmpty)) {
               onScreenMessage = adHocData[0]['userMessage'];
@@ -502,7 +502,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
           } else {
             final String userId = getStringPref(StringPrefsEnum.userId);
 
-            hasherEventMapService.joinEvent(eventId, TableType.hemUser, userId, null, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value).then((List<dynamic> adHocData) {
+            hasherEventMapService.joinEvent(eventId, TableType.hemUser, userId, null,AppDomainType.user , rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value).then((List<dynamic> adHocData) {
               setState(() {
                 if ((adHocData != null) && (adHocData.isNotEmpty)) {
                   onScreenMessage = adHocData[0]['userMessage'];

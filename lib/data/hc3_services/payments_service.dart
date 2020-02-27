@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:http/http.dart' as http;
 
@@ -114,12 +115,24 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
   @override
   num cacheDuration;
 
-  @override
-  String tableName = 'Payments';
+  // @override
+  // String tableName = 'Payments';
+
+  // @override
+  // String getTableName(TableType type) {
+  //   return tableName;
+  // }
 
   @override
-  String getTableName(TableType type) {
-    return tableName;
+  String tableName = '';
+
+  @override
+  String getTableName(TableType tblType) {
+    if (tblType == TableType.paymentsUser) {
+      return userPaymentsTable;
+    } else {
+      return eventPaymentsTable;
+    }
   }
 
   @override
@@ -146,11 +159,10 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
   final String colSurcharge = 'surcharge';
   final String colPaymentProvider = 'paymentProvider';
 
-
   @override
-  Future<dynamic> createTable(Database db, int version,TableType tableType) async {
+  Future<dynamic> createTable(Database db, int version, TableType tableType) async {
     await db.execute('''
-          CREATE TABLE $tableName (
+          CREATE TABLE ${getTableName(tableType)} (
             $colId INTEGER PRIMARY KEY,
 
             $colPaymentId TEXT NOT NULL,
@@ -180,8 +192,13 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
           )
           ''');
 
-    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
+    String sql = 'CREATE INDEX idx_${getTableName(tableType)}_id ON ${getTableName(tableType)}($remoteDbId);';
+    await db.execute(sql);
+    sql = 'CREATE INDEX idx_${getTableName(tableType)}_update_at_value ON ${getTableName(tableType)}($colUpdatedAtValue);';
+    await db.execute(sql);
+
+    // await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
+    // await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
   @override
@@ -286,7 +303,7 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
 }
 
 class PaymentsService {
-  Future<List<dynamic>> payForEvent(String eventId, String hasherId, String hasherEventMapId, int paymentType, num paymentAmount, int minimumAttendenceValue, EnumPayForExtras<int> doPayForExtras, {num surcharge, String paymentProvider}) async {
+  Future<List<dynamic>> payForEvent(String eventId, String hasherId, String hasherEventMapId, int paymentType, num paymentAmount, int minimumAttendenceValue, EnumPayForExtras<int> doPayForExtras, AppDomainType appDomainType, {num surcharge, String paymentProvider}) async {
     List<dynamic> results;
 
     if (globalConnectionStatus == connectionStatus_notConnected) {
@@ -309,17 +326,19 @@ class PaymentsService {
 
     final String accessToken = Utilities.generateToken(userId, 'processPayment', paramString: tokenParameterString);
 
-    final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper,hasherEventMapTableHelper.colUpdatedAtValue, tableType: TableType.hemEventAdmin);
+    final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper, hasherEventMapTableHelper.colUpdatedAtValue, tableType: appDomainType == AppDomainType.event ? TableType.hemEventAdmin : TableType.hemUser);
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
 
-   final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper,hasherKennelMapTableHelper.colUpdatedAtValue, tableType: TableType.hkmEventAdmin);
+    final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper, hasherKennelMapTableHelper.colUpdatedAtValue, tableType: appDomainType == AppDomainType.event ? TableType.hkmEventAdmin : TableType.hkmUser);
     final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
 
-    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper, paymentsTableHelper.colUpdatedAtValue);
+    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper, paymentsTableHelper.colUpdatedAtValue, tableType: appDomainType == AppDomainType.event ? TableType.paymentsEvent : TableType.paymentsUser);
     final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
 
     final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(kennelCreditsTableHelper, kennelCreditsTableHelper.colUpdatedAtValue);
     final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
+
+    final String appDomainStr = appDomainType.toString();
 
     final String body = jsonEncode(<String, String>{
       'userId': userId,
@@ -336,8 +355,9 @@ class PaymentsService {
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
       'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString(),
       'doPayForExtras': doPayForExtras.value.toString(),
-      'surcharge' : surcharge.toString(),
-      'paymentProvider' : paymentProvider ?? ''
+      'surcharge': surcharge == null ? null : surcharge.toString(),
+      'paymentProvider': paymentProvider ?? '',
+      'appDomainType' : appDomainStr
     });
 
     final http.Response response = await http
@@ -347,12 +367,16 @@ class PaymentsService {
             )
         .catchError(
       (dynamic error) {
-        return false;
+        return null;
       },
     );
 
-    results = await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
-
+    if (appDomainType == AppDomainType.event)
+    {
+      results = await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    } else {
+      results = await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    }
     return results;
   }
 

@@ -26,7 +26,7 @@ class FutureRunsListPage extends StatefulWidget {
 }
 
 class RunDetailsQueryExtensions {
-  RunDetailsQueryExtensions({this.daysUntilEvent, this.distToEvent, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isHare, this.isMember, this.following, this.notificationPreference, this.emailAlertPreference, this.distancePreference});
+  RunDetailsQueryExtensions({this.daysUntilEvent, this.distToEvent, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isPaid, this.isHare, this.isMember, this.following, this.notificationPreference, this.emailAlertPreference, this.distancePreference});
 
   final num daysUntilEvent;
   num distToEvent;
@@ -34,7 +34,7 @@ class RunDetailsQueryExtensions {
   int digitsAfterDecimal;
   String currencySymbol;
   int rsvpState;
-  //int isPaid;
+  int isPaid;
   int isHare;
   int isMember;
   final int following;
@@ -50,7 +50,7 @@ class RunDetailsQueryExtensions {
         mismanagementRoleFlags: map['mismanagementRoleFlags'],
         following: map['following'],
         rsvpState: map['rsvpState'],
-        //isPaid: map['isPaid'],
+        isPaid: map['isPaid'],
         isHare: map['isHare'],
         isMember: map['isMember'],
         notificationPreference: map['notificationPreference'],
@@ -98,6 +98,13 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         print(e);
       }
 
+      query = 'DELETE FROM ${paymentsTableHelper.getTableName(TableType.paymentsUser)}';
+      try {
+        await db.rawQuery(query);
+      } catch (e) {
+        print(e);
+      }
+
       query = 'DELETE FROM ${eventsTableHelper.tableName}';
       try {
         await db.rawQuery(query);
@@ -108,7 +115,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
     if (queryBackend) {
       final SyncUserDataService cSrv = SyncUserDataService();
-      cSrv.updateFromBackend(db, SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable , false).then((bool result) {
+      cSrv.updateFromBackend(db, SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable | SyncUserDataService.flagPaymentsTable , false).then((bool result) {
         refreshFromTable(true);
         final String resultStr = result ? 'successfully' : 'unsuccessfully';
         print('Events user data synchronized $resultStr');
@@ -140,7 +147,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           coalesce(hkm.mismanagementRoleFlags,0) as mismanagementRoleFlags,
           coalesce(hkm.following,0) as following,
           coalesce(hem.rsvpState,0) as rsvpState,
-          -- CASE WHEN coalesce(pay.paymentType,0) >= 2 THEN 1 ELSE 0 END as isPaid,
+          CASE WHEN coalesce(pay.paymentType,0) >= 2 THEN 1 ELSE 0 END as isPaid,
           coalesce(hem.isHare,0) as isHare,
           case when ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime'))) then 1 else 0 end as isMember,
           coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) as notificationPreference,
@@ -157,7 +164,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           INNER JOIN hashers h on h.hasherId = "$userId"
           LEFT OUTER JOIN hasherKennelMap hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
           LEFT OUTER JOIN hasherEventMap hem on hem.eventId = evt.eventId and hem.userId = "$userId"
-          -- LEFT OUTER JOIN ${paymentsTableHelper.tableName} pay on pay.${paymentsTableHelper.colHemId} = hem.${hasherEventMapTableHelper.colHemId} AND pay.${paymentsTableHelper.colCancelledBy} IS NULL
+          LEFT OUTER JOIN ${paymentsTableHelper.getTableName(TableType.paymentsUser)} pay on pay.${paymentsTableHelper.colHemId} = hem.${hasherEventMapTableHelper.colHemId} AND pay.${paymentsTableHelper.colCancelledBy} IS NULL
           WHERE evt.eventStartDatetime > datetime('now','localtime','-4 hours') and evt.isVisible = 1
           AND (
                 (coalesce(hkm.following,0) <= 1) 

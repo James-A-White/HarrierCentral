@@ -329,7 +329,7 @@ Container(
         final int attendenceState = isScanningAtRunStart ? attendenceAtHash.value : attendenceOnIn.value;
 
         CommonQueries.getUserIdFromUqr(prefix + content).then((String hasherId) {
-          hasherEventMapService.joinEvent(widget.eventAggregate.event.eventId, TableType.hemEventAdmin, hasherId, null, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value, virginVisitorType: enumHasher.value).then((List<dynamic> adHocData) {
+          hasherEventMapService.joinEvent(widget.eventAggregate.event.eventId, TableType.hemEventAdmin, hasherId, null, AppDomainType.event ,rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value, virginVisitorType: enumHasher.value).then((List<dynamic> adHocData) {
             setState(() {
               
               if ((adHocData != null) && (adHocData.isNotEmpty)) {
@@ -440,7 +440,8 @@ Container(
       paymentType,
       amount,
       attendenceAtHash.value,
-      payForRunOnly
+      payForRunOnly,
+      AppDomainType.event
     );
     retVal.then(
       (List<dynamic> paymentResult) {

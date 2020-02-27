@@ -435,7 +435,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                     });
                                     //final String userId = getStringPref(StringPrefsEnum.userId);
                                     
-                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, rsvpState: rsvpYes.value, isHare: isHareYes.value);
+                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, AppDomainType.user ,rsvpState: rsvpYes.value, isHare: isHareYes.value);
 
                                     retVal.then((List<dynamic> adHocData) async {
                                       await refreshPackListFromTable(true);
@@ -647,7 +647,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     //final String userId = getStringPref(StringPrefsEnum.userId);
 
     final int attendenceValue = rsvpState.value <= rsvpMaybe.value ? attendenceNo.value : attendenceNoChange.value;
-    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, rsvpState: rsvpState.value, attendenceState: attendenceValue, isHare: isHareNo.value);
+    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, AppDomainType.user ,rsvpState: rsvpState.value, attendenceState: attendenceValue, isHare: isHareNo.value);
 
     retVal.then((List<dynamic> adHocData) async {
       await refreshPackListFromTable(false);
@@ -772,7 +772,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                       }
                     });
                     //final String userId = getStringPref(StringPrefsEnum.userId);
-                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, rsvpState: rsvpYes.value, attendenceState: attendenceNoChange.value, isHare: isHareYes.value);
+                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, AppDomainType.user ,rsvpState: rsvpYes.value, attendenceState: attendenceNoChange.value, isHare: isHareYes.value);
 
                     retVal.then((List<dynamic> adHocData) async {
                       await refreshPackListFromTable(true);

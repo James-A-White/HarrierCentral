@@ -19,20 +19,22 @@ class SyncUserDataService {
   static const int flagCountriesTable = 0x00000008;
   static const int flagKennelsTable = 0x00000010;
   static const int flagNarrowEventsTable = 0x00000020;
+  static const int flagPaymentsTable = 0x00000040;
 
-  static const int flagAllMasterDataWithoutHashers = 0x0000003E;
-  static const int flagAllMasterData = 0x0000003F;
+  static const int flagAllMasterDataWithoutHashers = 0x0000007E;
+  static const int flagAllMasterData = 0x0000007F;
 
   static const int flagHasherKennelMapTable = 0x00010000;
-  static const int flagHasherEventMapTable = 0x00010000;
+  static const int flagHasherEventMapTable = 0x00020000;
 
-  static const int flagsAllData = 0x0003003f;
+  static const int flagsAllData = 0x0003007f;
 
   num _hashersLastUpdated;
   num _citiesLastUpdated;
   num _regionsLastUpdated;
   num _countriesLastUpdated;
   num _kennelsLastUpdated;
+  num _paymentsLastUpdated;
   num _hasherKennelMapLastUpdated;
   num _hasherEventMapLastUpdated;
   num _narrowEventsLastUpdated;
@@ -50,6 +52,7 @@ class SyncUserDataService {
     _regionsLastUpdated = (flags & flagRegionsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, regionsTableHelper.colUpdatedAtValue, regionsTableHelper.tableName);
     _countriesLastUpdated = (flags & flagCountriesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, countriesTableHelper.colUpdatedAtValue, countriesTableHelper.tableName);
     _kennelsLastUpdated = (flags & flagKennelsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, kennelsTableHelper.colUpdatedAtValue, kennelsTableHelper.tableName);
+    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, paymentsTableHelper.colUpdatedAtValue, paymentsTableHelper.getTableName(TableType.paymentsUser));
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, hasherKennelMapTableHelper.colUpdatedAtValue, hasherKennelMapTableHelper.getTableName(TableType.hkmUser));
     _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, hasherEventMapTableHelper.colUpdatedAtValue, hasherEventMapTableHelper.getTableName(TableType.hemUser));
     _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, eventsTableHelper.colUpdatedAtValue, eventsTableHelper.tableName);
@@ -111,6 +114,7 @@ class SyncUserDataService {
       final DateTime regionsUpdatedAfter = _regionsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_regionsLastUpdated + 1000);
       final DateTime countriesUpdatedAfter = _countriesLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_countriesLastUpdated + 1000);
       final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
+      final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
       final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
       final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
       final DateTime narrowEventsUpdatedAfter = _narrowEventsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_narrowEventsLastUpdated + 1000);
@@ -133,6 +137,8 @@ class SyncUserDataService {
         'hasherKennelMapUpdatedAfter': (tablesToSync & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
         'hasherEventMapUpdatedAfter': (tablesToSync & flagHasherEventMapTable) == 0 ? 'ignore' : hasherEventMapUpdatedAfter.toString().substring(0, 19),
         'narrowEventsUpdatedAfter': (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : narrowEventsUpdatedAfter.toString().substring(0, 19),
+        'paymentsUpdatedAfter': (tablesToSync & flagPaymentsTable) == 0 ? 'ignore' : paymentsUpdatedAfter.toString().substring(0, 19),
+
       });
 
       final http.Response response = await http
@@ -168,6 +174,11 @@ class SyncUserDataService {
       if (ms.startsWith(r'[{"hasherId"')) {
         await hashersService.bulkUpdateDatabase(hashersTableHelper,'[$ms]', db, informUser);
         print('hashers updated');
+      }
+
+      if (ms.startsWith(r'[{"paymentId"')) {
+        await baseService.bulkUpdateDatabase(paymentsTableHelper,'[$ms]', db, informUser, tableType: TableType.paymentsUser);
+        print('payments updated');
       }
 
       if (ms.startsWith(r'[{"cityId"')) {

@@ -69,13 +69,14 @@ class DBProvider {
         await hasherKennelMapTableHelper.createTable(db, version, TableType.hkmUser);
         await hasherEventMapTableHelper.createTable(db, version, TableType.hemUser);
         await eventsTableHelper.createTable(db, version,null);
+        await paymentsTableHelper.createTable(db, version,TableType.paymentsUser);
         await NotificationsTableHelper.createTable(db, version);
         await MigrationsTableHelper.createTable(db,version);
 
         // create event admin tables
         await hasherEventMapTableHelper.createTable(db, version, TableType.hemEventAdmin);
         await hasherKennelMapTableHelper.createTable(db, version, TableType.hkmEventAdmin);
-        await paymentsTableHelper.createTable(db, version,null);
+        await paymentsTableHelper.createTable(db, version,TableType.paymentsEvent);
         await receiptsTableHelper.createTable(db, version,null);
         await kennelCreditsTableHelper.createTable(db, version,null);
 
