@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:intl/intl.dart';
 //import 'package:flutter_vector_icons/flutter_vector_icons.dart';
@@ -17,9 +16,9 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
+import 'package:harrier_central/widgets/payment_icons.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
-import 'package:harrier_central/data/hc3_services/payments_service.dart';
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
+
 import 'package:harrier_central/notifications/notification_support.dart';
 
 //import 'package:flip_panel/flip_panel.dart';
@@ -100,23 +99,6 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     return Icon(rawIcon, size: 26.0, color: color);
   }
 
-  Future<List<dynamic>> payForEvent(num amount, EnumPayForExtras<int> extras, num surcharge, String paymentProvider) async {
-    final String hasherId = getStringPref(StringPrefsEnum.userId);
-    final PaymentsService paySrv = PaymentsService();
-    return paySrv.payForEvent(
-      widget.futureRun.event.eventId,
-      hasherId,
-      GUID_EMPTY,
-      paymentBankTransfer.value,
-      amount,
-      attendenceAtHash.value,
-      extras,
-      AppDomainType.user,
-      surcharge: surcharge,
-      paymentProvider: paymentProvider,
-    );
-  }
-
   Future<void> setRsvpState(EnumRsvpState<int> rsvpState, bool willHare) async {
     setState(() {
       widget.futureRun.extensions.rsvpState = -1;
@@ -129,7 +111,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       TableType.hemEventAdmin,
       userId,
       null,
-      AppDomainType.user ,
+      AppDomainType.user,
       rsvpState: rsvpState.value,
       attendenceState: attendenceValue,
       isHare: willHare ? isHareYes.value : isHareNo.value,
@@ -334,248 +316,253 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
               ),
             ],
           ),
-          !showPaymentIcons(widget.futureRun)
-              ? Container()
-              : Column(
-                  children: <Widget>[
-                    Container(
-                      //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
-                      margin: const EdgeInsets.only(top: 2.0, bottom: 0.0),
-                      padding: const EdgeInsets.only(top: 7.0, bottom: 0.0),
-                      height: 1.0,
-                      color: Colors.grey[300],
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.only(top: 4.0, bottom: 0.0),
-                      child: Text('Pay for your run with...'),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: getPaymentIcons(),
-                    ),
-                  ],
-                )
+          PaymentIcons(widget.futureRun, () {
+            setState(() {});
+          })
         ],
       ),
     );
   }
 
-  List<Widget> getPaymentIcons() {
-    final List<Widget> icons = <Widget>[];
+  // Widget paymentIcons() {
+  //   return
+  //   !showPaymentIcons(widget.futureRun) ? Container() :
+  //   Column(
+  //     children: <Widget>[
+  //       Container(
+  //         //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
+  //         margin: const EdgeInsets.only(top: 2.0, bottom: 0.0),
+  //         padding: const EdgeInsets.only(top: 7.0, bottom: 0.0),
+  //         height: 1.0,
+  //         color: Colors.grey[300],
+  //       ),
+  //       const Padding(
+  //         padding: EdgeInsets.only(top: 4.0, bottom: 0.0),
+  //         child: Text('Pay for your run with...'),
+  //       ),
+  //       Row(
+  //         mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //         children: getPaymentIcons(),
+  //       ),
+  //     ],
+  //   );
+  // }
 
-    final KennelsModel k = widget.futureRun.kennel;
+  // List<Widget> getPaymentIcons() {
+  //   final List<Widget> icons = <Widget>[];
 
-    Widget w = getPaymentIcon(k.kennelPaymentUrl, k.kennelPaymentUrlExpires, k.kennelPaymentScheme, k.kennelPaymentMemberSurcharge, k.kennelPaymentNonMemberSurcharge);
-    if (w != null) {
-      icons.add(w);
-    }
+  //   final KennelsModel k = widget.futureRun.kennel;
 
-    w = getPaymentIcon(k.kennelPaymentUrl2, k.kennelPaymentUrlExpires2, k.kennelPaymentScheme2, k.kennelPaymentMemberSurcharge2, k.kennelPaymentNonMemberSurcharge2);
-    if (w != null) {
-      icons.add(w);
-    }
+  //   Widget w = getPaymentIcon(k.kennelPaymentUrl, k.kennelPaymentUrlExpires, k.kennelPaymentScheme, k.kennelPaymentMemberSurcharge, k.kennelPaymentNonMemberSurcharge);
+  //   if (w != null) {
+  //     icons.add(w);
+  //   }
 
-    w = getPaymentIcon(k.kennelPaymentUrl3, k.kennelPaymentUrlExpires3, k.kennelPaymentScheme3, k.kennelPaymentMemberSurcharge3, k.kennelPaymentNonMemberSurcharge3);
-    if (w != null) {
-      icons.add(w);
-    }
-    return icons;
-  }
+  //   w = getPaymentIcon(k.kennelPaymentUrl2, k.kennelPaymentUrlExpires2, k.kennelPaymentScheme2, k.kennelPaymentMemberSurcharge2, k.kennelPaymentNonMemberSurcharge2);
+  //   if (w != null) {
+  //     icons.add(w);
+  //   }
 
-  Future<dynamic> showExtrasDialog(BuildContext context, num runOnlyPrice, num extrasPrice) {
-    final String runOnlyPriceStr = Utilities.getFormattedMoney(runOnlyPrice, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol);
-    final String runPlusExtrasPriceStr = Utilities.getFormattedMoney(runOnlyPrice + extrasPrice, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol);
+  //   w = getPaymentIcon(k.kennelPaymentUrl3, k.kennelPaymentUrlExpires3, k.kennelPaymentScheme3, k.kennelPaymentMemberSurcharge3, k.kennelPaymentNonMemberSurcharge3);
+  //   if (w != null) {
+  //     icons.add(w);
+  //   }
+  //   return icons;
+  // }
 
-    final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
-      <String, dynamic>{
-        'title': 'Run only ($runOnlyPriceStr)',
-        'icon': <Widget>[
-          Container(),
-        ],
-        'returnValue': payForRunOnly,
-      },
-      <String, dynamic>{
-        'title': 'Run + ' + widget.futureRun.event.extrasDescription + ' ($runPlusExtrasPriceStr)',
-        'icon': <Widget>[
-          Container(),
-        ],
-        'returnValue': payForRunAndExtras
-      },
-    ];
+  // Future<dynamic> showExtrasDialog(BuildContext context, num runOnlyPrice, num extrasPrice) {
+  //   final String runOnlyPriceStr = Utilities.getFormattedMoney(runOnlyPrice, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol);
+  //   final String runPlusExtrasPriceStr = Utilities.getFormattedMoney(runOnlyPrice + extrasPrice, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol);
 
-    final MultipleChoicePopup popup = MultipleChoicePopup(
-      title: 'Payment options',
-      buttons: buttons,
-      cancelButtonTitle: 'Cancel',
-    );
+  //   final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+  //     <String, dynamic>{
+  //       'title': 'Run only ($runOnlyPriceStr)',
+  //       'icon': <Widget>[
+  //         Container(),
+  //       ],
+  //       'returnValue': payForRunOnly,
+  //     },
+  //     <String, dynamic>{
+  //       'title': 'Run + ' + widget.futureRun.event.extrasDescription + ' ($runPlusExtrasPriceStr)',
+  //       'icon': <Widget>[
+  //         Container(),
+  //       ],
+  //       'returnValue': payForRunAndExtras
+  //     },
+  //   ];
 
-    return showDialog<dynamic>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return popup;
-        });
-  }
+  //   final MultipleChoicePopup popup = MultipleChoicePopup(
+  //     title: 'Payment options',
+  //     buttons: buttons,
+  //     cancelButtonTitle: 'Cancel',
+  //   );
 
-  Widget getPaymentIcon(String url, DateTime urlExpires, String paymentProvider, num memberSurcharge, num nonMemberSurcharge) {
-    if ((url == null) || (paymentProvider == null) || (urlExpires == null)) {
-      return null;
-    }
+  //   return showDialog<dynamic>(
+  //       context: context,
+  //       barrierDismissible: false, // user must tap button!
+  //       builder: (BuildContext context) {
+  //         return popup;
+  //       });
+  // }
 
-    if (!url.toLowerCase().startsWith('http')) {
-      return null;
-    }
+  // Widget getPaymentIcon(String url, DateTime urlExpires, String paymentProvider, num memberSurcharge, num nonMemberSurcharge) {
+  //   if ((url == null) || (paymentProvider == null) || (urlExpires == null)) {
+  //     return null;
+  //   }
 
-    if ((!urlExpires.isBefore(DateTime(2010))) && (urlExpires.isBefore(DateTime.now()))) {
-      return null;
-    }
+  //   if (!url.toLowerCase().startsWith('http')) {
+  //     return null;
+  //   }
 
-    const num imgSize = 70.0;
+  //   if ((!urlExpires.isBefore(DateTime(2010))) && (urlExpires.isBefore(DateTime.now()))) {
+  //     return null;
+  //   }
 
-    Widget w;
+  //   const num imgSize = 70.0;
 
-    switch (paymentProvider.toLowerCase()) {
-      case 'paypal':
-        w = Image.asset('images/logos/paypal_logo.png', height: imgSize, width: imgSize);
-        break;
-      case 'zelle':
-        w = Image.asset('images/logos/zelle_logo.png', height: imgSize, width: imgSize);
-        break;
-      case 'transferwise':
-        w = Image.asset('images/logos/transferwise_logo.png', height: imgSize, width: imgSize);
-        break;
-      case 'venmo':
-        w = Image.asset('images/logos/venmo_logo.png', height: imgSize, width: imgSize);
-        break;
-      case 'tikkie':
-        w = Image.asset('images/logos/tikkie_logo.png', height: imgSize, width: imgSize);
-        break;
-    }
+  //   Widget w;
 
-    return GestureDetector(
-        onTap: () {
-          canLaunch(url).then((bool canLaunch) async {
-            if (canLaunch) {
-              // OK, we have a good URL, so let's figure out how much the hasher needs to pay
+  //   switch (paymentProvider.toLowerCase()) {
+  //     case 'paypal':
+  //       w = Image.asset('images/logos/paypal_logo.png', height: imgSize, width: imgSize);
+  //       break;
+  //     case 'zelle':
+  //       w = Image.asset('images/logos/zelle_logo.png', height: imgSize, width: imgSize);
+  //       break;
+  //     case 'transferwise':
+  //       w = Image.asset('images/logos/transferwise_logo.png', height: imgSize, width: imgSize);
+  //       break;
+  //     case 'venmo':
+  //       w = Image.asset('images/logos/venmo_logo.png', height: imgSize, width: imgSize);
+  //       break;
+  //     case 'tikkie':
+  //       w = Image.asset('images/logos/tikkie_logo.png', height: imgSize, width: imgSize);
+  //       break;
+  //   }
 
-              // start with the extras
-              EnumPayForExtras<int> didPayForExtras = payForRunOnly;
+  //   return GestureDetector(
+  //       onTap: () {
+  //         canLaunch(url).then((bool canLaunch) async {
+  //           if (canLaunch) {
+  //             // OK, we have a good URL, so let's figure out how much the hasher needs to pay
 
-              String extrasStr = '';
-              num extrasPrice = widget.futureRun.event.eventPriceForExtras ?? 0;
-              final num surcharge = (widget.futureRun.extensions.isMember == 0 ? nonMemberSurcharge : memberSurcharge) ?? 0;
-              final num eventPrice = (widget.futureRun.extensions.isMember == 0 ? widget.futureRun.event.eventPriceForNonMembers ?? widget.futureRun.kennel.defaultPriceForNonMembers : widget.futureRun.event.eventPriceForMembers ?? widget.futureRun.kennel.defaultPriceForMembers) ?? 0;
+  //             // start with the extras
+  //             EnumPayForExtras<int> didPayForExtras = payForRunOnly;
 
-              if (extrasPrice > 0) {
-                // if there are extras, show the extras dialog
-                final dynamic x = await showExtrasDialog(context, eventPrice, extrasPrice);
-                if (x == followTypeCancel) {
-                  return;
-                } else {
-                  if (x == payForRunOnly) {
-                    // if the user wants to pay only for the run, don't process extras, so set the value to zero
-                    extrasPrice = 0;
-                  } else {
-                    didPayForExtras = payForRunAndExtras;
-                  }
-                }
-              }
+  //             String extrasStr = '';
+  //             num extrasPrice = widget.futureRun.event.eventPriceForExtras ?? 0;
+  //             final num surcharge = (widget.futureRun.extensions.isMember == 0 ? nonMemberSurcharge : memberSurcharge) ?? 0;
+  //             final num eventPrice = (widget.futureRun.extensions.isMember == 0 ? widget.futureRun.event.eventPriceForNonMembers ?? widget.futureRun.kennel.defaultPriceForNonMembers : widget.futureRun.event.eventPriceForMembers ?? widget.futureRun.kennel.defaultPriceForMembers) ?? 0;
 
-              if (extrasPrice > 0) {
-                // build the string if we need to
-                extrasStr = ' ,and a\r\n' + Utilities.getFormattedMoney(extrasPrice, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol) + ' charge for ${widget.futureRun.event.extrasDescription}';
-              }
+  //             if (extrasPrice > 0) {
+  //               // if there are extras, show the extras dialog
+  //               final dynamic x = await showExtrasDialog(context, eventPrice, extrasPrice);
+  //               if (x == followTypeCancel) {
+  //                 return;
+  //               } else {
+  //                 if (x == payForRunOnly) {
+  //                   // if the user wants to pay only for the run, don't process extras, so set the value to zero
+  //                   extrasPrice = 0;
+  //                 } else {
+  //                   didPayForExtras = payForRunAndExtras;
+  //                 }
+  //               }
+  //             }
 
-              final num total = surcharge + eventPrice + extrasPrice;
+  //             if (extrasPrice > 0) {
+  //               // build the string if we need to
+  //               extrasStr = ' ,and a\r\n' + Utilities.getFormattedMoney(extrasPrice, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol) + ' charge for ${widget.futureRun.event.extrasDescription}';
+  //             }
 
-              // build the other strings for the total price and event prices
-              final String totalStr = Utilities.getFormattedMoney(total, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol);
-              final String eventPriceStr = Utilities.getFormattedMoney(eventPrice, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol);
+  //             final num total = surcharge + eventPrice + extrasPrice;
 
-              String surchargeStr = '';
-              if (surcharge > 0) {
-                // if there is a surcharge, build the surcharge string
-                surchargeStr = ' ,and a\r\n' + Utilities.getFormattedMoney(surcharge, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol) + ' surcharge for $paymentProvider';
-              }
+  //             // build the other strings for the total price and event prices
+  //             final String totalStr = Utilities.getFormattedMoney(total, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol);
+  //             final String eventPriceStr = Utilities.getFormattedMoney(eventPrice, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol);
 
-              // show the alert so the user knows how much to pay
-              Utilities.showAlert(context, 'Please pay $totalStr', 'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr', 'OK', showCancelButton: true, cancelButtonText: 'Cancel').then((bool result) {
-                if (result) {
-                  // now launch into the payment provider
-                  launch(url).then((bool launched) {
-                    if (widget.futureRun.kennel.allowSelfPayment == 0) {
-                      Utilities.showAlert(context, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
-                    } else {
-                      // show the alert so the user knows how much to pay
-                      Utilities.showAlert(
-                        context,
-                        'Were you able to pay?',
-                        'Were you able to complete a payment of $totalStr using $paymentProvider',
-                        'Yes',
-                        showCancelButton: true,
-                        cancelButtonText: 'No',
-                      ).then((bool result2) {
-                        if (result2) {
-                          setState(() {
-                            widget.futureRun.extensions.rsvpState = -1;
-                          });
-                          payForEvent(eventPrice + extrasPrice, didPayForExtras, surcharge, paymentProvider).then((List<dynamic> adHocItems) {
-                            widget.futureRun.extensions.rsvpState = adHocItems[0]['rsvpState'];
-                            widget.futureRun.extensions.isPaid = 1;
+  //             String surchargeStr = '';
+  //             if (surcharge > 0) {
+  //               // if there is a surcharge, build the surcharge string
+  //               surchargeStr = ' ,and a\r\n' + Utilities.getFormattedMoney(surcharge, widget.futureRun.extensions.digitsAfterDecimal, widget.futureRun.extensions.currencySymbol) + ' surcharge for $paymentProvider';
+  //             }
 
-                            setState(() {});
-                          });
-                        } else {
-                          Utilities.showAlert(context, 'Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
-                        }
-                      });
-                    }
-                  });
-                }
-              });
-            } else {
-              Utilities.showAlert(context, 'Bad payment URL', 'The payment URL provided by the Kennel is not valid. Please check with the Kennel\'s mismanagement to have them fix the problem.', 'OK');
-            }
-          });
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: w,
-        ));
-  }
+  //             // show the alert so the user knows how much to pay
+  //             Utilities.showAlert(context, 'Please pay $totalStr', 'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr', 'OK', showCancelButton: true, cancelButtonText: 'Cancel').then((bool result) {
+  //               if (result) {
+  //                 // now launch into the payment provider
+  //                 launch(url).then((bool launched) {
+  //                   if (widget.futureRun.kennel.allowSelfPayment == 0) {
+  //                     Utilities.showAlert(context, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
+  //                   } else {
+  //                     // show the alert so the user knows how much to pay
+  //                     Utilities.showAlert(
+  //                       context,
+  //                       'Were you able to pay?',
+  //                       'Were you able to complete a payment of $totalStr using $paymentProvider',
+  //                       'Yes',
+  //                       showCancelButton: true,
+  //                       cancelButtonText: 'No',
+  //                     ).then((bool result2) {
+  //                       if (result2) {
+  //                         setState(() {
+  //                           widget.futureRun.extensions.rsvpState = -1;
+  //                         });
+  //                         payForEvent(eventPrice + extrasPrice, didPayForExtras, surcharge, paymentProvider).then((List<dynamic> adHocItems) {
+  //                           widget.futureRun.extensions.rsvpState = adHocItems[0]['rsvpState'];
+  //                           widget.futureRun.extensions.isPaid = 1;
 
-  bool showPaymentIcons(RunDetailsAggregate futureRun) {
-    if ((DateTime.now().isBefore(futureRun.event.eventStartDatetime.subtract(const Duration(days: 7)))) || (DateTime.now().isAfter(futureRun.event.eventStartDatetime.add(const Duration(days: 7))))) {
-      return false;
-    }
+  //                           setState(() {});
+  //                         });
+  //                       } else {
+  //                         Utilities.showAlert(context, 'Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
+  //                       }
+  //                     });
+  //                   }
+  //                 });
+  //               }
+  //             });
+  //           } else {
+  //             Utilities.showAlert(context, 'Bad payment URL', 'The payment URL provided by the Kennel is not valid. Please check with the Kennel\'s mismanagement to have them fix the problem.', 'OK');
+  //           }
+  //         });
+  //       },
+  //       child: Padding(
+  //         padding: const EdgeInsets.all(8.0),
+  //         child: w,
+  //       ));
+  // }
 
-    // if the event is more than 10k away, don't show the payment options
-    // TODO(James): Need to test what happens here if user doesn't allow location
-    if(futureRun.extensions.distToEvent > 100000)
-    {
-      return false;
-    }
+  // bool showPaymentIcons(RunDetailsAggregate futureRun) {
+  //   if ((DateTime.now().isBefore(futureRun.event.eventStartDatetime.subtract(const Duration(days: 7)))) || (DateTime.now().isAfter(futureRun.event.eventStartDatetime.add(const Duration(days: 7))))) {
+  //     return false;
+  //   }
 
-    if (futureRun.extensions.isPaid != 0) {
-      return false;
-    }
+  //   // if the event is more than 10k away, don't show the payment options
+  //   // TODO(James): Need to test what happens here if user doesn't allow location
+  //   if (futureRun.extensions.distToEvent > 100000) {
+  //     return false;
+  //   }
 
-    // TODO(James): Add filter for distance to event after testing is done so we only pay when we are at an event
+  //   if (futureRun.extensions.isPaid != 0) {
+  //     return false;
+  //   }
 
-    if ((futureRun.kennel.kennelPaymentUrl != null) && (futureRun.kennel.kennelPaymentUrl.toLowerCase().startsWith('http')) && (futureRun.kennel.kennelPaymentUrlExpires.isBefore(DateTime(2010)) || futureRun.kennel.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
-      return true;
-    }
+  //   // TODO(James): Add filter for distance to event after testing is done so we only pay when we are at an event
 
-    if ((futureRun.kennel.kennelPaymentUrl2 != null) && (futureRun.kennel.kennelPaymentUrl2.toLowerCase().startsWith('http')) && (futureRun.kennel.kennelPaymentUrlExpires2.isBefore(DateTime(2010)) || futureRun.kennel.kennelPaymentUrlExpires2.isAfter(DateTime.now()))) {
-      return true;
-    }
+  //   if ((futureRun.kennel.kennelPaymentUrl != null) && (futureRun.kennel.kennelPaymentUrl.toLowerCase().startsWith('http')) && (futureRun.kennel.kennelPaymentUrlExpires.isBefore(DateTime(2010)) || futureRun.kennel.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+  //     return true;
+  //   }
 
-    if ((futureRun.kennel.kennelPaymentUrl3 != null) && (futureRun.kennel.kennelPaymentUrl3.toLowerCase().startsWith('http')) && (futureRun.kennel.kennelPaymentUrlExpires3.isBefore(DateTime(2010)) || futureRun.kennel.kennelPaymentUrlExpires3.isAfter(DateTime.now()))) {
-      return true;
-    }
+  //   if ((futureRun.kennel.kennelPaymentUrl2 != null) && (futureRun.kennel.kennelPaymentUrl2.toLowerCase().startsWith('http')) && (futureRun.kennel.kennelPaymentUrlExpires2.isBefore(DateTime(2010)) || futureRun.kennel.kennelPaymentUrlExpires2.isAfter(DateTime.now()))) {
+  //     return true;
+  //   }
 
-    return false;
-  }
+  //   if ((futureRun.kennel.kennelPaymentUrl3 != null) && (futureRun.kennel.kennelPaymentUrl3.toLowerCase().startsWith('http')) && (futureRun.kennel.kennelPaymentUrlExpires3.isBefore(DateTime(2010)) || futureRun.kennel.kennelPaymentUrlExpires3.isAfter(DateTime.now()))) {
+  //     return true;
+  //   }
+
+  //   return false;
+  // }
 
   void showRsvpOptionsPopup(BuildContext context) {
     if (Utilities.checkForConnection(context, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
@@ -827,7 +814,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         widget.futureRun.extensions.notificationPreference = -1;
       });
 
-      hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemUser, userId, null,AppDomainType.user , notificationState: nState.value).then((List<dynamic> results) {
+      hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemUser, userId, null, AppDomainType.user, notificationState: nState.value).then((List<dynamic> results) {
         setState(() {
           final NotificationSupport notifications = NotificationSupport();
           notifications.setNotificationState(eventId: widget.futureRun.event.eventId);
@@ -918,7 +905,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         widget.futureRun.extensions.emailAlertPreference = -1;
       });
 
-      hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemUser, userId, null, AppDomainType.user ,emailAlertState: nState.value).then((List<dynamic> results) {
+      hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemUser, userId, null, AppDomainType.user, emailAlertState: nState.value).then((List<dynamic> results) {
         setState(() {
           widget.futureRun.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;
         });
