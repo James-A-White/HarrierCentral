@@ -3,8 +3,6 @@ import 'dart:core';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import 'package:flutter/foundation.dart';
-
 import 'package:flutter_linkify/flutter_linkify.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
@@ -17,18 +15,24 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
+import 'package:harrier_central/widgets/payment_icons.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/zoomable_image_page.dart';
 
 class RunDetails extends StatelessWidget {
-  const RunDetails({
-    @required this.event,
+  const RunDetails(
+    this.event,
     this.kennel,
     this.digitsAfterDecimal,
     this.currencySymbol,
     this.distancePreference,
     this.distToEvent,
     this.paymentLinkUrl,
+    this.showPaymentOptions, {
+    this.isMember = 0,
+    this.isPaid = 0,
+    this.rsvpState = 0,
+    this.processPayment,
   });
 
   final EventModel event;
@@ -38,6 +42,11 @@ class RunDetails extends StatelessWidget {
   final int distancePreference;
   final num distToEvent;
   final String paymentLinkUrl;
+  final bool showPaymentOptions;
+  final int isMember;
+  final int isPaid;
+  final int rsvpState;
+  final Function processPayment;
 
   static const int flexLeft = 30;
   static const int flexRight = 70;
@@ -93,12 +102,11 @@ class RunDetails extends StatelessWidget {
               padding: EdgeInsets.only(top: 40.0, bottom: 10.0),
               child: FancyDivider(innerColor: Colors.white),
             ),
-                          Text('Event details', style: headingStyle),
-              const SizedBox(
-                height: 15.0,
-              ),
+            Text('Event details', style: headingStyle),
+            const SizedBox(
+              height: 15.0,
+            ),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-
               ((event.eventNumber ?? 0) == 0) || (event.isCountedRun == 0)
                   ? Container()
                   : Row(
@@ -407,27 +415,49 @@ class RunDetails extends StatelessWidget {
                 ],
               ),
             ]),
-            (paymentLinkUrl == '')
+            !showPaymentOptions
                 ? Container()
-                : const Padding(
-                    padding: EdgeInsets.only(top: 32.0),
-                    child: FancyDivider(innerColor: Colors.white),
+                : PaymentIcons(
+                    event,
+                    kennel,
+                    digitsAfterDecimal,
+                    currencySymbol,
+                    distancePreference,
+                    distToEvent,
+                    paymentLinkUrl,
+                    rsvpState,
+                    isMember,
+                    isPaid,
+                    false,
+                    (int r, int p) {
+                      if (processPayment != null)
+                      {
+                        processPayment(r,p);
+                      }
+                    },
                   ),
-            (paymentLinkUrl == '')
-                ? Container()
-                : Padding(
-                    padding: const EdgeInsets.only(top: 30.0, right: 20.0, left: 20.0, bottom: 20.0),
-                    child: RaisedButton(
-                      onPressed: () async {
-                        if (await canLaunch(paymentLinkUrl)) {
-                          await launch(paymentLinkUrl);
-                        } else {
-                          Utilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $paymentLinkUrl', 'OK');
-                        }
-                      },
-                      child: Text('Pay for Hash', style: buttonTextStyle),
-                    ),
-                  ),
+
+            // (paymentLinkUrl == '')
+            //     ? Container()
+            //     : const Padding(
+            //         padding: EdgeInsets.only(top: 32.0),
+            //         child: FancyDivider(innerColor: Colors.white),
+            //       ),
+            // (paymentLinkUrl == '')
+            //     ? Container()
+            //     : Padding(
+            //         padding: const EdgeInsets.only(top: 30.0, right: 20.0, left: 20.0, bottom: 20.0),
+            //         child: RaisedButton(
+            //           onPressed: () async {
+            //             if (await canLaunch(paymentLinkUrl)) {
+            //               await launch(paymentLinkUrl);
+            //             } else {
+            //               Utilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $paymentLinkUrl', 'OK');
+            //             }
+            //           },
+            //           child: Text('Pay for Hash', style: buttonTextStyle),
+            //         ),
+            //       ),
             (event.tags1 ?? 0) == 0
                 ? Container()
                 : Column(
@@ -466,7 +496,7 @@ class RunDetails extends StatelessWidget {
                 ? Container()
                 : const FancyDivider(
                     innerColor: Colors.white,
-                    topMargin: 40.0,
+                    topMargin: 30.0,
                   ),
             (event.eventDescription ?? '') == ''
                 ? Container()

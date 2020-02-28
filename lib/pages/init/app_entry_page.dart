@@ -89,6 +89,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
                 final String resetCode = getStringPref(StringPrefsEnum.resetCode);
 
                 DBProvider.db.deleteDb();
+                await setIntPref(IntPrefsEnum.dbCreated,0);
 
                 //bool isLoading = true;
                 String userName;

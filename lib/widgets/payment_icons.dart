@@ -1,22 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:harrier_central/widgets/fancy_divider.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
-import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
+import 'package:harrier_central/data/hc3_services/events_service.dart';
 
 class PaymentIcons extends StatelessWidget {
-  const PaymentIcons(this.futureRun, this.stateSetter);
+  const PaymentIcons(this.event, this.kennel, this.digitsAfterDecimal, this.currencySymbol, this.distancePreference, this.distToEvent, this.paymentLinkUrl, this.rsvpState, this.isMember, this.isPaid, this.showHairlineDivider, this.stateSetter);
 
-  final RunDetailsAggregate futureRun;
+  final EventModel event;
+  final KennelsModel kennel;
+  final int digitsAfterDecimal;
+  final String currencySymbol;
+  final int distancePreference;
+  final num distToEvent;
+  final String paymentLinkUrl;
+  final int rsvpState;
+  final int isMember;
+  final int isPaid;
+  final bool showHairlineDivider;
   final Function stateSetter;
+
+  static int daysToDisplayPaymentIcons = 1;
+  static int distanceToDisplayPaymentIcons = 50; // in kilometers
 
   @override
   Widget build(BuildContext context) {
@@ -24,33 +39,71 @@ class PaymentIcons extends StatelessWidget {
   }
 
   Widget paymentIcons(BuildContext context) {
-    return !showPaymentIcons(futureRun)
+    return !showPaymentIcons()
         ? Container()
-        : Column(
-            children: <Widget>[
-              Container(
-                //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
-                margin: const EdgeInsets.only(top: 2.0, bottom: 0.0),
-                padding: const EdgeInsets.only(top: 7.0, bottom: 0.0),
-                height: 1.0,
-                color: Colors.grey[300],
-              ),
-              const Padding(
-                padding: EdgeInsets.only(top: 4.0, bottom: 0.0),
-                child: Text('Pay for your run with...'),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: getPaymentIcons(context),
-              ),
-            ],
-          );
+        : showHairlineDivider
+            ? Column(
+                children: <Widget>[
+                  Container(
+                    //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
+                    margin: const EdgeInsets.only(top: 2.0, bottom: 0.0),
+                    padding: const EdgeInsets.only(top: 7.0, bottom: 0.0),
+                    height: 1.0,
+                    color: Colors.grey[300],
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 4.0, bottom: 0.0),
+                    child: Text('Pay for your run with...'),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: getPaymentIcons(context),
+                  ),
+                ],
+              )
+            : Column(
+                children: <Widget>[
+                  const FancyDivider(
+                    innerColor: Colors.white,
+                    topMargin: 40.0,
+                    bottomMargin: 10.0,
+                  ),
+                  Text('Payment', style: headingStyle),
+                  const SizedBox(height: 20,),
+                  Stack(
+                    alignment: AlignmentDirectional.center,
+                    children: <Widget>[
+                      Container(
+                        height: 120,
+                        padding: const EdgeInsets.all(10.0),
+                        margin: const EdgeInsets.only(left:30,right:30),
+                        decoration: BoxDecoration(
+                          color: Colors.yellow[100],
+                          borderRadius: BorderRadius.circular(5.0),
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 80.0),
+                        child: Text('Pay for your run with...'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 28.0,left:30,right:30),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: getPaymentIcons(context),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20,),
+                ],
+              );
   }
 
   List<Widget> getPaymentIcons(BuildContext context) {
     final List<Widget> icons = <Widget>[];
 
-    final KennelsModel k = futureRun.kennel;
+    final KennelsModel k = kennel;
 
     Widget w = getPaymentIcon(context, k.kennelPaymentUrl, k.kennelPaymentUrlExpires, k.kennelPaymentScheme, k.kennelPaymentMemberSurcharge, k.kennelPaymentNonMemberSurcharge);
     if (w != null) {
@@ -70,8 +123,8 @@ class PaymentIcons extends StatelessWidget {
   }
 
   Future<dynamic> showExtrasDialog(BuildContext context, num runOnlyPrice, num extrasPrice) {
-    final String runOnlyPriceStr = Utilities.getFormattedMoney(runOnlyPrice, futureRun.extensions.digitsAfterDecimal, futureRun.extensions.currencySymbol);
-    final String runPlusExtrasPriceStr = Utilities.getFormattedMoney(runOnlyPrice + extrasPrice, futureRun.extensions.digitsAfterDecimal, futureRun.extensions.currencySymbol);
+    final String runOnlyPriceStr = Utilities.getFormattedMoney(runOnlyPrice, digitsAfterDecimal, currencySymbol);
+    final String runPlusExtrasPriceStr = Utilities.getFormattedMoney(runOnlyPrice + extrasPrice, digitsAfterDecimal, currencySymbol);
 
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
@@ -82,7 +135,7 @@ class PaymentIcons extends StatelessWidget {
         'returnValue': payForRunOnly,
       },
       <String, dynamic>{
-        'title': 'Run + ' + futureRun.event.extrasDescription + ' ($runPlusExtrasPriceStr)',
+        'title': 'Run + ' + event.extrasDescription + ' ($runPlusExtrasPriceStr)',
         'icon': <Widget>[
           Container(),
         ],
@@ -149,9 +202,9 @@ class PaymentIcons extends StatelessWidget {
               EnumPayForExtras<int> didPayForExtras = payForRunOnly;
 
               String extrasStr = '';
-              num extrasPrice = futureRun.event.eventPriceForExtras ?? 0;
-              final num surcharge = (futureRun.extensions.isMember == 0 ? nonMemberSurcharge : memberSurcharge) ?? 0;
-              final num eventPrice = (futureRun.extensions.isMember == 0 ? futureRun.event.eventPriceForNonMembers ?? futureRun.kennel.defaultPriceForNonMembers : futureRun.event.eventPriceForMembers ?? futureRun.kennel.defaultPriceForMembers) ?? 0;
+              num extrasPrice = event.eventPriceForExtras ?? 0;
+              final num surcharge = (isMember == 0 ? nonMemberSurcharge : memberSurcharge) ?? 0;
+              final num eventPrice = (isMember == 0 ? event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers : event.eventPriceForMembers ?? kennel.defaultPriceForMembers) ?? 0;
 
               if (extrasPrice > 0) {
                 // if there are extras, show the extras dialog
@@ -170,19 +223,19 @@ class PaymentIcons extends StatelessWidget {
 
               if (extrasPrice > 0) {
                 // build the string if we need to
-                extrasStr = ' ,and a\r\n' + Utilities.getFormattedMoney(extrasPrice, futureRun.extensions.digitsAfterDecimal, futureRun.extensions.currencySymbol) + ' charge for ${futureRun.event.extrasDescription}';
+                extrasStr = ' ,and a\r\n' + Utilities.getFormattedMoney(extrasPrice, digitsAfterDecimal, currencySymbol) + ' charge for ${event.extrasDescription}';
               }
 
               final num total = surcharge + eventPrice + extrasPrice;
 
               // build the other strings for the total price and event prices
-              final String totalStr = Utilities.getFormattedMoney(total, futureRun.extensions.digitsAfterDecimal, futureRun.extensions.currencySymbol);
-              final String eventPriceStr = Utilities.getFormattedMoney(eventPrice, futureRun.extensions.digitsAfterDecimal, futureRun.extensions.currencySymbol);
+              final String totalStr = Utilities.getFormattedMoney(total, digitsAfterDecimal, currencySymbol);
+              final String eventPriceStr = Utilities.getFormattedMoney(eventPrice, digitsAfterDecimal, currencySymbol);
 
               String surchargeStr = '';
               if (surcharge > 0) {
                 // if there is a surcharge, build the surcharge string
-                surchargeStr = ' ,and a\r\n' + Utilities.getFormattedMoney(surcharge, futureRun.extensions.digitsAfterDecimal, futureRun.extensions.currencySymbol) + ' surcharge for $paymentProvider';
+                surchargeStr = ' ,and a\r\n' + Utilities.getFormattedMoney(surcharge, digitsAfterDecimal, currencySymbol) + ' surcharge for $paymentProvider';
               }
 
               // show the alert so the user knows how much to pay
@@ -190,7 +243,7 @@ class PaymentIcons extends StatelessWidget {
                 if (result) {
                   // now launch into the payment provider
                   launch(url).then((bool launched) {
-                    if (futureRun.kennel.allowSelfPayment == 0) {
+                    if (kennel.allowSelfPayment == 0) {
                       Utilities.showAlert(context, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
                     } else {
                       // show the alert so the user knows how much to pay
@@ -203,13 +256,12 @@ class PaymentIcons extends StatelessWidget {
                         cancelButtonText: 'No',
                       ).then((bool result2) {
                         if (result2) {
-                          futureRun.extensions.rsvpState = -1;
-
-                          stateSetter(); // call setState on the parent
+                          //rsvpState = -1;
+                          stateSetter(-1, -1); // call setState on the parent
                           payForEvent(eventPrice + extrasPrice, didPayForExtras, surcharge, paymentProvider).then((List<dynamic> adHocItems) {
-                            futureRun.extensions.rsvpState = adHocItems[0]['rsvpState'];
-                            futureRun.extensions.isPaid = 1;
-                            stateSetter();
+                            // rsvpState = adHocItems[0]['rsvpState'];
+                            // isPaid = 1;
+                            stateSetter(adHocItems[0]['rsvpState'], 1);
                           });
                         } else {
                           Utilities.showAlert(context, 'Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
@@ -230,32 +282,32 @@ class PaymentIcons extends StatelessWidget {
         ));
   }
 
-  bool showPaymentIcons(RunDetailsAggregate futureRun) {
-    if ((DateTime.now().isBefore(futureRun.event.eventStartDatetime.subtract(const Duration(days: 7)))) || (DateTime.now().isAfter(futureRun.event.eventStartDatetime.add(const Duration(days: 7))))) {
+  bool showPaymentIcons() {
+    if ((DateTime.now().isBefore(event.eventStartDatetime.subtract(Duration(days: daysToDisplayPaymentIcons)))) || (DateTime.now().isAfter(event.eventStartDatetime.add(Duration(days: daysToDisplayPaymentIcons))))) {
       return false;
     }
 
     // if the event is more than 10k away, don't show the payment options
     // TODO(James): Need to test what happens here if user doesn't allow location
-    if (futureRun.extensions.distToEvent > 100000) {
+    if (distToEvent > distanceToDisplayPaymentIcons * 1000) {
       return false;
     }
 
-    if (futureRun.extensions.isPaid != 0) {
+    if (isPaid != 0) {
       return false;
     }
 
     // TODO(James): Add filter for distance to event after testing is done so we only pay when we are at an event
 
-    if ((futureRun.kennel.kennelPaymentUrl != null) && (futureRun.kennel.kennelPaymentUrl.toLowerCase().startsWith('http')) && (futureRun.kennel.kennelPaymentUrlExpires.isBefore(DateTime(2010)) || futureRun.kennel.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+    if ((kennel.kennelPaymentUrl != null) && (kennel.kennelPaymentUrl.toLowerCase().startsWith('http')) && (kennel.kennelPaymentUrlExpires.isBefore(DateTime(2010)) || kennel.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
       return true;
     }
 
-    if ((futureRun.kennel.kennelPaymentUrl2 != null) && (futureRun.kennel.kennelPaymentUrl2.toLowerCase().startsWith('http')) && (futureRun.kennel.kennelPaymentUrlExpires2.isBefore(DateTime(2010)) || futureRun.kennel.kennelPaymentUrlExpires2.isAfter(DateTime.now()))) {
+    if ((kennel.kennelPaymentUrl2 != null) && (kennel.kennelPaymentUrl2.toLowerCase().startsWith('http')) && (kennel.kennelPaymentUrlExpires2.isBefore(DateTime(2010)) || kennel.kennelPaymentUrlExpires2.isAfter(DateTime.now()))) {
       return true;
     }
 
-    if ((futureRun.kennel.kennelPaymentUrl3 != null) && (futureRun.kennel.kennelPaymentUrl3.toLowerCase().startsWith('http')) && (futureRun.kennel.kennelPaymentUrlExpires3.isBefore(DateTime(2010)) || futureRun.kennel.kennelPaymentUrlExpires3.isAfter(DateTime.now()))) {
+    if ((kennel.kennelPaymentUrl3 != null) && (kennel.kennelPaymentUrl3.toLowerCase().startsWith('http')) && (kennel.kennelPaymentUrlExpires3.isBefore(DateTime(2010)) || kennel.kennelPaymentUrlExpires3.isAfter(DateTime.now()))) {
       return true;
     }
 
@@ -266,7 +318,7 @@ class PaymentIcons extends StatelessWidget {
     final String hasherId = getStringPref(StringPrefsEnum.userId);
     final PaymentsService paySrv = PaymentsService();
     return paySrv.payForEvent(
-      futureRun.event.eventId,
+      event.eventId,
       hasherId,
       GUID_EMPTY,
       paymentBankTransfer.value,

@@ -112,10 +112,10 @@ class BaseService {
 
   Future<num> getLastUpdatedTime(BaseTableHelper tableHelper, String colUpdatedAtValue, {TableType tableType}) async {
     final String tableName = getTableName(tableHelper, tableType);
-    if((tableName == null) || (tableName.isEmpty))
-    {
-      int xxx = 0;
-    }
+    // if((tableName == null) || (tableName.isEmpty))
+    // {
+    //   int xxx = 0;
+    // }
     final Database db = await DBProvider.db.database;
     final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX($colUpdatedAtValue) AS maxDate FROM $tableName');
     final num timeValue = table.first['maxDate'];

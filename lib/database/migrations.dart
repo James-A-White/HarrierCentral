@@ -125,7 +125,7 @@ class MigrationsTableHelper {
   ///
   ///
 
-  static int dbVersion = 232;
+  static int dbVersion = 250;
 
   static List<MigrationsModel> migrationList = <MigrationsModel>[
 

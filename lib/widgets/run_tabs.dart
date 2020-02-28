@@ -28,7 +28,6 @@ import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 
-
 class RunTabs extends StatefulWidget {
   const RunTabs({Key key, @required this.futureRun}) : super(key: key);
 
@@ -196,15 +195,26 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   num spaceBetweenRows = 23.0;
 
   Widget buildRunDetailsView() {
-
     return RunDetails(
-        event: widget.futureRun.event,
-        kennel: widget.futureRun.kennel,
-        digitsAfterDecimal: widget.futureRun.extensions.digitsAfterDecimal,
-        currencySymbol: widget.futureRun.extensions.currencySymbol,
-        distancePreference: widget.futureRun.extensions.distancePreference,
-        distToEvent: widget.futureRun.extensions.distToEvent,
-        paymentLinkUrl: widget.futureRun.paymentUrl);
+      widget.futureRun.event,
+      widget.futureRun.kennel,
+      widget.futureRun.extensions.digitsAfterDecimal,
+      widget.futureRun.extensions.currencySymbol,
+      widget.futureRun.extensions.distancePreference,
+      widget.futureRun.extensions.distToEvent,
+      widget.futureRun.paymentUrl,
+      true,
+      isMember: widget.futureRun.extensions.isMember,
+      isPaid: widget.futureRun.extensions.isPaid,
+      rsvpState: widget.futureRun.extensions.rsvpState,
+      processPayment: (int r, int p) {
+        widget.futureRun.extensions.rsvpState = r;
+        if (p != -1) {
+          widget.futureRun.extensions.isPaid = p;
+        }
+        setState(() {});
+      },
+    );
   }
 
   TextStyle rsvpTitlesView = TextStyle(color: Colors.white, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0 * deviceWidthScaleFactor, height: 1);
@@ -434,8 +444,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       }
                                     });
                                     //final String userId = getStringPref(StringPrefsEnum.userId);
-                                    
-                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, AppDomainType.user ,rsvpState: rsvpYes.value, isHare: isHareYes.value);
+
+                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, isHare: isHareYes.value);
 
                                     retVal.then((List<dynamic> adHocData) async {
                                       await refreshPackListFromTable(true);
@@ -647,7 +657,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     //final String userId = getStringPref(StringPrefsEnum.userId);
 
     final int attendenceValue = rsvpState.value <= rsvpMaybe.value ? attendenceNo.value : attendenceNoChange.value;
-    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, AppDomainType.user ,rsvpState: rsvpState.value, attendenceState: attendenceValue, isHare: isHareNo.value);
+    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, AppDomainType.user, rsvpState: rsvpState.value, attendenceState: attendenceValue, isHare: isHareNo.value);
 
     retVal.then((List<dynamic> adHocData) async {
       await refreshPackListFromTable(false);
@@ -772,7 +782,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                       }
                     });
                     //final String userId = getStringPref(StringPrefsEnum.userId);
-                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, AppDomainType.user ,rsvpState: rsvpYes.value, attendenceState: attendenceNoChange.value, isHare: isHareYes.value);
+                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemEventAdmin, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceNoChange.value, isHare: isHareYes.value);
 
                     retVal.then((List<dynamic> adHocData) async {
                       await refreshPackListFromTable(true);
