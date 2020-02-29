@@ -309,7 +309,7 @@ class KennelListItemState extends State<KennelsListItem> {
   void showNotificationPopup(BuildContext context) {
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
-        'title': 'Turn notifications\r\non',
+        'title': 'Notifications On',
         'icon': <Widget>[
           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
@@ -326,7 +326,7 @@ class KennelListItemState extends State<KennelsListItem> {
         'returnValue': notificationsOn,
       },
       <String, dynamic>{
-        'title': 'Turn notifications\r\noff',
+        'title': 'Notifications Off',
         'icon': <Widget>[
           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
