@@ -25,6 +25,7 @@ import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 
@@ -689,7 +690,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                   height: 120.0,
                   point: LatLng(Utilities.unInt(widget.futureRun.event.narrowEventLatitude), Utilities.unInt(widget.futureRun.event.narrowEventLongitude)),
                   builder: (BuildContext ctx) => GestureDetector(
-                    onTap: () => _launchMaps(widget.futureRun.event.narrowEventLatitude, widget.futureRun.event.narrowEventLongitude),
+                    onTap: () => _launchMaps(widget.futureRun.event),
                     child: Container(
                       padding: const EdgeInsets.only(bottom: 58.0),
                       child: Image.asset('images/icons/map_pin_foot.png'),
@@ -1110,39 +1111,73 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   //   );
   // }
 
-  Future<void> _launchMaps(num lat, num lon) async {
-    final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$lat,$lon';
-    //String googleAppUrl = 'comgooglemaps://maps.google.com/maps/place/<name>/@<lat>,<long>,15z/data=<mode-value>';
-    final String googleAppUrl = 'comgooglemaps://?q=$lat,$lon';
-    final String appleUrl = 'https://maps.apple.com/?sll=$lat,$lon';
+  Future<void> _launchMaps(EventModel event) async {
+    String latStr = '';
+    String lonStr = '';
+    String address = '';
+    String url = '';
+
+    if (event.narrowEventLatitude != null) {
+      latStr = event.narrowEventLatitude.toString();
+    }
+
+    if (event.narrowEventLongitude != null) {
+      lonStr = event.narrowEventLongitude.toString();
+    }
+
+    if (event.locationStreet != null) {
+      address = address + event.locationStreet + ' ';
+    }
+
+    if (event.locationCity != null) {
+      address = address + event.locationCity + ' ';
+    }
+
+    if (event.locationPostCode != null) {
+      address = address + event.locationPostCode + ' ';
+    }
+
+    if (event.locationCountry != null) {
+      address = address + event.locationCountry + ' ';
+    }
+
+    address = address.trim();
+
+    if ((address.isEmpty) && (latStr.isEmpty || lonStr.isEmpty)) {
+      address = event.locationOneLineDesc;
+    }
+
+    if ((address != null) && (address.isNotEmpty)) {
+      address = address.replaceAll(' ', '+');
+      address = Uri.encodeComponent(address);
+      url = address;
+    } else if ((latStr != '') && (lonStr != '')) {
+      url = latStr + ',' + lonStr;
+    } else {
+      Utilities.showAlert(context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
+    }
+
+    final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$url';
+    final String googleAppUrl = 'comgooglemaps://?q=$url';
+    String appleUrl = '';
+    if ((latStr.isNotEmpty) && (lonStr.isNotEmpty))
+    {
+      appleUrl = 'https://maps.apple.com/?sll=$latStr,$lonStr';
+    }
+  
     if (await canLaunch('comgooglemaps://')) {
       print('launching com googleUrl');
       await launch(googleAppUrl);
     } else if (await canLaunch(googleWebUrl)) {
-      print('launching apple url');
+      print('launching Google web url');
       await launch(googleWebUrl);
-    } else if (await canLaunch(appleUrl)) {
+    } else if ((appleUrl.isNotEmpty) && (await canLaunch(appleUrl))) {
       print('launching apple url');
       await launch(appleUrl);
     } else {
       throw 'Could not launch url';
     }
-    // return Future<void>(() {});((){});
   }
-
-  // void showInSnackBar(String value) {
-  //   FocusScope.of(context).requestFocus(FocusNode());
-  //   _scaffoldKey.currentState?.removeCurrentSnackBar();
-  //   _scaffoldKey.currentState.showSnackBar(SnackBar(
-  //     content: Text(
-  //       value,
-  //       textAlign: TextAlign.center,
-  //       style: const TextStyle(color: Colors.white, fontSize: 16.0, fontFamily: 'WorkSansSemiBold'),
-  //     ),
-  //     backgroundColor: Colors.blue,
-  //     duration: const Duration(seconds: 3),
-  //   ));
-  // }
 
   Future<bool> _promptForHare(String hareList) async {
     return showDialog<bool>(
