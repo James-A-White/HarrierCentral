@@ -627,7 +627,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                   ? Container()
                                   : Column(
                                       children: <Widget>[
-                                                                                const FancyDivider(
+                                        const FancyDivider(
                                           innerColor: Colors.white,
                                           topMargin: 30.0,
                                           bottomMargin: 15.0,
@@ -672,32 +672,38 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     ]);
   }
 
-  Row mmRow(String s) {
-    final List<String> items = s.split('\t');
-    return Row(
-      children: <Widget>[
-        const SizedBox(height: 25.0),
-        Expanded(
-          child: Text(
-            items[0] + ':',
-            style: listLabelStyle,
-            textAlign: TextAlign.right,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          flex: 4,
-        ),
-        Expanded(
-            child: Text(
-              ' ' + items[1],
-              style: listValueStyle,
-              textAlign: TextAlign.left,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            flex: 6),
-      ],
-    );
+  Widget mmRow(String s) {
+    if ((s == null) || (s.isEmpty)) {
+      return Container();
+    } else {
+      final List<String> items = s.split('\t');
+      return ((items == null) || (items.length < 2))
+          ? Container()
+          : Row(
+              children: <Widget>[
+                const SizedBox(height: 25.0),
+                Expanded(
+                  child: Text(
+                    items[0] + ':',
+                    style: listLabelStyle,
+                    textAlign: TextAlign.right,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  flex: 4,
+                ),
+                Expanded(
+                    child: Text(
+                      ' ' + items[1],
+                      style: listValueStyle,
+                      textAlign: TextAlign.left,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    flex: 6),
+              ],
+            );
+    }
   }
 
   Future<void> _launchMaps(num lat, num lon) async {
