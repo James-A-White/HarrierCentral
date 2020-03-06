@@ -485,11 +485,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       const Pattern pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
       final RegExp regex = RegExp(pattern, caseSensitive: false);
       if (!regex.hasMatch(value))
-        return 'Enter Valid Email';
+        return 'Please enter a valid Email';
       else
         return null;
     }
-    return null;
+    return 'Please enter a valid Email';
   }
 
   AppBar appBar;

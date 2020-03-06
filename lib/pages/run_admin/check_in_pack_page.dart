@@ -351,20 +351,28 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             LEFT OUTER JOIN ${hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin)} hkm4 on hkm4.userId = h3.hasherId and hkm4.kennelId = "${widget.eventAggregate.event.kennelId}" 
             LEFT OUTER JOIN ${kennelCreditsTableHelper.tableName} credits3 on credits3.userId = hkm3.userId and credits3.kennelId = hkm3.kennelId
             WHERE hem3.eventId = "${widget.eventAggregate.event.eventId}" 
-              AND hem3.virginVisitorType == 0 
-              AND hkm3.isKennelFollowing != 1
-              AND 
+              AND hem3.virginVisitorType = 0 
+              AND  
               (
-                hkm3.hkmId IS NULL -- is not a member
-                OR
                 (
-                  hkm3.hkmId IS NULL -- is not a member
-                  AND
-                  julianday(hkm4.dateOfLastRun) < julianday('now','localtime','-2 months') -- but has run in the last 2 months
+                  hkm4.userId IS NULL
+                )  
+                OR NOT
+                (
+                  hkm4.isKennelFollowing = 1
+                  OR 
+                    (
+                      hkm4.isKennelFollowing = 0
+                AND 
+                (
+                  julianday(coalesce(hkm4.membershipExpirationDate,'2000-01-01T01:00:00.000Z')) >= julianday('now','localtime') -- is a member
+                  OR
+                  julianday(coalesce(hkm4.dateOfLastRun,'2000-01-01T01:00:00.000Z')) >= julianday('now','localtime','-2 months')
                 )
-                OR
-                hkm3.isKennelFollowing = -1
-              )
+              ) 
+            )          
+          )   
+
           ORDER BY nameForSort
             
           
@@ -483,9 +491,12 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           memberCount = results[0]['memberCount'];
         }
 
-        final List<CheckInPackModel> specialRunNumbers = packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (checkSpecialRun((a.currentHaringCount ?? 0) + (a.currentPackRunCount ?? 0)))).toList();
-
-        drinkCount = specialRunNumbers.length;
+        if (packList != null) {
+          final List<CheckInPackModel> specialRunNumbers = packList.where((CheckInPackModel a) => ((a.attendenceState ?? 0) >= 20) && (checkSpecialRun((a.currentHaringCount ?? 0) + (a.currentPackRunCount ?? 0)))).toList();
+          drinkCount = specialRunNumbers.length;
+        } else {
+          drinkCount = 0;
+        }
 
         if (forceRefresh) {
           setState(() {
@@ -510,7 +521,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     ).then((Map<String, dynamic> result) {
       if ((result != null) && (result['hasher']?.hasherId != null)) {
         final Future<List<dynamic>> retVal =
-            hasherEventMapService.joinEvent(widget.eventAggregate.event.eventId, TableType.hemEventAdmin, result['hasher'].hasherId, null, AppDomainType.event ,rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value, virginVisitorType: result['virginVisitorType']);
+            hasherEventMapService.joinEvent(widget.eventAggregate.event.eventId, TableType.hemEventAdmin, result['hasher'].hasherId, null, AppDomainType.event, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value, virginVisitorType: result['virginVisitorType']);
 
         retVal.then((List<dynamic> adHocData) {
           _refreshPackListFromTables(false).then((void dummy) {
@@ -548,7 +559,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         setState(() {
           _isLoading = true;
         });
-        final Future<List<dynamic>> retVal = hasherEventMapService.joinEventAsVisitor(widget.eventAggregate.event.eventId, TableType.hemEventAdmin, name, evv.value, attendenceUnknown.value, email, phoneNumber,AppDomainType.event );
+        final Future<List<dynamic>> retVal = hasherEventMapService.joinEventAsVisitor(widget.eventAggregate.event.eventId, TableType.hemEventAdmin, name, evv.value, attendenceUnknown.value, email, phoneNumber, AppDomainType.event);
 
         retVal.then((List<dynamic> adHocData) {
           _refreshPackListFromTables(false).then((void dummy) {
@@ -839,11 +850,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
-        title: 'Common filter options',
-        buttons: buttons,
-        cancelButtonTitle: 'Cancel',
-        
-        );
+      title: 'Common filter options',
+      buttons: buttons,
+      cancelButtonTitle: 'Cancel',
+    );
 
     showDialog<dynamic>(
         context: context,
@@ -851,55 +861,55 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         builder: (BuildContext context) {
           return popup;
         }).then((dynamic retVal) {
-          switch (retVal) {
-            case FilterOptions.hashersNotHereYet:
-              filterValues = <int>[0, 1, 0, 0, 0, 0, 0, 0, 0, 0];
-              searchText = '';
-              searchController.text = '';
-              break;
-            case FilterOptions.hashersNotPaid:
-              filterValues = <int>[0, 0, 1, -1, 0, 0, 0, 0, 0, 0];
-              searchText = '';
-              searchController.text = '';
-              break;
-            case FilterOptions.hashersStillOnTrail:
-              filterValues = <int>[0, 0, 1, 0, -1, 0, 0, 0, 0, 0];
-              searchText = '';
-              searchController.text = '';
-              break;
-            case FilterOptions.clearAllFilters:
-              filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-              searchText = '';
-              searchController.text = '';
-              break;
-            case FilterOptions.visitors:
-              filterValues = <int>[0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
-              searchText = '(visitor)';
-              searchController.text = '(visitor)';
-              break;
-            case FilterOptions.virgins:
-              filterValues = <int>[0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
-              searchText = '(virgin)';
-              searchController.text = '(virgin)';
-              break;
-            case FilterOptions.cancel:
-              break;
-            default:
-              filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-              searchText = '';
-              searchController.text = '';
-              break;
-          }
+      switch (retVal) {
+        case FilterOptions.hashersNotHereYet:
+          filterValues = <int>[0, 1, 0, 0, 0, 0, 0, 0, 0, 0];
+          searchText = '';
+          searchController.text = '';
+          break;
+        case FilterOptions.hashersNotPaid:
+          filterValues = <int>[0, 0, 1, -1, 0, 0, 0, 0, 0, 0];
+          searchText = '';
+          searchController.text = '';
+          break;
+        case FilterOptions.hashersStillOnTrail:
+          filterValues = <int>[0, 0, 1, 0, -1, 0, 0, 0, 0, 0];
+          searchText = '';
+          searchController.text = '';
+          break;
+        case FilterOptions.clearAllFilters:
+          filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+          searchText = '';
+          searchController.text = '';
+          break;
+        case FilterOptions.visitors:
+          filterValues = <int>[0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
+          searchText = '(visitor)';
+          searchController.text = '(visitor)';
+          break;
+        case FilterOptions.virgins:
+          filterValues = <int>[0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
+          searchText = '(virgin)';
+          searchController.text = '(virgin)';
+          break;
+        case FilterOptions.cancel:
+          break;
+        default:
+          filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+          searchText = '';
+          searchController.text = '';
+          break;
+      }
 
-          if (retVal != FilterOptions.cancel) {
-            if (!showFilter) {
-              showFilter = true;
+      if (retVal != FilterOptions.cancel) {
+        if (!showFilter) {
+          showFilter = true;
 
-              animationController.forward();
-            }
-            _refreshPackListFromTables(true);
-          }
-        });
+          animationController.forward();
+        }
+        _refreshPackListFromTables(true);
+      }
+    });
   }
 
   @override
@@ -1109,10 +1119,10 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       ];
 
       final MultipleChoicePopup popup = MultipleChoicePopup(
-          title: 'Payment options',
-          buttons: buttons,
-          cancelButtonTitle: 'Cancel',
-          );
+        title: 'Payment options',
+        buttons: buttons,
+        cancelButtonTitle: 'Cancel',
+      );
 
       showDialog<dynamic>(
           context: context,
@@ -1120,13 +1130,13 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           builder: (BuildContext context) {
             return popup;
           }).then((dynamic payForExtras) {
-            payForEvent(packMember, paymentType, otherAmount: otherAmount, doPayForExtras: payForExtras).then((List<dynamic> results) {
-              _refreshPackListFromTables(false).then((void dummy) {
-                _refreshCounters(true);
-                BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.nameForDisplay, packMember.isMember, otherAmount);
-              });
-            });
+        payForEvent(packMember, paymentType, otherAmount: otherAmount, doPayForExtras: payForExtras).then((List<dynamic> results) {
+          _refreshPackListFromTables(false).then((void dummy) {
+            _refreshCounters(true);
+            BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.nameForDisplay, packMember.isMember, otherAmount);
           });
+        });
+      });
     } else {
       payForEvent(packMember, paymentType, otherAmount: otherAmount).then((List<dynamic> results) {
         _refreshPackListFromTables(false).then((void dummy) {
@@ -1351,7 +1361,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
     // });
 
-    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.eventAggregate.event.eventId, TableType.hemEventAdmin, hasherId, hemId, AppDomainType.event ,rsvpState: rsvpState, attendenceState: attendenceState, isHare: isHare, virginVisitorType: -1);
+    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(widget.eventAggregate.event.eventId, TableType.hemEventAdmin, hasherId, hemId, AppDomainType.event, rsvpState: rsvpState, attendenceState: attendenceState, isHare: isHare, virginVisitorType: -1);
 
     retVal.then((List<dynamic> adHocData) {
       _refreshPackListFromTables(false).then((void dummy) {
@@ -1375,7 +1385,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     }
 
     final PaymentsService paySrv = PaymentsService();
-    return paySrv.payForEvent(widget.eventAggregate.event.eventId, ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId, ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId, paymentType, amount, attendenceAtHash.value, doPayForExtras, AppDomainType.event);
+    return paySrv.payForEvent(
+        widget.eventAggregate.event.eventId, ((hasherId == null) || (hasherId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId, ((hemId == null) || (hemId.length != GUID_EMPTY.length)) ? GUID_EMPTY : hemId, paymentType, amount, attendenceAtHash.value, doPayForExtras, AppDomainType.event);
   }
 
   Widget buildPackListView() {
