@@ -22,19 +22,7 @@ import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
 
 class KennelListQueryExtenstions {
-  KennelListQueryExtenstions({
-    this.location,
-    this.distToKennel,
-    this.nextRunDate,
-    this.lastRunDate,
-    this.digitsAfterDecimal,
-    this.currencySymbol,
-    this.isHomeKennel,
-    this.distancePreference,
-    this.cityLat,
-    this.cityLon,
-    this.nameForSearch
-  });
+  KennelListQueryExtenstions({this.location, this.distToKennel, this.nextRunDate, this.lastRunDate, this.digitsAfterDecimal, this.currencySymbol, this.isHomeKennel, this.distancePreference, this.cityLat, this.cityLon, this.nameForSearch});
 
   final String location;
   num distToKennel;
@@ -64,8 +52,7 @@ class KennelListQueryExtenstions {
         distancePreference: map['distancePreference'],
         cityLat: map['cityLat'],
         cityLon: map['cityLon'],
-        nameForSearch: map['nameForSearch']
-        );
+        nameForSearch: map['nameForSearch']);
     return item;
   }
 }
@@ -102,7 +89,13 @@ class KennelsListPageState extends State<KennelsListPage> {
 
   @override
   void initState() {
+    searchController.text = '';
+    searchText = '';
+
+    // NOTE: refreshFromTable will run asynchronously so don't expect the
+    // tables to be populated immediately when this call returns.
     refreshFromTable(false);
+
     //print('initState called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
 
     super.initState();
@@ -246,34 +239,39 @@ class KennelsListPageState extends State<KennelsListPage> {
                     globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (b.hkm.isHomeKennel).compareTo(a.hkm.isHomeKennel));
                     filterResults();
                     setState(() {});
-                    
                   }
                 });
               }
-              
             });
-           
           } catch (e) {
             print(e);
           }
         });
       });
-    }
-  }
-
-  void filterResults(){
-      if (searchController.text.isEmpty) {
-      filteredList = <KennelListAggregate>[];
-      filteredList.addAll(globalKennelMainPageList);
     } else {
-      filteredList = globalKennelMainPageList.where((KennelListAggregate a) => a.extensions.nameForSearch.toLowerCase().contains(searchText.toLowerCase())).toList();
+      // if the global list is already loaded,
+      // go ahead and call filterResults to make sure that the
+      // filtered list is also populated, otherwise we might
+      // end up with an empty list.
+      filterResults();
     }
   }
 
+  void filterResults() {
+    if (globalKennelMainPageList != null) {
+      if (searchController.text.isEmpty) {
+        filteredList = <KennelListAggregate>[];
+        filteredList.addAll(globalKennelMainPageList);
+      } else {
+        filteredList = globalKennelMainPageList.where((KennelListAggregate a) => a.extensions.nameForSearch.toLowerCase().contains(searchText.toLowerCase())).toList();
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: globalKennelMainPageList == null
           ? const Center(
               child: HcCircularProgressIndicator(),
@@ -282,7 +280,7 @@ class KennelsListPageState extends State<KennelsListPage> {
               decoration: Backgrounds.defaultHcBackground(),
               padding: const EdgeInsets.only(top: 0.0),
               child: ((globalKennelMainPageList == null) || (globalKennelMainPageList.isEmpty))
-                  ? Center(child: Text('No Kennels available.',style: headingStyle))
+                  ? Center(child: Text('No Kennels available.', style: headingStyle))
                   : NestedScrollView(
                       headerSliverBuilder: (BuildContext context, bool innerBoxScrolled) => [
                         //!innerBoxScrolled ? Container() :
