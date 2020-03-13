@@ -1,8 +1,6 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 0.8.129+281
-
-# 0.8.128+280: Fixed bug with filtering for kennels
+version: 0.8.130+285
 
 environment:
   sdk: ">=2.7.0 <3.0.0"

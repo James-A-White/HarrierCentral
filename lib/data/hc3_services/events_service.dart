@@ -35,6 +35,8 @@ class EventModel implements BaseModel {
       this.locationCity,
       this.locationStreet,
       this.locationCountry,
+      this.locationRegion,
+      this.locationSubRegion,
       this.hares,
       this.eventPaymentScheme,
       this.eventPaymentUrl,
@@ -70,6 +72,8 @@ class EventModel implements BaseModel {
   final String locationCity;
   final String locationStreet;
   final String locationCountry;
+  final String locationRegion;
+  final String locationSubRegion;
   String hares;
   final String eventPaymentScheme;
   final String eventPaymentUrl;
@@ -114,6 +118,8 @@ class EventModel implements BaseModel {
             locationCity: jsonItem['locationCity'],
             locationStreet: jsonItem['locationStreet'],
             locationCountry: jsonItem['locationCountry'],
+            locationRegion: jsonItem['locationRegion'],
+            locationSubRegion: jsonItem['locationSubRegion'],
             hares: jsonItem['hares'],
             eventPaymentScheme: jsonItem['eventPaymentScheme'],
             eventPaymentUrl: jsonItem['eventPaymentUrl'],
@@ -194,6 +200,8 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
   final String colLocationCity = 'locationCity';
   final String colLocationStreet = 'locationStreet';
   final String colLocationCountry = 'locationCountry';
+  final String colLocationRegion= 'locationRegion';
+  final String colLocationSubRegion= 'locationSubRegion';
   final String colHares = 'hares';
   final String colEventPaymentScheme = 'eventPaymentScheme';
   final String colEventPaymentUrl = 'eventPaymentUrl';
@@ -233,6 +241,8 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
             $colLocationCity TEXT,
             $colLocationStreet TEXT,
             $colLocationCountry TEXT,
+            $colLocationRegion TEXT,
+            $colLocationSubRegion TEXT,
             $colHares TEXT,
             $colEventPaymentScheme TEXT,
             $colEventPaymentUrl TEXT,
@@ -279,6 +289,8 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
       colLocationCity: item.locationCity,
       colLocationStreet: item.locationStreet,
       colLocationCountry: item.locationCountry,
+      colLocationRegion: item.locationRegion,
+      colLocationSubRegion: item.locationSubRegion,
       colHares: item.hares,
       colEventPaymentScheme: item.eventPaymentScheme,
       colEventPaymentUrl: item.eventPaymentUrl,
@@ -322,6 +334,8 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
       colLocationCity: inputMap[colLocationCity],
       colLocationStreet: inputMap[colLocationStreet],
       colLocationCountry: inputMap[colLocationCountry],
+      colLocationRegion: inputMap[colLocationRegion],
+      colLocationSubRegion: inputMap[colLocationSubRegion],
       colHares: inputMap[colHares],
       colEventPaymentScheme: inputMap[colEventPaymentScheme],
       colEventPaymentUrl: inputMap[colEventPaymentUrl],
@@ -376,6 +390,8 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
       locationCity: map[colLocationCity],
       locationStreet: map[colLocationStreet],
       locationCountry: map[colLocationCountry],
+      locationRegion: map[colLocationRegion],
+      locationSubRegion: map[colLocationSubRegion],
       hares: map[colHares],
       eventPaymentScheme: map[colEventPaymentScheme],
       eventPaymentUrl: map[colEventPaymentUrl],

@@ -194,7 +194,12 @@ class PaymentIcons extends StatelessWidget {
 
     return GestureDetector(
         onTap: () {
-          canLaunch(url).then((bool canLaunch) async {
+          // temporarily replace the payment value token (if one exists) with a number 
+          // just so we can get a valid URL for testing. This will not be the actual value
+          // sent to the bank, that is done lower down in this method once we've calculated
+          // the total amount to be paid.
+          final String modifiedUrl = url.replaceAll('<payment amount>', '5.0');
+          canLaunch(modifiedUrl).then((bool canLaunch) async {
             if (canLaunch) {
               // OK, we have a good URL, so let's figure out how much the hasher needs to pay
 
@@ -242,7 +247,7 @@ class PaymentIcons extends StatelessWidget {
               Utilities.showAlert(context, 'Please pay $totalStr', 'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr', 'OK', showCancelButton: true, cancelButtonText: 'Cancel').then((bool result) {
                 if (result) {
                   // now launch into the payment provider
-                  launch(url).then((bool launched) {
+                  launch(url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.'))).then((bool launched) {
                     if (kennel.allowSelfPayment == 0) {
                       Utilities.showAlert(context, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
                     } else {

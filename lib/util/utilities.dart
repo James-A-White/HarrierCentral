@@ -81,7 +81,18 @@ class Utilities {
     final GeolocationStatus status = await Geolocator().checkGeolocationPermissionStatus(locationPermission: GeolocationPermission.location);
 
     if (status == GeolocationStatus.granted) {
-      position = await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
+      position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+      position ??= await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      position ??= await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
+      position ??= await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
+      position ??= await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
+      position ??= await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);
+      position ??= await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.best); 
+      position ??= await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.high); 
+      position ??= await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium); 
+      position ??= await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.low); 
+      position ??= await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.lowest); 
+      position ??= await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);   
     }
 
     final LatLon latLon = LatLon();

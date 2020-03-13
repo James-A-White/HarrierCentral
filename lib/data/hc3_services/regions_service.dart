@@ -44,6 +44,8 @@ class RegionsModel implements BaseModel {
   }
 }
 
+// TODO(James): Eventually add the flag file to the Regions and Cities JSON or remove it completely from the app
+
 class RegionsTableHelper with BaseFields implements BaseTableHelper {
   RegionsTableHelper();
 

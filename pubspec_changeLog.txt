@@ -1,0 +1,8 @@
+# 0.8.128+280: 
+    Fixed bug with filtering for kennels
+# 0.8.130+285: 
+    Added a payment token support to payment URLs, 
+    Fixed geolocation issue with Android,
+    Added region and subRegion to location for events (for searching)
+    
+
