@@ -4,5 +4,7 @@
     Added a payment token support to payment URLs, 
     Fixed geolocation issue with Android,
     Added region and subRegion to location for events (for searching)
+    Added search bar to runs list
+    
     
 

@@ -82,6 +82,7 @@ class KennelsListPageState extends State<KennelsListPage> {
   FocusNode searchFocusNode = FocusNode();
   TextEditingController searchController = TextEditingController();
   String searchText;
+  ScrollController scrollController = ScrollController(initialScrollOffset: 80);
 
   List<KennelListAggregate> filteredList = <KennelListAggregate>[];
 
@@ -147,13 +148,14 @@ class KennelsListPageState extends State<KennelsListPage> {
           Container(
             width: 40,
             child: FlatButton(
-              //color: Colors.red,
               child: const Text('X'),
               textColor: Colors.grey[700],
               onPressed: () {
                 searchController.text = '';
                 searchText = '';
-                //_refreshPackListFromTables(true);
+                setState(() {
+                  filterResults();
+                });
               },
             ),
           ),
@@ -282,7 +284,8 @@ class KennelsListPageState extends State<KennelsListPage> {
               child: ((globalKennelMainPageList == null) || (globalKennelMainPageList.isEmpty))
                   ? Center(child: Text('No Kennels available.', style: headingStyle))
                   : NestedScrollView(
-                      headerSliverBuilder: (BuildContext context, bool innerBoxScrolled) => [
+                    controller: scrollController,
+                      headerSliverBuilder: (BuildContext context, bool innerBoxScrolled) => <Widget>[
                         //!innerBoxScrolled ? Container() :
                         SliverAppBar(
                           floating: false,

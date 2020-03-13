@@ -313,7 +313,7 @@ class HasherKennelMapService {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
 
-    final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper,hasherKennelMapTableHelper.colUpdatedAtValue, tableType: TableType.hkmEventAdmin);
+    final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper,hasherKennelMapTableHelper.colUpdatedAtValue, tableType: tblType);
     final num _kennelsLastUpdated = await baseService.getLastUpdatedTime(kennelsTableHelper, kennelsTableHelper.colUpdatedAtValue);
     final num _hashersLastUpdated = await hashersService.getLastUpdatedTime(hashersTableHelper, hashersTableHelper.colUpdatedAtValue);
 
