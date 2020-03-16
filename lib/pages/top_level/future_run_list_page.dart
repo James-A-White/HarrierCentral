@@ -11,6 +11,7 @@ import 'package:harrier_central/widgets/run_list_item.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
@@ -27,8 +28,24 @@ class FutureRunsListPage extends StatefulWidget {
 }
 
 class RunDetailsQueryExtensions {
-  RunDetailsQueryExtensions(
-      {this.daysUntilEvent, this.distToEvent, this.mismanagementRoleFlags, this.currencySymbol, this.digitsAfterDecimal, this.rsvpState, this.isPaid, this.isHare, this.isMember, this.following, this.notificationPreference, this.emailAlertPreference, this.distancePreference, this.searchText});
+  RunDetailsQueryExtensions({
+    this.daysUntilEvent,
+    this.distToEvent,
+    this.mismanagementRoleFlags,
+    this.currencySymbol,
+    this.digitsAfterDecimal,
+    this.rsvpState,
+    this.isPaid,
+    this.isHare,
+    this.isMember,
+    this.following,
+    this.notificationPreference,
+    this.emailAlertPreference,
+    this.distancePreference,
+    this.autoRunDistancePreference,
+    this.userPrefs,
+    this.searchText,
+  });
 
   final num daysUntilEvent;
   num distToEvent;
@@ -43,6 +60,8 @@ class RunDetailsQueryExtensions {
   int notificationPreference;
   int emailAlertPreference;
   int distancePreference;
+  int autoRunDistancePreference;
+  int userPrefs;
   String searchText;
 
   static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map) {
@@ -59,6 +78,8 @@ class RunDetailsQueryExtensions {
       notificationPreference: map['notificationPreference'],
       emailAlertPreference: map['emailAlertPreference'],
       distancePreference: map['distancePreference'],
+      autoRunDistancePreference: map['autoRunDistancePreference'],
+      userPrefs: map['userPrefs'],
       searchText: map['searchText'],
     );
     return item;
@@ -66,7 +87,12 @@ class RunDetailsQueryExtensions {
 }
 
 class RunDetailsAggregate {
-  RunDetailsAggregate({this.event, this.kennel, this.extensions, this.paymentUrl});
+  RunDetailsAggregate({
+    this.event,
+    this.kennel,
+    this.extensions,
+    this.paymentUrl,
+  });
 
   final EventModel event;
   final KennelsModel kennel;
@@ -166,7 +192,9 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
               Checkbox(
                 value: searchAllRuns,
                 onChanged: (bool value) {
+                  //allRuns = null;
                   searchAllRuns = !searchAllRuns;
+                  setState(() {});
                   refreshFromTable(true);
                 },
               ),
@@ -260,6 +288,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           julianday(evt.eventStartDatetime) + 0.5 as eventJulian,
           julianday('now','localtime') + 0.5 as nowJulian,
           CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,n.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference,
+          h.preferences & 0x0000001C as autoRunDistancePreference,
+          h.preferences as userPrefs,
             coalesce(evt.${eventsTableHelper.colEventName},"")
             || " " || coalesce(evt.${eventsTableHelper.colEventDescription},"")
             || " " || coalesce(evt.${eventsTableHelper.colHares},'')
@@ -325,7 +355,41 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
                   print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 
-                  if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < 50000))) {
+                  num meters = 0;
+
+                  switch (extensionsItem.autoRunDistancePreference) {
+                    case hasherPref_10:
+                      meters = 10000;
+                      break;
+                    case hasherPref_25:
+                      meters = 25000;
+                      break;
+                    case hasherPref_50:
+                      meters = 50000;
+                      break;
+                    case hasherPref_75:
+                      meters = 75000;
+                      break;
+                    case hasherPref_100:
+                      meters = 100000;
+                      break;
+                    case hasherPref_150:
+                      meters = 150000;
+                      break;
+                    case hasherPref_200:
+                      meters = 200000;
+                      break;
+                    default:
+                      meters = 50000;
+                      break;
+                  }
+
+                  if ((extensionsItem.distancePreference != 0) || ((extensionsItem.userPrefs & 0x00000002) == 0))
+                  {
+                      meters = meters * MILES_TO_METERS / 1000;
+                  }
+
+                  if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < meters))) {
                     final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
                     allRuns.add(item);
                   }

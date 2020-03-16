@@ -18,6 +18,7 @@ const num PROFILE_PIC_SIZE = 92.0;
 const num PROFILE_PIC_SIZE2 = 60.0;
 
 const num METERS_TO_MILES = 0.000621371;
+const num MILES_TO_METERS = 1609.34449;
 
 const int SPLASH_SCREEN_DISPLAY_TIME = 1;
 
@@ -58,6 +59,17 @@ const String QR_PREFIX_USER_SECRET_CODE = 'USC:';
 const String QR_PREFIX_USER_RESET_CODE = 'URC:';
 
 const String LAST_CACHE_CLEAR_KEY = 'lastCacheClear_';
+
+const int hasherPref_distanceMeasuredIn = 0x00000003;
+const int hasherPref_distanceForAutoDisplay = 0x0000001C;
+
+const int hasherPref_10 = 0 * 4;
+const int hasherPref_25 = 1 * 4;
+const int hasherPref_50 = 2 * 4;
+const int hasherPref_75 = 3 * 4;
+const int hasherPref_100 = 4 * 4;
+const int hasherPref_150 = 5 * 4;
+const int hasherPref_200 = 6 * 4;
 
 const int mmAuthIsGm = 0x40000000; // TODO(James): Needs implementation
 const int mmAuthCanGrantPermissions = 0x20000000; // TODO(James): Needs implementation

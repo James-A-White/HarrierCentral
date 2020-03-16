@@ -50,6 +50,7 @@ class HasherProfilePage extends StatefulWidget {
   static const int flagUiElement_followKennel = 0x00000001;
   static const int flagUiElement_inviteCode = 0x00000002;
   static const int flagUiElement_distancePref = 0x00000004;
+  static const int flagUiElement_autoDisplayRunsDistance = 0x00000008;
 
   @override
   HasherProfilePageState createState() => HasherProfilePageState();
@@ -162,7 +163,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         previousRunCountController.text = (hkmData?.historicalPackRunCount ?? 0).toString();
         previousHaringCountController.text = (hkmData?.historicalHaringCount ?? 0).toString();
         historicalCountIsEstimate = (hkmData?.historicalCountIsEstimate ?? 0) == 1;
-        _distancePreference = hasher.preferences & 0x00000003;
+        _distancePreference = hasher.preferences & hasherPref_distanceMeasuredIn;
+        _autoRunPreference = hasher.preferences & hasherPref_distanceForAutoDisplay;
       }
 
       setState(() {
@@ -235,6 +237,15 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     newPhoto = 'bundle://avatar-$avatarNumber';
   }
 
+  String getDistancePreferenceAsString(int distPref) {
+    if (distPref == 2) {
+      return 'kilometers';
+    } else if (distPref == 3) {
+      return 'miles';
+    }
+    return 'miles';
+  }
+
   void checkDirty() {
     if (_isLoading) {
       return;
@@ -267,7 +278,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
     if (hasher != null) {
       hasher.preferences ??= 0;
-      if ((hasher.preferences & 0x00000003) != _distancePreference) {
+      if ((hasher.preferences & hasherPref_distanceMeasuredIn) != _distancePreference) {
+        isDirty = true;
+      }
+    }
+
+    if (hasher != null) {
+      hasher.preferences ??= 0;
+      if ((hasher.preferences & hasherPref_distanceForAutoDisplay) != _autoRunPreference) {
         isDirty = true;
       }
     }
@@ -330,7 +348,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             historicalPackRunCount: previousRunCountController.text,
             historicalHaringCount: previousHaringCountController.text,
             historicalCountIsEstimate: historicalCountIsEstimate,
-            preferences: _distancePreference,
+            preferences: _distancePreference | _autoRunPreference,
             followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0);
 
         apiCall.then((void dummy) async {
@@ -495,10 +513,18 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   AppBar appBar;
 
   int _distancePreference = 0;
+  int _autoRunPreference = 2;
 
   void _handleRadioValueChange1(int value) {
     setState(() {
       _distancePreference = value;
+      checkDirty();
+    });
+  }
+
+  void _handleRadioValueChange2(int value) {
+    setState(() {
+      _autoRunPreference = value;
       checkDirty();
     });
   }
@@ -685,6 +711,156 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   const Text(
                                                                     'Miles',
                                                                     style: TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        hasLocationPermissions
+                                                            ? Container()
+                                                            : Padding(
+                                                                padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
+                                                                child: RaisedButton(
+                                                                  onPressed: () {
+                                                                    if (Platform.isIOS) {
+                                                                      PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.locationWhenInUse]).then((Map<PermissionGroup, PermissionStatus> e) {
+                                                                        setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                        hasLocationPermissions = true;
+                                                                        Utilities.getLatLong();
+                                                                      });
+                                                                    } else {
+                                                                      PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.location]).then((Map<PermissionGroup, PermissionStatus> e) {
+                                                                        setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                        hasLocationPermissions = true;
+                                                                        Utilities.getLatLong();
+                                                                      });
+                                                                    }
+
+                                                                    Utilities.showAlert(context, 'Location preferences updated', 'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 'OK');
+                                                                  },
+                                                                  child: Text('Enable Location Svcs', style: buttonTextStyle),
+                                                                ),
+                                                              ),
+                                                      ],
+                                                    ),
+                                              (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_autoDisplayRunsDistance == 0)
+                                                  ? Container()
+                                                  : Column(
+                                                      children: <Widget>[
+                                                        const FancyDivider(
+                                                          innerColor: Colors.white,
+                                                          topMargin: 45.0,
+                                                          bottomMargin: 20.0,
+                                                        ),
+                                                        Container(
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.yellow[100],
+                                                            borderRadius: BorderRadius.circular(5.0),
+                                                          ),
+                                                          child: Column(
+                                                            children: <Widget>[
+                                                              const SizedBox(
+                                                                height: 20,
+                                                                width: 10,
+                                                              ),
+                                                              Text(
+                                                                'Automatically Show\r\nAll Runs Within...',
+                                                                textAlign: TextAlign.center,
+                                                                style: headingStyle20Black,
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 10,
+                                                                width: 10,
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: 0,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  Text(
+                                                                    '10 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: 4,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  Text(
+                                                                    '25 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: 8,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  Text(
+                                                                    '50 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: 12,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  Text(
+                                                                    '75 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: 16,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  Text(
+                                                                    '100 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: 20,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  Text(
+                                                                    '150 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: 24,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  Text(
+                                                                    '200 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
                                                               ),

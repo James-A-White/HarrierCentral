@@ -105,7 +105,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                           dataContext: EnumDataContext.user, 
                           pageType: EnumMyProfilePageType.myProfile, 
                           hasherId: userId,
-                          uiElementsToDisplay: HasherProfilePage.flagUiElement_distancePref,
+                          uiElementsToDisplay: HasherProfilePage.flagUiElement_distancePref | HasherProfilePage.flagUiElement_autoDisplayRunsDistance,
                           );
                       },
                     ),
