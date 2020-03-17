@@ -395,9 +395,9 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           }
 
           setState(() {
-            if (forceRefresh) {
+
               _isLoading = false;
-            }
+            
           });
         }
 
@@ -515,13 +515,22 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       MaterialPageRoute<Map<String, dynamic>>(
         settings: const RouteSettings(),
         builder: (BuildContext context) {
-          return const FindHasherPage(FindHasherPageType.addHasherToRun);
+          return FindHasherPage(FindHasherPageType.addHasherToRun,kennelId: widget.eventAggregate.event.kennelId, eventId: widget.eventAggregate.event.eventId);
         },
       ),
     ).then((Map<String, dynamic> result) {
       if ((result != null) && (result['hasher']?.hasherId != null)) {
-        final Future<List<dynamic>> retVal =
-            hasherEventMapService.joinEvent(widget.eventAggregate.event.eventId, TableType.hemEventAdmin, result['hasher'].hasherId, null, AppDomainType.event, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value, virginVisitorType: result['virginVisitorType']);
+        final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
+          widget.eventAggregate.event.eventId,
+          TableType.hemEventAdmin,
+          result['hasher'].hasherId,
+          null,
+          AppDomainType.event,
+          rsvpState: rsvpYes.value,
+          attendenceState: attendenceAtHash.value,
+          isHare: isHareNo.value,
+          virginVisitorType: result['virginVisitorType'],
+        );
 
         retVal.then((List<dynamic> adHocData) {
           _refreshPackListFromTables(false).then((void dummy) {
@@ -1575,21 +1584,28 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       child: Container(
         height: 80,
         margin: const EdgeInsets.only(left: 10),
-        child: Row(children: <Widget>[
-          Icon(SimpleLineIcons.question, size: 35.0, color: Theme.of(context).accentColor),
-          Expanded(
+        child: Row(
+          children: <Widget>[
+            Icon(SimpleLineIcons.question, size: 35.0, color: Theme.of(context).accentColor),
+            Expanded(
               child: Padding(
-            padding: const EdgeInsets.only(left: 14.0, right: 10.0),
-            child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-              Text('Can\'t find a Hasher?', style: smallContentStyleDb),
-              AutoSizeText(
-                'Click here to add \'${capitalizeFirstLetter(searchController.text)}\'',
-                style: smallContentStyle,
-                maxLines: 1,
+                padding: const EdgeInsets.only(left: 14.0, right: 10.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text('Can\'t find a Hasher?', style: smallContentStyleDb),
+                    AutoSizeText(
+                      'Click here to add \'${capitalizeFirstLetter(searchController.text)}\'',
+                      style: smallContentStyle,
+                      maxLines: 1,
+                    ),
+                  ],
+                ),
               ),
-            ]),
-          ))
-        ]),
+            )
+          ],
+        ),
       ),
     );
   }

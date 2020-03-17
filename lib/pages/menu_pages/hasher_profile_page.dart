@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io' show Platform;
 import 'dart:math';
 
@@ -36,7 +37,17 @@ enum EnumMyProfilePageType { myProfile, anyHasherProfile, newHasherProfile }
 class HasherProfilePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const HasherProfilePage({Key key, @required this.dataContext, @required this.pageType, this.hasherId = GUID_EMPTY, this.eventId = GUID_EMPTY, this.kennelId = GUID_EMPTY, this.uiElementsToDisplay = 0, this.kennelShortName, this.hashNameFromSearch = ''}) : super(key: key);
+  const HasherProfilePage({
+    Key key,
+    @required this.dataContext,
+    @required this.pageType,
+    this.hasherId = GUID_EMPTY,
+    this.eventId = GUID_EMPTY,
+    this.kennelId = GUID_EMPTY,
+    this.uiElementsToDisplay = 0,
+    this.kennelShortName,
+    this.hashNameFromSearch = '',
+  }) : super(key: key);
 
   final EnumDataContext dataContext;
   final EnumMyProfilePageType pageType;
@@ -167,8 +178,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         _autoRunPreference = hasher.preferences & hasherPref_distanceForAutoDisplay;
       }
 
+      _isLoading = false; 
+      checkDirty(); 
       setState(() {
-        _isLoading = false;
+        
+        
       });
     } catch (e) {
       print(e);
@@ -257,7 +271,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     if (lastNameController.text != hasher?.lastName ?? '') {
       isDirty = true;
     }
-    if ((emailController.text ?? '') != (hasher?.email ?? '')) {
+    if ((hasher?.email != null) && ((emailController.text ?? '') != (hasher?.email ?? ''))) {
       isDirty = true;
     }
     if (hashNameController.text != hasher?.hashName ?? '') {
@@ -278,17 +292,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
     if (hasher != null) {
       hasher.preferences ??= 0;
-      if ((hasher.preferences & hasherPref_distanceMeasuredIn) != _distancePreference) {
+      if (hasher.preferences  != (_distancePreference + _autoRunPreference)) {
         isDirty = true;
       }
     }
 
-    if (hasher != null) {
-      hasher.preferences ??= 0;
-      if ((hasher.preferences & hasherPref_distanceForAutoDisplay) != _autoRunPreference) {
-        isDirty = true;
-      }
-    }
 
     if (historicalCountIsEstimate != ((hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
       isDirty = true;
@@ -336,7 +344,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
         final HashersService srv = HashersService();
 
-        final Future<dynamic> apiCall = srv.addEditUser(
+        final Future<String> apiCall = srv.addEditUser(
             targetUserId: hasher.hasherId,
             firstName: firstNameController.text,
             lastName: lastNameController.text,
@@ -348,28 +356,39 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             historicalPackRunCount: previousRunCountController.text,
             historicalHaringCount: previousHaringCountController.text,
             historicalCountIsEstimate: historicalCountIsEstimate,
-            preferences: _distancePreference | _autoRunPreference,
+            preferences: _distancePreference + _autoRunPreference,
             followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0);
 
-        apiCall.then((void dummy) async {
-          refreshUserDataFromTable(false).then((void dummy) {
-            setState(() {
-              if (widget.pageType == EnumMyProfilePageType.myProfile) {
-                setStringPref(StringPrefsEnum.profilePhotoUrl, hasher.photo);
-                setStringPref(StringPrefsEnum.displayName, hasher.dispName);
-                setStringPref(StringPrefsEnum.email, hasher.email);
-                setStringPref(StringPrefsEnum.firstName, hasher.firstName);
-                setStringPref(StringPrefsEnum.hashName, hasher.hashName);
-                setStringPref(StringPrefsEnum.lastName, hasher.lastName);
-                setIntPref(IntPrefsEnum.hasherPreferences, hasher.preferences);
-              }
-              _isLoading = false;
-              checkDirty();
-              if (widget.pageType != EnumMyProfilePageType.myProfile) {
-                Navigator.of(context).pop(hasher);
-              }
-            });
+        apiCall.then((String jsonResponse) async {
+
+
+          final dynamic jsonResult = json.decode(jsonResponse);
+          final HashersModel h = hashersTableHelper.fromMap(jsonResult[0][0]);
+          setState(() {
+            if (widget.pageType == EnumMyProfilePageType.myProfile) {
+              setStringPref(StringPrefsEnum.profilePhotoUrl, h.photo);
+              setStringPref(StringPrefsEnum.displayName, h.dispName);
+              // don't set the e-mail with the result from the 
+              // api call. Use the local value in hasher.email instead
+              setStringPref(StringPrefsEnum.email, hasher.email);
+              setStringPref(StringPrefsEnum.firstName, h.firstName);
+              setStringPref(StringPrefsEnum.hashName, h.hashName);
+              setStringPref(StringPrefsEnum.lastName, h.lastName);
+              setIntPref(IntPrefsEnum.hasherPreferences, h.preferences);
+            }
+
+            refreshUserDataFromTable(true);
+             _isLoading = false;
+            checkDirty();
+
+            if (widget.pageType != EnumMyProfilePageType.myProfile) {
+              Navigator.of(context).pop(h);
+            }
           });
+
+
+
+
         });
       });
     } else {
@@ -764,8 +783,21 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 height: 20,
                                                                 width: 10,
                                                               ),
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  Radio<int>(
+                                                                    value: 0,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
+                                                                  ),
+                                                                  const Text(
+                                                                    'Do not automatically show runs' ,
+                                                                    style: TextStyle(fontSize: 16.0),
+                                                                  ),
+                                                                ],
+                                                              ),
                                                               Text(
-                                                                'Automatically Show\r\nAll Runs Within...',
+                                                                'Or...\r\n...Automatically Show\r\nAll Runs Within...',
                                                                 textAlign: TextAlign.center,
                                                                 style: headingStyle20Black,
                                                               ),
@@ -776,7 +808,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               Row(
                                                                 children: <Widget>[
                                                                   Radio<int>(
-                                                                    value: 0,
+                                                                    value: 4,
                                                                     groupValue: _autoRunPreference,
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
@@ -789,7 +821,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               Row(
                                                                 children: <Widget>[
                                                                   Radio<int>(
-                                                                    value: 4,
+                                                                    value: 8,
                                                                     groupValue: _autoRunPreference,
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
@@ -802,7 +834,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               Row(
                                                                 children: <Widget>[
                                                                   Radio<int>(
-                                                                    value: 8,
+                                                                    value: 12,
                                                                     groupValue: _autoRunPreference,
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
@@ -815,7 +847,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               Row(
                                                                 children: <Widget>[
                                                                   Radio<int>(
-                                                                    value: 12,
+                                                                    value: 16,
                                                                     groupValue: _autoRunPreference,
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
@@ -828,7 +860,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               Row(
                                                                 children: <Widget>[
                                                                   Radio<int>(
-                                                                    value: 16,
+                                                                    value: 20,
                                                                     groupValue: _autoRunPreference,
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
@@ -841,7 +873,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               Row(
                                                                 children: <Widget>[
                                                                   Radio<int>(
-                                                                    value: 20,
+                                                                    value: 24,
                                                                     groupValue: _autoRunPreference,
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
@@ -854,7 +886,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               Row(
                                                                 children: <Widget>[
                                                                   Radio<int>(
-                                                                    value: 24,
+                                                                    value: 28,
                                                                     groupValue: _autoRunPreference,
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),

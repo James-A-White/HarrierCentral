@@ -341,7 +341,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                   MaterialPageRoute<Map<String, dynamic>>(
                     settings: const RouteSettings(),
                     builder: (BuildContext context) {
-                      return const FindHasherPage(FindHasherPageType.addMember);
+                      return FindHasherPage(FindHasherPageType.addMember, kennelId: widget.kennel.kennel.kennelId,);
                     },
                   ),
                 ).then((Map<String, dynamic> result) {

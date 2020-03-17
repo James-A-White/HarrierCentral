@@ -15,7 +15,23 @@ import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 
 class HashersModel implements BaseModel {
-  HashersModel({this.hasherId, this.homeKennelId, this.firstName, this.lastName, this.dispName, this.hashName, this.email, this.photo, this.dispPref, this.resetCode, this.qrCode, this.includeInGlobalHashDirectory, this.preferences, this.removed, this.updatedAt});
+  HashersModel({
+    this.hasherId,
+    this.homeKennelId,
+    this.firstName,
+    this.lastName,
+    this.dispName,
+    this.hashName,
+    this.email,
+    this.photo,
+    this.dispPref,
+    this.resetCode,
+    this.qrCode,
+    this.includeInGlobalHashDirectory,
+    this.preferences,
+    this.removed,
+    this.updatedAt,
+  });
 
   final String hasherId;
   final String homeKennelId;
@@ -106,7 +122,7 @@ class HashersTableHelper with BaseFields implements BaseTableHelper {
   final String colPreferences = 'preferences';
 
   @override
-  Future<dynamic> createTable(Database db, int version,TableType tableType) async {
+  Future<dynamic> createTable(Database db, int version, TableType tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -251,10 +267,10 @@ class HashersService extends BaseService {
       final num _hashersLastUpdated = await getLastUpdatedTime(hashersTableHelper, hashersTableHelper.colUpdatedAtValue);
       hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
 
-      final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper,hasherEventMapTableHelper.colUpdatedAtValue, tableType: TableType.hemEventAdmin);
+      final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper, hasherEventMapTableHelper.colUpdatedAtValue, tableType: TableType.hemEventAdmin);
       hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
 
-      final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper,hasherKennelMapTableHelper.colUpdatedAtValue, tableType: ((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? TableType.hkmEventAdmin : TableType.hkmKennelAdmin);
+      final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper, hasherKennelMapTableHelper.colUpdatedAtValue, tableType: ((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? TableType.hkmEventAdmin : TableType.hkmKennelAdmin);
       hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
     } else {
       // do this to suppress any records being returned through the sync mechanism

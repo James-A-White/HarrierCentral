@@ -124,7 +124,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     );
   }
 
-  Future<void> _handleRefresh({bool queryBackend = true, bool clearLocalTables = false}) async {
+  Future<void> _refreshFromBackend({bool clearLocalTables = false}) async {
     final Database db = await DBProvider.db.database;
 
     if (clearLocalTables) {
@@ -154,14 +154,14 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
       }
     }
 
-    if (queryBackend) {
+
       final SyncUserDataService cSrv = SyncUserDataService();
       cSrv.updateFromBackend(db, SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable | SyncUserDataService.flagPaymentsTable, false).then((bool result) {
         refreshFromTable(true);
         final String resultStr = result ? 'successfully' : 'unsuccessfully';
         print('Events user data synchronized $resultStr');
       });
-    }
+    
   }
 
   @override
@@ -169,12 +169,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     searchController.text = '';
     searchText = '';
 
-    // scrollController.addListener((){
-    //   showFilters = true;
-    // });
-
-    _handleRefresh().then((void dummy) {
-      refreshFromTable(false);
+    _refreshFromBackend().then((void dummy) {
     });
     super.initState();
   }
@@ -331,10 +326,9 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
           ORDER BY evt.eventStartDatetime
           ''';
 
-          allRuns = <RunDetailsAggregate>[];
-          allRuns.clear(); // make double sure it's cleared!
           try {
             db.rawQuery(query).then((List<Map<String, dynamic>> results) {
+              allRuns = <RunDetailsAggregate>[];
               for (int i = 0; i < results.length; i++) {
                 locator.distanceBetween(Utilities.unInt(ll.latitude), Utilities.unInt(ll.longitude), Utilities.unInt(results[i]['narrowEventLatitude']), Utilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
                   final EventModel eventItem = eventsTableHelper.fromMap(results[i]);
@@ -358,6 +352,9 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   num meters = 0;
 
                   switch (extensionsItem.autoRunDistancePreference) {
+                    case hasherPref_0:
+                      meters = 0;
+                      break;
                     case hasherPref_10:
                       meters = 10000;
                       break;
@@ -384,9 +381,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                       break;
                   }
 
-                  if ((extensionsItem.distancePreference != 0) || ((extensionsItem.userPrefs & 0x00000002) == 0))
-                  {
-                      meters = meters * MILES_TO_METERS / 1000;
+                  if ((extensionsItem.distancePreference != 0) || ((extensionsItem.userPrefs & 0x00000002) == 0)) {
+                    meters = meters * MILES_TO_METERS / 1000;
                   }
 
                   if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < meters))) {
@@ -456,7 +452,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                     color: Theme.of(context).accentColor,
                     child: Text('Reload runs', style: buttonLabelStyleMedium),
                     onPressed: () async {
-                      _handleRefresh(queryBackend: true, clearLocalTables: false);
+                      _refreshFromBackend(clearLocalTables: false);
                     },
                   ),
                 ),
@@ -482,7 +478,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                 ];
               },
               body: RefreshIndicator(
-                onRefresh: () => _handleRefresh(queryBackend: true, clearLocalTables: true),
+                onRefresh: () => _refreshFromBackend(clearLocalTables: true),
                 displacement: 40.0,
                 child: ListView.builder(
                   padding: const EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 50),
@@ -499,7 +495,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                             builder: (BuildContext context) => RunDetailsPage(futureRun: filteredRuns[index]),
                           ),
                         ).then((void dummy) {
-                          _handleRefresh(queryBackend: true, clearLocalTables: false).then((void dummy) {
+                          _refreshFromBackend(clearLocalTables: false).then((void dummy) {
                             setState(() {});
                           });
                         });
