@@ -11,21 +11,28 @@ import 'package:latlong/latlong.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:geolocator/geolocator.dart';
 
-import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
+import 'package:harrier_central/data/hc3_services/events_service.dart';
+import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
-import 'package:harrier_central/widgets/kennel_logo.dart';
-import 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
 import 'package:harrier_central/data/services/email_reports_service.dart';
+import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/database/query_runs.dart';
 import 'package:harrier_central/pages/kennel_admin/filter_events_page.dart';
 import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
-import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
+import 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
+import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/globals.dart';
+import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
+import 'package:harrier_central/widgets/fancy_divider.dart';
+import 'package:harrier_central/widgets/kennel_logo.dart';
+import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
+import 'package:harrier_central/widgets/run_list_item.dart';
+import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 
 class KennelAdminMainPage extends StatefulWidget {
   const KennelAdminMainPage({@required this.kennelAggregateItem});
@@ -41,10 +48,12 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
 
   @override
   void initState() {
+    refreshFromTable(true);
+
     if ((widget.kennelAggregateItem.kennel.kennelMismanagementTeam == null) || (widget.kennelAggregateItem.kennel.kennelMismanagementTeam.trim().isEmpty)) {
       mismanagement = null;
     } else {
-      mismanagement = widget.kennelAggregateItem.kennel.kennelMismanagementTeam.split('\r');
+      mismanagement = widget.kennelAggregateItem.kennel.kennelMismanagementTeam.contains('\r') ? widget.kennelAggregateItem.kennel.kennelMismanagementTeam.split('\r') : widget.kennelAggregateItem.kennel.kennelMismanagementTeam.split('\n');
     }
 
     DBProvider.db.database.then((Database db) async {
@@ -76,6 +85,79 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   KennelMembersList kennelMembersList;
 
   List<String> mismanagement;
+
+  List<RunDetailsAggregate> allRuns;
+
+  // Future<void> refreshRunsFromInternalDb(bool forceRefresh) async {
+  //   final Database db = await DBProvider.db.database;
+
+  //   final String query = '''
+  //         SELECT
+  //         e.${eventsTableHelper.colEventId} as eventId,
+  //         e.${eventsTableHelper.colEventStartDatetime} as eventStartDatetime,
+  //         e.${eventsTableHelper.colEventName} as eventName,
+  //         e.${eventsTableHelper.colEventNumber} as eventNumber
+  //         FROM ${eventsTableHelper.tableName} e
+  //         WHERE e.${eventsTableHelper.colKennelId} = "${widget.kennelAggregateItem.kennel.kennelId}"
+  //         AND e.${eventsTableHelper.colIsVisible} = 1
+  //         AND e.${eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-12 hours')
+  //         ORDER BY e.${eventsTableHelper.colEventStartDatetime} ASC
+  //         LIMIT 5
+  //         ''';
+
+  //   //runCountsList = <HistoryListResults>[];
+  //   try {
+  //     final List<Map<String, dynamic>> results = await db.rawQuery(query);
+  //     next5runs = <KennelEventsStruct>[];
+
+  //     if (results.isNotEmpty) {
+  //       for (int i = 0; i < results.length; i++) {
+  //         final KennelEventsStruct item = KennelEventsStruct.fromMap(results[i]);
+  //         next5runs.add(item);
+  //       }
+  //     }
+
+  //     setState(() {});
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
+
+  void refreshFromTable(bool forceRefresh) {
+    if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
+      final Geolocator locator = Geolocator();
+
+      Utilities.getLatLong().then((LatLon ll) {
+        QueryRuns.queryRuns(EnumRunQueryType.kennelDetailPage, kennelId: widget.kennelAggregateItem.kennel.kennelId).then((List<Map<String, dynamic>> results) {
+          allRuns = <RunDetailsAggregate>[];
+          for (int i = 0; i < results.length; i++) {
+            locator.distanceBetween(Utilities.unInt(ll.latitude), Utilities.unInt(ll.longitude), Utilities.unInt(results[i]['narrowEventLatitude']), Utilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
+              final EventModel eventItem = eventsTableHelper.fromMap(results[i]);
+              final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
+              final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i]);
+              extensionsItem.distToEvent = dist;
+
+              String paymentLinkUrl = '';
+
+              if (((eventItem.eventPaymentUrl ?? '') != '') && (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
+                paymentLinkUrl = eventItem.eventPaymentUrl;
+              } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+                paymentLinkUrl = kennelItem.kennelPaymentUrl;
+              }
+
+              final num julianNow = results[i]['nowJulian'];
+              final num eventJulian = results[i]['eventJulian'];
+
+              print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+
+              final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
+              allRuns.add(item);
+            });
+          }
+        });
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -623,6 +705,29 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: <Widget>[const FancyDivider(innerColor: Colors.white, topMargin: 30.0, bottomMargin: 10.0), for (String item in mismanagement) mmRow(item)],
                                     ),
+                              ((allRuns == null) || (allRuns.isEmpty))
+                                  ? Container()
+                                  : Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        const FancyDivider(innerColor: Colors.white, topMargin: 30.0, bottomMargin: 10.0),
+                                        Center(
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(bottom: 15.0),
+                                            child: Text(
+                                              allRuns.length == 1 ? 'Next run' : 'Next ${allRuns.length} runs',
+                                              style: headingStyle,
+                                              textAlign: TextAlign.right,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ),
+                                        for (RunDetailsAggregate item in allRuns) runRow(item),
+                                        const SizedBox(height: 15.0)
+                                      ],
+                                    ),
                               ((widget.kennelAggregateItem.kennel.kennelWebsiteUrl == null) || (widget.kennelAggregateItem.kennel.kennelWebsiteUrl.trim().isEmpty))
                                   ? Container()
                                   : Column(
@@ -704,6 +809,53 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               ],
             );
     }
+  }
+
+  Widget runRow(RunDetailsAggregate s) {
+    return RunListItem(
+      futureRun: s,
+      onItemTapped: () {
+        Navigator.push<dynamic>(
+          context,
+          MaterialPageRoute<dynamic>(
+            builder: (BuildContext context) => RunDetailsPage(futureRun: s),
+          ),
+        ).then((void dummy) {
+          // _refreshFromBackend(clearLocalTables: false).then((void dummy) {
+          //   setState(() {});
+          // });
+        });
+      },
+    );
+
+    // Padding(
+    //   padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
+    //   child: Column(
+    //     mainAxisAlignment: MainAxisAlignment.center,
+    //     crossAxisAlignment: CrossAxisAlignment.center,
+    //     mainAxisSize: MainAxisSize.max,
+    //     children: <Widget>[
+    //       Text(
+    //         s.event.eventName.trim(),
+    //         style: listValueStyle,
+    //         textAlign: TextAlign.center,
+    //         maxLines: 3,
+    //         overflow: TextOverflow.ellipsis,
+    //       ),
+    //       //flex: 4,
+
+    //       // Expanded(
+    //       //     child: Text(
+    //       //       ' ' + items[1],
+    //       //       style: listValueStyle,
+    //       //       textAlign: TextAlign.left,
+    //       //       maxLines: 1,
+    //       //       overflow: TextOverflow.ellipsis,
+    //       //     ),
+    //       //     flex: 6),
+    //     ],
+    //   ),
+    // );
   }
 
   Future<void> _launchMaps(num lat, num lon) async {

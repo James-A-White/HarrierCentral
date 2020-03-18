@@ -5,9 +5,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:harrier_central/widgets/run_tabs.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
-import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
-
-
+import 'package:harrier_central/database/query_runs.dart';
 
 class RunDetailsPage extends StatelessWidget { 
   const RunDetailsPage({Key key, @required this.futureRun}) : super(key: key);

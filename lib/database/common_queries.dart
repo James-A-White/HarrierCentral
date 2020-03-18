@@ -4,6 +4,10 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
 
+
+
+
+
 class CommonQueries {
   static Future<String> getClosestEventInTime(String kennelId) async {
     String result = 'none';
@@ -40,8 +44,7 @@ class CommonQueries {
     return result;
   }
 
-
-static Future<String> getUserIdFromUqr(String uqr) async {
+  static Future<String> getUserIdFromUqr(String uqr) async {
     uqr = uqr.toUpperCase();
     String result = 'none';
     try {
@@ -58,14 +61,11 @@ static Future<String> getUserIdFromUqr(String uqr) async {
       final List<Map<String, dynamic>> results = await db.rawQuery(sql);
 
       if (results.isNotEmpty) {
-          result = results[0]['hasherId'];
+        result = results[0]['hasherId'];
       }
     } catch (e) {
       print(e);
     }
     return result;
   }
-
-
-
 }

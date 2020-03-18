@@ -5,6 +5,12 @@
     Fixed geolocation issue with Android,
     Added region and subRegion to location for events (for searching)
     Added search bar to runs list
+# 0.8.140+295:
+    Added the ability for users to specify distance for auto display of runs
+    Fixed a few bugs in loading runs
+    Fixed a problem adding new Hashers using the hamburger menu during manual checkin
+# 0.8.141+296:
+    Added next runs list to Kennel page with up to 10 runs listed
     
     
 
