@@ -93,6 +93,17 @@ const EnumRsvpState<int> rsvpNo = EnumRsvpState<int>(1);
 const EnumRsvpState<int> rsvpMaybe = EnumRsvpState<int>(2);
 const EnumRsvpState<int> rsvpYes = EnumRsvpState<int>(3);
 
+
+//////////////////////////
+
+class EnumYesNo<int> extends Enum<int> {
+  const EnumYesNo(int val) : super(val);
+}
+
+const EnumYesNo<int> enumYesNo_Cancel = EnumYesNo<int>(-1);
+const EnumYesNo<int> enumYesNo_No = EnumYesNo<int>(0);
+const EnumYesNo<int> enumYesNo_Yes = EnumYesNo<int>(1);
+
 //////////////////////////
 
 class EnumIsHare<int> extends Enum<int> {

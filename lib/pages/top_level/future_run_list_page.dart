@@ -21,17 +21,25 @@ import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 
 class FutureRunsListPage extends StatefulWidget {
-  const FutureRunsListPage({Key key}) : super(key: key);
+   FutureRunsListPage({Key key}) : super(key: key);
+
+  // @override
+  // FutureRunListPageState createState() => FutureRunListPageState();
+
+  final FutureRunListPageState state = FutureRunListPageState();
 
   @override
-  FutureRunListPageState createState() => FutureRunListPageState();
+  State<FutureRunsListPage> createState() { 
+    return state;
+  }
+
+  void forceSetState()
+  {
+    state.forceSetState();
+  }
 }
 
 class FutureRunListPageState extends State<FutureRunsListPage> {
-  // BuildContext context;
-
-  // @override
-  // bool get wantKeepAlive => true;
 
   int pageIndex = 1;
   List<RunDetailsAggregate> allRuns;
@@ -49,6 +57,11 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     return Scaffold(
       body: allRuns == null ? const HcCircularProgressIndicator() : _buildListView(),
     );
+  }
+
+  void forceSetState()
+  {
+    refreshFromTable(true);
   }
 
   Future<void> _refreshFromBackend({bool clearLocalTables = false}) async {

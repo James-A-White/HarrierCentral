@@ -1,16 +1,26 @@
 import 'package:sqflite/sqflite.dart';
 
+import 'package:geolocator/geolocator.dart';
+
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/utilities.dart';
 
-
-
-
+class AreWeAtRunResult {
+  String eventId;
+  String eventName;
+  String eventImage;
+  String kennelLogo;
+  String kennelShortName;
+  num eventNumber;
+  num distanceInMeters;
+}
 
 class CommonQueries {
   static Future<String> getClosestEventInTime(String kennelId) async {
-    String result = 'none';
+    String result = EMPTY_RESULT;
     try {
       final Database db = await DBProvider.db.database;
 
@@ -35,6 +45,74 @@ class CommonQueries {
           } else if (results[i]['deltaHours'] > ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT) {
             result = (results[i]['deltaHours'] - ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT).toString();
             break;
+          }
+        }
+      }
+    } catch (e) {
+      print(e);
+    }
+    return result;
+  }
+
+  static Future<AreWeAtRunResult> areWeAtRunStart() async {
+    final AreWeAtRunResult result = AreWeAtRunResult();
+    result.eventId = EMPTY_RESULT;
+
+    try {
+      final Database db = await DBProvider.db.database;
+
+      final LatLon ll = await Utilities.getLatLong();
+
+      final String sql = ''' 
+
+          SELECT e.${eventsTableHelper.colEventId},
+          e.${eventsTableHelper.colEventName},
+          e.${eventsTableHelper.colNarrowEventLatitude} as lat,
+          e.${eventsTableHelper.colNarrowEventLongitude} as lon,
+          e.${eventsTableHelper.colEventImage} as eventImage,
+          e.${eventsTableHelper.colEventNumber} as eventNumber,
+          k.${kennelsTableHelper.colKennelLogo} as kennelLogo,
+          k.${kennelsTableHelper.colKennelShortName} as kennelShortName,
+          (julianday(${eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24 as deltaHours
+          FROM ${eventsTableHelper.tableName} e
+          INNER JOIN ${kennelsTableHelper.tableName} k on e.${eventsTableHelper.colKennelId} = k.${kennelsTableHelper.colKennelId}
+          WHERE ABS((julianday(${eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24) <= $ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT
+          ORDER BY abs(julianday('now') - julianday(${eventsTableHelper.colEventStartDatetime})) ASC
+          
+          ''';
+
+      final List<Map<String, dynamic>> queryResults = await db.rawQuery(sql);
+
+      final Geolocator locator = Geolocator();
+
+      num closestRun = 99999999.0;
+
+      if (queryResults.isNotEmpty) {
+        for (int i = 0; i < queryResults.length; i++) {
+          final num dist = await locator.distanceBetween(Utilities.unInt(ll.latitude), Utilities.unInt(ll.longitude), Utilities.unInt(queryResults[i]['lat']), Utilities.unInt(queryResults[i]['lon']));
+          if (closestRun < dist) {
+            continue;
+          }
+
+          closestRun = dist;
+
+          result.eventId = queryResults[i]['eventId'];
+          result.eventName = queryResults[i]['eventName'];
+          result.eventImage = queryResults[i]['eventImage'];
+          result.kennelLogo = queryResults[i]['kennelLogo'];
+          result.eventNumber = queryResults[i]['eventNumber'];
+          result.kennelShortName = queryResults[i]['kennelShortName'];
+          result.distanceInMeters = dist;
+
+          // NOTE: Event images can either be full URLs or they can be partial URLs in the case
+          // when events have been uploaded directly to the DB using the HcWeb application.
+          // For partial URLs we need to append the root URL. The Root URL is stored in the
+          // Server settings table and copied into the string prefs on app startup.
+          if ((result.eventImage != null) && (result.eventImage.isNotEmpty) && (!result.eventImage.startsWith('http'))) {
+            final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+            if ((s != null) && (s.isNotEmpty)) {
+              result.eventImage = s + result.eventImage;
+            }
           }
         }
       }

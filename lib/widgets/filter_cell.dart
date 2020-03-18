@@ -6,9 +6,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
-
 class CheckinFiltersCell extends StatelessWidget {
-  const CheckinFiltersCell({@required this.counter, @required this.index, @required this.label, @required this.onTap, @required this.filterValues, this.color, this.icon, this.useTriState = true});
+  const CheckinFiltersCell({
+    @required this.counter,
+    @required this.index,
+    @required this.label,
+    @required this.onTap,
+    @required this.filterValues,
+    this.color,
+    this.icon,
+    this.useTriState = true,
+  });
 
   final IconData icon;
   final Color color;

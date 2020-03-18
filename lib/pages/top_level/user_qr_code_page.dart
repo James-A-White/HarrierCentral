@@ -495,7 +495,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
             }
           });
         } else {
-          if (eventId == 'none') {
+          if (eventId == EMPTY_RESULT) {
             setState(() {
               onScreenMessage = 'There is no event for this Kennel at this time';
             });

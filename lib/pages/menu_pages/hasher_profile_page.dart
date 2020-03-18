@@ -791,7 +791,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   const Text(
-                                                                    'Do not automatically show runs' ,
+                                                                    'Do not auto show runs' ,
                                                                     style: TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+
+import 'package:harrier_central/database/common_queries.dart';
+import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/widgets/confirm_auto_checkin_popup.dart';
 //import 'package:permission_handler/permission_handler.dart';
 
 import 'package:sqflite/sqflite.dart';
@@ -13,12 +17,14 @@ import 'package:harrier_central/database/migrations.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/pages/top_level/history_list_page.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 //import 'package:harrier_central/pages/history_sub_pages/add_user_run_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
@@ -39,7 +45,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   // TODO(James): Investigate Page Storage Bucket / PageView
 
-  final FutureRunsListPage futureRunsListPage = const FutureRunsListPage();
+  final FutureRunsListPage futureRunsListPage = FutureRunsListPage();
   final KennelsListPage kennelsListPage = const KennelsListPage();
   final HistoryListPage historyListPage = const HistoryListPage();
   final UserQrCodePage userQrCodePage = const UserQrCodePage();
@@ -74,10 +80,42 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       });
     });
 
-    checkLocationPermissions();
+    checkLocationPermissions().then((bool hasLoc) {
+      if (hasLoc) {
+        CommonQueries.areWeAtRunStart().then((AreWeAtRunResult result) async {
+          if ((result.eventId != EMPTY_RESULT) && (result.distanceInMeters <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN)) {
+            final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
+              title: 'Check-in to Run',
+              eventImage: result.eventImage,
+              eventName: result.eventName,
+              kennelLogo: result.kennelLogo,
+              okButtonTitle: 'Yes',
+              cancelButtonTitle: 'No',
+              kennelShortName: result.kennelShortName,
+              eventNumber: result.eventNumber,
+            );
+
+            final EnumYesNo<int> retVal = await showDialog<EnumYesNo<int>>(
+                context: context,
+                barrierDismissible: false, // user must tap button!
+                builder: (BuildContext context) {
+                  return popup;
+                });
+
+            final String userId = getStringPref(StringPrefsEnum.userId);
+
+            if (retVal == enumYesNo_Yes) {
+              hasherEventMapService.joinEvent(result.eventId, TableType.hemUser, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value).then((List<dynamic> svcResult) {
+                futureRunsListPage.forceSetState();
+              });
+            }
+          }
+        });
+      }
+    });
   }
 
-  Future<void> checkLocationPermissions() async {
+  Future<bool> checkLocationPermissions() async {
     bool hasLocPermission = true;
 
     final LocationPermissions permissions = LocationPermissions();
@@ -106,6 +144,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     setIntPref(IntPrefsEnum.hasLocationPermissions, hasLocPermission ? 1 : 0);
     hasLocationPermissions = hasLocPermission;
+    return hasLocPermission;
   }
 
   void informUser(String message) {

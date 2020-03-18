@@ -11,6 +11,7 @@
     Fixed a problem adding new Hashers using the hamburger menu during manual checkin
 # 0.8.141+296:
     Added next runs list to Kennel page with up to 10 runs listed
-    
+# 0.8.142+297
+    Added auto checkin for hashers when they arrive at an event
     
 

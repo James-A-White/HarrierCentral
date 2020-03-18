@@ -108,7 +108,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     final int attendenceValue = rsvpState.value <= rsvpMaybe.value ? attendenceNo.value : attendenceNoChange.value;
     final List<dynamic> adHocData = await hasherEventMapService.joinEvent(
       widget.futureRun.event.eventId,
-      TableType.hemEventAdmin,
+      TableType.hemUser,
       userId,
       null,
       AppDomainType.user,
@@ -330,12 +330,10 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
             true,
             (int r, int p) {
               widget.futureRun.extensions.rsvpState = r;
-              if (p != -1)
-              {
+              if (p != -1) {
                 widget.futureRun.extensions.isPaid = p;
               }
-              setState(() {
-              });
+              setState(() {});
             },
           )
         ],
@@ -593,7 +591,16 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         widget.futureRun.extensions.notificationPreference = -1;
       });
 
-      hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemUser, userId, null, AppDomainType.user, notificationState: nState.value).then((List<dynamic> results) {
+      hasherEventMapService
+          .joinEvent(
+        widget.futureRun.event.eventId,
+        TableType.hemUser,
+        userId,
+        null,
+        AppDomainType.user,
+        notificationState: nState.value,
+      )
+          .then((List<dynamic> results) {
         setState(() {
           final NotificationSupport notifications = NotificationSupport();
           notifications.setNotificationState(eventId: widget.futureRun.event.eventId);
@@ -684,7 +691,16 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         widget.futureRun.extensions.emailAlertPreference = -1;
       });
 
-      hasherEventMapService.joinEvent(widget.futureRun.event.eventId, TableType.hemUser, userId, null, AppDomainType.user, emailAlertState: nState.value).then((List<dynamic> results) {
+      hasherEventMapService
+          .joinEvent(
+        widget.futureRun.event.eventId,
+        TableType.hemUser,
+        userId,
+        null,
+        AppDomainType.user,
+        emailAlertState: nState.value,
+      )
+          .then((List<dynamic> results) {
         setState(() {
           widget.futureRun.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;
         });
