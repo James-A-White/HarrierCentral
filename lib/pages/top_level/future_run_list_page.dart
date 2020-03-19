@@ -20,23 +20,14 @@ import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 
+
+final GlobalKey<FutureRunListPageState> futureRunsListPageKey = GlobalKey<FutureRunListPageState>();
+
 class FutureRunsListPage extends StatefulWidget {
-   FutureRunsListPage({Key key}) : super(key: key);
-
-  // @override
-  // FutureRunListPageState createState() => FutureRunListPageState();
-
-  final FutureRunListPageState state = FutureRunListPageState();
+  FutureRunsListPage() : super(key: futureRunsListPageKey);
 
   @override
-  State<FutureRunsListPage> createState() { 
-    return state;
-  }
-
-  void forceSetState()
-  {
-    state.forceSetState();
-  }
+  State<FutureRunsListPage> createState() => FutureRunListPageState();
 }
 
 class FutureRunListPageState extends State<FutureRunsListPage> {

@@ -4,9 +4,11 @@ import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/globals.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/data/hc3_services/base_service.dart';
 
 class AreWeAtRunResult {
   String eventId;
@@ -63,6 +65,8 @@ class CommonQueries {
 
       final LatLon ll = await Utilities.getLatLong();
 
+      final String userId = getStringPref(StringPrefsEnum.userId);
+
       final String sql = ''' 
 
           SELECT e.${eventsTableHelper.colEventId},
@@ -76,7 +80,9 @@ class CommonQueries {
           (julianday(${eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24 as deltaHours
           FROM ${eventsTableHelper.tableName} e
           INNER JOIN ${kennelsTableHelper.tableName} k on e.${eventsTableHelper.colKennelId} = k.${kennelsTableHelper.colKennelId}
+          LEFT OUTER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemUser)} hem on hem.${hasherEventMapTableHelper.colUserId} = "$userId" AND hem.${hasherEventMapTableHelper.colEventId} = e.${eventsTableHelper.colEventId}
           WHERE ABS((julianday(${eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24) <= $ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT
+          AND COALESCE(hem.${hasherEventMapTableHelper.colAttendenceState},0) < ${attendenceAtHash.value}
           ORDER BY abs(julianday('now') - julianday(${eventsTableHelper.colEventStartDatetime})) ASC
           
           ''';
