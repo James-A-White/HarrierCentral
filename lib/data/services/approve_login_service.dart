@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:device_info/device_info.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/data/models/approve_login_model.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 
@@ -55,8 +57,6 @@ class ApproveLoginService {
     final String accessToken =
         Utilities.generateToken(userId, 'approveLogin', paramString: deviceId);
 
-    final LatLon latLon = await Utilities.getLatLong();
-
     final String body = jsonEncode(<String, String>{
       'userId': userId,
       'accessToken': accessToken,
@@ -66,8 +66,8 @@ class ApproveLoginService {
       'systemName': systemName,
       'systemVersion': systemVersion,
       'manufacturer': manufacturer,
-      'latitude': (latLon?.latitude ?? DEFAULT_LATITUDE).toString(),
-      'longitude': (latLon?.longitude ?? DEFAULT_LONGITUDE).toString(),
+      'latitude': (deviceLat ?? DEFAULT_LATITUDE).toString(),
+      'longitude': (deviceLon ?? DEFAULT_LONGITUDE).toString(),
       'hcVersion': hcVersion,
     });
     

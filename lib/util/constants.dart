@@ -1,4 +1,6 @@
 // lat lon of London Eye
+import 'package:geolocator/geolocator.dart';
+
 const num DEFAULT_LATITUDE = 51.5033;
 const num DEFAULT_LONGITUDE = 0.1195;
 
@@ -29,6 +31,8 @@ const num METERS_TO_MILES = 0.000621371;
 const num MILES_TO_METERS = 1609.34449;
 
 const int SPLASH_SCREEN_DISPLAY_TIME = 1;
+
+const LocationAccuracy BASE_APP_LOCATION_ACCURACY = LocationAccuracy.medium;
 
 const String BASE_HCWEB_UPLOAD_URL = 'https://hcweb.azurewebsites.net/upload/';
 

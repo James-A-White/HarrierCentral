@@ -63,30 +63,27 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   List<PackListAggregate> thePackList;
   Map<String, dynamic> packCount = <String, dynamic>{};
 
-  Future<void> _refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
+  Future<void> _refreshHemTableFromBackend(bool showLoadingIndicator) async {
     if (showLoadingIndicator) {
       setState(() {
         //_isLoading = true;
       });
     }
 
-    DBProvider.db.database.then((Database db) async {
-      final SyncEventAdminService cSrv = SyncEventAdminService();
-      final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagHasherEventMapTable, true, widget.futureRun.event.eventId);
-      final String resultStr = result ? 'successfully' : 'unsuccessfully';
-      print('Pack member data synchronized $resultStr');
+    final Database db = await DBProvider.db.database;
 
-      refreshPackListFromTable(false).then((void dummy) {
-        refreshPackCountFromTable(true).then((void dummy) {
-          //_refreshCounters(true);
-        });
-      });
-    });
+    final SyncEventAdminService cSrv = SyncEventAdminService();
+    final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagHasherEventMapTable, true, widget.futureRun.event.eventId);
+    final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    print('Pack member data synchronized $resultStr');
+
+    await refreshPackListFromTable(false);
+    await refreshPackCountFromTable(true);
   }
 
   int _thisUserIndex = -1;
 
-  Future<void> refreshPackListFromTable(bool forceRefresh) async {
+  Future<void> refreshPackListFromTable(bool callSetState) async {
     final Database db = await DBProvider.db.database;
 
     final String query = ''' 
@@ -109,7 +106,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         if (packItem.userId == userId) {
           _thisUserIndex = i;
         }
-        if (forceRefresh && (i == results.length - 1)) {
+        if (callSetState && (i == results.length - 1)) {
           setState(() {});
         }
       }
@@ -118,7 +115,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     }
   }
 
-  Future<void> refreshPackCountFromTable(bool forceRefresh) async {
+  Future<void> refreshPackCountFromTable(bool callSetState) async {
     packCount = <String, dynamic>{};
 
     final Database db = await DBProvider.db.database;
@@ -138,7 +135,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         if (results.isNotEmpty) {
           packCount = results[0];
         }
-        if (forceRefresh) {
+        if (callSetState) {
           setState(() {});
         }
       });
@@ -162,11 +159,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
-    refreshPackListFromTable(false).then((void dummy) {
-      refreshPackCountFromTable(true).then((void dummy) {
-        //_refreshCounters(true);
-      });
-    });
+    _refreshHemTableFromBackend(false);
     _initTabs();
     _tabController = TabController(vsync: this, length: tabs.length);
     _tabController.addListener(() async {
@@ -175,7 +168,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           fabIsVisible = tabs[_tabController.index].text.toLowerCase() == 'rsvp';
           if (tabs[_tabController.index].text.toLowerCase() == 'rsvp') {
             print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-            _refreshSqlTablesFromBackend(false);
+            _refreshHemTableFromBackend(false);
           }
         });
       }
@@ -246,11 +239,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         alignment: AlignmentDirectional.center,
                         children: <Widget>[
                           Positioned(
-                            top: 6.5,
-                            left: 6.5,
+                            // top: 6.5,
+                            // left: 6.5,
                             child: Container(
-                              height: 38,
-                              width: 38,
+                              height: 36,
+                              width: 36,
                               decoration: const BoxDecoration(
                                 color: Colors.white,
                                 shape: BoxShape.circle,
@@ -304,11 +297,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         alignment: AlignmentDirectional.center,
                         children: <Widget>[
                           Positioned(
-                            top: 6.5,
-                            left: 6.5,
+                            // top: 6.5,
+                            // left: 6.5,
                             child: Container(
-                              height: 38,
-                              width: 38,
+                              height: 36,
+                              width: 36,
                               decoration: const BoxDecoration(
                                 color: Colors.white,
                                 shape: BoxShape.circle,
@@ -359,11 +352,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         alignment: AlignmentDirectional.center,
                         children: <Widget>[
                           Positioned(
-                            top: 6.5,
-                            left: 6.5,
+                            // top: 6.5,
+                            // left: 6.5,
                             child: Container(
-                              height: 38,
-                              width: 38,
+                              height: 36,
+                              width: 36,
                               decoration: const BoxDecoration(
                                 color: Colors.white,
                                 shape: BoxShape.circle,
@@ -414,64 +407,58 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         alignment: AlignmentDirectional.center,
                         children: <Widget>[
                           Positioned(
-                            top: 6.5,
-                            left: 6.5,
                             child: Container(
-                              height: 38,
-                              width: 38,
+                              height: 36,
+                              width: 36,
                               decoration: const BoxDecoration(
                                 color: Colors.white,
                                 shape: BoxShape.circle,
                               ),
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2.5, left: 1.5, right: 2.5, bottom: 2),
-                            child: IconButton(
-                              icon: const ImageIcon(AssetImage('images/icons/hare_icon.png')),
-                              color: _thisUserIndex == -1 ? Colors.grey : thePackList[_thisUserIndex].hem.isHare == isHareYes.value ? Colors.deepPurple : thePackList[_thisUserIndex].hem.isHare == -1 ? Colors.blue : Colors.grey,
-                              //tooltip: 'Select to follow a Kennel',
-                              iconSize: 30.0,
-                              alignment: Alignment.topCenter,
-                              splashColor: Colors.greenAccent,
-                              onPressed: () {
-                                _promptForHare(widget.futureRun.event.hares ?? '').then<dynamic>((bool willHare) {
-                                  if (willHare) {
-                                    setState(() {
-                                      if (_thisUserIndex >= 0) {
-                                        thePackList[_thisUserIndex].hem.rsvpState = -1;
-                                        thePackList[_thisUserIndex].hem.isHare = -1;
-                                        rsvpRequested = rsvpYes;
-                                      }
-                                    });
-                                    //final String userId = getStringPref(StringPrefsEnum.userId);
+                          IconButton(
+                            icon: const ImageIcon(AssetImage('images/icons/hare_icon.png')),
+                            color: _thisUserIndex == -1 ? Colors.grey : thePackList[_thisUserIndex].hem.isHare == isHareYes.value ? Colors.deepPurple : thePackList[_thisUserIndex].hem.isHare == -1 ? Colors.blue : Colors.grey,
+                            //tooltip: 'Select to follow a Kennel',
+                            iconSize: 30.0,
+                            alignment: Alignment.center,
+                            splashColor: Colors.greenAccent,
+                            onPressed: () {
+                              _promptForHare(widget.futureRun.event.hares ?? '').then<dynamic>((bool willHare) {
+                                if (willHare) {
+                                  setState(() {
+                                    if (_thisUserIndex >= 0) {
+                                      thePackList[_thisUserIndex].hem.rsvpState = -1;
+                                      thePackList[_thisUserIndex].hem.isHare = -1;
+                                      rsvpRequested = rsvpYes;
+                                    }
+                                  });
+                                  //final String userId = getStringPref(StringPrefsEnum.userId);
 
-                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
-                                      widget.futureRun.event.eventId,
-                                      TableType.hemUser,
-                                      userId,
-                                      null,
-                                      AppDomainType.user,
-                                      rsvpState: rsvpYes.value,
-                                      isHare: isHareYes.value,
-                                    );
+                                  final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
+                                    widget.futureRun.event.eventId,
+                                    TableType.hemUser,
+                                    userId,
+                                    null,
+                                    AppDomainType.user,
+                                    rsvpState: rsvpYes.value,
+                                    isHare: isHareYes.value,
+                                  );
 
-                                    retVal.then((List<dynamic> adHocData) async {
-                                      await refreshPackListFromTable(true);
-                                      await refreshPackCountFromTable(true);
-                                    });
-                                  }
-                                });
+                                  retVal.then((List<dynamic> adHocData) async {
+                                    _refreshHemTableFromBackend(false);
+                                  });
+                                }
+                              });
 
-                                // model.setRsvpState(
-                                //     rsvpHare.value, widget.futureRun);
-                                //model.toggleFollowing(kennel);
+                              // model.setRsvpState(
+                              //     rsvpHare.value, widget.futureRun);
+                              //model.toggleFollowing(kennel);
 
-                                // setState(() {
-                                // kennel.followingBool = kennel.followingBool == 0 ? 1 : 0;
-                                // });
-                              },
-                            ),
+                              // setState(() {
+                              // kennel.followingBool = kennel.followingBool == 0 ? 1 : 0;
+                              // });
+                            },
                           ),
                         ],
                       ),
@@ -504,7 +491,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               padding: const EdgeInsets.all(8.0),
               child: Scrollbar(
                 child: RefreshIndicator(
-                  onRefresh: () => _refreshSqlTablesFromBackend(true),
+                  onRefresh: () => _refreshHemTableFromBackend(true),
                   child: StaggeredGridView.countBuilder(
                     crossAxisCount: 4,
                     itemCount: thePackList?.length ?? 0,
@@ -611,30 +598,28 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                               fit: BoxFit.fill,
                                               image: AssetImage('images/avatars/avatar-2.jpg'),
                                             ),
-                                  const Positioned(
+                                  Positioned(
                                     right: 1.0,
                                     bottom: 1.0,
-                                    child: CircleAvatar(
-                                      backgroundColor: Colors.white,
-                                      radius: 12.0,
+                                    child: Stack(
+                                      alignment: AlignmentDirectional.center,
+                                      children: <Widget>[
+                                        const CircleAvatar(
+                                          backgroundColor: Colors.white,
+                                          radius: 11.0,
+                                        ),
+                                        (thePackList[index].hem.rsvpState ?? 0) <= 0
+                                            ? const CircleAvatar(
+                                                backgroundColor: Colors.blue,
+                                                radius: 10.0,
+                                              )
+                                            : thePackList[index].hem.rsvpState == 1
+                                                ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 21.0)
+                                                : thePackList[index].hem.rsvpState == 2
+                                                    ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 21.0)
+                                                    : thePackList[index].hem.isHare == 0 ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 21.0) : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 18.0, width: 18.0),
+                                      ],
                                     ),
-                                  ),
-                                  Positioned(
-                                    right: 3.0,
-                                    bottom: (thePackList[index].hem.rsvpState ?? 0) <= 0 ? 2.5 : thePackList[index].hem.isHare == 1 ? 3.0 : 3.5,
-                                    child: (thePackList[index].hem.rsvpState ?? 0) <= 0
-                                        ? const CircleAvatar(
-                                            backgroundColor: Colors.blue,
-                                            radius: 10.0,
-                                          )
-                                        : thePackList[index].hem.rsvpState == 1
-                                            ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 20.0)
-                                            : thePackList[index].hem.rsvpState == 2
-                                                ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 20.0)
-                                                : thePackList[index].hem.isHare == 0 ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 20.0) : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 20.0, width: 20.0),
-
-                                    // AssetImage(
-                                    //     'images/icons/hare_icon.png'),
                                   ),
                                 ],
                               ),
@@ -678,8 +663,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     );
 
     retVal.then((List<dynamic> adHocData) async {
-      await refreshPackListFromTable(false);
-      await refreshPackCountFromTable(true);
+      _refreshHemTableFromBackend(false);
     });
   }
 
@@ -812,8 +796,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     );
 
                     retVal.then((List<dynamic> adHocData) async {
-                      await refreshPackListFromTable(true);
-                      await refreshPackCountFromTable(true);
+                      _refreshHemTableFromBackend(false);
                     });
                   }
                 });
@@ -1214,9 +1197,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                const Text('Please confirm that you are'),
-                const Text('signing up to hare this run'),
-                Text(hareList == null ? '' : 'with ' + hareList),
+                Text('Please confirm that you are signing up to hare this run' + ((hareList == null) ? '.' : ' with ' + hareList)),
               ],
             ),
           ),

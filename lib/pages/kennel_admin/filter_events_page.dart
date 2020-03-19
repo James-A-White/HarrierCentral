@@ -66,7 +66,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
   Future<void> _refreshEventFromTables(bool forceRefresh) async {
     final String sortOrder = widget.pageType == FilterEventsPageType.future ? 'ASC' : 'DESC';
     final String dateComparer = widget.pageType == FilterEventsPageType.future ? '>=' : '<=';
-    final String dateOffset = widget.pageType == FilterEventsPageType.future ? '-1 day' : '+1 day';
+    final String dateOffset = widget.pageType == FilterEventsPageType.future ? '-5 minutes' : '+5 minutes';
 
     final String userId = getStringPref(StringPrefsEnum.userId);
     final Database db = await DBProvider.db.database;
@@ -88,7 +88,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
           FROM ${eventsTableHelper.tableName} evt
           INNER JOIN ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} hkm on hkm.kennelId = "${widget.kennel.kennel.kennelId}" and hkm.userId = "$userId"
           WHERE evt.kennelId = "${widget.kennel.kennel.kennelId}"
-          AND date(evt.eventStartDatetime,"$dateOffset") $dateComparer date("now")
+          AND datetime(evt.eventStartDatetime) $dateComparer datetime('now','localtime','$dateOffset')
           ORDER BY evt.eventStartDatetime $sortOrder
         
           ''';

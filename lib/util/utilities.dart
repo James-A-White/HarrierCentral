@@ -27,6 +27,14 @@ class Utilities {
   static const int qrScanTypeFlag_kennelRunEnd = 0x00000020;
   static const int qrScanTypeFlag_resetCode = 0x00000040;
 
+  static int logCounter = 0;
+
+  static void logTiming(String item) {
+    logCounter++;
+    Duration d = DateTime.now().difference(appStartTime);
+    print((d.inMilliseconds / 1000.0).toString() + ' ($logCounter): ' + item);
+  }
+
   static Map<String, String> validateScan(String scanText, int allowedScanTypes) {
     Map<String, String> result;
 
@@ -75,43 +83,61 @@ class Utilities {
     return result;
   }
 
-  static Future<LatLon> getLatLong() async {
-    Position position;
+  static Future<void> subscribeToGeoLocationStream() async {
+    deviceLat = DEFAULT_LATITUDE;
+    deviceLon = DEFAULT_LONGITUDE;
 
+    final Geolocator geolocator = Geolocator();
+
+    Utilities.logTiming('Geostatus query start');
     final GeolocationStatus status = await Geolocator().checkGeolocationPermissionStatus(locationPermission: GeolocationPermission.location);
 
+    Utilities.logTiming('Geolocation query start');
     if (status == GeolocationStatus.granted) {
-      position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
-      position ??= await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      position ??= await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
-      position ??= await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
-      position ??= await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
-      position ??= await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);
-      position ??= await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.best); 
-      position ??= await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.high); 
-      position ??= await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium); 
-      position ??= await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.low); 
-      position ??= await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.lowest); 
-      position ??= await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);   
+      final LocationOptions locationOptions = LocationOptions(accuracy: LocationAccuracy.high, distanceFilter: 50);
+      geoLocationStream = geolocator.getPositionStream(locationOptions).listen((Position position) {
+        if (position != null) {
+          deviceLat = position.latitude;
+          deviceLon = position.longitude;
+        }
+        print('>>>>>>>>>>> geoloc update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
+      });
+
+      final Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
+      deviceLat = position.latitude;
+      deviceLon = position.longitude;
     }
-
-    final LatLon latLon = LatLon();
-
-    latLon.latitude = DEFAULT_LATITUDE;
-    latLon.longitude = DEFAULT_LONGITUDE;
-
-    if (position != null) {
-      latLon.latitude = position.latitude;
-      latLon.longitude = position.longitude;
-      setNumPref(NumPrefsEnum.latitude, latLon.latitude);
-      setNumPref(NumPrefsEnum.longitude, latLon.longitude);
-    } else {
-      latLon.latitude = getNumPref(NumPrefsEnum.latitude) ?? DEFAULT_LATITUDE;
-      latLon.longitude = getNumPref(NumPrefsEnum.longitude) ?? DEFAULT_LONGITUDE;
-    }
-
-    return latLon;
   }
+
+  // static Future<LatLon> getLatLong(LocationAccuracy locationAccuracy) async {
+  //   Position position;
+
+  //   Utilities.logTiming('Geostatus query start');
+  //   final GeolocationStatus status = await Geolocator().checkGeolocationPermissionStatus(locationPermission: GeolocationPermission.location);
+
+  //   Utilities.logTiming('Geolocation query start');
+  //   if (status == GeolocationStatus.granted) {
+  //     position = await Geolocator().getCurrentPosition(desiredAccuracy: locationAccuracy);
+  //     position ??= await Geolocator().getLastKnownPosition(desiredAccuracy: locationAccuracy);
+  //   }
+
+  //   final LatLon latLon = LatLon();
+
+  //   latLon.latitude = DEFAULT_LATITUDE;
+  //   latLon.longitude = DEFAULT_LONGITUDE;
+
+  //   if (position != null) {
+  //     latLon.latitude = position.latitude;
+  //     latLon.longitude = position.longitude;
+  //     setNumPref(NumPrefsEnum.latitude, latLon.latitude);
+  //     setNumPref(NumPrefsEnum.longitude, latLon.longitude);
+  //   } else {
+  //     latLon.latitude = getNumPref(NumPrefsEnum.latitude) ?? DEFAULT_LATITUDE;
+  //     latLon.longitude = getNumPref(NumPrefsEnum.longitude) ?? DEFAULT_LONGITUDE;
+  //   }
+
+  //   return latLon;
+  // }
 
   static String generateToken(String userId, String procName, {String paramString = ''}) {
     final Duration difference = DateTime.now().toUtc().difference(DateTime.utc(1993, 7, 25, 15, 0, 0));

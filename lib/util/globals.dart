@@ -1,7 +1,10 @@
+import 'dart:async';
+
+import 'package:geolocator/geolocator.dart';
+
 import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
-
 import 'package:harrier_central/data/hc3_services/cities_service.dart';
 import 'package:harrier_central/data/hc3_services/countries_service.dart';
 import 'package:harrier_central/data/hc3_services/regions_service.dart';
@@ -25,6 +28,12 @@ num deviceMinScaleFactor;
 num deviceWidth;
 
 bool hasLocationPermissions = false;
+
+DateTime appStartTime;
+
+StreamSubscription<Position> geoLocationStream;
+num deviceLat;
+num deviceLon;
 
 CitiesTableHelper citiesTableHelper;
 CountriesTableHelper countriesTableHelper;

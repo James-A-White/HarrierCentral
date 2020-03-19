@@ -6,6 +6,7 @@ import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/utilities.dart';
 
 class RunDetailsQueryExtensions {
   RunDetailsQueryExtensions({
@@ -84,6 +85,8 @@ enum EnumRunQueryType { topRunsPage, kennelDetailPage }
 
 class QueryRuns {
   static Future<List<Map<String, dynamic>>> queryRuns(EnumRunQueryType queryType, {String kennelId, bool searchAllRuns = true}) async {
+   
+
     final Database db = await DBProvider.db.database;
 
     final String userId = getStringPref(StringPrefsEnum.userId);
@@ -142,7 +145,7 @@ class QueryRuns {
           ''';
 
     final String whereClauseForTopRunsPage = '''
-            WHERE evt.${eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-12 hours') and evt.${eventsTableHelper.colIsVisible} = 1
+            WHERE evt.${eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-4 hours') and evt.${eventsTableHelper.colIsVisible} = 1
             AND (
                   "${searchAllRuns.toString()}" == "true"
                   OR
@@ -154,7 +157,7 @@ class QueryRuns {
           ''';
 
     final String whereClauseForKennelDetailsPage = '''
-            WHERE evt.${eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-12 hours') and evt.${eventsTableHelper.colIsVisible} = 1
+            WHERE evt.${eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-4 hours') and evt.${eventsTableHelper.colIsVisible} = 1
             AND evt.${eventsTableHelper.colKennelId} = "$kennelId"
             ORDER BY evt.${eventsTableHelper.colEventStartDatetime}
             LIMIT 10

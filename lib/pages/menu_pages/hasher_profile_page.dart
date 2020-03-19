@@ -11,6 +11,7 @@ import 'package:harrier_central/widgets/profile_photo.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -746,13 +747,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                       PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.locationWhenInUse]).then((Map<PermissionGroup, PermissionStatus> e) {
                                                                         setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
                                                                         hasLocationPermissions = true;
-                                                                        Utilities.getLatLong();
+                                                                        Utilities.subscribeToGeoLocationStream();
                                                                       });
                                                                     } else {
                                                                       PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.location]).then((Map<PermissionGroup, PermissionStatus> e) {
                                                                         setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
                                                                         hasLocationPermissions = true;
-                                                                        Utilities.getLatLong();
+                                                                        Utilities.subscribeToGeoLocationStream();
                                                                       });
                                                                     }
 
@@ -909,13 +910,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                       PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.locationWhenInUse]).then((Map<PermissionGroup, PermissionStatus> e) {
                                                                         setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
                                                                         hasLocationPermissions = true;
-                                                                        Utilities.getLatLong();
+                                                                        Utilities.subscribeToGeoLocationStream();
                                                                       });
                                                                     } else {
                                                                       PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.location]).then((Map<PermissionGroup, PermissionStatus> e) {
                                                                         setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
                                                                         hasLocationPermissions = true;
-                                                                        Utilities.getLatLong();
+                                                                        Utilities.subscribeToGeoLocationStream();
                                                                       });
                                                                     }
 

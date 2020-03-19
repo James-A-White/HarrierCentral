@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'package:package_info/package_info.dart';
 import 'package:sqflite/sqflite.dart';
@@ -35,9 +36,13 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     final PackageInfo p = await PackageInfo.fromPlatform();
     final String hcVersion = 'HC Ver: ${p.version}, Bld: ${p.buildNumber}';
 
+    appStartTime = DateTime.now();
+
     await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
 
     // await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);
+
+    Utilities.subscribeToGeoLocationStream();
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
@@ -89,7 +94,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
                 final String resetCode = getStringPref(StringPrefsEnum.resetCode);
 
                 DBProvider.db.deleteDb();
-                await setIntPref(IntPrefsEnum.dbCreated,0);
+                await setIntPref(IntPrefsEnum.dbCreated, 0);
 
                 //bool isLoading = true;
                 String userName;

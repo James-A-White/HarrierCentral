@@ -106,7 +106,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
             if (retVal == enumYesNo_Yes) {
               hasherEventMapService.joinEvent(result.eventId, TableType.hemUser, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value).then((List<dynamic> svcResult) {
-                futureRunsListPageKey.currentState.forceSetState();
+                futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
               });
             }
           }

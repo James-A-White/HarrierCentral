@@ -63,8 +63,6 @@ class CommonQueries {
     try {
       final Database db = await DBProvider.db.database;
 
-      final LatLon ll = await Utilities.getLatLong();
-
       final String userId = getStringPref(StringPrefsEnum.userId);
 
       final String sql = ''' 
@@ -95,7 +93,7 @@ class CommonQueries {
 
       if (queryResults.isNotEmpty) {
         for (int i = 0; i < queryResults.length; i++) {
-          final num dist = await locator.distanceBetween(Utilities.unInt(ll.latitude), Utilities.unInt(ll.longitude), Utilities.unInt(queryResults[i]['lat']), Utilities.unInt(queryResults[i]['lon']));
+          final num dist = await locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(queryResults[i]['lat']), Utilities.unInt(queryResults[i]['lon']));
           if (closestRun < dist) {
             continue;
           }

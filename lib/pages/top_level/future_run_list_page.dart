@@ -20,7 +20,6 @@ import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 
-
 final GlobalKey<FutureRunListPageState> futureRunsListPageKey = GlobalKey<FutureRunListPageState>();
 
 class FutureRunsListPage extends StatefulWidget {
@@ -31,7 +30,6 @@ class FutureRunsListPage extends StatefulWidget {
 }
 
 class FutureRunListPageState extends State<FutureRunsListPage> {
-
   int pageIndex = 1;
   List<RunDetailsAggregate> allRuns;
   List<RunDetailsAggregate> filteredRuns;
@@ -50,8 +48,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     );
   }
 
-  void forceSetState()
-  {
+  void forceRefreshFromTableExternal() {
     refreshFromTable(true);
   }
 
@@ -95,10 +92,11 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
   @override
   void initState() {
+    Utilities.logTiming('initState called');
     searchController.text = '';
     searchText = '';
-
-    _refreshFromBackend().then((void dummy) {});
+    refreshFromTable(true);
+    // _refreshFromBackend().then((void dummy) {});
     super.initState();
   }
 
@@ -187,77 +185,80 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   void refreshFromTable(bool forceRefresh) {
     if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
       final Geolocator locator = Geolocator();
+      Utilities.logTiming('Geoquery start');
 
-      Utilities.getLatLong().then((LatLon ll) {
-        QueryRuns.queryRuns(EnumRunQueryType.topRunsPage, searchAllRuns: searchAllRuns).then((List<Map<String, dynamic>> results) {
-          allRuns = <RunDetailsAggregate>[];
-          for (int i = 0; i < results.length; i++) {
-            locator.distanceBetween(Utilities.unInt(ll.latitude), Utilities.unInt(ll.longitude), Utilities.unInt(results[i]['narrowEventLatitude']), Utilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
-              final EventModel eventItem = eventsTableHelper.fromMap(results[i]);
-              final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
-              final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i]);
-              extensionsItem.distToEvent = dist;
+      Utilities.logTiming('Run query start');
+      QueryRuns.queryRuns(EnumRunQueryType.topRunsPage, searchAllRuns: searchAllRuns).then((List<Map<String, dynamic>> results) {
+        Utilities.logTiming('Run query end');
+        allRuns = <RunDetailsAggregate>[];
+        for (int i = 0; i < results.length; i++) {
+          locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(results[i]['narrowEventLatitude']), Utilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
+            final EventModel eventItem = eventsTableHelper.fromMap(results[i]);
+            final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
+            final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i]);
+            extensionsItem.distToEvent = dist;
 
-              String paymentLinkUrl = '';
+            String paymentLinkUrl = '';
 
-              if (((eventItem.eventPaymentUrl ?? '') != '') && (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
-                paymentLinkUrl = eventItem.eventPaymentUrl;
-              } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
-                paymentLinkUrl = kennelItem.kennelPaymentUrl;
-              }
+            if (((eventItem.eventPaymentUrl ?? '') != '') && (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
+              paymentLinkUrl = eventItem.eventPaymentUrl;
+            } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+              paymentLinkUrl = kennelItem.kennelPaymentUrl;
+            }
 
-              final num julianNow = results[i]['nowJulian'];
-              final num eventJulian = results[i]['eventJulian'];
+            final num julianNow = results[i]['nowJulian'];
+            final num eventJulian = results[i]['eventJulian'];
 
-              print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+            print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 
-              num meters = 0;
+            num meters = 0;
 
-              switch (extensionsItem.autoRunDistancePreference) {
-                case hasherPref_0:
-                  meters = 0;
-                  break;
-                case hasherPref_10:
-                  meters = 10000;
-                  break;
-                case hasherPref_25:
-                  meters = 25000;
-                  break;
-                case hasherPref_50:
-                  meters = 50000;
-                  break;
-                case hasherPref_75:
-                  meters = 75000;
-                  break;
-                case hasherPref_100:
-                  meters = 100000;
-                  break;
-                case hasherPref_150:
-                  meters = 150000;
-                  break;
-                case hasherPref_200:
-                  meters = 200000;
-                  break;
-                default:
-                  meters = 50000;
-                  break;
-              }
+            switch (extensionsItem.autoRunDistancePreference) {
+              case hasherPref_0:
+                meters = 0;
+                break;
+              case hasherPref_10:
+                meters = 10000;
+                break;
+              case hasherPref_25:
+                meters = 25000;
+                break;
+              case hasherPref_50:
+                meters = 50000;
+                break;
+              case hasherPref_75:
+                meters = 75000;
+                break;
+              case hasherPref_100:
+                meters = 100000;
+                break;
+              case hasherPref_150:
+                meters = 150000;
+                break;
+              case hasherPref_200:
+                meters = 200000;
+                break;
+              default:
+                meters = 50000;
+                break;
+            }
 
-              if ((extensionsItem.distancePreference != 0) || ((extensionsItem.userPrefs & 0x00000002) == 0)) {
-                meters = meters * MILES_TO_METERS / 1000;
-              }
+            if ((extensionsItem.distancePreference != 0) || ((extensionsItem.userPrefs & 0x00000002) == 0)) {
+              meters = meters * MILES_TO_METERS / 1000;
+            }
 
-              if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < meters))) {
-                final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
-                allRuns.add(item);
-              }
-              if (i == results.length - 1) {
-                filterRuns();
-                setState(() {});
-              }
-            });
-          }
-        });
+            if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < meters))) {
+              final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
+              allRuns.add(item);
+            }
+            if (i == results.length - 1) {
+              Utilities.logTiming('Filter start');
+              filterRuns();
+              setState(() {});
+              Utilities.logTiming('Filter end');
+            }
+          });
+        }
       });
     }
   }

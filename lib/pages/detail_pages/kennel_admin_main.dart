@@ -127,11 +127,11 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
       final Geolocator locator = Geolocator();
 
-      Utilities.getLatLong().then((LatLon ll) {
+      
         QueryRuns.queryRuns(EnumRunQueryType.kennelDetailPage, kennelId: widget.kennelAggregateItem.kennel.kennelId).then((List<Map<String, dynamic>> results) {
           allRuns = <RunDetailsAggregate>[];
           for (int i = 0; i < results.length; i++) {
-            locator.distanceBetween(Utilities.unInt(ll.latitude), Utilities.unInt(ll.longitude), Utilities.unInt(results[i]['narrowEventLatitude']), Utilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
+            locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(results[i]['narrowEventLatitude']), Utilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
               final EventModel eventItem = eventsTableHelper.fromMap(results[i]);
               final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
               final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i]);
@@ -155,7 +155,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
             });
           }
         });
-      });
+      
     }
   }
 

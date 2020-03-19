@@ -124,11 +124,10 @@ class RunDetailPageState extends State<RunDetailPage> {
       final List<Map<String, dynamic>> results = await db.rawQuery(sql);
 
       final Geolocator locator = Geolocator();
-      final LatLon ll = await Utilities.getLatLong();
 
       final num dist = await locator.distanceBetween(
-        Utilities.unInt(ll.latitude),
-        Utilities.unInt(ll.longitude),
+        Utilities.unInt(deviceLat),
+        Utilities.unInt(deviceLon),
         Utilities.unInt(results[0]['narrowEventLatitude']),
         Utilities.unInt(
           results[0]['narrowEventLongitude'],
