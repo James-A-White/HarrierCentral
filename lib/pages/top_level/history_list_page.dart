@@ -159,22 +159,26 @@ class HistoryListPageState extends State<HistoryListPage> {
                       Expanded(
                         child: ListView.builder(
                           physics: const AlwaysScrollableScrollPhysics(),
-                          itemCount: runCountsList.length + 1,
+                          //itemCount: runCountsList.length + 1,
+                          itemCount: runCountsList.length,
                           padding: const EdgeInsets.only(top: 20),
                           itemExtent: 100.0,
                           itemBuilder: (BuildContext context, int index) {
-                            if (index == 0) {
-                              return KennelRunHistoryMyRunsItem(refreshCounters: () {
-                                  refreshRunHistoryFromTable(true);
-                                },);
-                            } else {
+                            // if (index == 0) {
+                            //   return KennelRunHistoryMyRunsItem(refreshCounters: () {
+                            //       refreshRunHistoryFromTable(true);
+                            //     },);
+                            // } else {
+
+
                               return KennelRunHistoryCountListItem(
-                                kennelInfo: runCountsList[index - 1],
+                                //kennelInfo: runCountsList[index - 1],
+                                 kennelInfo: runCountsList[index],
                                 refreshCounters: () {
                                   refreshRunHistoryFromTable(true);
                                 },
                               );
-                            }
+                            //}
                           },
                         ),
                       ),
