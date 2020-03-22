@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:harrier_central/database/common_queries.dart';
+import 'package:harrier_central/pages/top_level/run_locations.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/confirm_auto_checkin_popup.dart';
 //import 'package:permission_handler/permission_handler.dart';
@@ -34,6 +35,8 @@ class MainNavigationPage extends StatefulWidget {
   _MainNavigationPageState createState() => _MainNavigationPageState();
 }
 
+final GlobalKey<RunLocationsPageState> runLocationsPageKey = GlobalKey<RunLocationsPageState>();
+
 class _MainNavigationPageState extends State<MainNavigationPage> {
   //MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
 
@@ -48,20 +51,16 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   final FutureRunsListPage futureRunsListPage = FutureRunsListPage();
   final KennelsListPage kennelsListPage = const KennelsListPage();
   final HistoryListPage historyListPage = const HistoryListPage();
-  final UserQrCodePage userQrCodePage = const UserQrCodePage();
+  //final UserQrCodePage userQrCodePage = const UserQrCodePage();
+  final RunLocationsPage runLocationsPage = RunLocationsPage(key: runLocationsPageKey);
 
   @override
   void initState() {
-    // print('initState called from MainPage @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-    // tabs.add(const FutureRunsListPage());
-    // tabs.add(const KennelsListPage());
-    // tabs.add(const UserQrCodePage());
-    // tabs.add(const UserQrCodePage());
-    //tabs.add(const UserQrCodePage());
-
     tabTitles.add('Upcoming Runs');
     tabTitles.add('Kennels');
+    tabTitles.add('Run Locations');
     tabTitles.add('Your Total Run Counts');
+
     //tabTitles.add('Scanner');
     // tabTitles.add('Friends');
 
@@ -172,6 +171,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         w = kennelsListPage;
         break;
       case 2:
+        w = runLocationsPage;
+        break;
+      case 3:
         w = historyListPage;
         break;
       // case 3:
@@ -198,6 +200,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               backgroundColor: themeAppBarBackground,
               title: Text(appBarText),
             ),
+            floatingActionButton: runLocationsPageKey?.currentState == null ? null : runLocationsPageKey.currentState.getFab(),
             body: Container(
               decoration: const BoxDecoration(color: Colors.white),
               child: dbCreated == 0
@@ -253,6 +256,16 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                   //       ),
                   //     ),
                 ),
+
+                TabData(
+                  iconData: FontAwesome.map,
+                  title: 'Explore',
+                  // onclick: () => Navigator.of(context).push<dynamic>(
+                  //       MaterialPageRoute<dynamic>(
+                  //         builder: (BuildContext context) => UserQrCodePage(),
+                  //       ),
+                  //     ),
+                ),
                 TabData(
                   iconData: FontAwesome.list_ul,
                   title: 'History',
@@ -270,9 +283,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               initialSelection: 0,
               key: bottomNavigationKey,
               onTabChangedListener: (int position) {
-                setState(() {
-                  appBarText = tabTitles[position];
-                  currentPage = position;
+                appBarText = tabTitles[position];
+                currentPage = position;
+                setState(() {});
+                Future<void>.delayed(const Duration(milliseconds: 100)).then((void dummy) {
+                  setState(() {});
                 });
               },
             ),

@@ -1,6 +1,6 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 0.8.146+301
+version: 0.8.148+303
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -30,7 +30,8 @@ dependencies:
   flutter_image: ^3.0.0 # upgraded Dec 19 from ^2.0.1 # upgraded Nov 10 from ^2.0.0c
   flutter_image_compress: ^0.6.5+1 # upgraded Feb 02 from ^0.6.3 # upgraded from 0.4.0 on 28 Jul
   flutter_linkify: ^2.1.0
-  flutter_map: ^0.8.0 # upgraded Dec 19 from ^0.7.3 # upgraded Nov 10 from ^0.7.2 # updated on 11 Sep from 0.7.0+1 # upodated from 0.4.0 on 29 Jul # latest version is 0.5.0, but it depends on cached_network_image 0.5.1 - 19 March 2019
+  flutter_map: ^0.8.2 # upgraded Mar 21 from ^0.8.0 # upgraded Dec 19 from ^0.7.3 # upgraded Nov 10 from ^0.7.2 # updated on 11 Sep from 0.7.0+1 # upodated from 0.4.0 on 29 Jul # latest version is 0.5.0, but it depends on cached_network_image 0.5.1 - 19 March 2019
+  flutter_map_marker_cluster: ^0.2.7
   flutter_speed_dial: ^1.2.5 # upgraded Dec 19 from ^1.2.1   # updated from 1.1.2 on 8 Jun 19
   flutter_spinkit: ^3.1.0 
   flutter_staggered_grid_view: ^0.3.0 # upgraded from ^0.2.7 on 29 Jul
@@ -67,6 +68,8 @@ dependencies:
   # # country_pickers 1.1.0
   # # dash_chat 1.0.10 - great chat implementation!
   # # flutter_slidable 0.5.4
+  # # location 2.5.4  --  switch to this!
+  # # table_calendar 2.2.3
 
 
 dev_dependencies:

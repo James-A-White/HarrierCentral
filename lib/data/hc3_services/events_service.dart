@@ -268,7 +268,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
   @override
   Map<String, dynamic> toMap(dynamic item) {
     final Map<String, dynamic> map = <String, dynamic>{
-      colEventId: item.eventId,
+      colEventId: item.id,
       colEventStartDatetime: item.eventStartDatetime.toString(),
       colKennelId: item.kennelId,
       colIsVisible: item.isVisible,

@@ -159,7 +159,7 @@ class RunDetails extends StatelessWidget {
                     ),
                     Expanded(
                         child: Text(
-                          DateFormat('E, MMM d').format(event.eventStartDatetime),
+                          DateFormat('E, MMM d, yyyy').format(event.eventStartDatetime),
                           style: listValueStyle,
                           textAlign: TextAlign.left,
                           maxLines: 1,

@@ -151,7 +151,7 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
   Map<String, dynamic> toMap(dynamic item) {
     final Map<String, dynamic> map = <String, dynamic>{
       colReceiptId: item.receiptId,
-      colEventId: item.eventId,
+      colEventId: item.id,
       colUserId: item.userId,
       colReceiptAmount: item.receiptAmount,
       colCostCategory: item.costCategory,

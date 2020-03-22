@@ -6,7 +6,6 @@ import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
 
 class RunDetailsQueryExtensions {
   RunDetailsQueryExtensions({
@@ -81,11 +80,32 @@ class RunDetailsAggregate {
   final String paymentUrl;
 }
 
-enum EnumRunQueryType { topRunsPage, kennelDetailPage }
+enum EnumRunQueryType { topRunsPage, kennelDetailPage, singleRun }
+enum EnumRunQueryContext { user, kennelAdmin, eventAdmin }
 
 class QueryRuns {
-  static Future<List<Map<String, dynamic>>> queryRuns(EnumRunQueryType queryType, {String kennelId, bool searchAllRuns = true}) async {
-   
+  static Future<List<Map<String, dynamic>>> queryRuns(EnumRunQueryType queryType, EnumRunQueryContext queryContext, {String kennelId, bool searchAllRuns = true, String eventId}) async {
+    String hkmTable;
+    String hemTable;
+    String paymentsTable;
+
+    switch (queryContext) {
+      case EnumRunQueryContext.user:
+        hkmTable = hasherKennelMapTableHelper.getTableName(TableType.hkmUser);
+        hemTable = hasherEventMapTableHelper.getTableName(TableType.hemUser);
+        paymentsTable = paymentsTableHelper.getTableName(TableType.paymentsUser);
+        break;
+      case EnumRunQueryContext.kennelAdmin:
+        hkmTable = hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin);
+        hemTable = hasherEventMapTableHelper.getTableName(TableType.hemUser);
+        paymentsTable = paymentsTableHelper.getTableName(TableType.paymentsUser);
+        break;
+      case EnumRunQueryContext.eventAdmin:
+        hkmTable = hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin);
+        hemTable = hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin);
+        paymentsTable = paymentsTableHelper.getTableName(TableType.paymentsEvent);
+        break;
+    }
 
     final Database db = await DBProvider.db.database;
 
@@ -139,9 +159,9 @@ class QueryRuns {
           INNER JOIN kennels k on k.kennelId = evt.kennelId
           INNER JOIN countries n on n.countryId = k.countryId
           INNER JOIN hashers h on h.hasherId = "$userId"
-          LEFT OUTER JOIN ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
-          LEFT OUTER JOIN hasherEventMap hem on hem.eventId = evt.eventId and hem.userId = "$userId"
-          LEFT OUTER JOIN ${paymentsTableHelper.getTableName(TableType.paymentsUser)} pay on pay.${paymentsTableHelper.colHemId} = hem.${hasherEventMapTableHelper.colHemId} AND pay.${paymentsTableHelper.colCancelledBy} IS NULL
+          LEFT OUTER JOIN $hkmTable hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
+          LEFT OUTER JOIN $hemTable hem on hem.eventId = evt.eventId and hem.userId = "$userId"
+          LEFT OUTER JOIN $paymentsTable pay on pay.${paymentsTableHelper.colHemId} = hem.${hasherEventMapTableHelper.colHemId} AND pay.${paymentsTableHelper.colCancelledBy} IS NULL
           ''';
 
     final String whereClauseForTopRunsPage = '''
@@ -163,11 +183,17 @@ class QueryRuns {
             LIMIT 10
           ''';
 
+    final String whereClauseForSingleRun = '''
+            WHERE evt.${eventsTableHelper.colEventId} = "$eventId"
+          ''';
+
     String query = queryBase;
     if (queryType == EnumRunQueryType.topRunsPage) {
       query = query + whereClauseForTopRunsPage;
     } else if (queryType == EnumRunQueryType.kennelDetailPage) {
       query = query + whereClauseForKennelDetailsPage;
+    } else if (queryType == EnumRunQueryType.singleRun) {
+      query = query + whereClauseForSingleRun;
     } else {
       assert(false);
     }

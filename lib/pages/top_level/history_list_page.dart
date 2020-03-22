@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/widgets/kennel_run_history_my_runs_item.dart';
 import 'package:harrier_central/widgets/kennel_run_history_count_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
@@ -35,15 +36,15 @@ class HistoryListResults {
 
   static HistoryListResults fromMap(Map<String, dynamic> map) {
     final HistoryListResults item = HistoryListResults(
-      totalRunsThisKennel: map['totalRunsThisKennel'], 
-      totalHaringThisKennel: map['totalHaringThisKennel'], 
-      kennelId: map['kennelId'], 
-      historicalPackRunCount: map['historicalPackRunCount'], 
-      historicalHaringCount: map['historicalHaringCount'], 
-      historicalCountIsEstimate: map['historicalCountIsEstimate'],
-      kennelLogo: map['kennelLogo'], 
-      kennelName: map['kennelName'], 
-      kennelShortName: map['kennelShortName']);
+        totalRunsThisKennel: map['totalRunsThisKennel'],
+        totalHaringThisKennel: map['totalHaringThisKennel'],
+        kennelId: map['kennelId'],
+        historicalPackRunCount: map['historicalPackRunCount'],
+        historicalHaringCount: map['historicalHaringCount'],
+        historicalCountIsEstimate: map['historicalCountIsEstimate'],
+        kennelLogo: map['kennelLogo'],
+        kennelName: map['kennelName'],
+        kennelShortName: map['kennelShortName']);
     return item;
   }
 }
@@ -158,13 +159,22 @@ class HistoryListPageState extends State<HistoryListPage> {
                       Expanded(
                         child: ListView.builder(
                           physics: const AlwaysScrollableScrollPhysics(),
-                          itemCount: runCountsList.length,
+                          itemCount: runCountsList.length + 1,
                           padding: const EdgeInsets.only(top: 20),
                           itemExtent: 100.0,
                           itemBuilder: (BuildContext context, int index) {
-                            return KennelRunHistoryCountListItem(kennelInfo: runCountsList[index], refreshCounters: (){
-                              refreshRunHistoryFromTable(true);
-                            },);
+                            if (index == 0) {
+                              return KennelRunHistoryMyRunsItem(refreshCounters: () {
+                                  refreshRunHistoryFromTable(true);
+                                },);
+                            } else {
+                              return KennelRunHistoryCountListItem(
+                                kennelInfo: runCountsList[index - 1],
+                                refreshCounters: () {
+                                  refreshRunHistoryFromTable(true);
+                                },
+                              );
+                            }
                           },
                         ),
                       ),
@@ -193,24 +203,25 @@ class HistoryListPageState extends State<HistoryListPage> {
                   children: <Widget>[
                     ProfilePhoto(leftPadding: 20.0, photoHeight: 80.0, profilePhotoUrl: _photo),
                     const SizedBox(width: 20),
-                    (runCountsList == null || runCountsList.isEmpty) ? Container() :
-                    Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                      const Text(
-                        'My total run counts',
-                        style: TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
-                        textAlign: TextAlign.center,
-                      ),
-                      Text(
-                        'Total runs: ' + _totalRuns.toString(),
-                        style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
-                        textAlign: TextAlign.left,
-                      ),
-                      Text(
-                        'Total times hared: ' + _totalHaring.toString(),
-                        style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
-                        textAlign: TextAlign.left,
-                      ),
-                    ])
+                    (runCountsList == null || runCountsList.isEmpty)
+                        ? Container()
+                        : Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                            const Text(
+                              'My total run counts',
+                              style: TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
+                              textAlign: TextAlign.center,
+                            ),
+                            Text(
+                              'Total runs: ' + _totalRuns.toString(),
+                              style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
+                              textAlign: TextAlign.left,
+                            ),
+                            Text(
+                              'Total times hared: ' + _totalHaring.toString(),
+                              style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
+                              textAlign: TextAlign.left,
+                            ),
+                          ])
                   ],
                 ))),
       ],

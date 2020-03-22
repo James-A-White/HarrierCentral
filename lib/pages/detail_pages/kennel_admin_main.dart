@@ -21,6 +21,7 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/database/query_runs.dart';
 import 'package:harrier_central/pages/kennel_admin/filter_events_page.dart';
 import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
+import 'package:harrier_central/pages/top_level/run_locations.dart';
 import 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -127,35 +128,33 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
       final Geolocator locator = Geolocator();
 
-      
-        QueryRuns.queryRuns(EnumRunQueryType.kennelDetailPage, kennelId: widget.kennelAggregateItem.kennel.kennelId).then((List<Map<String, dynamic>> results) {
-          allRuns = <RunDetailsAggregate>[];
-          for (int i = 0; i < results.length; i++) {
-            locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(results[i]['narrowEventLatitude']), Utilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
-              final EventModel eventItem = eventsTableHelper.fromMap(results[i]);
-              final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
-              final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i]);
-              extensionsItem.distToEvent = dist;
+      QueryRuns.queryRuns(EnumRunQueryType.kennelDetailPage, EnumRunQueryContext.kennelAdmin, kennelId: widget.kennelAggregateItem.kennel.kennelId).then((List<Map<String, dynamic>> results) {
+        allRuns = <RunDetailsAggregate>[];
+        for (int i = 0; i < results.length; i++) {
+          locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(results[i]['narrowEventLatitude']), Utilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
+            final EventModel eventItem = eventsTableHelper.fromMap(results[i]);
+            final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
+            final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i]);
+            extensionsItem.distToEvent = dist;
 
-              String paymentLinkUrl = '';
+            String paymentLinkUrl = '';
 
-              if (((eventItem.eventPaymentUrl ?? '') != '') && (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
-                paymentLinkUrl = eventItem.eventPaymentUrl;
-              } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
-                paymentLinkUrl = kennelItem.kennelPaymentUrl;
-              }
+            if (((eventItem.eventPaymentUrl ?? '') != '') && (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
+              paymentLinkUrl = eventItem.eventPaymentUrl;
+            } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+              paymentLinkUrl = kennelItem.kennelPaymentUrl;
+            }
 
-              final num julianNow = results[i]['nowJulian'];
-              final num eventJulian = results[i]['eventJulian'];
+            final num julianNow = results[i]['nowJulian'];
+            final num eventJulian = results[i]['eventJulian'];
 
-              print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+            print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 
-              final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
-              allRuns.add(item);
-            });
-          }
-        });
-      
+            final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
+            allRuns.add(item);
+          });
+        }
+      });
     }
   }
 
@@ -413,6 +412,42 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                               runEndPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_END,
                                                               runStartPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_START,
                                                               title: 'Any ' + widget.kennelAggregateItem.kennel.kennelShortName + ' run')));
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                          child: Container(
+                                            width: 110,
+                                            height: 110,
+                                            child: Utilities.styleForConnected(
+                                              RaisedButton(
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                                                padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 8.0),
+                                                child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                                  const Padding(
+                                                    padding: EdgeInsets.only(left: 0, top: 4),
+                                                    child: Icon(MaterialIcons.location_on, color: Colors.white, size: 55),
+                                                  ),
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(left: 10, right: 10, top: 7),
+                                                    child: Text(
+                                                      'View run locations',
+                                                      textAlign: TextAlign.center,
+                                                      style: buttonLabelStyleSmall,
+                                                    ),
+                                                  ),
+                                                ]),
+                                                textColor: Colors.white,
+                                                onPressed: () {
+                                                  Navigator.push<dynamic>(
+                                                    context,
+                                                    MaterialPageRoute<dynamic>(
+                                                      builder: (BuildContext context) => RunLocationsPage(kennel: widget.kennelAggregateItem.kennel),
+                                                    ),
+                                                  );
                                                 },
                                               ),
                                             ),

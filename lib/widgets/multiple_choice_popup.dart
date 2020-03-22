@@ -88,7 +88,7 @@ class _MultipleChoicePopupState extends State<MultipleChoicePopup> {
                       btnDef['title'].toString(),
                       maxLines: 5,
                       overflow: TextOverflow.ellipsis,
-                      style: buttonLabelStyleSmall,
+                      style: buttonLabelStyleSmallCompressedLines,
                     ),
                   ),
                 ),

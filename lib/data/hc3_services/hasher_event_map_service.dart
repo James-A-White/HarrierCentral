@@ -173,7 +173,7 @@ class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
     final Map<String, dynamic> map = <String, dynamic>{
       colHemId: item.hemId,
       colUserId: item.userId,
-      colEventId: item.eventId,
+      colEventId: item.id,
       colHasherOwnEventId: item.hasherOwnEventId,
       colUserStartEvent: item.userStartEvent,
       colUserEndEvent: item.userEndEvent,

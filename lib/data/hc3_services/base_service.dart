@@ -125,7 +125,8 @@ class BaseService {
   Future<void> clearTable(BaseTableHelper tableHelper, {TableType tableType}) async {
     final String tableName = getTableName(tableHelper, tableType);
     final Database db = await DBProvider.db.database;
-    await db.rawDelete('DELETE FROM $tableName').then((void dummy) {
+    final String query = 'DELETE FROM $tableName';
+    await db.rawDelete(query).then((void dummy) {
       setIntPrefStrKey(LAST_CACHE_CLEAR_KEY + tableHelper.getTableName(tableType), DateTime.now().millisecondsSinceEpoch);
     });
   }

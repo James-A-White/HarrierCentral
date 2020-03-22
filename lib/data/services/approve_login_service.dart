@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:device_info/device_info.dart';
-import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/data/models/approve_login_model.dart';
 import 'package:harrier_central/util/constants.dart';

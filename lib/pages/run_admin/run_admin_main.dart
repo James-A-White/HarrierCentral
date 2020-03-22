@@ -244,7 +244,7 @@ class RunDetailPageState extends State<RunDetailPage> {
                     padding: const EdgeInsets.only(left: 8, right: 10, top: 10),
                     child: Text(
                       'Manual check in',
-                      style: buttonLabelStyleSmall,
+                      style: buttonLabelStyleSmallCompressedLines,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -278,7 +278,7 @@ class RunDetailPageState extends State<RunDetailPage> {
                     padding: const EdgeInsets.only(left: 8, right: 10, top: 10),
                     child: Text(
                       'Scan to check in',
-                      style: buttonLabelStyleSmall,
+                      style: buttonLabelStyleSmallCompressedLines,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -319,7 +319,7 @@ class RunDetailPageState extends State<RunDetailPage> {
                   padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
                   child: Text(
                     'Hash\r\ncash',
-                    style: buttonLabelStyleSmall,
+                    style: buttonLabelStyleSmallCompressedLines,
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -355,7 +355,7 @@ class RunDetailPageState extends State<RunDetailPage> {
                   padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
                   child: Text(
                     'Manage receipts',
-                    style: buttonLabelStyleSmall,
+                    style: buttonLabelStyleSmallCompressedLines,
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -397,7 +397,7 @@ class RunDetailPageState extends State<RunDetailPage> {
                   padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
                   child: Text(
                     'Print QR codes',
-                    style: buttonLabelStyleSmall,
+                    style: buttonLabelStyleSmallCompressedLines,
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -435,7 +435,7 @@ class RunDetailPageState extends State<RunDetailPage> {
                   padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
                   child: Text(
                     'Email Run Details',
-                    style: buttonLabelStyleSmall,
+                    style: buttonLabelStyleSmallCompressedLines,
                     textAlign: TextAlign.center,
                   ),
                 ),

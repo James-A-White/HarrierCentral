@@ -9,7 +9,6 @@ import 'package:geolocator/geolocator.dart';
 //import 'package:permission_handler/permission_handler.dart';
 
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/enums.dart';
 
@@ -31,7 +30,7 @@ class Utilities {
 
   static void logTiming(String item) {
     logCounter++;
-    Duration d = DateTime.now().difference(appStartTime);
+    final Duration d = DateTime.now().difference(appStartTime);
     print((d.inMilliseconds / 1000.0).toString() + ' ($logCounter): ' + item);
   }
 

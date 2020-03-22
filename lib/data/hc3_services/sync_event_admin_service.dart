@@ -60,11 +60,11 @@ class SyncEventAdminService {
       // narrowEvents is not included here because all events are loaded all the time for all hashers.
       // TODO(James): create separate events table for event management
 
-      baseService.clearTable(paymentsTableHelper);
-      baseService.clearTable(hasherEventMapTableHelper, tableType: TableType.hemEventAdmin);
-      baseService.clearTable(hasherKennelMapTableHelper, tableType: TableType.hkmEventAdmin);
-      baseService.clearTable(receiptsTableHelper);
-      baseService.clearTable(kennelCreditsTableHelper);
+      await baseService.clearTable(paymentsTableHelper,tableType: TableType.paymentsEvent);
+      await baseService.clearTable(hasherEventMapTableHelper, tableType: TableType.hemEventAdmin);
+      await baseService.clearTable(hasherKennelMapTableHelper, tableType: TableType.hkmEventAdmin);
+      await baseService.clearTable(receiptsTableHelper);
+      await baseService.clearTable(kennelCreditsTableHelper);
       // we don't want to clear the Hashers table since it is meant to be persistent and not tied to a single event
 
       await setStringPref(StringPrefsEnum.adminEventId, eventId);

@@ -188,7 +188,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
       Utilities.logTiming('Geoquery start');
 
       Utilities.logTiming('Run query start');
-      QueryRuns.queryRuns(EnumRunQueryType.topRunsPage, searchAllRuns: searchAllRuns).then((List<Map<String, dynamic>> results) {
+      QueryRuns.queryRuns(EnumRunQueryType.topRunsPage, EnumRunQueryContext.user, searchAllRuns: searchAllRuns).then((List<Map<String, dynamic>> results) {
         Utilities.logTiming('Run query end');
         allRuns = <RunDetailsAggregate>[];
         for (int i = 0; i < results.length; i++) {

@@ -208,7 +208,7 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
       colKennelId: item.kennelId,
       colPaidBy: item.paidBy,
       colHemId: item.hemId,
-      colEventId: item.eventId,
+      colEventId: item.id,
       colPaidTo: item.paidTo,
       colCreditAmount: item.creditAmount,
       colDebitAmount: item.debitAmount,

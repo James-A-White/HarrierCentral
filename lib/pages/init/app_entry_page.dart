@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:geolocator/geolocator.dart';
 
 import 'package:package_info/package_info.dart';
 import 'package:sqflite/sqflite.dart';
