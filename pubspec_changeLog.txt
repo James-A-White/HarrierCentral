@@ -19,7 +19,7 @@
     Release to iOS app store and Google Play store
 # 0.8.146+301
     Replaced how geolocation works in order to achieve significant improvements in performance
-# 0.8.147+302
+# 0.8.148+303
     Added a feature to display all runs, all past runs or all future runs on a map by kennel (kennel admin) and for end-users
     
 

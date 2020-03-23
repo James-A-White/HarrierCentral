@@ -46,6 +46,8 @@ class RunLocationsPageState extends State<RunLocationsPage> {
 
   RunLocationsViewMode viewMode = RunLocationsViewMode.all;
 
+  String textDescription = 'Showing all runs';
+
   @override
   void initState() {
     loadEvents();
@@ -83,6 +85,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             label: 'Show all runs',
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
+              textDescription = 'Showing all runs';
               viewMode = RunLocationsViewMode.all;
               loadEvents().then((void dummy) {
                 setState(() {});
@@ -95,6 +98,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             label: 'Show all future runs',
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
+              textDescription = 'Showing all future runs';
               viewMode = RunLocationsViewMode.future;
               loadEvents().then((void dummy) {
                 setState(() {});
@@ -107,6 +111,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             label: 'Show all past runs',
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
+              textDescription = 'Showing all past runs';
               viewMode = RunLocationsViewMode.past;
               loadEvents().then((void dummy) {
                 setState(() {});
@@ -119,6 +124,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             label: 'Show recent runs',
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
+              textDescription = 'Showing runs in last 90 days';
               viewMode = RunLocationsViewMode.recent;
               loadEvents().then((void dummy) {
                 setState(() {});
@@ -126,11 +132,12 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             },
           ),
           SpeedDialChild(
-            child: const Icon(MaterialCommunityIcons.run, color:Colors.black),
+            child: const Icon(MaterialCommunityIcons.run, color: Colors.black),
             backgroundColor: Colors.orange[400],
             label: 'Show my runs',
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
+              textDescription = 'Showing runs you\'ve been at';
               viewMode = RunLocationsViewMode.myRuns;
               loadEvents().then((void dummy) {
                 setState(() {});
@@ -138,11 +145,12 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             },
           ),
           SpeedDialChild(
-            child: const Icon(MaterialCommunityIcons.run_fast, color:Colors.black),
+            child: const Icon(MaterialCommunityIcons.run_fast, color: Colors.black),
             backgroundColor: Colors.orange[400],
             label: 'Show my haring',
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
+              textDescription = 'Showing runs you\'ve hared';
               viewMode = RunLocationsViewMode.myHaring;
               loadEvents().then((void dummy) {
                 setState(() {});
@@ -315,47 +323,65 @@ class RunLocationsPageState extends State<RunLocationsPage> {
   }
 
   Widget runLocationsBody() {
-    return Container(
-      decoration: Backgrounds.defaultHcBackground(),
-      height: MediaQuery.of(context).size.height,
-      child: FlutterMap(
-        options: MapOptions(
-          center: (widget.kennel?.kennelLatitude != null) ? LatLng(Utilities.unInt(widget.kennel.kennelLatitude), Utilities.unInt(widget.kennel.kennelLongitude)) : LatLng(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon)),
-          zoom: 15.0,
-          plugins: <MarkerClusterPlugin>[
-            MarkerClusterPlugin(),
-          ],
-        ),
-        layers: <LayerOptions>[
-          TileLayerOptions(
-              urlTemplate:
-                  //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-              //subdomains: ['a', 'b', 'c']),
-              subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
-          MarkerClusterLayerOptions(
-            maxClusterRadius: 60,
-            size: const Size(40, 40),
-            fitBoundsOptions: const FitBoundsOptions(
-              padding: EdgeInsets.all(50),
+    return Stack(
+      children: <Widget>[
+        Container(
+          //decoration: Backgrounds.defaultHcBackground(),
+          //height: MediaQuery.of(context).size.height,
+          child: FlutterMap(
+            options: MapOptions(
+              center: (widget.kennel?.kennelLatitude != null) ? LatLng(Utilities.unInt(widget.kennel.kennelLatitude), Utilities.unInt(widget.kennel.kennelLongitude)) : LatLng(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon)),
+              zoom: 15.0,
+              plugins: <MarkerClusterPlugin>[
+                MarkerClusterPlugin(),
+              ],
             ),
-            markers: runLocationMarkers,
-            polygonOptions: PolygonOptions(borderColor: Colors.blueAccent, color: Colors.black12, borderStrokeWidth: 3),
-            builder: (BuildContext context, List<Marker> markers) {
-              heroCounter++;
-              return FloatingActionButton(
-                child: Text(markers.length.toString()),
-                onPressed: null,
-                heroTag: 'btn_$heroCounter',
-              );
-            },
-          ),
+            layers: <LayerOptions>[
+              TileLayerOptions(
+                  urlTemplate:
+                      //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                  //subdomains: ['a', 'b', 'c']),
+                  subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
+              MarkerClusterLayerOptions(
+                maxClusterRadius: 60,
+                size: const Size(40, 40),
+                fitBoundsOptions: const FitBoundsOptions(
+                  padding: EdgeInsets.all(50),
+                ),
+                markers: runLocationMarkers,
+                polygonOptions: PolygonOptions(borderColor: Colors.blueAccent, color: Colors.black12, borderStrokeWidth: 3),
+                builder: (BuildContext context, List<Marker> markers) {
+                  heroCounter++;
+                  return FloatingActionButton(
+                    child: Text(markers.length.toString()),
+                    onPressed: null,
+                    heroTag: 'btn_$heroCounter',
+                  );
+                },
+              ),
 
-          // MarkerLayerOptions(
-          //   markers: <Marker>[for (MapMarker item in runLocations) mapMarker(item)],
-          // )
-        ],
-      ),
+              // MarkerLayerOptions(
+              //   markers: <Marker>[for (MapMarker item in runLocations) mapMarker(item)],
+              // )
+            ],
+          ),
+        ),
+        Positioned(
+            left:10.0,right:10.0,
+            top: 10.0,
+            child: Container(
+              padding: const EdgeInsets.only(top:5.0,bottom:5.0),
+              child: Text(textDescription,textAlign: TextAlign.center,style:headingStyle20Black),
+              
+              decoration: BoxDecoration(
+                color: Colors.yellow[100],
+                border: Border.all(width: 2.0),
+                borderRadius: const BorderRadius.all(Radius.circular(10.0) 
+                    ),
+              ),
+            )),
+      ],
     );
   }
 

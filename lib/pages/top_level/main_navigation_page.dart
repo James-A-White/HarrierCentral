@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
+import 'package:flutter_swiper/flutter_swiper.dart';
+import 'package:flutter_page_indicator/flutter_page_indicator.dart';
+
 import 'package:harrier_central/database/common_queries.dart';
 import 'package:harrier_central/pages/top_level/run_locations.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -17,6 +20,7 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/database/migrations.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
+import 'package:harrier_central/widgets/flippable_box.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
@@ -24,7 +28,7 @@ import 'package:harrier_central/pages/top_level/history_list_page.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
-import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
+//import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 //import 'package:harrier_central/pages/history_sub_pages/add_user_run_page.dart';
 
@@ -43,8 +47,17 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   List<Widget> tabs = <Widget>[];
   List<String> tabTitles = <String>[];
 
+  List<String> images = <String>[
+    'images/tutorial/run_locations_help_1.jpg',
+    'images/tutorial/run_locations_help_2.jpg',
+    'images/tutorial/run_locations_help_3.jpg',
+    'images/tutorial/run_locations_help_4.jpg',
+  ];
+
   String appBarText;
   String initializationMessage = '';
+
+  bool isFlipped = false;
 
   // TODO(James): Investigate Page Storage Bucket / PageView
 
@@ -199,41 +212,92 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             appBar: AppBar(
               backgroundColor: themeAppBarBackground,
               title: Text(appBarText),
+              actions: <IconButton>[
+                IconButton(
+                    icon: Icon(isFlipped ? Icons.undo : Icons.info_outline),
+                    onPressed: () {
+                      isFlipped = !isFlipped;
+                      setState(() {
+                        
+                        // do this extra setState to ensure the FAB is displayed properly
+                      });
+                      Future<void>.delayed(const Duration(milliseconds: 500)).then((void dummy) {
+                        setState(() {});
+                      });
+                    }),
+              ],
             ),
-            floatingActionButton: runLocationsPageKey?.currentState == null ? null : runLocationsPageKey.currentState.getFab(),
+            floatingActionButton: (runLocationsPageKey?.currentState == null) || (isFlipped == true) ? null : runLocationsPageKey.currentState.getFab(),
             body: Container(
-              decoration: const BoxDecoration(color: Colors.white),
-              child: dbCreated == 0
-                  ? Container(
-                      decoration: Backgrounds.defaultHcBackground(),
-                      height: MediaQuery.of(context).size.height,
-                      width: MediaQuery.of(context).size.width,
-                      child: Center(
-                          child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Image.asset(
-                            'images/other/creating_database.png',
-                            height: 250,
-                            width: 250,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Text(
-                              initializationMessage,
-                              style: headingStyle,
-                              textAlign: TextAlign.center,
+                decoration: const BoxDecoration(color: Colors.white),
+                child: dbCreated == 0
+                    ? Container(
+                        decoration: Backgrounds.defaultHcBackground(),
+                        height: MediaQuery.of(context).size.height,
+                        width: MediaQuery.of(context).size.width,
+                        child: Center(
+                            child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Image.asset(
+                              'images/other/creating_database.png',
+                              height: 250,
+                              width: 250,
                             ),
+                            Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Text(
+                                initializationMessage,
+                                style: headingStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        )),
+                      )
+                    : FlippableBox(
+                        front: front(),
+                        back: Container(
+                          child: Swiper(
+                            pagination: SwiperCustomPagination(
+                              builder: (BuildContext context, SwiperPluginConfig config) {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: <Widget>[
+                                    Expanded(child: Container()),
+                                    Row(
+                                      children: <Widget>[
+                                        Expanded(
+                                          child: Align(
+                                            alignment: Alignment.bottomCenter,
+                                            child: DotSwiperPaginationBuilder(color: Colors.grey, activeColor: Colors.blue, size: 10.0, activeSize: 20.0).build(context, config),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12.0)
+                                  ],
+                                );
+                              },
+                            ),
+
+                            itemCount: images.length,
+                            control: const SwiperControl(color: Colors.red, disableColor: Colors.blue),
+                            //indicatorLayout: PageIndicatorLayout.SCALE,
+                            itemBuilder: (BuildContext context, int index) {
+                              return Image.asset(
+                                images[index],
+                                fit: BoxFit.fill,
+                              );
+                            },
                           ),
-                        ],
+                        ),
+                        isFlipped: isFlipped,
                       )),
-                    )
-                  : Center(
-                      child: _getPage(currentPage),
-                    ),
-            ),
-            bottomNavigationBar: FancyBottomNavigation(
+            bottomNavigationBar: isFlipped == true ? null :
+            
+            FancyBottomNavigation(
               circleColor: themeButtonColors,
               inactiveIconColor: themeBackgroundColor,
               barBackgroundColor: themeNavBarBackground,
@@ -241,44 +305,19 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 TabData(
                   iconData: MaterialCommunityIcons.run_fast,
                   title: 'Runs',
-                  // onclick: () {
-                  //   final FancyBottomNavigationState fState =
-                  //       bottomNavigationKey.currentState;
-                  //   fState.setPage(2);
-                  // },
                 ),
                 TabData(
                   iconData: FontAwesome.home,
                   title: 'Kennels',
-                  // onclick: () => Navigator.of(context).push<dynamic>(
-                  //       MaterialPageRoute<dynamic>(
-                  //         builder: (BuildContext context) => UserQrCodePage(),
-                  //       ),
-                  //     ),
                 ),
-
                 TabData(
                   iconData: FontAwesome.map,
                   title: 'Explore',
-                  // onclick: () => Navigator.of(context).push<dynamic>(
-                  //       MaterialPageRoute<dynamic>(
-                  //         builder: (BuildContext context) => UserQrCodePage(),
-                  //       ),
-                  //     ),
                 ),
                 TabData(
                   iconData: FontAwesome.list_ul,
                   title: 'History',
-                  // onclick: () => Navigator.of(context).push<dynamic>(
-                  //       MaterialPageRoute<dynamic>(
-                  //         builder: (BuildContext context) => UserQrCodePage(),
-                  //       ),
-                  //     ),
                 ),
-                // TabData(
-                //   iconData: MaterialCommunityIcons.qrcode_scan,
-                //   title: 'Scanner',
-                // )
               ],
               initialSelection: 0,
               key: bottomNavigationKey,
@@ -296,6 +335,14 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         ),
         const OfflineModeRibbon(),
       ],
+    );
+  }
+
+  Container front() {
+    return Container(
+      child: Center(
+        child: _getPage(currentPage),
+      ),
     );
   }
 }

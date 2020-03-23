@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/widgets/kennel_run_history_my_runs_item.dart';
 import 'package:harrier_central/widgets/kennel_run_history_count_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
