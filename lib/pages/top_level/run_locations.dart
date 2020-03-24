@@ -402,7 +402,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                   centerTitle: true,
                   backgroundColor: themeAppBarBackground,
                   title: const Text(
-                    'Run Locationss',
+                    'Explore Runs',
                     style: TextStyle(
                       color: Colors.white,
                     ),

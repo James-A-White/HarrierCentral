@@ -29,7 +29,13 @@ class AnimatedBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(width: child.constraints.maxWidth, height: child.constraints.maxHeight, duration: const Duration(milliseconds: 700), curve: Curves.easeOut, child: child);
+    return AnimatedContainer(
+      width: child.constraints.maxWidth,
+      height: child.constraints.maxHeight,
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.easeOut,
+      child: child,
+    );
   }
 }
 
@@ -48,9 +54,21 @@ class FlippableBox extends StatelessWidget {
       tween: Tween<double>(begin: 0.0, end: isFlipped ? 180.0 : 0.0),
       builder: (BuildContext context, double value, Widget child) {
         final Container content = value >= 90 ? back : front;
-        return RotationY(
-          rotationY: value,
-          child: RotationY(rotationY: value > 90 ? 180 : 0, child: content),
+        final Container offScreenContent = value >= 90 ? front : back;
+        return Stack(
+          children: <Widget>[
+            RotationY(
+              rotationY: value,
+              child: RotationY(rotationY: value > 90 ? 180 : 0, child: content),
+            ),
+            // this ensures that we keep the original (front) widget in the tree so we preserve
+            // it's state while it's out of view
+            Container(
+              child: offScreenContent,
+              width: 0.0,
+              height: 0.0,
+            )
+          ],
         );
       },
     );

@@ -58,6 +58,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   String initializationMessage = '';
 
   bool isFlipped = false;
+  bool fabFlipped = false;
 
   // TODO(James): Investigate Page Storage Bucket / PageView
 
@@ -71,7 +72,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   void initState() {
     tabTitles.add('Upcoming Runs');
     tabTitles.add('Kennels');
-    tabTitles.add('Run Locations');
+    tabTitles.add('Explore Runs');
     tabTitles.add('Your Total Run Counts');
 
     //tabTitles.add('Scanner');
@@ -202,13 +203,18 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     return Stack(
       children: <Widget>[
-        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        // Container(
+        //   height: MediaQuery.of(context).size.height,
+        //   width: MediaQuery.of(context).size.width,
+        //   color:Colors.red
+        // ),
         Positioned(
           top: 0,
           left: 0,
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
           child: Scaffold(
+            backgroundColor: Colors.white,
             appBar: AppBar(
               backgroundColor: themeAppBarBackground,
               title: Text(appBarText),
@@ -217,17 +223,20 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                     icon: Icon(isFlipped ? Icons.undo : Icons.info_outline),
                     onPressed: () {
                       isFlipped = !isFlipped;
+                      if (isFlipped == true) {
+                        fabFlipped = true;
+                      }
                       setState(() {
-                        
                         // do this extra setState to ensure the FAB is displayed properly
                       });
-                      Future<void>.delayed(const Duration(milliseconds: 500)).then((void dummy) {
+                      Future<void>.delayed(const Duration(milliseconds: 250)).then((void dummy) {
+                        fabFlipped = isFlipped;
                         setState(() {});
                       });
                     }),
               ],
             ),
-            floatingActionButton: (runLocationsPageKey?.currentState == null) || (isFlipped == true) ? null : runLocationsPageKey.currentState.getFab(),
+            floatingActionButton: (runLocationsPageKey?.currentState == null) || (fabFlipped == true) ? null : runLocationsPageKey.currentState.getFab(),
             body: Container(
                 decoration: const BoxDecoration(color: Colors.white),
                 child: dbCreated == 0
@@ -271,7 +280,12 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                                         Expanded(
                                           child: Align(
                                             alignment: Alignment.bottomCenter,
-                                            child: DotSwiperPaginationBuilder(color: Colors.grey, activeColor: Colors.blue, size: 10.0, activeSize: 20.0).build(context, config),
+                                            child: DotSwiperPaginationBuilder(
+                                              color: Colors.grey,
+                                              activeColor: Colors.blue,
+                                              size: 10.0,
+                                              activeSize: 20.0,
+                                            ).build(context, config),
                                           ),
                                         )
                                       ],
@@ -286,49 +300,59 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                             control: const SwiperControl(color: Colors.red, disableColor: Colors.blue),
                             //indicatorLayout: PageIndicatorLayout.SCALE,
                             itemBuilder: (BuildContext context, int index) {
-                              return Image.asset(
-                                images[index],
-                                fit: BoxFit.fill,
+                              return Column(
+                                children: <Widget>[
+                                  Expanded(child: Container()),
+                                  Image.asset(
+                                    images[index],
+                                    fit: BoxFit.fill,
+                                  ),
+                                  Expanded(child: Container()),
+                                ],
                               );
                             },
                           ),
                         ),
                         isFlipped: isFlipped,
                       )),
-            bottomNavigationBar: isFlipped == true ? null :
-            
-            FancyBottomNavigation(
-              circleColor: themeButtonColors,
-              inactiveIconColor: themeBackgroundColor,
-              barBackgroundColor: themeNavBarBackground,
-              tabs: <TabData>[
-                TabData(
-                  iconData: MaterialCommunityIcons.run_fast,
-                  title: 'Runs',
+            bottomNavigationBar: FlippableBox(
+              front: Container(
+                child: FancyBottomNavigation(
+                  circleColor: themeButtonColors,
+                  inactiveIconColor: themeBackgroundColor,
+                  barBackgroundColor: themeNavBarBackground,
+                  tabs: <TabData>[
+                    TabData(
+                      iconData: MaterialCommunityIcons.run_fast,
+                      title: 'Runs',
+                    ),
+                    TabData(
+                      iconData: FontAwesome.home,
+                      title: 'Kennels',
+                    ),
+                    TabData(
+                      iconData: FontAwesome.map,
+                      title: 'Explore',
+                    ),
+                    TabData(
+                      iconData: FontAwesome.list_ul,
+                      title: 'History',
+                    ),
+                  ],
+                  initialSelection: 0,
+                  key: bottomNavigationKey,
+                  onTabChangedListener: (int position) {
+                    appBarText = tabTitles[position];
+                    currentPage = position;
+                    setState(() {});
+                    Future<void>.delayed(const Duration(milliseconds: 100)).then((void dummy) {
+                      setState(() {});
+                    });
+                  },
                 ),
-                TabData(
-                  iconData: FontAwesome.home,
-                  title: 'Kennels',
-                ),
-                TabData(
-                  iconData: FontAwesome.map,
-                  title: 'Explore',
-                ),
-                TabData(
-                  iconData: FontAwesome.list_ul,
-                  title: 'History',
-                ),
-              ],
-              initialSelection: 0,
-              key: bottomNavigationKey,
-              onTabChangedListener: (int position) {
-                appBarText = tabTitles[position];
-                currentPage = position;
-                setState(() {});
-                Future<void>.delayed(const Duration(milliseconds: 100)).then((void dummy) {
-                  setState(() {});
-                });
-              },
+              ),
+              back: Container(height: 0, width: 0),
+              isFlipped: isFlipped,
             ),
             drawer: DrawerMenu(scaffoldKey: _scaffoldKey),
           ),
