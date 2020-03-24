@@ -354,6 +354,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                 builder: (BuildContext context, List<Marker> markers) {
                   heroCounter++;
                   return FloatingActionButton(
+                    backgroundColor: Colors.blue[800],
                     child: Text(markers.length.toString()),
                     onPressed: null,
                     heroTag: 'btn_$heroCounter',

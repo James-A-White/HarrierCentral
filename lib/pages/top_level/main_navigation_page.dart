@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:flutter_page_indicator/flutter_page_indicator.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/database/common_queries.dart';
 import 'package:harrier_central/pages/top_level/run_locations.dart';
@@ -290,26 +291,43 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                                         )
                                       ],
                                     ),
-                                    const SizedBox(height: 12.0)
+                                    const SizedBox(height: 20.0)
                                   ],
                                 );
                               },
                             ),
-
                             itemCount: images.length,
                             control: const SwiperControl(color: Colors.red, disableColor: Colors.blue),
-                            //indicatorLayout: PageIndicatorLayout.SCALE,
                             itemBuilder: (BuildContext context, int index) {
-                              return Column(
-                                children: <Widget>[
-                                  Expanded(child: Container()),
-                                  Image.asset(
-                                    images[index],
-                                    fit: BoxFit.fill,
-                                  ),
-                                  Expanded(child: Container()),
-                                ],
-                              );
+                              // this configuration of LayoutBuilder is used to center images that do not
+                              // overflow the height of the available render area, but align images
+                              // to the top of the render space if they will overflow the available space.
+                              return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
+                                return Stack(
+                                  overflow: Overflow.clip,
+                                  fit: StackFit.passthrough,
+                                  alignment: AlignmentDirectional.topCenter,
+                                  children: <Widget>[
+                                    Positioned(
+                                      top: 0.0,
+                                      left: 0.0,
+                                      right: 0.0,
+                                      child: Column(
+                                        children: <Widget>[
+                                          ConstrainedBox(
+                                            constraints: BoxConstraints(minHeight: constraints.maxHeight - 60),
+                                            child: Image.asset(
+                                              images[index],
+                                              fit: BoxFit.fitWidth,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Positioned(bottom: 0.0, left: 0.0, right: 0.0, child: Container(height: 60.0, color: Colors.white))
+                                  ],
+                                );
+                              });
                             },
                           ),
                         ),
