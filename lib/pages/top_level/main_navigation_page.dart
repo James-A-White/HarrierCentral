@@ -48,11 +48,23 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   List<Widget> tabs = <Widget>[];
   List<String> tabTitles = <String>[];
 
-  List<String> images = <String>[
+  List<List<String>> tutorials = <List<String>>[tutorialUpcomingRuns,tutorialRunLocations,tutorialRunLocations,tutorialRunLocations,tutorialRunLocations];
+
+  static List<String> tutorialRunLocations = <String>[
     'images/tutorial/run_locations_help_1.jpg',
     'images/tutorial/run_locations_help_2.jpg',
     'images/tutorial/run_locations_help_3.jpg',
     'images/tutorial/run_locations_help_4.jpg',
+  ];
+
+  static List<String> tutorialUpcomingRuns = <String>[
+    'images/tutorial/upcoming_runs_page_1.jpg',
+    'images/tutorial/upcoming_runs_page_2.jpg',
+    'images/tutorial/upcoming_runs_page_3.jpg',
+    'images/tutorial/upcoming_runs_page_4.jpg',
+    'images/tutorial/upcoming_runs_page_5.jpg',
+    'images/tutorial/upcoming_runs_page_6.jpg',
+    'images/tutorial/upcoming_runs_page_7.jpg',
   ];
 
   String appBarText;
@@ -296,7 +308,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                                 );
                               },
                             ),
-                            itemCount: images.length,
+                            itemCount: tutorials[currentPage].length,
                             control: const SwiperControl(color: Colors.red, disableColor: Colors.blue),
                             itemBuilder: (BuildContext context, int index) {
                               // this configuration of LayoutBuilder is used to center images that do not
@@ -314,10 +326,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                                       right: 0.0,
                                       child: Column(
                                         children: <Widget>[
-                                          ConstrainedBox(
-                                            constraints: BoxConstraints(minHeight: constraints.maxHeight - 60),
+                                          ConstrainedBox( 
+                                            constraints: BoxConstraints(minHeight: constraints.maxHeight > 60 ? constraints.maxHeight - 60 : constraints.maxHeight),
                                             child: Image.asset(
-                                              images[index],
+                                              tutorials[currentPage][index],
                                               fit: BoxFit.fitWidth,
                                             ),
                                           ),

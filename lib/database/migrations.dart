@@ -125,7 +125,7 @@ class MigrationsTableHelper {
   ///
   ///
 
-  static int dbVersion = 252;
+  static int dbVersion = 253;
 
   static List<MigrationsModel> migrationList = <MigrationsModel>[
 
@@ -225,6 +225,9 @@ class MigrationsTableHelper {
                   ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colLocationSubRegion} TEXT;         
          '''),
 
+         MigrationsModel(migrationNumber: 253, migrationText: '''
+                  ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPinColor} INT;    
+         '''),
 
   ];
 }

@@ -15,6 +15,7 @@ class KennelsModel implements BaseModel {
       this.kennelShortName,
       this.kennelDescription,
       this.kennelLogo,
+      this.kennelPinColor,
       this.kennelCoverPhoto,
       this.kennelWebsiteUrl,
       this.defaultEventCurrencyType,
@@ -64,6 +65,7 @@ class KennelsModel implements BaseModel {
   final String kennelShortName;
   final String kennelDescription;
   final String kennelLogo;
+  final int kennelPinColor;
   final String kennelCoverPhoto;
   final String kennelWebsiteUrl;
   final String defaultEventCurrencyType;
@@ -122,6 +124,7 @@ class KennelsModel implements BaseModel {
           kennelShortName: jsonItem['kennelShortName'],
           kennelDescription: jsonItem['kennelDescription'],
           kennelLogo: jsonItem['kennelLogo'],
+          kennelPinColor: jsonItem['kennelPinColor'],
           kennelCoverPhoto: jsonItem['kennelCoverPhoto'],
           kennelWebsiteUrl: jsonItem['kennelWebsiteUrl'],
           defaultEventCurrencyType: jsonItem['defaultEventCurrencyType'],
@@ -202,6 +205,7 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
   final String colKennelShortName = 'kennelShortName';
   final String colKennelDescription = 'kennelDescription';
   final String colKennelLogo = 'kennelLogo';
+  final String colKennelPinColor = 'kennelPinColor';
   final String colKennelCoverPhoto = 'kennelCoverPhoto';
   final String colKennelWebsiteUrl = 'kennelWebsiteUrl';
   final String colDefaultEventCurrencyType = 'defaultEventCurrencyType';
@@ -255,6 +259,7 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
             $colKennelShortName TEXT NOT NULL,
             $colKennelDescription TEXT,
             $colKennelLogo TEXT,
+            $colKennelPinColor INT,
             $colKennelCoverPhoto TEXT,
             $colKennelWebsiteUrl TEXT,
             $colDefaultEventCurrencyType TEXT,
@@ -315,6 +320,7 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
       colKennelShortName: item.kennelShortName,
       colKennelDescription: item.kennelDescription,
       colKennelLogo: item.kennelLogo,
+      colKennelPinColor: item.kennelPinColor,
       colKennelCoverPhoto: item.kennelCoverPhoto,
       colKennelWebsiteUrl: item.kennelWebsiteUrl,
       colDefaultEventCurrencyType: item.defaultEventCurrencyType,
@@ -371,6 +377,7 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
       colKennelShortName: inputMap[colKennelShortName],
       colKennelDescription: inputMap[colKennelDescription],
       colKennelLogo: inputMap[colKennelLogo],
+      colKennelPinColor: inputMap[colKennelPinColor],
       colKennelCoverPhoto: inputMap[colKennelCoverPhoto],
       colKennelWebsiteUrl: inputMap[colKennelWebsiteUrl],
       colDefaultEventCurrencyType: inputMap[colDefaultEventCurrencyType],
@@ -428,6 +435,7 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
       kennelShortName: map[colKennelShortName],
       kennelDescription: map[colKennelDescription],
       kennelLogo: map[colKennelLogo],
+      kennelPinColor: map[colKennelPinColor],
       kennelCoverPhoto: map[colKennelCoverPhoto],
       kennelWebsiteUrl: map[colKennelWebsiteUrl],
       defaultEventCurrencyType: map[colDefaultEventCurrencyType],

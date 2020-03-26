@@ -21,6 +21,7 @@ import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/database/query_runs.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
+import 'package:harrier_central/widgets/kennel_logo.dart';
 
 // class MapMarker extends Marker {
 //   MapMarker({@required this.eventId, @required this.eventName, @required this.eventStartDatetime, num width, num height, LatLng point, WidgetBuilder builder}) : super(width: width, height: height, point: point, builder: builder);
@@ -43,15 +44,20 @@ class RunLocationsPage extends StatefulWidget {
 
 class RunLocationsPageState extends State<RunLocationsPage> {
   List<Marker> runLocationMarkers = <Marker>[];
+  List<Marker> kennelMarkers = <Marker>[];
 
-  RunLocationsViewMode viewMode = RunLocationsViewMode.all;
+  RunLocationsViewMode viewMode = RunLocationsViewMode.recent;
 
-  String textDescription = 'Showing all runs';
+  String textDescription = 'Showing recent runs';
 
   @override
   void initState() {
-    loadEvents();
+
     super.initState();
+    loadEvents();
+    loadKennels().then((void dummy){setState(() {
+      
+    });});
   }
 
   Widget getFab() {
@@ -205,8 +211,10 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             evt.${eventsTableHelper.colEventStartDatetime} as eventStartDatetime,
             coalesce(hem.${hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
             coalesce(hem.${hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
-            coalesce(hem.${hasherEventMapTableHelper.colIsHare},0) as isHare
+            coalesce(hem.${hasherEventMapTableHelper.colIsHare},0) as isHare,
+            coalesce(k.${kennelsTableHelper.colKennelPinColor},0) as kennelPinColor
             FROM ${eventsTableHelper.tableName} evt
+            INNER JOIN ${kennelsTableHelper.tableName} k on evt.${eventsTableHelper.colKennelId} = k.${kennelsTableHelper.colKennelId}
             LEFT OUTER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemUser)} hem on hem.${hasherEventMapTableHelper.colEventId} = evt.${eventsTableHelper.colEventId} AND hem.${hasherEventMapTableHelper.colUserId} = "$userId"
             WHERE evt.${eventsTableHelper.colIsVisible} = 1
           ''';
@@ -233,18 +241,11 @@ class RunLocationsPageState extends State<RunLocationsPage> {
 
             final LatLng ll = LatLng(Utilities.unInt(lat), Utilities.unInt(lon));
             final Marker marker = Marker(
-                width: 50.0,
-                height: 60.0,
-                anchorPos: AnchorPos.exactly(Anchor(25.0, 0.0)),
+                width: 54.0,
+                height: 66.0,
+                anchorPos: AnchorPos.exactly(Anchor(27.0, 0.0)),
                 point: ll,
-                builder: (BuildContext ctx) => buildMarker(
-                      results[i]['eventId'],
-                      dt,
-                      results[i]['eventName'],
-                      rsvpState: rsvpState,
-                      attendenceState: attendenceState,
-                      isHare: isHare,
-                    ));
+                builder: (BuildContext ctx) => buildRunMarker(results[i]['eventId'], dt, results[i]['eventName'], rsvpState: rsvpState, attendenceState: attendenceState, isHare: isHare, kennelPinColor: results[i]['kennelPinColor']));
 
             if ((viewMode == RunLocationsViewMode.all) ||
                 ((viewMode == RunLocationsViewMode.past) && (dt.isBefore(DateTime.now()))) ||
@@ -264,7 +265,64 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     }
   }
 
-  Widget buildMarker(String eventId, DateTime eventStartDatetime, String eventName, {int attendenceState, int rsvpState, int isHare}) {
+  Future<void> loadKennels() async {
+    final Database db = await DBProvider.db.database;
+
+    //final String userId = getStringPref(StringPrefsEnum.userId);
+
+    String query = ''' 
+
+          SELECT 
+            k.${kennelsTableHelper.colKennelLogo} as logo,
+            k.${kennelsTableHelper.colKennelShortName} as shortName,
+            k.${kennelsTableHelper.colKennelLatitude} as lat,
+            k.${kennelsTableHelper.colKennelLongitude} as lon
+            FROM ${kennelsTableHelper.tableName} k 
+          ''';
+
+    if ((widget.kennel?.kennelId != null) && (widget.kennel.kennelId.isNotEmpty)) {
+      query = query +
+          '''
+            AND k.${kennelsTableHelper.colKennelId} = "${widget.kennel.kennelId}"''';
+    }
+
+    try {
+      final List<Map<String, dynamic>> results = await db.rawQuery(query);
+      kennelMarkers = <Marker>[];
+      if ((results != null) && (results.isNotEmpty)) {
+        for (int i = 0; i < results.length; i++) {
+          final num lat = results[i]['lat'];
+          final num lon = results[i]['lon'];
+
+          if ((lat != null) && (lon != null) && (lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
+            final LatLng ll = LatLng(Utilities.unInt(lat), Utilities.unInt(lon));
+            final Marker marker = Marker(
+                width: 120.0,
+                height: 120.0,
+                anchorPos: AnchorPos.exactly(Anchor(60.0, 0.0)),
+                point: ll,
+                builder: (BuildContext ctx) => buildKennelMarker(results[i]['logo'], results[i]['shortName']));
+
+            kennelMarkers.add(marker);
+          }
+        }
+      }
+
+      setState(() {});
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Widget buildRunMarker(
+    String eventId,
+    DateTime eventStartDatetime,
+    String eventName, {
+    int attendenceState,
+    int rsvpState,
+    int isHare,
+    int kennelPinColor,
+  }) {
     return GestureDetector(
       onTap: () {
         getSingleRun(eventId).then((RunDetailsAggregate run) {
@@ -284,38 +342,64 @@ class RunLocationsPageState extends State<RunLocationsPage> {
       child: Container(
         //padding: const EdgeInsets.only(bottom: 58.0),
         //color: Colors.red,
-        child: Image.asset(getPin(eventStartDatetime, rsvpState, attendenceState, isHare)),
+        child: Image.asset(getPin(eventStartDatetime, rsvpState, attendenceState, isHare, kennelPinColor)),
         //child: FlutterLogo(colors: Colors.purple),
       ),
     );
   }
 
-  static int heroCounter = 0;
+  Widget buildKennelMarker(
+    String kennelLogo,
+    String kennelShortName,
+  ) {
+    return GestureDetector(
+      onTap: () {},
+      child: Container(
+        //padding: const EdgeInsets.only(bottom: 58.0),
+        //color: Colors.red,
+        child: Stack(alignment: AlignmentDirectional.topCenter, children: <Widget>[
+          Image.asset('images/icons/grey_square_pin.png'),
+          Positioned(
+            top: 9,
+            child: KennelLogo(
+              kennelLogoUrl: kennelLogo,
+              kennelShortName: kennelShortName,
+              logoHeight: 60.0,
+              leftPadding: 0.0,
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
 
-  String getPin(DateTime eventStartDatetime, int rsvpState, int attendenceState, int isHare) {
-    String pinFileName = 'images/icons/map_purple_pin.png';
+  static int heroCounter = 0;
+  static List<String> colors = ['red', 'orange', 'yellow', 'green', 'teal', 'baby_blue', 'blue', 'purple', 'pink'];
+
+  String getPin(DateTime eventStartDatetime, int rsvpState, int attendenceState, int isHare, int kennelPinColor) {
+    String pinFileName = 'images/map_pins/pin_${colors[kennelPinColor]}_no_rsvp.png';
 
     if (eventStartDatetime.isAfter(DateTime.now())) {
       // run is in the future
       if ((attendenceState >= attendenceAtHash.value) || (rsvpState >= rsvpYes.value)) {
         if (isHare != 0) {
-          pinFileName = 'images/icons/map_gold_star_pin.png';
+          pinFileName = 'images/map_pins/pin_${colors[kennelPinColor]}_rsvp_hare.png';
         } else {
-          pinFileName = 'images/icons/map_green_star_pin.png';
+          pinFileName = 'images/map_pins/pin_${colors[kennelPinColor]}_rsvp_yes.png';
         }
       } else {
-        pinFileName = 'images/icons/map_green_pin.png';
+        pinFileName = 'images/map_pins/pin_${colors[kennelPinColor]}_no_rsvp.png';
       }
     } else {
       // run is in the past
       if (attendenceState >= attendenceAtHash.value) {
         if (isHare != 0) {
-          pinFileName = 'images/icons/map_gold_star_pin.png';
+          pinFileName = 'images/map_pins/pin_${colors[kennelPinColor]}_hared.png';
         } else {
-          pinFileName = 'images/icons/map_purple_star_pin.png';
+          pinFileName = 'images/map_pins/pin_${colors[kennelPinColor]}_ran.png';
         }
       } else {
-        pinFileName = 'images/icons/map_purple_pin.png';
+        pinFileName = 'images/map_pins/pin_${colors[kennelPinColor]}_past_run.png';
       }
     }
 
@@ -343,6 +427,9 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                       'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
                   //subdomains: ['a', 'b', 'c']),
                   subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
+
+
+
               MarkerClusterLayerOptions(
                 maxClusterRadius: 60,
                 size: const Size(40, 40),
@@ -362,6 +449,25 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                 },
               ),
 
+              MarkerClusterLayerOptions(
+                maxClusterRadius: 60,
+                size: const Size(50, 50),
+                fitBoundsOptions: const FitBoundsOptions(
+                  padding: EdgeInsets.all(50),
+                ),
+                markers: kennelMarkers,
+                polygonOptions: PolygonOptions(borderColor: Colors.blueAccent, color: Colors.black12, borderStrokeWidth: 3),
+                builder: (BuildContext context, List<Marker> markers) {
+                  heroCounter++;
+                  return FloatingActionButton(
+                    backgroundColor: Colors.purple[600],
+                    child: Text(markers.length.toString()),
+                    onPressed: null,
+                    heroTag: 'btn_$heroCounter',
+                  );
+                },
+              ),
+
               // MarkerLayerOptions(
               //   markers: <Marker>[for (MapMarker item in runLocations) mapMarker(item)],
               // )
@@ -369,17 +475,16 @@ class RunLocationsPageState extends State<RunLocationsPage> {
           ),
         ),
         Positioned(
-            left:10.0,right:10.0,
+            left: 10.0,
+            right: 10.0,
             top: 10.0,
             child: Container(
-              padding: const EdgeInsets.only(top:5.0,bottom:5.0),
-              child: Text(textDescription,textAlign: TextAlign.center,style:headingStyle20Black),
-              
+              padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+              child: Text(textDescription, textAlign: TextAlign.center, style: headingStyle20Black),
               decoration: BoxDecoration(
                 color: Colors.yellow[100],
                 border: Border.all(width: 2.0),
-                borderRadius: const BorderRadius.all(Radius.circular(10.0) 
-                    ),
+                borderRadius: const BorderRadius.all(Radius.circular(10.0)),
               ),
             )),
       ],
