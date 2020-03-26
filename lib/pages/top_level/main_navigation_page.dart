@@ -48,7 +48,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   List<Widget> tabs = <Widget>[];
   List<String> tabTitles = <String>[];
 
-  List<List<String>> tutorials = <List<String>>[tutorialUpcomingRuns,tutorialRunLocations,tutorialRunLocations,tutorialRunLocations,tutorialRunLocations];
+  List<List<String>> tutorials = <List<String>>[tutorialUpcomingRuns,helpNotAvailable,tutorialRunLocations,helpNotAvailable];
 
   static List<String> tutorialRunLocations = <String>[
     'images/tutorial/run_locations_help_1.jpg',
@@ -66,6 +66,12 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     'images/tutorial/upcoming_runs_page_6.jpg',
     'images/tutorial/upcoming_runs_page_7.jpg',
   ];
+
+    static List<String> helpNotAvailable = <String>[
+    'images/tutorial/help_not_available.jpg',
+  ];
+
+
 
   String appBarText;
   String initializationMessage = '';
