@@ -272,3 +272,14 @@ const EnumLoginApproval<int> loginApprovalUserAccountDoesNotExist =
     EnumLoginApproval<int>(3);
 const EnumLoginApproval<int> loginApprovalNotAuthorized =
     EnumLoginApproval<int>(4);
+
+
+//////////////////////////
+///
+class EnumMapCenterOption<int> extends Enum<int> {
+  const EnumMapCenterOption(int val) : super(val);
+}
+
+const EnumMapCenterOption<int> centerOnCurrentLocation = EnumMapCenterOption<int>(0);
+const EnumMapCenterOption<int> centerOnHomeKennel = EnumMapCenterOption<int>(1);
+

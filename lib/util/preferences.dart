@@ -27,7 +27,7 @@ enum StringPrefsEnum {
   imageRootUrl
 }
 
-enum NumPrefsEnum { latitude, longitude }
+enum NumPrefsEnum { latitude, longitude, homeKennelLat, homeKennelLon }
 
 enum IntPrefsEnum {
   databaseVersion,
@@ -35,6 +35,7 @@ enum IntPrefsEnum {
   lastSuccessfulUserDataSync,
   hasLocationPermissions,
   dbCreated,
+  mapCenterOption,
 }
 
 SharedPreferences _sharedPreferences;

@@ -22,6 +22,7 @@ import 'package:harrier_central/database/query_runs.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
+import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 
 // class MapMarker extends Marker {
 //   MapMarker({@required this.eventId, @required this.eventName, @required this.eventStartDatetime, num width, num height, LatLng point, WidgetBuilder builder}) : super(width: width, height: height, point: point, builder: builder);
@@ -48,23 +49,42 @@ class RunLocationsPageState extends State<RunLocationsPage> {
 
   RunLocationsViewMode viewMode = RunLocationsViewMode.recent;
 
+  int mapCenterOption;
+
+  num homeKennelLat;
+  num homeKennelLon;
+
+
+  final MapController mapController = MapController();
+
   String textDescription = 'Showing recent runs';
 
   @override
   void initState() {
 
-    super.initState();
+    homeKennelLat = getNumPref(NumPrefsEnum.homeKennelLat);
+    homeKennelLon = getNumPref(NumPrefsEnum.homeKennelLon);
+
+    mapCenterOption = getIntPref(IntPrefsEnum.mapCenterOption);
+    if (mapCenterOption == null) {
+      mapCenterOption = centerOnCurrentLocation.value;
+      setIntPref(IntPrefsEnum.mapCenterOption, mapCenterOption);
+    }
+
     loadEvents();
-    loadKennels().then((void dummy){setState(() {
-      
-    });});
+    loadKennels().then((void dummy) {
+      setState(() {
+        
+      });
+    });
+
+    super.initState();
   }
 
   Widget getFab() {
     return SpeedDial(
-        // both default to 16
         marginRight: 18,
-        marginBottom: 30,
+        marginBottom: 10,
         animatedIcon: AnimatedIcons.menu_close,
         animatedIconTheme: const IconThemeData(size: 22.0),
         // this is ignored if animatedIcon is non null
@@ -163,6 +183,43 @@ class RunLocationsPageState extends State<RunLocationsPage> {
               });
             },
           ),
+          SpeedDialChild(
+            child: const Icon(MaterialCommunityIcons.target),
+            backgroundColor: Colors.purple[700],
+            label: 'Change map center',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () {
+              if (mapCenterOption == centerOnCurrentLocation.value) {
+                mapCenterOption = centerOnHomeKennel.value;
+                setIntPref(IntPrefsEnum.mapCenterOption, mapCenterOption);
+                mapController.move(((homeKennelLat != null) && (homeKennelLon != null)) ? LatLng(Utilities.unInt(homeKennelLat),Utilities.unInt(homeKennelLon)) : LatLng(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon)),mapController.zoom);
+                Scaffold.of(context).showSnackBar(SnackBar(
+                  content: Text(
+                    'Map will center on home kennel\r\n\r\n',
+                    style: smallTitleStyle,
+                    textAlign: TextAlign.center,
+                  ),
+                  backgroundColor: Colors.blue[700],
+                  elevation: 200.0,
+                ));
+              } else {
+                mapCenterOption = centerOnCurrentLocation.value;
+                setIntPref(IntPrefsEnum.mapCenterOption, mapCenterOption);
+            mapController.move(LatLng(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon)),mapController.zoom);
+   
+                
+                Scaffold.of(context).showSnackBar(SnackBar(
+                  content: Text(
+                    'Map will center on current location\r\n\r\n',
+                    style: smallTitleStyle,
+                    textAlign: TextAlign.center,
+                  ),
+                  backgroundColor: Colors.blue[700],
+                  elevation: 200.0,
+                ));
+              }
+            },
+          ),
         ]);
   }
 
@@ -217,6 +274,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             INNER JOIN ${kennelsTableHelper.tableName} k on evt.${eventsTableHelper.colKennelId} = k.${kennelsTableHelper.colKennelId}
             LEFT OUTER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemUser)} hem on hem.${hasherEventMapTableHelper.colEventId} = evt.${eventsTableHelper.colEventId} AND hem.${hasherEventMapTableHelper.colUserId} = "$userId"
             WHERE evt.${eventsTableHelper.colIsVisible} = 1
+            ORDER BY evt.${eventsTableHelper.colEventStartDatetime}
           ''';
 
     if ((widget.kennel?.kennelId != null) && (widget.kennel.kennelId.isNotEmpty)) {
@@ -268,7 +326,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
   Future<void> loadKennels() async {
     final Database db = await DBProvider.db.database;
 
-    //final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     String query = ''' 
 
@@ -276,14 +334,16 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             k.${kennelsTableHelper.colKennelLogo} as logo,
             k.${kennelsTableHelper.colKennelShortName} as shortName,
             k.${kennelsTableHelper.colKennelLatitude} as lat,
-            k.${kennelsTableHelper.colKennelLongitude} as lon
+            k.${kennelsTableHelper.colKennelLongitude} as lon,
+            h.${hashersTableHelper.colHomeKennelId} as homeKennelId
             FROM ${kennelsTableHelper.tableName} k 
+            LEFT OUTER JOIN ${hashersTableHelper.tableName} h on k.${kennelsTableHelper.colKennelId} = h.${hashersTableHelper.colHomeKennelId} AND h.${hashersTableHelper.colHasherId} = "$userId"
           ''';
 
     if ((widget.kennel?.kennelId != null) && (widget.kennel.kennelId.isNotEmpty)) {
       query = query +
           '''
-            AND k.${kennelsTableHelper.colKennelId} = "${widget.kennel.kennelId}"''';
+            WHERE k.${kennelsTableHelper.colKennelId} = "${widget.kennel.kennelId}"''';
     }
 
     try {
@@ -294,14 +354,22 @@ class RunLocationsPageState extends State<RunLocationsPage> {
           final num lat = results[i]['lat'];
           final num lon = results[i]['lon'];
 
+          if (results[i]['homeKennelId'] != null) {
+            homeKennelLat = lat;
+            homeKennelLon = lon;
+
+            setNumPref(NumPrefsEnum.homeKennelLat, homeKennelLat);
+            setNumPref(NumPrefsEnum.homeKennelLon, homeKennelLon);
+
+            if ((mapCenterOption == centerOnHomeKennel.value) && (homeKennelLat != null) && (homeKennelLon != null))
+            {
+              mapController.move(LatLng(Utilities.unInt(homeKennelLat), Utilities.unInt(homeKennelLon)), mapController.zoom);
+            }
+          }
+
           if ((lat != null) && (lon != null) && (lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
             final LatLng ll = LatLng(Utilities.unInt(lat), Utilities.unInt(lon));
-            final Marker marker = Marker(
-                width: 120.0,
-                height: 120.0,
-                anchorPos: AnchorPos.exactly(Anchor(60.0, 0.0)),
-                point: ll,
-                builder: (BuildContext ctx) => buildKennelMarker(results[i]['logo'], results[i]['shortName']));
+            final Marker marker = Marker(width: 120.0, height: 120.0, anchorPos: AnchorPos.exactly(Anchor(60.0, 0.0)), point: ll, builder: (BuildContext ctx) => buildKennelMarker(results[i]['logo'], results[i]['shortName']));
 
             kennelMarkers.add(marker);
           }
@@ -413,9 +481,12 @@ class RunLocationsPageState extends State<RunLocationsPage> {
           //decoration: Backgrounds.defaultHcBackground(),
           //height: MediaQuery.of(context).size.height,
           child: FlutterMap(
+            mapController: mapController,
             options: MapOptions(
-              center: (widget.kennel?.kennelLatitude != null) ? LatLng(Utilities.unInt(widget.kennel.kennelLatitude), Utilities.unInt(widget.kennel.kennelLongitude)) : LatLng(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon)),
-              zoom: 15.0,
+              center: (widget.kennel?.kennelLatitude != null)
+                  ? LatLng(Utilities.unInt(widget.kennel.kennelLatitude), Utilities.unInt(widget.kennel.kennelLongitude))
+                  : ((mapCenterOption == centerOnCurrentLocation.value) || (homeKennelLat == null) || (homeKennelLon == null)) ? LatLng(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon)) : LatLng(Utilities.unInt(homeKennelLat), Utilities.unInt(homeKennelLon)),
+              zoom: 10.0,
               plugins: <MarkerClusterPlugin>[
                 MarkerClusterPlugin(),
               ],
@@ -427,8 +498,6 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                       'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
                   //subdomains: ['a', 'b', 'c']),
                   subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
-
-
 
               MarkerClusterLayerOptions(
                 maxClusterRadius: 60,
