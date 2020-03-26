@@ -1,0 +1,78 @@
+# 0.8.150+305
+    Updated the map feature to include improved pin icons, the ability of kennels to select
+    pin a custom pin icon color to make it easier to distinguish between runs from 
+    different kennels in the same location on a map and the ability to center the
+    map on either the user's home kennel or their current location
+# 0.8.148+303
+    Added a feature to display all runs, all past runs or all future runs on a map by kennel (kennel admin) and for end-users
+# 0.8.146+301
+    Replaced how geolocation works in order to achieve significant improvements in performance
+# 0.8.145+300
+    Fixed refresh issues
+    Release to iOS app store and Google Play store
+# 0.8.142+297
+    Added auto checkin for hashers when they arrive at an event
+# 0.8.141+296:
+    Added next runs list to Kennel page with up to 10 runs listed
+# 0.8.140+295:
+    Added the ability for users to specify distance for auto display of runs
+    Fixed a few bugs in loading runs
+    Fixed a problem adding new Hashers using the hamburger menu during manual checkin
+# 0.8.130+285: 
+    Added a payment token support to payment URLs, 
+    Fixed geolocation issue with Android,
+    Added region and subRegion to location for events (for searching)
+    Added search bar to runs list
+# 0.8.128+280: 
+    Fixed bug with filtering for kennels
+# 0.8.127-9+279-81: 
+    Various bug fixes
+# 0.8.125+275 
+    Payment platform support complete - NOTE: This version will force a database reload
+# 0.8.110+260: 
+    +Allow up to 3 payment platforms per kennel, plus bug fixes
+# 0.8.105+255: 
+    UI optimization & fixes, fixed run counts, added Drink! filter for run milestones to check-in page
+# 0.8.104+251: 
+    +Fixes to kennel credit & Member view, major refactor of internal DB
+# 0.8.96+246: 
+    +RSVP from main run screen, Fixes to receipt page
+# 0.8.95+245: 
+    Fixes + Run tags + Pay for extras + Kennel member filter + mismanagement list
+# 0.8.85+233: 
+    Lots of UI fixes, added FB login, proper handling of location svcs
+# 0.8.81+221: 
+    Fix regression in Add New Hasher, added app download pages
+# 0.8.80+220: 
+    First release for pack use, major updates to DB & UI
+# 0.8.75+215: 
+    Major update to app launch and account creation
+# 0.8.66: 
+    Minor bug fixes, added run counts for hashers in to check-in page
+# 0.8.55: 
+    Fixed bug that caused crashes when fields were added to the wire protocol
+# 0.8.50: 
+    Added ability to send run detail emails to kennel members
+# 0.8.43:  
+    Ability for users and admins to set home kennels
+# 0.8.30: 
+    Fixes to bank QR codes, added "Estimated run count" flag
+# 0.8.25: 
+    Added SEPA QR support & better permissions request upon startup
+# 0.8.12: 
+    Re-enabled support for Hash Credit.
+# 0.8.12: 
+    Re-enabled support for Hash Credit. Lots of UI cleanups.
+# 0.8.11: 
+    Improved push notification support. Fixed problem with hares not displaying correctly. Improved Facebook event importing.
+# 0.8.10: 
+    Struggling with Android 64-bit APK files. Reverted back to 32-bit only
+# 0.8.9: 
+    Added push notifications and improved the app update process
+# 0.8.8: 
+    A MAJOR REWORK of the app. Significantly improved the backend data handling, reduced chattiness with the server. Added offline mode and much more. 
+
+
+
+
+
