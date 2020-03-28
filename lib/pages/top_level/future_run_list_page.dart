@@ -263,22 +263,43 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     }
   }
 
-  void filterRuns() {
-    filteredRuns = <RunDetailsAggregate>[];
-    filteredRuns.clear();
-    if (allRuns != null) {
-      // for some strange reason, we sometime get double results in the
-      // list. I'm not sure why this is happening, so I'm clearing the list twice
-      // below to make sure the filtered run list is really empty!
 
-      if (searchController.text.isEmpty) {
-        filteredRuns.addAll(allRuns);
-      } else {
-        filteredRuns = allRuns.where((RunDetailsAggregate a) => a.extensions.searchText.toLowerCase().contains(searchText.toLowerCase())).toList();
+    void filterRuns() {
+    if (allRuns != null) {
+      filteredRuns = <RunDetailsAggregate>[];
+
+      filteredRuns.addAll(allRuns);
+
+      // allow for comma separated search lists
+      if ((searchText != null) && (searchText.isNotEmpty)) {
+        final List<String> searchItems = searchText.trim().toLowerCase().split(',');
+        for (String st in searchItems) {
+          st = ' ' + st.trim().toLowerCase();
+          filteredRuns = filteredRuns.where((RunDetailsAggregate a) => a.extensions.searchText.toLowerCase().contains(st)).toList();
+        }
       }
     }
+
     setState(() {});
   }
+  
+
+  // void filterRuns() {
+  //   filteredRuns = <RunDetailsAggregate>[];
+  //   filteredRuns.clear();
+  //   if (allRuns != null) {
+  //     // for some strange reason, we sometime get double results in the
+  //     // list. I'm not sure why this is happening, so I'm clearing the list twice
+  //     // below to make sure the filtered run list is really empty!
+
+  //     if (searchController.text.isEmpty) {
+  //       filteredRuns.addAll(allRuns);
+  //     } else {
+  //       filteredRuns = allRuns.where((RunDetailsAggregate a) => a.extensions.searchText.toLowerCase().contains(' ' + searchText.toLowerCase())).toList();
+  //     }
+  //   }
+  //   setState(() {});
+  // }
 
   Widget _buildListView() {
     return Container(
@@ -336,10 +357,14 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   ),
                 ];
               },
-              body: RefreshIndicator(
-                onRefresh: () => _refreshFromBackend(clearLocalTables: true),
-                displacement: 40.0,
-                child: ListView.builder(
+              body: 
+              
+              // RefreshIndicator(
+              //   onRefresh: () => _refreshFromBackend(clearLocalTables: true),
+              //   displacement: 40.0,
+              //   child: 
+                
+                ListView.builder(
                   padding: const EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 50),
                   physics: const AlwaysScrollableScrollPhysics(),
                   //padding: const EdgeInsets.only( bottom: 40.0),
@@ -362,7 +387,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                     );
                   },
                 ),
-              ),
+              //),
             ),
     );
   }

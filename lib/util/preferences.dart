@@ -24,7 +24,7 @@ enum StringPrefsEnum {
   customEmailBody,
   iosDownloadLink,
   androidDownloadLink,
-  imageRootUrl
+  imageRootUrl,
 }
 
 enum NumPrefsEnum { latitude, longitude, homeKennelLat, homeKennelLon }
@@ -36,6 +36,8 @@ enum IntPrefsEnum {
   hasLocationPermissions,
   dbCreated,
   mapCenterOption,
+  mapShowSearchBar,
+  mapShowKennels
 }
 
 SharedPreferences _sharedPreferences;

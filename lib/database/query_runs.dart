@@ -18,6 +18,7 @@ class RunDetailsQueryExtensions {
     this.rsvpState,
     this.isPaid,
     this.isHare,
+    this.attendenceState,
     this.isMember,
     this.following,
     this.notificationPreference,
@@ -34,6 +35,7 @@ class RunDetailsQueryExtensions {
   int digitsAfterDecimal;
   String currencySymbol;
   int rsvpState;
+  int attendenceState;
   int isPaid;
   int isHare;
   int isMember;
@@ -45,28 +47,35 @@ class RunDetailsQueryExtensions {
   int userPrefs;
   String searchText;
 
-  static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map, DateTime eventStartDateTime) {
-    
-    // make dates and tiems searchable
+  static String getSearchDateString(DateTime eventStartDateTime)
+  {
     final DateFormat df = DateFormat('EEEE LLLL d y LLL d y h:mm aaa HH:mm', 'en_US');
     String days = '';
 
     final int deltaDays = eventStartDateTime.millisecondsSinceEpoch ~/ (86400 * 1000) - DateTime.now().millisecondsSinceEpoch ~/ (86400 * 1000);
     if (deltaDays < 0) {
       if (deltaDays == 1) {
-        days = '1 day ago';
+        days = ' 1 day ago yesterday ';
       } else {
-        days = '$deltaDays days ago';
+        days = ' ${-deltaDays} days ago ';
       }
     } else if (deltaDays > 0) {
       if (deltaDays == 1) {
-        days = 'in 1 day';
+        days = ' in 1 day tomorrow ';
       } else {
-        days = 'in $deltaDays days';
+        days = ' in $deltaDays days ';
       }
     } else {
-      days = 'is today';
+      days = ' is today ';
     }
+
+    return ' ' + df.format(eventStartDateTime) + ' ' + days;
+  }
+
+  static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map, DateTime eventStartDateTime) {
+    
+    // make dates and tiems searchable
+    
 
     final RunDetailsQueryExtensions item = RunDetailsQueryExtensions(
       daysUntilEvent: map['daysUntilEvent'],
@@ -75,6 +84,7 @@ class RunDetailsQueryExtensions {
       mismanagementRoleFlags: map['mismanagementRoleFlags'],
       following: map['following'],
       rsvpState: map['rsvpState'],
+      attendenceState: map['attendenceState'],
       isPaid: map['isPaid'],
       isHare: map['isHare'],
       isMember: map['isMember'],
@@ -83,7 +93,7 @@ class RunDetailsQueryExtensions {
       distancePreference: map['distancePreference'],
       autoRunDistancePreference: map['autoRunDistancePreference'],
       userPrefs: map['userPrefs'],
-      searchText: map['searchText'] + ' ' + df.format(eventStartDateTime) + ' ' + days,
+      searchText: map['searchText'] + getSearchDateString(eventStartDateTime),
     );
     return item;
   }
@@ -106,11 +116,47 @@ class RunDetailsAggregate {
 enum EnumRunQueryType { topRunsPage, kennelDetailPage, singleRun }
 enum EnumRunQueryContext { user, kennelAdmin, eventAdmin }
 
+
+
 class QueryRuns {
+
+      // it is important to have the beginning and end of the search field have a space
+      // character to ensure that searches run properly.
+
+      static String searchField = '''
+               " " || coalesce(evt.${eventsTableHelper.colEventName},"")
+            || " " || coalesce(k.${kennelsTableHelper.colKennelShortName},"") 
+            || " " || coalesce(k.${kennelsTableHelper.colKennelName},"")   
+            || " " || coalesce(evt.${eventsTableHelper.colEventDescription},"")
+            || " " || coalesce(evt.${eventsTableHelper.colHares},'')
+            || " " || coalesce(evt.${eventsTableHelper.colLocationCity},'')
+            || " " || coalesce(evt.${eventsTableHelper.colLocationCountry},'')
+            || " " || coalesce(evt.${eventsTableHelper.colLocationOneLineDesc},'')
+            || " " || coalesce(evt.${eventsTableHelper.colLocationPostCode},'')
+            || " " || coalesce(evt.${eventsTableHelper.colLocationRegion},'')
+            || " " || coalesce(evt.${eventsTableHelper.colLocationStreet},'')
+            || " " || coalesce(evt.${eventsTableHelper.colLocationSubRegion},'')
+            || " " || case when ${eventsTableHelper.colEventNumber} IS NOT NULL THEN cast(evt.${eventsTableHelper.colEventNumber} as TEXT) END
+            || " " || case 
+              when n.${countriesTableHelper.colContinentCode} = "EU" then "europe" 
+              when n.${countriesTableHelper.colContinentCode} = "AF" then "africa" 
+              when n.${countriesTableHelper.colContinentCode} = "AS" then "asia" 
+              when n.${countriesTableHelper.colContinentCode} = "NA" then "north america" 
+              when n.${countriesTableHelper.colContinentCode} = "SA" then "south america" 
+              when n.${countriesTableHelper.colContinentCode} = "OC" then "oceania" 
+              when n.${countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
+              else "" 
+              end 
+            || " "
+          as searchText
+          ''';
+
   static Future<List<Map<String, dynamic>>> queryRuns(EnumRunQueryType queryType, EnumRunQueryContext queryContext, {String kennelId, bool searchAllRuns = true, String eventId}) async {
     String hkmTable;
     String hemTable;
     String paymentsTable;
+
+
 
     switch (queryContext) {
       case EnumRunQueryContext.user:
@@ -142,6 +188,7 @@ class QueryRuns {
           coalesce(hkm.mismanagementRoleFlags,0) as mismanagementRoleFlags,
           coalesce(hkm.following,0) as following,
           coalesce(hem.rsvpState,0) as rsvpState,
+          coalesce(hem.${hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
           CASE WHEN coalesce(pay.paymentType,0) >= 2 THEN 1 ELSE 0 END as isPaid,
           coalesce(hem.isHare,0) as isHare,
           case when ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime'))) then 1 else 0 end as isMember,
@@ -155,28 +202,7 @@ class QueryRuns {
           CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,n.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference,
           h.preferences & 0x0000001C as autoRunDistancePreference,
           h.preferences as userPrefs,
-            coalesce(evt.${eventsTableHelper.colEventName},"")
-            || " " || coalesce(evt.${eventsTableHelper.colEventDescription},"")
-            || " " || coalesce(evt.${eventsTableHelper.colHares},'')
-            || " " || coalesce(evt.${eventsTableHelper.colLocationCity},'')
-            || " " || coalesce(evt.${eventsTableHelper.colLocationCountry},'')
-            || " " || coalesce(evt.${eventsTableHelper.colLocationOneLineDesc},'')
-            || " " || coalesce(evt.${eventsTableHelper.colLocationPostCode},'')
-            || " " || coalesce(evt.${eventsTableHelper.colLocationRegion},'')
-            || " " || coalesce(evt.${eventsTableHelper.colLocationStreet},'')
-            || " " || coalesce(evt.${eventsTableHelper.colLocationSubRegion},'')
-            || " " || case when ${eventsTableHelper.colEventNumber} IS NOT NULL THEN cast(evt.${eventsTableHelper.colEventNumber} as TEXT) END
-            || case 
-              when n.${countriesTableHelper.colContinentCode} = "EU" then "europe" 
-              when n.${countriesTableHelper.colContinentCode} = "AF" then "africa" 
-              when n.${countriesTableHelper.colContinentCode} = "AS" then "asia" 
-              when n.${countriesTableHelper.colContinentCode} = "NA" then "north america" 
-              when n.${countriesTableHelper.colContinentCode} = "SA" then "south america" 
-              when n.${countriesTableHelper.colContinentCode} = "OC" then "oceania" 
-              when n.${countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
-              else "" 
-              end
-          as searchText
+          $searchField
         
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
