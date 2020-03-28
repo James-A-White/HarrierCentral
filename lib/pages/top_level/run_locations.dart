@@ -232,7 +232,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
       final num dist = await locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(results[0]['narrowEventLatitude']), Utilities.unInt(results[0]['narrowEventLongitude']));
       final EventModel eventItem = eventsTableHelper.fromMap(results[0]);
       final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[0]);
-      final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[0]);
+      final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[0],eventItem.eventStartDatetime);
       extensionsItem.distToEvent = dist;
 
       String paymentLinkUrl = '';

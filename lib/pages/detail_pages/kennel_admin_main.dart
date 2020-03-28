@@ -134,7 +134,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(results[i]['narrowEventLatitude']), Utilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
             final EventModel eventItem = eventsTableHelper.fromMap(results[i]);
             final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
-            final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i]);
+            final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i],eventItem.eventStartDatetime);
             extensionsItem.distToEvent = dist;
 
             String paymentLinkUrl = '';

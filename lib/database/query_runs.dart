@@ -1,4 +1,5 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:intl/intl.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/globals.dart';
@@ -44,7 +45,29 @@ class RunDetailsQueryExtensions {
   int userPrefs;
   String searchText;
 
-  static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map) {
+  static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map, DateTime eventStartDateTime) {
+    
+    // make dates and tiems searchable
+    final DateFormat df = DateFormat('EEEE LLLL d y LLL d y h:mm aaa HH:mm', 'en_US');
+    String days = '';
+
+    final int deltaDays = eventStartDateTime.millisecondsSinceEpoch ~/ (86400 * 1000) - DateTime.now().millisecondsSinceEpoch ~/ (86400 * 1000);
+    if (deltaDays < 0) {
+      if (deltaDays == 1) {
+        days = '1 day ago';
+      } else {
+        days = '$deltaDays days ago';
+      }
+    } else if (deltaDays > 0) {
+      if (deltaDays == 1) {
+        days = 'in 1 day';
+      } else {
+        days = 'in $deltaDays days';
+      }
+    } else {
+      days = 'is today';
+    }
+
     final RunDetailsQueryExtensions item = RunDetailsQueryExtensions(
       daysUntilEvent: map['daysUntilEvent'],
       digitsAfterDecimal: map['digitsAfterDecimal'],
@@ -60,7 +83,7 @@ class RunDetailsQueryExtensions {
       distancePreference: map['distancePreference'],
       autoRunDistancePreference: map['autoRunDistancePreference'],
       userPrefs: map['userPrefs'],
-      searchText: map['searchText'],
+      searchText: map['searchText'] + ' ' + df.format(eventStartDateTime) + ' ' + days,
     );
     return item;
   }
