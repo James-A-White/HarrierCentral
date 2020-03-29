@@ -23,7 +23,7 @@ import 'package:harrier_central/pages/kennel_admin/filter_events_page.dart';
 import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
 import 'package:harrier_central/pages/top_level/run_locations.dart';
 import 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
-import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
+import 'package:harrier_central/database/query_kennels.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/styles.dart';
@@ -134,7 +134,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(results[i]['narrowEventLatitude']), Utilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
             final EventModel eventItem = eventsTableHelper.fromMap(results[i]);
             final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
-            final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i],eventItem.eventStartDatetime);
+            final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);
             extensionsItem.distToEvent = dist;
 
             String paymentLinkUrl = '';

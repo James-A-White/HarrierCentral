@@ -7,7 +7,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
+import 'package:harrier_central/database/query_kennels.dart';
 import 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
 import 'package:harrier_central/widgets/kennel_member_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
@@ -341,7 +341,10 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                   MaterialPageRoute<Map<String, dynamic>>(
                     settings: const RouteSettings(),
                     builder: (BuildContext context) {
-                      return FindHasherPage(FindHasherPageType.addMember, kennelId: widget.kennel.kennel.kennelId,);
+                      return FindHasherPage(
+                        FindHasherPageType.addMember,
+                        kennelId: widget.kennel.kennel.kennelId,
+                      );
                     },
                   ),
                 ).then((Map<String, dynamic> result) {
@@ -703,7 +706,6 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   }
 
   Future<List<KennelMembersResults>> _getAllHashers() async {
-
     final List<KennelMembersResults> hasherList = <KennelMembersResults>[];
     final Database db = await DBProvider.db.database;
     try {

@@ -22,7 +22,9 @@ import 'package:harrier_central/database/query_runs.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
-import 'package:harrier_central/widgets/circular_progress_indicator.dart';
+import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
+import 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
+import 'package:harrier_central/database/query_kennels.dart';
 
 // class MapMarker extends Marker {
 //   MapMarker({@required this.eventId, @required this.eventName, @required this.eventStartDatetime, num width, num height, LatLng point, WidgetBuilder builder}) : super(width: width, height: height, point: point, builder: builder);
@@ -435,6 +437,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     String query = ''' 
 
           SELECT 
+            k.${kennelsTableHelper.colKennelId} as kennelId,
             k.${kennelsTableHelper.colKennelLogo} as logo,
             k.${kennelsTableHelper.colKennelShortName} as shortName,
             k.${kennelsTableHelper.colKennelLatitude} as lat,
@@ -472,7 +475,16 @@ class RunLocationsPageState extends State<RunLocationsPage> {
 
           if ((lat != null) && (lon != null) && (lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
             final LatLng ll = LatLng(Utilities.unInt(lat), Utilities.unInt(lon));
-            final Marker marker = Marker(width: 120.0, height: 120.0, anchorPos: AnchorPos.exactly(Anchor(60.0, 0.0)), point: ll, builder: (BuildContext ctx) => buildKennelMarker(results[i]['logo'], results[i]['shortName']));
+            final Marker marker = Marker(
+                width: 120.0,
+                height: 120.0,
+                anchorPos: AnchorPos.exactly(Anchor(60.0, 0.0)),
+                point: ll,
+                builder: (BuildContext ctx) => buildKennelMarker(
+                      results[i]['logo'],
+                      results[i]['shortName'],
+                      results[i]['kennelId'],
+                    ));
 
             kennelMarkers.add(marker);
           }
@@ -511,12 +523,34 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     );
   }
 
-  Widget buildKennelMarker(
-    String kennelLogo,
-    String kennelShortName,
-  ) {
+  Widget buildKennelMarker(String kennelLogo, String kennelShortName, String kennelId) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () async {
+        final Geolocator locator = Geolocator();
+
+        final String hasherId = getStringPref(StringPrefsEnum.userId);
+        final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user, hasherId: hasherId, kennelId: kennelId);
+
+        if (results.isNotEmpty) {
+          final num dist = await locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(results[0]['cityLat']), Utilities.unInt(results[0]['cityLon']));
+
+          final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[0]);
+          final HasherKennelMapModel hkmItem = hasherKennelMapTableHelper.fromMap(results[0]);
+          final KennelListQueryExtenstions extensionsItem = KennelListQueryExtenstions.fromMap(results[0]);
+          extensionsItem.distToKennel = dist;
+          extensionsItem.followingRequested = -1;
+          extensionsItem.notificationsRequested = -1;
+          extensionsItem.emailAlertRequested = -1;
+
+          final KennelListAggregate kennel = KennelListAggregate(kennel: kennelItem, extensions: extensionsItem, hkm: hkmItem);
+
+          Navigator.of(context).push<dynamic>(
+            MaterialPageRoute<dynamic>(
+              builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
+            ),
+          );
+        }
+      },
       child: Container(
         //padding: const EdgeInsets.only(bottom: 58.0),
         //color: Colors.red,
@@ -537,7 +571,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
   }
 
   static int heroCounter = 0;
-  static List<String> colors = ['red', 'orange', 'yellow', 'green', 'teal', 'baby_blue', 'blue', 'purple', 'pink'];
+  static List<String> colors = <String>['red', 'orange', 'yellow', 'green', 'teal', 'baby_blue', 'blue', 'purple', 'pink'];
 
   String getPin(DateTime eventStartDatetime, int rsvpState, int attendenceState, int isHare, int kennelPinColor, int eventScope) {
     String pinFileName = 'images/map_pins/pin_${colors[kennelPinColor]}_no_rsvp.png';
@@ -545,8 +579,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     if (eventStartDatetime.isAfter(DateTime.now())) {
       // run is in the future
       String isEvent = '';
-      if ((eventScope ?? 0) != 0)
-      {
+      if ((eventScope ?? 0) != 0) {
         isEvent = '_event';
       }
       if ((attendenceState >= attendenceAtHash.value) || (rsvpState >= rsvpYes.value)) {

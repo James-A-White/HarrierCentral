@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
@@ -9,6 +8,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/database/query_kennels.dart';
 
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
@@ -21,53 +21,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
 
-class KennelListQueryExtenstions {
-  KennelListQueryExtenstions({this.location, this.distToKennel, this.nextRunDate, this.lastRunDate, this.digitsAfterDecimal, this.currencySymbol, this.isHomeKennel, this.distancePreference, this.cityLat, this.cityLon, this.nameForSearch});
 
-  final String location;
-  num distToKennel;
-  final String nextRunDate;
-  final String lastRunDate;
-  final int digitsAfterDecimal;
-  final String currencySymbol;
-  int isHomeKennel;
-  int distancePreference;
-  num cityLat;
-  num cityLon;
-  final String nameForSearch;
-
-  int followingRequested;
-  int notificationsRequested;
-  int emailAlertRequested;
-
-  static KennelListQueryExtenstions fromMap(Map<String, dynamic> map) {
-    final KennelListQueryExtenstions item = KennelListQueryExtenstions(
-        location: map['location'],
-        distToKennel: map['distToKennel'],
-        nextRunDate: map['nextRunDate'],
-        lastRunDate: map['lastRunDate'],
-        digitsAfterDecimal: map['digitsAfterDecimal'],
-        currencySymbol: map['currencySymbol'],
-        isHomeKennel: map['isHomeKennel'],
-        distancePreference: map['distancePreference'],
-        cityLat: map['cityLat'],
-        cityLon: map['cityLon'],
-        nameForSearch: map['nameForSearch']);
-    return item;
-  }
-}
-
-class KennelListAggregate {
-  KennelListAggregate({
-    this.kennel,
-    this.hkm,
-    this.extensions,
-  });
-
-  final KennelsModel kennel;
-  final HasherKennelMapModel hkm;
-  final KennelListQueryExtenstions extensions;
-}
 
 class KennelsListPage extends StatefulWidget {
   const KennelsListPage({Key key}) : super(key: key);
@@ -173,48 +127,9 @@ class KennelsListPageState extends State<KennelsListPage> {
 
       final String hasherId = getStringPref(StringPrefsEnum.userId);
 
-      DBProvider.db.database.then((Database db) {
-        final String query = ''' 
-      
-        SELECT  
-          k.*, 
-          hkm.hkmId, 
-          hkm.kennelNotificationPreference,
-          hkm.kennelEmailAlertPreference,
-          COALESCE(hkm.following,0) as following,
-          COALESCE(hkm.mismanagementRoleFlags,0) as mismanagementRoleFlags,
-          c.cityName || ', ' || CASE WHEN n.showRegion = 1 THEN r.regionName || ', ' ELSE '' END || n.countryName as location,
-          (SELECT min(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime >= datetime('now','localtime') ) as nextRunDate,
-          (SELECT max(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime <= datetime('now','localtime') ) as lastRunDate,
-          n.digitsAfterDecimal,
-          n.currencySymbol,
-          coalesce(k.${kennelsTableHelper.colKennelLatitude},c.${citiesTableHelper.colLatitude},$DEFAULT_LATITUDE) as cityLat,
-          coalesce(k.${kennelsTableHelper.colKennelLongitude},c.${citiesTableHelper.colLongitude},$DEFAULT_LONGITUDE) as cityLon,
-          CASE WHEN ((h.homeKennelId IS NOT NULL) AND (h.homeKennelId = k.kennelId)) then 1 else 0 end as isHomeKennel,
-          CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,n.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference,
-          lower(k.${kennelsTableHelper.colKennelName} || " " || k.${kennelsTableHelper.colKennelShortName} || " " || c.${citiesTableHelper.colCityName} || " " || r.${regionsTableHelper.colRegionName} || " " || n.${countriesTableHelper.colCountryName} || " " 
-            || case 
-              when n.${countriesTableHelper.colContinentCode} = "EU" then "europe" 
-              when n.${countriesTableHelper.colContinentCode} = "AF" then "africa" 
-              when n.${countriesTableHelper.colContinentCode} = "AS" then "asia" 
-              when n.${countriesTableHelper.colContinentCode} = "NA" then "north america" 
-              when n.${countriesTableHelper.colContinentCode} = "SA" then "south america" 
-              when n.${countriesTableHelper.colContinentCode} = "OC" then "oceania" 
-              when n.${countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
-              else "" 
-              end
-            ) as nameForSearch
-          FROM ${kennelsTableHelper.tableName} k
-          INNER JOIN ${citiesTableHelper.tableName} c on c.cityId = k.cityId
-          INNER JOIN ${regionsTableHelper.tableName} r on r.regionId = k.regionId
-          INNER JOIN ${countriesTableHelper.tableName} n on n.countryId = k.countryId
-          INNER JOIN ${hashersTableHelper.tableName} h on h.hasherId = "$hasherId"
-          LEFT OUTER JOIN ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} hkm on hkm.kennelId = k.kennelId and hkm.${hasherKennelMapTableHelper.colUserId} = "$hasherId"
-          ''';
-
         globalKennelMainPageList = <KennelListAggregate>[];
         try {
-          db.rawQuery(query).then((List<Map<String, dynamic>> results) {
+          QueryKennels.queryKennels(EnumKennelQueryType.topKennelPage, EnumKennelQueryContext.user, hasherId:hasherId).then((List<Map<String, dynamic>> results) {
             for (int i = 0; i < results.length; i++) {
               locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(results[i]['cityLat']), Utilities.unInt(results[i]['cityLon'])).then((num dist) {
                 final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
@@ -247,7 +162,7 @@ class KennelsListPageState extends State<KennelsListPage> {
         } catch (e) {
           print(e);
         }
-      });
+      
     } else {
       // if the global list is already loaded,
       // go ahead and call filterResults to make sure that the
@@ -263,7 +178,7 @@ class KennelsListPageState extends State<KennelsListPage> {
         filteredList = <KennelListAggregate>[];
         filteredList.addAll(globalKennelMainPageList);
       } else {
-        filteredList = globalKennelMainPageList.where((KennelListAggregate a) => a.extensions.nameForSearch.toLowerCase().contains(searchText.toLowerCase())).toList();
+        filteredList = QueryKennels.doFilter(searchText, globalKennelMainPageList);
       }
     }
   }

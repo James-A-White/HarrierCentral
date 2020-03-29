@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
+import 'package:harrier_central/database/query_kennels.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
@@ -233,7 +233,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
       decoration: Backgrounds.defaultHcBackgroundLight(),
       padding: const EdgeInsets.only(top: 0.0),
       child: events.isEmpty
-          ? Center(child: Text('No events found', style: headingStyleBlack)) 
+          ? Center(child: Text('No events found', style: headingStyleBlack))
           : RefreshIndicator(
               onRefresh: () => _handleRefresh(),
               displacement: 130.0,

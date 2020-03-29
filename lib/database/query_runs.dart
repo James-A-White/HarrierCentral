@@ -190,13 +190,12 @@ class QueryRuns {
           as searchText
           ''';
 
-
-            //   this.addOption("0", "<none>");
-            // this.addOption("1", "Local");
-            // this.addOption("2", "Regional");
-            // this.addOption("3", "National");
-            // this.addOption("4", "Continental");
-            // this.addOption("5", "Worldwide");
+  //   this.addOption("0", "<none>");
+  // this.addOption("1", "Local");
+  // this.addOption("2", "Regional");
+  // this.addOption("3", "National");
+  // this.addOption("4", "Continental");
+  // this.addOption("5", "Worldwide");
 
   static List<RunDetailsAggregate> doFilter(String searchText, List<RunDetailsAggregate> allRuns) {
     List<RunDetailsAggregate> filteredRuns = <RunDetailsAggregate>[];

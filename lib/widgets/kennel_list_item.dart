@@ -11,7 +11,7 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
-import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
+import 'package:harrier_central/database/query_kennels.dart';
 import 'package:harrier_central/notifications/notification_support.dart';
 
 class KennelsListItem extends StatefulWidget {
@@ -192,16 +192,10 @@ class KennelListItemState extends State<KennelsListItem> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   Container(width: 5.0, height: 85.0),
-                  KennelLogo(
-                    kennelLogoUrl: widget.kennelItem.kennel.kennelLogo,
-                    kennelShortName: widget.kennelItem.kennel.kennelShortName,
-                    logoHeight: 70.0,
-                    leftPadding: 0.0,
-                    rightPadding: 10.0
-                  ),
+                  KennelLogo(kennelLogoUrl: widget.kennelItem.kennel.kennelLogo, kennelShortName: widget.kennelItem.kennel.kennelShortName, logoHeight: 70.0, leftPadding: 0.0, rightPadding: 10.0),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom:10.0),
+                      padding: const EdgeInsets.only(bottom: 10.0),
                       child: Column(
                         //mainAxisSize: MainAxisSize.max,
                         //mainAxisAlignment: MainAxisAlignment.center,
@@ -218,13 +212,10 @@ class KennelListItemState extends State<KennelsListItem> {
                                   style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                                 )
                               : Container(),
-
                         ],
                       ),
                     ),
                   ),
-
-                  
                   IconButton(
                     icon: Utilities.styleForConnected(const Icon(MaterialCommunityIcons.dots_vertical)),
                     iconSize: Theme.of(context).iconTheme.size,
@@ -267,10 +258,10 @@ class KennelListItemState extends State<KennelsListItem> {
                         ];
 
                         final MultipleChoicePopup popup = MultipleChoicePopup(
-                            title: 'Follow ${widget.kennelItem.kennel.kennelName}',
-                            buttons: buttons,
-                            cancelButtonTitle: 'Cancel',
-                            );
+                          title: 'Follow ${widget.kennelItem.kennel.kennelName}',
+                          buttons: buttons,
+                          cancelButtonTitle: 'Cancel',
+                        );
 
                         showDialog<dynamic>(
                             context: context,
@@ -278,27 +269,25 @@ class KennelListItemState extends State<KennelsListItem> {
                             builder: (BuildContext context) {
                               return popup;
                             }).then((dynamic retVal) {
-                              if (retVal.value != -1) {
-                                final HasherKennelMapService srv = HasherKennelMapService();
-                                widget.kennelItem.extensions.followingRequested = retVal.value;
-                                setState(() {});
-                                int isHomeKennel = -1;
-                                if (retVal == followTypeToggleHomeKennel) {
-                                  isHomeKennel = widget.kennelItem.extensions.isHomeKennel == 0 ? 1 : 0;
-                                }
+                          if (retVal.value != -1) {
+                            final HasherKennelMapService srv = HasherKennelMapService();
+                            widget.kennelItem.extensions.followingRequested = retVal.value;
+                            setState(() {});
+                            int isHomeKennel = -1;
+                            if (retVal == followTypeToggleHomeKennel) {
+                              isHomeKennel = widget.kennelItem.extensions.isHomeKennel == 0 ? 1 : 0;
+                            }
 
-                                srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, TableType.hkmUser, followingState: retVal.value, isHomeKennel: isHomeKennel).then((List<dynamic> queryResults) {
-                                  setState(() {
-                                    widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
-                                  });
-                                });
-                              }
+                            srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, TableType.hkmUser, followingState: retVal.value, isHomeKennel: isHomeKennel).then((List<dynamic> queryResults) {
+                              setState(() {
+                                widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+                              });
                             });
+                          }
+                        });
                       }
                     },
                   ),
-             
-             
                 ],
               )),
         ],
@@ -350,10 +339,10 @@ class KennelListItemState extends State<KennelsListItem> {
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
-        title: 'Notification options for this Kennel',
-        buttons: buttons,
-        cancelButtonTitle: 'Cancel',
-         );
+      title: 'Notification options for this Kennel',
+      buttons: buttons,
+      cancelButtonTitle: 'Cancel',
+    );
 
     showDialog<dynamic>(
         context: context,
@@ -361,24 +350,24 @@ class KennelListItemState extends State<KennelsListItem> {
         builder: (BuildContext context) {
           return popup;
         }).then((dynamic retVal) {
-          if ((retVal == notificationsOn) || (retVal == notificationsOff)) {
-            {
-              if (Utilities.checkForConnection(context, message: 'Setting Kennel notifications is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
-                final HasherKennelMapService srv = HasherKennelMapService();
-                final int notificationStatus = retVal.value;
-                widget.kennelItem.extensions.notificationsRequested = notificationStatus;
-                setState(() {});
-                srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, TableType.hkmUser, notificationState: notificationStatus).then((List<dynamic> queryResults) {
-                  setState(() {
-                    widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
-                    final NotificationSupport notifications = NotificationSupport();
-                    notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
-                  });
-                });
-              }
-            }
+      if ((retVal == notificationsOn) || (retVal == notificationsOff)) {
+        {
+          if (Utilities.checkForConnection(context, message: 'Setting Kennel notifications is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
+            final HasherKennelMapService srv = HasherKennelMapService();
+            final int notificationStatus = retVal.value;
+            widget.kennelItem.extensions.notificationsRequested = notificationStatus;
+            setState(() {});
+            srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, TableType.hkmUser, notificationState: notificationStatus).then((List<dynamic> queryResults) {
+              setState(() {
+                widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+                final NotificationSupport notifications = NotificationSupport();
+                notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
+              });
+            });
           }
-        });
+        }
+      }
+    });
   }
 
   void showEmailPopup(BuildContext context) {
@@ -425,10 +414,10 @@ class KennelListItemState extends State<KennelsListItem> {
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
-        title: 'Email options for this Kennel',
-        buttons: buttons,
-        cancelButtonTitle: 'Cancel',
-         );
+      title: 'Email options for this Kennel',
+      buttons: buttons,
+      cancelButtonTitle: 'Cancel',
+    );
 
     showDialog<dynamic>(
         context: context,
@@ -436,21 +425,21 @@ class KennelListItemState extends State<KennelsListItem> {
         builder: (BuildContext context) {
           return popup;
         }).then((dynamic retVal) {
-          if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff)) {
-            if (Utilities.checkForConnection(context, message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
-              final HasherKennelMapService srv = HasherKennelMapService();
-              final int emailAlertStatus = retVal.value;
-              widget.kennelItem.extensions.emailAlertRequested = emailAlertStatus;
-              setState(() {});
-              srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, TableType.hkmUser, emailAlertState: emailAlertStatus).then((List<dynamic> queryResults) {
-                setState(() {
-                  widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
-                  // final NotificationSupport notifications = NotificationSupport();
-                  // notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
-                });
-              });
-            }
-          }
-        });
+      if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff)) {
+        if (Utilities.checkForConnection(context, message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
+          final HasherKennelMapService srv = HasherKennelMapService();
+          final int emailAlertStatus = retVal.value;
+          widget.kennelItem.extensions.emailAlertRequested = emailAlertStatus;
+          setState(() {});
+          srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, TableType.hkmUser, emailAlertState: emailAlertStatus).then((List<dynamic> queryResults) {
+            setState(() {
+              widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+              // final NotificationSupport notifications = NotificationSupport();
+              // notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
+            });
+          });
+        }
+      }
+    });
   }
 }

@@ -2,20 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:flutter_swiper/flutter_swiper.dart';
-import 'package:flutter_page_indicator/flutter_page_indicator.dart';
-import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/database/common_queries.dart';
 import 'package:harrier_central/pages/top_level/run_locations.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/confirm_auto_checkin_popup.dart';
-//import 'package:permission_handler/permission_handler.dart';
 
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 import 'package:location_permissions/location_permissions.dart';
-//import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/database/migrations.dart';
@@ -29,9 +25,7 @@ import 'package:harrier_central/pages/top_level/history_list_page.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
-//import 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
-//import 'package:harrier_central/pages/history_sub_pages/add_user_run_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);
