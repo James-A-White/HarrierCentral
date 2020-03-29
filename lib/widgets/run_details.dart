@@ -232,6 +232,38 @@ class RunDetails extends StatelessWidget {
                     ],
                   ),
                 ),
+                ((event.eventGeographicScope ?? 0) == 0)
+                    ? Container()
+                    : Container(
+                        //height: spaceBetweenRows,
+                        child: Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                'Event:',
+                                style: listLabelStyle,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              flex: flexLeft,
+                            ),
+                            const SizedBox(
+                              height: spaceBetweenRows,
+                              width: spaceBetweenColumns,
+                            ),
+                            Expanded(
+                                child: Text(
+                                  getEventText(event),
+                                  style: listValueStyle,
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                flex: flexRight),
+                          ],
+                        ),
+                      ),
                 Container(
                   //height: spaceBetweenRows,
                   child: Row(
@@ -682,5 +714,27 @@ class RunDetails extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String getEventText(EventModel event) {
+    String result = '';
+    switch (event.eventGeographicScope) {
+      case 1:
+        result = 'Local event';
+        break;
+      case 2:
+        result = 'Regional event';
+        break;
+      case 3:
+        result = 'Nash hash';
+        break;
+      case 4:
+        result = 'Inter hash';
+        break;
+      case 5:
+        result = 'World interhash / global event';
+        break;
+    }
+    return result;
   }
 }

@@ -47,21 +47,22 @@ class RunDetailsQueryExtensions {
   int userPrefs;
   String searchText;
 
-  static String getSearchDateString(DateTime eventStartDateTime)
-  {
-    final DateFormat df = DateFormat('EEEE LLLL d y LLL d y h:mm aaa HH:mm', 'en_US');
+  static String getSearchDateString(DateTime eventStartDateTime) {
+    final DateFormat df = DateFormat("' is' y ' is' EEEE ' is' LLLL d y ' is' LLL d y h:mm aaa HH:mm", 'en_US');
     String days = '';
+    String weekend = '';
+    String thisDay = '';
 
     final int deltaDays = eventStartDateTime.millisecondsSinceEpoch ~/ (86400 * 1000) - DateTime.now().millisecondsSinceEpoch ~/ (86400 * 1000);
     if (deltaDays < 0) {
       if (deltaDays == 1) {
-        days = ' 1 day ago yesterday ';
+        days = ' 1 day ago is yesterday ';
       } else {
         days = ' ${-deltaDays} days ago ';
       }
     } else if (deltaDays > 0) {
       if (deltaDays == 1) {
-        days = ' in 1 day tomorrow ';
+        days = ' in 1 day is tomorrow ';
       } else {
         days = ' in $deltaDays days ';
       }
@@ -69,13 +70,44 @@ class RunDetailsQueryExtensions {
       days = ' is today ';
     }
 
-    return ' ' + df.format(eventStartDateTime) + ' ' + days;
+    if ((deltaDays > 0) && (deltaDays < 7)) {
+      switch (eventStartDateTime.weekday) {
+        case DateTime.monday:
+          thisDay = ' this Monday ';
+          break;
+        case DateTime.tuesday:
+          thisDay = ' this Tuesday ';
+          break;
+        case DateTime.wednesday:
+          thisDay = ' this Wednesday ';
+          break;
+        case DateTime.thursday:
+          thisDay = ' this Thursday ';
+          break;
+        case DateTime.friday:
+          thisDay = ' this Friday ';
+          break;
+        case DateTime.saturday:
+          thisDay = ' this Saturday ';
+          break;
+        case DateTime.sunday:
+          thisDay = ' this Sunday ';
+          break;
+      }
+    }
+
+    if ((eventStartDateTime.weekday == DateTime.sunday) || (eventStartDateTime.weekday == DateTime.saturday)) {
+      weekend = ' is weekend ';
+    }
+
+    final String test = ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
+    print(test);
+
+    return ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
   }
 
   static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map, DateTime eventStartDateTime) {
-    
     // make dates and tiems searchable
-    
 
     final RunDetailsQueryExtensions item = RunDetailsQueryExtensions(
       daysUntilEvent: map['daysUntilEvent'],
@@ -116,17 +148,14 @@ class RunDetailsAggregate {
 enum EnumRunQueryType { topRunsPage, kennelDetailPage, singleRun }
 enum EnumRunQueryContext { user, kennelAdmin, eventAdmin }
 
-
-
 class QueryRuns {
+  // it is important to have the beginning and end of the search field have a space
+  // character to ensure that searches run properly.
 
-      // it is important to have the beginning and end of the search field have a space
-      // character to ensure that searches run properly.
-
-      static String searchField = '''
+  static String searchField = '''
                " " || coalesce(evt.${eventsTableHelper.colEventName},"")
-            || " " || coalesce(k.${kennelsTableHelper.colKennelShortName},"") 
-            || " " || coalesce(k.${kennelsTableHelper.colKennelName},"")   
+            || " is " || coalesce(k.${kennelsTableHelper.colKennelShortName},"") 
+            || " is " || coalesce(k.${kennelsTableHelper.colKennelName},"")   
             || " " || coalesce(evt.${eventsTableHelper.colEventDescription},"")
             || " " || coalesce(evt.${eventsTableHelper.colHares},'')
             || " " || coalesce(evt.${eventsTableHelper.colLocationCity},'')
@@ -136,8 +165,18 @@ class QueryRuns {
             || " " || coalesce(evt.${eventsTableHelper.colLocationRegion},'')
             || " " || coalesce(evt.${eventsTableHelper.colLocationStreet},'')
             || " " || coalesce(evt.${eventsTableHelper.colLocationSubRegion},'')
-            || " " || case when ${eventsTableHelper.colEventNumber} IS NOT NULL THEN cast(evt.${eventsTableHelper.colEventNumber} as TEXT) END
-            || " " || case 
+            || " " || case when evt.${eventsTableHelper.colEventNumber} IS NOT NULL THEN cast(evt.${eventsTableHelper.colEventNumber} as TEXT) END
+            || " " || 
+              case 
+              when evt.${eventsTableHelper.colEventGeographicScope} = 1 THEN "is event is local" 
+              when evt.${eventsTableHelper.colEventGeographicScope} = 2 THEN "is event is regional" 
+              when evt.${eventsTableHelper.colEventGeographicScope} = 3 THEN "is event is national is nash hash" 
+              when evt.${eventsTableHelper.colEventGeographicScope} = 4 THEN "is event is continental is interhash" 
+              when evt.${eventsTableHelper.colEventGeographicScope} = 5 THEN "is event is global is world interhash" 
+              else "" 
+              end 
+            || " " || 
+              case 
               when n.${countriesTableHelper.colContinentCode} = "EU" then "europe" 
               when n.${countriesTableHelper.colContinentCode} = "AF" then "africa" 
               when n.${countriesTableHelper.colContinentCode} = "AS" then "asia" 
@@ -151,12 +190,57 @@ class QueryRuns {
           as searchText
           ''';
 
+
+            //   this.addOption("0", "<none>");
+            // this.addOption("1", "Local");
+            // this.addOption("2", "Regional");
+            // this.addOption("3", "National");
+            // this.addOption("4", "Continental");
+            // this.addOption("5", "Worldwide");
+
+  static List<RunDetailsAggregate> doFilter(String searchText, List<RunDetailsAggregate> allRuns) {
+    List<RunDetailsAggregate> filteredRuns = <RunDetailsAggregate>[];
+    if (allRuns != null) {
+      filteredRuns.addAll(allRuns);
+
+      // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
+      if ((searchText != null) && (searchText.isNotEmpty)) {
+        final List<String> searchItems = searchText.trim().toLowerCase().split(',');
+        for (String st in searchItems) {
+          if (st.trim().isEmpty) {
+            continue;
+          }
+          bool negate = false;
+          if (st.trim().toLowerCase().startsWith('not ')) {
+            negate = true;
+            st = st.substring(4);
+          }
+          final List<String> orItems = st.split('+');
+
+          //print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
+
+          filteredRuns = filteredRuns.where((RunDetailsAggregate a) {
+            for (String orItem in orItems) {
+              if (orItem.trim().isEmpty) {
+                continue;
+              }
+              orItem = ' ' + orItem.trim().toLowerCase();
+              if (a.extensions.searchText.toLowerCase().contains(orItem)) {
+                return !negate;
+              }
+            }
+            return negate;
+          }).toList();
+        }
+      }
+    }
+    return filteredRuns;
+  }
+
   static Future<List<Map<String, dynamic>>> queryRuns(EnumRunQueryType queryType, EnumRunQueryContext queryContext, {String kennelId, bool searchAllRuns = true, String eventId}) async {
     String hkmTable;
     String hemTable;
     String paymentsTable;
-
-
 
     switch (queryContext) {
       case EnumRunQueryContext.user:

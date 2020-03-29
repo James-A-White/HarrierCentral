@@ -80,7 +80,7 @@ class MigrationsTableHelper {
     if (currentDbVersion == upgradedDbVersion) {
       return true;
     }
-    
+
     bool migrationsSuccessful = true;
 
     try {
@@ -94,21 +94,19 @@ class MigrationsTableHelper {
 
         int line = 1;
 
-        for(String statement in statements)
-        {
-            statement = statement.trim();
-            if (statement.isEmpty) 
-            {
-              continue;
-            }
+        for (String statement in statements) {
+          statement = statement.trim();
+          if (statement.isEmpty) {
+            continue;
+          }
 
-            statement = statement + ';';
+          statement = statement + ';';
 
-            print('Migration #: ${mm.migrationNumber.toString()}, statement #$line');
-            print('Migration sql: $statement');
-            await db.execute(statement);
-            print('Migration ${mm.migrationNumber.toString()}, statement #$line succeeded');
-            line++;
+          print('Migration #: ${mm.migrationNumber.toString()}, statement #$line');
+          print('Migration sql: $statement');
+          await db.execute(statement);
+          print('Migration ${mm.migrationNumber.toString()}, statement #$line succeeded');
+          line++;
         }
       }
     } catch (e) {
@@ -125,15 +123,14 @@ class MigrationsTableHelper {
   ///
   ///
 
-  static int dbVersion = 253;
+  static int dbVersion = 254;
 
   static List<MigrationsModel> migrationList = <MigrationsModel>[
-
     // MIGRATION 221
     MigrationsModel(migrationNumber: 221, migrationText: '''
             ALTER TABLE ${hashersTableHelper.tableName} ADD COLUMN ${hashersTableHelper.colHomeKennelId} TEXT;
          '''),
-      
+
     // MIGRATION 222
     MigrationsModel(migrationNumber: 222, migrationText: '''
             ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} ADD COLUMN ${hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
@@ -146,7 +143,6 @@ class MigrationsTableHelper {
             ALTER TABLE ${hasherEventMapTableHelper.getTableName(TableType.hemUser)} ADD COLUMN ${hasherEventMapTableHelper.colEventEmailAlertPreference} INT;
             ALTER TABLE ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
          '''),
-
 
     // MIGRATION 224
     MigrationsModel(migrationNumber: 224, migrationText: '''
@@ -163,31 +159,30 @@ class MigrationsTableHelper {
             ALTER TABLE ${countriesTableHelper.tableName} ADD COLUMN ${countriesTableHelper.colDistancePreference} INT NOT NULL DEFAULT 0;
          '''),
 
-  // MIGRATION 225
+    // MIGRATION 225
     MigrationsModel(migrationNumber: 225, migrationText: '''
             ALTER TABLE ${hashersTableHelper.tableName} ADD COLUMN ${hashersTableHelper.colPreferences} INT;
          '''),
 
-             // MIGRATION 226
+    // MIGRATION 226
     MigrationsModel(migrationNumber: 226, migrationText: '''
             ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colIsKennelFollowing} INT;
             ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colMismanagementRoles} INT;
          '''),
 
-
-             // MIGRATION 227
+    // MIGRATION 227
     MigrationsModel(migrationNumber: 227, migrationText: '''
             ALTER TABLE ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} ADD COLUMN ${paymentsTableHelper.colDoPayForExtras} INT;
          '''),
 
-                      // MIGRATION 228
+    // MIGRATION 228
     MigrationsModel(migrationNumber: 228, migrationText: '''
             ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colTags1} INT;
             ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colTags2} INT;
             ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colTags3} INT;
          '''),
 
-     MigrationsModel(migrationNumber: 229, migrationText: '''
+    MigrationsModel(migrationNumber: 229, migrationText: '''
             ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colEventPaymentScheme} TEXT;
             ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentScheme} TEXT;
             ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentScheme2} TEXT;
@@ -198,7 +193,7 @@ class MigrationsTableHelper {
             ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentUrlExpires3} TEXT;
          '''),
 
-        MigrationsModel(migrationNumber: 230, migrationText: '''
+    MigrationsModel(migrationNumber: 230, migrationText: '''
             ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentMemberSurcharge} NUM;
             ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentNonMemberSurcharge} NUM;
             ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentMemberSurcharge2} NUM;
@@ -207,27 +202,30 @@ class MigrationsTableHelper {
             ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentNonMemberSurcharge3} NUM;
          '''),
 
-        MigrationsModel(migrationNumber: 231, migrationText: '''
+    MigrationsModel(migrationNumber: 231, migrationText: '''
             ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colAllowSelfPayment} INT;
          '''),
 
-        MigrationsModel(migrationNumber: 232, migrationText: '''
+    MigrationsModel(migrationNumber: 232, migrationText: '''
             ALTER TABLE ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} ADD COLUMN ${paymentsTableHelper.colSurcharge} INT;
             ALTER TABLE ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} ADD COLUMN ${paymentsTableHelper.colPaymentProvider} INT;
          '''),
 
-         MigrationsModel(migrationNumber: 251, migrationText: '''
+    MigrationsModel(migrationNumber: 251, migrationText: '''
             ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colLocationCountry} TEXT;
          '''),
 
-         MigrationsModel(migrationNumber: 252, migrationText: '''
+    MigrationsModel(migrationNumber: 252, migrationText: '''
                   ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colLocationRegion} TEXT;
                   ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colLocationSubRegion} TEXT;         
          '''),
 
-         MigrationsModel(migrationNumber: 253, migrationText: '''
+    MigrationsModel(migrationNumber: 253, migrationText: '''
                   ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPinColor} INT;    
          '''),
 
+    MigrationsModel(migrationNumber: 254, migrationText: '''
+                  ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colEventGeographicScope} INT;          
+         '''),
   ];
 }

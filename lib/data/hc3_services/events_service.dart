@@ -19,6 +19,7 @@ class EventModel implements BaseModel {
       this.kennelId,
       this.isVisible,
       this.isCountedRun,
+      this.eventGeographicScope,
       this.eventNumber,
       this.eventName,
       this.narrowEventLatitude,
@@ -56,6 +57,7 @@ class EventModel implements BaseModel {
   final String kennelId;
   final int isVisible;
   final int isCountedRun;
+  final int eventGeographicScope;
   final int eventNumber;
   final String eventName;
   final num narrowEventLatitude;
@@ -102,6 +104,7 @@ class EventModel implements BaseModel {
             kennelId: jsonItem['kennelId'],
             isVisible: jsonItem['isVisible'],
             isCountedRun: jsonItem['isCountedRun'],
+            eventGeographicScope: jsonItem['eventGeographicScope'],
             eventNumber: jsonItem['eventNumber'],
             eventName: jsonItem['eventName'],
             narrowEventLatitude: jsonItem['narrowEventLatitude'],
@@ -184,6 +187,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
   final String colKennelId = 'kennelId';
   final String colIsVisible = 'isVisible';
   final String colIsCountedRun = 'isCountedRun';
+  final String colEventGeographicScope = 'eventGeographicScope';
   final String colEventNumber = 'eventNumber';
   final String colEventName = 'eventName';
   final String colNarrowEventLatitude = 'narrowEventLatitude';
@@ -225,6 +229,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
             $colKennelId TEXT NOT NULL,
             $colIsVisible INT,
             $colIsCountedRun INT,
+            $colEventGeographicScope INT,
             $colEventNumber INT,
             $colEventName TEXT,
             $colNarrowEventLatitude NUM,
@@ -273,6 +278,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
       colKennelId: item.kennelId,
       colIsVisible: item.isVisible,
       colIsCountedRun: item.isCountedRun,
+      colEventGeographicScope: item.eventGeographicScope,
       colEventNumber: item.eventNumber,
       colEventName: item.eventName,
       colNarrowEventLatitude: item.narrowEventLatitude,
@@ -318,6 +324,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
       colKennelId: inputMap[colKennelId],
       colIsVisible: inputMap[colIsVisible],
       colIsCountedRun: inputMap[colIsCountedRun],
+      colEventGeographicScope: inputMap[colEventGeographicScope],
       colEventNumber: inputMap[colEventNumber],
       colEventName: inputMap[colEventName],
       colNarrowEventLatitude: inputMap[colNarrowEventLatitude],
@@ -374,6 +381,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
       kennelId: map[colKennelId],
       isVisible: map[colIsVisible],
       isCountedRun: map[colIsCountedRun],
+      eventGeographicScope: map[colEventGeographicScope],
       eventNumber: map[colEventNumber],
       eventName: map[colEventName],
       narrowEventLatitude: map[colNarrowEventLatitude],

@@ -1,3 +1,11 @@
+
+
+# xxxx
+    Added event geographic scope (local events, regional events, nash hash, interhash, world interhash / global events)
+    Added map pins for special events
+    Enhanced search feature to include event search, ability to narrow search results using comma separated lists,
+    ability to expand search results using the + sign, etc.
+    Added ability to show / hide kennel markers on map
 # 0.8.150+305
     Updated the map feature to include improved pin icons, the ability of kennels to select
     pin a custom pin icon color to make it easier to distinguish between runs from 
