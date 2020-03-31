@@ -1,10 +1,12 @@
 
 
-# xxxx
+# 0.8.155+310
     Added event geographic scope (local events, regional events, nash hash, interhash, world interhash / global events)
     Added map pins for special events
     Enhanced search feature to include event search, ability to narrow search results using comma separated lists,
-    ability to expand search results using the + sign, etc.
+    ability to add to search results using the + sign
+    ability to limit search results using a comma (e.g. find all runs in the Netherlands on Monday would be, "Netherlands, Monday")
+    ability to negate search results using the 'not' keyword (e.g. show all kennels that are not in the Netherlands would be, "not Netherlands")
     Added ability to show / hide kennel markers on map
 # 0.8.150+305
     Updated the map feature to include improved pin icons, the ability of kennels to select

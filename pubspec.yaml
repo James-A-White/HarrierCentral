@@ -1,6 +1,6 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 0.8.150+305
+version: 0.8.155+310
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -119,7 +119,15 @@ flutter:
     - images/icons/
     - images/init/
     - images/init/intro/
-    - images/map_pins/
+    - images/map_pins/yellow/
+    - images/map_pins/green/
+    - images/map_pins/teal/
+    - images/map_pins/baby_blue/
+    - images/map_pins/blue/
+    - images/map_pins/purple/
+    - images/map_pins/pink/
+    - images/map_pins/orange/
+    - images/map_pins/red/
     - images/other/
     - images/tutorial/
 

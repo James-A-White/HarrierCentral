@@ -175,7 +175,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
           // _scaffoldKey.currentState.hideCurrentSnackBar();
           // searchFocusNode.unfocus();
         },
-        onClose: () => print('DIAL CLOSED'),
+        //onClose: () => print('DIAL CLOSED'),
         tooltip: 'Speed Dial',
         heroTag: 'speed-dial-hero-tag',
         backgroundColor: Theme.of(context).accentColor,
@@ -306,7 +306,14 @@ class RunLocationsPageState extends State<RunLocationsPage> {
 
     final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(EnumRunQueryType.singleRun, EnumRunQueryContext.kennelAdmin, eventId: eventId);
     if (results.isNotEmpty) {
-      final num dist = await locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(results[0]['narrowEventLatitude']), Utilities.unInt(results[0]['narrowEventLongitude']));
+      final num dist = await locator.distanceBetween(
+        Utilities.unInt(deviceLat),
+        Utilities.unInt(deviceLon),
+        Utilities.unInt(results[0]['narrowEventLatitude']),
+        Utilities.unInt(
+          results[0]['narrowEventLongitude'],
+        ),
+      );
       final EventModel eventItem = eventsTableHelper.fromMap(results[0]);
       final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[0]);
       final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[0], eventItem.eventStartDatetime);
@@ -323,7 +330,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
       final num julianNow = results[0]['nowJulian'];
       final num eventJulian = results[0]['eventJulian'];
 
-      print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+      //print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 
       item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
     }
@@ -340,6 +347,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
           SELECT 
             evt.${eventsTableHelper.colEventId} as eventId,
             evt.${eventsTableHelper.colEventName} as eventName,
+            evt.${eventsTableHelper.colIsCountedRun} as isCountedRun,
             evt.${eventsTableHelper.colNarrowEventLatitude} as lat,
             evt.${eventsTableHelper.colNarrowEventLongitude} as lon,
             evt.${eventsTableHelper.colEventStartDatetime} as eventStartDatetime,
@@ -387,6 +395,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                   narrowEventLongitude: lon,
                   eventStartDatetime: dt,
                   eventId: results[i]['eventId'],
+                  isCountedRun: results[i]['isCountedRun'],
                   eventGeographicScope: results[i]['eventGeographicScope'],
                 ),
                 extensions: RunDetailsQueryExtensions(rsvpState: results[i]['rsvpState'], attendenceState: results[i]['attendenceState'], isHare: results[i]['isHare'], searchText: results[i]['searchText'] + RunDetailsQueryExtensions.getSearchDateString(dt)),
@@ -413,12 +422,12 @@ class RunLocationsPageState extends State<RunLocationsPage> {
       final DateTime dt = run.event.eventStartDatetime;
 
       final Marker marker = Marker(
-          width: 54.0,
-          height: 66.0,
+          width: 45.0,
+          height: 55.0,
           anchorPos: AnchorPos.exactly(Anchor(27.0, 0.0)),
           point: ll,
           builder: (BuildContext ctx) =>
-              buildRunMarker(run.event.eventId, dt, run.event.eventName, rsvpState: run.extensions.rsvpState, attendenceState: run.extensions.attendenceState, isHare: run.extensions.isHare, kennelPinColor: run.kennel.kennelPinColor, eventScope: run.event.eventGeographicScope));
+              buildRunMarker(run.event.eventId, dt, run.event.eventName, rsvpState: run.extensions.rsvpState, attendenceState: run.extensions.attendenceState, isHare: run.extensions.isHare, kennelPinColor: run.kennel.kennelPinColor, eventScope: run.event.eventGeographicScope, isCountedRun: run.event.isCountedRun));
 
       if ((viewMode == RunLocationsViewMode.all) ||
           ((viewMode == RunLocationsViewMode.past) && (dt.isBefore(DateTime.now()))) ||
@@ -497,11 +506,11 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     }
   }
 
-  Widget buildRunMarker(String eventId, DateTime eventStartDatetime, String eventName, {int attendenceState, int rsvpState, int isHare, int kennelPinColor, int eventScope}) {
+  Widget buildRunMarker(String eventId, DateTime eventStartDatetime, String eventName, {int attendenceState, int rsvpState, int isHare, int kennelPinColor, int eventScope, int isCountedRun}) {
     return GestureDetector(
       onTap: () {
         getSingleRun(eventId).then((RunDetailsAggregate run) {
-          print(run.event.eventName + ' + ' + run.event.eventId);
+          //print(run.event.eventName + ' + ' + run.event.eventId);
           Navigator.push<dynamic>(
             context,
             MaterialPageRoute<dynamic>(
@@ -517,7 +526,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
       child: Container(
         //padding: const EdgeInsets.only(bottom: 58.0),
         //color: Colors.red,
-        child: Image.asset(getPin(eventStartDatetime, rsvpState, attendenceState, isHare, kennelPinColor, eventScope)),
+        child: Image.asset(getPin(eventStartDatetime, rsvpState, attendenceState, isHare, kennelPinColor, eventScope, isCountedRun)),
         //child: FlutterLogo(colors: Colors.purple),
       ),
     );
@@ -573,37 +582,44 @@ class RunLocationsPageState extends State<RunLocationsPage> {
   static int heroCounter = 0;
   static List<String> colors = <String>['red', 'orange', 'yellow', 'green', 'teal', 'baby_blue', 'blue', 'purple', 'pink'];
 
-  String getPin(DateTime eventStartDatetime, int rsvpState, int attendenceState, int isHare, int kennelPinColor, int eventScope) {
-    String pinFileName = 'images/map_pins/pin_${colors[kennelPinColor]}_no_rsvp.png';
+  String getPin(DateTime eventStartDatetime, int rsvpState, int attendenceState, int isHare, int kennelPinColor, int eventScope, int isCountedRun) {
+    String pinFileName = 'images/map_pins/${colors[kennelPinColor]}/past_run_no_rsvp.png';
+
+    String isEvent = 'run';
+
+    if (isCountedRun == 0)
+    {
+      isEvent = 'activity';
+    }
+    if ((eventScope ?? 0) != 0) {
+      isEvent = 'event';
+    }
 
     if (eventStartDatetime.isAfter(DateTime.now())) {
       // run is in the future
-      String isEvent = '';
-      if ((eventScope ?? 0) != 0) {
-        isEvent = '_event';
-      }
       if ((attendenceState >= attendenceAtHash.value) || (rsvpState >= rsvpYes.value)) {
         if (isHare != 0) {
-          pinFileName = 'images/map_pins/pin_${colors[kennelPinColor]}${isEvent}_rsvp_hare.png';
+          pinFileName = 'images/map_pins/${colors[kennelPinColor]}/future_${isEvent}_rsvp_hare.png';
         } else {
-          pinFileName = 'images/map_pins/pin_${colors[kennelPinColor]}${isEvent}_rsvp_yes.png';
+          pinFileName = 'images/map_pins/${colors[kennelPinColor]}/future_${isEvent}_rsvp_yes.png';
         }
       } else {
-        pinFileName = 'images/map_pins/pin_${colors[kennelPinColor]}${isEvent}_no_rsvp.png';
+        pinFileName = 'images/map_pins/${colors[kennelPinColor]}/future_${isEvent}_rsvp_none.png';
       }
     } else {
       // run is in the past
       if (attendenceState >= attendenceAtHash.value) {
         if (isHare != 0) {
-          pinFileName = 'images/map_pins/pin_${colors[kennelPinColor]}_hared.png';
+          pinFileName = 'images/map_pins/${colors[kennelPinColor]}/past_${isEvent}_rsvp_hare.png';
         } else {
-          pinFileName = 'images/map_pins/pin_${colors[kennelPinColor]}_ran.png';
+          pinFileName = 'images/map_pins/${colors[kennelPinColor]}/past_${isEvent}_rsvp_yes.png';
         }
       } else {
-        pinFileName = 'images/map_pins/pin_${colors[kennelPinColor]}_past_run.png';
+        pinFileName = 'images/map_pins/${colors[kennelPinColor]}/past_${isEvent}_rsvp_none.png';
       }
     }
 
+    //print(pinFileName);
     return pinFileName;
   }
 
