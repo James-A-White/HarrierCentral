@@ -42,7 +42,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   List<Widget> tabs = <Widget>[];
   List<String> tabTitles = <String>[];
 
-  List<List<String>> tutorials = <List<String>>[tutorialUpcomingRuns,helpNotAvailable,tutorialRunLocations,helpNotAvailable];
+  List<List<String>> tutorials = <List<String>>[tutorialUpcomingRuns, tutorialKennelsView, tutorialRunLocations, tutorialRunCounts];
 
   static List<String> tutorialRunLocations = <String>[
     'images/tutorial/run_locations_help_1.jpg',
@@ -61,11 +61,25 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     'images/tutorial/upcoming_runs_page_7.jpg',
   ];
 
-    static List<String> helpNotAvailable = <String>[
+  static List<String> helpNotAvailable = <String>[
     'images/tutorial/help_not_available.jpg',
   ];
 
+  static List<String> tutorialRunCounts = <String>[
+    'images/tutorial/run_counts_tutorial_1.jpg',
+    'images/tutorial/run_counts_tutorial_2.jpg',
+    'images/tutorial/run_counts_tutorial_3.jpg',
+  ];
 
+  static List<String> tutorialKennelsView = <String>[
+    'images/tutorial/kennels_tutorial_1.jpg',
+    'images/tutorial/kennels_tutorial_2.jpg',
+    'images/tutorial/kennels_tutorial_3.jpg',
+    'images/tutorial/kennels_tutorial_4.jpg',
+    'images/tutorial/kennels_tutorial_5.jpg',
+    'images/tutorial/kennels_tutorial_6.jpg',
+    'images/tutorial/kennels_tutorial_7.jpg',
+  ];
 
   String appBarText;
   String initializationMessage = '';
@@ -86,7 +100,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     tabTitles.add('Upcoming Runs');
     tabTitles.add('Kennels');
     tabTitles.add('Explore Runs');
-    tabTitles.add('Your Total Run Counts');
+    tabTitles.add('Run Counts');
 
     //tabTitles.add('Scanner');
     // tabTitles.add('Friends');
@@ -321,12 +335,12 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                                   alignment: AlignmentDirectional.topCenter,
                                   children: <Widget>[
                                     Positioned(
-                                      top: 0.0,
+                                      top: 15.0,
                                       left: 0.0,
                                       right: 0.0,
                                       child: Column(
                                         children: <Widget>[
-                                          ConstrainedBox( 
+                                          ConstrainedBox(
                                             constraints: BoxConstraints(minHeight: constraints.maxHeight > 60 ? constraints.maxHeight - 60 : constraints.maxHeight),
                                             child: Image.asset(
                                               tutorials[currentPage][index],
