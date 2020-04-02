@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -212,7 +214,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                   isLoading = true;
 
                   final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                  final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + inviteCodeTextController.text.toUpperCase(),includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
+                  final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + inviteCodeTextController.text.toUpperCase(), includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
                   apiCall.then((Map<String, String> result) {
                     setState(() {
                       isLoading = false;
@@ -221,6 +223,9 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                     if (result['result'] != 'failed') {
                       final String userName = getStringPref(StringPrefsEnum.displayName);
 
+                      String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
+                      profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
+
                       Utilities.showAlert(context, 'Success!', 'The app has been successfully set up for $userName.', 'OK').then((void dummy) {
                         Navigator.pushReplacement<dynamic, dynamic>(
                             context,
@@ -228,7 +233,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                               builder: (BuildContext context) => ChooseProfileImage(
                                 isForThisDevice: true,
                                 fileNamePrefix: getStringPref(StringPrefsEnum.supportCode),
-                                currentProfileImage: getStringPref(StringPrefsEnum.profilePhotoUrl),
+                                currentProfileImage: profilePhotoUrl,
                                 popToCaller: false,
                               ),
                             ));

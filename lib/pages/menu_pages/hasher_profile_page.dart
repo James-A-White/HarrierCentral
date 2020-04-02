@@ -90,7 +90,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   bool _isDirty = false;
   bool _addAsKennelFollower = false;
   String photoPrefix = '';
-  String newPhoto = '';
+  String newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
   HashersModel hasher;
   HasherKennelMapModel hkmData;
   String previousRunCount;
@@ -162,13 +162,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         if (widget.dataContext == EnumDataContext.kennel) {
           hkmData = hasherKennelMapTableHelper.fromMap(results[0]);
         }
-        if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          hasher.email = getStringPref(StringPrefsEnum.email);
-        }
 
         firstNameController.text = hasher.firstName;
         lastNameController.text = hasher.lastName;
-        emailController.text = hasher.email;
+        emailController.text = ''; // we don't reveal e-mail in the app for users other than the user of the app
         hashNameController.text = hasher.hashName;
         newPhoto = hasher.photo; // if we have returned from the photo chooser, don't overwrite
         previousRunCountController.text = (hkmData?.historicalPackRunCount ?? 0).toString();
@@ -176,14 +173,17 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         historicalCountIsEstimate = (hkmData?.historicalCountIsEstimate ?? 0) == 1;
         _distancePreference = hasher.preferences & hasherPref_distanceMeasuredIn;
         _autoRunPreference = hasher.preferences & hasherPref_distanceForAutoDisplay;
+        
+        // fill in the e-mail for the user of the app.
+        if (widget.pageType == EnumMyProfilePageType.myProfile) {
+          hasher.email = getStringPref(StringPrefsEnum.email);
+          emailController.text = hasher.email;
+        }
       }
 
-      _isLoading = false; 
-      checkDirty(); 
-      setState(() {
-        
-        
-      });
+      _isLoading = false;
+      checkDirty();
+      setState(() {});
     } catch (e) {
       print(e);
     }
@@ -247,8 +247,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     });
     super.initState();
 
-    final num avatarNumber = Random.secure().nextInt(49) + 1;
-    newPhoto = 'bundle://avatar-$avatarNumber';
+    newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
   }
 
   String getDistancePreferenceAsString(int distPref) {
@@ -292,11 +291,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
     if (hasher != null) {
       hasher.preferences ??= 0;
-      if (hasher.preferences  != (_distancePreference + _autoRunPreference)) {
+      if (hasher.preferences != (_distancePreference + _autoRunPreference)) {
         isDirty = true;
       }
     }
-
 
     if (historicalCountIsEstimate != ((hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
       isDirty = true;
@@ -340,6 +338,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       _profileFormKey.currentState.save();
 
       setState(() {
+
+        // write the value of the email address to local preferences
+        if (widget.pageType == EnumMyProfilePageType.myProfile) {
+          setStringPref(StringPrefsEnum.email,emailController.text);
+        }
+
         _isLoading = true;
 
         final HashersService srv = HashersService();
@@ -360,17 +364,15 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0);
 
         apiCall.then((String jsonResponse) async {
-
-
           final dynamic jsonResult = json.decode(jsonResponse);
           final HashersModel h = hashersTableHelper.fromMap(jsonResult[0][0]);
           setState(() {
             if (widget.pageType == EnumMyProfilePageType.myProfile) {
               setStringPref(StringPrefsEnum.profilePhotoUrl, h.photo);
               setStringPref(StringPrefsEnum.displayName, h.dispName);
-              // don't set the e-mail with the result from the 
+              // don't set the e-mail with the result from the
               // api call. Use the local value in hasher.email instead
-              setStringPref(StringPrefsEnum.email, hasher.email);
+              //setStringPref(StringPrefsEnum.email, hasher.email);
               setStringPref(StringPrefsEnum.firstName, h.firstName);
               setStringPref(StringPrefsEnum.hashName, h.hashName);
               setStringPref(StringPrefsEnum.lastName, h.lastName);
@@ -378,17 +380,15 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             }
 
             refreshUserDataFromTable(true);
-             _isLoading = false;
+            _isLoading = false;
             checkDirty();
 
             if (widget.pageType != EnumMyProfilePageType.myProfile) {
               Navigator.of(context).pop(h);
+            } else {
+              Utilities.showAlert(context, 'Profile Updated', 'Your profile was updated successfully.', 'OK');
             }
           });
-
-
-
-
         });
       });
     } else {
@@ -791,7 +791,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                     onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   const Text(
-                                                                    'Do not auto show runs' ,
+                                                                    'Do not auto show runs',
                                                                     style: TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],

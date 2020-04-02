@@ -327,8 +327,8 @@ class RunLocationsPageState extends State<RunLocationsPage> {
         paymentLinkUrl = kennelItem.kennelPaymentUrl;
       }
 
-      final num julianNow = results[0]['nowJulian'];
-      final num eventJulian = results[0]['eventJulian'];
+      // final num julianNow = results[0]['nowJulian'];
+      // final num eventJulian = results[0]['eventJulian'];
 
       //print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 

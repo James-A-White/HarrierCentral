@@ -223,7 +223,7 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                           if (result.isNotEmpty) {
                             setStringPref(StringPrefsEnum.profilePhotoUrl, result['photo']);
                             setStringPref(StringPrefsEnum.displayName, result['displayName']);
-                            setStringPref(StringPrefsEnum.email, result['email']);
+                            //setStringPref(StringPrefsEnum.email, result['email']);
                             setStringPref(StringPrefsEnum.facebookId, result['facebookId']);
                             setStringPref(StringPrefsEnum.firstName, result['firstName']);
                             setStringPref(StringPrefsEnum.hashName, result['hashName']);
@@ -236,13 +236,17 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
 
                             isSuccessfulLoad = true;
 
+                            //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
+                            final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode);
+                            //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
+
                             Navigator.pushReplacement<dynamic, dynamic>(
                                 context,
                                 MaterialPageRoute<dynamic>(
                                   builder: (BuildContext context) => ChooseProfileImage(
                                     isForThisDevice: true,
-                                    fileNamePrefix: getStringPref(StringPrefsEnum.supportCode),
-                                    currentProfileImage: getStringPref(StringPrefsEnum.profilePhotoUrl),
+                                    fileNamePrefix: fileNamePrefix,
+                                    currentProfileImage: null,
                                     popToCaller: false,
                                   ),
                                 ));

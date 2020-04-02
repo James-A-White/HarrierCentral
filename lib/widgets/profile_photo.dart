@@ -30,9 +30,5 @@ class ProfilePhoto extends StatelessWidget {
                     fit: BoxFit.fitHeight,
                     height: photoHeight),
         alignment: Alignment.centerRight);
-
-    //     Image.network(kennel.kennelLogo,
-    //         fit: BoxFit.fitHeight, height: logoHeight),
-    // alignment: Alignment.centerRight);
   }
 }

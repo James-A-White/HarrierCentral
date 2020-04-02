@@ -108,35 +108,6 @@ class Utilities {
     }
   }
 
-  // static Future<LatLon> getLatLong(LocationAccuracy locationAccuracy) async {
-  //   Position position;
-
-  //   Utilities.logTiming('Geostatus query start');
-  //   final GeolocationStatus status = await Geolocator().checkGeolocationPermissionStatus(locationPermission: GeolocationPermission.location);
-
-  //   Utilities.logTiming('Geolocation query start');
-  //   if (status == GeolocationStatus.granted) {
-  //     position = await Geolocator().getCurrentPosition(desiredAccuracy: locationAccuracy);
-  //     position ??= await Geolocator().getLastKnownPosition(desiredAccuracy: locationAccuracy);
-  //   }
-
-  //   final LatLon latLon = LatLon();
-
-  //   latLon.latitude = DEFAULT_LATITUDE;
-  //   latLon.longitude = DEFAULT_LONGITUDE;
-
-  //   if (position != null) {
-  //     latLon.latitude = position.latitude;
-  //     latLon.longitude = position.longitude;
-  //     setNumPref(NumPrefsEnum.latitude, latLon.latitude);
-  //     setNumPref(NumPrefsEnum.longitude, latLon.longitude);
-  //   } else {
-  //     latLon.latitude = getNumPref(NumPrefsEnum.latitude) ?? DEFAULT_LATITUDE;
-  //     latLon.longitude = getNumPref(NumPrefsEnum.longitude) ?? DEFAULT_LONGITUDE;
-  //   }
-
-  //   return latLon;
-  // }
 
   static String generateToken(String userId, String procName, {String paramString = ''}) {
     final Duration difference = DateTime.now().toUtc().difference(DateTime.utc(1993, 7, 25, 15, 0, 0));
