@@ -8,6 +8,8 @@
     ability to limit search results using a comma (e.g. find all runs in the Netherlands on Monday would be, "Netherlands, Monday")
     ability to negate search results using the 'not' keyword (e.g. show all kennels that are not in the Netherlands would be, "not Netherlands")
     Added ability to show / hide kennel markers on map
+    Fixed profile image page (lots of problems)
+    Fixed profile page e-mail, and add a confirmation that profile was updated successfully
 # 0.8.150+305
     Updated the map feature to include improved pin icons, the ability of kennels to select
     pin a custom pin icon color to make it easier to distinguish between runs from 
