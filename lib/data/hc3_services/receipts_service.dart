@@ -35,10 +35,10 @@ class ReceiptsModel implements BaseModel {
     this.updatedAt,
   });
 
-  factory ReceiptsModel.fromJson(Map<String,dynamic> json) => _$ReceiptsModelFromJson(json);
- 
+  factory ReceiptsModel.fromJson(Map<String, dynamic> json) => _$ReceiptsModelFromJson(json);
+
   @override
-  Map<String,dynamic> toJson() => _$ReceiptsModelToJson(this);
+  Map<String, dynamic> toJson() => _$ReceiptsModelToJson(this);
 
   final String receiptId;
   final String eventId;
@@ -55,24 +55,6 @@ class ReceiptsModel implements BaseModel {
   final String reimbursedNotes;
   final int removed;
   final DateTime updatedAt;
-
-  // @override
-  // List<ReceiptsModel> itemsFromJson(String jsonResult) {
-  //   final List<ReceiptsModel> items = <ReceiptsModel>[];
-
-  //   json.decode(jsonResult).forEach(
-  //     (dynamic jsonItem) {
-  //       final ReceiptsModel item = _$ReceiptsModelFromJson(jsonItem);
-  //       items.add(item);
-  //     },
-  //   );
-
-  //   if (items.isEmpty) {
-  //     return null;
-  //   }
-
-  //   return items;
-  // }
 }
 
 class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
@@ -139,23 +121,14 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  // @override
-  // Map<String, dynamic> toMap(dynamic item) {
-  //   final Map<String, dynamic> map = _$ReceiptsModelToJson(item);
-  //   return map;
-  // }
-
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final ReceiptsModel item = _$ReceiptsModelFromJson(inputMap);
-    final Map<String, dynamic> outputMap = _$ReceiptsModelToJson(item);
-    return outputMap;
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
+    return ReceiptsModel.fromJson(map).toJson();
   }
 
   @override
   ReceiptsModel fromMap(Map<String, dynamic> map) {
-    final ReceiptsModel item = _$ReceiptsModelFromJson(map);
-    return item;
+    return ReceiptsModel.fromJson(map);
   }
 
   String toQueryBody(String userId, String accessToken, ReceiptsModel item, String receiptsUploadedAfter) {

@@ -1,7 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-
-
 
 import 'package:sqflite/sqflite.dart';
 
@@ -119,25 +116,6 @@ class KennelsModel implements BaseModel {
   final DateTime updatedAt;
   final int removed;
 
-  // @override
-  // List<KennelsModel> itemsFromJson(String jsonResult) {
-  //   final List<KennelsModel> items = <KennelsModel>[];
-
-  //   KennelsModel item;
-
-  //   json.decode(jsonResult).forEach(
-  //     (dynamic jsonItem) {
-  //       item = _$KennelsModelFromJson(jsonItem);
-  //       items.add(item);
-  //     },
-  //   );
-
-  //   if (items.isEmpty) {
-  //     return null;
-  //   }
-
-  //   return items;
-  // }
 }
 
 class KennelsTableHelper with BaseFields implements BaseTableHelper {
@@ -277,15 +255,12 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
   // }
 
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final KennelsModel item = _$KennelsModelFromJson(inputMap);
-    final Map<String,dynamic> outputMap = _$KennelsModelToJson(item);
-    return outputMap;
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
+    return KennelsModel.fromJson(map).toJson();
   }
 
   @override
   KennelsModel fromMap(Map<String, dynamic> map) {
-    final KennelsModel item = _$KennelsModelFromJson(map);
-    return item;
+    return KennelsModel.fromJson(map);
   }
 }

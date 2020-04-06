@@ -71,24 +71,6 @@ class PaymentsModel implements BaseModel {
   final int removed;
   final DateTime updatedAt;
 
-  // @override
-  // List<PaymentsModel> itemsFromJson(String jsonResult) {
-  //   final List<PaymentsModel> items = <PaymentsModel>[];
-
-  //   json.decode(jsonResult).forEach(
-  //     (dynamic jsonItem) {
-  //       final PaymentsModel item = _$PaymentsModelFromJson(jsonItem);
-
-  //       items.add(item);
-  //     },
-  //   );
-
-  //   if (items.isEmpty) {
-  //     return null;
-  //   }
-
-  //   return items;
-  // }
 }
 
 class PaymentsTableHelper with BaseFields implements BaseTableHelper {
@@ -99,14 +81,6 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
 
   @override
   num cacheDuration;
-
-  // @override
-  // String tableName = 'Payments';
-
-  // @override
-  // String getTableName(TableType type) {
-  //   return tableName;
-  // }
 
   @override
   String tableName = '';
@@ -182,36 +156,17 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
     sql = 'CREATE INDEX idx_${getTableName(tableType)}_update_at_value ON ${getTableName(tableType)}($colUpdatedAtValue);';
     await db.execute(sql);
 
-    // await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    // await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  // @override
-  // Map<String, dynamic> toMap(dynamic item) {
-  //   final Map<String, dynamic> map = _$PaymentsModelToJson(item);
-  //   return map;
-  // }
 
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final PaymentsModel item = _$PaymentsModelFromJson(inputMap);
-    final Map<String, dynamic> outputMap = _$PaymentsModelToJson(item);
-
-    return outputMap;
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
+    return PaymentsModel.fromJson(map).toJson();
   }
-
-  // List<PaymentsModel> listFromMap(List<Map<String, dynamic>> mapList) {
-  //   final List<PaymentsModel> paymentList = <PaymentsModel>[];
-  //   for (int i = 0; i < mapList.length; i++) {
-  //     paymentList.add(fromMap(mapList[i]));
-  //   }
-  //   return paymentList;
-  // }
 
   @override
   PaymentsModel fromMap(Map<String, dynamic> map) {
-    final PaymentsModel item = _$PaymentsModelFromJson(map);
-    return item;
+    return PaymentsModel.fromJson(map);
   }
 }
 

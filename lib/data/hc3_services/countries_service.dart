@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
 
@@ -34,24 +33,6 @@ class CountriesModel implements BaseModel {
 
   final int removed;
   final DateTime updatedAt;
-
-  // @override
-  // List<CountriesModel> itemsFromJson(String jsonResult) {
-  //   final List<CountriesModel> items = <CountriesModel>[];
-
-  //   json.decode(jsonResult).forEach(
-  //     (dynamic jsonItem) {
-  //       final CountriesModel item = _$CountriesModelFromJson(jsonItem);
-  //       items.add(item);
-  //     },
-  //   );
-
-  //   if (items.isEmpty) {
-  //     return null;
-  //   }
-
-  //   return items;
-  // }
 }
 
 class CountriesTableHelper with BaseFields implements BaseTableHelper {
@@ -119,22 +100,13 @@ class CountriesTableHelper with BaseFields implements BaseTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  // @override
-  // Map<String, dynamic> toMap(dynamic item) {
-  //   final Map<String, dynamic> map = _$CountriesModelToJson(item);
-  //   return map;
-  // }
-
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final CountriesModel item = _$CountriesModelFromJson(inputMap);
-    final Map<String, dynamic> outputMap = _$CountriesModelToJson(item);
-    return outputMap;
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
+    return CountriesModel.fromJson(map).toJson();
   }
 
   @override
   CountriesModel fromMap(Map<String, dynamic> map) {
-    final CountriesModel item = _$CountriesModelFromJson(map);
-    return item;
+    return CountriesModel.fromJson(map);
   }
 }

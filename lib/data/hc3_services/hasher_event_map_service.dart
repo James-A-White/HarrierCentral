@@ -39,10 +39,10 @@ class HasherEventMapModel implements BaseModel {
       this.removed,
       this.updatedAt});
 
-  factory HasherEventMapModel.fromJson(Map<String,dynamic> json) => _$HasherEventMapModelFromJson(json);
- 
+  factory HasherEventMapModel.fromJson(Map<String, dynamic> json) => _$HasherEventMapModelFromJson(json);
+
   @override
-  Map<String,dynamic> toJson() => _$HasherEventMapModelToJson(this);
+  Map<String, dynamic> toJson() => _$HasherEventMapModelToJson(this);
 
   final String hemId;
   final String userId;
@@ -63,25 +63,6 @@ class HasherEventMapModel implements BaseModel {
 
   final int removed;
   final DateTime updatedAt;
-
-  // @override
-  // List<HasherEventMapModel> itemsFromJson(String jsonResult) {
-  //   final List<HasherEventMapModel> items = <HasherEventMapModel>[];
-
-  //   json.decode(jsonResult).forEach(
-  //     (dynamic jsonItem) {
-  //       final HasherEventMapModel item = _$HasherEventMapModelFromJson(jsonItem);
-
-  //       items.add(item);
-  //     },
-  //   );
-
-  //   if (items.isEmpty) {
-  //     return null;
-  //   }
-
-  //   return items;
-  // }
 }
 
 class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
@@ -166,17 +147,13 @@ class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
   // }
 
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final HasherEventMapModel item = _$HasherEventMapModelFromJson(inputMap);
-    final Map<String, dynamic> outputMap = _$HasherEventMapModelToJson(item);
-
-    return outputMap;
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
+    return HasherEventMapModel.fromJson(map).toJson();
   }
 
   @override
   HasherEventMapModel fromMap(Map<String, dynamic> map) {
-    final HasherEventMapModel item = _$HasherEventMapModelFromJson(map);
-    return item;
+    return HasherEventMapModel.fromJson(map);
   }
 }
 

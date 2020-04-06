@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
 
@@ -33,25 +32,6 @@ class KennelCreditsModel implements BaseModel {
   final String balanceAsOfEventId;
   final DateTime updatedAt;
   final int removed;
-
-  // @override
-  // List<KennelCreditsModel> itemsFromJson(String jsonResult) {
-  //   final List<KennelCreditsModel> items = <KennelCreditsModel>[];
-
-  //   json.decode(jsonResult).forEach(
-  //     (dynamic jsonItem) {
-  //       final KennelCreditsModel item = _$KennelCreditsModelFromJson(jsonItem);
-
-  //       items.add(item);
-  //     },
-  //   );
-
-  //   if (items.isEmpty) {
-  //     return null;
-  //   }
-
-  //   return items;
-  // }
 }
 
 class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
@@ -109,15 +89,12 @@ class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
   // }
 
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final KennelCreditsModel item = _$KennelCreditsModelFromJson(inputMap);
-    final Map<String, dynamic> outputMap = _$KennelCreditsModelToJson(item);
-    return outputMap;
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
+    return KennelCreditsModel.fromJson(map).toJson();
   }
 
   @override
   KennelCreditsModel fromMap(Map<String, dynamic> map) {
-    final KennelCreditsModel item = _$KennelCreditsModelFromJson(map);
-    return item;
+    return KennelCreditsModel.fromJson(map);
   }
 }

@@ -75,24 +75,6 @@ class HasherKennelMapModel implements BaseModel {
   final DateTime updatedAt;
   final int removed;
 
-  // @override
-  // List<HasherKennelMapModel> itemsFromJson(String jsonResult) {
-  //   final List<HasherKennelMapModel> items = <HasherKennelMapModel>[];
-
-  //   json.decode(jsonResult).forEach(
-  //     (dynamic jsonItem) {
-  //       final HasherKennelMapModel item = _$HasherKennelMapModelFromJson(jsonItem);
-
-  //       items.add(item);
-  //     },
-  //   );
-
-  //   if (items.isEmpty) {
-  //     return null;
-  //   }
-
-  //   return items;
-  // }
 }
 
 class HasherKennelMapTableHelper with BaseFields implements BaseTableHelper {
@@ -189,18 +171,13 @@ class HasherKennelMapTableHelper with BaseFields implements BaseTableHelper {
   // }
 
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final HasherKennelMapModel item = _$HasherKennelMapModelFromJson(inputMap);
-    final Map<String, dynamic> outputMap = _$HasherKennelMapModelToJson(item);
-
-    return outputMap;
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
+    return HasherKennelMapModel.fromJson(map).toJson();
   }
 
   @override
   HasherKennelMapModel fromMap(Map<String, dynamic> map) {
-    final HasherKennelMapModel item = _$HasherKennelMapModelFromJson(map);
-
-    return item;
+    return HasherKennelMapModel.fromJson(map);
   }
 }
 

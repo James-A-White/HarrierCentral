@@ -100,37 +100,6 @@ class EventModel implements BaseModel {
   final int removed;
   final DateTime updatedAt;
 
-  // @override
-  // List<EventModel> itemsFromJson(String jsonResult) {
-  //   final List<EventModel> items = <EventModel>[];
-
-  //   json.decode(jsonResult).forEach(
-  //     (dynamic jsonItem) {
-  //       final EventModel item = _$EventModelFromJson(jsonItem);
-
-  //       // CUSTOMIZATION
-
-  //       // NOTE: Event images can either be full URLs or they can be partial URLs in the case
-  //       // when events have been uploaded directly to the DB using the HcWeb application.
-  //       // For partial URLs we need to append the root URL. The Root URL is stored in the
-  //       // Server settings table and copied into the string prefs on app startup.
-  //       if ((item.eventImage != null) && (item.eventImage.isNotEmpty) && (!item.eventImage.startsWith('http'))) {
-  //         final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
-  //         if ((s != null) && (s.isNotEmpty)) {
-  //           item.eventImage = s + item.eventImage;
-  //         }
-  //       }
-
-  //       items.add(item);
-  //     },
-  //   );
-
-  //   if (items.isEmpty) {
-  //     return null;
-  //   }
-
-  //   return items;
-  // }
 }
 
 class EventsTableHelper with BaseFields implements BaseTableHelper {
@@ -248,9 +217,8 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
   // }
 
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final EventModel item = _$EventModelFromJson(inputMap);
-    final Map<String, dynamic> outputMap = _$EventModelToJson(item);
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
+    final Map<String, dynamic> outputMap = _$EventModelToJson(EventModel.fromJson(map));
 
     // NOTE: Event images can either be full URLs or they can be partial URLs in the case
     // when events have been uploaded directly to the DB using the HcWeb application.
@@ -268,7 +236,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
 
   @override
   EventModel fromMap(Map<String, dynamic> map) {
-    final EventModel item = _$EventModelFromJson(map);
+    final EventModel item = EventModel.fromJson(map);
 
     // NOTE: Event images can either be full URLs or they can be partial URLs in the case
     // when events have been uploaded directly to the DB using the HcWeb application.

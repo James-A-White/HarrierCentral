@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
 
@@ -82,22 +81,14 @@ class RegionsTableHelper with BaseFields implements BaseTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  //  @override
-  // Map<String, dynamic> toMap(dynamic item) {
-  //   final Map<String, dynamic> map = _$RegionsModelToJson(item);
-  //   return map;
-  // }
 
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final RegionsModel item = _$RegionsModelFromJson(inputMap);
-    final Map<String, dynamic> outputMap = _$RegionsModelToJson(item);
-    return outputMap;
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
+    return RegionsModel.fromJson(map).toJson();
   }
 
   @override
   RegionsModel fromMap(Map<String, dynamic> map) {
-    final RegionsModel item = RegionsModel.fromJson(map);
-    return item;
+    return RegionsModel.fromJson(map);
   }
 }

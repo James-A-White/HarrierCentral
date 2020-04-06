@@ -60,24 +60,6 @@ class HashersModel implements BaseModel {
   final int removed;
   final DateTime updatedAt;
 
-  // @override
-  // List<HashersModel> itemsFromJson(String jsonResult) {
-  //   final List<HashersModel> items = <HashersModel>[];
-
-  //   json.decode(jsonResult).forEach(
-  //     (dynamic jsonItem) {
-  //       final HashersModel item = _$HashersModelFromJson(jsonItem);
-
-  //       items.add(item);
-  //     },
-  //   );
-
-  //   if (items.isEmpty) {
-  //     return null;
-  //   }
-
-  //   return items;
-  // }
 }
 
 class HashersTableHelper with BaseFields implements BaseTableHelper {
@@ -151,19 +133,14 @@ class HashersTableHelper with BaseFields implements BaseTableHelper {
   // }
 
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
     // do we need to block the data from the email field?
-    final HashersModel item = _$HashersModelFromJson(inputMap);
-    final Map<String, dynamic> outputMap = _$HashersModelToJson(item);
-
-    return outputMap;
+    return HashersModel.fromJson(map).toJson();
   }
 
   @override
   HashersModel fromMap(Map<String, dynamic> map) {
-    final HashersModel item = _$HashersModelFromJson(map);
-
-    return item;
+    return HashersModel.fromJson(map);
   }
 }
 

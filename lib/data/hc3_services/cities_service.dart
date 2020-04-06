@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
 
@@ -38,27 +37,6 @@ class CitiesModel implements BaseModel {
   final int removed;
   final DateTime updatedAt;
 
-  
-
-  // @override
-  // List<CitiesModel> itemsFromJson(String jsonResult) {
-  //   final List<CitiesModel> items = <CitiesModel>[];
-
-  //   CitiesModel item;
-
-  //   json.decode(jsonResult).forEach(
-  //     (dynamic jsonItem) {
-  //       item = _$CitiesModelFromJson(jsonItem);
-  //       items.add(item);
-  //     },
-  //   );
-
-  //   if (items.isEmpty) {
-  //     return null;
-  //   }
-
-  //   return items;
-  // }
 }
 
 class CitiesTableHelper with BaseFields implements BaseTableHelper {
@@ -113,22 +91,13 @@ class CitiesTableHelper with BaseFields implements BaseTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  // @override
-  // Map<String, dynamic> toMap(dynamic item) {
-  //   final Map<String, dynamic> map = _$CitiesModelToJson(item);
-  //   return map;
-  // }
-
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final CitiesModel item = _$CitiesModelFromJson(inputMap);
-    final Map<String, dynamic> outputMap = _$CitiesModelToJson(item);
-    return outputMap;
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
+    return CitiesModel.fromJson(map).toJson();
   }
 
   @override
   CitiesModel fromMap(Map<String, dynamic> map) {
-    final CitiesModel item = _$CitiesModelFromJson(map);
-    return item;
+    return CitiesModel.fromJson(map);
   }
 }
