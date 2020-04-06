@@ -23,6 +23,11 @@ class CitiesModel implements BaseModel {
     this.updatedAt,
   });
 
+  factory CitiesModel.fromJson(Map<String,dynamic> json) => _$CitiesModelFromJson(json);
+
+  @override
+  Map<String,dynamic> toJson() => _$CitiesModelToJson(this);
+
   final String cityId;
   final String cityName;
   final String regionId;
@@ -33,25 +38,27 @@ class CitiesModel implements BaseModel {
   final int removed;
   final DateTime updatedAt;
 
-  @override
-  List<CitiesModel> itemsFromJson(String jsonResult) {
-    final List<CitiesModel> items = <CitiesModel>[];
+  
 
-    CitiesModel item;
+  // @override
+  // List<CitiesModel> itemsFromJson(String jsonResult) {
+  //   final List<CitiesModel> items = <CitiesModel>[];
 
-    json.decode(jsonResult).forEach(
-      (dynamic jsonItem) {
-        item = _$CitiesModelFromJson(jsonItem);
-        items.add(item);
-      },
-    );
+  //   CitiesModel item;
 
-    if (items.isEmpty) {
-      return null;
-    }
+  //   json.decode(jsonResult).forEach(
+  //     (dynamic jsonItem) {
+  //       item = _$CitiesModelFromJson(jsonItem);
+  //       items.add(item);
+  //     },
+  //   );
 
-    return items;
-  }
+  //   if (items.isEmpty) {
+  //     return null;
+  //   }
+
+  //   return items;
+  // }
 }
 
 class CitiesTableHelper with BaseFields implements BaseTableHelper {
@@ -106,11 +113,11 @@ class CitiesTableHelper with BaseFields implements BaseTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  @override
-  Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = _$CitiesModelToJson(item);
-    return map;
-  }
+  // @override
+  // Map<String, dynamic> toMap(dynamic item) {
+  //   final Map<String, dynamic> map = _$CitiesModelToJson(item);
+  //   return map;
+  // }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {

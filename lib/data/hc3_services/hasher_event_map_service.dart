@@ -39,6 +39,11 @@ class HasherEventMapModel implements BaseModel {
       this.removed,
       this.updatedAt});
 
+  factory HasherEventMapModel.fromJson(Map<String,dynamic> json) => _$HasherEventMapModelFromJson(json);
+ 
+  @override
+  Map<String,dynamic> toJson() => _$HasherEventMapModelToJson(this);
+
   final String hemId;
   final String userId;
   final String eventId;
@@ -59,24 +64,24 @@ class HasherEventMapModel implements BaseModel {
   final int removed;
   final DateTime updatedAt;
 
-  @override
-  List<HasherEventMapModel> itemsFromJson(String jsonResult) {
-    final List<HasherEventMapModel> items = <HasherEventMapModel>[];
+  // @override
+  // List<HasherEventMapModel> itemsFromJson(String jsonResult) {
+  //   final List<HasherEventMapModel> items = <HasherEventMapModel>[];
 
-    json.decode(jsonResult).forEach(
-      (dynamic jsonItem) {
-        final HasherEventMapModel item = _$HasherEventMapModelFromJson(jsonItem);
+  //   json.decode(jsonResult).forEach(
+  //     (dynamic jsonItem) {
+  //       final HasherEventMapModel item = _$HasherEventMapModelFromJson(jsonItem);
 
-        items.add(item);
-      },
-    );
+  //       items.add(item);
+  //     },
+  //   );
 
-    if (items.isEmpty) {
-      return null;
-    }
+  //   if (items.isEmpty) {
+  //     return null;
+  //   }
 
-    return items;
-  }
+  //   return items;
+  // }
 }
 
 class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
@@ -153,12 +158,12 @@ class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
     await db.execute('CREATE INDEX idx_${getTableName(tblType)}_update_at_value ON ${getTableName(tblType)}($colUpdatedAtValue);');
   }
 
-  @override
-  Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = _$HasherEventMapModelToJson(item);
+  // @override
+  // Map<String, dynamic> toMap(dynamic item) {
+  //   final Map<String, dynamic> map = _$HasherEventMapModelToJson(item);
 
-    return map;
-  }
+  //   return map;
+  // }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {

@@ -45,6 +45,11 @@ class HasherKennelMapModel implements BaseModel {
       this.removed,
       this.updatedAt});
 
+  factory HasherKennelMapModel.fromJson(Map<String,dynamic> json) => _$HasherKennelMapModelFromJson(json);
+  
+  @override
+  Map<String,dynamic> toJson() => _$HasherKennelMapModelToJson(this);
+
   final String hkmId;
   final String userId;
   final String kennelId;
@@ -70,24 +75,24 @@ class HasherKennelMapModel implements BaseModel {
   final DateTime updatedAt;
   final int removed;
 
-  @override
-  List<HasherKennelMapModel> itemsFromJson(String jsonResult) {
-    final List<HasherKennelMapModel> items = <HasherKennelMapModel>[];
+  // @override
+  // List<HasherKennelMapModel> itemsFromJson(String jsonResult) {
+  //   final List<HasherKennelMapModel> items = <HasherKennelMapModel>[];
 
-    json.decode(jsonResult).forEach(
-      (dynamic jsonItem) {
-        final HasherKennelMapModel item = _$HasherKennelMapModelFromJson(jsonItem);
+  //   json.decode(jsonResult).forEach(
+  //     (dynamic jsonItem) {
+  //       final HasherKennelMapModel item = _$HasherKennelMapModelFromJson(jsonItem);
 
-        items.add(item);
-      },
-    );
+  //       items.add(item);
+  //     },
+  //   );
 
-    if (items.isEmpty) {
-      return null;
-    }
+  //   if (items.isEmpty) {
+  //     return null;
+  //   }
 
-    return items;
-  }
+  //   return items;
+  // }
 }
 
 class HasherKennelMapTableHelper with BaseFields implements BaseTableHelper {
@@ -176,12 +181,12 @@ class HasherKennelMapTableHelper with BaseFields implements BaseTableHelper {
     await db.execute(sql);
   }
 
-  @override
-  Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = _$HasherKennelMapModelToJson(item);
+  // @override
+  // Map<String, dynamic> toMap(dynamic item) {
+  //   final Map<String, dynamic> map = _$HasherKennelMapModelToJson(item);
 
-    return map;
-  }
+  //   return map;
+  // }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {

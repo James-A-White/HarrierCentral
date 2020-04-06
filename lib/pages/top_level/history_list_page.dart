@@ -21,7 +21,17 @@ class HistoryListPage extends StatefulWidget {
 }
 
 class HistoryListResults {
-  HistoryListResults({this.totalRunsThisKennel, this.totalHaringThisKennel, this.kennelName, this.kennelShortName, this.kennelId, this.kennelLogo, this.historicalPackRunCount, this.historicalHaringCount, this.historicalCountIsEstimate});
+  HistoryListResults({
+    this.totalRunsThisKennel,
+    this.totalHaringThisKennel,
+    this.kennelName,
+    this.kennelShortName,
+    this.kennelId,
+    this.kennelLogo,
+    this.historicalPackRunCount,
+    this.historicalHaringCount,
+    this.historicalCountIsEstimate,
+  });
 
   final int totalRunsThisKennel;
   final int totalHaringThisKennel;
@@ -169,14 +179,13 @@ class HistoryListPageState extends State<HistoryListPage> {
                             //     },);
                             // } else {
 
-
-                              return KennelRunHistoryCountListItem(
-                                //kennelInfo: runCountsList[index - 1],
-                                 kennelInfo: runCountsList[index],
-                                refreshCounters: () {
-                                  refreshRunHistoryFromTable(true);
-                                },
-                              );
+                            return KennelRunHistoryCountListItem(
+                              //kennelInfo: runCountsList[index - 1],
+                              kennelInfo: runCountsList[index],
+                              refreshCounters: () {
+                                refreshRunHistoryFromTable(true);
+                              },
+                            );
                             //}
                           },
                         ),

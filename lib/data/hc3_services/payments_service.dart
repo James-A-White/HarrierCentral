@@ -43,6 +43,11 @@ class PaymentsModel implements BaseModel {
     this.updatedAt,
   });
 
+  factory PaymentsModel.fromJson(Map<String,dynamic> json) => _$PaymentsModelFromJson(json);
+ 
+  @override
+  Map<String,dynamic> toJson() => _$PaymentsModelToJson(this);
+
   final String paymentId;
   final String kennelId;
   final String paidBy;
@@ -66,24 +71,24 @@ class PaymentsModel implements BaseModel {
   final int removed;
   final DateTime updatedAt;
 
-  @override
-  List<PaymentsModel> itemsFromJson(String jsonResult) {
-    final List<PaymentsModel> items = <PaymentsModel>[];
+  // @override
+  // List<PaymentsModel> itemsFromJson(String jsonResult) {
+  //   final List<PaymentsModel> items = <PaymentsModel>[];
 
-    json.decode(jsonResult).forEach(
-      (dynamic jsonItem) {
-        final PaymentsModel item = _$PaymentsModelFromJson(jsonItem);
+  //   json.decode(jsonResult).forEach(
+  //     (dynamic jsonItem) {
+  //       final PaymentsModel item = _$PaymentsModelFromJson(jsonItem);
 
-        items.add(item);
-      },
-    );
+  //       items.add(item);
+  //     },
+  //   );
 
-    if (items.isEmpty) {
-      return null;
-    }
+  //   if (items.isEmpty) {
+  //     return null;
+  //   }
 
-    return items;
-  }
+  //   return items;
+  // }
 }
 
 class PaymentsTableHelper with BaseFields implements BaseTableHelper {
@@ -181,11 +186,11 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
     // await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  @override
-  Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = _$PaymentsModelToJson(item);
-    return map;
-  }
+  // @override
+  // Map<String, dynamic> toMap(dynamic item) {
+  //   final Map<String, dynamic> map = _$PaymentsModelToJson(item);
+  //   return map;
+  // }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {

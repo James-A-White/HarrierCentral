@@ -64,6 +64,11 @@ class KennelsModel implements BaseModel {
       this.updatedAt,
       this.removed});
 
+  factory KennelsModel.fromJson(Map<String,dynamic> json) => _$KennelsModelFromJson(json);
+ 
+  @override
+  Map<String,dynamic> toJson() => _$KennelsModelToJson(this);
+
   final String kennelId;
   final String cityId;
   final String regionId;
@@ -114,25 +119,25 @@ class KennelsModel implements BaseModel {
   final DateTime updatedAt;
   final int removed;
 
-  @override
-  List<KennelsModel> itemsFromJson(String jsonResult) {
-    final List<KennelsModel> items = <KennelsModel>[];
+  // @override
+  // List<KennelsModel> itemsFromJson(String jsonResult) {
+  //   final List<KennelsModel> items = <KennelsModel>[];
 
-    KennelsModel item;
+  //   KennelsModel item;
 
-    json.decode(jsonResult).forEach(
-      (dynamic jsonItem) {
-        item = _$KennelsModelFromJson(jsonItem);
-        items.add(item);
-      },
-    );
+  //   json.decode(jsonResult).forEach(
+  //     (dynamic jsonItem) {
+  //       item = _$KennelsModelFromJson(jsonItem);
+  //       items.add(item);
+  //     },
+  //   );
 
-    if (items.isEmpty) {
-      return null;
-    }
+  //   if (items.isEmpty) {
+  //     return null;
+  //   }
 
-    return items;
-  }
+  //   return items;
+  // }
 }
 
 class KennelsTableHelper with BaseFields implements BaseTableHelper {
@@ -265,11 +270,11 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  @override
-  Map<String, dynamic> toMap(dynamic item) {
-    final Map<String,dynamic> map = _$KennelsModelToJson(item);
-    return map;
-  }
+  // @override
+  // Map<String, dynamic> toMap(dynamic item) {
+  //   final Map<String,dynamic> map = _$KennelsModelToJson(item);
+  //   return map;
+  // }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {

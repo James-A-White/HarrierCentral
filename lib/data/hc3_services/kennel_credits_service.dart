@@ -21,6 +21,11 @@ class KennelCreditsModel implements BaseModel {
     this.removed,
   });
 
+  factory KennelCreditsModel.fromJson(Map<String,dynamic> json) => _$KennelCreditsModelFromJson(json);
+ 
+  @override
+  Map<String,dynamic> toJson() => _$KennelCreditsModelToJson(this);
+
   final String kennelCreditId;
   final String userId;
   final String kennelId;
@@ -29,24 +34,24 @@ class KennelCreditsModel implements BaseModel {
   final DateTime updatedAt;
   final int removed;
 
-  @override
-  List<KennelCreditsModel> itemsFromJson(String jsonResult) {
-    final List<KennelCreditsModel> items = <KennelCreditsModel>[];
+  // @override
+  // List<KennelCreditsModel> itemsFromJson(String jsonResult) {
+  //   final List<KennelCreditsModel> items = <KennelCreditsModel>[];
 
-    json.decode(jsonResult).forEach(
-      (dynamic jsonItem) {
-        final KennelCreditsModel item = _$KennelCreditsModelFromJson(jsonItem);
+  //   json.decode(jsonResult).forEach(
+  //     (dynamic jsonItem) {
+  //       final KennelCreditsModel item = _$KennelCreditsModelFromJson(jsonItem);
 
-        items.add(item);
-      },
-    );
+  //       items.add(item);
+  //     },
+  //   );
 
-    if (items.isEmpty) {
-      return null;
-    }
+  //   if (items.isEmpty) {
+  //     return null;
+  //   }
 
-    return items;
-  }
+  //   return items;
+  // }
 }
 
 class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
@@ -97,11 +102,11 @@ class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  @override
-  Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = _$KennelCreditsModelToJson(item);
-    return map;
-  }
+  // @override
+  // Map<String, dynamic> toMap(dynamic item) {
+  //   final Map<String, dynamic> map = _$KennelCreditsModelToJson(item);
+  //   return map;
+  // }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {

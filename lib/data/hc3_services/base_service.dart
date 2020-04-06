@@ -9,9 +9,34 @@ import 'package:harrier_central/util/constants.dart';
 
 class BaseModel {
   BaseModel();
-  List<BaseModel> itemsFromJson(String jsonResult) {
-    return null;
-  }
+  factory BaseModel.fromJson() => null;
+
+  Map<String,dynamic> toJson() => null;
+
+  // List<BaseModel> itemsFromJson(String jsonResult) {
+  //   return null;
+  // }
+
+  //   List<dynamic> itemsFromJson(String jsonResult) {
+  //   final List<dynamic> items = <dynamic>[];
+
+  //   dynamic item;
+
+  //   json.decode(jsonResult).forEach(
+  //     (dynamic jsonItem) {
+  //       item = BaseModel.fromJson(jsonItem);
+  //       items.add(item);
+  //     },
+  //   );
+
+  //   if (items.isEmpty) {
+  //     return null;
+  //   }
+
+  //   return items;
+  // }
+
+
 }
 
 enum AppDomainType {user,event,kennel}
@@ -32,9 +57,9 @@ class BaseTableHelper {
 
   Future<dynamic> createTable(Database db, int version, TableType tableType) async {}
 
-  Map<String, dynamic> toMap(BaseModel item) {
-    return null;
-  }
+  // Map<String, dynamic> toMap(BaseModel item) {
+  //   return null;
+  // }
 
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
     return null;

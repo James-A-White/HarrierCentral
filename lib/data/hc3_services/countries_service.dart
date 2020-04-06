@@ -13,6 +13,11 @@ part 'countries_service.g.dart';
 class CountriesModel implements BaseModel {
   CountriesModel({this.countryId, this.countryCode, this.latitude, this.longitude, this.countryName, this.continentCode, this.flagFile, this.currencyCode, this.primaryCultureCode, this.showRegion, this.currencySymbol, this.digitsAfterDecimal, this.distancePreference, this.removed, this.updatedAt});
 
+  factory CountriesModel.fromJson(Map<String,dynamic> json) => _$CountriesModelFromJson(json);
+ 
+  @override
+  Map<String,dynamic> toJson() => _$CountriesModelToJson(this);
+
   final String countryId;
   final String countryCode;
   final num latitude;
@@ -30,23 +35,23 @@ class CountriesModel implements BaseModel {
   final int removed;
   final DateTime updatedAt;
 
-  @override
-  List<CountriesModel> itemsFromJson(String jsonResult) {
-    final List<CountriesModel> items = <CountriesModel>[];
+  // @override
+  // List<CountriesModel> itemsFromJson(String jsonResult) {
+  //   final List<CountriesModel> items = <CountriesModel>[];
 
-    json.decode(jsonResult).forEach(
-      (dynamic jsonItem) {
-        final CountriesModel item = _$CountriesModelFromJson(jsonItem);
-        items.add(item);
-      },
-    );
+  //   json.decode(jsonResult).forEach(
+  //     (dynamic jsonItem) {
+  //       final CountriesModel item = _$CountriesModelFromJson(jsonItem);
+  //       items.add(item);
+  //     },
+  //   );
 
-    if (items.isEmpty) {
-      return null;
-    }
+  //   if (items.isEmpty) {
+  //     return null;
+  //   }
 
-    return items;
-  }
+  //   return items;
+  // }
 }
 
 class CountriesTableHelper with BaseFields implements BaseTableHelper {
@@ -114,11 +119,11 @@ class CountriesTableHelper with BaseFields implements BaseTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  @override
-  Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = _$CountriesModelToJson(item);
-    return map;
-  }
+  // @override
+  // Map<String, dynamic> toMap(dynamic item) {
+  //   final Map<String, dynamic> map = _$CountriesModelToJson(item);
+  //   return map;
+  // }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {

@@ -57,6 +57,11 @@ class EventModel implements BaseModel {
       this.removed,
       this.updatedAt});
 
+  factory EventModel.fromJson(Map<String,dynamic> json) => _$EventModelFromJson(json);
+ 
+  @override
+  Map<String,dynamic> toJson() => _$EventModelToJson(this);
+
   final String eventId;
   final DateTime eventStartDatetime;
   final String kennelId;
@@ -95,37 +100,37 @@ class EventModel implements BaseModel {
   final int removed;
   final DateTime updatedAt;
 
-  @override
-  List<EventModel> itemsFromJson(String jsonResult) {
-    final List<EventModel> items = <EventModel>[];
+  // @override
+  // List<EventModel> itemsFromJson(String jsonResult) {
+  //   final List<EventModel> items = <EventModel>[];
 
-    json.decode(jsonResult).forEach(
-      (dynamic jsonItem) {
-        final EventModel item = _$EventModelFromJson(jsonItem);
+  //   json.decode(jsonResult).forEach(
+  //     (dynamic jsonItem) {
+  //       final EventModel item = _$EventModelFromJson(jsonItem);
 
-        // CUSTOMIZATION
+  //       // CUSTOMIZATION
 
-        // NOTE: Event images can either be full URLs or they can be partial URLs in the case
-        // when events have been uploaded directly to the DB using the HcWeb application.
-        // For partial URLs we need to append the root URL. The Root URL is stored in the
-        // Server settings table and copied into the string prefs on app startup.
-        if ((item.eventImage != null) && (item.eventImage.isNotEmpty) && (!item.eventImage.startsWith('http'))) {
-          final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
-          if ((s != null) && (s.isNotEmpty)) {
-            item.eventImage = s + item.eventImage;
-          }
-        }
+  //       // NOTE: Event images can either be full URLs or they can be partial URLs in the case
+  //       // when events have been uploaded directly to the DB using the HcWeb application.
+  //       // For partial URLs we need to append the root URL. The Root URL is stored in the
+  //       // Server settings table and copied into the string prefs on app startup.
+  //       if ((item.eventImage != null) && (item.eventImage.isNotEmpty) && (!item.eventImage.startsWith('http'))) {
+  //         final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+  //         if ((s != null) && (s.isNotEmpty)) {
+  //           item.eventImage = s + item.eventImage;
+  //         }
+  //       }
 
-        items.add(item);
-      },
-    );
+  //       items.add(item);
+  //     },
+  //   );
 
-    if (items.isEmpty) {
-      return null;
-    }
+  //   if (items.isEmpty) {
+  //     return null;
+  //   }
 
-    return items;
-  }
+  //   return items;
+  // }
 }
 
 class EventsTableHelper with BaseFields implements BaseTableHelper {
@@ -236,11 +241,11 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  @override
-  Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = _$EventModelToJson(item);
-    return map;
-  }
+  // @override
+  // Map<String, dynamic> toMap(dynamic item) {
+  //   final Map<String, dynamic> map = _$EventModelToJson(item);
+  //   return map;
+  // }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {

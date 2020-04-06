@@ -35,6 +35,11 @@ class ReceiptsModel implements BaseModel {
     this.updatedAt,
   });
 
+  factory ReceiptsModel.fromJson(Map<String,dynamic> json) => _$ReceiptsModelFromJson(json);
+ 
+  @override
+  Map<String,dynamic> toJson() => _$ReceiptsModelToJson(this);
+
   final String receiptId;
   final String eventId;
   final String userId;
@@ -51,23 +56,23 @@ class ReceiptsModel implements BaseModel {
   final int removed;
   final DateTime updatedAt;
 
-  @override
-  List<ReceiptsModel> itemsFromJson(String jsonResult) {
-    final List<ReceiptsModel> items = <ReceiptsModel>[];
+  // @override
+  // List<ReceiptsModel> itemsFromJson(String jsonResult) {
+  //   final List<ReceiptsModel> items = <ReceiptsModel>[];
 
-    json.decode(jsonResult).forEach(
-      (dynamic jsonItem) {
-        final ReceiptsModel item = _$ReceiptsModelFromJson(jsonItem);
-        items.add(item);
-      },
-    );
+  //   json.decode(jsonResult).forEach(
+  //     (dynamic jsonItem) {
+  //       final ReceiptsModel item = _$ReceiptsModelFromJson(jsonItem);
+  //       items.add(item);
+  //     },
+  //   );
 
-    if (items.isEmpty) {
-      return null;
-    }
+  //   if (items.isEmpty) {
+  //     return null;
+  //   }
 
-    return items;
-  }
+  //   return items;
+  // }
 }
 
 class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
@@ -134,11 +139,11 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  @override
-  Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = _$ReceiptsModelToJson(item);
-    return map;
-  }
+  // @override
+  // Map<String, dynamic> toMap(dynamic item) {
+  //   final Map<String, dynamic> map = _$ReceiptsModelToJson(item);
+  //   return map;
+  // }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {

@@ -38,6 +38,11 @@ class HashersModel implements BaseModel {
     this.updatedAt,
   });
 
+  factory HashersModel.fromJson(Map<String,dynamic> json) => _$HashersModelFromJson(json);
+ 
+  @override
+  Map<String,dynamic> toJson() => _$HashersModelToJson(this);
+
   final String hasherId;
   final String homeKennelId;
   String firstName;
@@ -55,24 +60,24 @@ class HashersModel implements BaseModel {
   final int removed;
   final DateTime updatedAt;
 
-  @override
-  List<HashersModel> itemsFromJson(String jsonResult) {
-    final List<HashersModel> items = <HashersModel>[];
+  // @override
+  // List<HashersModel> itemsFromJson(String jsonResult) {
+  //   final List<HashersModel> items = <HashersModel>[];
 
-    json.decode(jsonResult).forEach(
-      (dynamic jsonItem) {
-        final HashersModel item = _$HashersModelFromJson(jsonItem);
+  //   json.decode(jsonResult).forEach(
+  //     (dynamic jsonItem) {
+  //       final HashersModel item = _$HashersModelFromJson(jsonItem);
 
-        items.add(item);
-      },
-    );
+  //       items.add(item);
+  //     },
+  //   );
 
-    if (items.isEmpty) {
-      return null;
-    }
+  //   if (items.isEmpty) {
+  //     return null;
+  //   }
 
-    return items;
-  }
+  //   return items;
+  // }
 }
 
 class HashersTableHelper with BaseFields implements BaseTableHelper {
@@ -139,11 +144,11 @@ class HashersTableHelper with BaseFields implements BaseTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  @override
-  Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = _$HashersModelToJson(item);
-    return map;
-  }
+  // @override
+  // Map<String, dynamic> toMap(dynamic item) {
+  //   final Map<String, dynamic> map = _$HashersModelToJson(item);
+  //   return map;
+  // }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {

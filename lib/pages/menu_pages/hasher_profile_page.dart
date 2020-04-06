@@ -158,7 +158,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       });
       final List<Map<String, dynamic>> results = await db.rawQuery(query);
       if ((results != null) && (results.isNotEmpty)) {
-        hasher = hashersTableHelper.fromMap(results[0]);
+        hasher = HashersModel.fromJson(results[0]);
         if (widget.dataContext == EnumDataContext.kennel) {
           hkmData = hasherKennelMapTableHelper.fromMap(results[0]);
         }
@@ -365,7 +365,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
         apiCall.then((String jsonResponse) async {
           final dynamic jsonResult = json.decode(jsonResponse);
-          final HashersModel h = hashersTableHelper.fromMap(jsonResult[0][0]);
+          final HashersModel h = HashersModel.fromJson(jsonResult[0][0]);
           setState(() {
             if (widget.pageType == EnumMyProfilePageType.myProfile) {
               setStringPref(StringPrefsEnum.profilePhotoUrl, h.photo);

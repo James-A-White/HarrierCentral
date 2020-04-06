@@ -20,6 +20,11 @@ class RegionsModel implements BaseModel {
     this.updatedAt,
   });
 
+  factory RegionsModel.fromJson(Map<String,dynamic> json) => _$RegionsModelFromJson(json);
+ 
+  @override
+  Map<String,dynamic> toJson() => _$RegionsModelToJson(this);
+
   final String regionId;
   final String regionName;
   final String countryId;
@@ -27,23 +32,6 @@ class RegionsModel implements BaseModel {
   final int removed;
   final DateTime updatedAt;
 
-  @override
-  List<RegionsModel> itemsFromJson(String jsonResult) {
-    final List<RegionsModel> items = <RegionsModel>[];
-
-    json.decode(jsonResult).forEach(
-      (dynamic jsonItem) {
-        final RegionsModel item = _$RegionsModelFromJson(jsonItem);
-        items.add(item);
-      },
-    );
-
-    if (items.isEmpty) {
-      return null;
-    }
-
-    return items;
-  }
 }
 
 // TODO(James): Eventually add the flag file to the Regions and Cities JSON or remove it completely from the app
@@ -94,11 +82,11 @@ class RegionsTableHelper with BaseFields implements BaseTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-   @override
-  Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = _$RegionsModelToJson(item);
-    return map;
-  }
+  //  @override
+  // Map<String, dynamic> toMap(dynamic item) {
+  //   final Map<String, dynamic> map = _$RegionsModelToJson(item);
+  //   return map;
+  // }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
@@ -109,7 +97,7 @@ class RegionsTableHelper with BaseFields implements BaseTableHelper {
 
   @override
   RegionsModel fromMap(Map<String, dynamic> map) {
-    final RegionsModel item = _$RegionsModelFromJson(map);
+    final RegionsModel item = RegionsModel.fromJson(map);
     return item;
   }
 }
