@@ -13,6 +13,11 @@ import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 
+import 'package:json_annotation/json_annotation.dart';
+
+part 'hasher_event_map_service.g.dart';
+
+@JsonSerializable(fieldRename: FieldRename.none)
 class HasherEventMapModel implements BaseModel {
   HasherEventMapModel(
       {this.hemId,
@@ -58,29 +63,9 @@ class HasherEventMapModel implements BaseModel {
   List<HasherEventMapModel> itemsFromJson(String jsonResult) {
     final List<HasherEventMapModel> items = <HasherEventMapModel>[];
 
-    HasherEventMapModel item;
-
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
-        item = HasherEventMapModel(
-            hemId: jsonItem['hemId'],
-            userId: jsonItem['userId'],
-            eventId: jsonItem['eventId'],
-            hasherOwnEventId: jsonItem['hasherOwnEventId'],
-            userStartEvent: jsonItem['userStartEvent'],
-            userEndEvent: jsonItem['userEndEvent'],
-            rsvpState: jsonItem['rsvpState'],
-            attendenceState: jsonItem['attendenceState'],
-            isHare: jsonItem['isHare'],
-            eventNotificationPreference: jsonItem['eventNotificationPreference'],
-            eventEmailAlertPreference: jsonItem['eventEmailAlertPreference'],
-            eventCountOverride: jsonItem['eventCountOverride'],
-            virginVisitorType: jsonItem['virginVisitorType'],
-            displayName: jsonItem['displayName'],
-            email: jsonItem['email'],
-            phoneNumber: jsonItem['phoneNumber'],
-            updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
-            removed: jsonItem['removed']);
+        final HasherEventMapModel item = _$HasherEventMapModelFromJson(jsonItem);
 
         items.add(item);
       },
@@ -170,87 +155,27 @@ class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
 
   @override
   Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = <String, dynamic>{
-      colHemId: item.hemId,
-      colUserId: item.userId,
-      colEventId: item.id,
-      colHasherOwnEventId: item.hasherOwnEventId,
-      colUserStartEvent: item.userStartEvent,
-      colUserEndEvent: item.userEndEvent,
-      colRsvpState: item.rsvpState,
-      colAttendenceState: item.attendenceState,
-      colIsHare: item.isHare,
-      colEventNotificationPreference: item.eventNotificationPreference,
-      colEventEmailAlertPreference: item.eventEmailAlertPreference,
-      colEventCountOverride: item.eventCountOverride,
-      colVirginVisitorType: item.virginVisitorType,
-      colDisplayName: item.displayName,
-      colEmail: item.email,
-      colPhoneNumber: item.phoneNumber,
-      colUpdatedAt: item.updatedAt.toString(),
-      colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
-      colRemoved: item.removed
-    };
+    final Map<String, dynamic> map = _$HasherEventMapModelToJson(item);
 
     return map;
   }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final Map<String, dynamic> outputMap = <String, dynamic>{
-      colHemId: inputMap[colHemId],
-      colUserId: inputMap[colUserId],
-      colEventId: inputMap[colEventId],
-      colHasherOwnEventId: inputMap[colHasherOwnEventId],
-      colUserStartEvent: inputMap[colUserStartEvent],
-      colUserEndEvent: inputMap[colUserEndEvent],
-      colRsvpState: inputMap[colRsvpState],
-      colAttendenceState: inputMap[colAttendenceState],
-      colIsHare: inputMap[colIsHare],
-      colEventNotificationPreference: inputMap[colEventNotificationPreference],
-      colEventEmailAlertPreference: inputMap[colEventEmailAlertPreference],
-      colEventCountOverride: inputMap[colEventCountOverride],
-      colVirginVisitorType: inputMap[colVirginVisitorType],
-      colDisplayName: inputMap[colDisplayName],
-      colEmail: inputMap[colEmail],
-      colPhoneNumber: inputMap[colPhoneNumber],
-      colUpdatedAt: inputMap[colUpdatedAt],
-      colUpdatedAtValue: DateTime.parse(inputMap[colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
-      colRemoved: inputMap[colRemoved],
-    };
+    final HasherEventMapModel item = _$HasherEventMapModelFromJson(inputMap);
+    final Map<String, dynamic> outputMap = _$HasherEventMapModelToJson(item);
 
     return outputMap;
   }
 
   @override
   HasherEventMapModel fromMap(Map<String, dynamic> map) {
-    final HasherEventMapModel item = HasherEventMapModel(
-      hemId: map[colHemId],
-      userId: map[colUserId],
-      eventId: map[colEventId],
-      hasherOwnEventId: map[colHasherOwnEventId],
-      userStartEvent: map[colUserStartEvent],
-      userEndEvent: map[colUserEndEvent],
-      rsvpState: map[colRsvpState],
-      attendenceState: map[colAttendenceState],
-      isHare: map[colIsHare],
-      eventNotificationPreference: map[colEventNotificationPreference],
-      eventEmailAlertPreference: map[colEventEmailAlertPreference],
-      eventCountOverride: map[colEventCountOverride],
-      virginVisitorType: map[colVirginVisitorType],
-      displayName: map[colDisplayName],
-      email: map[colEmail],
-      phoneNumber: map[colPhoneNumber],
-      updatedAt: DateTime.parse(map[colUpdatedAt].toString().substring(0, 19)),
-      removed: map[colRemoved],
-    );
-
+    final HasherEventMapModel item = _$HasherEventMapModelFromJson(map);
     return item;
   }
 }
 
 class HasherEventMapService {
-
   //==============  Domain specific functions ===========
 
   Future<Map<String, String>> sendRunCountReportByEmail({String kennelId, String kennelName}) async {
@@ -286,10 +211,10 @@ class HasherEventMapService {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEvent');
 
-    final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper,hasherEventMapTableHelper.colUpdatedAtValue, tableType: TableType.hemEventAdmin);
-    final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper,hasherKennelMapTableHelper.colUpdatedAtValue, tableType: TableType.hkmEventAdmin);
-    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper,paymentsTableHelper.colUpdatedAtValue,tableType: appDomainType == AppDomainType.event ? TableType.paymentsEvent : TableType.paymentsUser);
-    final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(kennelCreditsTableHelper,kennelCreditsTableHelper.colUpdatedAtValue);
+    final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper, hasherEventMapTableHelper.colUpdatedAtValue, tableType: TableType.hemEventAdmin);
+    final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper, hasherKennelMapTableHelper.colUpdatedAtValue, tableType: TableType.hkmEventAdmin);
+    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper, paymentsTableHelper.colUpdatedAtValue, tableType: appDomainType == AppDomainType.event ? TableType.paymentsEvent : TableType.paymentsUser);
+    final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(kennelCreditsTableHelper, kennelCreditsTableHelper.colUpdatedAtValue);
 
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
     final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
@@ -312,7 +237,6 @@ class HasherEventMapService {
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
       'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString()
-
     });
 
     final http.Response response = await http.post(BASE_API_URL + 'hc3_join_event', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
@@ -343,8 +267,8 @@ class HasherEventMapService {
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor');
 
     final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper, hasherEventMapTableHelper.colUpdatedAtValue, tableType: TableType.hemEventAdmin);
-    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper,paymentsTableHelper.colUpdatedAtValue,tableType: appDomainType == AppDomainType.event ? TableType.paymentsEvent : TableType.paymentsUser);
-    final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(kennelCreditsTableHelper,kennelCreditsTableHelper.colUpdatedAtValue);
+    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper, paymentsTableHelper.colUpdatedAtValue, tableType: appDomainType == AppDomainType.event ? TableType.paymentsEvent : TableType.paymentsUser);
+    final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(kennelCreditsTableHelper, kennelCreditsTableHelper.colUpdatedAtValue);
 
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
     final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);

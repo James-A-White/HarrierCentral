@@ -13,6 +13,10 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/util/enums.dart';
 
+import 'package:json_annotation/json_annotation.dart';
+
+part 'payments_service.g.dart';
+@JsonSerializable(fieldRename: FieldRename.none)
 class PaymentsModel implements BaseModel {
   PaymentsModel({
     this.paymentId,
@@ -66,33 +70,9 @@ class PaymentsModel implements BaseModel {
   List<PaymentsModel> itemsFromJson(String jsonResult) {
     final List<PaymentsModel> items = <PaymentsModel>[];
 
-    PaymentsModel item;
-
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
-        item = PaymentsModel(
-            paymentId: jsonItem['paymentId'],
-            kennelId: jsonItem['kennelId'],
-            paidBy: jsonItem['paidBy'],
-            hemId: jsonItem['hemId'],
-            eventId: jsonItem['eventId'],
-            paidTo: jsonItem['paidTo'],
-            creditAmount: jsonItem['creditAmount'],
-            debitAmount: jsonItem['debitAmount'],
-            paidDate: DateTime.parse(jsonItem['paidDate'].toString().substring(0, 19)),
-            paymentType: jsonItem['paymentType'],
-            productType: jsonItem['productType'],
-            cancelledDate: DateTime.parse(jsonItem['cancelledDate'].toString().substring(0, 19)),
-            cancelledBy: jsonItem['cancelledBy'],
-            confirmedDate: DateTime.parse(jsonItem['confirmedDate'].toString().substring(0, 19)),
-            confirmedBy: jsonItem['confirmedBy'],
-            paymentReference: jsonItem['paymentReference'],
-            notes: jsonItem['notes'],
-            doPayForExtras: jsonItem['doPayForExtras'],
-            surcharge: jsonItem['surcharge'],
-            paymentProvider: jsonItem['paymentProvider'],
-            updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
-            removed: jsonItem['removed']);
+        final PaymentsModel item = _$PaymentsModelFromJson(jsonItem);
 
         items.add(item);
       },
@@ -203,62 +183,14 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
 
   @override
   Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = <String, dynamic>{
-      colPaymentId: item.paymentId,
-      colKennelId: item.kennelId,
-      colPaidBy: item.paidBy,
-      colHemId: item.hemId,
-      colEventId: item.id,
-      colPaidTo: item.paidTo,
-      colCreditAmount: item.creditAmount,
-      colDebitAmount: item.debitAmount,
-      colPaidDate: item.paidDate.toString(),
-      colPaymentType: item.paymentType,
-      colProductType: item.productType,
-      colCancelledDate: item.cancelledDate.toString(),
-      colCancelledBy: item.cancelledBy,
-      colConfirmedDate: item.confirmedDate,
-      colConfirmedBy: item.confirmedBy,
-      colPaymentReference: item.paymentReference,
-      colNotes: item.notes,
-      colDoPayForExtras: item.doPayForExtras,
-      colSurcharge: item.surcharge,
-      colPaymentProvider: item.paymentProvider,
-      colUpdatedAt: item.updatedAt.toString(),
-      colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
-      colRemoved: item.removed
-    };
-
+    final Map<String, dynamic> map = _$PaymentsModelToJson(item);
     return map;
   }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final Map<String, dynamic> outputMap = <String, dynamic>{
-      colPaymentId: inputMap[colPaymentId],
-      colKennelId: inputMap[colKennelId],
-      colPaidBy: inputMap[colPaidBy],
-      colHemId: inputMap[colHemId],
-      colEventId: inputMap[colEventId],
-      colPaidTo: inputMap[colPaidTo],
-      colCreditAmount: inputMap[colCreditAmount],
-      colDebitAmount: inputMap[colDebitAmount],
-      colPaidDate: inputMap[colPaidDate],
-      colPaymentType: inputMap[colPaymentType],
-      colProductType: inputMap[colProductType],
-      colCancelledDate: inputMap[colCancelledDate],
-      colCancelledBy: inputMap[colCancelledBy],
-      colConfirmedDate: inputMap[colConfirmedDate],
-      colConfirmedBy: inputMap[colConfirmedBy],
-      colPaymentReference: inputMap[colPaymentReference],
-      colNotes: inputMap[colNotes],
-      colDoPayForExtras: inputMap[colDoPayForExtras],
-      colSurcharge: inputMap[colSurcharge],
-      colPaymentProvider: inputMap[colPaymentProvider],
-      colUpdatedAt: inputMap[colUpdatedAt],
-      colUpdatedAtValue: DateTime.parse(inputMap[colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
-      colRemoved: inputMap[colRemoved],
-    };
+    final PaymentsModel item = _$PaymentsModelFromJson(inputMap);
+    final Map<String, dynamic> outputMap = _$PaymentsModelToJson(item);
 
     return outputMap;
   }
@@ -273,31 +205,7 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
 
   @override
   PaymentsModel fromMap(Map<String, dynamic> map) {
-    final PaymentsModel item = PaymentsModel(
-      paymentId: map[colPaymentId],
-      kennelId: map[colKennelId],
-      paidBy: map[colPaidBy],
-      hemId: map[colHemId],
-      eventId: map[colEventId],
-      paidTo: map[colPaidTo],
-      creditAmount: map[colCreditAmount],
-      debitAmount: map[colDebitAmount],
-      paidDate: (map[colPaidDate] == null) ? null : DateTime.parse(map[colPaidDate].toString().substring(0, 19)),
-      paymentType: map[colPaymentType],
-      productType: map[colProductType],
-      cancelledDate: (map[colCancelledDate] == null) ? null : DateTime.parse(map[colCancelledDate].toString().substring(0, 19)),
-      cancelledBy: map[colCancelledBy],
-      confirmedDate: (map[colConfirmedDate] == null) ? null : DateTime.parse(map[colConfirmedDate].toString().substring(0, 19)),
-      confirmedBy: map[colConfirmedBy],
-      paymentReference: map[colPaymentReference],
-      notes: map[colNotes],
-      doPayForExtras: map[colDoPayForExtras],
-      surcharge: map[colSurcharge],
-      paymentProvider: map[colPaymentProvider],
-      updatedAt: (map[colUpdatedAt] == null) ? null : DateTime.parse(map[colUpdatedAt].toString().substring(0, 19)),
-      removed: map[colRemoved],
-    );
-
+    final PaymentsModel item = _$PaymentsModelFromJson(map);
     return item;
   }
 }

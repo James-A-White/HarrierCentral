@@ -11,6 +11,11 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/data/services/service_common.dart';
 
+import 'package:json_annotation/json_annotation.dart';
+
+part 'receipts_service.g.dart';
+
+@JsonSerializable(fieldRename: FieldRename.none)
 class ReceiptsModel implements BaseModel {
   ReceiptsModel({
     this.receiptId,
@@ -50,27 +55,9 @@ class ReceiptsModel implements BaseModel {
   List<ReceiptsModel> itemsFromJson(String jsonResult) {
     final List<ReceiptsModel> items = <ReceiptsModel>[];
 
-    ReceiptsModel item;
-
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
-        item = ReceiptsModel(
-            receiptId: jsonItem['receiptId'],
-            eventId: jsonItem['eventId'],
-            userId: jsonItem['userId'],
-            receiptAmount: jsonItem['receiptAmount'],
-            costCategory: jsonItem['costCategory'],
-            dateUploaded: DateTime.parse(jsonItem['dateUploaded'].toString().substring(0, 19)),
-            imageUrl: jsonItem['imageUrl'],
-            receiptShortDescription: jsonItem['receiptShortDescription'],
-            notes: jsonItem['notes'],
-            reimbursedBy: jsonItem['reimbursedBy'],
-            reimbursedOn: jsonItem['reimbursedOn'],
-            reimbursedAmount: jsonItem['reimbursedAmount'],
-            reimbursedNotes: jsonItem['reimbursedNotes'],
-            updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
-            removed: jsonItem['removed']);
-
+        final ReceiptsModel item = _$ReceiptsModelFromJson(jsonItem);
         items.add(item);
       },
     );
@@ -118,7 +105,7 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
   final String colReimbursedNotes = 'reimbursedNotes';
 
   @override
-  Future<dynamic> createTable(Database db, int version,TableType tableType) async {
+  Future<dynamic> createTable(Database db, int version, TableType tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -149,72 +136,20 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
 
   @override
   Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = <String, dynamic>{
-      colReceiptId: item.receiptId,
-      colEventId: item.id,
-      colUserId: item.userId,
-      colReceiptAmount: item.receiptAmount,
-      colCostCategory: item.costCategory,
-      colDateUploaded: item.dateUploaded,
-      colImageUrl: item.imageUrl,
-      colReceiptShortDescription: item.receiptShortDescription,
-      colNotes: item.notes,
-      colReimbursedBy: item.reimbursedBy,
-      colReimbursedOn: item.reimbursedOn,
-      colReimbursedAmount: item.reimbursedAmount,
-      colReimbursedNotes: item.reimbursedNotes,
-      colUpdatedAt: item.updatedAt.toString(),
-      colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
-      colRemoved: item.removed
-    };
-
+    final Map<String, dynamic> map = _$ReceiptsModelToJson(item);
     return map;
   }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final Map<String, dynamic> outputMap = <String, dynamic>{
-      colReceiptId: inputMap[colReceiptId],
-      colEventId: inputMap[colEventId],
-      colUserId: inputMap[colUserId],
-      colReceiptAmount: inputMap[colReceiptAmount],
-      colCostCategory: inputMap[colCostCategory],
-      colDateUploaded: inputMap[colDateUploaded],
-      colImageUrl: inputMap[colImageUrl],
-      colReceiptShortDescription: inputMap[colReceiptShortDescription],
-      colNotes: inputMap[colNotes],
-      colReimbursedBy: inputMap[colReimbursedBy],
-      colReimbursedOn: inputMap[colReimbursedOn],
-      colReimbursedAmount: inputMap[colReimbursedAmount],
-      colReimbursedNotes: inputMap[colReimbursedNotes],
-      colUpdatedAt: inputMap[colUpdatedAt],
-      colUpdatedAtValue: DateTime.parse(inputMap[colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
-      colRemoved: inputMap[colRemoved],
-    };
-
+    final ReceiptsModel item = _$ReceiptsModelFromJson(inputMap);
+    final Map<String, dynamic> outputMap = _$ReceiptsModelToJson(item);
     return outputMap;
   }
 
   @override
   ReceiptsModel fromMap(Map<String, dynamic> map) {
-    final ReceiptsModel item = ReceiptsModel(
-      receiptId: map[colReceiptId],
-      eventId: map[colEventId],
-      userId: map[colUserId],
-      receiptAmount: map[colReceiptAmount],
-      costCategory: map[colCostCategory],
-      dateUploaded: DateTime.parse(map[colDateUploaded].toString().substring(0, 19)),
-      imageUrl: map[colImageUrl],
-      receiptShortDescription: map[colReceiptShortDescription],
-      notes: map[colNotes],
-      reimbursedBy: map[colReimbursedBy],
-      reimbursedOn: map[colReimbursedOn],
-      reimbursedAmount: map[colReimbursedAmount],
-      reimbursedNotes: map[colReimbursedNotes],
-      updatedAt: DateTime.parse(map[colUpdatedAt].toString().substring(0, 19)),
-      removed: map[colRemoved],
-    );
-
+    final ReceiptsModel item = _$ReceiptsModelFromJson(map);
     return item;
   }
 

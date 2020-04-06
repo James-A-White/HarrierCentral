@@ -21,7 +21,6 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
-import 'package:harrier_central/widgets/profile_photo.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 
 class ChooseProfileImage extends StatefulWidget {
@@ -253,12 +252,12 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                         alignment: AlignmentDirectional.center,
                         children: <Widget>[
                           Container(
-                            margin: EdgeInsets.all(0.0),
+                            margin: const EdgeInsets.all(0.0),
                             child: Image.asset('images/other/white_square.jpg', width: 400, height: 400, fit: BoxFit.fitHeight),
                           ),
                           (imageTypeSelection == _SelectedImageTypeEnum.none)
                               ? Container(
-                                  margin: EdgeInsets.all(6.0),
+                                  margin: const EdgeInsets.all(6.0),
                                   // Positioned(
                                   // left: 30,
                                   // right: 30,
@@ -270,7 +269,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                               //,
                               // )
                               : Container(
-                                  margin: EdgeInsets.all(6.0),
+                                  margin: const EdgeInsets.all(6.0),
                                   // Positioned(
                                   // left: 30,
                                   // right: 30,

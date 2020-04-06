@@ -5,6 +5,11 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 
+import 'package:json_annotation/json_annotation.dart';
+
+part 'regions_service.g.dart';
+
+@JsonSerializable(fieldRename: FieldRename.none)
 class RegionsModel implements BaseModel {
   RegionsModel({
     this.regionId,
@@ -26,12 +31,9 @@ class RegionsModel implements BaseModel {
   List<RegionsModel> itemsFromJson(String jsonResult) {
     final List<RegionsModel> items = <RegionsModel>[];
 
-    RegionsModel item;
-
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
-        item = RegionsModel(regionId: jsonItem['regionId'].toString(), regionName: jsonItem['regionName'], countryId: jsonItem['countryId'].toString(), flagFile: jsonItem['flagFile'], updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)), removed: jsonItem['removed']);
-
+        final RegionsModel item = _$RegionsModelFromJson(jsonItem);
         items.add(item);
       },
     );
@@ -72,7 +74,7 @@ class RegionsTableHelper with BaseFields implements BaseTableHelper {
   final String colFlagFile = 'flagFile';
 
   @override
-  Future<dynamic> createTable(Database db, int version,TableType tableType) async {
+  Future<dynamic> createTable(Database db, int version, TableType tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -92,39 +94,22 @@ class RegionsTableHelper with BaseFields implements BaseTableHelper {
     await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
-  @override
+   @override
   Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = <String, dynamic>{colRegionId: item.regionId, colRegionName: item.regionName, colCountryId: item.countryId, colFlagFile: item.flagFile, colUpdatedAt: item.updatedAt.toString(), colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch, colRemoved: item.removed};
-
+    final Map<String, dynamic> map = _$RegionsModelToJson(item);
     return map;
   }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final Map<String, dynamic> outputMap = <String, dynamic>{
-      colRegionId: inputMap[colRegionId],
-      colRegionName: inputMap[colRegionName],
-      colCountryId: inputMap[colCountryId],
-      colFlagFile: inputMap[colFlagFile],
-      colUpdatedAt: inputMap[colUpdatedAt],
-      colUpdatedAtValue: DateTime.parse(inputMap[colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
-      colRemoved: inputMap[colRemoved],
-    };
-
+    final RegionsModel item = _$RegionsModelFromJson(inputMap);
+    final Map<String, dynamic> outputMap = _$RegionsModelToJson(item);
     return outputMap;
   }
 
   @override
   RegionsModel fromMap(Map<String, dynamic> map) {
-    final RegionsModel item = RegionsModel(
-      regionId: map[colRegionId],
-      regionName: map[colRegionName],
-      countryId: map[colCountryId],
-      flagFile: map[colFlagFile],
-      updatedAt: DateTime.parse(map[colUpdatedAt].toString().substring(0, 19)),
-      removed: map[colRemoved],
-    );
-
+    final RegionsModel item = _$RegionsModelFromJson(map);
     return item;
   }
 }

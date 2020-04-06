@@ -12,6 +12,11 @@ import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 
+import 'package:json_annotation/json_annotation.dart';
+
+part 'events_service.g.dart';
+
+@JsonSerializable(fieldRename: FieldRename.none)
 class EventModel implements BaseModel {
   EventModel(
       {this.eventId,
@@ -94,48 +99,9 @@ class EventModel implements BaseModel {
   List<EventModel> itemsFromJson(String jsonResult) {
     final List<EventModel> items = <EventModel>[];
 
-    EventModel item;
-
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
-        item = EventModel(
-            eventId: jsonItem['eventId'],
-            eventStartDatetime: jsonItem['eventStartDatetime'],
-            kennelId: jsonItem['kennelId'],
-            isVisible: jsonItem['isVisible'],
-            isCountedRun: jsonItem['isCountedRun'],
-            eventGeographicScope: jsonItem['eventGeographicScope'],
-            eventNumber: jsonItem['eventNumber'],
-            eventName: jsonItem['eventName'],
-            narrowEventLatitude: jsonItem['narrowEventLatitude'],
-            narrowEventLongitude: jsonItem['narrowEventLongitude'],
-            eventPriceForMembers: jsonItem['eventPriceForMembers'],
-            eventPriceForNonMembers: jsonItem['eventPriceForNonMembers'],
-            eventFacebookId: jsonItem['eventFacebookId'],
-            absoluteEventNumber: jsonItem['absoluteEventNumber'],
-            canEditRunAttendence: jsonItem['canEditRunAttendence'],
-            eventImage: jsonItem['eventImage'],
-            eventDescription: jsonItem['eventDescription'],
-            locationOneLineDesc: jsonItem['locationOneLineDesc'],
-            locationPostCode: jsonItem['locationPostCode'],
-            locationCity: jsonItem['locationCity'],
-            locationStreet: jsonItem['locationStreet'],
-            locationCountry: jsonItem['locationCountry'],
-            locationRegion: jsonItem['locationRegion'],
-            locationSubRegion: jsonItem['locationSubRegion'],
-            hares: jsonItem['hares'],
-            eventPaymentScheme: jsonItem['eventPaymentScheme'],
-            eventPaymentUrl: jsonItem['eventPaymentUrl'],
-            eventPaymentUrlExpires: jsonItem['eventPaymentUrlExpires'],
-            unconfirmedBankXferCount: jsonItem['unconfirmedBankXferCount'],
-            eventPriceForExtras: jsonItem['eventPriceForExtras'],
-            extrasDescription: jsonItem['extrasDescription'],
-            doTrackHashCash: jsonItem['doTrackHashCash'],
-            tags1: jsonItem['tags1'],
-            tags2: jsonItem['tags2'],
-            tags3: jsonItem['tags3'],
-            updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
-            removed: jsonItem['removed']);
+        final EventModel item = _$EventModelFromJson(jsonItem);
 
         // CUSTOMIZATION
 
@@ -204,8 +170,8 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
   final String colLocationCity = 'locationCity';
   final String colLocationStreet = 'locationStreet';
   final String colLocationCountry = 'locationCountry';
-  final String colLocationRegion= 'locationRegion';
-  final String colLocationSubRegion= 'locationSubRegion';
+  final String colLocationRegion = 'locationRegion';
+  final String colLocationSubRegion = 'locationSubRegion';
   final String colHares = 'hares';
   final String colEventPaymentScheme = 'eventPaymentScheme';
   final String colEventPaymentUrl = 'eventPaymentUrl';
@@ -219,7 +185,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
   final String colTags3 = 'tags3';
 
   @override
-  Future<dynamic> createTable(Database db, int version,TableType tableType) async {
+  Future<dynamic> createTable(Database db, int version, TableType tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -272,92 +238,14 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
 
   @override
   Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = <String, dynamic>{
-      colEventId: item.id,
-      colEventStartDatetime: item.eventStartDatetime.toString(),
-      colKennelId: item.kennelId,
-      colIsVisible: item.isVisible,
-      colIsCountedRun: item.isCountedRun,
-      colEventGeographicScope: item.eventGeographicScope,
-      colEventNumber: item.eventNumber,
-      colEventName: item.eventName,
-      colNarrowEventLatitude: item.narrowEventLatitude,
-      colNarrowEventLongitude: item.narrowEventLongitude,
-      colEventPriceForMembers: item.eventPriceForMembers,
-      colEventPriceForNonMembers: item.eventPriceForNonMembers,
-      colEventFacebookId: item.eventFacebookId,
-      colAbsoluteEventNumber: item.absoluteEventNumber,
-      colCanEditRunAttendence: item.canEditRunAttendence,
-      colEventImage: item.eventImage,
-      colEventDescription: item.eventDescription,
-      colLocationOneLineDesc: item.locationOneLineDesc,
-      colLocationPostCode: item.locationPostCode,
-      colLocationCity: item.locationCity,
-      colLocationStreet: item.locationStreet,
-      colLocationCountry: item.locationCountry,
-      colLocationRegion: item.locationRegion,
-      colLocationSubRegion: item.locationSubRegion,
-      colHares: item.hares,
-      colEventPaymentScheme: item.eventPaymentScheme,
-      colEventPaymentUrl: item.eventPaymentUrl,
-      colEventPaymentUrlExpires: item.eventPaymentUrlExpires.toString(),
-      colUnconfirmedBankXferCount: item.unconfirmedBankXferCount,
-      colEventPriceForExtras: item.eventPriceForExtras,
-      colExtrasDescription: item.extrasDescription,
-      colDoTrackHashCash: item.doTrackHashCash,
-      colTags1: item.tags1,
-      colTags2: item.tags2,
-      colTags3: item.tags3,
-      colUpdatedAt: item.updatedAt.toString(),
-      colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
-      colRemoved: item.removed
-    };
-
+    final Map<String, dynamic> map = _$EventModelToJson(item);
     return map;
   }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final Map<String, dynamic> outputMap = <String, dynamic>{
-      colEventId: inputMap[colEventId],
-      colEventStartDatetime: inputMap[colEventStartDatetime],
-      colKennelId: inputMap[colKennelId],
-      colIsVisible: inputMap[colIsVisible],
-      colIsCountedRun: inputMap[colIsCountedRun],
-      colEventGeographicScope: inputMap[colEventGeographicScope],
-      colEventNumber: inputMap[colEventNumber],
-      colEventName: inputMap[colEventName],
-      colNarrowEventLatitude: inputMap[colNarrowEventLatitude],
-      colNarrowEventLongitude: inputMap[colNarrowEventLongitude],
-      colEventPriceForMembers: inputMap[colEventPriceForMembers],
-      colEventPriceForNonMembers: inputMap[colEventPriceForNonMembers],
-      colEventFacebookId: inputMap[colEventFacebookId],
-      colAbsoluteEventNumber: inputMap[colAbsoluteEventNumber],
-      colCanEditRunAttendence: inputMap[colCanEditRunAttendence],
-      colEventImage: inputMap[colEventImage],
-      colEventDescription: inputMap[colEventDescription],
-      colLocationOneLineDesc: inputMap[colLocationOneLineDesc],
-      colLocationPostCode: inputMap[colLocationPostCode],
-      colLocationCity: inputMap[colLocationCity],
-      colLocationStreet: inputMap[colLocationStreet],
-      colLocationCountry: inputMap[colLocationCountry],
-      colLocationRegion: inputMap[colLocationRegion],
-      colLocationSubRegion: inputMap[colLocationSubRegion],
-      colHares: inputMap[colHares],
-      colEventPaymentScheme: inputMap[colEventPaymentScheme],
-      colEventPaymentUrl: inputMap[colEventPaymentUrl],
-      colEventPaymentUrlExpires: inputMap[colEventPaymentUrlExpires],
-      colUnconfirmedBankXferCount: inputMap[colUnconfirmedBankXferCount],
-      colEventPriceForExtras: inputMap[colEventPriceForExtras],
-      colExtrasDescription: inputMap[colExtrasDescription],
-      colDoTrackHashCash: inputMap[colDoTrackHashCash],
-      colTags1: inputMap[colTags1],
-      colTags2: inputMap[colTags2],
-      colTags3: inputMap[colTags3],
-      colUpdatedAt: inputMap[colUpdatedAt],
-      colUpdatedAtValue: DateTime.parse(inputMap[colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
-      colRemoved: inputMap[colRemoved],
-    };
+    final EventModel item = _$EventModelFromJson(inputMap);
+    final Map<String, dynamic> outputMap = _$EventModelToJson(item);
 
     // NOTE: Event images can either be full URLs or they can be partial URLs in the case
     // when events have been uploaded directly to the DB using the HcWeb application.
@@ -375,45 +263,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
 
   @override
   EventModel fromMap(Map<String, dynamic> map) {
-    final EventModel item = EventModel(
-      eventId: map[colEventId],
-      eventStartDatetime: DateTime.parse(map[colEventStartDatetime].toString().substring(0, 19)),
-      kennelId: map[colKennelId],
-      isVisible: map[colIsVisible],
-      isCountedRun: map[colIsCountedRun],
-      eventGeographicScope: map[colEventGeographicScope],
-      eventNumber: map[colEventNumber],
-      eventName: map[colEventName],
-      narrowEventLatitude: map[colNarrowEventLatitude],
-      narrowEventLongitude: map[colNarrowEventLongitude],
-      eventPriceForMembers: map[colEventPriceForMembers],
-      eventPriceForNonMembers: map[colEventPriceForNonMembers],
-      eventFacebookId: map[colEventFacebookId],
-      absoluteEventNumber: map[colAbsoluteEventNumber],
-      canEditRunAttendence: map[colCanEditRunAttendence],
-      eventImage: map[colEventImage],
-      eventDescription: map[colEventDescription],
-      locationOneLineDesc: map[colLocationOneLineDesc],
-      locationPostCode: map[colLocationPostCode],
-      locationCity: map[colLocationCity],
-      locationStreet: map[colLocationStreet],
-      locationCountry: map[colLocationCountry],
-      locationRegion: map[colLocationRegion],
-      locationSubRegion: map[colLocationSubRegion],
-      hares: map[colHares],
-      eventPaymentScheme: map[colEventPaymentScheme],
-      eventPaymentUrl: map[colEventPaymentUrl],
-      eventPaymentUrlExpires: DateTime.parse((map[colEventPaymentUrlExpires] ?? '2000-01-01 01:00:00').toString().substring(0, 19)),
-      unconfirmedBankXferCount: map[colUnconfirmedBankXferCount],
-      eventPriceForExtras: map[colEventPriceForExtras],
-      extrasDescription: map[colExtrasDescription],
-      doTrackHashCash: map[colDoTrackHashCash],
-      tags1: map[colTags1],
-      tags2: map[colTags2],
-      tags3: map[colTags3],
-      updatedAt: DateTime.parse(map[colUpdatedAt].toString().substring(0, 19)),
-      removed: map[colRemoved],
-    );
+    final EventModel item = _$EventModelFromJson(map);
 
     // NOTE: Event images can either be full URLs or they can be partial URLs in the case
     // when events have been uploaded directly to the DB using the HcWeb application.

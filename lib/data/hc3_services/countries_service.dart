@@ -5,6 +5,11 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 
+import 'package:json_annotation/json_annotation.dart';
+
+part 'countries_service.g.dart';
+
+@JsonSerializable(fieldRename: FieldRename.none)
 class CountriesModel implements BaseModel {
   CountriesModel({this.countryId, this.countryCode, this.latitude, this.longitude, this.countryName, this.continentCode, this.flagFile, this.currencyCode, this.primaryCultureCode, this.showRegion, this.currencySymbol, this.digitsAfterDecimal, this.distancePreference, this.removed, this.updatedAt});
 
@@ -29,26 +34,9 @@ class CountriesModel implements BaseModel {
   List<CountriesModel> itemsFromJson(String jsonResult) {
     final List<CountriesModel> items = <CountriesModel>[];
 
-    CountriesModel item;
-
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
-        item = CountriesModel(
-            countryId: jsonItem['countryId'].toString(),
-            countryCode: jsonItem['countryCode'],
-            latitude: jsonItem['latitude'],
-            longitude: jsonItem['longitude'],
-            countryName: jsonItem['countryName'],
-            continentCode: jsonItem['continentCode'],
-            flagFile: jsonItem['flagFile'],
-            currencyCode: jsonItem['currencyCode'],
-            primaryCultureCode: jsonItem['primaryCultureCode'],
-            showRegion: jsonItem['showRegion'],
-            currencySymbol: jsonItem['currencySymbol'],
-            digitsAfterDecimal: jsonItem['digitsAfterDecimal'],
-            distancePreference: jsonItem['distancePreference'],
-            updatedAt: DateTime.parse(jsonItem['updatedAt']),
-            removed: jsonItem['removed']);
+        final CountriesModel item = _$CountriesModelFromJson(jsonItem);
         items.add(item);
       },
     );
@@ -96,9 +84,8 @@ class CountriesTableHelper with BaseFields implements BaseTableHelper {
   final String colDigitsAfterDecimal = 'digitsAfterDecimal';
   final String colDistancePreference = 'distancePreference';
 
-
   @override
-  Future<dynamic> createTable(Database db, int version,TableType tableType) async {
+  Future<dynamic> createTable(Database db, int version, TableType tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -129,72 +116,20 @@ class CountriesTableHelper with BaseFields implements BaseTableHelper {
 
   @override
   Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = <String, dynamic>{
-      colCountryId: item.countryId,
-      colCountryCode: item.countryCode,
-      colLatitude: item.latitude,
-      colLongitude: item.longitude,
-      colCountryName: item.countryName,
-      colContinentCode: item.continentCode,
-      colFlagFile: item.flagFile,
-      colCurrencyCode: item.currencyCode,
-      colPrimaryCultureCode: item.primaryCultureCode,
-      colShowRegion: item.showRegion,
-      colCurrencySymbol: item.currencySymbol,
-      colDigitsAfterDecimal: item.digitsAfterDecimal,
-      colDistancePreference: item.distancePreference,
-      colUpdatedAt: item.updatedAt.toString(),
-      colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
-      colRemoved: item.removed
-    };
-
+    final Map<String, dynamic> map = _$CountriesModelToJson(item);
     return map;
   }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final Map<String, dynamic> outputMap = <String, dynamic>{
-      colCountryId: inputMap[colCountryId],
-      colCountryCode: inputMap[colCountryCode],
-      colLatitude: inputMap[colLatitude],
-      colLongitude: inputMap[colLongitude],
-      colCountryName: inputMap[colCountryName],
-      colContinentCode: inputMap[colContinentCode],
-      colFlagFile: inputMap[colFlagFile],
-      colCurrencyCode: inputMap[colCurrencyCode],
-      colPrimaryCultureCode: inputMap[colPrimaryCultureCode],
-      colShowRegion: inputMap[colShowRegion],
-      colCurrencySymbol: inputMap[colCurrencySymbol],
-      colDigitsAfterDecimal: inputMap[colDigitsAfterDecimal],
-      colDistancePreference: inputMap[colDistancePreference],
-      colUpdatedAt: inputMap[colUpdatedAt],
-      colUpdatedAtValue: DateTime.parse(inputMap[colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
-      colRemoved: inputMap[colRemoved],
-    };
-
+    final CountriesModel item = _$CountriesModelFromJson(inputMap);
+    final Map<String, dynamic> outputMap = _$CountriesModelToJson(item);
     return outputMap;
   }
 
   @override
   CountriesModel fromMap(Map<String, dynamic> map) {
-    final CountriesModel item = CountriesModel(
-      countryId: map[colCountryId],
-      countryCode: map[colCountryCode],
-      latitude: map[colLatitude],
-      longitude: map[colLongitude],
-      countryName: map[colCountryName],
-      continentCode: map[colContinentCode],
-      flagFile: map[colFlagFile],
-      currencyCode: map[colCurrencyCode],
-      primaryCultureCode: map[colPrimaryCultureCode],
-      showRegion: map[colShowRegion],
-      currencySymbol: map[colCurrencySymbol],
-      digitsAfterDecimal: map[colDigitsAfterDecimal],
-      distancePreference: map[colDistancePreference],
-      updatedAt: DateTime.parse(map[colUpdatedAt]),
-      removed: map[colRemoved],
-    );
-
+    final CountriesModel item = _$CountriesModelFromJson(map);
     return item;
   }
 }

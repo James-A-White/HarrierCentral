@@ -5,6 +5,11 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 
+import 'package:json_annotation/json_annotation.dart';
+
+part 'kennel_credits_service.g.dart';
+
+@JsonSerializable(fieldRename: FieldRename.none)
 class KennelCreditsModel implements BaseModel {
   KennelCreditsModel({
     this.kennelCreditId,
@@ -28,11 +33,9 @@ class KennelCreditsModel implements BaseModel {
   List<KennelCreditsModel> itemsFromJson(String jsonResult) {
     final List<KennelCreditsModel> items = <KennelCreditsModel>[];
 
-    KennelCreditsModel item;
-
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
-        item = KennelCreditsModel(kennelCreditId: jsonItem['kennelCreditId'], userId: jsonItem['userId'], kennelId: jsonItem['kennelId'], currentBalance: jsonItem['currentBalance'], balanceAsOfEventId: jsonItem['balanceAsOfEventId'], updatedAt: jsonItem['updatedAt'], removed: jsonItem['removed']);
+        final KennelCreditsModel item = _$KennelCreditsModelFromJson(jsonItem);
 
         items.add(item);
       },
@@ -73,7 +76,7 @@ class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
   final String colBalanceAsOfEventId = 'balanceAsOfEventId';
 
   @override
-  Future<dynamic> createTable(Database db, int version,TableType tableType) async {
+  Future<dynamic> createTable(Database db, int version, TableType tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -96,48 +99,20 @@ class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
 
   @override
   Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = <String, dynamic>{
-      colKennelCreditId: item.kennelCreditId,
-      colUserId: item.userId,
-      colKennelId: item.kennelId,
-      colCurrentBalance: item.currentBalance,
-      colBalanceAsOfEventId: item.balanceAsOfEventId,
-      colUpdatedAt: item.updatedAt,
-      colRemoved: item.removed,
-      colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
-    };
-
+    final Map<String, dynamic> map = _$KennelCreditsModelToJson(item);
     return map;
   }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final Map<String, dynamic> outputMap = <String, dynamic>{
-      colKennelCreditId: inputMap[colKennelCreditId],
-      colUserId: inputMap[colUserId],
-      colKennelId: inputMap[colKennelId],
-      colCurrentBalance: inputMap[colCurrentBalance],
-      colBalanceAsOfEventId: inputMap[colBalanceAsOfEventId],
-      colUpdatedAt: inputMap[colUpdatedAt],
-      colUpdatedAtValue: DateTime.parse(inputMap[colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
-      colRemoved: inputMap[colRemoved],
-    };
-
+    final KennelCreditsModel item = _$KennelCreditsModelFromJson(inputMap);
+    final Map<String, dynamic> outputMap = _$KennelCreditsModelToJson(item);
     return outputMap;
   }
 
   @override
   KennelCreditsModel fromMap(Map<String, dynamic> map) {
-    final KennelCreditsModel item = KennelCreditsModel(
-      kennelCreditId: map[colKennelCreditId],
-      userId: map[colUserId],
-      kennelId: map[colKennelId],
-      currentBalance: map[colCurrentBalance],
-      balanceAsOfEventId: map[colBalanceAsOfEventId],
-      updatedAt: DateTime.parse(map[colUpdatedAt].toString().substring(0, 19)),
-      removed: map[colRemoved],
-    );
-
+    final KennelCreditsModel item = _$KennelCreditsModelFromJson(map);
     return item;
   }
 }

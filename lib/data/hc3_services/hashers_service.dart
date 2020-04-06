@@ -14,6 +14,11 @@ import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart'
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 
+import 'package:json_annotation/json_annotation.dart';
+
+part 'hashers_service.g.dart';
+
+@JsonSerializable(fieldRename: FieldRename.none)
 class HashersModel implements BaseModel {
   HashersModel({
     this.hasherId,
@@ -54,26 +59,9 @@ class HashersModel implements BaseModel {
   List<HashersModel> itemsFromJson(String jsonResult) {
     final List<HashersModel> items = <HashersModel>[];
 
-    HashersModel item;
-
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
-        item = HashersModel(
-            hasherId: jsonItem['hasherId'],
-            homeKennelId: jsonItem['homeKennelId'],
-            firstName: jsonItem['firstName'],
-            lastName: jsonItem['lastName'],
-            dispName: jsonItem['dispName'],
-            hashName: jsonItem['hashName'],
-            email: jsonItem['email'],
-            photo: jsonItem['photo'],
-            dispPref: jsonItem['dispPref'],
-            resetCode: jsonItem['resetCode'],
-            qrCode: jsonItem['qrCode'],
-            includeInGlobalHashDirectory: jsonItem['includeInGlobalHashDirectory'],
-            preferences: jsonItem['preferences'],
-            updatedAt: DateTime.parse(jsonItem['updatedAt'].toString().substring(0, 19)),
-            removed: jsonItem['removed']);
+        final HashersModel item = _$HashersModelFromJson(jsonItem);
 
         items.add(item);
       },
@@ -153,72 +141,22 @@ class HashersTableHelper with BaseFields implements BaseTableHelper {
 
   @override
   Map<String, dynamic> toMap(dynamic item) {
-    final Map<String, dynamic> map = <String, dynamic>{
-      colHasherId: item.hasherId,
-      colHomeKennelId: item.homeKennelId,
-      colFirstName: item.firstName,
-      colLastName: item.lastName,
-      colDispName: item.dispName,
-      colHashName: item.hashName,
-      colEmail: item.email,
-      colPhoto: item.photo,
-      colDispPref: item.dispPref,
-      colResetCode: item.resetCode,
-      colQrCode: item.qrCode,
-      colIncludeInGlobalHashDirectory: item.includeInGlobalHashDirectory,
-      colPreferences: item.preferences,
-      colUpdatedAt: item.updatedAt.toString(),
-      colUpdatedAtValue: item.updatedAt.millisecondsSinceEpoch,
-      colRemoved: item.removed
-    };
-
+    final Map<String, dynamic> map = _$HashersModelToJson(item);
     return map;
   }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final Map<String, dynamic> outputMap = <String, dynamic>{
-      colHasherId: inputMap[colHasherId],
-      colHomeKennelId: inputMap[colHomeKennelId],
-      colFirstName: inputMap[colFirstName],
-      colLastName: inputMap[colLastName],
-      colDispName: inputMap[colDispName],
-      colHashName: inputMap[colHashName],
-      //colEmail: inputMap[colEmail],  // we don't pull eMail from the server for privacy reasons
-      colPhoto: inputMap[colPhoto],
-      colDispPref: inputMap[colDispPref],
-      colResetCode: inputMap[colResetCode],
-      colQrCode: inputMap[colQrCode],
-      colIncludeInGlobalHashDirectory: inputMap[colIncludeInGlobalHashDirectory],
-      colPreferences: inputMap[colPreferences],
-
-      colUpdatedAt: inputMap[colUpdatedAt],
-      colUpdatedAtValue: DateTime.parse(inputMap[colUpdatedAt].toString().substring(0, 19)).millisecondsSinceEpoch,
-      colRemoved: inputMap[colRemoved],
-    };
+    // do we need to block the data from the email field?
+    final HashersModel item = _$HashersModelFromJson(inputMap);
+    final Map<String, dynamic> outputMap = _$HashersModelToJson(item);
 
     return outputMap;
   }
 
   @override
   HashersModel fromMap(Map<String, dynamic> map) {
-    final HashersModel item = HashersModel(
-      hasherId: map[colHasherId],
-      homeKennelId: map[colHomeKennelId],
-      firstName: map[colFirstName],
-      lastName: map[colLastName],
-      dispName: map[colDispName],
-      hashName: map[colHashName],
-      email: map[colEmail],
-      photo: map[colPhoto],
-      dispPref: map[colDispPref],
-      resetCode: map[colResetCode],
-      qrCode: map[colQrCode],
-      includeInGlobalHashDirectory: map[colIncludeInGlobalHashDirectory],
-      preferences: map[colPreferences],
-      updatedAt: DateTime.parse(map[colUpdatedAt].toString().substring(0, 19)),
-      removed: map[colRemoved],
-    );
+    final HashersModel item = _$HashersModelFromJson(map);
 
     return item;
   }

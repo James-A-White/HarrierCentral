@@ -4,7 +4,7 @@ version: 0.8.200+315
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
-  flutter: ^1.12.13+hotfix.8
+  flutter: ^1.12.13+hotfix.9
 
 dependencies:
   flutter:
@@ -44,6 +44,7 @@ dependencies:
   image_picker: ^0.6.4 # upgraded 7 Apr 20 from 0.6.3+4 # upgraded Feb 25 2020 from 0.6.3+1 # upgraded Feb 02 from ^0.6.2+3 # upgraded Dec 19 from ^0.6.1+11 # upgraded Nov 10 from ^0.6.1+4 # updated on 11 Sep from 0.6.0+17 #updated from +10 on 29 Jul # updated from 0.6.0+4 on 8 Jun 19, updated from 0.6.0+8 on July 5
   intro_slider: ^2.2.9 # upgraded Feb 25 2020 from 2.2.8 # updated on 11 Sep from 2.2.5 # upgraded from ^1.2.3 Jul 29
   # location_permissions: ^2.0.1
+  json_annotation: ^3.0.1
   location_permissions: ^2.0.5 # upgraded 7 Apr 20 from 2.0.4+1
   keyboard_avoider: ^0.1.2
   meta: ^1.1.6  # Geolocator Dependency.
@@ -71,13 +72,15 @@ dependencies:
   # # flutter_slidable 0.5.4
   # # location 2.5.4  --  switch to this!
   # # table_calendar 2.2.3
+  # # bottom_navy_bar
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  build_runner: ^1.8.1
   intl_translation: ^0.17.9 # upgraded Feb 02 from ^0.17.7 # updated on 11 Sep from 0.17.5 # updated from 0.17.4 on 8 Jun 19
-
+  json_serializable: ^3.3.0
 
   flutter_launcher_icons: ^0.7.4 # upgraded Nov 10 from ^0.7.3 # updated on 11 Sep from 0.7.2+1 # updated from 0.7.0 on 5 Jul 19 from 0.7.2
 
