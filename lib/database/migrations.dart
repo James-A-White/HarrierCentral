@@ -17,7 +17,7 @@ class MigrationsModel {
 
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
-        item = MigrationsModel(dbVersion: jsonItem['migrationNumber'], migrationText: jsonItem['migrationText'], appliedAtInt: jsonItem['appliedAtInt']);
+        item = MigrationsModel(dbVersion: jsonItem['dbVersion'], migrationText: jsonItem['migrationText'], appliedAtInt: jsonItem['appliedAtInt']);
 
         items.add(item);
       },
@@ -38,7 +38,7 @@ class MigrationsTableHelper {
 
   static const String colId = 'id';
 
-  static const String colMigrationNumber = 'migrationNumber';
+  static const String colDbVersion = 'dbVersion';
   static const String colMigrationText = 'migrationText';
   static const String colAppliedAtInt = 'appliedAtInt';
 
@@ -52,23 +52,23 @@ class MigrationsTableHelper {
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
 
-            $colMigrationNumber INT NOT NULL,
+            $colDbVersion INT NOT NULL,
             $colMigrationText TEXT NOT NULL,
             $colAppliedAtInt INT
           )
           ''');
 
-    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($colMigrationNumber);');
+    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($colDbVersion);');
   }
 
   static Map<String, dynamic> toMap(MigrationsModel item) {
-    final Map<String, dynamic> map = <String, dynamic>{MigrationsTableHelper.colMigrationNumber: item.dbVersion, MigrationsTableHelper.colMigrationText: item.migrationText, MigrationsTableHelper.colAppliedAtInt: item.appliedAtInt};
+    final Map<String, dynamic> map = <String, dynamic>{MigrationsTableHelper.colDbVersion: item.dbVersion, MigrationsTableHelper.colMigrationText: item.migrationText, MigrationsTableHelper.colAppliedAtInt: item.appliedAtInt};
 
     return map;
   }
 
   static MigrationsModel fromMap(Map<String, dynamic> map) {
-    final MigrationsModel item = MigrationsModel(dbVersion: map[MigrationsTableHelper.colMigrationNumber], migrationText: map[MigrationsTableHelper.colMigrationText], appliedAtInt: map[MigrationsTableHelper.colAppliedAtInt]);
+    final MigrationsModel item = MigrationsModel(dbVersion: map[MigrationsTableHelper.colDbVersion], migrationText: map[MigrationsTableHelper.colMigrationText], appliedAtInt: map[MigrationsTableHelper.colAppliedAtInt]);
 
     return item;
   }
