@@ -34,7 +34,7 @@ class NotificationSupport {
   }
 
   Future<void> initNotificationTopics(FirebaseMessaging _firebaseMessaging) async {
-    DBProvider.db.database.then((Database db) async {
+    
       try {
         final String userId = getStringPref(StringPrefsEnum.userId);
         print('UserId = $userId');
@@ -61,13 +61,13 @@ class NotificationSupport {
             )
           ''';
 
-        List<Map<String, dynamic>> results = await db.rawQuery(sql);
+        List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(sql);
 
         for (int i = 0; i < results.length; i++) {
           final String tag = '$NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']}';
           _firebaseMessaging.subscribeToTopic(tag);
           print('subscribed to: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
-          NotificationsTableHelper.recordNotificationStatus(db, NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
+          NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
         }
 
         // only deactivate subscriptions that have existed and no longer do
@@ -89,13 +89,13 @@ class NotificationSupport {
             )
           ''';
 
-        results = await db.rawQuery(sql);
+        results = await internalSqlDb.rawQuery(sql);
 
         for (int i = 0; i < results.length; i++) {
           final String tag = '$NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']}';
           _firebaseMessaging.unsubscribeFromTopic(tag);
           print('unsubscribed from: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
-          NotificationsTableHelper.recordNotificationStatus(db, NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 0);
+          NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 0);
         }
 
         // clean up the notification table
@@ -109,12 +109,12 @@ class NotificationSupport {
           WHERE e.eventStartDatetime BETWEEN datetime('now','localtime','-10 years') AND datetime('now','localtime','-7 days'))
           ''';
 
-        results = await db.rawQuery(sql);
+        results = await internalSqlDb.rawQuery(sql);
         for (int i = 0; i < results.length; i++) {
           final String tag = results[i]['topicTag'];
           _firebaseMessaging.subscribeToTopic(results[i]['eventId']);
           print('timeout unsubscribed from: ${results[i]['topicTag']}');
-          NotificationsTableHelper.recordNotificationStatus(db, NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
+          NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
         }
 
         // clean up the notification table and hope we have unsubscribed from
@@ -127,17 +127,17 @@ class NotificationSupport {
           WHERE e.eventStartDatetime BETWEEN datetime('now','localtime','-10 years') AND datetime('now','localtime','-7 days'))
           ''';
 
-        results = await db.rawQuery(sql);
+        results = await internalSqlDb.rawQuery(sql);
       } catch (e) {
         print(e);
       }
-    });
+    
   }
 
   Future<void> setNotificationState({String eventId, String kennelId}) async {
     final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
-    DBProvider.db.database.then((Database db) async {
+
       try {
         final String userId = getStringPref(StringPrefsEnum.userId);
         print('UserId = $userId');
@@ -158,7 +158,7 @@ class NotificationSupport {
           AND e.eventStartDatetime BETWEEN datetime('now','localtime','-7 days') AND datetime('now','localtime','+$NOTIFICATION_DAYS_IN_FUTURE days') 
           ''';
 
-        final List<Map<String, dynamic>> results = await db.rawQuery(sql);
+        final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(sql);
 
         for (int i = 0; i < results.length; i++) {
           final String tag = '$NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']}';
@@ -170,11 +170,11 @@ class NotificationSupport {
             print('unsubscribed from: $NOTIFICATION_PREFIX_EVENT_UPDATE${results[i]['eventId']} - ${results[i]['eventName']} - ${results[i]['eventStartDatetime']}');
           }
 
-          NotificationsTableHelper.recordNotificationStatus(db, NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
+          NotificationsTableHelper.recordNotificationStatus(NOTIFICATION_PREFIX_EVENT_UPDATE, tag, 1);
         }
       } catch (e) {
         print(e);
       }
-    });
+    
   }
 }

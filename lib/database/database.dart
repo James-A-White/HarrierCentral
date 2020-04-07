@@ -7,50 +7,25 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
+
 import 'package:harrier_central/database/notifications_table.dart';
 import 'package:harrier_central/database/migrations.dart';
-import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/globals.dart';
 
 class DBProvider {
-  DBProvider._();
-  static final DBProvider db = DBProvider._();
 
-  Database _database;
-
-  Future<Database> get database async {
-    if (_database != null) {
-      return _database;
-    }
-    // if _database is null we instantiate it
-    _database = await initDB(null);
-    return _database;
-  }
-
-  Future<bool> deleteDb() async {
+  static Future<bool> deleteDb(String dbName) async {
     final Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    final String path = join(documentsDirectory.path, DB_NAME);
+    final String path = join(documentsDirectory.path, dbName);
     await deleteDatabase(path);
 
     return true;
   }
 
-  // Future<bool> resetDb() async
-  // {
-
-  //   if (_database != null) {
-  //     final Directory documentsDirectory = await getApplicationDocumentsDirectory();
-  //     final String path = join(documentsDirectory.path, DB_NAME);
-  //   }
-
-  //   return true;
-  // }
-
-  Future<Database> initDB(Function informUser) async {
+  static Future<Database> initDB(String dbName, Function informUser) async {
     final Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    final String path = join(documentsDirectory.path, DB_NAME);
+    final String path = join(documentsDirectory.path, dbName);
     return openDatabase(path, version: MigrationsTableHelper.dbVersion, 
       onOpen: (Database db) {
         // nothing happens in here
@@ -70,7 +45,7 @@ class DBProvider {
         await hasherEventMapTableHelper.createTable(db, version, TableType.hemUser);
         await eventsTableHelper.createTable(db, version,null);
         await paymentsTableHelper.createTable(db, version,TableType.paymentsUser);
-        await NotificationsTableHelper.createTable(db, version);
+        await NotificationsTableHelper.createTable(db,version);
         await MigrationsTableHelper.createTable(db,version);
 
         // create event admin tables
@@ -105,10 +80,7 @@ class DBProvider {
         final String countriesJson = await rootBundle.loadString('database/countries.json');
         await baseService.bulkUpdateDatabase(countriesTableHelper,countriesJson, db, informUser);
 
-        final SyncUserDataService cSrv = SyncUserDataService();
-        final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagsAllData, false, informUser: informUser);
-        final String resultStr = result ? 'successfully' : 'unsuccessfully';
-        print('Master data synchronized $resultStr');
+
     });
   }
 }

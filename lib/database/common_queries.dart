@@ -24,7 +24,6 @@ class CommonQueries {
   static Future<String> getClosestEventInTime(String kennelId) async {
     String result = EMPTY_RESULT;
     try {
-      final Database db = await DBProvider.db.database;
 
       final String sql = ''' 
 
@@ -37,7 +36,7 @@ class CommonQueries {
           
           ''';
 
-      final List<Map<String, dynamic>> results = await db.rawQuery(sql);
+      final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(sql);
 
       if (results.isNotEmpty) {
         for (int i = 0; i < results.length; i++) {
@@ -61,7 +60,6 @@ class CommonQueries {
     result.eventId = EMPTY_RESULT;
 
     try {
-      final Database db = await DBProvider.db.database;
 
       final String userId = getStringPref(StringPrefsEnum.userId);
 
@@ -85,7 +83,7 @@ class CommonQueries {
           
           ''';
 
-      final List<Map<String, dynamic>> queryResults = await db.rawQuery(sql);
+      final List<Map<String, dynamic>> queryResults = await internalSqlDb.rawQuery(sql);
 
       final Geolocator locator = Geolocator();
 
@@ -130,7 +128,6 @@ class CommonQueries {
     uqr = uqr.toUpperCase();
     String result = 'none';
     try {
-      final Database db = await DBProvider.db.database;
 
       final String sql = ''' 
 
@@ -140,7 +137,7 @@ class CommonQueries {
           
           ''';
 
-      final List<Map<String, dynamic>> results = await db.rawQuery(sql);
+      final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(sql);
 
       if (results.isNotEmpty) {
         result = results[0]['hasherId'];

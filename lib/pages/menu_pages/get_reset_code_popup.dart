@@ -123,7 +123,7 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
                       QR_PREFIX_USER_RESET_CODE+ 'CLEAR') {
 
                     clearAllPrefs();
-                    await DBProvider.db.deleteDb();
+                    await DBProvider.deleteDb(DB_NAME);
                     
                     Utilities.showAlert(
                               context,

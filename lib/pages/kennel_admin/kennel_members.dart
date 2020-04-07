@@ -160,7 +160,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   }
 
   Future<void> refreshKennelMembersFromTable(bool forceRefresh) async {
-    final Database db = await DBProvider.db.database;
+    
 
     String orderBy = 'lower(h.dispName)';
 
@@ -206,7 +206,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     final List<KennelMembersResults> kList = <KennelMembersResults>[];
 
     try {
-      final List<Map<String, dynamic>> results = await db.rawQuery(query);
+      final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(query);
       for (int i = 0; i < results.length; i++) {
         final KennelMembersResults hlrItem = KennelMembersResults.fromMap(results[i]);
         hlrItem.isLoading = false;
@@ -258,7 +258,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   int countHasRecentRuns = 0;
 
   Future<void> _refreshCounters(bool forceRefresh) async {
-    final Database db = await DBProvider.db.database;
+    
     try {
       final String sql = ''' 
 
@@ -272,7 +272,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   
           ''';
 
-      db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
+      internalSqlDb.rawQuery(sql).then((List<Map<String, dynamic>> results) {
         if (results.isNotEmpty) {
           countIsMember = results[0]['isMember'];
           countIsFollowing = results[0]['isFollowing'];
@@ -707,7 +707,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
 
   Future<List<KennelMembersResults>> _getAllHashers() async {
     final List<KennelMembersResults> hasherList = <KennelMembersResults>[];
-    final Database db = await DBProvider.db.database;
+    
     try {
       final String query = ''' 
         SELECT 
@@ -733,7 +733,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           
           ''';
 
-      final List<Map<String, dynamic>> results = await db.rawQuery(query);
+      final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(query);
 
       if (results.isNotEmpty) {
         for (int i = 0; i < results.length; i++) {
@@ -853,14 +853,13 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   }
 
   Future<void> _handleRefresh() async {
-    final Database db = await DBProvider.db.database;
+    
 
     setState(() {
       //_isLoading = true;
     });
 
-    final SyncKennelAdminService cSrv = SyncKennelAdminService();
-    final bool result = await cSrv.updateFromBackend(db, SyncKennelAdminService.flagKennelTable | SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennel.kennel.kennelId);
+    final bool result = await syncKennelAdminService.updateFromBackend(SyncKennelAdminService.flagKennelTable | SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennel.kennel.kennelId);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Kennel member data synchronized $resultStr');
     refreshKennelMembersFromTable(true).then((void dummy) {

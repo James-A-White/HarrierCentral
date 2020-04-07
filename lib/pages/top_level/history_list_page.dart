@@ -1,13 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/widgets/kennel_run_history_count_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/widgets/profile_photo.dart';
 
@@ -75,7 +74,7 @@ class HistoryListPageState extends State<HistoryListPage> {
   }
 
   Future<void> refreshRunHistoryFromTable(bool forceRefresh) async {
-    final Database db = await DBProvider.db.database;
+    
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String query = '''  
@@ -99,7 +98,7 @@ class HistoryListPageState extends State<HistoryListPage> {
 
     runCountsList = <HistoryListResults>[];
     try {
-      final List<Map<String, dynamic>> results = await db.rawQuery(query);
+      final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(query);
 
       _totalHaring = 0;
       _totalRuns = 0;
@@ -133,14 +132,13 @@ class HistoryListPageState extends State<HistoryListPage> {
   }
 
   Future<void> _handleRefresh() async {
-    final Database db = await DBProvider.db.database;
+    
 
     setState(() {
       _isLoading = true;
     });
 
-    final SyncUserDataService cSrv = SyncUserDataService();
-    final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
+    final bool result = await syncUserDataService.updateFromBackend(SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Hasher data synchronized $resultStr');
     refreshRunHistoryFromTable(true);

@@ -53,7 +53,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   }
 
   Future<void> _refreshFromBackend({bool clearLocalTables = false}) async {
-    final Database db = await DBProvider.db.database;
+    
 
     if (clearLocalTables) {
       setState(() {
@@ -62,28 +62,27 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
       String query = 'DELETE FROM ${hasherEventMapTableHelper.getTableName(TableType.hemUser)}';
       try {
-        await db.rawQuery(query);
+        await internalSqlDb.rawQuery(query);
       } catch (e) {
         print(e);
       }
 
       query = 'DELETE FROM ${paymentsTableHelper.getTableName(TableType.paymentsUser)}';
       try {
-        await db.rawQuery(query);
+        await internalSqlDb.rawQuery(query);
       } catch (e) {
         print(e);
       }
 
       query = 'DELETE FROM ${eventsTableHelper.tableName}';
       try {
-        await db.rawQuery(query);
+        await internalSqlDb.rawQuery(query);
       } catch (e) {
         print(e);
       }
     }
 
-    final SyncUserDataService cSrv = SyncUserDataService();
-    cSrv.updateFromBackend(db, SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable | SyncUserDataService.flagPaymentsTable, false).then((bool result) {
+    syncUserDataService.updateFromBackend(SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable | SyncUserDataService.flagPaymentsTable, false).then((bool result) {
       refreshFromTable(true);
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Events user data synchronized $resultStr');

@@ -8,12 +8,11 @@ import 'package:harrier_central/pages/top_level/run_locations.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/confirm_auto_checkin_popup.dart';
 
-import 'package:sqflite/sqflite.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 import 'package:location_permissions/location_permissions.dart';
 
-import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/database/migrations.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
@@ -89,11 +88,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   // TODO(James): Investigate Page Storage Bucket / PageView
 
-  final FutureRunsListPage futureRunsListPage = FutureRunsListPage();
-  final KennelsListPage kennelsListPage = const KennelsListPage();
-  final HistoryListPage historyListPage = const HistoryListPage();
+  FutureRunsListPage futureRunsListPage;
+  KennelsListPage kennelsListPage;
+  HistoryListPage historyListPage;
   //final UserQrCodePage userQrCodePage = const UserQrCodePage();
-  final RunLocationsPage runLocationsPage = RunLocationsPage(key: runLocationsPageKey);
+  RunLocationsPage runLocationsPage;
 
   @override
   void initState() {
@@ -113,45 +112,57 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     // the first time this is run, the database will be created. On subsequent
     // runs, the database will simply be opened.
 
-    DBProvider.db.initDB(informUser).then((Database db) {
-      setState(() {
+    initializeDb(DB_NAME, informUser).then((void dummy) {
+      syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false, informUser: informUser).then((bool result) {
+        final String resultStr = result ? 'successfully' : 'unsuccessfully';
+        print('Master data synchronized $resultStr');
+
+        // create pages after database is loaded
+        futureRunsListPage = FutureRunsListPage();
+        kennelsListPage = const KennelsListPage();
+        historyListPage = const HistoryListPage();
+        //final UserQrCodePage userQrCodePage = const UserQrCodePage();
+        runLocationsPage = RunLocationsPage(key: runLocationsPageKey);
+
         setIntPref(IntPrefsEnum.dbCreated, 1);
         setIntPref(IntPrefsEnum.databaseVersion, MigrationsTableHelper.dbVersion);
-      });
-    });
 
-    checkLocationPermissions().then((bool hasLoc) {
-      if (hasLoc) {
-        CommonQueries.areWeAtRunStart().then((AreWeAtRunResult result) async {
-          if ((result.eventId != EMPTY_RESULT) && (result.distanceInMeters <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN)) {
-            final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
-              title: 'Check-in to Run',
-              eventImage: result.eventImage,
-              eventName: result.eventName,
-              kennelLogo: result.kennelLogo,
-              okButtonTitle: 'Yes',
-              cancelButtonTitle: 'No',
-              kennelShortName: result.kennelShortName,
-              eventNumber: result.eventNumber,
-            );
+        setState(() {});
 
-            final EnumYesNo<int> retVal = await showDialog<EnumYesNo<int>>(
-                context: context,
-                barrierDismissible: false, // user must tap button!
-                builder: (BuildContext context) {
-                  return popup;
-                });
+        checkLocationPermissions().then((bool hasLoc) {
+          if (hasLoc) {
+            CommonQueries.areWeAtRunStart().then((AreWeAtRunResult result) async {
+              if ((result.eventId != EMPTY_RESULT) && (result.distanceInMeters <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN)) {
+                final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
+                  title: 'Check-in to Run',
+                  eventImage: result.eventImage,
+                  eventName: result.eventName,
+                  kennelLogo: result.kennelLogo,
+                  okButtonTitle: 'Yes',
+                  cancelButtonTitle: 'No',
+                  kennelShortName: result.kennelShortName,
+                  eventNumber: result.eventNumber,
+                );
 
-            final String userId = getStringPref(StringPrefsEnum.userId);
+                final EnumYesNo<int> retVal = await showDialog<EnumYesNo<int>>(
+                    context: context,
+                    barrierDismissible: false, // user must tap button!
+                    builder: (BuildContext context) {
+                      return popup;
+                    });
 
-            if (retVal == enumYesNo_Yes) {
-              hasherEventMapService.joinEvent(result.eventId, TableType.hemUser, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value).then((List<dynamic> svcResult) {
-                futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
-              });
-            }
+                final String userId = getStringPref(StringPrefsEnum.userId);
+
+                if (retVal == enumYesNo_Yes) {
+                  hasherEventMapService.joinEvent(result.eventId, TableType.hemUser, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value).then((List<dynamic> svcResult) {
+                    futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
+                  });
+                }
+              }
+            });
           }
         });
-      }
+      });
     });
   }
 

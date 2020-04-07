@@ -5,9 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/util/enums.dart';
@@ -78,7 +76,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   }
 
   Future<void> refreshRunHistoryFromTable(bool forceRefresh) async {
-    final Database db = await DBProvider.db.database;
+    
 
     final String query = ''' 
         SELECT 
@@ -100,7 +98,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
     runCountsList = <UserRunHistoryResults>[];
     try {
-      final List<Map<String, dynamic>> results = await db.rawQuery(query);
+      final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(query);
 
       for (int i = 0; i < results.length; i++) {
         final UserRunHistoryResults hlrItem = UserRunHistoryResults.fromMap(results[i]);
@@ -215,14 +213,13 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   }
 
   Future<void> _handleRefresh() async {
-    final Database db = await DBProvider.db.database;
+    
 
     setState(() {
       _isLoading = true;
     });
 
-    final SyncUserDataService cSrv = SyncUserDataService();
-    final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
+    final bool result = await syncUserDataService.updateFromBackend(SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('User data synchronized $resultStr');
     refreshRunHistoryFromTable(true);

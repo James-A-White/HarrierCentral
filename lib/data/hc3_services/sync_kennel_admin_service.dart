@@ -23,20 +23,20 @@ class SyncKennelAdminService {
   num _hasherKennelMapLastUpdated;
   num _hashersLastUpdated;
 
-  Future<num> getLastUpdatedTime(Database db, String colName, String tableName) async {
-    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
+  Future<num> getLastUpdatedTime(String colName, String tableName) async {
+    final List<Map<String, dynamic>> table = await internalSqlDb.rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
     final num timeValue = table.first['maxDate'];
     print(timeValue.toString());
     return timeValue;
   }
 
-  Future<void> getLastUpdatedTimes(Database db, int flags) async {
-    _kennelLastUpdated = (flags & flagKennelTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, kennelsTableHelper.colUpdatedAtValue, kennelsTableHelper.tableName);
-    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, hashersTableHelper.colUpdatedAtValue, hashersTableHelper.tableName);
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(db, hasherKennelMapTableHelper.colUpdatedAtValue, hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin));
+  Future<void> getLastUpdatedTimes(int flags) async {
+    _kennelLastUpdated = (flags & flagKennelTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(kennelsTableHelper.colUpdatedAtValue, kennelsTableHelper.tableName);
+    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hashersTableHelper.colUpdatedAtValue, hashersTableHelper.tableName);
+    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hasherKennelMapTableHelper.colUpdatedAtValue, hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin));
   }
 
-  Future<bool> updateFromBackend(Database db, int flags, bool forceRefresh, String kennelId, {Function informUser}) async {
+  Future<bool> updateFromBackend(int flags, bool forceRefresh, String kennelId, {Function informUser}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return false;
     }
@@ -82,7 +82,7 @@ class SyncKennelAdminService {
 
       // get the last updated time of any of the records in
       // the table and add one second to it
-      await getLastUpdatedTimes(db, flags);
+      await getLastUpdatedTimes(flags);
 
       final DateTime kennelsUpdatedAfter = _kennelLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_kennelLastUpdated + 1000);
       final DateTime hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
@@ -115,15 +115,13 @@ class SyncKennelAdminService {
         },
       );
 
-      await updateSqlTablesWithResultsFromBackendApiCall(response.body, db: db, informUser: informUser);
+      await updateSqlTablesWithResultsFromBackendApiCall(response.body, informUser: informUser);
     }
     return true;
   }
 
-  static Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Database db, Function informUser}) async {
+  static Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser}) async {
     List<dynamic> adHocData;
-
-    db ??= await DBProvider.db.database;
 
     if (jsonResults.startsWith('[[')) {
       jsonResults = jsonResults.substring(1, jsonResults.length - 1);
@@ -135,17 +133,17 @@ class SyncKennelAdminService {
       final String ms = matches.elementAt(i).group(0);
 
       if (ms.startsWith(r'[{"kennelId"')) {
-        await baseService.bulkUpdateDatabase(kennelsTableHelper,'[$ms]', db, informUser);
+        await baseService.bulkUpdateDatabase(kennelsTableHelper,'[$ms]', internalSqlDb, informUser);
         print('kennels updated');
       }
 
       if (ms.startsWith(r'[{"hasherId"')) {
-        await baseService.bulkUpdateDatabase(hashersTableHelper,'[$ms]', db, informUser);
+        await baseService.bulkUpdateDatabase(hashersTableHelper,'[$ms]', internalSqlDb, informUser);
         print('hashers updated');
       }
 
       if (ms.startsWith(r'[{"hkmId"')) {
-        await baseService.bulkUpdateDatabase(hasherKennelMapTableHelper,'[$ms]', db, informUser, tableType: TableType.hkmKennelAdmin);
+        await baseService.bulkUpdateDatabase(hasherKennelMapTableHelper,'[$ms]', internalSqlDb, informUser, tableType: TableType.hkmKennelAdmin);
         print('hasher kennel map for kennel admin updated');
       }
 

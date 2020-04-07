@@ -6,6 +6,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:harrier_central/util/globals.dart';
 
 class BaseModel {
   BaseModel();
@@ -88,10 +89,10 @@ class BaseService {
   }
 
   Future<List<BaseModel>> selectAllFromLocalDb(BaseTableHelper tableHelper, {TableType tableType}) async {
-    final Database db = await DBProvider.db.database;
+    
     final String tableName = getTableName(tableHelper, tableType);
 
-    final List<Map<String, dynamic>> result = await db.query(tableName);
+    final List<Map<String, dynamic>> result = await internalSqlDb.query(tableName);
 
     final List<BaseModel> records = <BaseModel>[];
 
@@ -112,17 +113,15 @@ class BaseService {
     // {
     //   int xxx = 0;
     // }
-    final Database db = await DBProvider.db.database;
-    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX($colUpdatedAtValue) AS maxDate FROM $tableName');
+    final List<Map<String, dynamic>> table = await internalSqlDb.rawQuery('SELECT MAX($colUpdatedAtValue) AS maxDate FROM $tableName');
     final num timeValue = table.first['maxDate'];
     return timeValue;
   }
 
   Future<void> clearTable(BaseTableHelper tableHelper, {TableType tableType}) async {
     final String tableName = getTableName(tableHelper, tableType);
-    final Database db = await DBProvider.db.database;
     final String query = 'DELETE FROM $tableName';
-    await db.rawDelete(query).then((void dummy) {
+    await internalSqlDb.rawDelete(query).then((void dummy) {
       setIntPrefStrKey(LAST_CACHE_CLEAR_KEY + tableHelper.getTableName(tableType), DateTime.now().millisecondsSinceEpoch);
     });
   }
@@ -146,13 +145,30 @@ class BaseService {
       print('$tableName results received from cloud = ${jsonResults.length}');
 
       for (int j = 0; j < jsonResults.length; j++) {
-        final Map<String, dynamic> jsonItem = jsonResults[j];
+        Map<String, dynamic> jsonItem = jsonResults[j];
 
         if (doNormalizeMap == null) {
           final Map<String, dynamic> testMap = tableHelper.normalizeMap(jsonItem);
-          doNormalizeMap = (testMap.length - 1) != jsonItem.length;
+          doNormalizeMap = testMap.length != jsonItem.length;
           if (doNormalizeMap) {
-            print('Normalize map called for $tableName, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length - 1}');
+            print('Normalize map called for $tableName, # of fields on the wire = ${jsonItem.length}, # of fields in internal DB = ${testMap.length}');
+            for (int i = 0; i < jsonItem.length; i++)
+            {
+              final String key = jsonItem.keys.elementAt(i);
+              if (!testMap.containsKey(key))
+              {
+                print('$key field is on the wire but not in the internal database');
+              }
+            }
+
+            for (int i = 0; i < testMap.length; i++)
+            {
+              final String key = testMap.keys.elementAt(i);
+              if (!jsonItem.containsKey(key))
+              {
+                print('$key field is in the internal database but not on the wire');
+              }
+            }
           }
         }
 
@@ -161,6 +177,12 @@ class BaseService {
         if ((percentage != lastPercentage) && (informUser != null)) {
           lastPercentage = percentage;
           informUser('Loading $tableName data\r\n$percentage% complete');
+        }
+
+        // important: make sure to normalize the map before adding the updatedAtValue!
+        if (doNormalizeMap)
+        {
+          jsonItem = tableHelper.normalizeMap(jsonItem);
         }
 
         jsonItem.addAll(<String, dynamic>{
@@ -177,13 +199,13 @@ class BaseService {
 
           if ((table == null) || (table.isEmpty)) {
             await db.transaction<dynamic>((Transaction txn) async {
-              await txn.insert(tableName, doNormalizeMap ? tableHelper.normalizeMap(jsonItem) : jsonItem);
+              await txn.insert(tableName, jsonItem);
               insertCounter++;
             });
           } else {
             final String rowId = table.first['id'].toString();
             await db.transaction<dynamic>((Transaction txn) async {
-              await txn.update(tableName, doNormalizeMap ? tableHelper.normalizeMap(jsonItem) : jsonItem, where: 'id = $rowId');
+              await txn.update(tableName, jsonItem, where: 'id = $rowId');
               updateCounter++;
             });
           }

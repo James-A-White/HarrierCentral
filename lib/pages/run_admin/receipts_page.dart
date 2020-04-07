@@ -47,17 +47,15 @@ class ReceiptsListState extends State<ReceiptsList> {
   }
 
   void refreshFromTable() {
-    DBProvider.db.database.then((Database db) {
-      try {
-        db.query(receiptsTableHelper.tableName).then((List<Map<String, dynamic>> results) {
-          setState(() {
-            receiptsList = results;
-          });
+    try {
+      internalSqlDb.query(receiptsTableHelper.tableName).then((List<Map<String, dynamic>> results) {
+        setState(() {
+          receiptsList = results;
         });
-      } catch (e) {
-        print(e);
-      }
-    });
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
@@ -66,7 +64,6 @@ class ReceiptsListState extends State<ReceiptsList> {
         key: _scaffoldKey,
         appBar: AppBar(
           centerTitle: true,
-        
           backgroundColor: themeAppBarBackground,
           title: Text(
             '${widget.eventAggregate.event.eventName} receipts',
@@ -122,10 +119,7 @@ class ReceiptsListState extends State<ReceiptsList> {
   }
 
   Future<void> _handleRefresh() async {
-    final Database db = await DBProvider.db.database;
-
-    final SyncEventAdminService cSrv = SyncEventAdminService();
-    final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagReceiptsTable, true, widget.eventAggregate.event.eventId);
+    final bool result = await syncEventAdminService.updateFromBackend(SyncEventAdminService.flagReceiptsTable, true, widget.eventAggregate.event.eventId);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Receipts data synchronized $resultStr');
     refreshFromTable();
@@ -134,9 +128,7 @@ class ReceiptsListState extends State<ReceiptsList> {
   Future<void> setReceiptReimbursementStatus(String receiptId, bool cancelReimbursement) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final Database db = await DBProvider.db.database;
-
-    await db.transaction<dynamic>((Transaction txn) async {
+    await internalSqlDb.transaction<dynamic>((Transaction txn) async {
       final String guidFlag = cancelReimbursement ? GUID_9 : GUID_8;
       final String sql = 'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
       final int result = await txn.rawUpdate(sql);
@@ -150,19 +142,15 @@ class ReceiptsListState extends State<ReceiptsList> {
     setState(() {
       final ReceiptsService srv = ReceiptsService();
       srv.uploadReceipt(context, item).then((String result) {
-        DBProvider.db.database.then((Database db) {
-          baseService.bulkUpdateDatabase(receiptsTableHelper,result, db, null).then((int notUsed) {
-            refreshFromTable();
-          });
+        baseService.bulkUpdateDatabase(receiptsTableHelper, result, internalSqlDb, null).then((int notUsed) {
+          refreshFromTable();
         });
       });
     });
   }
 
   Future<void> setReceiptRemovedStatus(String receiptId, bool removed) async {
-    final Database db = await DBProvider.db.database;
-
-    await db.transaction<dynamic>((Transaction txn) async {
+    await internalSqlDb.transaction<dynamic>((Transaction txn) async {
       final String guidFlag = removed ? GUID_9 : GUID_8;
       final String sql = 'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
       final int result = await txn.rawUpdate(sql);
@@ -176,10 +164,8 @@ class ReceiptsListState extends State<ReceiptsList> {
     setState(() {
       final ReceiptsService srv = ReceiptsService();
       srv.uploadReceipt(context, item).then((String result) {
-        DBProvider.db.database.then((Database db) {
-          baseService.bulkUpdateDatabase(receiptsTableHelper,result, db, null).then((int notUsed) {
-            refreshFromTable();
-          });
+        baseService.bulkUpdateDatabase(receiptsTableHelper, result, internalSqlDb, null).then((int notUsed) {
+          refreshFromTable();
         });
       });
     });
@@ -206,16 +192,7 @@ class ReceiptsListState extends State<ReceiptsList> {
                       itemCount: receiptsList.length,
                       itemBuilder: (BuildContext context, int index) {
                         final Map<String, dynamic> receipt = receiptsList[index];
-                        return 
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        Dismissible(
+                        return Dismissible(
                           key: Key(receipt['receiptId']),
                           confirmDismiss: (DismissDirection direction) {
                             if (direction == DismissDirection.endToStart) {

@@ -338,7 +338,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
   }
 
   Future<void> loadEvents() async {
-    final Database db = await DBProvider.db.database;
+    
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
@@ -378,7 +378,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     ''';
 
     try {
-      final List<Map<String, dynamic>> results = await db.rawQuery(query);
+      final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(query);
       allRuns = <RunDetailsAggregate>[];
 
       runLocationMarkers = <Marker>[];
@@ -439,7 +439,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
   }
 
   Future<void> loadKennels() async {
-    final Database db = await DBProvider.db.database;
+    
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
@@ -463,7 +463,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     }
 
     try {
-      final List<Map<String, dynamic>> results = await db.rawQuery(query);
+      final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(query);
       kennelMarkers = <Marker>[];
       if ((results != null) && (results.isNotEmpty)) {
         for (int i = 0; i < results.length; i++) {

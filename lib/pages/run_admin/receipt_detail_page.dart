@@ -153,10 +153,8 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
         final ReceiptsService srv = ReceiptsService();
         srv.uploadReceipt(context, item).then((String result) {
-          DBProvider.db.database.then((Database db) {
-            baseService.bulkUpdateDatabase(receiptsTableHelper,result, db, null).then((int notUsed) {
-              Navigator.of(context).pop();
-            });
+          baseService.bulkUpdateDatabase(receiptsTableHelper, result, internalSqlDb, null).then((int notUsed) {
+            Navigator.of(context).pop();
           });
         });
       });
@@ -344,8 +342,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                       ),
                     ),
                   ),
-             
-                               Container(
+                  Container(
                       // padding: const EdgeInsets.all(12.0),
                       decoration: BoxDecoration(
                         // border: new Border.all(width: 1.0, color: Colors.black),
@@ -365,7 +362,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: <Widget>[
                           Container(
-                            margin: const EdgeInsets.only(right:15),
+                            margin: const EdgeInsets.only(right: 15),
                             width: 150,
                             child: RaisedButton(
                               onPressed: _uploadReceipt,
@@ -374,8 +371,6 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                           ),
                         ],
                       )),
-                 
-             
                 ],
               ));
   }

@@ -92,7 +92,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
                 final String resetCode = getStringPref(StringPrefsEnum.resetCode);
 
-                DBProvider.db.deleteDb();
+                DBProvider.deleteDb(DB_NAME);
                 await setIntPref(IntPrefsEnum.dbCreated, 0);
 
                 //bool isLoading = true;
@@ -118,10 +118,9 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
                   }
                 });
               } else {
-                final Database db = await DBProvider.db.database;
+                
 
-                final SyncUserDataService cSrv = SyncUserDataService();
-                final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagsAllData, false);
+                final bool result = await syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false);
                 final String resultStr = result ? 'successfully' : 'unsuccessfully';
                 print('Master data synchronized $resultStr');
 

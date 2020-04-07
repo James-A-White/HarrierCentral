@@ -52,7 +52,6 @@ class RunDetailQueryExtensions {
 
   bool isLoading = false;
 
-
   static RunDetailQueryExtensions fromMap(Map<String, dynamic> map) {
     final RunDetailQueryExtensions item = RunDetailQueryExtensions(mismanagementRoleFlags: map['mismanagementRoleFlags'], digAfterDec: map['digAfterDec'], curSym: map['curSym'], curCode: map['curCode'], memberPrice: map['memberPrice'], nonMemberPrice: map['nonMemberPrice']);
     return item;
@@ -77,14 +76,11 @@ class RunDetailPageState extends State<RunDetailPage> {
 
   @override
   void initState() {
-    DBProvider.db.database.then((Database db) async {
-      final SyncEventAdminService cSrv = SyncEventAdminService();
-      cSrv.updateFromBackend(db, SyncEventAdminService.flagsAllData, false, widget.eventId).then((bool result) {
-        refreshFromTables();
-        setState(() {
-          final String resultStr = result ? 'successfully' : 'unsuccessfully';
-          print('Event admin data synchronized $resultStr');
-        });
+    syncEventAdminService.updateFromBackend(SyncEventAdminService.flagsAllData, false, widget.eventId).then((bool result) {
+      refreshFromTables();
+      setState(() {
+        final String resultStr = result ? 'successfully' : 'unsuccessfully';
+        print('Event admin data synchronized $resultStr');
       });
     });
 
@@ -94,8 +90,6 @@ class RunDetailPageState extends State<RunDetailPage> {
   String userId = getStringPref(StringPrefsEnum.userId);
 
   Future<void> refreshFromTables() async {
-    final Database db = await DBProvider.db.database;
-
     try {
       const String dollarSign = r'$^';
 
@@ -121,7 +115,7 @@ class RunDetailPageState extends State<RunDetailPage> {
           
           ''';
 
-      final List<Map<String, dynamic>> results = await db.rawQuery(sql);
+      final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(sql);
 
       final Geolocator locator = Geolocator();
 
@@ -201,16 +195,7 @@ class RunDetailPageState extends State<RunDetailPage> {
                       topMargin: 35.0,
                       bottomMargin: 5.0,
                     ),
-                    RunDetails(
-                      eventAggregate.event,
-                      eventAggregate.kennel,
-                      eventAggregate.extensions.digAfterDec,
-                      eventAggregate.extensions.curSym,
-                      eventAggregate.extensions.distancePreference,
-                      eventAggregate.extensions.distToEvent,
-                      eventAggregate.extensions.paymentUrl,
-                      false
-                    ),
+                    RunDetails(eventAggregate.event, eventAggregate.kennel, eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym, eventAggregate.extensions.distancePreference, eventAggregate.extensions.distToEvent, eventAggregate.extensions.paymentUrl, false),
                   ],
                 ),
               ),

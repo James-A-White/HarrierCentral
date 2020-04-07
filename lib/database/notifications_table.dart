@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:harrier_central/util/globals.dart';
 import 'package:sqflite/sqflite.dart';
 
 class NotificationsModel {
@@ -65,21 +66,31 @@ class NotificationsTableHelper {
   }
 
   static Map<String, dynamic> toMap(NotificationsModel item) {
-    final Map<String, dynamic> map = <String, dynamic>{NotificationsTableHelper.colNotificationType: item.notificationType, NotificationsTableHelper.colNotificationTag: item.notificationTag, NotificationsTableHelper.colNotificationStatus: item.notificationStatus, NotificationsTableHelper.colUpdatedAtInt: item.updatedAtInt};
+    final Map<String, dynamic> map = <String, dynamic>{
+      NotificationsTableHelper.colNotificationType: item.notificationType,
+      NotificationsTableHelper.colNotificationTag: item.notificationTag,
+      NotificationsTableHelper.colNotificationStatus: item.notificationStatus,
+      NotificationsTableHelper.colUpdatedAtInt: item.updatedAtInt,
+    };
 
     return map;
   }
 
   static NotificationsModel fromMap(Map<String, dynamic> map) {
-    final NotificationsModel item = NotificationsModel(notificationType: map[NotificationsTableHelper.colNotificationType], notificationTag: map[NotificationsTableHelper.colNotificationTag], notificationStatus: map[NotificationsTableHelper.colNotificationStatus], updatedAtInt: map[NotificationsTableHelper.colUpdatedAtInt]);
+    final NotificationsModel item = NotificationsModel(
+      notificationType: map[NotificationsTableHelper.colNotificationType],
+      notificationTag: map[NotificationsTableHelper.colNotificationTag],
+      notificationStatus: map[NotificationsTableHelper.colNotificationStatus],
+      updatedAtInt: map[NotificationsTableHelper.colUpdatedAtInt],
+    );
 
     return item;
   }
 
-  static Future<void> recordNotificationStatus(Database db, String notificationType, String notificationTag, int status) async {
+  static Future<void> recordNotificationStatus(String notificationType, String notificationTag, int status) async {
     //final String sql = 'INSERT INTO $tableName ($colNotificationType, $colNotificationTag, $colNotificationStatus, $colUpdatedAtInt) VALUES ("$notificationType","$notificationTag",$status,${DateTime.now().millisecondsSinceEpoch}) ON CONFLICT($colNotificationTag) DO UPDATE SET $colNotificationStatus = $status, $colUpdatedAtInt = ${DateTime.now().millisecondsSinceEpoch};';
     final String sql = 'INSERT OR REPLACE INTO $tableName ($colNotificationType, $colNotificationTag, $colNotificationStatus, $colUpdatedAtInt) VALUES ("$notificationType","$notificationTag",$status,${DateTime.now().millisecondsSinceEpoch});';
     //print(sql);
-    db.rawQuery(sql);
+    internalSqlDb.rawQuery(sql);
   }
 }

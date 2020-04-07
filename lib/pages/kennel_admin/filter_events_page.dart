@@ -51,14 +51,11 @@ class FilterEventsPageState extends State<FilterEventsPage> {
       });
     }
 
-    DBProvider.db.database.then((Database db) async {
-      final SyncUserDataService cSrv = SyncUserDataService();
-      final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagNarrowEventsTable, true);
-      final String resultStr = result ? 'successfully' : 'unsuccessfully';
-      print('Events data synchronized $resultStr');
+    final bool result = await syncUserDataService.updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true);
+    final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    print('Events data synchronized $resultStr');
 
-      _refreshEventFromTables(true).then((void dummy) {});
-    });
+    _refreshEventFromTables(true).then((void dummy) {});
   }
 
   List<Map<String, dynamic>> events = <Map<String, dynamic>>[];
@@ -69,7 +66,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
     final String dateOffset = widget.pageType == FilterEventsPageType.future ? '-5 minutes' : '+5 minutes';
 
     final String userId = getStringPref(StringPrefsEnum.userId);
-    final Database db = await DBProvider.db.database;
+
     try {
       final String sql = ''' 
 
@@ -93,7 +90,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
         
           ''';
 
-      db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
+      internalSqlDb.rawQuery(sql).then((List<Map<String, dynamic>> results) {
         events = results;
         setState(() {
           _isLoading = false;
@@ -202,14 +199,11 @@ class FilterEventsPageState extends State<FilterEventsPage> {
   }
 
   Future<void> _handleRefresh() async {
-    final Database db = await DBProvider.db.database;
-
     setState(() {
       _isLoading = true;
     });
 
-    final SyncUserDataService cSrv = SyncUserDataService();
-    final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagNarrowEventsTable, true);
+    final bool result = await syncUserDataService.updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Receipts data synchronized $resultStr');
     _refreshEventFromTables(true);
@@ -441,14 +435,12 @@ class FilterEventsPageState extends State<FilterEventsPage> {
   }
 
   Future<void> updateEvent(Map<String, dynamic> event, {bool isVisible, bool isCountedRun, int asboluteEventNumber}) async {
-    DBProvider.db.database.then((Database db) async {
-      await db.transaction<dynamic>((Transaction txn) async {
-        final int guidFlag = isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
-        final String sql = 'UPDATE ${eventsTableHelper.tableName} SET canEditRunAttendence = "$guidFlag" where eventId = "${event['eventId']}"';
-        final int result = await txn.rawUpdate(sql);
-        print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        _refreshEventFromTables(true);
-      });
+    await internalSqlDb.transaction<dynamic>((Transaction txn) async {
+      final int guidFlag = isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
+      final String sql = 'UPDATE ${eventsTableHelper.tableName} SET canEditRunAttendence = "$guidFlag" where eventId = "${event['eventId']}"';
+      final int result = await txn.rawUpdate(sql);
+      print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+      _refreshEventFromTables(true);
     });
 
     final EventsService nSvc = EventsService();

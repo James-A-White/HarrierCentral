@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/data/hc3_services/events_service.dart';
+import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/database/query_kennels.dart';
 
 import 'package:harrier_central/data/hc3_services/cities_service.dart';
@@ -17,6 +19,11 @@ import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
+import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
+
+import 'package:sqflite/sqflite.dart';
 
 List<KennelListAggregate> globalKennelMainPageList;
 EnumConnectionStatus<int> globalConnectionStatus;
@@ -55,6 +62,15 @@ PaymentsService paymentsService;
 EventsService eventsService;
 HasherEventMapService hasherEventMapService;
 HasherKennelMapService hasherKennelMapService;
+SyncUserDataService syncUserDataService;
+SyncKennelAdminService syncKennelAdminService;
+SyncEventAdminService syncEventAdminService;
+
+Database internalSqlDb;
+
+Future<void> initializeDb(String dbName, Function informUser) async {
+  internalSqlDb = await DBProvider.initDB(DB_NAME, informUser);
+}
 
 void initializeGlobals() {
   citiesTableHelper = CitiesTableHelper();
@@ -75,4 +91,8 @@ void initializeGlobals() {
   eventsService = EventsService();
   hasherEventMapService = HasherEventMapService();
   hasherKennelMapService = HasherKennelMapService();
+
+  syncUserDataService = SyncUserDataService();
+  syncKennelAdminService = SyncKennelAdminService();
+  syncEventAdminService = SyncEventAdminService();
 }

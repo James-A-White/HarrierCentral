@@ -106,24 +106,19 @@ class PaymentReportState extends State<PaymentReportPage> {
       _isLoading = true;
     });
 
-    DBProvider.db.database.then((Database db) async {
-      final SyncEventAdminService cSrv = SyncEventAdminService();
-      final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable, true, widget.eventAggregate.event.eventId);
-      final String resultStr = result ? 'successfully' : 'unsuccessfully';
-      print('Payments data synchronized $resultStr');
+    final bool result = await syncEventAdminService.updateFromBackend(SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable, true, widget.eventAggregate.event.eventId);
+    final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    print('Payments data synchronized $resultStr');
 
-      _refreshListsFromTable().then((void dummy) {
-        setState(() {
-          _isLoading = false;
-          refreshTotals();
-        });
+    _refreshListsFromTable().then((void dummy) {
+      setState(() {
+        _isLoading = false;
+        refreshTotals();
       });
     });
   }
 
   Future<void> _refreshListsFromTable() async {
-    final Database db = await DBProvider.db.database;
-
     final String sql = '''
 
           SELECT
@@ -152,7 +147,7 @@ class PaymentReportState extends State<PaymentReportPage> {
           WHERE hem.attendenceState >= 20
           ''';
 
-    final List<Map<String, dynamic>> results = await db.rawQuery(sql);
+    final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(sql);
 
     paymentsList.clear();
 
@@ -174,9 +169,9 @@ class PaymentReportState extends State<PaymentReportPage> {
 
   void refreshTotals() {
     paymentTotals = <Map<String, dynamic>>[];
-    DBProvider.db.database.then((Database db) {
-      try {
-        final String sql = '''
+
+    try {
+      final String sql = '''
 
           select 0 as paymentType, (SELECT COUNT(*) from ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem 
           WHERE  hem.attendenceState >= 20
@@ -202,15 +197,15 @@ class PaymentReportState extends State<PaymentReportPage> {
 
           ''';
 
-        db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
-          setState(() {
-            paymentTotals = results;
-          });
+      internalSqlDb.rawQuery(sql).then((List<Map<String, dynamic>> results) {
+        setState(() {
+          paymentTotals = results;
         });
-      } catch (e) {
-        print(e);
-      }
-    });
+      });
+    } catch (e) {
+      print(e);
+    }
+
     print('Payment totals refreshed at ' + DateTime.now().millisecondsSinceEpoch.toString());
   }
 
@@ -535,10 +530,10 @@ class PaymentReportState extends State<PaymentReportPage> {
       ];
 
       final MultipleChoicePopup popup = MultipleChoicePopup(
-          title: 'Payment options',
-          buttons: buttons,
-          cancelButtonTitle: 'Cancel',
-           );
+        title: 'Payment options',
+        buttons: buttons,
+        cancelButtonTitle: 'Cancel',
+      );
 
       showDialog<dynamic>(
           context: context,
@@ -546,15 +541,15 @@ class PaymentReportState extends State<PaymentReportPage> {
           builder: (BuildContext context) {
             return popup;
           }).then((dynamic payForExtras) {
-            payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForExtras).then((List<dynamic> results) {
-              _refreshListsFromTable().then((void dummy) {
-                setState(() {
-                  refreshTotals();
-                  BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.extensions.paidByName, packMember.extensions.isMember, otherAmount);
-                });
-              });
+        payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForExtras).then((List<dynamic> results) {
+          _refreshListsFromTable().then((void dummy) {
+            setState(() {
+              refreshTotals();
+              BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentType, context, packMember.extensions.paidByName, packMember.extensions.isMember, otherAmount);
             });
           });
+        });
+      });
     } else {
       // there are no extras so just pay for the run without any extras dialog
       payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForRunOnly).then((List<dynamic> results) {
@@ -892,49 +887,48 @@ class PaymentReportState extends State<PaymentReportPage> {
                       ),
                       flex: flexRight),
                 ]),
-                (item.payment.surcharge ?? 0) == 0 ? Container() :
-                 Row(children: <Widget>[
-                  const Expanded(
-                    child: Text(
-                      'Surcharge:',
-                      style: headingStyle,
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    flex: flexLeft,
-                  ),
-                  const SizedBox(width: spacer, height: 10.0),
-                  Expanded(
-                      child: Text(
-                        Utilities.getFormattedMoney(item?.payment?.surcharge ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym),
-                        style: bodyStyle,
-                      ),
-                      flex: flexRight),
-                ]),
-                (item.payment.paymentProvider ?? '') == '' ? Container() :
-                 Row(children: <Widget>[
-                  const Expanded(
-                    child: Text(
-                      'Provider:',
-                      style: headingStyle,
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    flex: flexLeft,
-                  ),
-                  const SizedBox(width: spacer, height: 10.0),
-                  Expanded(
-                      child: Text(
-                        item.payment.paymentProvider,
-                        style: bodyStyle,
-                      ),
-                      flex: flexRight),
-                ]),
-
-
-
+                (item.payment.surcharge ?? 0) == 0
+                    ? Container()
+                    : Row(children: <Widget>[
+                        const Expanded(
+                          child: Text(
+                            'Surcharge:',
+                            style: headingStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          flex: flexLeft,
+                        ),
+                        const SizedBox(width: spacer, height: 10.0),
+                        Expanded(
+                            child: Text(
+                              Utilities.getFormattedMoney(item?.payment?.surcharge ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym),
+                              style: bodyStyle,
+                            ),
+                            flex: flexRight),
+                      ]),
+                (item.payment.paymentProvider ?? '') == ''
+                    ? Container()
+                    : Row(children: <Widget>[
+                        const Expanded(
+                          child: Text(
+                            'Provider:',
+                            style: headingStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          flex: flexLeft,
+                        ),
+                        const SizedBox(width: spacer, height: 10.0),
+                        Expanded(
+                            child: Text(
+                              item.payment.paymentProvider,
+                              style: bodyStyle,
+                            ),
+                            flex: flexRight),
+                      ]),
                 ((item.payment.paymentType != paymentBankTransfer.value) && (item.payment.paymentType != paymentBankTransferOtherAmount.value))
                     ? Container()
                     : Row(children: <Widget>[

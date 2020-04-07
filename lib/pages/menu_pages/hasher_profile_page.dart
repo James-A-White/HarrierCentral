@@ -103,7 +103,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   }
 
   Future<void> refreshUserDataFromTable(bool forceRefresh) async {
-    final Database db = await DBProvider.db.database;
+    
 
     String query = ''' 
         SELECT 
@@ -118,20 +118,18 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
       switch (widget.dataContext) {
         case EnumDataContext.event:
-          final SyncEventAdminService cSrv = SyncEventAdminService();
-          final bool res = await cSrv.updateFromBackend(db, SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagHasherKennelMapTable | SyncEventAdminService.flagHasherEventMapTable, true, widget.eventId);
+          
+          final bool res = await syncEventAdminService.updateFromBackend(SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagHasherKennelMapTable | SyncEventAdminService.flagHasherEventMapTable, true, widget.eventId);
           final String resultStr = res ? 'successfully' : 'unsuccessfully';
           print('Event data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
         case EnumDataContext.user:
-          final SyncUserDataService cSrv = SyncUserDataService();
-          final bool res = await cSrv.updateFromBackend(db, SyncUserDataService.flagHashersTable, true);
+          final bool res = await syncUserDataService.updateFromBackend(SyncUserDataService.flagHashersTable, true);
           final String resultStr = res ? 'successfully' : 'unsuccessfully';
           print('User master Hashers data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
         case EnumDataContext.kennel:
-          final SyncKennelAdminService cSrv = SyncKennelAdminService();
-          final bool res = await cSrv.updateFromBackend(db, SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennelId);
+          final bool res = await syncKennelAdminService.updateFromBackend(SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennelId);
           final String resultStr = res ? 'successfully' : 'unsuccessfully';
           print('Kennel data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
 
@@ -156,7 +154,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       setState(() {
         _isLoading = true;
       });
-      final List<Map<String, dynamic>> results = await db.rawQuery(query);
+      final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(query);
       if ((results != null) && (results.isNotEmpty)) {
         hasher = HashersModel.fromJson(results[0]);
         if (widget.dataContext == EnumDataContext.kennel) {

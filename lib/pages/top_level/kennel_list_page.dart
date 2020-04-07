@@ -252,10 +252,8 @@ class KennelsListPageState extends State<KennelsListPage> {
                                       .then((void dummy) async {
                                     refreshFromTable(true);
 
-                                    final Database db = await DBProvider.db.database;
-
-                                    final SyncUserDataService cSrv = SyncUserDataService();
-                                    final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagHasherEventMapTable, true);
+                        
+                                    final bool result = await syncUserDataService.updateFromBackend(SyncUserDataService.flagHasherEventMapTable, true);
                                     final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                     print('Pack member data synchronized $resultStr');
                                   });
@@ -271,7 +269,7 @@ class KennelsListPageState extends State<KennelsListPage> {
   }
 
   Future<void> _handleRefresh() async {
-    final Database db = await DBProvider.db.database;
+    
 
     setState(() {
       globalKennelMainPageList = null;
@@ -279,20 +277,19 @@ class KennelsListPageState extends State<KennelsListPage> {
 
     String query = 'DELETE FROM ${kennelsTableHelper.tableName}';
     try {
-      await db.rawQuery(query);
+      await internalSqlDb.rawQuery(query);
     } catch (e) {
       print(e);
     }
 
     query = 'DELETE FROM ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)}';
     try {
-      await db.rawQuery(query);
+      await internalSqlDb.rawQuery(query);
     } catch (e) {
       print(e);
     }
 
-    final SyncUserDataService cSrv = SyncUserDataService();
-    cSrv.updateFromBackend(db, SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable, false).then((bool result) {
+    syncUserDataService.updateFromBackend(SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable, false).then((bool result) {
       refreshFromTable(true);
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Kennel user data synchronized $resultStr');

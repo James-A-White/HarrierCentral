@@ -70,10 +70,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       });
     }
 
-    final Database db = await DBProvider.db.database;
-
-    final SyncEventAdminService cSrv = SyncEventAdminService();
-    final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagHasherEventMapTable, true, widget.futureRun.event.eventId);
+    final bool result = await syncEventAdminService.updateFromBackend(SyncEventAdminService.flagHasherEventMapTable, true, widget.futureRun.event.eventId);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Pack member data synchronized $resultStr');
 
@@ -84,7 +81,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   int _thisUserIndex = -1;
 
   Future<void> refreshPackListFromTable(bool callSetState) async {
-    final Database db = await DBProvider.db.database;
+    
 
     final String query = ''' 
         SELECT  
@@ -97,7 +94,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 
     thePackList = <PackListAggregate>[];
     try {
-      final List<Map<String, dynamic>> results = await db.rawQuery(query);
+      final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(query);
 
       for (int i = 0; i < results.length; i++) {
         final HasherEventMapModel packItem = hasherEventMapTableHelper.fromMap(results[i]);
@@ -118,7 +115,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   Future<void> refreshPackCountFromTable(bool callSetState) async {
     packCount = <String, dynamic>{};
 
-    final Database db = await DBProvider.db.database;
+    
 
     final String query = ''' 
         SELECT  
@@ -131,7 +128,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           ''';
 
     try {
-      db.rawQuery(query).then((List<Map<String, dynamic>> results) {
+      internalSqlDb.rawQuery(query).then((List<Map<String, dynamic>> results) {
         if (results.isNotEmpty) {
           packCount = results[0];
         }

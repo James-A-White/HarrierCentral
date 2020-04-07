@@ -259,7 +259,7 @@ class QueryRuns {
         break;
     }
 
-    final Database db = await DBProvider.db.database;
+    
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
@@ -330,6 +330,6 @@ class QueryRuns {
       assert(false);
     }
 
-    return db.rawQuery(query);
+    return internalSqlDb.rawQuery(query);
   }
 }

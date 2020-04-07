@@ -192,21 +192,19 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       });
     }
 
-    DBProvider.db.database.then((Database db) async {
-      final SyncEventAdminService cSrv = SyncEventAdminService();
-      final bool result = await cSrv.updateFromBackend(db, SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable, true, widget.eventAggregate.event.eventId);
-      final String resultStr = result ? 'successfully' : 'unsuccessfully';
-      print('Payments data synchronized $resultStr');
+    
+    final bool result = await syncEventAdminService.updateFromBackend(SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable, true, widget.eventAggregate.event.eventId);
+    final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    print('Payments data synchronized $resultStr');
 
-      _refreshPackListFromTables(false).then((void dummy) {
-        _refreshCounters(true);
-      });
+    _refreshPackListFromTables(false).then((void dummy) {
+      _refreshCounters(true);
     });
   }
 
   Future<void> _getAllHashers() async {
     allHashers = <CheckInPackModel>[];
-    final Database db = await DBProvider.db.database;
+
     try {
       final String sql = ''' 
 
@@ -232,7 +230,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           ORDER BY nameForSort
           ''';
 
-      final List<Map<String, dynamic>> results = await db.rawQuery(sql);
+      final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(sql);
 
       if (results.isNotEmpty) {
         for (int i = 0; i < results.length; i++) {
@@ -248,7 +246,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   }
 
   Future<void> _refreshPackListFromTables(bool forceRefresh) async {
-    final Database db = await DBProvider.db.database;
     try {
       final String sql = ''' 
 
@@ -381,7 +378,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       List<Map<String, dynamic>> results;
 
       try {
-        results = await db.rawQuery(sql);
+        results = await internalSqlDb.rawQuery(sql);
       } catch (x) {
         print(x);
       }
@@ -395,9 +392,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           }
 
           setState(() {
-
-              _isLoading = false;
-            
+            _isLoading = false;
           });
         }
 
@@ -465,7 +460,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   }
 
   Future<void> _refreshCounters(bool forceRefresh) async {
-    final Database db = await DBProvider.db.database;
     try {
       final String sql = ''' 
 
@@ -481,7 +475,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   
           ''';
 
-      db.rawQuery(sql).then((List<Map<String, dynamic>> results) {
+      internalSqlDb.rawQuery(sql).then((List<Map<String, dynamic>> results) {
         if (results.isNotEmpty) {
           countRsvps = results[0]['rsvps'];
           countAtHash = results[0]['atHash'];
@@ -515,7 +509,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       MaterialPageRoute<Map<String, dynamic>>(
         settings: const RouteSettings(),
         builder: (BuildContext context) {
-          return FindHasherPage(FindHasherPageType.addHasherToRun,kennelId: widget.eventAggregate.event.kennelId, eventId: widget.eventAggregate.event.eventId);
+          return FindHasherPage(FindHasherPageType.addHasherToRun, kennelId: widget.eventAggregate.event.kennelId, eventId: widget.eventAggregate.event.eventId);
         },
       ),
     ).then((Map<String, dynamic> result) {

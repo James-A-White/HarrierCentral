@@ -135,7 +135,7 @@ class QueryKennels {
   }
 
   static Future<List<Map<String, dynamic>>> queryKennels(EnumKennelQueryType queryType, EnumKennelQueryContext queryContext, {String hasherId, String kennelId}) async {
-    final Database db = await DBProvider.db.database;
+    
 
     String hkmTable;
 
@@ -188,6 +188,6 @@ class QueryKennels {
       assert(false);
     }
 
-    return db.rawQuery(query);
+    return internalSqlDb.rawQuery(query);
   }
 }

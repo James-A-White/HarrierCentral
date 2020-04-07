@@ -57,15 +57,12 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
       mismanagement = widget.kennelAggregateItem.kennel.kennelMismanagementTeam.contains('\r') ? widget.kennelAggregateItem.kennel.kennelMismanagementTeam.split('\r') : widget.kennelAggregateItem.kennel.kennelMismanagementTeam.split('\n');
     }
 
-    DBProvider.db.database.then((Database db) async {
-      final SyncKennelAdminService cSrv = SyncKennelAdminService();
-      cSrv.updateFromBackend(db, SyncKennelAdminService.flagsAllData, false, widget.kennelAggregateItem.kennel.kennelId).then((bool result) {
-        //refreshFromTables();
-        setState(() {
-          final String resultStr = result ? 'successfully' : 'unsuccessfully';
-          print('Event admin data synchronized $resultStr');
-          _isLoading = false;
-        });
+    syncKennelAdminService.updateFromBackend(SyncKennelAdminService.flagsAllData, false, widget.kennelAggregateItem.kennel.kennelId).then((bool result) {
+      //refreshFromTables();
+      setState(() {
+        final String resultStr = result ? 'successfully' : 'unsuccessfully';
+        print('Event admin data synchronized $resultStr');
+        _isLoading = false;
       });
     });
 
@@ -90,7 +87,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   List<RunDetailsAggregate> allRuns;
 
   // Future<void> refreshRunsFromInternalDb(bool forceRefresh) async {
-  //   final Database db = await DBProvider.db.database;
+  //
 
   //   final String query = '''
   //         SELECT

@@ -6,20 +6,16 @@ import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/data/services/authorize_device_service.dart';
-import 'package:harrier_central/database/database.dart';
-
-// import 'package:harrier_central/widgets/user_details_ui.dart';
-// import 'package:harrier_central/widgets/fancy_divider.dart';
 
 class SupportPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -144,7 +140,7 @@ class SupportPageState extends State<SupportPage> {
                                 ],
                               ),
                             ),
-                            const SizedBox(height:10.0),
+                            const SizedBox(height: 10.0),
                             FlatButton(
                               textColor: Colors.white,
                               child: const Text('Learn more about this feature'),
@@ -152,19 +148,27 @@ class SupportPageState extends State<SupportPage> {
                                 _displayInstructions(context);
                               },
                             ),
-                            const FancyDivider(innerColor: Colors.white, topMargin: 20.0, bottomMargin: 20.0,),
+                            const FancyDivider(
+                              innerColor: Colors.white,
+                              topMargin: 20.0,
+                              bottomMargin: 20.0,
+                            ),
                             Text(
                               'Support Code:',
                               style: headingStyle,
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height:15.0),
+                            const SizedBox(height: 15.0),
                             Text(
                               supportCode ?? '<no code>',
                               style: largeText,
                               textAlign: TextAlign.center,
                             ),
-                            const FancyDivider(innerColor: Colors.white, topMargin: 40.0, bottomMargin: 30.0,),
+                            const FancyDivider(
+                              innerColor: Colors.white,
+                              topMargin: 40.0,
+                              bottomMargin: 30.0,
+                            ),
                             Text(
                               'Reset Code:',
                               style: headingStyle,
@@ -213,10 +217,7 @@ class SupportPageState extends State<SupportPage> {
                                               padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                               onPressed: () async {
                                                 if (Utilities.checkForConnection(context)) {
-                                                  final Database db = await DBProvider.db.database;
-
-                                                  final SyncUserDataService cSrv = SyncUserDataService();
-                                                  final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagAllMasterData, false);
+                                                  final bool result = await syncUserDataService.updateFromBackend(SyncUserDataService.flagAllMasterData, false);
                                                   final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                                   print('Master data synchronized $resultStr');
 
@@ -258,10 +259,7 @@ class SupportPageState extends State<SupportPage> {
                                               padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                               onPressed: () async {
                                                 if (Utilities.checkForConnection(context)) {
-                                                  final Database db = await DBProvider.db.database;
-
-                                                  final SyncUserDataService cSrv = SyncUserDataService();
-                                                  final bool result = await cSrv.updateFromBackend(db, SyncUserDataService.flagAllMasterData, false);
+                                                  final bool result = await syncUserDataService.updateFromBackend(SyncUserDataService.flagAllMasterData, false);
                                                   final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                                   print('Master data synchronized $resultStr');
 
