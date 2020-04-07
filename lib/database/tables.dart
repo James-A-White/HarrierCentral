@@ -2,9 +2,9 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/core/base_service.dart';
+import 'package:ive_flutter_core/base_service.dart';
 
-import 'package:harrier_central/core/migrations.dart';
+import 'package:ive_flutter_core/migrations.dart';
 import 'package:harrier_central/util/globals.dart';
 
 import 'package:harrier_central/database/notifications_table.dart';

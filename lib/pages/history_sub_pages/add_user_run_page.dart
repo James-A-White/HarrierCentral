@@ -7,7 +7,7 @@
 // import 'package:sqflite/sqflite.dart';
 // import 'package:qr_flutter/qr_flutter.dart';
 
-// import 'package:harrier_central/core/database.dart';
+// import 'package:ive_flutter_core/database.dart';
 // import 'package:harrier_central/util/preferences.dart';
 // import 'package:harrier_central/util/styles.dart';
 // import 'package:harrier_central/widgets/offline_mode_ribbon.dart';

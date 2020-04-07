@@ -2,7 +2,7 @@ import 'package:intl/intl.dart';
 
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';
-import 'package:harrier_central/core/base_service.dart';
+import 'package:ive_flutter_core/base_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 

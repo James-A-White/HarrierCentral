@@ -8,7 +8,7 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/core/base_service.dart';
+import 'package:ive_flutter_core/base_service.dart';
 import 'package:harrier_central/database/tables.dart';
 
 class SyncEventAdminService {

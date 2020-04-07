@@ -63,6 +63,10 @@ dependencies:
     git:
       url: git://github.com/facundomedica/fast_qr_reader_view.git
 
+  ive_flutter_core: 
+    git:
+      url: git://github.com/InnoVet-Europe/ive_flutter_core.git
+
 
   # # flip_panel: ^1.0.0
   # # qr_mobile_vision: ^0.1.0

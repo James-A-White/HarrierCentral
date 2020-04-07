@@ -8,7 +8,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
-import 'package:harrier_central/core/base_service.dart';
+import 'package:ive_flutter_core/base_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';

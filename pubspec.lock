@@ -499,6 +499,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.3.4"
+  ive_flutter_core:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "7d1e6de7bd659bc97f57a3ce9b2a5d02ef98ce32"
+      url: "git://github.com/InnoVet-Europe/ive_flutter_core.git"
+    source: git
+    version: "1.0.0"
   js:
     dependency: transitive
     description:
