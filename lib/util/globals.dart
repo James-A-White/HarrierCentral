@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+
 import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/data/hc3_services/events_service.dart';
@@ -22,6 +24,7 @@ import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
+import 'package:harrier_central/database/migrations.dart';
 
 import 'package:sqflite/sqflite.dart';
 
@@ -68,8 +71,8 @@ SyncEventAdminService syncEventAdminService;
 
 Database internalSqlDb;
 
-Future<void> openOrInitializeDb(String dbName, Function informUser) async {
-  internalSqlDb = await DBProvider.openOrInitDb(DB_NAME, informUser);
+Future<void> openOrInitializeDb(String dbName, int dbVersion, Function informUser,  {@required List<MigrationsModel> migrations, @required Function createTables}) async {
+  internalSqlDb = await DBProvider.openOrInitDb(DB_NAME, informUser, dbVersion, migrations, createTables: createTables);
 }
 
 void initializeGlobals() {

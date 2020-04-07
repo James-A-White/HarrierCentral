@@ -82,7 +82,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
             } else {
               // app has been run before... let's check the DB version.
               final int installedDbVersion = getIntPref(IntPrefsEnum.databaseVersion) ?? 0;
-              if ((installedDbVersion != MigrationsTableHelper.dbVersion) && ((installedDbVersion + 9) < MigrationsTableHelper.dbVersion)) {
+              if ((installedDbVersion != DB_VERSION) && ((installedDbVersion + 9) < DB_VERSION)) {
                 // the installed DB version is not up to date
                 // if the version numbers are greater than 10 apart,
                 // reload the entire DB.
@@ -105,7 +105,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
                   if (result['result'] != 'failed') {
                     userName = getStringPref(StringPrefsEnum.displayName);
 
-                    await setIntPref(IntPrefsEnum.databaseVersion, MigrationsTableHelper.dbVersion);
+                    await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 
                     Utilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void dummy) {
                       Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
@@ -115,10 +115,6 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
                   }
                 });
               } else {
-                
-
-
-
                 Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
               }
             }
