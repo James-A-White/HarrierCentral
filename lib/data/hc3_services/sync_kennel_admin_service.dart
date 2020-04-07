@@ -9,6 +9,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/database/tables.dart';
 
 class SyncKennelAdminService {
   static const int flagKennelTable = 0x00000001;
@@ -40,10 +41,12 @@ class SyncKennelAdminService {
     }
 
     if (getStringPref(StringPrefsEnum.adminKennelId) != kennelId) {
-
-
       // NOTE: kennels and hashers are not cleared here because all kennels and all hashers are loaded all the time for all users
-      baseService.clearTable(hasherKennelMapTableHelper, tableType: TableType.hkmKennelAdmin);
+      baseService.clearTable(
+        internalSqlDb,
+        hasherKennelMapTableHelper,
+        Tables.getTableName(hasherKennelMapTableHelper, tableType: TableType.hkmKennelAdmin),
+      );
 
       await setStringPref(StringPrefsEnum.adminKennelId, kennelId);
     }
@@ -131,17 +134,35 @@ class SyncKennelAdminService {
       final String ms = matches.elementAt(i).group(0);
 
       if (ms.startsWith(r'[{"kennelId"')) {
-        await baseService.bulkUpdateDatabase(kennelsTableHelper,'[$ms]', internalSqlDb, informUser);
+        await baseService.bulkUpdateDatabase(
+          kennelsTableHelper,
+          Tables.getTableName(kennelsTableHelper),
+          '[$ms]',
+          internalSqlDb,
+          informUser: informUser,
+        );
         print('kennels updated');
       }
 
       if (ms.startsWith(r'[{"hasherId"')) {
-        await baseService.bulkUpdateDatabase(hashersTableHelper,'[$ms]', internalSqlDb, informUser);
+        await baseService.bulkUpdateDatabase(
+          hashersTableHelper,
+          Tables.getTableName(hashersTableHelper),
+          '[$ms]',
+          internalSqlDb,
+          informUser: informUser,
+        );
         print('hashers updated');
       }
 
       if (ms.startsWith(r'[{"hkmId"')) {
-        await baseService.bulkUpdateDatabase(hasherKennelMapTableHelper,'[$ms]', internalSqlDb, informUser, tableType: TableType.hkmKennelAdmin);
+        await baseService.bulkUpdateDatabase(
+          hasherKennelMapTableHelper,
+          Tables.getTableName(hasherKennelMapTableHelper, tableType: TableType.hkmKennelAdmin),
+          '[$ms]',
+          internalSqlDb,
+          informUser: informUser,
+        );
         print('hasher kennel map for kennel admin updated');
       }
 

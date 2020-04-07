@@ -9,6 +9,7 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
+import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 
@@ -57,10 +58,10 @@ class EventModel implements BaseModel {
       this.removed,
       this.updatedAt});
 
-  factory EventModel.fromJson(Map<String,dynamic> json) => _$EventModelFromJson(json);
- 
+  factory EventModel.fromJson(Map<String, dynamic> json) => _$EventModelFromJson(json);
+
   @override
-  Map<String,dynamic> toJson() => _$EventModelToJson(this);
+  Map<String, dynamic> toJson() => _$EventModelToJson(this);
 
   final String eventId;
   final DateTime eventStartDatetime;
@@ -99,7 +100,6 @@ class EventModel implements BaseModel {
   final int tags3;
   final int removed;
   final DateTime updatedAt;
-
 }
 
 class EventsTableHelper with BaseFields implements BaseTableHelper {
@@ -265,7 +265,12 @@ class EventsService extends BaseService {
 
     final String accessToken = Utilities.generateToken(userId, 'addEditEvent');
 
-    final num _eventsLastUpdated = await getLastUpdatedTime(eventsTableHelper, eventsTableHelper.colUpdatedAtValue);
+    final num _eventsLastUpdated = await getLastUpdatedTime(
+      internalSqlDb,
+      eventsTableHelper,
+      Tables.getTableName(eventsTableHelper),
+      eventsTableHelper.colUpdatedAtValue,
+    );
     final DateTime eventUpdatedAfter = _eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_eventsLastUpdated + 1000);
 
     final Map<String, String> bodyMap = <String, String>{'userId': userId, 'accessToken': accessToken, 'narrowEventsUpdatedAfter': eventUpdatedAfter.toString(), 'eventId': eventId};

@@ -18,8 +18,8 @@ class DBProvider {
 
   static Future<Database> openOrInitDb(
     String dbName,
-    Function informUser,
     int dbVersion,
+    Function informUser,
     List<MigrationsModel> migrations, {
     Function createTables,
   }) async {
@@ -30,7 +30,7 @@ class DBProvider {
     }, onUpgrade: (Database db, int oldVersion, int newVersion) async {
       MigrationsTableHelper.doDatabaseMigrations(db, migrations, oldVersion, dbVersion);
     }, onCreate: (Database db, int version) async {
-      await createTables(db, version);
+      await createTables(db, version, informUser);
     });
   }
 }

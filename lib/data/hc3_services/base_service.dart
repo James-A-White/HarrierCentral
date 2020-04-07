@@ -3,9 +3,7 @@ import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/globals.dart';
+//import 'package:harrier_central/util/constants.dart';
 
 class BaseModel {
   BaseModel();
@@ -22,23 +20,13 @@ class BaseTableHelper {
   String tableName;
   String remoteDbId;
 
-  String getTableName(TableType tableType) {
-    return null;
-  }
-
   final num forceRequeryInterval = 1 * 1000;
   final num cacheDuration = 365 * 3 * 86400000; // cause a force refresh of the cache every 3 years. This effectively prevents cache refreshes
 
-  Future<dynamic> createTable(Database db, int version, TableType tableType) async {}
-
-
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    return null;
-  }
-
-  BaseModel fromMap(Map<String, dynamic> map) {
-    return null;
-  }
+  String getTableName(TableType tableType) => null;
+  Future<dynamic> createTable(Database db, int version, TableType tableType) async => null;
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) => null;
+  BaseModel fromMap(Map<String, dynamic> map) => null;
 }
 
 mixin BaseFields {
@@ -49,49 +37,10 @@ mixin BaseFields {
 }
 
 class BaseService {
-  String getTableName(BaseTableHelper tableHelper, TableType tableType) {
-    String tableName = tableHelper.tableName;
-    if (tableType != null) {
-      switch (tableType) {
-        case TableType.baseTable:
-          // don't change the string, keep it as it was initialized above
-          break;
-        case TableType.hemEventAdmin:
-          tableName = hemAdminTable;
-          break;
-        case TableType.hemUser:
-          tableName = hemUserTable;
-          break;
-        case TableType.hkmUser:
-          tableName = hkmUserTable;
-          break;
-        case TableType.hkmEventAdmin:
-          tableName = hkmEventAdminTable;
-          break;
-        case TableType.hkmKennelAdmin:
-          tableName = hkmKennelAdminTable;
-          break;
-        case TableType.paymentsEvent:
-          tableName = eventPaymentsTable;
-          break;
-        case TableType.paymentsUser:
-          tableName = userPaymentsTable;
-          break;
-        default:
-          // this will cause a SQL error and help us debug, should put a debug assert here
-          tableName = '';
-          break;
-      }
-    }
+  
+  Future<List<BaseModel>> selectAllFromLocalDb(Database db, BaseTableHelper tableHelper, String tableName) async {
 
-    return tableName;
-  }
-
-  Future<List<BaseModel>> selectAllFromLocalDb(BaseTableHelper tableHelper, {TableType tableType}) async {
-    
-    final String tableName = getTableName(tableHelper, tableType);
-
-    final List<Map<String, dynamic>> result = await internalSqlDb.query(tableName);
+    final List<Map<String, dynamic>> result = await db.query(tableName);
 
     final List<BaseModel> records = <BaseModel>[];
 
@@ -106,34 +55,27 @@ class BaseService {
     return records;
   }
 
-  Future<num> getLastUpdatedTime(BaseTableHelper tableHelper, String colUpdatedAtValue, {TableType tableType}) async {
-    final String tableName = getTableName(tableHelper, tableType);
-    // if((tableName == null) || (tableName.isEmpty))
-    // {
-    //   int xxx = 0;
-    // }
-    final List<Map<String, dynamic>> table = await internalSqlDb.rawQuery('SELECT MAX($colUpdatedAtValue) AS maxDate FROM $tableName');
+  Future<num> getLastUpdatedTime(Database db, BaseTableHelper tableHelper,String tableName,String colUpdatedAtValue) async {
+    
+    final List<Map<String, dynamic>> table = await db.rawQuery('SELECT MAX($colUpdatedAtValue) AS maxDate FROM $tableName');
     final num timeValue = table.first['maxDate'];
     return timeValue;
   }
 
-  Future<void> clearTable(BaseTableHelper tableHelper, {TableType tableType}) async {
-    final String tableName = getTableName(tableHelper, tableType);
+  Future<void> clearTable(Database db, BaseTableHelper tableHelper,String tableName) async {
     final String query = 'DELETE FROM $tableName';
-    await internalSqlDb.rawDelete(query).then((void dummy) {
-      setIntPrefStrKey(LAST_CACHE_CLEAR_KEY + tableHelper.getTableName(tableType), DateTime.now().millisecondsSinceEpoch);
+    await db.rawDelete(query).then((void dummy) {
+      //setIntPrefStrKey(LAST_CACHE_CLEAR_KEY + tableHelper.getTableName(tableType), DateTime.now().millisecondsSinceEpoch);
     });
   }
 
-  Future<int> bulkUpdateDatabase(BaseTableHelper tableHelper, String rawResults, Database db, Function informUser, {TableType tableType}) async {
+  Future<int> bulkUpdateDatabase(BaseTableHelper tableHelper, String tableName, String rawResults, Database db, {Function informUser}) async {
     int updateCounter = 0;
     int insertCounter = 0;
     int deletedCounter = 0;
 
     bool doNormalizeMap;
-
-    final String tableName = getTableName(tableHelper, tableType);
-
+    
     final List<dynamic> jsonResultSets = json.decode(rawResults);
     print('$tableName result sets received from cloud = ${jsonResultSets.length}');
 

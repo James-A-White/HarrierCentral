@@ -13,6 +13,7 @@ import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart'
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/database/tables.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 
@@ -45,10 +46,10 @@ class HasherKennelMapModel implements BaseModel {
       this.removed,
       this.updatedAt});
 
-  factory HasherKennelMapModel.fromJson(Map<String,dynamic> json) => _$HasherKennelMapModelFromJson(json);
-  
+  factory HasherKennelMapModel.fromJson(Map<String, dynamic> json) => _$HasherKennelMapModelFromJson(json);
+
   @override
-  Map<String,dynamic> toJson() => _$HasherKennelMapModelToJson(this);
+  Map<String, dynamic> toJson() => _$HasherKennelMapModelToJson(this);
 
   final String hkmId;
   final String userId;
@@ -74,7 +75,6 @@ class HasherKennelMapModel implements BaseModel {
 
   final DateTime updatedAt;
   final int removed;
-
 }
 
 class HasherKennelMapTableHelper with BaseFields implements BaseTableHelper {
@@ -200,9 +200,24 @@ class HasherKennelMapService {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
 
-    final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper, hasherKennelMapTableHelper.colUpdatedAtValue, tableType: tblType);
-    final num _kennelsLastUpdated = await baseService.getLastUpdatedTime(kennelsTableHelper, kennelsTableHelper.colUpdatedAtValue);
-    final num _hashersLastUpdated = await hashersService.getLastUpdatedTime(hashersTableHelper, hashersTableHelper.colUpdatedAtValue);
+    final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(
+      internalSqlDb,
+      hasherKennelMapTableHelper,
+      Tables.getTableName(hasherKennelMapTableHelper, tableType: tblType),
+      hasherKennelMapTableHelper.colUpdatedAtValue,
+    );
+    final num _kennelsLastUpdated = await baseService.getLastUpdatedTime(
+      internalSqlDb,
+      kennelsTableHelper,
+      Tables.getTableName(kennelsTableHelper),
+      kennelsTableHelper.colUpdatedAtValue,
+    );
+    final num _hashersLastUpdated = await hashersService.getLastUpdatedTime(
+      internalSqlDb,
+      hashersTableHelper,
+      Tables.getTableName(hashersTableHelper),
+      hashersTableHelper.colUpdatedAtValue,
+    );
 
     final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
     final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);

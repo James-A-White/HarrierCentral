@@ -14,6 +14,7 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/receipts_service.dart';
+import 'package:harrier_central/database/tables.dart';
 
 class ReceiptsList extends StatefulWidget {
   const ReceiptsList({Key key, @required this.eventAggregate}) : super(key: key);
@@ -141,7 +142,14 @@ class ReceiptsListState extends State<ReceiptsList> {
     setState(() {
       final ReceiptsService srv = ReceiptsService();
       srv.uploadReceipt(context, item).then((String result) {
-        baseService.bulkUpdateDatabase(receiptsTableHelper, result, internalSqlDb, null).then((int notUsed) {
+        baseService
+            .bulkUpdateDatabase(
+          receiptsTableHelper,
+          Tables.getTableName(receiptsTableHelper),
+          result,
+          internalSqlDb,
+        )
+            .then((int notUsed) {
           refreshFromTable();
         });
       });
@@ -163,7 +171,14 @@ class ReceiptsListState extends State<ReceiptsList> {
     setState(() {
       final ReceiptsService srv = ReceiptsService();
       srv.uploadReceipt(context, item).then((String result) {
-        baseService.bulkUpdateDatabase(receiptsTableHelper, result, internalSqlDb, null).then((int notUsed) {
+        baseService
+            .bulkUpdateDatabase(
+          receiptsTableHelper,
+          Tables.getTableName(receiptsTableHelper),
+          result,
+          internalSqlDb,
+        )
+            .then((int notUsed) {
           refreshFromTable();
         });
       });

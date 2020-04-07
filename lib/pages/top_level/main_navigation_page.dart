@@ -11,12 +11,10 @@ import 'package:harrier_central/widgets/confirm_auto_checkin_popup.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 import 'package:location_permissions/location_permissions.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:flutter/services.dart' show rootBundle;
 
-import 'package:harrier_central/database/notifications_table.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/database/migrations.dart';
+import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/widgets/flippable_box.dart';
@@ -120,58 +118,14 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     // the first time this is run, the database will be created. On subsequent
     // runs, the database will simply be opened.
 
-    Future<void> createTables(Database db, int version) async {
-      await hashersTableHelper.createTable(db, version, null);
-      await citiesTableHelper.createTable(db, version, null);
-      await regionsTableHelper.createTable(db, version, null);
-      await countriesTableHelper.createTable(db, version, null);
-      await kennelsTableHelper.createTable(db, version, null);
-      await hasherKennelMapTableHelper.createTable(db, version, TableType.hkmUser);
-      await hasherEventMapTableHelper.createTable(db, version, TableType.hemUser);
-      await eventsTableHelper.createTable(db, version, null);
-      await paymentsTableHelper.createTable(db, version, TableType.paymentsUser);
-      await NotificationsTableHelper.createTable(db, version);
-      await MigrationsTableHelper.createTable(db, version);
+    
 
-      // create event admin tables
-      await hasherEventMapTableHelper.createTable(db, version, TableType.hemEventAdmin);
-      await hasherKennelMapTableHelper.createTable(db, version, TableType.hkmEventAdmin);
-      await paymentsTableHelper.createTable(db, version, TableType.paymentsEvent);
-      await receiptsTableHelper.createTable(db, version, null);
-      await kennelCreditsTableHelper.createTable(db, version, null);
-
-      // create kennel admin tables
-      await hasherKennelMapTableHelper.createTable(db, version, TableType.hkmKennelAdmin);
-
-      if (informUser != null) {
-        informUser('Loading city data\r\n0% complete');
-      }
-      // first load the cities from the static text file into SQFLITE
-      final String cityJson = await rootBundle.loadString('database/cities.json');
-      final BaseService citySrv = BaseService();
-      await citySrv.bulkUpdateDatabase(citiesTableHelper, cityJson, db, informUser);
-
-      if (informUser != null) {
-        informUser('Loading region data\r\n0% complete');
-      }
-      // first load the regions from the static text file into SQFLITE
-      final String regionJson = await rootBundle.loadString('database/regions.json');
-      await baseService.bulkUpdateDatabase(regionsTableHelper, regionJson, db, informUser);
-
-      if (informUser != null) {
-        informUser('Loading country data\r\n0% complete');
-      }
-
-      final String countriesJson = await rootBundle.loadString('database/countries.json');
-      await baseService.bulkUpdateDatabase(countriesTableHelper, countriesJson, db, informUser);
-    }
-
-    migrationList.sort((MigrationsModel a, MigrationsModel b) => a.dbVersion.compareTo(b.dbVersion));
+    Tables.migrationList.sort((MigrationsModel a, MigrationsModel b) => a.dbVersion.compareTo(b.dbVersion));
 
     // make sure the DB_VERSION is equal to the maximum migration in the list
-    assert(DB_VERSION == migrationList.last.dbVersion);
+    assert(DB_VERSION == Tables.migrationList.last.dbVersion);
 
-    openOrInitializeDb(DB_NAME, DB_VERSION, informUser, migrations: migrationList, createTables: createTables).then((void dummy) {
+    openOrInitializeDb(DB_NAME, DB_VERSION, informUser, migrations: Tables.migrationList, createTables: Tables.createTables).then((void dummy) {
       final NotificationSupport notifications = NotificationSupport();
       notifications.configureNotifications(true);
 
@@ -486,113 +440,4 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       ),
     );
   }
-
-  // *****************
-  // DB migrations & version
-
-  static List<MigrationsModel> migrationList = <MigrationsModel>[
-    // MIGRATION 221
-    MigrationsModel(dbVersion: 221, migrationText: '''
-            ALTER TABLE ${hashersTableHelper.tableName} ADD COLUMN ${hashersTableHelper.colHomeKennelId} TEXT;
-         '''),
-
-    // MIGRATION 222
-    MigrationsModel(dbVersion: 222, migrationText: '''
-            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} ADD COLUMN ${hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
-            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
-            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
-         '''),
-
-    // MIGRATION 223
-    MigrationsModel(dbVersion: 223, migrationText: '''
-            ALTER TABLE ${hasherEventMapTableHelper.getTableName(TableType.hemUser)} ADD COLUMN ${hasherEventMapTableHelper.colEventEmailAlertPreference} INT;
-            ALTER TABLE ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colKennelEmailAlertPreference} INT;
-         '''),
-
-    // MIGRATION 224
-    MigrationsModel(dbVersion: 224, migrationText: '''
-            ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colEventPriceForExtras} NUM;
-            ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colExtrasDescription} TEXT;
-            ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colDoTrackHashCash} INT;
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelMismanagementTeam} TEXT;
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colDistancePreference} INT;
-            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colIsKennelFollowing} INT;
-            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colMismanagementRoles} INT;
-            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} ADD COLUMN ${hasherKennelMapTableHelper.colIsKennelFollowing} INT;
-            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} ADD COLUMN ${hasherKennelMapTableHelper.colMismanagementRoles} INT;
-            ALTER TABLE ${hashersTableHelper.tableName} ADD COLUMN ${hashersTableHelper.colIncludeInGlobalHashDirectory} INT;
-            ALTER TABLE ${countriesTableHelper.tableName} ADD COLUMN ${countriesTableHelper.colDistancePreference} INT NOT NULL DEFAULT 0;
-         '''),
-
-    // MIGRATION 225
-    MigrationsModel(dbVersion: 225, migrationText: '''
-            ALTER TABLE ${hashersTableHelper.tableName} ADD COLUMN ${hashersTableHelper.colPreferences} INT;
-         '''),
-
-    // MIGRATION 226
-    MigrationsModel(dbVersion: 226, migrationText: '''
-            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colIsKennelFollowing} INT;
-            ALTER TABLE ${hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin)} ADD COLUMN ${hasherKennelMapTableHelper.colMismanagementRoles} INT;
-         '''),
-
-    // MIGRATION 227
-    MigrationsModel(dbVersion: 227, migrationText: '''
-            ALTER TABLE ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} ADD COLUMN ${paymentsTableHelper.colDoPayForExtras} INT;
-         '''),
-
-    // MIGRATION 228
-    MigrationsModel(dbVersion: 228, migrationText: '''
-            ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colTags1} INT;
-            ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colTags2} INT;
-            ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colTags3} INT;
-         '''),
-
-    MigrationsModel(dbVersion: 229, migrationText: '''
-            ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colEventPaymentScheme} TEXT;
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentScheme} TEXT;
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentScheme2} TEXT;
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentScheme3} TEXT;
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentUrl2} TEXT;
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentUrl3} TEXT;
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentUrlExpires2} TEXT;
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentUrlExpires3} TEXT;
-         '''),
-
-    MigrationsModel(dbVersion: 230, migrationText: '''
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentMemberSurcharge} NUM;
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentNonMemberSurcharge} NUM;
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentMemberSurcharge2} NUM;
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentNonMemberSurcharge2} NUM;
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentMemberSurcharge3} NUM;
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPaymentNonMemberSurcharge3} NUM;
-         '''),
-
-    MigrationsModel(dbVersion: 231, migrationText: '''
-            ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colAllowSelfPayment} INT;
-         '''),
-
-    MigrationsModel(dbVersion: 232, migrationText: '''
-            ALTER TABLE ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} ADD COLUMN ${paymentsTableHelper.colSurcharge} INT;
-            ALTER TABLE ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} ADD COLUMN ${paymentsTableHelper.colPaymentProvider} INT;
-         '''),
-
-    MigrationsModel(dbVersion: 251, migrationText: '''
-            ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colLocationCountry} TEXT;
-         '''),
-
-    MigrationsModel(dbVersion: 252, migrationText: '''
-                  ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colLocationRegion} TEXT;
-                  ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colLocationSubRegion} TEXT;         
-         '''),
-
-    MigrationsModel(dbVersion: 253, migrationText: '''
-                  ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPinColor} INT;    
-         '''),
-
-    MigrationsModel(dbVersion: DB_VERSION, migrationText: '''
-                  ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colEventGeographicScope} INT;          
-         '''),
-  ];
-
-  
 }

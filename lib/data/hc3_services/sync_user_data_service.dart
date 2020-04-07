@@ -9,6 +9,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/database/tables.dart';
 
 class SyncUserDataService {
   static const int flagHashersTable = 0x00000001;
@@ -46,14 +47,14 @@ class SyncUserDataService {
 
   Future<void> getLastUpdatedTimes(int flags) async {
     _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hashersTableHelper.colUpdatedAtValue, hashersTableHelper.tableName);
-    _citiesLastUpdated = (flags & flagCitiesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(citiesTableHelper.colUpdatedAtValue, citiesTableHelper.tableName);
-    _regionsLastUpdated = (flags & flagRegionsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(regionsTableHelper.colUpdatedAtValue, regionsTableHelper.tableName);
-    _countriesLastUpdated = (flags & flagCountriesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(countriesTableHelper.colUpdatedAtValue, countriesTableHelper.tableName);
-    _kennelsLastUpdated = (flags & flagKennelsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(kennelsTableHelper.colUpdatedAtValue, kennelsTableHelper.tableName);
+    _citiesLastUpdated = (flags & flagCitiesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(citiesTableHelper.colUpdatedAtValue, citiesTableHelper.tableName);
+    _regionsLastUpdated = (flags & flagRegionsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(regionsTableHelper.colUpdatedAtValue, regionsTableHelper.tableName);
+    _countriesLastUpdated = (flags & flagCountriesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(countriesTableHelper.colUpdatedAtValue, countriesTableHelper.tableName);
+    _kennelsLastUpdated = (flags & flagKennelsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(kennelsTableHelper.colUpdatedAtValue, kennelsTableHelper.tableName);
     _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(paymentsTableHelper.colUpdatedAtValue, paymentsTableHelper.getTableName(TableType.paymentsUser));
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(hasherKennelMapTableHelper.colUpdatedAtValue, hasherKennelMapTableHelper.getTableName(TableType.hkmUser));
-    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(hasherEventMapTableHelper.colUpdatedAtValue, hasherEventMapTableHelper.getTableName(TableType.hemUser));
-    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(eventsTableHelper.colUpdatedAtValue, eventsTableHelper.tableName);
+    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hasherKennelMapTableHelper.colUpdatedAtValue, hasherKennelMapTableHelper.getTableName(TableType.hkmUser));
+    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hasherEventMapTableHelper.colUpdatedAtValue, hasherEventMapTableHelper.getTableName(TableType.hemUser));
+    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(eventsTableHelper.colUpdatedAtValue, eventsTableHelper.tableName);
   }
 
   Future<bool> updateFromBackend(int tablesToSync, bool forceRefresh, {Function informUser}) async {
@@ -136,7 +137,6 @@ class SyncUserDataService {
         'hasherEventMapUpdatedAfter': (tablesToSync & flagHasherEventMapTable) == 0 ? 'ignore' : hasherEventMapUpdatedAfter.toString().substring(0, 19),
         'narrowEventsUpdatedAfter': (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : narrowEventsUpdatedAfter.toString().substring(0, 19),
         'paymentsUpdatedAfter': (tablesToSync & flagPaymentsTable) == 0 ? 'ignore' : paymentsUpdatedAfter.toString().substring(0, 19),
-
       });
 
       final http.Response response = await http
@@ -169,47 +169,101 @@ class SyncUserDataService {
       final String ms = matches.elementAt(i).group(0);
 
       if (ms.startsWith(r'[{"hasherId"')) {
-        await hashersService.bulkUpdateDatabase(hashersTableHelper,'[$ms]', internalSqlDb, informUser);
+        await hashersService.bulkUpdateDatabase(
+          hashersTableHelper,
+          Tables.getTableName(hashersTableHelper),
+          '[$ms]',
+          internalSqlDb,
+          informUser: informUser,
+        );
         print('hashers updated');
       }
 
       if (ms.startsWith(r'[{"paymentId"')) {
-        await baseService.bulkUpdateDatabase(paymentsTableHelper,'[$ms]', internalSqlDb, informUser, tableType: TableType.paymentsUser);
+        await baseService.bulkUpdateDatabase(
+          paymentsTableHelper,
+          Tables.getTableName(paymentsTableHelper, tableType: TableType.paymentsUser),
+          '[$ms]',
+          internalSqlDb,
+          informUser: informUser,
+        );
         print('payments updated');
       }
 
       if (ms.startsWith(r'[{"cityId"')) {
-        await baseService.bulkUpdateDatabase(citiesTableHelper,'[$ms]', internalSqlDb, informUser);
+        await baseService.bulkUpdateDatabase(
+          citiesTableHelper,
+          Tables.getTableName(citiesTableHelper),
+          '[$ms]',
+          internalSqlDb,
+          informUser: informUser,
+        );
         print('cities updated');
       }
 
       if (ms.startsWith(r'[{"regionId"')) {
-        await baseService.bulkUpdateDatabase(regionsTableHelper,'[$ms]', internalSqlDb, informUser);
+        await baseService.bulkUpdateDatabase(
+          regionsTableHelper,
+          Tables.getTableName(regionsTableHelper),
+          '[$ms]',
+          internalSqlDb,
+          informUser: informUser,
+        );
         print('regions updated');
       }
 
       if (ms.startsWith(r'[{"countryId"')) {
-        await baseService.bulkUpdateDatabase(countriesTableHelper,'[$ms]', internalSqlDb, informUser);
+        await baseService.bulkUpdateDatabase(
+          countriesTableHelper,
+          Tables.getTableName(countriesTableHelper),
+          '[$ms]',
+          internalSqlDb,
+          informUser: informUser,
+        );
         print('countries updated');
       }
 
       if (ms.startsWith(r'[{"kennelId"')) {
-        await baseService.bulkUpdateDatabase(kennelsTableHelper,'[$ms]', internalSqlDb, informUser);
+        await baseService.bulkUpdateDatabase(
+          kennelsTableHelper,
+          Tables.getTableName(kennelsTableHelper),
+          '[$ms]',
+          internalSqlDb,
+          informUser: informUser,
+        );
         print('kennels updated');
       }
 
       if (ms.startsWith(r'[{"eventId"')) {
-        await baseService.bulkUpdateDatabase(eventsTableHelper,'[$ms]', internalSqlDb, informUser);
+        await baseService.bulkUpdateDatabase(
+          eventsTableHelper,
+          Tables.getTableName(eventsTableHelper),
+          '[$ms]',
+          internalSqlDb,
+          informUser: informUser,
+        );
         print('events updated');
       }
 
       if (ms.startsWith(r'[{"hkmId"')) {
-        await baseService.bulkUpdateDatabase(hasherKennelMapTableHelper,'[$ms]', internalSqlDb, informUser, tableType: TableType.hkmUser);
+        await baseService.bulkUpdateDatabase(
+          hasherKennelMapTableHelper,
+          Tables.getTableName(hasherKennelMapTableHelper, tableType: TableType.hkmUser),
+          '[$ms]',
+          internalSqlDb,
+          informUser: informUser,
+        );
         print('hasher kennel map updated');
       }
 
       if (ms.startsWith(r'[{"hemId"')) {
-        await baseService.bulkUpdateDatabase(hasherEventMapTableHelper, '[$ms]', internalSqlDb, informUser, tableType: TableType.hemUser);
+        await baseService.bulkUpdateDatabase(
+          hasherEventMapTableHelper,
+          Tables.getTableName(hasherEventMapTableHelper,tableType:TableType.hemUser ),
+          '[$ms]',
+          internalSqlDb,
+          informUser: informUser,
+        );
         print('hasher event map updated');
       }
 

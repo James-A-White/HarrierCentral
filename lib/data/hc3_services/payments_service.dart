@@ -12,10 +12,12 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/database/tables.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 
 part 'payments_service.g.dart';
+
 @JsonSerializable(fieldRename: FieldRename.none)
 class PaymentsModel implements BaseModel {
   PaymentsModel({
@@ -43,10 +45,10 @@ class PaymentsModel implements BaseModel {
     this.updatedAt,
   });
 
-  factory PaymentsModel.fromJson(Map<String,dynamic> json) => _$PaymentsModelFromJson(json);
- 
+  factory PaymentsModel.fromJson(Map<String, dynamic> json) => _$PaymentsModelFromJson(json);
+
   @override
-  Map<String,dynamic> toJson() => _$PaymentsModelToJson(this);
+  Map<String, dynamic> toJson() => _$PaymentsModelToJson(this);
 
   final String paymentId;
   final String kennelId;
@@ -70,7 +72,6 @@ class PaymentsModel implements BaseModel {
   final String paymentProvider;
   final int removed;
   final DateTime updatedAt;
-
 }
 
 class PaymentsTableHelper with BaseFields implements BaseTableHelper {
@@ -155,9 +156,7 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
     await db.execute(sql);
     sql = 'CREATE INDEX idx_${getTableName(tableType)}_update_at_value ON ${getTableName(tableType)}($colUpdatedAtValue);';
     await db.execute(sql);
-
   }
-
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
@@ -194,16 +193,36 @@ class PaymentsService {
 
     final String accessToken = Utilities.generateToken(userId, 'processPayment', paramString: tokenParameterString);
 
-    final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper, hasherEventMapTableHelper.colUpdatedAtValue, tableType: appDomainType == AppDomainType.event ? TableType.hemEventAdmin : TableType.hemUser);
+    final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(
+      internalSqlDb,
+      hasherEventMapTableHelper,
+      Tables.getTableName(hasherEventMapTableHelper,tableType: appDomainType == AppDomainType.event ? TableType.hemEventAdmin : TableType.hemUser),
+      hasherEventMapTableHelper.colUpdatedAtValue,
+    );
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
 
-    final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper, hasherKennelMapTableHelper.colUpdatedAtValue, tableType: appDomainType == AppDomainType.event ? TableType.hkmEventAdmin : TableType.hkmUser);
+    final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(
+      internalSqlDb,
+      hasherKennelMapTableHelper,
+      Tables.getTableName(hasherKennelMapTableHelper,tableType: appDomainType == AppDomainType.event ? TableType.hkmEventAdmin : TableType.hkmUser),
+      hasherKennelMapTableHelper.colUpdatedAtValue,
+    );
     final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
 
-    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(paymentsTableHelper, paymentsTableHelper.colUpdatedAtValue, tableType: appDomainType == AppDomainType.event ? TableType.paymentsEvent : TableType.paymentsUser);
+    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(
+      internalSqlDb,
+      paymentsTableHelper,
+      Tables.getTableName(paymentsTableHelper, tableType: appDomainType == AppDomainType.event ? TableType.paymentsEvent : TableType.paymentsUser),
+      paymentsTableHelper.colUpdatedAtValue,
+    );
     final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
 
-    final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(kennelCreditsTableHelper, kennelCreditsTableHelper.colUpdatedAtValue);
+    final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(
+      internalSqlDb,
+      kennelCreditsTableHelper,
+      Tables.getTableName(kennelCreditsTableHelper),
+      kennelCreditsTableHelper.colUpdatedAtValue,
+    );
     final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
     final String appDomainStr = appDomainType.toString();
@@ -225,7 +244,7 @@ class PaymentsService {
       'doPayForExtras': doPayForExtras.value.toString(),
       'surcharge': surcharge == null ? null : surcharge.toString(),
       'paymentProvider': paymentProvider ?? '',
-      'appDomainType' : appDomainStr
+      'appDomainType': appDomainStr
     });
 
     final http.Response response = await http
@@ -239,8 +258,7 @@ class PaymentsService {
       },
     );
 
-    if (appDomainType == AppDomainType.event)
-    {
+    if (appDomainType == AppDomainType.event) {
       results = await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else {
       results = await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);

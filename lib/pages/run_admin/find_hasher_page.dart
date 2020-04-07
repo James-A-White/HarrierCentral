@@ -15,6 +15,7 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
+import 'package:harrier_central/database/tables.dart';
 
 enum FindHasherPageType { addHasherToRun, addMember }
 
@@ -47,8 +48,14 @@ class FindHasherPageState extends State<FindHasherPage> {
     //}
 
     final HashersService svc = HashersService();
-    svc.selectAllFromLocalDb(hashersTableHelper).then((List<BaseModel> list) {
-      hasherList =  list.cast<HashersModel>();
+    svc
+        .selectAllFromLocalDb(
+      internalSqlDb,
+      hashersTableHelper,
+      Tables.getTableName(hashersTableHelper),
+    )
+        .then((List<BaseModel> list) {
+      hasherList = list.cast<HashersModel>();
       setState(() {
         if (hasherList != null) {
           hasherList.sort((dynamic a, dynamic b) => (a.dispName ?? '').toLowerCase().compareTo((b.dispName ?? '').toLowerCase()));

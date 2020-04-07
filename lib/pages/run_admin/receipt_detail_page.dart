@@ -18,6 +18,7 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 import 'package:harrier_central/widgets/zoomable_image_page.dart';
 import 'package:harrier_central/data/hc3_services/receipts_service.dart';
+import 'package:harrier_central/database/tables.dart';
 
 // import 'package:harrier_central/widgets/user_details_ui.dart';
 // import 'package:harrier_central/widgets/fancy_divider.dart';
@@ -151,7 +152,14 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
         final ReceiptsService srv = ReceiptsService();
         srv.uploadReceipt(context, item).then((String result) {
-          baseService.bulkUpdateDatabase(receiptsTableHelper, result, internalSqlDb, null).then((int notUsed) {
+          baseService
+              .bulkUpdateDatabase(
+            receiptsTableHelper,
+            Tables.getTableName(receiptsTableHelper),
+            result,
+            internalSqlDb,
+          )
+              .then((int notUsed) {
             Navigator.of(context).pop();
           });
         });

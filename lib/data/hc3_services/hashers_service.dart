@@ -13,6 +13,7 @@ import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/database/tables.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 
@@ -38,10 +39,10 @@ class HashersModel implements BaseModel {
     this.updatedAt,
   });
 
-  factory HashersModel.fromJson(Map<String,dynamic> json) => _$HashersModelFromJson(json);
- 
+  factory HashersModel.fromJson(Map<String, dynamic> json) => _$HashersModelFromJson(json);
+
   @override
-  Map<String,dynamic> toJson() => _$HashersModelToJson(this);
+  Map<String, dynamic> toJson() => _$HashersModelToJson(this);
 
   final String hasherId;
   final String homeKennelId;
@@ -59,7 +60,6 @@ class HashersModel implements BaseModel {
 
   final int removed;
   final DateTime updatedAt;
-
 }
 
 class HashersTableHelper with BaseFields implements BaseTableHelper {
@@ -184,13 +184,28 @@ class HashersService extends BaseService {
     DateTime hasherKennelMapUpdatedAfter;
 
     if (!newUserForThisDevice) {
-      final num _hashersLastUpdated = await getLastUpdatedTime(hashersTableHelper, hashersTableHelper.colUpdatedAtValue);
+      final num _hashersLastUpdated = await getLastUpdatedTime(
+        internalSqlDb,
+        hashersTableHelper,
+        Tables.getTableName(hashersTableHelper),
+        hashersTableHelper.colUpdatedAtValue,
+      );
       hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
 
-      final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(hasherEventMapTableHelper, hasherEventMapTableHelper.colUpdatedAtValue, tableType: TableType.hemEventAdmin);
+      final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(
+        internalSqlDb,
+        hasherEventMapTableHelper,
+        Tables.getTableName(hasherEventMapTableHelper, tableType: TableType.hemEventAdmin),
+        hasherEventMapTableHelper.colUpdatedAtValue,
+      );
       hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
 
-      final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(hasherKennelMapTableHelper, hasherKennelMapTableHelper.colUpdatedAtValue, tableType: ((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? TableType.hkmEventAdmin : TableType.hkmKennelAdmin);
+      final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(
+        internalSqlDb,
+        hasherKennelMapTableHelper,
+        Tables.getTableName(hasherKennelMapTableHelper, tableType: ((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? TableType.hkmEventAdmin : TableType.hkmKennelAdmin),
+        hasherKennelMapTableHelper.colUpdatedAtValue,
+      );
       hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
     } else {
       // do this to suppress any records being returned through the sync mechanism
@@ -322,7 +337,12 @@ class HashersService extends BaseService {
     DateTime hashersUpdatedAfter;
 
     if (!newUserForThisDevice) {
-      final num _hashersLastUpdated = await getLastUpdatedTime(hashersTableHelper, hashersTableHelper.colUpdatedAtValue);
+      final num _hashersLastUpdated = await getLastUpdatedTime(
+        internalSqlDb,
+        hashersTableHelper,
+        Tables.getTableName(hashersTableHelper),
+        hashersTableHelper.colUpdatedAtValue,
+      );
       hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
     } else {
       // do this to suppress any records being returned through the sync mechanism

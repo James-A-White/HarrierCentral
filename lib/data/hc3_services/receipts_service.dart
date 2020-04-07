@@ -10,6 +10,7 @@ import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/data/services/service_common.dart';
+import 'package:harrier_central/database/tables.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 
@@ -157,7 +158,12 @@ class ReceiptsService {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
 
-    final num _receiptsLastUpdated = await baseService.getLastUpdatedTime(receiptsTableHelper, receiptsTableHelper.colUpdatedAtValue);
+    final num _receiptsLastUpdated = await baseService.getLastUpdatedTime(
+      internalSqlDb,
+      receiptsTableHelper,
+      Tables.getTableName(receiptsTableHelper),
+      receiptsTableHelper.colUpdatedAtValue,
+    );
     final DateTime receiptsUpdatedAfter = _receiptsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_receiptsLastUpdated + 1000);
 
     final String body = receiptsTableHelper.toQueryBody(userId, accessToken, item, receiptsUpdatedAfter.toString());
