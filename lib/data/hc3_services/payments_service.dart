@@ -5,7 +5,7 @@ import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/core/base_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/utilities.dart';

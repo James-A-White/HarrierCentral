@@ -13,7 +13,7 @@ import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 import 'package:location_permissions/location_permissions.dart';
 
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-import 'package:harrier_central/database/migrations.dart';
+import 'package:harrier_central/core/migrations.dart';
 import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
@@ -25,7 +25,7 @@ import 'package:harrier_central/pages/top_level/history_list_page.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
-import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/core/base_service.dart';
 import 'package:harrier_central/notifications/notification_support.dart';
 
 class MainNavigationPage extends StatefulWidget {

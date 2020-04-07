@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/core/base_service.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 

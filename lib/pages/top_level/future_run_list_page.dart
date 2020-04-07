@@ -14,7 +14,7 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';
-import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/core/base_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 

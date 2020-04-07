@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/data/hc3_services/events_service.dart';
-import 'package:harrier_central/database/database.dart';
+import 'package:harrier_central/core/database.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/database/query_kennels.dart';
@@ -20,11 +20,11 @@ import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/core/base_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
-import 'package:harrier_central/database/migrations.dart';
+import 'package:harrier_central/core/migrations.dart';
 
 import 'package:sqflite/sqflite.dart';
 

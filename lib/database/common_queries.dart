@@ -6,7 +6,7 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/core/base_service.dart';
 
 class AreWeAtRunResult {
   String eventId;

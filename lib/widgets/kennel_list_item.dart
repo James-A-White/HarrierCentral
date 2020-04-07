@@ -9,7 +9,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
-import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/core/base_service.dart';
 import 'package:harrier_central/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/database/query_kennels.dart';
 import 'package:harrier_central/notifications/notification_support.dart';

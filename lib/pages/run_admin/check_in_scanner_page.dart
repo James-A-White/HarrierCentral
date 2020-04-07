@@ -11,7 +11,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/core/base_service.dart';
 import 'package:harrier_central/pages/run_admin/payment_popup.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';

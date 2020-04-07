@@ -9,7 +9,7 @@ import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
 import 'package:audioplayers/audio_cache.dart';
 
 import 'package:harrier_central/database/common_queries.dart';
-import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/core/base_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';

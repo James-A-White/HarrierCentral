@@ -10,7 +10,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
-import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/core/base_service.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';

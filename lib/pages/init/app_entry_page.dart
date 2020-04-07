@@ -6,8 +6,7 @@ import 'package:flutter/services.dart';
 
 import 'package:package_info/package_info.dart';
 
-import 'package:harrier_central/database/database.dart';
-import 'package:harrier_central/database/migrations.dart';
+import 'package:harrier_central/core/database.dart';
 import 'package:harrier_central/data/models/approve_login_model.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
 import 'package:harrier_central/data/services/approve_login_service.dart';

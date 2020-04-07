@@ -11,7 +11,7 @@ import 'package:harrier_central/database/query_kennels.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/core/base_service.dart';
 import 'package:harrier_central/widgets/kennel_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';

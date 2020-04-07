@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/database/migrations.dart';
+import 'package:harrier_central/core/migrations.dart';
 
 class DBProvider {
   static Future<bool> deleteDb(String dbName) async {
