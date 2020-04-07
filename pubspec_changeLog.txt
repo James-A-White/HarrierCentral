@@ -1,5 +1,8 @@
 
-
+# xxxx
+    Major refactoring of the database. Moved DB instance from singleton to global variable
+    Fixed issues related to normalizing json maps between wire protocol and internal db (doNormalizeMap)
+    Initial preps to move DB functions into an InnoVet Europe core platform package
 # 0.8.155+310
     Added event geographic scope (local events, regional events, nash hash, interhash, world interhash / global events)
     Added map pins for special events

@@ -10,14 +10,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:latlong/latlong.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/data/services/email_reports_service.dart';
-import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/database/query_runs.dart';
 import 'package:harrier_central/pages/kennel_admin/filter_events_page.dart';
 import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';

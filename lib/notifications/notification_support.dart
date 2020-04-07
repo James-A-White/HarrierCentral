@@ -1,11 +1,9 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
 
-import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/database/notifications_table.dart';
 
 class NotificationSupport {

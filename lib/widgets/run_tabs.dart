@@ -12,9 +12,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:latlong/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';

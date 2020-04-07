@@ -3,10 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:geolocator/geolocator.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
-import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/database/query_runs.dart';
 import 'package:harrier_central/widgets/run_list_item.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';

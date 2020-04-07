@@ -23,7 +23,7 @@ class DBProvider {
     return true;
   }
 
-  static Future<Database> initDB(String dbName, Function informUser) async {
+  static Future<Database> openOrInitDb(String dbName, Function informUser) async {
     final Directory documentsDirectory = await getApplicationDocumentsDirectory();
     final String path = join(documentsDirectory.path, dbName);
     return openDatabase(path, version: MigrationsTableHelper.dbVersion, 

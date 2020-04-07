@@ -68,8 +68,8 @@ SyncEventAdminService syncEventAdminService;
 
 Database internalSqlDb;
 
-Future<void> initializeDb(String dbName, Function informUser) async {
-  internalSqlDb = await DBProvider.initDB(DB_NAME, informUser);
+Future<void> openOrInitializeDb(String dbName, Function informUser) async {
+  internalSqlDb = await DBProvider.openOrInitDb(DB_NAME, informUser);
 }
 
 void initializeGlobals() {

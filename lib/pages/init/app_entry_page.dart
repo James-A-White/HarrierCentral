@@ -5,12 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:package_info/package_info.dart';
-import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/database/migrations.dart';
 import 'package:harrier_central/data/models/approve_login_model.dart';
-import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
 import 'package:harrier_central/data/services/approve_login_service.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -19,7 +17,6 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/notifications/notification_support.dart';
 import 'package:harrier_central/data/services/authorize_device_service.dart';
 
 class AppEntryPage extends StatefulWidget {
@@ -120,12 +117,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
               } else {
                 
 
-                final bool result = await syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false);
-                final String resultStr = result ? 'successfully' : 'unsuccessfully';
-                print('Master data synchronized $resultStr');
 
-                final NotificationSupport notifications = NotificationSupport();
-                notifications.configureNotifications(true);
 
                 Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
               }

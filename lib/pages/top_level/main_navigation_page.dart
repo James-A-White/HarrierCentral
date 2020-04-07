@@ -25,6 +25,7 @@ import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:harrier_central/data/hc3_services/base_service.dart';
+import 'package:harrier_central/notifications/notification_support.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);
@@ -108,11 +109,18 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     super.initState();
 
+    // final bool result = await syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false);
+    // final String resultStr = result ? 'successfully' : 'unsuccessfully';
+    // print('Master data synchronized $resultStr');
+
     // this is here to force the database to be instnatiated upon startup.
     // the first time this is run, the database will be created. On subsequent
     // runs, the database will simply be opened.
 
-    initializeDb(DB_NAME, informUser).then((void dummy) {
+    openOrInitializeDb(DB_NAME, informUser).then((void dummy) {
+      final NotificationSupport notifications = NotificationSupport();
+      notifications.configureNotifications(true);
+
       syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false, informUser: informUser).then((bool result) {
         final String resultStr = result ? 'successfully' : 'unsuccessfully';
         print('Master data synchronized $resultStr');

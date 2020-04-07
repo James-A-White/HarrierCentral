@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';

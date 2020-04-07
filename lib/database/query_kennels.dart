@@ -1,6 +1,4 @@
-import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';

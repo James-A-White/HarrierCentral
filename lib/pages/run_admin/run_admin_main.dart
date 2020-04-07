@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:harrier_central/widgets/fancy_divider.dart';
 
-import 'package:sqflite/sqflite.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:geolocator/geolocator.dart';
 
-import 'package:harrier_central/database/database.dart';
 import 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
 import 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
 import 'package:harrier_central/pages/run_admin/payment_report.dart';
