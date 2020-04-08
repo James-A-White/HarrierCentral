@@ -1,5 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:ive_flutter_core/base_service.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';

@@ -9,11 +9,11 @@ import 'package:keyboard_avoider/keyboard_avoider.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/widgets/fancy_divider.dart';
+import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 
 
 // import 'package:harrier_central/widgets/user_details_ui.dart';
-// import 'package:harrier_central/widgets/fancy_divider.dart';
+// import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 
 class EmailEditorPage extends StatefulWidget {
   const EmailEditorPage({Key key, this.eventId}) : super(key: key);

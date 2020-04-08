@@ -9,7 +9,7 @@ import 'package:harrier_central/data/services/authorize_device_service.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:ive_flutter_core/database.dart';
+import 'package:ive_flutter_core/database/database.dart';
 
 
 class GetResetCodePopup extends StatefulWidget {

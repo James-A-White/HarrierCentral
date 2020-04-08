@@ -7,13 +7,13 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-import 'package:ive_flutter_core/base_service.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
+import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/user_event_list_item.dart';
@@ -76,8 +76,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   }
 
   Future<void> refreshRunHistoryFromTable(bool forceRefresh) async {
-    
-
     final String query = ''' 
         SELECT 
           e.eventId,
@@ -201,7 +199,11 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
             body: _isLoading ? _buildCircularProgressIndicator() : _buildListView(),
           ),
         ),
-        const OfflineModeRibbon(),
+        OfflineModeRibbon(
+          showRibbon: globalConnectionStatus == connectionStatus_notConnected,
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+        ribbonImage: 'images/icons/offline_mode.png',
+        ),
       ],
     );
   }
@@ -213,8 +215,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   }
 
   Future<void> _handleRefresh() async {
-    
-
     setState(() {
       _isLoading = true;
     });
@@ -492,14 +492,15 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   // so assume that the person was not a hare
                                   if (item.attendenceState < attendenceAtHash.value) {
                                     item.isLoading = true;
-                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(item.eventId, TableType.hemUser, userId, item.hemId, AppDomainType.user ,rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value);
+                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(item.eventId, TableType.hemUser, userId, item.hemId, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value);
 
                                     retVal.then((List<dynamic> adHocData) {
                                       refreshRunHistoryFromTable(true).then((void dummy) {});
                                     });
                                   } else {
                                     item.isLoading = true;
-                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(item.eventId, TableType.hemUser, userId, item.hemId, AppDomainType.user ,rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: item.isHare == 1 ? isHareNo.value : isHareYes.value);
+                                    final Future<List<dynamic>> retVal =
+                                        hasherEventMapService.joinEvent(item.eventId, TableType.hemUser, userId, item.hemId, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: item.isHare == 1 ? isHareNo.value : isHareYes.value);
 
                                     retVal.then((List<dynamic> adHocData) {
                                       refreshRunHistoryFromTable(true).then((void dummy) {});
@@ -509,7 +510,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   // swipe from left to right to
                                   // indicate that the hasher did
                                   // not participate in this event
-                                  final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(item.eventId, TableType.hemUser, userId, item.hemId, AppDomainType.user ,rsvpState: rsvpNo.value, attendenceState: attendenceNo.value, isHare: isHareNo.value);
+                                  final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(item.eventId, TableType.hemUser, userId, item.hemId, AppDomainType.user, rsvpState: rsvpNo.value, attendenceState: attendenceNo.value, isHare: isHareNo.value);
 
                                   retVal.then((List<dynamic> adHocData) {
                                     refreshRunHistoryFromTable(true).then((void dummy) {});

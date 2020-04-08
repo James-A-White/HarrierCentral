@@ -125,6 +125,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         onTap: () {
           if (activeTab == 0) {
             PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.location]).then((Map<PermissionGroup, PermissionStatus> e) {
+              Utilities.subscribeToGeoLocationStream();
               goToTab(1);
             });
           }
@@ -158,6 +159,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
       Utilities.showAlert(context, 'Location Preference', 'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool allow) {
         if (allow) {
           PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.location]).then((Map<PermissionGroup, PermissionStatus> e) {
+            Utilities.subscribeToGeoLocationStream();
             goToTab(1);
           });
         } else {

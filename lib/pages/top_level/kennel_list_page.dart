@@ -11,7 +11,7 @@ import 'package:harrier_central/database/query_kennels.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-import 'package:ive_flutter_core/base_service.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/widgets/kennel_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
@@ -56,18 +56,6 @@ class KennelsListPageState extends State<KennelsListPage> {
 
   Container searchBar() {
     return Container(
-      // decoration: const BoxDecoration(
-      //   // border: new Border.all(width: 1.0, color: Colors.black),
-      //   //shape: BoxShape.circle,
-      //   color: Colors.white,
-      //   boxShadow: <BoxShadow>[
-      //     BoxShadow(
-      //       color: Color.fromARGB(70, 0, 0, 0),
-      //       offset: Offset(0.0, 6.0),
-      //       blurRadius: 10.0,
-      //     ),
-      //   ],
-      // ),
       padding: const EdgeInsets.only(left: 10),
       color: Colors.white,
       width: MediaQuery.of(context).size.width,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:harrier_central/widgets/qr_popup.dart';
+import 'package:ive_flutter_core/widgets/qr_popup.dart';
 import 'package:intl/intl.dart';
 
 import 'package:harrier_central/pages/run_admin/run_admin_main.dart';

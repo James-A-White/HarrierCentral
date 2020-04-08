@@ -9,8 +9,8 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
-import 'package:ive_flutter_core/base_service.dart';
-import 'package:harrier_central/widgets/multiple_choice_popup.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
+import 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/database/query_kennels.dart';
 import 'package:harrier_central/notifications/notification_support.dart';
 
@@ -261,6 +261,7 @@ class KennelListItemState extends State<KennelsListItem> {
                           title: 'Follow ${widget.kennelItem.kennel.kennelName}',
                           buttons: buttons,
                           cancelButtonTitle: 'Cancel',
+                          cancelButtonReturnValue: followTypeCancel,
                         );
 
                         showDialog<dynamic>(
@@ -342,6 +343,7 @@ class KennelListItemState extends State<KennelsListItem> {
       title: 'Notification options for this Kennel',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',
+      cancelButtonReturnValue: followTypeCancel,
     );
 
     showDialog<dynamic>(
@@ -417,6 +419,7 @@ class KennelListItemState extends State<KennelsListItem> {
       title: 'Email options for this Kennel',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',
+      cancelButtonReturnValue: followTypeCancel,
     );
 
     showDialog<dynamic>(

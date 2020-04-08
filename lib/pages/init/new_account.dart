@@ -8,7 +8,9 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
+import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 
 class NewAccountPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -49,7 +51,11 @@ class NewAccountPageState extends State<NewAccountPage> {
             ),
           ),
         ),
-        const OfflineModeRibbon(),
+        OfflineModeRibbon(
+          showRibbon: globalConnectionStatus == connectionStatus_notConnected,
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+        ribbonImage: 'images/icons/offline_mode.png',
+        ),
       ],
     );
   }
@@ -126,48 +132,46 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                 ),
               ),
             ),
-                
-                           GestureDetector(
+            GestureDetector(
               onTap: () {
                 Navigator.push<dynamic>(
                   context,
                   MaterialPageRoute<dynamic>(builder: (BuildContext context) => FbLoginPage()),
                 );
               },
-              child: 
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20.0),
-                    color: Colors.white,
-                    border: Border.all(
-                      color: Theme.of(context).accentColor,
-                      width: 2, //                   <--- border width here
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.0),
+                  color: Colors.white,
+                  border: Border.all(
+                    color: Theme.of(context).accentColor,
+                    width: 2, //                   <--- border width here
+                  ),
+                ),
+                child: Row(
+                  children: <Widget>[
+                    Image(
+                      width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
+                      height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
+                      fit: BoxFit.fill,
+                      image: const AssetImage('images/icons/facebookLogoCircle.png'),
                     ),
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      Image(
-                        width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-                        height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-                        fit: BoxFit.fill,
-                        image: const AssetImage('images/icons/facebookLogoCircle.png'),
-                      ),
-                      const SizedBox(height: 1, width: 10),
-                      Expanded(
-                        child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                          Text('Use Facebook', style: localTitleStyle),
-                          Text(
-                            'Create a new Harrier Central account or connect to your existing account using your Facebook login',
-                            style: localBodyStyle,
-                            //softWrap: true,
-                          ),
-                        ]),
-                      ),
-                    ],
-                  ),
-                ),),
-
+                    const SizedBox(height: 1, width: 10),
+                    Expanded(
+                      child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                        Text('Use Facebook', style: localTitleStyle),
+                        Text(
+                          'Create a new Harrier Central account or connect to your existing account using your Facebook login',
+                          style: localBodyStyle,
+                          //softWrap: true,
+                        ),
+                      ]),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             Utilities.styleForDisabled(
                 Container(
                   padding: const EdgeInsets.all(10),
@@ -209,38 +213,39 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                   MaterialPageRoute<dynamic>(builder: (BuildContext context) => const CreateNewAccountPage()),
                 );
               },
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20.0),
-                color: Colors.white,
-                border: Border.all(
-                  color: Theme.of(context).accentColor,
-                  width: 2, //                   <--- border width here
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.0),
+                  color: Colors.white,
+                  border: Border.all(
+                    color: Theme.of(context).accentColor,
+                    width: 2, //                   <--- border width here
+                  ),
+                ),
+                child: Row(
+                  children: <Widget>[
+                    Image(
+                      width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
+                      height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
+                      fit: BoxFit.fill,
+                      image: const AssetImage('images/icons/pencil.png'),
+                    ),
+                    const SizedBox(height: 1, width: 10),
+                    Expanded(
+                      child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                        Text('Create New Account', style: localTitleStyle),
+                        Text(
+                          'Provide information to create a new Harrier Central account if you are not already in the system',
+                          style: localBodyStyle,
+                          //softWrap: true,
+                        ),
+                      ]),
+                    ),
+                  ],
                 ),
               ),
-              child: Row(
-                children: <Widget>[
-                  Image(
-                    width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-                    height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-                    fit: BoxFit.fill,
-                    image: const AssetImage('images/icons/pencil.png'),
-                  ),
-                  const SizedBox(height: 1, width: 10),
-                  Expanded(
-                    child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                      Text('Create New Account', style: localTitleStyle),
-                      Text(
-                        'Provide information to create a new Harrier Central account if you are not already in the system',
-                        style: localBodyStyle,
-                        //softWrap: true,
-                      ),
-                    ]),
-                  ),
-                ],
-              ),
-            ),),
+            ),
           ],
         ),
       );

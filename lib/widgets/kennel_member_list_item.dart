@@ -8,7 +8,7 @@ import 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/widgets/multiple_choice_popup.dart';
+import 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/util/styles.dart';
@@ -98,7 +98,7 @@ class KennelMemberListItem extends StatelessWidget {
                             child: Text(
                               '${kennelMember.dispName}',
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontFamily: (kennelMember?.membershipExpirationDate ?? DateTime.parse('19900101')).isAfter(DateTime.now())  ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensed', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
+                              style: TextStyle(fontFamily: (kennelMember?.membershipExpirationDate ?? DateTime.parse('19900101')).isAfter(DateTime.now()) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensed', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
                               textAlign: TextAlign.left,
                             ),
                           ),
@@ -255,10 +255,11 @@ class KennelMemberListItem extends StatelessWidget {
                       ];
 
                       final MultipleChoicePopup popup = MultipleChoicePopup(
-                          title: 'Membership options',
-                          buttons: buttons,
-                          cancelButtonTitle: 'Cancel',
-                          );
+                        title: 'Membership options',
+                        buttons: buttons,
+                        cancelButtonTitle: 'Cancel',
+                        cancelButtonReturnValue: followTypeCancel,
+                      );
 
                       showDialog<dynamic>(
                           context: context,
@@ -266,8 +267,8 @@ class KennelMemberListItem extends StatelessWidget {
                           builder: (BuildContext context) {
                             return popup;
                           }).then((dynamic retVal) {
-                            modifyMembershipCallback(retVal);
-                          });
+                        modifyMembershipCallback(retVal);
+                      });
                     },
                   ),
                 ),

@@ -3,7 +3,10 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/pages/menu_pages/get_reset_code_popup.dart';
-import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
+import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
+import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/globals.dart';
 
 class LegalPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -43,7 +46,11 @@ class LegalPageState extends State<LegalPage> {
             ),
           ),
         ),
-         const OfflineModeRibbon(),
+        OfflineModeRibbon(
+          showRibbon: globalConnectionStatus == connectionStatus_notConnected,
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+        ribbonImage: 'images/icons/offline_mode.png',
+        ),
       ],
     );
   }

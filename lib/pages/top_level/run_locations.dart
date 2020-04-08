@@ -10,12 +10,12 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
-import 'package:ive_flutter_core/base_service.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
+import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/database/query_runs.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
@@ -336,8 +336,6 @@ class RunLocationsPageState extends State<RunLocationsPage> {
   }
 
   Future<void> loadEvents() async {
-    
-
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     String query = ''' 
@@ -424,8 +422,8 @@ class RunLocationsPageState extends State<RunLocationsPage> {
           height: 55.0,
           anchorPos: AnchorPos.exactly(Anchor(27.0, 0.0)),
           point: ll,
-          builder: (BuildContext ctx) =>
-              buildRunMarker(run.event.eventId, dt, run.event.eventName, rsvpState: run.extensions.rsvpState, attendenceState: run.extensions.attendenceState, isHare: run.extensions.isHare, kennelPinColor: run.kennel.kennelPinColor, eventScope: run.event.eventGeographicScope, isCountedRun: run.event.isCountedRun));
+          builder: (BuildContext ctx) => buildRunMarker(run.event.eventId, dt, run.event.eventName,
+              rsvpState: run.extensions.rsvpState, attendenceState: run.extensions.attendenceState, isHare: run.extensions.isHare, kennelPinColor: run.kennel.kennelPinColor, eventScope: run.event.eventGeographicScope, isCountedRun: run.event.isCountedRun));
 
       if ((viewMode == RunLocationsViewMode.all) ||
           ((viewMode == RunLocationsViewMode.past) && (dt.isBefore(DateTime.now()))) ||
@@ -437,8 +435,6 @@ class RunLocationsPageState extends State<RunLocationsPage> {
   }
 
   Future<void> loadKennels() async {
-    
-
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     String query = ''' 
@@ -585,8 +581,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
 
     String isEvent = 'run';
 
-    if (isCountedRun == 0)
-    {
+    if (isCountedRun == 0) {
       isEvent = 'activity';
     }
     if ((eventScope ?? 0) != 0) {
@@ -739,7 +734,11 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                 ),
                 body: runLocationsBody()),
       ),
-      const OfflineModeRibbon(),
+      OfflineModeRibbon(
+        showRibbon: globalConnectionStatus == connectionStatus_notConnected,
+        lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+        ribbonImage: 'images/icons/offline_mode.png',
+      ),
     ]);
   }
 }

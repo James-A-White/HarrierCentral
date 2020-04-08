@@ -9,7 +9,10 @@ import 'package:flutter_full_pdf_viewer/full_pdf_viewer_scaffold.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
+import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
+import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/globals.dart';
 
 class PrivacyPolicyPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -70,9 +73,9 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                     RaisedButton(
                       child: Text('Open Privacy Policy', style: headingStyle),
                       onPressed: () => Navigator.push<dynamic>(
-                            context,
-                            MaterialPageRoute<dynamic>(builder: (BuildContext context) => PDFScreen(pathPDF)),
-                          ),
+                        context,
+                        MaterialPageRoute<dynamic>(builder: (BuildContext context) => PDFScreen(pathPDF)),
+                      ),
                     ),
                     Container(
                       margin: const EdgeInsets.all(30),
@@ -84,7 +87,11 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
             ),
           ),
         ),
-        const OfflineModeRibbon(),
+        OfflineModeRibbon(
+          showRibbon: globalConnectionStatus == connectionStatus_notConnected,
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+        ribbonImage: 'images/icons/offline_mode.png',
+        ),
       ],
     );
   }

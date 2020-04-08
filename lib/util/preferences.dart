@@ -32,12 +32,16 @@ enum NumPrefsEnum { latitude, longitude, homeKennelLat, homeKennelLon }
 enum IntPrefsEnum {
   databaseVersion,
   hasherPreferences,
-  lastSuccessfulUserDataSync,
+  //lastSuccessfulUserDataSyncInMs,
   hasLocationPermissions,
   dbCreated,
   mapCenterOption,
   mapShowSearchBar,
   mapShowKennels
+}
+
+enum DatePrefsEnum {
+  lastSuccessfulUserDataSyncAsDate
 }
 
 SharedPreferences _sharedPreferences;
@@ -79,6 +83,19 @@ num getIntPref(IntPrefsEnum key) {
 
 Future<bool> setIntPref(IntPrefsEnum key, int value) async {
   return _sharedPreferences.setInt(key.toString(), value);
+}
+
+Future<bool> setDatePref(DatePrefsEnum key, DateTime value) async {
+  return _sharedPreferences.setInt(key.toString(), value.millisecondsSinceEpoch);
+}
+
+DateTime getDatePref(DatePrefsEnum key) {
+  final int ms = _sharedPreferences.getInt(key.toString());
+  if (ms == null) 
+  {
+    return null;
+  }
+  return DateTime.fromMillisecondsSinceEpoch(ms);
 }
 
 num getIntPrefStrKey(String key) {

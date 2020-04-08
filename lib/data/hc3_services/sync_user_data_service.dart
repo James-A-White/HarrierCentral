@@ -8,7 +8,7 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:ive_flutter_core/base_service.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/database/tables.dart';
 
 class SyncUserDataService {
@@ -151,7 +151,8 @@ class SyncUserDataService {
       );
 
       await updateSqlTablesWithResultsFromBackendApiCall(response.body, informUser: informUser);
-      await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSync, DateTime.now().millisecondsSinceEpoch);
+      //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
+      await setDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate, DateTime.now());
     }
     return true;
   }

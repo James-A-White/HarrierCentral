@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:ive_flutter_core/widgets/zoomable_image_page.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
@@ -14,10 +15,10 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/widgets/fancy_divider.dart';
+import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 import 'package:harrier_central/widgets/payment_icons.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/widgets/zoomable_image_page.dart';
+
 
 class RunDetails extends StatelessWidget {
   const RunDetails(
@@ -74,6 +75,8 @@ class RunDetails extends StatelessWidget {
                               builder: (BuildContext context) => ZoomableImagePage(
                                 pageTitle: 'Zoomable Event Image',
                                 imageUrl: event.eventImage,
+                                appBarBackgroundColor: themeAppBarBackground,
+                                background: Backgrounds.defaultHcBackground(),
                               ),
                             ),
                           );

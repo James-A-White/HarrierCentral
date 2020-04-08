@@ -1,8 +1,10 @@
 
-# xxxx
+# 0.8.205+320
     Major refactoring of the database. Moved DB instance from singleton to global variable
     Fixed issues related to normalizing json maps between wire protocol and internal db (doNormalizeMap)
-    Initial preps to move DB functions into an InnoVet Europe core platform package
+    Initial preps to move DB functions and some widgets into an InnoVet Europe core platform package for use in other apps
+    Fixed issues relating to performance, especially when doNormalizeMap is called
+    Minor UI tweaks to the Kennel Admin page
 # 0.8.155+310
     Added event geographic scope (local events, regional events, nash hash, interhash, world interhash / global events)
     Added map pins for special events

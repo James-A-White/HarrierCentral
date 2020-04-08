@@ -23,7 +23,7 @@
 // import 'package:harrier_central/util/styles.dart';
 // import 'package:harrier_central/widgets/user_details_ui.dart';
 // import 'package:flutter_facebook_login/flutter_facebook_login.dart';
-// import 'package:harrier_central/widgets/fancy_divider.dart';
+// import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 // import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 // import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 // import 'package:harrier_central/widgets/circular_progress_indicator.dart';

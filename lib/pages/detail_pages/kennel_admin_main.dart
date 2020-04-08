@@ -24,12 +24,14 @@ import 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
 import 'package:harrier_central/database/query_kennels.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
-import 'package:harrier_central/widgets/fancy_divider.dart';
+import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
-import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
+import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/widgets/run_list_item.dart';
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 
@@ -83,41 +85,6 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   List<String> mismanagement;
 
   List<RunDetailsAggregate> allRuns;
-
-  // Future<void> refreshRunsFromInternalDb(bool forceRefresh) async {
-  //
-
-  //   final String query = '''
-  //         SELECT
-  //         e.${eventsTableHelper.colEventId} as eventId,
-  //         e.${eventsTableHelper.colEventStartDatetime} as eventStartDatetime,
-  //         e.${eventsTableHelper.colEventName} as eventName,
-  //         e.${eventsTableHelper.colEventNumber} as eventNumber
-  //         FROM ${eventsTableHelper.tableName} e
-  //         WHERE e.${eventsTableHelper.colKennelId} = "${widget.kennelAggregateItem.kennel.kennelId}"
-  //         AND e.${eventsTableHelper.colIsVisible} = 1
-  //         AND e.${eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-12 hours')
-  //         ORDER BY e.${eventsTableHelper.colEventStartDatetime} ASC
-  //         LIMIT 5
-  //         ''';
-
-  //   //runCountsList = <HistoryListResults>[];
-  //   try {
-  //     final List<Map<String, dynamic>> results = await db.rawQuery(query);
-  //     next5runs = <KennelEventsStruct>[];
-
-  //     if (results.isNotEmpty) {
-  //       for (int i = 0; i < results.length; i++) {
-  //         final KennelEventsStruct item = KennelEventsStruct.fromMap(results[i]);
-  //         next5runs.add(item);
-  //       }
-  //     }
-
-  //     setState(() {});
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
 
   void refreshFromTable(bool forceRefresh) {
     if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
@@ -187,6 +154,49 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         children: <Widget>[
+
+                            ((widget.kennelAggregateItem.kennel.kennelCoverPhoto ?? '').isNotEmpty && widget.kennelAggregateItem.kennel.kennelCoverPhoto.startsWith('http'))
+                              ? Column(mainAxisSize: MainAxisSize.max, children: <Widget>[
+                                  Container(margin: const EdgeInsets.only(bottom: 20.0), width: MediaQuery.of(context).size.width - 40, child: Text(widget.kennelAggregateItem.kennel.kennelName, textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
+                                  KennelLogo(
+                                    kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
+                                    kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
+                                    logoHeight: 200.0,
+                                    leftPadding: 0.0,
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 45.0, bottom: 15.0),
+                                    child: FancyDivider(innerColor: Colors.white),
+                                  ),
+                                  Padding(
+                                      padding: const EdgeInsets.only(top: 20, bottom: 5),
+                                      child: CachedNetworkImage(
+                                        imageUrl: widget.kennelAggregateItem.kennel.kennelCoverPhoto,
+                                        // errorWidget:
+                                        //     (BuildContext context, String url, Exception error) =>
+                                        //         const  Icon(Icons.error),
+                                      )
+                                      //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
+                                      ),
+                                ])
+                              : Column(
+                                  children: <Widget>[
+                                    Container(margin: const EdgeInsets.only(bottom: 20.0), width: MediaQuery.of(context).size.width - 40, child: Text(widget.kennelAggregateItem.kennel.kennelName, textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
+                                    KennelLogo(
+                                      kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
+                                      kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
+                                      logoHeight: 200.0,
+                                      leftPadding: 0.0,
+                                    ),
+                                  ],
+                                ),
+                          const Padding(
+                            padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
+                            child: FancyDivider(innerColor: Colors.white),
+                          ),
+
+
+
                           !isAdmin
                               ? Container()
                               : Column(
@@ -456,57 +466,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     ),
                                   ],
                                 ),
-                          ((widget.kennelAggregateItem.kennel.kennelCoverPhoto ?? '').isNotEmpty && widget.kennelAggregateItem.kennel.kennelCoverPhoto.startsWith('http'))
-                              ? Column(mainAxisSize: MainAxisSize.max, children: <Widget>[
-                                  // Row(mainAxisAlignment: MainAxisAlignment.start, mainAxisSize: MainAxisSize.max, children: <Widget>[
-                                  //   KennelLogo(
-                                  //     kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
-                                  //     kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
-                                  //     logoHeight: 80.0,
-                                  //     leftPadding: 0.0,
-                                  //   ),
-                                  //   Container(width: MediaQuery.of(context).size.width - 120, padding: const EdgeInsets.only(left: 15.0), child: Text(widget.kennelAggregateItem.kennel.kennelName, maxLines: 3, style: smallTitleStyle))
-                                  //   //Container(width: MediaQuery.of(context).size.width - 120, padding: const EdgeInsets.only(left: 15.0), child: Text('Test of a long hash name that will span several lines and then keep going until we get an elipsis', maxLines: 3, overflow:TextOverflow.ellipsis, style: smallTitleStyle))
-                                  // ]),
-                                  Container(margin: const EdgeInsets.only(bottom: 20.0), width: MediaQuery.of(context).size.width - 40, child: Text(widget.kennelAggregateItem.kennel.kennelName, textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
-                                  //Container(width: MediaQuery.of(context).size.width - 40, child: Text('this is a test of what a long kennel name might look like', textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
-                                  KennelLogo(
-                                    kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
-                                    kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
-                                    logoHeight: 200.0,
-                                    leftPadding: 0.0,
-                                  ),
-                                  const Padding(
-                                    padding: EdgeInsets.only(top: 45.0, bottom: 15.0),
-                                    child: FancyDivider(innerColor: Colors.white),
-                                  ),
-                                  Padding(
-                                      padding: const EdgeInsets.only(top: 20, bottom: 5),
-                                      child: CachedNetworkImage(
-                                        imageUrl: widget.kennelAggregateItem.kennel.kennelCoverPhoto,
-                                        // errorWidget:
-                                        //     (BuildContext context, String url, Exception error) =>
-                                        //         const  Icon(Icons.error),
-                                      )
-                                      //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
-                                      ),
-                                ])
-                              : Column(
-                                  children: <Widget>[
-                                    Container(margin: const EdgeInsets.only(bottom: 20.0), width: MediaQuery.of(context).size.width - 40, child: Text(widget.kennelAggregateItem.kennel.kennelName, textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
-                                    //Container(width: MediaQuery.of(context).size.width - 40, child: Text('this is a test of what a long kennel name might look like', textAlign: TextAlign.center, maxLines: 3, style: titleStyle)),
-                                    KennelLogo(
-                                      kennelLogoUrl: widget.kennelAggregateItem.kennel.kennelLogo,
-                                      kennelShortName: widget.kennelAggregateItem.kennel.kennelShortName,
-                                      logoHeight: 200.0,
-                                      leftPadding: 0.0,
-                                    ),
-                                  ],
-                                ),
-                          const Padding(
-                            padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
-                            child: FancyDivider(innerColor: Colors.white),
-                          ),
+                        
                           (widget.kennelAggregateItem.kennel.kennelDescription ?? '').isNotEmpty
                               ? Column(
                                   children: <Widget>[
@@ -803,7 +763,11 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                 ),
         ),
       ),
-      const OfflineModeRibbon(),
+      OfflineModeRibbon(
+        showRibbon: globalConnectionStatus == connectionStatus_notConnected,
+        lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+        ribbonImage: 'images/icons/offline_mode.png',
+      ),
     ]);
   }
 

@@ -9,9 +9,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
+import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/widgets/user_details_ui.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
@@ -55,7 +56,11 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
             ),
           ),
         ),
-        const OfflineModeRibbon(),
+        OfflineModeRibbon(
+          showRibbon: globalConnectionStatus == connectionStatus_notConnected,
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+        ribbonImage: 'images/icons/offline_mode.png',
+        ),
       ],
     );
   }

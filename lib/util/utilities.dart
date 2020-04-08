@@ -102,7 +102,7 @@ class Utilities {
         print('>>>>>>>>>>> geoloc update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
       });
 
-      final Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
+      final Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
       deviceLat = position.latitude;
       deviceLon = position.longitude;
     }

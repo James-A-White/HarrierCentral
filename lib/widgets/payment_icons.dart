@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:harrier_central/widgets/fancy_divider.dart';
+import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:ive_flutter_core/base_service.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -11,7 +11,7 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/widgets/multiple_choice_popup.dart';
+import 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';
 
 class PaymentIcons extends StatelessWidget {
@@ -147,6 +147,7 @@ class PaymentIcons extends StatelessWidget {
       title: 'Payment options',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',
+      cancelButtonReturnValue: followTypeCancel,
     );
 
     return showDialog<dynamic>(

@@ -16,9 +16,9 @@ import 'package:harrier_central/widgets/payment_report_list_item.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
-import 'package:ive_flutter_core/base_service.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/util/bank_transfer_qr.dart';
-import 'package:harrier_central/widgets/multiple_choice_popup.dart';
+import 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 
 class PaymentAggregate {
   PaymentAggregate({
@@ -531,6 +531,7 @@ class PaymentReportState extends State<PaymentReportPage> {
         title: 'Payment options',
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
+        cancelButtonReturnValue: followTypeCancel,
       );
 
       showDialog<dynamic>(

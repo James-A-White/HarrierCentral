@@ -11,7 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/widgets/multiple_choice_popup.dart';
+import 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 
 class FilterEventListItem extends StatelessWidget {
   const FilterEventListItem({@required this.event, @required this.kennelShortName, @required this.updateEvent});
@@ -20,12 +20,10 @@ class FilterEventListItem extends StatelessWidget {
   final String kennelShortName;
   final Function updateEvent;
 
-  
-
   @override
   Widget build(BuildContext context) {
     final num iconSize = 45 * deviceWidthScaleFactor;
-    return  GestureDetector(
+    return GestureDetector(
       onTap: () {
         Navigator.push<void>(
           context,
@@ -83,11 +81,7 @@ class FilterEventListItem extends StatelessWidget {
                             TextSpan(
                               text: 'Run ',
                               children: <TextSpan>[
-                                TextSpan(
-                                  text: '#${event['eventNumber'].toString()}', 
-                                  style:TextStyle(fontFamily: 'AvenirNextCondensedBold',
-                                    decoration: ((event['absoluteEventNumber'] ?? 0) >= 1) ? TextDecoration.underline :TextDecoration.none)
-                                ),
+                                TextSpan(text: '#${event['eventNumber'].toString()}', style: TextStyle(fontFamily: 'AvenirNextCondensedBold', decoration: ((event['absoluteEventNumber'] ?? 0) >= 1) ? TextDecoration.underline : TextDecoration.none)),
                               ],
                             ),
                             style: TextStyle(color: event['isVisible'] == 1 ? Colors.black87 : Colors.grey, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 14.0 * deviceWidthScaleFactor, height: 1.0),
@@ -100,9 +94,7 @@ class FilterEventListItem extends StatelessWidget {
             ),
             Align(
               alignment: Alignment.centerRight,
-              child: 
-              
-              IconButton(
+              child: IconButton(
                 icon: const Icon(MaterialCommunityIcons.dots_vertical),
                 iconSize: Theme.of(context).iconTheme.size,
                 color: Colors.black54,
@@ -110,7 +102,7 @@ class FilterEventListItem extends StatelessWidget {
                 onPressed: () {
                   //
 
-                  final List<Map<String, dynamic>> buttons = <Map<String,dynamic>>[
+                  final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
                     <String, dynamic>{
                       'title': event['isVisible'] == 0 ? 'Show Event' : 'Hide Event',
                       'icon': <Widget>[
@@ -147,10 +139,11 @@ class FilterEventListItem extends StatelessWidget {
                   ];
 
                   final MultipleChoicePopup popup = MultipleChoicePopup(
-                      title: 'Set event details',
-                      buttons: buttons,
-                      cancelButtonTitle: 'Cancel',
-                       );
+                    title: 'Set event details',
+                    buttons: buttons,
+                    cancelButtonTitle: 'Cancel',
+                    cancelButtonReturnValue: followTypeCancel,
+                  );
 
                   showDialog<dynamic>(
                       context: context,
@@ -158,12 +151,10 @@ class FilterEventListItem extends StatelessWidget {
                       builder: (BuildContext context) {
                         return popup;
                       }).then((dynamic retVal) {
-                        updateEvent(retVal);
-                      });
+                    updateEvent(retVal);
+                  });
                 },
               ),
-          
-          
             ),
             // Container(
             //   //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
@@ -176,7 +167,5 @@ class FilterEventListItem extends StatelessWidget {
         ),
       ),
     );
-  
   }
-
 }

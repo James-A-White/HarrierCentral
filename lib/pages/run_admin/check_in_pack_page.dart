@@ -8,7 +8,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
-import 'package:ive_flutter_core/base_service.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
@@ -24,7 +24,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/bank_transfer_qr.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
-import 'package:harrier_central/widgets/multiple_choice_popup.dart';
+import 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
 import 'package:harrier_central/widgets/filter_cell.dart';
 
@@ -190,7 +190,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       });
     }
 
-    
     final bool result = await syncEventAdminService.updateFromBackend(SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable, true, widget.eventAggregate.event.eventId);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Payments data synchronized $resultStr');
@@ -854,6 +853,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       title: 'Common filter options',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',
+      cancelButtonReturnValue: followTypeCancel,
     );
 
     showDialog<dynamic>(
@@ -1123,6 +1123,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         title: 'Payment options',
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
+        cancelButtonReturnValue: followTypeCancel,
       );
 
       showDialog<dynamic>(

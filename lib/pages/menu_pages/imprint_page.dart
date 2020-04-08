@@ -4,7 +4,10 @@ import 'package:package_info/package_info.dart';
 
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
+import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
+import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/util/globals.dart';
 
 class ImprintPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -44,7 +47,11 @@ class ImprintPageState extends State<ImprintPage> {
             ),
           ),
         ),
-        const OfflineModeRibbon(),
+        OfflineModeRibbon(
+          showRibbon: globalConnectionStatus == connectionStatus_notConnected,
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+        ribbonImage: 'images/icons/offline_mode.png',
+        ),
       ],
     );
   }

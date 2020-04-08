@@ -15,9 +15,9 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/database/query_runs.dart';
-import 'package:harrier_central/widgets/multiple_choice_popup.dart';
+import 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/widgets/payment_icons.dart';
-import 'package:ive_flutter_core/base_service.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
 
 import 'package:harrier_central/notifications/notification_support.dart';
 
@@ -370,6 +370,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         title: 'Run Options',
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
+        cancelButtonReturnValue: followTypeCancel,
       );
 
       showDialog<dynamic>(
@@ -486,6 +487,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
         title: 'Run Options',
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
+        cancelButtonReturnValue: followTypeCancel,
       );
 
       showDialog<dynamic>(
@@ -571,6 +573,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       title: 'Notification options for this run',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',
+      cancelButtonReturnValue: followTypeCancel,
     );
 
     showDialog<dynamic>(
@@ -671,6 +674,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       title: 'Email options for this run',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',
+      cancelButtonReturnValue: followTypeCancel,
     );
 
     showDialog<dynamic>(

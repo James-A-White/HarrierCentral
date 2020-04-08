@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:ive_flutter_core/base_service.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
 
 import 'package:sqflite/sqflite.dart';
 import 'package:json_annotation/json_annotation.dart';

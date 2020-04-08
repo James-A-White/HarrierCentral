@@ -13,14 +13,14 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
+import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/widgets/fancy_divider.dart';
+import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
-import 'package:ive_flutter_core/base_service.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
@@ -28,7 +28,7 @@ import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart'
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 
 // import 'package:harrier_central/widgets/user_details_ui.dart';
-// import 'package:harrier_central/widgets/fancy_divider.dart';
+// import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 
 enum EnumMyProfilePageType { myProfile, anyHasherProfile, newHasherProfile }
 
@@ -101,8 +101,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   }
 
   Future<void> refreshUserDataFromTable(bool forceRefresh) async {
-    
-
     String query = ''' 
         SELECT 
           h.*
@@ -116,7 +114,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
       switch (widget.dataContext) {
         case EnumDataContext.event:
-          
           final bool res = await syncEventAdminService.updateFromBackend(SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagHasherKennelMapTable | SyncEventAdminService.flagHasherEventMapTable, true, widget.eventId);
           final String resultStr = res ? 'successfully' : 'unsuccessfully';
           print('Event data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
@@ -169,7 +166,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         historicalCountIsEstimate = (hkmData?.historicalCountIsEstimate ?? 0) == 1;
         _distancePreference = hasher.preferences & hasherPref_distanceMeasuredIn;
         _autoRunPreference = hasher.preferences & hasherPref_distanceForAutoDisplay;
-        
+
         // fill in the e-mail for the user of the app.
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
           hasher.email = getStringPref(StringPrefsEnum.email);
@@ -334,10 +331,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       _profileFormKey.currentState.save();
 
       setState(() {
-
         // write the value of the email address to local preferences
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          setStringPref(StringPrefsEnum.email,emailController.text);
+          setStringPref(StringPrefsEnum.email, emailController.text);
         }
 
         _isLoading = true;
@@ -1065,7 +1061,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                 height: 60,
                 width: MediaQuery.of(context).size.width,
                 color: Colors.yellow[100])),
-        const OfflineModeRibbon(),
+        OfflineModeRibbon(
+          showRibbon: globalConnectionStatus == connectionStatus_notConnected,
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+        ribbonImage: 'images/icons/offline_mode.png',
+        ),
       ],
     );
   }

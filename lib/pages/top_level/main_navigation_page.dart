@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:flutter_swiper/flutter_swiper.dart';
-import 'package:ive_flutter_core/migrations.dart';
+import 'package:ive_flutter_core/database/migrations.dart';
 
 import 'package:harrier_central/database/common_queries.dart';
 import 'package:harrier_central/pages/top_level/run_locations.dart';
@@ -16,8 +16,8 @@ import 'package:location_permissions/location_permissions.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/widgets/offline_mode_ribbon.dart';
-import 'package:harrier_central/widgets/flippable_box.dart';
+import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
+import 'package:ive_flutter_core/widgets/flippable_box.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
@@ -25,7 +25,7 @@ import 'package:harrier_central/pages/top_level/history_list_page.dart';
 import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
-import 'package:ive_flutter_core/base_service.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/notifications/notification_support.dart';
 
 class MainNavigationPage extends StatefulWidget {
@@ -117,8 +117,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     // this is here to force the database to be instnatiated upon startup.
     // the first time this is run, the database will be created. On subsequent
     // runs, the database will simply be opened.
-
-    
 
     Tables.migrationList.sort((MigrationsModel a, MigrationsModel b) => a.dbVersion.compareTo(b.dbVersion));
 
@@ -428,7 +426,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             drawer: DrawerMenu(scaffoldKey: _scaffoldKey),
           ),
         ),
-        const OfflineModeRibbon(),
+        OfflineModeRibbon(
+          showRibbon: globalConnectionStatus == connectionStatus_notConnected,
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+        ribbonImage: 'images/icons/offline_mode.png',
+        ),
       ],
     );
   }

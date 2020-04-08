@@ -4,6 +4,8 @@ import 'dart:io' as platform;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'package:ive_flutter_core/widgets/zoomable_image_page.dart';
+
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
@@ -15,13 +17,12 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/widgets/fancy_divider.dart';
-import 'package:harrier_central/widgets/zoomable_image_page.dart';
+import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 import 'package:harrier_central/data/hc3_services/receipts_service.dart';
 import 'package:harrier_central/database/tables.dart';
 
 // import 'package:harrier_central/widgets/user_details_ui.dart';
-// import 'package:harrier_central/widgets/fancy_divider.dart';
+// import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 
 class ReceiptDetailPage extends StatefulWidget {
   const ReceiptDetailPage({Key key, this.eventId, this.receiptItem}) : super(key: key);
@@ -309,6 +310,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                       //     ),
                                       //   ),
                                       // ),
+
                                       GestureDetector(
                                         onTap: () {
                                           Navigator.push<void>(
@@ -317,6 +319,9 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                               builder: (BuildContext context) => ZoomableImagePage(
                                                 image: _imageFromCamera != null ? _imageFromCamera : _imageFromCache,
                                                 pageTitle: 'Zoomable Receipt',
+                                                appBarBackgroundColor: themeAppBarBackground,
+                                                background: Backgrounds.defaultHcBackground(),
+                                                
                                               ),
                                             ),
                                           );
