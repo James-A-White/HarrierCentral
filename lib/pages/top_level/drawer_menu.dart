@@ -10,7 +10,8 @@ import 'package:harrier_central/pages/menu_pages/faq_page.dart';
 import 'package:harrier_central/pages/menu_pages/app_download_page.dart';
 import 'package:harrier_central/pages/menu_pages/support_page.dart';
 import 'package:harrier_central/pages/menu_pages/privacy_policy_page.dart';
-import 'package:harrier_central/util/preferences.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
+
 
 class DrawerMenu extends StatefulWidget {
   const DrawerMenu({Key key, this.scaffoldKey}) : super(key: key);

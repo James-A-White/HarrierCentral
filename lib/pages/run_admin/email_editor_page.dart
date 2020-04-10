@@ -3,13 +3,14 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:keyboard_avoider/keyboard_avoider.dart';
 
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:ive_flutter_core/widgets/fancy_divider.dart';
+import 'package:harrier_central/util/enums.dart';
 
 
 // import 'package:harrier_central/widgets/user_details_ui.dart';

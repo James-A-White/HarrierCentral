@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:harrier_central/util/constants.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/globals.dart';
@@ -12,6 +12,7 @@ import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/database/tables.dart';
 import 'package:ive_flutter_core/util/connection.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
+import 'package:harrier_central/util/enums.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 

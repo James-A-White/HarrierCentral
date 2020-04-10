@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 
 import 'package:qr_flutter/qr_flutter.dart';
 
-import 'package:harrier_central/util/preferences.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
+
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
+import 'package:harrier_central/util/enums.dart';
 
 class AppDownloadPage extends StatefulWidget {
   const AppDownloadPage({Key key}) : super(key: key);

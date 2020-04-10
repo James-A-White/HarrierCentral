@@ -7,10 +7,11 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:ive_flutter_core/database/base_service.dart';
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/data/services/service_common.dart';
 import 'package:harrier_central/database/tables.dart';
+import 'package:harrier_central/util/enums.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 

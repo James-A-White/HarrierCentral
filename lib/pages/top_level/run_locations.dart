@@ -14,7 +14,7 @@ import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/database/query_runs.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';

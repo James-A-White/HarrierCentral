@@ -4,7 +4,7 @@
 
 // import 'package:qr_flutter/qr_flutter.dart';
 
-// import 'package:harrier_central/util/preferences.dart';
+// 
 // import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 // import 'package:harrier_central/data/models/kennel_member_model.dart';
 // import 'package:harrier_central/util/styles.dart';

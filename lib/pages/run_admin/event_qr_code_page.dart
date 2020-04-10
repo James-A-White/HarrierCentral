@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-import 'package:harrier_central/util/preferences.dart';
+
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 
 class EventQrCodePage extends StatefulWidget {
   const EventQrCodePage({Key key, @required this.kennelShortName, @required this.qrContent, @required this.title, @required this.runStartPrefix, @required this.runEndPrefix, this.eventStartDatetime}) : super(key: key);

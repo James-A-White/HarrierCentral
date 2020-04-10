@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:geolocator/geolocator.dart';
@@ -14,12 +14,11 @@ import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart
 import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/widgets/kennel_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
-
-
 
 class KennelsListPage extends StatefulWidget {
   const KennelsListPage({Key key}) : super(key: key);

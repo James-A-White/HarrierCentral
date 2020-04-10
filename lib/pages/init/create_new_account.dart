@@ -11,11 +11,12 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:ive_flutter_core/util/connection.dart';
 import 'package:harrier_central/widgets/user_details_ui.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
+import 'package:harrier_central/util/enums.dart';
 
 class CreateNewAccountPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;

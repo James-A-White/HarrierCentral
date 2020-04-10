@@ -1,33 +1,35 @@
-import 'package:flutter/material.dart';
+
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import 'package:flutter_swiper/flutter_swiper.dart';
-import 'package:ive_flutter_core/database/migrations.dart';
-
-import 'package:harrier_central/database/common_queries.dart';
-import 'package:harrier_central/pages/top_level/run_locations.dart';
-import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/widgets/confirm_auto_checkin_popup.dart';
-
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 import 'package:location_permissions/location_permissions.dart';
 
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
+import 'package:harrier_central/database/common_queries.dart';
 import 'package:harrier_central/database/tables.dart';
-import 'package:harrier_central/util/styles.dart';
-import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
-import 'package:ive_flutter_core/widgets/flippable_box.dart';
-import 'package:harrier_central/util/preferences.dart';
+import 'package:harrier_central/notifications/notification_support.dart';
+import 'package:harrier_central/pages/top_level/drawer_menu.dart';
+import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
+import 'package:harrier_central/pages/top_level/history_list_page.dart';
+import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
+import 'package:harrier_central/pages/top_level/run_locations.dart';
+import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/pages/top_level/history_list_page.dart';
-import 'package:harrier_central/pages/top_level/future_run_list_page.dart';
-import 'package:harrier_central/pages/top_level/drawer_menu.dart';
-import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
+
+import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/widgets/confirm_auto_checkin_popup.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
-import 'package:harrier_central/notifications/notification_support.dart';
+import 'package:ive_flutter_core/database/migrations.dart';
 import 'package:ive_flutter_core/util/connection.dart';
+import 'package:ive_flutter_core/widgets/flippable_box.dart';
+import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
+
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);

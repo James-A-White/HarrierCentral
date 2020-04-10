@@ -4,12 +4,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:ive_flutter_core/util/connection.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/database/tables.dart';
+import 'package:harrier_central/util/enums.dart';
 
 class SyncUserDataService {
   static const int flagHashersTable = 0x00000001;

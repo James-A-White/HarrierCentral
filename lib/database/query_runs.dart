@@ -3,8 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
-import 'package:harrier_central/util/preferences.dart';
+
+import 'package:harrier_central/util/enums.dart';
+
 
 class RunDetailsQueryExtensions {
   RunDetailsQueryExtensions({

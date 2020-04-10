@@ -10,6 +10,49 @@ enum EnumAppPages {
   fab
 }
 
+enum StringPrefsEnum {
+  userId,
+  qrCode,
+  supportCode,
+  resetCode,
+  qrSecretCode,
+  displayName,
+  firstName,
+  lastName,
+  harrierCentralVersion,
+  hashName,
+  email,
+  gender,
+  profilePhotoUrl,
+  facebookId,
+  facebookAccessToken,
+  facebookProfilePhoto,
+  adminEventId,
+  adminKennelId,
+  customEmailBody,
+  iosDownloadLink,
+  androidDownloadLink,
+  imageRootUrl,
+}
+
+enum NumPrefsEnum { latitude, longitude, homeKennelLat, homeKennelLon }
+
+enum IntPrefsEnum {
+  databaseVersion,
+  hasherPreferences,
+  //lastSuccessfulUserDataSyncInMs,
+  hasLocationPermissions,
+  dbCreated,
+  mapCenterOption,
+  mapShowSearchBar,
+  mapShowKennels
+}
+
+enum DatePrefsEnum {
+  lastSuccessfulUserDataSyncAsDate
+}
+
+
 enum EnumDataContext{
   user,
   event,

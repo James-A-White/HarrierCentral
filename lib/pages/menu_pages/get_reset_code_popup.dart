@@ -8,8 +8,9 @@ import 'package:harrier_central/data/models/single_result_model.dart';
 import 'package:harrier_central/data/services/authorize_device_service.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:ive_flutter_core/database/database.dart';
+import 'package:harrier_central/util/enums.dart';
 
 
 class GetResetCodePopup extends StatefulWidget {
@@ -122,7 +123,7 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
                   if (getResetCodeTextController.text.toUpperCase() ==
                       QR_PREFIX_USER_RESET_CODE+ 'CLEAR') {
 
-                    clearAllPrefs();
+                    clearPrefs();
                     await DBProvider.deleteDb(DB_NAME);
                     
                     CoreUtilities.showAlert(

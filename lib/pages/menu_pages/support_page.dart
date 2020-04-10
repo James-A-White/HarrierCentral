@@ -7,7 +7,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -17,6 +17,7 @@ import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 import 'package:harrier_central/data/services/authorize_device_service.dart';
 import 'package:ive_flutter_core/util/connection.dart';
+import 'package:harrier_central/util/enums.dart';
 
 
 class SupportPage extends StatefulWidget {

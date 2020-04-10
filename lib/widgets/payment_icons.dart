@@ -8,7 +8,7 @@ import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';

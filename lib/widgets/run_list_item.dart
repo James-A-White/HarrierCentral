@@ -13,12 +13,13 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:ive_flutter_core/util/connection.dart';
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/database/query_runs.dart';
 import 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/widgets/payment_icons.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 
 import 'package:harrier_central/notifications/notification_support.dart';
 

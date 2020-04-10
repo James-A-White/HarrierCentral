@@ -6,9 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:package_info/package_info.dart';
 
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/data/services/service_common.dart';
+import 'package:harrier_central/util/enums.dart';
 
 import 'package:device_info/device_info.dart';
 

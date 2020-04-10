@@ -8,7 +8,7 @@
 // import 'package:qr_flutter/qr_flutter.dart';
 
 // import 'package:ive_flutter_core/database/database.dart';
-// import 'package:harrier_central/util/preferences.dart';
+// 
 // import 'package:harrier_central/util/styles.dart';
 // import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 // import 'package:harrier_central/util/utilities.dart';

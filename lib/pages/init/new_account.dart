@@ -5,10 +5,11 @@ import 'package:harrier_central/pages/init/create_new_account.dart';
 import 'package:harrier_central/pages/init/use_invite_code_page.dart';
 import 'package:harrier_central/pages/init/facebook_login.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:ive_flutter_core/util/connection.dart';
 import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 

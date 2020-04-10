@@ -12,6 +12,7 @@ import 'package:harrier_central/pages/run_admin/email_editor_page.dart';
 import 'package:harrier_central/pages/run_admin/receipts_page.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';
+import 'package:harrier_central/util/enums.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
@@ -21,7 +22,7 @@ import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/widgets/run_details.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
-import 'package:harrier_central/util/preferences.dart';
+
 
 class RunDetailAggregate {
   RunDetailAggregate({

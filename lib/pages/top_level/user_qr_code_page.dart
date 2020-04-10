@@ -10,7 +10,7 @@ import 'package:audioplayers/audio_cache.dart';
 
 import 'package:harrier_central/database/common_queries.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
@@ -18,6 +18,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:ive_flutter_core/util/connection.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 
 class UserQrCodePage extends StatefulWidget {
   const UserQrCodePage({Key key}) : super(key: key);

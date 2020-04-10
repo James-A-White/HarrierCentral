@@ -25,7 +25,7 @@ import 'package:harrier_central/database/query_kennels.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:ive_flutter_core/util/connection.dart';
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:harrier_central/util/styles.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
@@ -34,6 +34,7 @@ import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/widgets/run_list_item.dart';
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
+import 'package:harrier_central/util/enums.dart';
 
 
 class KennelAdminMainPage extends StatefulWidget {

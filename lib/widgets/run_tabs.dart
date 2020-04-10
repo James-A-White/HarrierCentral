@@ -14,7 +14,7 @@ import 'package:latlong/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/preferences.dart';
+
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 import 'package:harrier_central/widgets/run_details.dart';
