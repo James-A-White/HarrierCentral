@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
-import 'package:crypto/crypto.dart';
 import 'package:intl/intl.dart';
 import 'package:geolocator/geolocator.dart';
 //import 'package:permission_handler/permission_handler.dart';
@@ -12,7 +10,6 @@ import 'package:ive_flutter_core/util/core_utilities.dart';
 
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:ive_flutter_core/util/connection.dart';
 
 class LatLon {
   num latitude;

@@ -27,7 +27,6 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:ive_flutter_core/util/connection.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/utilities.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:ive_flutter_core/widgets/fancy_divider.dart';

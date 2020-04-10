@@ -8,7 +8,6 @@ import 'package:ive_flutter_core/database/migrations.dart';
 
 import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:ive_flutter_core/database/database.dart';
-import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/database/query_kennels.dart';
 

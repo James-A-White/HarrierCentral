@@ -66,7 +66,7 @@ dependencies:
   ive_flutter_core: 
     git:
       url: git://github.com/InnoVet-Europe/ive_flutter_core.git
-      ref: 87977ca00ecb0537923c0c67a95aadc66019c0bd # 8 Apr 2020 
+      ref: 87977ca00ecb0537923c0c67a95aadc66019c0bd # 10 Apr 2020 
 
   # # flip_panel: ^1.0.0
   # # qr_mobile_vision: ^0.1.0

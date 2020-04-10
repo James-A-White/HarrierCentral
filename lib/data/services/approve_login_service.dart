@@ -11,7 +11,6 @@ import 'package:harrier_central/data/models/approve_login_model.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 
 import 'package:http/http.dart' as http;
