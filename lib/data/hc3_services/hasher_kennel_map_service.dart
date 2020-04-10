@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
@@ -14,6 +14,7 @@ import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/database/tables.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 
@@ -198,7 +199,7 @@ class HasherKennelMapService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'joinKennel');
+    final String accessToken = CoreUtilities.generateToken(userId.toUpperCase(), 'joinKennel');
 
     final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,

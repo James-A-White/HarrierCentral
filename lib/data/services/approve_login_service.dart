@@ -12,6 +12,7 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -54,7 +55,7 @@ class ApproveLoginService {
     }
 
     final String accessToken =
-        Utilities.generateToken(userId, 'approveLogin', paramString: deviceId);
+        CoreUtilities.generateToken(userId, 'approveLogin', paramString: deviceId);
 
     final String body = jsonEncode(<String, String>{
       'userId': userId,
@@ -108,7 +109,7 @@ class ApproveLoginService {
   }
 
   Future<http.Response> _onTimeout(BuildContext context) {
-    Utilities.showAlert(context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit').then((void dummy) async {
+    CoreUtilities.showAlert(context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit').then((void dummy) async {
         await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
     });
     

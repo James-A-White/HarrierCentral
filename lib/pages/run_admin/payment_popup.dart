@@ -2,7 +2,7 @@ import 'dart:core';
 
 import 'package:flutter/material.dart';
 
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/pages/run_admin/other_payment_popup.dart';
 
 
@@ -84,7 +84,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                     onChanged: _handleRadioValueChange1,
                   ),
                   Text(
-                    'Cash (${Utilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
+                    'Cash (${CoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
                     style: const TextStyle(fontSize: 16.0),
                   ),
                 ]),
@@ -95,7 +95,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                     onChanged: _handleRadioValueChange1,
                   ),
                   Text(
-                    'Bank transfer (${Utilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
+                    'Bank transfer (${CoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
                     style: const TextStyle(fontSize: 16.0),
                   ),
                 ]),
@@ -113,11 +113,11 @@ class _PaymentPopupState extends State<PaymentPopup> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              'Credit (${Utilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
+                              'Credit (${CoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
                               style: const TextStyle(fontSize: 16.0),
                             ),
                             Text(
-                              '${Utilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ' + ((widget.creditRemaining >= 0) ? 'remaining' : 'owed'),
+                              '${CoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ' + ((widget.creditRemaining >= 0) ? 'remaining' : 'owed'),
                               style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
                             ),
                           ],
@@ -137,7 +137,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                       //         crossAxisAlignment: CrossAxisAlignment.start,
                       //         children: <Widget>[
                       //           Text(
-                      //             'Pay ${Utilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)} & top up',
+                      //             'Pay ${CoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)} & top up',
                       //             style: const TextStyle(fontSize: 16.0),
                       //           ),
 
@@ -230,7 +230,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
             otherTransType == null
                 ? Container(height:1, width:1)
                 : Text(
-                    '${Utilities.getFormattedMoney(otherAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ' + ((otherTransType == 5) ? ' cash' : ' bank transfer'),
+                    '${CoreUtilities.getFormattedMoney(otherAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ' + ((otherTransType == 5) ? ' cash' : ' bank transfer'),
                     style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
                   ),
           ],

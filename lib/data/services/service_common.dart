@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 
 import 'package:harrier_central/data/models/db_error_model.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/globals.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
+import 'package:ive_flutter_core/util/connection.dart';
+
 
 import 'package:http/http.dart' as http;
 
@@ -37,7 +37,7 @@ class ServiceCommon {
     if (response.body.contains('"errorId"')) {
       final DbErrorModel result = DbErrorModel.itemFromJson(response.body);
       if (result != null) {
-        await Utilities.showAlert(context, result.errorTitle,
+        await CoreUtilities.showAlert(context, result.errorTitle,
             result.errorUserMessage, 'OK');
       }
 

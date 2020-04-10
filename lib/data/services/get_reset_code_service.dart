@@ -6,9 +6,8 @@ import 'dart:convert';
 import 'package:harrier_central/data/models/single_result_model.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/globals.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -26,7 +25,7 @@ class GetResetCodeService {
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final String accessToken = Utilities.generateToken(
+    final String accessToken = CoreUtilities.generateToken(
         userId, 'getResetCode');
 
     final String body = jsonEncode(<String,String>{

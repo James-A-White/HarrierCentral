@@ -8,7 +8,7 @@ import 'package:keyboard_avoider/keyboard_avoider.dart';
 
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 
 
@@ -307,17 +307,17 @@ class EmailEditorPageState extends State<EmailEditorPage> {
   }
 
   void sendEmail(BuildContext context, String emailBody) {
-    Utilities.showAlert(context, 'Email run details', 'Would you like to e-mail the run details to hashers who have signed up for e-mail notifications?', 'OK', showCancelButton: true).then((bool result) {
+    CoreUtilities.showAlert(context, 'Email run details', 'Would you like to e-mail the run details to hashers who have signed up for e-mail notifications?', 'OK', showCancelButton: true).then((bool result) {
       if (result) {
         eventsService.sendRunDetailsByEmail(eventId: widget.eventId, emailBody: emailBody).then((Map<String, String> result) {
           _scaffoldKey.currentState?.hideCurrentSnackBar();
           if (result['result'].toLowerCase().startsWith('success')) {
-            Utilities.showAlert(context, 'E-mails successfully sent', result['result'], 'OK');
+            CoreUtilities.showAlert(context, 'E-mails successfully sent', result['result'], 'OK');
           } else {
-            Utilities.showAlert(context, 'Error sending emails', 'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
+            CoreUtilities.showAlert(context, 'Error sending emails', 'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
           }
         });
-        Utilities.showInSnackBar(context, _scaffoldKey, 'Run detail emails being sent ..', durationInSeconds: 10);
+        CoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run detail emails being sent ..', durationInSeconds: 10);
       }
     });
   }

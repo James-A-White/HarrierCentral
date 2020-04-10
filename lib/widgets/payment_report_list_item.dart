@@ -5,7 +5,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:harrier_central/util/enums.dart';
 //import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/pages/run_admin/payment_report.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class PaymentReportListItem extends StatelessWidget {
@@ -18,7 +18,7 @@ class PaymentReportListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String amountPaid = Utilities.getFormattedMoney(paymentReportItem.payment.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
+    final String amountPaid = CoreUtilities.getFormattedMoney(paymentReportItem.payment.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
     return InkWell(
       onTap: onTap,
@@ -93,7 +93,7 @@ class PaymentTotalsCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String total = (creditAmount ?? 0) <= 0 ? '' : Utilities.getFormattedMoney(creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
+    final String total = (creditAmount ?? 0) <= 0 ? '' : CoreUtilities.getFormattedMoney(creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
     const TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 24.0, fontFamily: 'AvenirNextCondensedDemiBold');
     return Container(

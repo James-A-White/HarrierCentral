@@ -7,7 +7,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/pages/run_admin/other_payment_popup.dart';
 
@@ -27,7 +27,7 @@ class PaymentSnackBar extends SnackBar {
   Color get backgroundColor => Theme.of(context).accentColor;
 
   String formatMoney(num money) {
-    return Utilities.getFormattedMoney(money, eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym);
+    return CoreUtilities.getFormattedMoney(money, eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym);
   }
 
   @override
@@ -480,8 +480,8 @@ class PaymentSnackBar extends SnackBar {
                                       },
                                     ),
                                     Text(
-                                      (eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? 'Paid credit\r\n(${packMember.credit < 0 ? 'Owes' : 'Credit'} ${Utilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym)})' : 
-                                      'Credit ${formatMoney(packMember.isMember != 1 ? eventAggregate.extensions.nonMemberPrice : eventAggregate.extensions.memberPrice)}\r\n(${packMember.credit < 0 ? 'Owes' : 'Credit'} ${Utilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym)})',
+                                      (eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? 'Paid credit\r\n(${packMember.credit < 0 ? 'Owes' : 'Credit'} ${CoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym)})' : 
+                                      'Credit ${formatMoney(packMember.isMember != 1 ? eventAggregate.extensions.nonMemberPrice : eventAggregate.extensions.memberPrice)}\r\n(${packMember.credit < 0 ? 'Owes' : 'Credit'} ${CoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec ?? 2, eventAggregate.extensions.curSym)})',
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         fontFamily: 'AvenirNextCondensedDemiBold',
@@ -532,9 +532,9 @@ class PaymentSnackBar extends SnackBar {
       );
 
   // void populatePriceStrings() {
-  //   memberPrice = Utilities.getFormattedMoney(futureRun.eventPriceForMembers,
+  //   memberPrice = CoreUtilities.getFormattedMoney(futureRun.eventPriceForMembers,
   //       futureRun.digitsAfterDecimal, futureRun.currencySymbol);
-  //   nonMemberPrice = Utilities.getFormattedMoney(
+  //   nonMemberPrice = CoreUtilities.getFormattedMoney(
   //       futureRun.eventPriceForNonMembers,
   //       futureRun.digitsAfterDecimal,
   //       futureRun.currencySymbol);

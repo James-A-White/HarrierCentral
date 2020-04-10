@@ -5,8 +5,8 @@ import 'package:http/http.dart' as http;
 
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/database/tables.dart';
@@ -123,7 +123,7 @@ class SyncUserDataService {
         userId = GUID_EMPTY;
       }
 
-      final String accessToken = Utilities.generateToken(userId, 'syncUserData');
+      final String accessToken = CoreUtilities.generateToken(userId, 'syncUserData');
 
       final String body = jsonEncode(<String, String>{
         'userId': userId,

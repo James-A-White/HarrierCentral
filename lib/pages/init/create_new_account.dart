@@ -10,9 +10,9 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 import 'package:harrier_central/widgets/user_details_ui.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
@@ -121,7 +121,7 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                   ),
                   // GestureDetector(
                   //   onTap: () {
-                  //     Utilities.showAlert(
+                  //     CoreUtilities.showAlert(
                   //         context,
                   //         'What is an "Invite Code"?',
                   //         'An Invite Code is a six character code that allows you to connect to an existing account in Harrier Central.\r\n\r\nTypically you will receive an invite code from your home Kennel when they have already created an account for you in order to track your run counts.\r\n\r\nIf you do not have an Invite Code, please go back to the previous screen and select the option to Create a New Account.',
@@ -176,7 +176,7 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                         ),
                         GestureDetector(
                           onTap: () {
-                            Utilities.showAlert(
+                            CoreUtilities.showAlert(
                                 context,
                                 'What is the Global Hash Directory?',
                                 'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
@@ -259,7 +259,7 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                         }
                       }
                       if (!isSuccessfulLoad) {
-                        Utilities.showAlert(context, 'Account not created', 'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!', 'OK');
+                        CoreUtilities.showAlert(context, 'Account not created', 'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!', 'OK');
                         print(jsonResultSets.length);
                       }
                     });

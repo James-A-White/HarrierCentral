@@ -17,7 +17,7 @@ import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/widgets/run_details.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
@@ -118,10 +118,10 @@ class RunDetailPageState extends State<RunDetailPage> {
       final Geolocator locator = Geolocator();
 
       final num dist = await locator.distanceBetween(
-        Utilities.unInt(deviceLat),
-        Utilities.unInt(deviceLon),
-        Utilities.unInt(results[0]['narrowEventLatitude']),
-        Utilities.unInt(
+        CoreUtilities.unInt(deviceLat),
+        CoreUtilities.unInt(deviceLon),
+        CoreUtilities.unInt(results[0]['narrowEventLatitude']),
+        CoreUtilities.unInt(
           results[0]['narrowEventLongitude'],
         ),
       );

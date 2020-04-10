@@ -24,16 +24,18 @@ import 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
 import 'package:harrier_central/database/query_kennels.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/widgets/run_list_item.dart';
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
+
 
 class KennelAdminMainPage extends StatefulWidget {
   const KennelAdminMainPage({@required this.kennelAggregateItem});
@@ -93,7 +95,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
       QueryRuns.queryRuns(EnumRunQueryType.kennelDetailPage, EnumRunQueryContext.kennelAdmin, kennelId: widget.kennelAggregateItem.kennel.kennelId).then((List<Map<String, dynamic>> results) {
         allRuns = <RunDetailsAggregate>[];
         for (int i = 0; i < results.length; i++) {
-          locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(results[i]['narrowEventLatitude']), Utilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
+          locator.distanceBetween(CoreUtilities.unInt(deviceLat), CoreUtilities.unInt(deviceLon), CoreUtilities.unInt(results[i]['narrowEventLatitude']), CoreUtilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
             final EventModel eventItem = eventsTableHelper.fromMap(results[i]);
             final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
             final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);
@@ -211,7 +213,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         margin: const EdgeInsets.only(top: 20, bottom: 15),
                                         width: 110,
                                         height: 110,
-                                        child: Utilities.styleForConnected(
+                                        child: Connection.styleForConnected(
                                           RaisedButton(
                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                                             padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
@@ -231,7 +233,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             ]),
                                             textColor: Colors.white,
                                             onPressed: () {
-                                              if (Utilities.checkForConnection(context)) {
+                                              if (Connection.checkForConnection(context)) {
                                                 final EmailReportsService svc = EmailReportsService();
                                                 svc
                                                     .sendKennelRunStatsReportByEmail(
@@ -243,11 +245,11 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                   _scaffoldKey.currentState?.hideCurrentSnackBar();
 
                                                   if (result['result'].toLowerCase().startsWith('success')) {
-                                                    Utilities.showAlert(context, 'E-mail successfully sent', 'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+                                                    CoreUtilities.showAlert(context, 'E-mail successfully sent', 'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
                                                   }
                                                 });
 
-                                                Utilities.showInSnackBar(context, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 10);
+                                                CoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run stats being processed...', durationInSeconds: 10);
                                               }
                                             },
                                           ),
@@ -258,7 +260,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         child: Container(
                                           width: 110,
                                           height: 110,
-                                          child: Utilities.styleForConnected(
+                                          child: Connection.styleForConnected(
                                             RaisedButton(
                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                                               padding: const EdgeInsets.only(top: 2.0, left: 0, bottom: 8.0),
@@ -278,7 +280,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                               ]),
                                               textColor: Colors.white,
                                               onPressed: () {
-                                                if (Utilities.checkForConnection(context)) {
+                                                if (Connection.checkForConnection(context)) {
                                                   kennelMembersList = KennelMembersList(kennel: widget.kennelAggregateItem);
                                                   Navigator.push<dynamic>(
                                                     context,
@@ -301,7 +303,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           child: Container(
                                             width: 110,
                                             height: 110,
-                                            child: Utilities.styleForConnected(
+                                            child: Connection.styleForConnected(
                                               RaisedButton(
                                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                                                 padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 8.0),
@@ -321,7 +323,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 ]),
                                                 textColor: Colors.white,
                                                 onPressed: () {
-                                                  if (Utilities.checkForConnection(context)) {
+                                                  if (Connection.checkForConnection(context)) {
                                                     Navigator.push<dynamic>(
                                                       context,
                                                       MaterialPageRoute<dynamic>(
@@ -342,7 +344,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           child: Container(
                                             width: 110,
                                             height: 110,
-                                            child: Utilities.styleForConnected(
+                                            child: Connection.styleForConnected(
                                               RaisedButton(
                                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                                                 padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 8.0),
@@ -362,7 +364,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 ]),
                                                 textColor: Colors.white,
                                                 onPressed: () {
-                                                  if (Utilities.checkForConnection(context)) {
+                                                  if (Connection.checkForConnection(context)) {
                                                     Navigator.push<dynamic>(
                                                       context,
                                                       MaterialPageRoute<dynamic>(
@@ -388,7 +390,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           child: Container(
                                             width: 110,
                                             height: 110,
-                                            child: Utilities.styleForConnected(
+                                            child: Connection.styleForConnected(
                                               RaisedButton(
                                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                                                 padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 8.0),
@@ -427,7 +429,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           child: Container(
                                             width: 110,
                                             height: 110,
-                                            child: Utilities.styleForConnected(
+                                            child: Connection.styleForConnected(
                                               RaisedButton(
                                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                                                 padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 8.0),
@@ -479,7 +481,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         if (await canLaunch(link.url)) {
                                           await launch(link.url);
                                         } else {
-                                          Utilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                                          CoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                                         }
                                       },
                                     ),
@@ -502,7 +504,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     mapController: mapController,
                                     options: MapOptions(
                                       interactive: false,
-                                      center: LatLng(Utilities.unInt(widget.kennelAggregateItem.extensions.cityLat), Utilities.unInt(widget.kennelAggregateItem.extensions.cityLon)),
+                                      center: LatLng(CoreUtilities.unInt(widget.kennelAggregateItem.extensions.cityLat), CoreUtilities.unInt(widget.kennelAggregateItem.extensions.cityLon)),
                                       zoom: sliderValue,
                                     ),
                                     layers: <LayerOptions>[
@@ -517,7 +519,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           Marker(
                                             width: 240.0,
                                             height: 240.0,
-                                            point: LatLng(Utilities.unInt(widget.kennelAggregateItem.extensions.cityLat), Utilities.unInt(widget.kennelAggregateItem.extensions.cityLon)),
+                                            point: LatLng(CoreUtilities.unInt(widget.kennelAggregateItem.extensions.cityLat), CoreUtilities.unInt(widget.kennelAggregateItem.extensions.cityLon)),
                                             builder: (BuildContext ctx) => GestureDetector(
                                               onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat, widget.kennelAggregateItem.extensions.cityLat),
                                               child: Container(
@@ -556,7 +558,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     onChanged: (num val) {
                                       // setState(() {
                                       if (mapController != null) {
-                                        mapController.move(LatLng(Utilities.unInt(widget.kennelAggregateItem.extensions.cityLat), Utilities.unInt(widget.kennelAggregateItem.extensions.cityLon)), val);
+                                        mapController.move(LatLng(CoreUtilities.unInt(widget.kennelAggregateItem.extensions.cityLat), CoreUtilities.unInt(widget.kennelAggregateItem.extensions.cityLon)), val);
                                       }
                                       setState(() {
                                         sliderValue = val;
@@ -654,7 +656,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       child: Text(
                                         widget.kennelAggregateItem.kennel.defaultPriceForMembers == null
                                             ? '  <not provided>'
-                                            : '  ${Utilities.getFormattedMoney(widget.kennelAggregateItem.kennel.defaultPriceForMembers, widget.kennelAggregateItem.extensions.digitsAfterDecimal, widget.kennelAggregateItem.extensions.currencySymbol)}    (members)',
+                                            : '  ${CoreUtilities.getFormattedMoney(widget.kennelAggregateItem.kennel.defaultPriceForMembers, widget.kennelAggregateItem.extensions.digitsAfterDecimal, widget.kennelAggregateItem.extensions.currencySymbol)}    (members)',
                                         style: listValueStyle,
                                         textAlign: TextAlign.left,
                                         maxLines: 1,
@@ -680,7 +682,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       child: Text(
                                         widget.kennelAggregateItem.kennel.defaultPriceForNonMembers == null
                                             ? '  <not provided>'
-                                            : '  ${Utilities.getFormattedMoney(widget.kennelAggregateItem.kennel.defaultPriceForNonMembers, widget.kennelAggregateItem.extensions.digitsAfterDecimal, widget.kennelAggregateItem.extensions.currencySymbol)}    (non-members)',
+                                            : '  ${CoreUtilities.getFormattedMoney(widget.kennelAggregateItem.kennel.defaultPriceForNonMembers, widget.kennelAggregateItem.extensions.digitsAfterDecimal, widget.kennelAggregateItem.extensions.currencySymbol)}    (non-members)',
                                         style: listValueStyle,
                                         textAlign: TextAlign.left,
                                         maxLines: 1,
@@ -730,7 +732,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         Container(
                                           margin: const EdgeInsets.only(bottom: 20),
                                           width: 180,
-                                          child: Utilities.styleForConnected(
+                                          child: Connection.styleForConnected(
                                             RaisedButton(
                                               padding: const EdgeInsets.only(top: 8.0, left: 8.0, bottom: 8.0),
                                               child: Row(children: <Widget>[
@@ -744,7 +746,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                               ]),
                                               textColor: Colors.white,
                                               onPressed: () {
-                                                if (Utilities.checkForConnection(context)) {
+                                                if (Connection.checkForConnection(context)) {
                                                   launch(widget.kennelAggregateItem.kennel.kennelWebsiteUrl);
                                                 }
                                               },

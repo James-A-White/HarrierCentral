@@ -268,7 +268,7 @@
 //                                     if (result['result'] != 'failed') {
 //                                       userName = getStringPref(StringPrefsEnum.displayName);
 
-//                                       Utilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully loaded for $userName.', 'OK').then((void dummy) {
+//                                       CoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully loaded for $userName.', 'OK').then((void dummy) {
 //                                         Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
 //                                       });
 //                                     } else {
@@ -411,7 +411,7 @@
 //                           userDetailsUi.lastName = lastName;
 //                           userDetailsUi.email = email;
 
-//                           Utilities.showAlert(context, 'Facebook profile loaded', 'We have copied your Facebook profile information (name, email and profile photo) to the app. Please continue to register by adding your Hash name.', 'OK');
+//                           CoreUtilities.showAlert(context, 'Facebook profile loaded', 'We have copied your Facebook profile information (name, email and profile photo) to the app. Please continue to register by adding your Hash name.', 'OK');
 //                         });
 //                       },
 //                       child: Container(
@@ -421,7 +421,7 @@
 //                     ),
 //                     GestureDetector(
 //                       onTap: () {
-//                         Utilities.showAlert(
+//                         CoreUtilities.showAlert(
 //                             context,
 //                             'Why Connect with Facebook?',
 //                             'If you are not on a Hash group\'s Mismanagement, this only saves you time typing in your name and e-mail address. For those with administrative access to Harrier Central, having your Facebook credentials allows us to automatically download run information from your Hash group\'s Facebook events and add them to the app.',
@@ -475,12 +475,12 @@
 
 //     if (userDetailsUi != null && userDetailsUi.firstName.isEmpty) {
 //       canProcess = false;
-//       Utilities.showInSnackBar(context, widget.scaffoldKey, 'Please enter your first name', durationInSeconds: 7);
+//       CoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Please enter your first name', durationInSeconds: 7);
 //     }
 
 //     if (userDetailsUi != null && userDetailsUi.lastName.isEmpty) {
 //       canProcess = false;
-//       Utilities.showInSnackBar(context, widget.scaffoldKey, 'Please enter your last name', durationInSeconds: 7);
+//       CoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Please enter your last name', durationInSeconds: 7);
 //     }
 
 //     bool emailValid = false;
@@ -491,7 +491,7 @@
 
 //     if (canProcess && !emailValid) {
 //       canProcess = false;
-//       Utilities.showInSnackBar(context, widget.scaffoldKey, 'Please enter a valid email address', durationInSeconds: 7);
+//       CoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Please enter a valid email address', durationInSeconds: 7);
 //     }
 
 //     if (canProcess && (userDetailsUi != null)) {
@@ -600,7 +600,7 @@
 //             } else {
 //               // downloading from the cloud failed
 //               setState(() => _scanState = 2);
-//               Utilities.showInSnackBar(context, widget.scaffoldKey, result['message'], durationInSeconds: 7);
+//               CoreUtilities.showInSnackBar(context, widget.scaffoldKey, result['message'], durationInSeconds: 7);
 //             }
 //           });
 //         }
@@ -663,7 +663,7 @@
 //         setState(() {});
 //       }
 //       if (controller.value.hasError) {
-//         Utilities.showInSnackBar(context, widget.scaffoldKey, 'Camera error ${controller.value.errorDescription}', durationInSeconds: 7);
+//         CoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Camera error ${controller.value.errorDescription}', durationInSeconds: 7);
 //       }
 //     });
 
@@ -671,7 +671,7 @@
 //       await controller.initialize();
 //     } on QRReaderException catch (e) {
 //       //logError(e.code, e.description);
-//       Utilities.showInSnackBar(context, widget.scaffoldKey, 'Error: ${e.code}\n${e.description}', durationInSeconds: 7);
+//       CoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Error: ${e.code}\n${e.description}', durationInSeconds: 7);
 //     }
 
 //     if (mounted) {

@@ -21,7 +21,7 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/bank_transfer_qr.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
@@ -1099,8 +1099,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       final num runOnlyPrice = packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
       final num runPlusExtrasPrice = runOnlyPrice + widget.eventAggregate.event.eventPriceForExtras;
 
-      final String runOnlyPriceStr = Utilities.getFormattedMoney(runOnlyPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
-      final String runPlusExtrasPriceStr = Utilities.getFormattedMoney(runPlusExtrasPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+      final String runOnlyPriceStr = CoreUtilities.getFormattedMoney(runOnlyPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+      final String runPlusExtrasPriceStr = CoreUtilities.getFormattedMoney(runPlusExtrasPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
@@ -1465,7 +1465,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                             Padding(
                               padding: const EdgeInsets.only(left: 15.0),
                               child: Text(
-                                  '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Bank\r\nTransfer',
+                                  '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : CoreUtilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Bank\r\nTransfer',
                                   style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
                             ),
                           ],
@@ -1523,7 +1523,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                             Padding(
                               padding: const EdgeInsets.only(right: 15.0),
                               child: Text(
-                                  '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : Utilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Cash',
+                                  '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : CoreUtilities.getFormattedMoney(packMember.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + '\r\n'}Cash',
                                   textAlign: TextAlign.right,
                                   style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0)),
                             ),

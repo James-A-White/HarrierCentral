@@ -11,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:harrier_central/notifications/notification_support.dart';
 import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 
@@ -156,7 +157,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
 
   Future<void> onSkipPress() async {
     if (activeTab == 0) {
-      Utilities.showAlert(context, 'Location Preference', 'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool allow) {
+      CoreUtilities.showAlert(context, 'Location Preference', 'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool allow) {
         if (allow) {
           PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.location]).then((Map<PermissionGroup, PermissionStatus> e) {
             Utilities.subscribeToGeoLocationStream();
@@ -169,7 +170,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 1) {
-      Utilities.showAlert(context, 'Camera Preference', 'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool allow) {
+      CoreUtilities.showAlert(context, 'Camera Preference', 'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool allow) {
         if (allow) {
           PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.photos]).then((Map<PermissionGroup, PermissionStatus> e) {
             goToTab(2);
@@ -181,7 +182,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 2) {
-      Utilities.showAlert(context, 'Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool allow) {
+      CoreUtilities.showAlert(context, 'Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool allow) {
         if (allow) {
           final NotificationSupport notifications = NotificationSupport();
           notifications.configureNotifications(false);

@@ -15,7 +15,7 @@ import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/widgets/kennel_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
 
@@ -117,7 +117,7 @@ class KennelsListPageState extends State<KennelsListPage> {
         try {
           QueryKennels.queryKennels(EnumKennelQueryType.topKennelPage, EnumKennelQueryContext.user, hasherId:hasherId).then((List<Map<String, dynamic>> results) {
             for (int i = 0; i < results.length; i++) {
-              locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(results[i]['cityLat']), Utilities.unInt(results[i]['cityLon'])).then((num dist) {
+              locator.distanceBetween(CoreUtilities.unInt(deviceLat), CoreUtilities.unInt(deviceLon), CoreUtilities.unInt(results[i]['cityLat']), CoreUtilities.unInt(results[i]['cityLon'])).then((num dist) {
                 final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
                 final HasherKennelMapModel hkmItem = hasherKennelMapTableHelper.fromMap(results[i]);
                 final KennelListQueryExtenstions extensionsItem = KennelListQueryExtenstions.fromMap(results[i]);

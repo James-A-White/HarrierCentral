@@ -7,7 +7,7 @@ import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
@@ -220,7 +220,7 @@ class _LoginPageState extends State<FbLoginPage> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        Utilities.showAlert(
+                        CoreUtilities.showAlert(
                             context,
                             'What is the Global Hash Directory?',
                             'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',

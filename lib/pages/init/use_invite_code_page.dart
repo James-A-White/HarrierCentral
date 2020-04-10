@@ -8,9 +8,9 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/data/services/authorize_device_service.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
 
 class UseInviteCodePage extends StatefulWidget {
@@ -121,7 +121,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    Utilities.showAlert(
+                    CoreUtilities.showAlert(
                         context,
                         'What is an "Invite Code"?',
                         'An Invite Code is a six character code that allows you to connect to an existing account in Harrier Central.\r\n\r\nTypically you will receive an invite code from your home Kennel when they have already created an account for you in order to track your run counts.\r\n\r\nIf you do not have an Invite Code, please go back to the previous screen and select the option to Create a New Account.',
@@ -188,7 +188,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            Utilities.showAlert(
+                            CoreUtilities.showAlert(
                                 context,
                                 'What is the Global Hash Directory?',
                                 'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
@@ -231,7 +231,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                       String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
                       profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
-                      Utilities.showAlert(context, 'Success!', 'The app has been successfully set up for $userName.', 'OK').then((void dummy) {
+                      CoreUtilities.showAlert(context, 'Success!', 'The app has been successfully set up for $userName.', 'OK').then((void dummy) {
                         Navigator.pushReplacement<dynamic, dynamic>(
                             context,
                             MaterialPageRoute<dynamic>(

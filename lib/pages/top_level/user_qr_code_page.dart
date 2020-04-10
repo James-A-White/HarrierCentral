@@ -15,6 +15,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 
@@ -661,14 +662,14 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
         Container(
           //margin: const EdgeInsets.all(20.0),
           width: 280.0,
-          child: Utilities.styleForConnected(
+          child: Connection.styleForConnected(
             RaisedButton(
                 child: Text(
                   controller == null ? 'Start Scanning' : 'Stop Scanning',
                   style: const TextStyle(fontFamily: 'AvenirNextDemiBold', color: Colors.white, fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
                 ),
                 onPressed: () {
-                  if (Utilities.checkForConnection(context)) {
+                  if (Connection.checkForConnection(context)) {
                     scanUserBarcode();
                   }
                 }),

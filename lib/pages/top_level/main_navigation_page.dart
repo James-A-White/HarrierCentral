@@ -27,6 +27,7 @@ import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 import 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/notifications/notification_support.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);

@@ -9,7 +9,7 @@ import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';
@@ -123,8 +123,8 @@ class PaymentIcons extends StatelessWidget {
   }
 
   Future<dynamic> showExtrasDialog(BuildContext context, num runOnlyPrice, num extrasPrice) {
-    final String runOnlyPriceStr = Utilities.getFormattedMoney(runOnlyPrice, digitsAfterDecimal, currencySymbol);
-    final String runPlusExtrasPriceStr = Utilities.getFormattedMoney(runOnlyPrice + extrasPrice, digitsAfterDecimal, currencySymbol);
+    final String runOnlyPriceStr = CoreUtilities.getFormattedMoney(runOnlyPrice, digitsAfterDecimal, currencySymbol);
+    final String runPlusExtrasPriceStr = CoreUtilities.getFormattedMoney(runOnlyPrice + extrasPrice, digitsAfterDecimal, currencySymbol);
 
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
@@ -229,31 +229,31 @@ class PaymentIcons extends StatelessWidget {
 
               if (extrasPrice > 0) {
                 // build the string if we need to
-                extrasStr = ' ,and a\r\n' + Utilities.getFormattedMoney(extrasPrice, digitsAfterDecimal, currencySymbol) + ' charge for ${event.extrasDescription}';
+                extrasStr = ' ,and a\r\n' + CoreUtilities.getFormattedMoney(extrasPrice, digitsAfterDecimal, currencySymbol) + ' charge for ${event.extrasDescription}';
               }
 
               final num total = surcharge + eventPrice + extrasPrice;
 
               // build the other strings for the total price and event prices
-              final String totalStr = Utilities.getFormattedMoney(total, digitsAfterDecimal, currencySymbol);
-              final String eventPriceStr = Utilities.getFormattedMoney(eventPrice, digitsAfterDecimal, currencySymbol);
+              final String totalStr = CoreUtilities.getFormattedMoney(total, digitsAfterDecimal, currencySymbol);
+              final String eventPriceStr = CoreUtilities.getFormattedMoney(eventPrice, digitsAfterDecimal, currencySymbol);
 
               String surchargeStr = '';
               if (surcharge > 0) {
                 // if there is a surcharge, build the surcharge string
-                surchargeStr = ' ,and a\r\n' + Utilities.getFormattedMoney(surcharge, digitsAfterDecimal, currencySymbol) + ' surcharge for $paymentProvider';
+                surchargeStr = ' ,and a\r\n' + CoreUtilities.getFormattedMoney(surcharge, digitsAfterDecimal, currencySymbol) + ' surcharge for $paymentProvider';
               }
 
               // show the alert so the user knows how much to pay
-              Utilities.showAlert(context, 'Please pay $totalStr', 'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr', 'OK', showCancelButton: true, cancelButtonText: 'Cancel').then((bool result) {
+              CoreUtilities.showAlert(context, 'Please pay $totalStr', 'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr', 'OK', showCancelButton: true, cancelButtonText: 'Cancel').then((bool result) {
                 if (result) {
                   // now launch into the payment provider
                   launch(url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.'))).then((bool launched) {
                     if (kennel.allowSelfPayment == 0) {
-                      Utilities.showAlert(context, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
+                      CoreUtilities.showAlert(context, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
                     } else {
                       // show the alert so the user knows how much to pay
-                      Utilities.showAlert(
+                      CoreUtilities.showAlert(
                         context,
                         'Were you able to pay?',
                         'Were you able to complete a payment of $totalStr using $paymentProvider',
@@ -270,7 +270,7 @@ class PaymentIcons extends StatelessWidget {
                             stateSetter(adHocItems[0]['rsvpState'], 1);
                           });
                         } else {
-                          Utilities.showAlert(context, 'Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
+                          CoreUtilities.showAlert(context, 'Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
                         }
                       });
                     }
@@ -278,7 +278,7 @@ class PaymentIcons extends StatelessWidget {
                 }
               });
             } else {
-              Utilities.showAlert(context, 'Bad payment URL', 'The payment URL provided by the Kennel is not valid. Please check with the Kennel\'s mismanagement to have them fix the problem.', 'OK');
+              CoreUtilities.showAlert(context, 'Bad payment URL', 'The payment URL provided by the Kennel is not valid. Please check with the Kennel\'s mismanagement to have them fix the problem.', 'OK');
             }
           });
         },

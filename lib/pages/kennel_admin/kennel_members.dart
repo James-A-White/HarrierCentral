@@ -11,7 +11,7 @@ import 'package:harrier_central/widgets/kennel_member_list_item.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
@@ -467,7 +467,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                 Padding(
                                   padding: EdgeInsets.only(left: 15.0),
                                   child: Text(
-                                      // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                      // '${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                       'Cancel\r\nmembership',
                                       maxLines: 2,
                                       style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
@@ -485,7 +485,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                 Padding(
                                   padding: const EdgeInsets.only(right: 15.0),
                                   child: Text(
-                                      //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                      //'${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                       'Add ${item.membershipDurationInMonths} months\r\nto membership',
                                       style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                 )
@@ -527,7 +527,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                 }
                               },
                               toggleEmailPreferenceCallback: () {
-                                if (Utilities.checkForConnection(context, message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
+                                if (Connection.checkForConnection(context, message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
                                   final HasherKennelMapService srv = HasherKennelMapService();
                                   final int emailAlertStatus = snapshot.data[index].kennelEmailAlertPreference != 1 ? 1 : 2;
                                   snapshot.data[index].kennelEmailAlertPreference = -1;

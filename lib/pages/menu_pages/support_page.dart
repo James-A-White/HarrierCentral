@@ -12,11 +12,12 @@ import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 import 'package:harrier_central/data/services/authorize_device_service.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 
 
 class SupportPage extends StatefulWidget {
@@ -214,11 +215,11 @@ class SupportPageState extends State<SupportPage> {
                                       Padding(
                                         padding: const EdgeInsets.only(top: 25),
                                         child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                                          Utilities.styleForConnected(
+                                          Connection.styleForConnected(
                                             RaisedButton(
                                               padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                               onPressed: () async {
-                                                if (Utilities.checkForConnection(context)) {
+                                                if (Connection.checkForConnection(context)) {
                                                   final bool result = await syncUserDataService.updateFromBackend(SyncUserDataService.flagAllMasterData, false);
                                                   final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                                   print('Master data synchronized $resultStr');
@@ -238,7 +239,7 @@ class SupportPageState extends State<SupportPage> {
                                                           userName = getStringPref(StringPrefsEnum.displayName);
                                                           userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
 
-                                                          Utilities.showAlert(context, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
+                                                          CoreUtilities.showAlert(context, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
                                                         }
                                                       });
                                                     });
@@ -256,11 +257,11 @@ class SupportPageState extends State<SupportPage> {
                                       Padding(
                                         padding: const EdgeInsets.only(top: 25),
                                         child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                                          Utilities.styleForConnected(
+                                          Connection.styleForConnected(
                                             RaisedButton(
                                               padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                                               onPressed: () async {
-                                                if (Utilities.checkForConnection(context)) {
+                                                if (Connection.checkForConnection(context)) {
                                                   final bool result = await syncUserDataService.updateFromBackend(SyncUserDataService.flagAllMasterData, false);
                                                   final String resultStr = result ? 'successfully' : 'unsuccessfully';
                                                   print('Master data synchronized $resultStr');
@@ -280,7 +281,7 @@ class SupportPageState extends State<SupportPage> {
                                                           userName = getStringPref(StringPrefsEnum.displayName);
                                                           userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
 
-                                                          Utilities.showAlert(context, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
+                                                          CoreUtilities.showAlert(context, 'App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
                                                         }
                                                       });
                                                     });

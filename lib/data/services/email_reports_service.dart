@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 
 class EmailReportsService {
   Future<Map<String, String>> sendKennelRunStatsReportByEmail(
@@ -16,7 +16,7 @@ class EmailReportsService {
     final String emailAddress = getStringPref(StringPrefsEnum.email);
 
     final String accessToken =
-        Utilities.generateToken(userId, 'rptKennelRunStats');
+        CoreUtilities.generateToken(userId, 'rptKennelRunStats');
 
     if ((emailAddress ?? '').isNotEmpty) {
       final String body = jsonEncode(<String, String>{

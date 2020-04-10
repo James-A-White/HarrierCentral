@@ -10,7 +10,7 @@ import 'package:harrier_central/pages/run_admin/payment_popup.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/widgets/payment_report_list_item.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
@@ -275,12 +275,12 @@ class PaymentReportState extends State<PaymentReportPage> {
                 paymentsService.sendPaymentReportByEmail(eventId: widget.eventAggregate.event.eventId, eventName: widget.eventAggregate.event.eventName).then((Map<String, String> result) {
                   _scaffoldKey.currentState?.hideCurrentSnackBar();
                   if (result['result'].toLowerCase().startsWith('success')) {
-                    Utilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+                    CoreUtilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
                   } else {
-                    Utilities.showAlert(context, 'Error sending report', 'There was a problem sending the report to:\r\n\r\n${result['email']}\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
+                    CoreUtilities.showAlert(context, 'Error sending report', 'There was a problem sending the report to:\r\n\r\n${result['email']}\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
                   }
                 });
-                Utilities.showInSnackBar(context, _scaffoldKey, 'Payment Report being processed...', durationInSeconds: 10);
+                CoreUtilities.showInSnackBar(context, _scaffoldKey, 'Payment Report being processed...', durationInSeconds: 10);
               },
             ),
           ],
@@ -455,7 +455,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                     Padding(
                                                       padding: const EdgeInsets.only(left: 15.0),
                                                       child: Text(
-                                                          '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Bank Transfer',
+                                                          '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : CoreUtilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Bank Transfer',
                                                           style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                     )
                                                   ])),
@@ -482,7 +482,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                     Padding(
                                                       padding: const EdgeInsets.only(right: 15.0),
                                                       child: Text(
-                                                          '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : Utilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Cash',
+                                                          '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : CoreUtilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Cash',
                                                           style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                                     )
                                                   ])),
@@ -507,8 +507,8 @@ class PaymentReportState extends State<PaymentReportPage> {
       final num runOnlyPrice = packMember.extensions.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
       final num runPlusExtrasPrice = runOnlyPrice + widget.eventAggregate.event.eventPriceForExtras;
 
-      final String runOnlyPriceStr = Utilities.getFormattedMoney(runOnlyPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
-      final String runPlusExtrasPriceStr = Utilities.getFormattedMoney(runPlusExtrasPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+      final String runOnlyPriceStr = CoreUtilities.getFormattedMoney(runOnlyPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+      final String runPlusExtrasPriceStr = CoreUtilities.getFormattedMoney(runPlusExtrasPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
@@ -702,8 +702,8 @@ class PaymentReportState extends State<PaymentReportPage> {
         const int flexRight = 63;
         const num spacer = 6.0;
 
-        final String amountStr = Utilities.getFormattedMoney(item?.payment?.creditAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
-        final String extrasPriceStr = Utilities.getFormattedMoney(item?.extensions?.extrasPrice ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+        final String amountStr = CoreUtilities.getFormattedMoney(item?.payment?.creditAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+        final String extrasPriceStr = CoreUtilities.getFormattedMoney(item?.extensions?.extrasPrice ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
         return AlertDialog(
           title: const Text('Payment Detail'),
@@ -902,7 +902,7 @@ class PaymentReportState extends State<PaymentReportPage> {
                         const SizedBox(width: spacer, height: 10.0),
                         Expanded(
                             child: Text(
-                              Utilities.getFormattedMoney(item?.payment?.surcharge ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym),
+                              CoreUtilities.getFormattedMoney(item?.payment?.surcharge ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym),
                               style: bodyStyle,
                             ),
                             flex: flexRight),

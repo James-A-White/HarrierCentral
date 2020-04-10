@@ -10,7 +10,7 @@ import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
@@ -19,6 +19,7 @@ import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/widgets/user_event_list_item.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/pages/top_level/history_list_page.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 
 class UserRunHistoryListPage extends StatefulWidget {
   const UserRunHistoryListPage({Key key, @required this.kennelInfo}) : super(key: key);
@@ -173,10 +174,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                     hasherEventMapService.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelInfo.kennelName).then((Map<String, String> result) {
                       _scaffoldKey.currentState?.hideCurrentSnackBar();
                       if (result['result'].toLowerCase().startsWith('success')) {
-                        Utilities.showAlert(context, 'E-mail successfully sent', 'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+                        CoreUtilities.showAlert(context, 'E-mail successfully sent', 'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
                       }
                     });
-                    Utilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
+                    CoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
                   },
                 ),
                 SpeedDialChild(
@@ -188,10 +189,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                     hasherEventMapService.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
                       _scaffoldKey.currentState?.hideCurrentSnackBar();
                       if (result['result'].toLowerCase().startsWith('success')) {
-                        Utilities.showAlert(context, 'E-mail successfully sent', 'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+                        CoreUtilities.showAlert(context, 'E-mail successfully sent', 'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
                       }
                     });
-                    Utilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
+                    CoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
                   },
                 ),
               ],
@@ -267,7 +268,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //             onTap: () {
   //                   model.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelName).then((Map<String, String> result) {
   //                     if (result['result'].toLowerCase().startsWith('success')) {
-  //                       Utilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+  //                       CoreUtilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
   //                     }
   //                   });
   //                 },
@@ -280,7 +281,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //             onTap: ()  {
   //                   model.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
   //                     if (result['result'].toLowerCase().startsWith('success')) {
-  //                       Utilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+  //                       CoreUtilities.showAlert(context, 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
   //                     }
   //                   });
   //                 },
@@ -531,7 +532,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                     Padding(
                                       padding: EdgeInsets.only(left: 15.0),
                                       child: Text(
-                                          // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                          // '${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'Run locked',
                                           style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                     )
@@ -546,7 +547,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                     Padding(
                                       padding: EdgeInsets.only(left: 15.0),
                                       child: Text(
-                                          // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                          // '${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'I was not\r\nat the Hash',
                                           maxLines: 2,
                                           style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
@@ -563,7 +564,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                     Padding(
                                       padding: EdgeInsets.only(right: 15.0),
                                       child: Text(
-                                          //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                          //'${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                           'Run locked',
                                           style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                     )
@@ -581,7 +582,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                           Padding(
                                             padding: EdgeInsets.only(right: 15.0),
                                             child: Text(
-                                                //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                                //'${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                                 'I was at\r\nthe Hash',
                                                 maxLines: 2,
                                                 textAlign: TextAlign.right,
@@ -605,7 +606,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                           Padding(
                                             padding: EdgeInsets.only(right: 15.0),
                                             child: Text(
-                                                //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                                //'${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                                 'I was a Hare',
                                                 style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                           )

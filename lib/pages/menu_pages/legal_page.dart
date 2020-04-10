@@ -5,8 +5,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/pages/menu_pages/get_reset_code_popup.dart';
 import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/globals.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 
 class LegalPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;

@@ -15,6 +15,7 @@ import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
@@ -26,6 +27,7 @@ import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 
 // import 'package:harrier_central/widgets/user_details_ui.dart';
 // import 'package:ive_flutter_core/widgets/fancy_divider.dart';
@@ -378,7 +380,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             if (widget.pageType != EnumMyProfilePageType.myProfile) {
               Navigator.of(context).pop(h);
             } else {
-              Utilities.showAlert(context, 'Profile Updated', 'Your profile was updated successfully.', 'OK');
+              CoreUtilities.showAlert(context, 'Profile Updated', 'Your profile was updated successfully.', 'OK');
             }
           });
         });
@@ -633,10 +635,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         ),
                                                       ),
                                               ),
-                                              Utilities.styleForConnected(
+                                              Connection.styleForConnected(
                                                 RaisedButton(
                                                   onPressed: () {
-                                                    if (Utilities.checkForConnection(context)) {
+                                                    if (Connection.checkForConnection(context)) {
                                                       Navigator.push(
                                                         context,
                                                         MaterialPageRoute<String>(
@@ -748,7 +750,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                       });
                                                                     }
 
-                                                                    Utilities.showAlert(context, 'Location preferences updated', 'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 'OK');
+                                                                    CoreUtilities.showAlert(context, 'Location preferences updated', 'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 'OK');
                                                                   },
                                                                   child: Text('Enable Location Svcs', style: buttonTextStyle),
                                                                 ),
@@ -911,7 +913,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                       });
                                                                     }
 
-                                                                    Utilities.showAlert(context, 'Location preferences updated', 'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 'OK');
+                                                                    CoreUtilities.showAlert(context, 'Location preferences updated', 'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 'OK');
                                                                   },
                                                                   child: Text('Enable Location Svcs', style: buttonTextStyle),
                                                                 ),
@@ -1047,11 +1049,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             bottom: 0,
             child: Container(
                 padding: const EdgeInsets.only(top: 10, right: 20, bottom: 10, left: 20),
-                child: Utilities.styleForConnected(
+                child: Connection.styleForConnected(
                   RaisedButton(
                     color: _isDirty ? Theme.of(context).accentColor : Colors.grey,
                     onPressed: () {
-                      if (Utilities.checkForConnection(context) && _isDirty) {
+                      if (Connection.checkForConnection(context) && _isDirty) {
                         _updateProfile();
                       }
                     },

@@ -150,7 +150,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
         //               if (result['result']
         //                   .toLowerCase()
         //                   .startsWith('success')) {
-        //                 Utilities.showAlert(
+        //                 CoreUtilities.showAlert(
         //                     context,
         //                     'E-mail successfully sent',
         //                     'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
@@ -173,7 +173,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
         //               if (result['result']
         //                   .toLowerCase()
         //                   .startsWith('success')) {
-        //                 Utilities.showAlert(
+        //                 CoreUtilities.showAlert(
         //                     context,
         //                     'E-mail successfully sent',
         //                     'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
@@ -336,7 +336,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                                 Padding(
                                   padding: EdgeInsets.only(left: 15.0),
                                   child: Text(
-                                      // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                      // '${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                       'Hide event',
                                       style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                 )
@@ -353,7 +353,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                                 Padding(
                                   padding: EdgeInsets.only(right: 15.0),
                                   child: Text(
-                                      //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                      //'${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                       'Show event',
                                       style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                 )

@@ -11,6 +11,7 @@ import 'package:harrier_central/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';
@@ -89,7 +90,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
   @override
   void initState() {
-    Utilities.logTiming('initState called');
+    CoreUtilities.logTiming('initState called',appStartTime);
     searchController.text = '';
     searchText = '';
     refreshFromTable(true);
@@ -182,14 +183,14 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   void refreshFromTable(bool forceRefresh) {
     if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
       final Geolocator locator = Geolocator();
-      Utilities.logTiming('Geoquery start');
+      CoreUtilities.logTiming('Geoquery start',appStartTime);
 
-      Utilities.logTiming('Run query start');
+      CoreUtilities.logTiming('Run query start',appStartTime);
       QueryRuns.queryRuns(EnumRunQueryType.topRunsPage, EnumRunQueryContext.user, searchAllRuns: searchAllRuns).then((List<Map<String, dynamic>> results) {
-        Utilities.logTiming('Run query end');
+        CoreUtilities.logTiming('Run query end',appStartTime);
         allRuns = <RunDetailsAggregate>[];
         for (int i = 0; i < results.length; i++) {
-          locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(results[i]['narrowEventLatitude']), Utilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
+          locator.distanceBetween(CoreUtilities.unInt(deviceLat), CoreUtilities.unInt(deviceLon), CoreUtilities.unInt(results[i]['narrowEventLatitude']), CoreUtilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
             final EventModel eventItem = eventsTableHelper.fromMap(results[i]);
             final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
             final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i],eventItem.eventStartDatetime);
@@ -249,10 +250,10 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
               allRuns.add(item);
             }
             if (i == results.length - 1) {
-              Utilities.logTiming('Filter start');
+              CoreUtilities.logTiming('Filter start',appStartTime);
               filterRuns();
               setState(() {});
-              Utilities.logTiming('Filter end');
+              CoreUtilities.logTiming('Filter end',appStartTime);
             }
           });
         }

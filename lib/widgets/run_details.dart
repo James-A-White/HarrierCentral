@@ -18,6 +18,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 import 'package:harrier_central/widgets/payment_icons.dart';
 import 'package:harrier_central/util/styles.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 
 
 class RunDetails extends StatelessWidget {
@@ -287,7 +288,7 @@ class RunDetails extends StatelessWidget {
                       ),
                       Expanded(
                           child: Text(
-                            ((event.eventPriceForMembers ?? kennel.defaultPriceForMembers ?? 0) > 0) ? '${Utilities.getFormattedMoney(event.eventPriceForMembers ?? kennel.defaultPriceForMembers ?? 0, digitsAfterDecimal, currencySymbol)} (members)' : '',
+                            ((event.eventPriceForMembers ?? kennel.defaultPriceForMembers ?? 0) > 0) ? '${CoreUtilities.getFormattedMoney(event.eventPriceForMembers ?? kennel.defaultPriceForMembers ?? 0, digitsAfterDecimal, currencySymbol)} (members)' : '',
                             style: listValueStyle,
                             textAlign: TextAlign.left,
                             maxLines: 1,
@@ -317,7 +318,7 @@ class RunDetails extends StatelessWidget {
                       ),
                       Expanded(
                           child: Text(
-                            ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0) > 0) ? '${Utilities.getFormattedMoney(event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0, digitsAfterDecimal, currencySymbol)} (non-members)' : '',
+                            ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0) > 0) ? '${CoreUtilities.getFormattedMoney(event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0, digitsAfterDecimal, currencySymbol)} (non-members)' : '',
                             style: listValueStyle,
                             textAlign: TextAlign.left,
                             maxLines: 1,
@@ -349,7 +350,7 @@ class RunDetails extends StatelessWidget {
                             ),
                             Expanded(
                                 child: Text(
-                                  ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0) > 0) ? '${Utilities.getFormattedMoney(event.eventPriceForExtras ?? 0, digitsAfterDecimal, currencySymbol)} (${event.extrasDescription})' : '',
+                                  ((event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers ?? 0) > 0) ? '${CoreUtilities.getFormattedMoney(event.eventPriceForExtras ?? 0, digitsAfterDecimal, currencySymbol)} (${event.extrasDescription})' : '',
                                   style: listValueStyle,
                                   textAlign: TextAlign.left,
                                   maxLines: 1,
@@ -649,7 +650,7 @@ class RunDetails extends StatelessWidget {
             //             if (await canLaunch(paymentLinkUrl)) {
             //               await launch(paymentLinkUrl);
             //             } else {
-            //               Utilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $paymentLinkUrl', 'OK');
+            //               CoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open $paymentLinkUrl', 'OK');
             //             }
             //           },
             //           child: Text('Pay for Hash', style: buttonTextStyle),
@@ -708,7 +709,7 @@ class RunDetails extends StatelessWidget {
                         if (await canLaunch(link.url)) {
                           await launch(link.url);
                         } else {
-                          Utilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
+                          CoreUtilities.showAlert(context, 'Unable to open link', 'Harrier Central was unable to open ${link.url}', 'OK');
                         }
                       },
                     ),

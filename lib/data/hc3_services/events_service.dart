@@ -6,11 +6,11 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/database/tables.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
 
 import 'package:json_annotation/json_annotation.dart';
@@ -263,7 +263,7 @@ class EventsService extends BaseService {
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final String accessToken = Utilities.generateToken(userId, 'addEditEvent');
+    final String accessToken = CoreUtilities.generateToken(userId, 'addEditEvent');
 
     final num _eventsLastUpdated = await getLastUpdatedTime(
       internalSqlDb,
@@ -306,7 +306,7 @@ class EventsService extends BaseService {
 
   Future<Map<String, String>> sendRunDetailsByEmail({String eventId, String emailBody = ''}) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken = Utilities.generateToken(userId, 'rptApi_emailRunDetails', paramString: eventId);
+    final String accessToken = CoreUtilities.generateToken(userId, 'rptApi_emailRunDetails', paramString: eventId);
 
     final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'eventId': eventId, 'emailBody': emailBody});
 

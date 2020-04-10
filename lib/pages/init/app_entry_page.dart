@@ -16,7 +16,9 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/routes.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/data/services/authorize_device_service.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 
 class AppEntryPage extends StatefulWidget {
   @override
@@ -53,7 +55,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     if ((loginResult == null) && ((userId == null) || (userId.isEmpty))) {
       // we get here if we are disconnected and the app has never been run before
       // we can't operate in offline mode because there is no data in the cache
-      Utilities.showAlert(context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit').then((void dummy) async {
+      CoreUtilities.showAlert(context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit').then((void dummy) async {
         await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
         return null;
       });
@@ -106,7 +108,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
                     await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 
-                    Utilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void dummy) {
+                    CoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void dummy) {
                       Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
                     });
                   } else {

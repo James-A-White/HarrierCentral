@@ -6,7 +6,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:harrier_central/data/services/get_reset_code_service.dart';
 import 'package:harrier_central/data/models/single_result_model.dart';
 import 'package:harrier_central/data/services/authorize_device_service.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:ive_flutter_core/database/database.dart';
@@ -125,7 +125,7 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
                     clearAllPrefs();
                     await DBProvider.deleteDb(DB_NAME);
                     
-                    Utilities.showAlert(
+                    CoreUtilities.showAlert(
                               context,
                               'App Cleared Successful',
                               'Your app has been successfully cleared. Please close and restart the app to start the installation process again.',
@@ -141,7 +141,7 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
                           getResetCodeTextController.text =
                               getStringPref(StringPrefsEnum.displayName);
 
-                          Utilities.showAlert(
+                          CoreUtilities.showAlert(
                               context,
                               'App Reset Successful',
                               'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',

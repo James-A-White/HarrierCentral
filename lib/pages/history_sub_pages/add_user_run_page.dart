@@ -466,11 +466,11 @@
 //                                                                 ),
 //                                                         ),
 
-//                                                         Utilities.styleForConnected(
+//                                                         Connection.styleForConnected(
 //                                                           RaisedButton(
 //                                                             onPressed: () {
 
-//                                                               // if (Utilities.checkForConnection(context)) {
+//                                                               // if (Connection.checkForConnection(context)) {
 //                                                               //   Navigator.push(
 //                                                               //     context,
 //                                                               //     MaterialPageRoute<String>(
@@ -611,11 +611,11 @@
 //             bottom: 0,
 //             child: Container(
 //                 padding: const EdgeInsets.fromLTRB(220, 10, 10, 10),
-//                 child: Utilities.styleForConnected(
+//                 child: Connection.styleForConnected(
 //                   RaisedButton(
 //                     color: _isDirty ? Theme.of(context).accentColor : Colors.grey,
 //                     onPressed: () {
-//                       if (Utilities.checkForConnection(context) && _isDirty) {
+//                       if (Connection.checkForConnection(context) && _isDirty) {
 //                         _updateProfile();
 //                       }
 //                     },

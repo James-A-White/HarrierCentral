@@ -7,7 +7,7 @@ import 'package:package_info/package_info.dart';
 
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/data/services/service_common.dart';
 
 import 'package:device_info/device_info.dart';
@@ -26,7 +26,7 @@ class AuthorizeDeviceService {
       deviceId = iosInfo.identifierForVendor.toUpperCase();
     }
 
-    final String accessToken = Utilities.generateToken(GUID_EMPTY, 'authorizeDevice');
+    final String accessToken = CoreUtilities.generateToken(GUID_EMPTY, 'authorizeDevice');
 
     final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
     if ((hcVersion ?? '').isEmpty) {

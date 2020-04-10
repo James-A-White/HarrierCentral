@@ -15,7 +15,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 import 'package:harrier_central/widgets/run_details.dart';
 import 'package:harrier_central/util/styles.dart';
@@ -669,7 +669,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         // Map
         child: FlutterMap(
           options: MapOptions(
-            center: LatLng(Utilities.unInt(widget.futureRun.event.narrowEventLatitude), Utilities.unInt(widget.futureRun.event.narrowEventLongitude)),
+            center: LatLng(CoreUtilities.unInt(widget.futureRun.event.narrowEventLatitude), CoreUtilities.unInt(widget.futureRun.event.narrowEventLongitude)),
             zoom: 15.0,
           ),
           layers: <LayerOptions>[
@@ -684,7 +684,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                 Marker(
                   width: 120.0,
                   height: 120.0,
-                  point: LatLng(Utilities.unInt(widget.futureRun.event.narrowEventLatitude), Utilities.unInt(widget.futureRun.event.narrowEventLongitude)),
+                  point: LatLng(CoreUtilities.unInt(widget.futureRun.event.narrowEventLatitude), CoreUtilities.unInt(widget.futureRun.event.narrowEventLongitude)),
                   builder: (BuildContext ctx) => GestureDetector(
                     onTap: () => _launchMaps(widget.futureRun.event),
                     child: Container(
@@ -1158,7 +1158,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     } else if ((latStr != '') && (lonStr != '')) {
       url = latStr + ',' + lonStr;
     } else {
-      Utilities.showAlert(context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
+      CoreUtilities.showAlert(context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
     }
 
     final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$url';

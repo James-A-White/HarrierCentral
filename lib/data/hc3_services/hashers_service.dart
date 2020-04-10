@@ -6,8 +6,8 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/connection.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
@@ -177,7 +177,7 @@ class HashersService extends BaseService {
       newUserForThisDevice = true;
     }
 
-    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'addEditUser', paramString: targetUserId.toUpperCase());
+    final String accessToken = CoreUtilities.generateToken(userId.toUpperCase(), 'addEditUser', paramString: targetUserId.toUpperCase());
 
     DateTime hashersUpdatedAfter;
     DateTime hasherEventMapUpdatedAfter;
@@ -280,7 +280,7 @@ class HashersService extends BaseService {
       userId = GUID_EMPTY;
     }
 
-    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'addEditUser', paramString: targetUserId.toUpperCase());
+    final String accessToken = CoreUtilities.generateToken(userId.toUpperCase(), 'addEditUser', paramString: targetUserId.toUpperCase());
 
     final String body = jsonEncode(<String, String>{
       'userId': userId,
@@ -349,7 +349,7 @@ class HashersService extends BaseService {
       hashersUpdatedAfter = DateTime(2050, 1, 1);
     }
 
-    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'processFacebookLogin', paramString: userId.toUpperCase());
+    final String accessToken = CoreUtilities.generateToken(userId.toUpperCase(), 'processFacebookLogin', paramString: userId.toUpperCase());
 
     final String body = jsonEncode(<String, String>{
       'userId': userId,

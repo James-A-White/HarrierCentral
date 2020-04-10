@@ -12,6 +12,7 @@ import 'package:harrier_central/util/utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/database/query_runs.dart';
@@ -284,7 +285,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                           ),
 
                           IconButton(
-                            icon: Utilities.styleForConnected(const Icon(MaterialCommunityIcons.dots_vertical)),
+                            icon: Connection.styleForConnected(const Icon(MaterialCommunityIcons.dots_vertical)),
                             iconSize: Theme.of(context).iconTheme.size,
                             color: Colors.black54,
                             splashColor: Theme.of(context).highlightColor,
@@ -342,7 +343,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   }
 
   void showRsvpOptionsPopup(BuildContext context) {
-    if (Utilities.checkForConnection(context, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
+    if (Connection.checkForConnection(context, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
           'title': 'I\'ll be there!',
@@ -389,7 +390,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   }
 
   void showAllOptionsPopup(BuildContext context) {
-    if (Utilities.checkForConnection(context, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
+    if (Connection.checkForConnection(context, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
           'title': 'I\'ll be there!',

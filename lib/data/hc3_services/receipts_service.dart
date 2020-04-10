@@ -8,7 +8,7 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/data/services/service_common.dart';
 import 'package:harrier_central/database/tables.dart';
 
@@ -156,7 +156,7 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
 class ReceiptsService {
   Future<String> uploadReceipt(BuildContext context, ReceiptsModel item) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken = Utilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
+    final String accessToken = CoreUtilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
 
     final num _receiptsLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,

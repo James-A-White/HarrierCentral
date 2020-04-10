@@ -8,7 +8,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/pages/run_admin/receipt_detail_page.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/preferences.dart';
@@ -227,7 +227,7 @@ class ReceiptsListState extends State<ReceiptsList> {
                                     Padding(
                                       padding: EdgeInsets.only(left: 15.0),
                                       child: Text(
-                                          // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                          // '${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'Ignore receipt',
                                           style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                     )
@@ -242,7 +242,7 @@ class ReceiptsListState extends State<ReceiptsList> {
                                     Padding(
                                       padding: EdgeInsets.only(left: 15.0),
                                       child: Text(
-                                          // '${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                          // '${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'Restore receipt',
                                           style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                     )
@@ -260,7 +260,7 @@ class ReceiptsListState extends State<ReceiptsList> {
                                       Padding(
                                         padding: EdgeInsets.only(right: 15.0),
                                         child: Text(
-                                            //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                            //'${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                             'Cancel Reimbursement',
                                             style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 17.0, height: 1.0)),
                                       )
@@ -279,7 +279,7 @@ class ReceiptsListState extends State<ReceiptsList> {
                                       Padding(
                                         padding: EdgeInsets.only(right: 15.0),
                                         child: Text(
-                                            //'${Utilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                            //'${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                             'Receipt reimbursed',
                                             style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                       )
@@ -376,7 +376,7 @@ class ReceiptListItem extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.only(left: 10.0),
                 child: Text(
-                  '${Utilities.getFormattedMoney(receipt['receiptAmount'], digitsAfterDecimal, currencySymbol)}',
+                  '${CoreUtilities.getFormattedMoney(receipt['receiptAmount'], digitsAfterDecimal, currencySymbol)}',
                   style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0, color: receipt['removed'] == 0 ? Colors.blue[700] : Colors.grey),
                   textAlign: TextAlign.right,
                 ),

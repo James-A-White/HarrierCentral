@@ -12,7 +12,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/preferences.dart';
 import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
@@ -23,6 +23,7 @@ import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
 import 'package:harrier_central/database/query_kennels.dart';
+import 'package:ive_flutter_core/util/connection.dart';
 
 // class MapMarker extends Marker {
 //   MapMarker({@required this.eventId, @required this.eventName, @required this.eventStartDatetime, num width, num height, LatLng point, WidgetBuilder builder}) : super(width: width, height: height, point: point, builder: builder);
@@ -242,7 +243,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
               if (mapCenterOption == centerOnCurrentLocation.value) {
                 mapCenterOption = centerOnHomeKennel.value;
                 setIntPref(IntPrefsEnum.mapCenterOption, mapCenterOption);
-                mapController.move(((homeKennelLat != null) && (homeKennelLon != null)) ? LatLng(Utilities.unInt(homeKennelLat), Utilities.unInt(homeKennelLon)) : LatLng(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon)), mapController.zoom);
+                mapController.move(((homeKennelLat != null) && (homeKennelLon != null)) ? LatLng(CoreUtilities.unInt(homeKennelLat), CoreUtilities.unInt(homeKennelLon)) : LatLng(CoreUtilities.unInt(deviceLat), CoreUtilities.unInt(deviceLon)), mapController.zoom);
                 Scaffold.of(context).showSnackBar(SnackBar(
                   content: Text(
                     'Map will center on home kennel\r\n\r\n',
@@ -255,7 +256,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
               } else {
                 mapCenterOption = centerOnCurrentLocation.value;
                 setIntPref(IntPrefsEnum.mapCenterOption, mapCenterOption);
-                mapController.move(LatLng(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon)), mapController.zoom);
+                mapController.move(LatLng(CoreUtilities.unInt(deviceLat), CoreUtilities.unInt(deviceLon)), mapController.zoom);
 
                 Scaffold.of(context).showSnackBar(SnackBar(
                   content: Text(
@@ -305,10 +306,10 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(EnumRunQueryType.singleRun, EnumRunQueryContext.kennelAdmin, eventId: eventId);
     if (results.isNotEmpty) {
       final num dist = await locator.distanceBetween(
-        Utilities.unInt(deviceLat),
-        Utilities.unInt(deviceLon),
-        Utilities.unInt(results[0]['narrowEventLatitude']),
-        Utilities.unInt(
+        CoreUtilities.unInt(deviceLat),
+        CoreUtilities.unInt(deviceLon),
+        CoreUtilities.unInt(results[0]['narrowEventLatitude']),
+        CoreUtilities.unInt(
           results[0]['narrowEventLongitude'],
         ),
       );
@@ -414,7 +415,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     for (int i = 0; i < filteredRuns.length; i++) {
       final RunDetailsAggregate run = filteredRuns[i];
 
-      final LatLng ll = LatLng(Utilities.unInt(run.event.narrowEventLatitude), Utilities.unInt(run.event.narrowEventLongitude));
+      final LatLng ll = LatLng(CoreUtilities.unInt(run.event.narrowEventLatitude), CoreUtilities.unInt(run.event.narrowEventLongitude));
       final DateTime dt = run.event.eventStartDatetime;
 
       final Marker marker = Marker(
@@ -472,12 +473,12 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             setNumPref(NumPrefsEnum.homeKennelLon, homeKennelLon);
 
             if ((mapCenterOption == centerOnHomeKennel.value) && (homeKennelLat != null) && (homeKennelLon != null)) {
-              mapController.move(LatLng(Utilities.unInt(homeKennelLat), Utilities.unInt(homeKennelLon)), mapController.zoom);
+              mapController.move(LatLng(CoreUtilities.unInt(homeKennelLat), CoreUtilities.unInt(homeKennelLon)), mapController.zoom);
             }
           }
 
           if ((lat != null) && (lon != null) && (lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
-            final LatLng ll = LatLng(Utilities.unInt(lat), Utilities.unInt(lon));
+            final LatLng ll = LatLng(CoreUtilities.unInt(lat), CoreUtilities.unInt(lon));
             final Marker marker = Marker(
                 width: 120.0,
                 height: 120.0,
@@ -535,7 +536,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
         final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user, hasherId: hasherId, kennelId: kennelId);
 
         if (results.isNotEmpty) {
-          final num dist = await locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(results[0]['cityLat']), Utilities.unInt(results[0]['cityLon']));
+          final num dist = await locator.distanceBetween(CoreUtilities.unInt(deviceLat), CoreUtilities.unInt(deviceLon), CoreUtilities.unInt(results[0]['cityLat']), CoreUtilities.unInt(results[0]['cityLon']));
 
           final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[0]);
           final HasherKennelMapModel hkmItem = hasherKennelMapTableHelper.fromMap(results[0]);
@@ -630,8 +631,8 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                   mapController: mapController,
                   options: MapOptions(
                     center: (widget.kennel?.kennelLatitude != null)
-                        ? LatLng(Utilities.unInt(widget.kennel.kennelLatitude), Utilities.unInt(widget.kennel.kennelLongitude))
-                        : ((mapCenterOption == centerOnCurrentLocation.value) || (homeKennelLat == null) || (homeKennelLon == null)) ? LatLng(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon)) : LatLng(Utilities.unInt(homeKennelLat), Utilities.unInt(homeKennelLon)),
+                        ? LatLng(CoreUtilities.unInt(widget.kennel.kennelLatitude), CoreUtilities.unInt(widget.kennel.kennelLongitude))
+                        : ((mapCenterOption == centerOnCurrentLocation.value) || (homeKennelLat == null) || (homeKennelLon == null)) ? LatLng(CoreUtilities.unInt(deviceLat), CoreUtilities.unInt(deviceLon)) : LatLng(CoreUtilities.unInt(homeKennelLat), CoreUtilities.unInt(homeKennelLon)),
                     zoom: 10.0,
                     plugins: <MarkerClusterPlugin>[
                       MarkerClusterPlugin(),

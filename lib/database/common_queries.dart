@@ -5,7 +5,7 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/preferences.dart';
-import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
 
 class AreWeAtRunResult {
@@ -89,7 +89,7 @@ class CommonQueries {
 
       if (queryResults.isNotEmpty) {
         for (int i = 0; i < queryResults.length; i++) {
-          final num dist = await locator.distanceBetween(Utilities.unInt(deviceLat), Utilities.unInt(deviceLon), Utilities.unInt(queryResults[i]['lat']), Utilities.unInt(queryResults[i]['lon']));
+          final num dist = await locator.distanceBetween(CoreUtilities.unInt(deviceLat), CoreUtilities.unInt(deviceLon), CoreUtilities.unInt(queryResults[i]['lat']), CoreUtilities.unInt(queryResults[i]['lon']));
           if (closestRun < dist) {
             continue;
           }

@@ -10,6 +10,7 @@ import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
+import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/pages/run_admin/payment_popup.dart';
@@ -334,7 +335,7 @@ Container(
               
               if ((adHocData != null) && (adHocData.isNotEmpty)) {
                 final num amount = adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
-                Utilities.showInSnackBar(context, _scaffoldKey, adHocData[0]['userMessage'], durationInSeconds: 10);
+                CoreUtilities.showInSnackBar(context, _scaffoldKey, adHocData[0]['userMessage'], durationInSeconds: 10);
                 //
                 if ((adHocData[0]['isPaid'] != 0) || (amount <= 0)) {
                   scanUserBarcode();
@@ -447,7 +448,7 @@ Container(
       (List<dynamic> paymentResult) {
         if ((paymentResult != null) && (paymentResult.isNotEmpty)) {
           final int paymentType = paymentResult[0]['paymentType'];
-          final String amountPaid = Utilities.getFormattedMoney(paymentResult[0]['creditAmount'], widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+          final String amountPaid = CoreUtilities.getFormattedMoney(paymentResult[0]['creditAmount'], widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
           onScreenMessage = paymentResult[0]['hasherWhoPaid'];
 
