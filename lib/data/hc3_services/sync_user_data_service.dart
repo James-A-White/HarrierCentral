@@ -128,7 +128,7 @@ class SyncUserDataService {
       final String body = jsonEncode(<String, String>{
         'userId': userId,
         'accessToken': accessToken,
-        'hashersUpdatedAfter': (tablesToSync & flagCitiesTable) == 0 ? 'ignore' : hashersUpdatedAfter.toString().substring(0, 19),
+        'hashersUpdatedAfter': (tablesToSync & flagHashersTable) == 0 ? 'ignore' : hashersUpdatedAfter.toString().substring(0, 19),
         'citiesUpdatedAfter': (tablesToSync & flagCitiesTable) == 0 ? 'ignore' : citiesUpdatedAfter.toString().substring(0, 19),
         'regionsUpdatedAfter': (tablesToSync & flagRegionsTable) == 0 ? 'ignore' : regionsUpdatedAfter.toString().substring(0, 19),
         'countriesUpdatedAfter': (tablesToSync & flagCountriesTable) == 0 ? 'ignore' : countriesUpdatedAfter.toString().substring(0, 19),
@@ -169,7 +169,8 @@ class SyncUserDataService {
     for (int i = 0; i < matches.length; i++) {
       final String ms = matches.elementAt(i).group(0);
 
-      if (ms.startsWith(r'[{"hasherId"')) {
+      // TODO(James): Investigate why we're not using the baseService to do the bulk update for Hashers
+      if (ms.startsWith('[{"${hashersTableHelper.remoteDbId}"')) {
         await hashersService.bulkUpdateDatabase(
           hashersTableHelper,
           Tables.getTableName(hashersTableHelper),
@@ -180,7 +181,7 @@ class SyncUserDataService {
         print('hashers updated');
       }
 
-      if (ms.startsWith(r'[{"paymentId"')) {
+      if (ms.startsWith('[{"${paymentsTableHelper.remoteDbId}"')) {
         await baseService.bulkUpdateDatabase(
           paymentsTableHelper,
           Tables.getTableName(paymentsTableHelper, tableType: TableType.paymentsUser),
@@ -191,7 +192,7 @@ class SyncUserDataService {
         print('payments updated');
       }
 
-      if (ms.startsWith(r'[{"cityId"')) {
+      if (ms.startsWith('[{"${citiesTableHelper.remoteDbId}"')) {
         await baseService.bulkUpdateDatabase(
           citiesTableHelper,
           Tables.getTableName(citiesTableHelper),
@@ -202,7 +203,7 @@ class SyncUserDataService {
         print('cities updated');
       }
 
-      if (ms.startsWith(r'[{"regionId"')) {
+      if (ms.startsWith('[{"${regionsTableHelper.remoteDbId}"')) {
         await baseService.bulkUpdateDatabase(
           regionsTableHelper,
           Tables.getTableName(regionsTableHelper),
@@ -213,7 +214,7 @@ class SyncUserDataService {
         print('regions updated');
       }
 
-      if (ms.startsWith(r'[{"countryId"')) {
+      if (ms.startsWith('[{"${countriesTableHelper.remoteDbId}"')) {
         await baseService.bulkUpdateDatabase(
           countriesTableHelper,
           Tables.getTableName(countriesTableHelper),
@@ -224,7 +225,7 @@ class SyncUserDataService {
         print('countries updated');
       }
 
-      if (ms.startsWith(r'[{"kennelId"')) {
+      if (ms.startsWith('[{"${kennelsTableHelper.remoteDbId}"')) {
         await baseService.bulkUpdateDatabase(
           kennelsTableHelper,
           Tables.getTableName(kennelsTableHelper),
@@ -235,7 +236,7 @@ class SyncUserDataService {
         print('kennels updated');
       }
 
-      if (ms.startsWith(r'[{"eventId"')) {
+      if (ms.startsWith('[{"${eventsTableHelper.remoteDbId}"')) {
         await baseService.bulkUpdateDatabase(
           eventsTableHelper,
           Tables.getTableName(eventsTableHelper),
@@ -246,7 +247,7 @@ class SyncUserDataService {
         print('events updated');
       }
 
-      if (ms.startsWith(r'[{"hkmId"')) {
+      if (ms.startsWith('[{"${hasherKennelMapTableHelper.remoteDbId}"')) {
         await baseService.bulkUpdateDatabase(
           hasherKennelMapTableHelper,
           Tables.getTableName(hasherKennelMapTableHelper, tableType: TableType.hkmUser),
@@ -257,7 +258,7 @@ class SyncUserDataService {
         print('hasher kennel map updated');
       }
 
-      if (ms.startsWith(r'[{"hemId"')) {
+      if (ms.startsWith('[{"${hasherEventMapTableHelper.remoteDbId}"')) {
         await baseService.bulkUpdateDatabase(
           hasherEventMapTableHelper,
           Tables.getTableName(hasherEventMapTableHelper,tableType:TableType.hemUser ),
