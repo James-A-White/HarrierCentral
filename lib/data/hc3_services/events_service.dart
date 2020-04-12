@@ -116,7 +116,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
   String tableName = 'narrowEvents';
 
   @override
-  String getTableName(TableType type) {
+  String getTableName(dynamic tableType) {
     return tableName;
   }
 
@@ -160,7 +160,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
   final String colTags3 = 'tags3';
 
   @override
-  Future<dynamic> createTable(Database db, int version, TableType tableType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,

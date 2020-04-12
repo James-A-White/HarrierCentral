@@ -13,7 +13,7 @@ import 'package:harrier_central/pages/run_admin/receipts_page.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';
 import 'package:harrier_central/util/enums.dart';
-import 'package:ive_flutter_core/database/base_service.dart';
+import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 import 'package:harrier_central/util/styles.dart';

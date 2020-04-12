@@ -8,7 +8,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
-import 'package:ive_flutter_core/database/base_service.dart';
+import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';

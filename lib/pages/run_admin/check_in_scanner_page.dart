@@ -12,7 +12,7 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/utilities.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:ive_flutter_core/database/base_service.dart';
+import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/pages/run_admin/payment_popup.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';

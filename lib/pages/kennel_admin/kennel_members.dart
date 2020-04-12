@@ -13,7 +13,7 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:ive_flutter_core/util/connection.dart';
 import 'package:harrier_central/widgets/circular_progress_indicator.dart';
-import 'package:ive_flutter_core/database/base_service.dart';
+import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';

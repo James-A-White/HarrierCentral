@@ -3,7 +3,7 @@ import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:ive_flutter_core/database/base_service.dart';
+import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/payments_service.dart';
 import 'package:harrier_central/util/constants.dart';

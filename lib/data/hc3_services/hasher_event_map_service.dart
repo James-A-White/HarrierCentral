@@ -80,7 +80,7 @@ class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
   String tableName = '';
 
   @override
-  String getTableName(TableType tblType) {
+  String getTableName(dynamic tblType) {
     if (tblType == TableType.hemEventAdmin) {
       return hemAdminTable;
     }
@@ -108,7 +108,7 @@ class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
   final String colPhoneNumber = 'phoneNumber';
 
   @override
-  Future<dynamic> createTable(Database db, int version, TableType tblType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic tblType) async {
     await db.execute('''
           CREATE TABLE ${getTableName(tblType)} (
             $colId INTEGER PRIMARY KEY,

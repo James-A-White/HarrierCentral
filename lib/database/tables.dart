@@ -9,6 +9,9 @@ import 'package:harrier_central/util/globals.dart';
 
 import 'package:harrier_central/database/notifications_table.dart';
 
+enum AppDomainType {user,event,kennel}
+enum TableType { baseTable, hemUser, hemEventAdmin, hkmUser, hkmEventAdmin, hkmKennelAdmin, paymentsUser, paymentsEvent }
+
 class Tables {
   static String getTableName(BaseTableHelper tableHelper, {TableType tableType}) {
     String tableName = tableHelper.tableName;

@@ -76,7 +76,7 @@ class HashersTableHelper with BaseFields implements BaseTableHelper {
   String tableName = 'hashers';
 
   @override
-  String getTableName(TableType type) {
+  String getTableName(dynamic tableType) {
     return tableName;
   }
 
@@ -98,7 +98,7 @@ class HashersTableHelper with BaseFields implements BaseTableHelper {
   final String colPreferences = 'preferences';
 
   @override
-  Future<dynamic> createTable(Database db, int version, TableType tableType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,

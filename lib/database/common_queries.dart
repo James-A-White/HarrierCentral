@@ -6,7 +6,7 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/constants.dart';
 
 import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:ive_flutter_core/database/base_service.dart';
+import 'package:harrier_central/database/tables.dart';
 
 class AreWeAtRunResult {
   String eventId;

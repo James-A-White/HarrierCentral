@@ -3,7 +3,7 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-import 'package:ive_flutter_core/database/base_service.dart';
+import 'package:harrier_central/database/tables.dart';
 
 class KennelListQueryExtenstions {
   KennelListQueryExtenstions({

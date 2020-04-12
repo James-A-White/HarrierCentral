@@ -10,7 +10,7 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:ive_flutter_core/util/connection.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/widgets/kennel_logo.dart';
-import 'package:ive_flutter_core/database/base_service.dart';
+import 'package:harrier_central/database/tables.dart';
 import 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/database/query_kennels.dart';
 import 'package:harrier_central/notifications/notification_support.dart';

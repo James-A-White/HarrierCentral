@@ -48,7 +48,7 @@ class RegionsTableHelper with BaseFields implements BaseTableHelper {
   String tableName = 'regions';
 
   @override
-  String getTableName(TableType type) {
+  String getTableName(dynamic tableType) {
     return tableName;
   }
 
@@ -61,7 +61,7 @@ class RegionsTableHelper with BaseFields implements BaseTableHelper {
   final String colFlagFile = 'flagFile';
 
   @override
-  Future<dynamic> createTable(Database db, int version, TableType tableType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic tableType) async {
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,

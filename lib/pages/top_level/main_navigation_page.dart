@@ -24,7 +24,6 @@ import 'package:ive_flutter_core/util/core_utilities.dart';
 
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/widgets/confirm_auto_checkin_popup.dart';
-import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:ive_flutter_core/database/migrations.dart';
 import 'package:ive_flutter_core/util/connection.dart';
 import 'package:ive_flutter_core/widgets/flippable_box.dart';

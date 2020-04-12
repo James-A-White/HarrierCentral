@@ -1,9 +1,1 @@
-
-Event > EventPriceForExtras
-Event > ExtrasDescription
-Event > DoTrackHashCash
-Kennel > distancePreference
-HasherKennelMap > isKennelFollowing
-HasherKennelMap > mismanagementRoles
-Hasher > includeInGlobalHashDirectory
-Country > distancePreference test
+Convert $colRemoved NUM, to $colRemoved INT

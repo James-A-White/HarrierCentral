@@ -89,7 +89,7 @@ class HasherKennelMapTableHelper with BaseFields implements BaseTableHelper {
   String tableName = '';
 
   @override
-  String getTableName(TableType tblType) {
+  String getTableName(dynamic tblType) {
     if (tblType == TableType.hkmEventAdmin) {
       return hkmEventAdminTable;
     } else if (tblType == TableType.hkmKennelAdmin) {
@@ -125,7 +125,7 @@ class HasherKennelMapTableHelper with BaseFields implements BaseTableHelper {
   final String colMismanagementRoles = 'mismanagementRoles';
 
   @override
-  Future<dynamic> createTable(Database db, int version, TableType tblType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic tblType) async {
     await db.execute('''
           CREATE TABLE ${getTableName(tblType)} (
             $colId INTEGER PRIMARY KEY,

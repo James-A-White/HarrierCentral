@@ -8,7 +8,7 @@ import 'package:harrier_central/database/query_kennels.dart';
 import 'package:sqflite/sqflite.dart';
 
 
-import 'package:ive_flutter_core/database/base_service.dart';
+import 'package:harrier_central/database/tables.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/events_service.dart';

@@ -18,7 +18,7 @@ import 'package:harrier_central/widgets/kennel_logo.dart';
 import 'package:harrier_central/database/query_runs.dart';
 import 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/widgets/payment_icons.dart';
-import 'package:ive_flutter_core/database/base_service.dart';
+import 'package:harrier_central/database/tables.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 
 import 'package:harrier_central/notifications/notification_support.dart';

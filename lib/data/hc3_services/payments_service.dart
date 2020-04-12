@@ -88,7 +88,7 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
   String tableName = '';
 
   @override
-  String getTableName(TableType tblType) {
+  String getTableName(dynamic tblType) {
     if (tblType == TableType.paymentsUser) {
       return userPaymentsTable;
     } else {
@@ -121,7 +121,7 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
   final String colPaymentProvider = 'paymentProvider';
 
   @override
-  Future<dynamic> createTable(Database db, int version, TableType tableType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic tableType) async {
     await db.execute('''
           CREATE TABLE ${getTableName(tableType)} (
             $colId INTEGER PRIMARY KEY,
