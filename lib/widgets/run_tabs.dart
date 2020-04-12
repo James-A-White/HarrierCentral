@@ -79,8 +79,6 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   int _thisUserIndex = -1;
 
   Future<void> refreshPackListFromTable(bool callSetState) async {
-    
-
     final String query = ''' 
         SELECT  
           hem.*,
@@ -112,8 +110,6 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 
   Future<void> refreshPackCountFromTable(bool callSetState) async {
     packCount = <String, dynamic>{};
-
-    
 
     final String query = ''' 
         SELECT  
@@ -432,7 +428,6 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 
                                   final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
                                     widget.futureRun.event.eventId,
-                                    TableType.hemUser,
                                     userId,
                                     null,
                                     AppDomainType.user,
@@ -648,7 +643,6 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     final int attendenceValue = rsvpState.value <= rsvpMaybe.value ? attendenceNo.value : attendenceNoChange.value;
     final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
       widget.futureRun.event.eventId,
-      TableType.hemUser,
       userId,
       null,
       AppDomainType.user,
@@ -781,7 +775,6 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     //final String userId = getStringPref(StringPrefsEnum.userId);
                     final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
                       widget.futureRun.event.eventId,
-                      TableType.hemUser,
                       userId,
                       null,
                       AppDomainType.user,

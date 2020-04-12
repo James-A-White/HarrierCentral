@@ -52,7 +52,7 @@ class FindHasherPageState extends State<FindHasherPage> {
         .selectAllFromLocalDb(
       internalSqlDb,
       hashersTableHelper,
-      Tables.getTableName(hashersTableHelper),
+      hashersTableHelper.getTableName(AppDomainType.user)
     )
         .then((List<BaseModel> list) {
       hasherList = list.cast<HashersModel>();

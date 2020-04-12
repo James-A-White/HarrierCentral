@@ -110,7 +110,6 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     final int attendenceValue = rsvpState.value <= rsvpMaybe.value ? attendenceNo.value : attendenceNoChange.value;
     final List<dynamic> adHocData = await hasherEventMapService.joinEvent(
       widget.futureRun.event.eventId,
-      TableType.hemUser,
       userId,
       null,
       AppDomainType.user,
@@ -599,7 +598,6 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       hasherEventMapService
           .joinEvent(
         widget.futureRun.event.eventId,
-        TableType.hemUser,
         userId,
         null,
         AppDomainType.user,
@@ -700,7 +698,6 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       hasherEventMapService
           .joinEvent(
         widget.futureRun.event.eventId,
-        TableType.hemUser,
         userId,
         null,
         AppDomainType.user,

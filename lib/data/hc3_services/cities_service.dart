@@ -5,6 +5,7 @@ import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+
 part 'cities_service.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.none)
@@ -21,10 +22,10 @@ class CitiesModel implements BaseModel {
     this.updatedAt,
   });
 
-  factory CitiesModel.fromJson(Map<String,dynamic> json) => _$CitiesModelFromJson(json);
+  factory CitiesModel.fromJson(Map<String, dynamic> json) => _$CitiesModelFromJson(json);
 
   @override
-  Map<String,dynamic> toJson() => _$CitiesModelToJson(this);
+  Map<String, dynamic> toJson() => _$CitiesModelToJson(this);
 
   final String cityId;
   final String cityName;
@@ -35,7 +36,6 @@ class CitiesModel implements BaseModel {
   final String flagFile;
   final int removed;
   final DateTime updatedAt;
-
 }
 
 class CitiesTableHelper with BaseFields implements BaseTableHelper {
@@ -48,10 +48,19 @@ class CitiesTableHelper with BaseFields implements BaseTableHelper {
   num cacheDuration;
 
   @override
-  String tableName = 'cities';
-
-  @override
-  String getTableName(dynamic tableType) {
+  String getTableName(dynamic appDomainType) {
+    String tableName;
+    switch (appDomainType) {
+      // case AppDomainType.event:
+      //   break;
+      // case AppDomainType.kennel:
+      //   break;
+      // case AppDomainType.user:
+      //   tableName = 'cities';
+      //   break;
+      default:
+        tableName = 'cities';
+    }
     return tableName;
   }
 
@@ -67,7 +76,8 @@ class CitiesTableHelper with BaseFields implements BaseTableHelper {
   final String colFlagFile = 'flagFile';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic tableType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+    final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,

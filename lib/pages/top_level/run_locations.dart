@@ -354,10 +354,10 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             coalesce(hem.${hasherEventMapTableHelper.colIsHare},0) as isHare,
             coalesce(k.${kennelsTableHelper.colKennelPinColor},0) as kennelPinColor,
             ${QueryRuns.searchField}
-            FROM ${eventsTableHelper.tableName} evt
-            INNER JOIN ${kennelsTableHelper.tableName} k on evt.${eventsTableHelper.colKennelId} = k.${kennelsTableHelper.colKennelId}
-            INNER JOIN ${countriesTableHelper.tableName} n on n.${countriesTableHelper.colCountryId} = k.${kennelsTableHelper.colCountryId}
-            LEFT OUTER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemUser)} hem on hem.${hasherEventMapTableHelper.colEventId} = evt.${eventsTableHelper.colEventId} AND hem.${hasherEventMapTableHelper.colUserId} = "$userId"
+            FROM ${eventsTableHelper.getTableName(AppDomainType.user)} evt
+            INNER JOIN ${kennelsTableHelper.getTableName(AppDomainType.user)} k on evt.${eventsTableHelper.colKennelId} = k.${kennelsTableHelper.colKennelId}
+            INNER JOIN ${countriesTableHelper.getTableName(AppDomainType.user)} n on n.${countriesTableHelper.colCountryId} = k.${kennelsTableHelper.colCountryId}
+            LEFT OUTER JOIN ${hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem on hem.${hasherEventMapTableHelper.colEventId} = evt.${eventsTableHelper.colEventId} AND hem.${hasherEventMapTableHelper.colUserId} = "$userId"
             WHERE evt.${eventsTableHelper.colIsVisible} = 1
             
           ''';
@@ -447,8 +447,8 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             k.${kennelsTableHelper.colKennelLatitude} as lat,
             k.${kennelsTableHelper.colKennelLongitude} as lon,
             h.${hashersTableHelper.colHomeKennelId} as homeKennelId
-            FROM ${kennelsTableHelper.tableName} k 
-            LEFT OUTER JOIN ${hashersTableHelper.tableName} h on k.${kennelsTableHelper.colKennelId} = h.${hashersTableHelper.colHomeKennelId} AND h.${hashersTableHelper.colHasherId} = "$userId"
+            FROM ${kennelsTableHelper.getTableName(AppDomainType.user)} k 
+            LEFT OUTER JOIN ${hashersTableHelper.getTableName(AppDomainType.user)} h on k.${kennelsTableHelper.colKennelId} = h.${hashersTableHelper.colHomeKennelId} AND h.${hashersTableHelper.colHasherId} = "$userId"
           ''';
 
     if ((widget.kennel?.kennelId != null) && (widget.kennel.kennelId.isNotEmpty)) {

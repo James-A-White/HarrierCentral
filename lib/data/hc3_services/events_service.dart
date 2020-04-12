@@ -8,11 +8,11 @@ import 'package:sqflite/sqflite.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/database/tables.dart';
 import 'package:ive_flutter_core/util/connection.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/util/enums.dart';
+
 
 import 'package:json_annotation/json_annotation.dart';
 
@@ -112,11 +112,23 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
   @override
   num cacheDuration;
 
-  @override
-  String tableName = 'narrowEvents';
+  // @override
+  // String tableName = 'narrowEvents';
 
   @override
-  String getTableName(dynamic tableType) {
+  String getTableName(dynamic appDomainType) {
+    String tableName;
+    switch (appDomainType) {
+      // case AppDomainType.event:
+      //   break;
+      // case AppDomainType.kennel:
+      //   break;
+      // case AppDomainType.user:
+      //   tableName = 'narrowEvents';
+      //   break;
+      default:
+        tableName = 'narrowEvents';
+    }
     return tableName;
   }
 
@@ -160,7 +172,8 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
   final String colTags3 = 'tags3';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic tableType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+    final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -269,7 +282,7 @@ class EventsService extends BaseService {
     final num _eventsLastUpdated = await getLastUpdatedTime(
       internalSqlDb,
       eventsTableHelper,
-      Tables.getTableName(eventsTableHelper),
+      eventsTableHelper.getTableName(AppDomainType.user),
       eventsTableHelper.colUpdatedAtValue,
     );
     final DateTime eventUpdatedAfter = _eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_eventsLastUpdated + 1000);
@@ -300,7 +313,7 @@ class EventsService extends BaseService {
       },
     );
 
-    await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    await syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
 
     return;
   }

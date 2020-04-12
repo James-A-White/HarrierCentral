@@ -58,7 +58,7 @@ const String GUID_9 = '99999999-9999-9999-9999-999999999999';
 const String GUID_MAX = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
-const int DB_VERSION = 254;
+const int DB_VERSION = 270;
 
 const int IGNORE_REPLICATION_TIMESTAMP = 628387200000; // 1990-01-01 00:00:00
 const int FORCE_ALL_REPLICATION_TIMESTAMP = 949276800000; // 2000-01-31 00:00:00
@@ -101,14 +101,14 @@ const int mmAuthCanEditRunVisibility = 0x00000200; // TODO(James): Needs impleme
 
 const int cacheDurationAllHashers = 60 * 86400000; // 60 days cache duration
 
-const String normalTable = 'normal'; // this is not used, but is added to make the code more clear
-const String hemUserTable = 'hasherEventMap';
-const String hemAdminTable = 'hasherEventMapForRunAdmin';
-const String hkmUserTable = 'hasherKennelMap';
-const String hkmEventAdminTable = 'hasherKennelMapForRunAdmin';
-const String hkmKennelAdminTable = 'hasherKennelMapForKennelAdmin';
-const String eventPaymentsTable = 'Payments';
-const String userPaymentsTable = 'userPayments';
+// const String normalTable = 'normal'; // this is not used, but is added to make the code more clear
+// const String hemUserTable = 'hasherEventMap';
+// const String hemAdminTable = 'hasherEventMapForRunAdmin';
+// const String hkmUserTable = 'hasherKennelMap';
+// const String hkmEventAdminTable = 'hasherKennelMapForRunAdmin';
+// const String hkmKennelAdminTable = 'hasherKennelMapForKennelAdmin';
+// const String eventPaymentsTable = 'Payments';
+// const String userPaymentsTable = 'userPayments';
 
 const Map<String,int> runTags = <String, int>{
   'Normal run': 0x00000001,

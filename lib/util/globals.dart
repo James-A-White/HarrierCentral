@@ -27,9 +27,7 @@ import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 
-
 List<KennelListAggregate> globalKennelMainPageList;
-
 
 num deviceWidthScaleFactor;
 num deviceHeightScaleFactor;
@@ -58,6 +56,18 @@ KennelsTableHelper kennelsTableHelper;
 EventsTableHelper eventsTableHelper;
 HasherEventMapTableHelper hasherEventMapTableHelper;
 HasherKennelMapTableHelper hasherKennelMapTableHelper;
+
+List<BaseTableHelper> userTables = <BaseTableHelper>[
+  citiesTableHelper,
+  countriesTableHelper,
+  regionsTableHelper,
+  paymentsTableHelper,
+  hashersTableHelper,
+  kennelsTableHelper,
+  eventsTableHelper,
+  hasherEventMapTableHelper,
+  hasherKennelMapTableHelper,
+];
 
 BaseService baseService;
 HashersService hashersService;

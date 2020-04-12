@@ -139,10 +139,10 @@ class QueryKennels {
 
     switch (queryContext) {
       case EnumKennelQueryContext.user:
-        hkmTable = hasherKennelMapTableHelper.getTableName(TableType.hkmUser);
+        hkmTable = hasherKennelMapTableHelper.getTableName(AppDomainType.user);
         break;
       case EnumKennelQueryContext.kennelAdmin:
-        hkmTable = hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin);
+        hkmTable = hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
         break;
     }
 
@@ -165,11 +165,11 @@ class QueryKennels {
           CASE WHEN ((h.homeKennelId IS NOT NULL) AND (h.homeKennelId = k.kennelId)) then 1 else 0 end as isHomeKennel,
           CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,n.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference,
           $searchField
-          FROM ${kennelsTableHelper.tableName} k
-          INNER JOIN ${citiesTableHelper.tableName} c on c.cityId = k.cityId
-          INNER JOIN ${regionsTableHelper.tableName} r on r.regionId = k.regionId
-          INNER JOIN ${countriesTableHelper.tableName} n on n.countryId = k.countryId
-          INNER JOIN ${hashersTableHelper.tableName} h on h.hasherId = "$hasherId"
+          FROM ${kennelsTableHelper.getTableName(AppDomainType.user)} k
+          INNER JOIN ${citiesTableHelper.getTableName(AppDomainType.user)} c on c.cityId = k.cityId
+          INNER JOIN ${regionsTableHelper.getTableName(AppDomainType.user)} r on r.regionId = k.regionId
+          INNER JOIN ${countriesTableHelper.getTableName(AppDomainType.user)} n on n.countryId = k.countryId
+          INNER JOIN ${hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = "$hasherId"
           LEFT OUTER JOIN $hkmTable hkm on hkm.kennelId = k.kennelId and hkm.${hasherKennelMapTableHelper.colUserId} = "$hasherId"
           ''';
 

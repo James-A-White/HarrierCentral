@@ -4,14 +4,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 
-
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:ive_flutter_core/util/connection.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
-import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
-import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/util/enums.dart';
 
@@ -76,15 +73,32 @@ class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
   @override
   num cacheDuration;
 
-  @override
   String tableName = '';
 
+  // @override
+  // String getTableName(dynamic tblType) {
+  //   if (tblType == TableType.hemEventAdmin) {
+  //     return hemAdminTable;
+  //   }
+  //   return hemUserTable;
+  // }
+
   @override
-  String getTableName(dynamic tblType) {
-    if (tblType == TableType.hemEventAdmin) {
-      return hemAdminTable;
+  String getTableName(dynamic appDomainType) {
+    String tableName;
+    switch (appDomainType) {
+      case AppDomainType.event:
+        tableName = 'hasherEventMapForRunAdmin';
+        break;
+      // case AppDomainType.kennel:
+      //   break;
+      case AppDomainType.user:
+        tableName = 'hasherEventMap';
+        break;
+      default:
+        assert(false);
     }
-    return hemUserTable;
+    return tableName;
   }
 
   @override
@@ -185,7 +199,7 @@ class HasherEventMapService {
     return <String, String>{'result': 'No valid email address found', 'email': ''};
   }
 
-  Future<List<dynamic>> joinEvent(String eventId, TableType tblType, String hasherId, String hasherEventMapId, AppDomainType appDomainType, {int rsvpState = -1, int attendenceState = -1, int isHare = -1, int virginVisitorType = 0, int notificationState = -1, int emailAlertState = -1}) async {
+  Future<List<dynamic>> joinEvent(String eventId, String hasherId, String hasherEventMapId, AppDomainType appDomainType, {int rsvpState = -1, int attendenceState = -1, int isHare = -1, int virginVisitorType = 0, int notificationState = -1, int emailAlertState = -1}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return null;
       // TODO(James): fix this so we can return a bool
@@ -198,25 +212,25 @@ class HasherEventMapService {
     final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
       hasherEventMapTableHelper,
-      Tables.getTableName(hasherEventMapTableHelper,tableType:appDomainType == AppDomainType.event ? TableType.hemEventAdmin : TableType.hemUser),
+      hasherEventMapTableHelper.getTableName(appDomainType),
       hasherEventMapTableHelper.colUpdatedAtValue,
     );
     final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
       hasherKennelMapTableHelper,
-      Tables.getTableName(hasherKennelMapTableHelper,tableType:appDomainType == AppDomainType.event ? TableType.hkmEventAdmin : TableType.hkmUser),
+      hasherKennelMapTableHelper.getTableName(appDomainType),
       hasherKennelMapTableHelper.colUpdatedAtValue,
     );
     final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
       paymentsTableHelper,
-      Tables.getTableName(paymentsTableHelper,tableType:appDomainType == AppDomainType.event ? TableType.paymentsEvent : TableType.paymentsUser),
+      paymentsTableHelper.getTableName(appDomainType),
       paymentsTableHelper.colUpdatedAtValue,
     );
     final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
       kennelCreditsTableHelper,
-      Tables.getTableName(kennelCreditsTableHelper),
+      kennelCreditsTableHelper.getTableName(appDomainType),
       kennelCreditsTableHelper.colUpdatedAtValue,
     );
 
@@ -251,16 +265,18 @@ class HasherEventMapService {
 
     List<dynamic> adHocData;
 
-    if (tblType == TableType.hemEventAdmin) {
-      adHocData = await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    if (appDomainType == AppDomainType.event) {
+      adHocData = await syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    } else if (appDomainType == AppDomainType.user) {
+      adHocData = await syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else {
-      adHocData = await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      assert(false);
     }
 
     return adHocData;
   }
 
-  Future<List<dynamic>> joinEventAsVisitor(String eventId, TableType tblType, String displayName, int virginVisitorType, int attendenceState, String email, String phoneNumber, AppDomainType appDomainType) async {
+  Future<List<dynamic>> joinEventAsVisitor(String eventId, String displayName, int virginVisitorType, int attendenceState, String email, String phoneNumber, AppDomainType appDomainType) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return null;
       // TODO(James): fix this so we can return a bool
@@ -273,19 +289,19 @@ class HasherEventMapService {
     final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
       hasherEventMapTableHelper,
-      Tables.getTableName(hasherEventMapTableHelper,tableType:appDomainType == AppDomainType.event ? TableType.hemEventAdmin : TableType.hemUser ),
+      hasherEventMapTableHelper.getTableName(appDomainType),
       hasherEventMapTableHelper.colUpdatedAtValue,
     );
     final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
       paymentsTableHelper,
-      Tables.getTableName(paymentsTableHelper,tableType:appDomainType == AppDomainType.event ? TableType.paymentsEvent : TableType.paymentsUser ),
+      paymentsTableHelper.getTableName(appDomainType),
       paymentsTableHelper.colUpdatedAtValue,
     );
     final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
       kennelCreditsTableHelper,
-      Tables.getTableName(kennelCreditsTableHelper),
+      kennelCreditsTableHelper.getTableName(appDomainType),
       kennelCreditsTableHelper.colUpdatedAtValue,
     );
 
@@ -313,7 +329,7 @@ class HasherEventMapService {
       },
     );
 
-    final List<dynamic> adHocData = await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    final List<dynamic> adHocData = await syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
 
     return adHocData;
   }

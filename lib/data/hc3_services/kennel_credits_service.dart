@@ -43,11 +43,23 @@ class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
   @override
   num cacheDuration;
 
-  @override
-  String tableName = 'kennelCredits';
+  // @override
+  // String tableName = 'kennelCredits';
 
   @override
-  String getTableName(dynamic tableType) {
+  String getTableName(dynamic appDomainType) {
+    String tableName;
+    switch (appDomainType) {
+      // case AppDomainType.event:
+      //   break;
+      // case AppDomainType.kennel:
+      //   break;
+      // case AppDomainType.user:
+      //   tableName = 'hashers';
+      //   break;
+      default:
+        tableName = 'kennelCredits';
+    }
     return tableName;
   }
 
@@ -61,7 +73,8 @@ class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
   final String colBalanceAsOfEventId = 'balanceAsOfEventId';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic tableType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+    final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,

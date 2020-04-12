@@ -7,6 +7,8 @@ import 'package:harrier_central/util/constants.dart';
 
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:ive_flutter_core/util/connection.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
+
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/util/enums.dart';
@@ -38,14 +40,14 @@ class SyncEventAdminService {
   }
 
   Future<void> getLastUpdatedTimes(int flags) async {
-    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hasherEventMapTableHelper.colUpdatedAtValue, hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin));
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hasherKennelMapTableHelper.colUpdatedAtValue, hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin));
-    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(eventsTableHelper.colUpdatedAtValue, eventsTableHelper.tableName);
-    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(paymentsTableHelper.colUpdatedAtValue, paymentsTableHelper.getTableName(TableType.paymentsEvent));
-    _receiptsLastUpdated = (flags & flagReceiptsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(receiptsTableHelper.colUpdatedAtValue, receiptsTableHelper.tableName);
-    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hashersTableHelper.colUpdatedAtValue, hashersTableHelper.tableName);
+    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hasherEventMapTableHelper.colUpdatedAtValue, hasherEventMapTableHelper.getTableName(AppDomainType.event));
+    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hasherKennelMapTableHelper.colUpdatedAtValue, hasherKennelMapTableHelper.getTableName(AppDomainType.event));
+    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(eventsTableHelper.colUpdatedAtValue, eventsTableHelper.getTableName(AppDomainType.user));
+    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(paymentsTableHelper.colUpdatedAtValue, paymentsTableHelper.getTableName(AppDomainType.event));
+    _receiptsLastUpdated = (flags & flagReceiptsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(receiptsTableHelper.colUpdatedAtValue, receiptsTableHelper.getTableName(AppDomainType.event));
+    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hashersTableHelper.colUpdatedAtValue, hashersTableHelper.getTableName(AppDomainType.user));
     //_hashersLastUpdated = true ? IGNORE_REPLICATION_TIMESTAMP  : await getLastUpdatedTime(db, HashersTableHelper.colUpdatedAtValue, HashersTableHelper.tableName);
-    _kennelCreditsLastUpdated = (flags & flagKennelCreditTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(kennelCreditsTableHelper.colUpdatedAtValue, kennelCreditsTableHelper.tableName);
+    _kennelCreditsLastUpdated = (flags & flagKennelCreditTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(kennelCreditsTableHelper.colUpdatedAtValue, kennelCreditsTableHelper.getTableName(AppDomainType.event));
   }
 
   Future<bool> updateFromBackend(int flags, bool forceRefresh, String eventId, {Function informUser}) async {
@@ -61,28 +63,12 @@ class SyncEventAdminService {
       await baseService.clearTable(
         internalSqlDb,
         paymentsTableHelper,
-        Tables.getTableName(paymentsTableHelper, tableType: TableType.paymentsEvent),
+        paymentsTableHelper.getTableName(AppDomainType.event),
       );
-      await baseService.clearTable(
-        internalSqlDb,
-        hasherEventMapTableHelper,
-        Tables.getTableName(hasherEventMapTableHelper, tableType: TableType.hemEventAdmin),
-      );
-      await baseService.clearTable(
-        internalSqlDb,
-        hasherKennelMapTableHelper,
-        Tables.getTableName(hasherKennelMapTableHelper, tableType: TableType.hkmEventAdmin),
-      );
-      await baseService.clearTable(
-        internalSqlDb,
-        receiptsTableHelper,
-        Tables.getTableName(receiptsTableHelper),
-      );
-      await baseService.clearTable(
-        internalSqlDb,
-        kennelCreditsTableHelper,
-        Tables.getTableName(kennelCreditsTableHelper),
-      );
+      await baseService.clearTable(internalSqlDb, hasherEventMapTableHelper, hasherEventMapTableHelper.getTableName(AppDomainType.event));
+      await baseService.clearTable(internalSqlDb, hasherKennelMapTableHelper, hasherKennelMapTableHelper.getTableName(AppDomainType.event));
+      await baseService.clearTable(internalSqlDb, receiptsTableHelper, receiptsTableHelper.getTableName(AppDomainType.event));
+      await baseService.clearTable(internalSqlDb, kennelCreditsTableHelper, kennelCreditsTableHelper.getTableName(AppDomainType.event));
       // we don't want to clear the Hashers table since it is meant to be persistent and not tied to a single event
 
       await setStringPref(StringPrefsEnum.adminEventId, eventId);
@@ -176,103 +162,17 @@ class SyncEventAdminService {
     return true;
   }
 
-  static Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser}) async {
-    List<dynamic> adHocData;
+  final List<BaseTableHelper> _eventTables = <BaseTableHelper>[
+    paymentsTableHelper,
+    hashersTableHelper,
+    receiptsTableHelper,
+    eventsTableHelper,
+    hasherEventMapTableHelper,
+    hasherKennelMapTableHelper,
+    kennelCreditsTableHelper,
+  ];
 
-    if (jsonResults.startsWith('[[')) {
-      jsonResults = jsonResults.substring(1, jsonResults.length - 1);
-    }
-
-    final RegExp r = RegExp(r'\[(\{(.*?)\})\]', multiLine: true);
-    final Iterable<Match> matches = r.allMatches(jsonResults);
-    for (int i = 0; i < matches.length; i++) {
-      final String ms = matches.elementAt(i).group(0);
-
-      if (ms.startsWith(r'[{"paymentId"')) {
-        await baseService.bulkUpdateDatabase(
-          paymentsTableHelper,
-          Tables.getTableName(paymentsTableHelper, tableType: TableType.paymentsEvent),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('payments updated');
-      }
-
-      if (ms.startsWith(r'[{"hasherId"')) {
-        await hashersService.bulkUpdateDatabase(
-          hashersTableHelper,
-          Tables.getTableName(hashersTableHelper),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('hashers updated');
-      }
-
-      if (ms.startsWith(r'[{"receiptId"')) {
-        await baseService.bulkUpdateDatabase(
-          receiptsTableHelper,
-          Tables.getTableName(receiptsTableHelper),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('receipts updated');
-      }
-
-      if (ms.startsWith(r'[{"eventId"')) {
-        await baseService.bulkUpdateDatabase(
-          eventsTableHelper,
-          Tables.getTableName(eventsTableHelper),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('events updated');
-      }
-
-      if (ms.startsWith(r'[{"hemId"')) {
-        await baseService.bulkUpdateDatabase(
-          hasherEventMapTableHelper,
-          Tables.getTableName(hasherEventMapTableHelper, tableType:TableType.hemEventAdmin ),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('hasher event map for admin updated');
-      }
-
-      if (ms.startsWith(r'[{"hkmId"')) {
-        await baseService.bulkUpdateDatabase(
-          hasherKennelMapTableHelper,
-          Tables.getTableName(hasherKennelMapTableHelper,tableType: TableType.hkmEventAdmin),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('hasher event map for admin updated');
-      }
-
-      if (ms.startsWith(r'[{"kennelCreditId"')) {
-        await baseService.bulkUpdateDatabase(
-          kennelCreditsTableHelper,
-          Tables.getTableName(kennelCreditsTableHelper),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('kennel credits updated');
-      }
-
-      if (ms.startsWith(r'[{"adHocDataId"')) {
-        final List<dynamic> adHocItems = jsonDecode('$ms');
-        if ((adHocItems != null) && (adHocItems.isNotEmpty)) {
-          adHocData = adHocItems;
-        }
-        print('server messages received');
-      }
-    }
-    return adHocData;
+  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser}) async {
+    return baseService.updateSqlTablesFromJson(jsonResults, _eventTables, internalSqlDb, AppDomainType.event);
   }
 }

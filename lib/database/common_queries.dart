@@ -28,7 +28,7 @@ class CommonQueries {
           SELECT e.eventId,
           e.eventName,
           (julianday(eventStartDatetime) - julianday('now','localtime')) * 24 as deltaHours
-          FROM ${eventsTableHelper.tableName} e
+          FROM ${eventsTableHelper.getTableName(AppDomainType.user)} e
           WHERE e.kennelId = "$kennelId"
           ORDER BY abs(julianday('now') - julianday(eventStartDatetime)) ASC
           
@@ -72,9 +72,9 @@ class CommonQueries {
           k.${kennelsTableHelper.colKennelLogo} as kennelLogo,
           k.${kennelsTableHelper.colKennelShortName} as kennelShortName,
           (julianday(${eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24 as deltaHours
-          FROM ${eventsTableHelper.tableName} e
-          INNER JOIN ${kennelsTableHelper.tableName} k on e.${eventsTableHelper.colKennelId} = k.${kennelsTableHelper.colKennelId}
-          LEFT OUTER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemUser)} hem on hem.${hasherEventMapTableHelper.colUserId} = "$userId" AND hem.${hasherEventMapTableHelper.colEventId} = e.${eventsTableHelper.colEventId}
+          FROM ${eventsTableHelper.getTableName(AppDomainType.user)} e
+          INNER JOIN ${kennelsTableHelper.getTableName(AppDomainType.user)} k on e.${eventsTableHelper.colKennelId} = k.${kennelsTableHelper.colKennelId}
+          LEFT OUTER JOIN ${hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem on hem.${hasherEventMapTableHelper.colUserId} = "$userId" AND hem.${hasherEventMapTableHelper.colEventId} = e.${eventsTableHelper.colEventId}
           WHERE ABS((julianday(${eventsTableHelper.colEventStartDatetime}) - julianday('now','localtime')) * 24) <= $ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT
           AND COALESCE(hem.${hasherEventMapTableHelper.colAttendenceState},0) < ${attendenceAtHash.value}
           ORDER BY abs(julianday('now') - julianday(${eventsTableHelper.colEventStartDatetime})) ASC
@@ -130,7 +130,7 @@ class CommonQueries {
       final String sql = ''' 
 
           SELECT h.hasherId
-          FROM ${hashersTableHelper.tableName} h
+          FROM ${hashersTableHelper.getTableName(AppDomainType.user)} h
           WHERE upper(h.qrCode) = "$uqr"
           
           ''';

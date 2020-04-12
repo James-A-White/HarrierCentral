@@ -15,6 +15,8 @@ import 'package:harrier_central/util/enums.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 
+
+
 part 'receipts_service.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.none)
@@ -68,11 +70,24 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
   @override
   num cacheDuration;
 
-  @override
-  String tableName = 'receipts';
+  // @override
+  // String tableName = 'receipts';
 
   @override
-  String getTableName(dynamic tableType) {
+  String getTableName(dynamic appDomainType) {
+    String tableName;
+    switch (appDomainType) {
+      // case AppDomainType.event:
+      //   tableName = 'Payments';
+      //   break;
+      // // case AppDomainType.kennel:
+      // //   break;
+      // case AppDomainType.user:
+      //   tableName = 'userPayments';
+      //   break;
+      default:
+        tableName = 'receipts';
+    }
     return tableName;
   }
 
@@ -94,7 +109,8 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
   final String colReimbursedNotes = 'reimbursedNotes';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic tableType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+    final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -162,7 +178,7 @@ class ReceiptsService {
     final num _receiptsLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
       receiptsTableHelper,
-      Tables.getTableName(receiptsTableHelper),
+      receiptsTableHelper.getTableName(AppDomainType.event),
       receiptsTableHelper.colUpdatedAtValue,
     );
     final DateTime receiptsUpdatedAfter = _receiptsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_receiptsLastUpdated + 1000);

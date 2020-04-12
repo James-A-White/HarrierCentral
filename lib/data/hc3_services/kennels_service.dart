@@ -6,6 +6,7 @@ import 'package:ive_flutter_core/database/base_service.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 
+
 part 'kennels_service.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.none)
@@ -125,11 +126,23 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
   @override
   num cacheDuration;
 
-  @override
-  String tableName = 'kennels';
+  // @override
+  // String tableName = 'kennels';
 
   @override
-  String getTableName(dynamic tableType) {
+  String getTableName(dynamic appDomainType) {
+    String tableName;
+    switch (appDomainType) {
+      // case AppDomainType.event:
+      //   break;
+      // case AppDomainType.kennel:
+      //   break;
+      // case AppDomainType.user:
+      //   tableName = 'hashers';
+      //   break;
+      default:
+        tableName = 'kennels';
+    }
     return tableName;
   }
 
@@ -185,7 +198,8 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
   final String colDistancePreference = 'distancePreference';
 
   @override
-  Future<dynamic> createTable(Database db, int version,dynamic tableType) async {
+  Future<dynamic> createTable(Database db, int version,dynamic appDomainType) async {
+    final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,

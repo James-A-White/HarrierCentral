@@ -6,6 +6,7 @@ import 'package:ive_flutter_core/database/base_service.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 
+
 part 'regions_service.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.none)
@@ -44,11 +45,23 @@ class RegionsTableHelper with BaseFields implements BaseTableHelper {
   @override
   num cacheDuration;
 
-  @override
-  String tableName = 'regions';
+  // @override
+  // String tableName = 'regions';
 
   @override
-  String getTableName(dynamic tableType) {
+  String getTableName(dynamic appDomainType) {
+    String tableName;
+    switch (appDomainType) {
+      // case AppDomainType.event:
+      //   break;
+      // case AppDomainType.kennel:
+      //   break;
+      // case AppDomainType.user:
+      //   tableName = 'regions';
+      //   break;
+      default:
+        tableName = 'regions';
+    }
     return tableName;
   }
 
@@ -61,7 +74,8 @@ class RegionsTableHelper with BaseFields implements BaseTableHelper {
   final String colFlagFile = 'flagFile';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic tableType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+    final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,

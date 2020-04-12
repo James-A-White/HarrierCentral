@@ -7,6 +7,8 @@ import 'package:harrier_central/util/constants.dart';
 
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:ive_flutter_core/util/connection.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
+
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/util/enums.dart';
@@ -30,9 +32,9 @@ class SyncKennelAdminService {
   }
 
   Future<void> getLastUpdatedTimes(int flags) async {
-    _kennelLastUpdated = (flags & flagKennelTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(kennelsTableHelper.colUpdatedAtValue, kennelsTableHelper.tableName);
-    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hashersTableHelper.colUpdatedAtValue, hashersTableHelper.tableName);
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hasherKennelMapTableHelper.colUpdatedAtValue, hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin));
+    _kennelLastUpdated = (flags & flagKennelTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(kennelsTableHelper.colUpdatedAtValue, kennelsTableHelper.getTableName(AppDomainType.kennel));
+    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hashersTableHelper.colUpdatedAtValue, hashersTableHelper.getTableName(AppDomainType.user));
+    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hasherKennelMapTableHelper.colUpdatedAtValue, hasherKennelMapTableHelper.getTableName(AppDomainType.kennel));
   }
 
   Future<bool> updateFromBackend(int flags, bool forceRefresh, String kennelId, {Function informUser}) async {
@@ -45,7 +47,7 @@ class SyncKennelAdminService {
       baseService.clearTable(
         internalSqlDb,
         hasherKennelMapTableHelper,
-        Tables.getTableName(hasherKennelMapTableHelper, tableType: TableType.hkmKennelAdmin),
+        hasherKennelMapTableHelper.getTableName(AppDomainType.kennel),
       );
 
       await setStringPref(StringPrefsEnum.adminKennelId, kennelId);
@@ -115,66 +117,19 @@ class SyncKennelAdminService {
           return false;
         },
       );
-
+      
       await updateSqlTablesWithResultsFromBackendApiCall(response.body, informUser: informUser);
     }
     return true;
   }
 
-  static Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser}) async {
-    List<dynamic> adHocData;
+   List<BaseTableHelper> kennelTables = <BaseTableHelper>[
+    kennelsTableHelper,
+    hashersTableHelper,
+    hasherKennelMapTableHelper,
+  ];
 
-    if (jsonResults.startsWith('[[')) {
-      jsonResults = jsonResults.substring(1, jsonResults.length - 1);
-    }
-
-    final RegExp r = RegExp(r'\[(\{(.*?)\})\]', multiLine: true);
-    final Iterable<Match> matches = r.allMatches(jsonResults);
-    for (int i = 0; i < matches.length; i++) {
-      final String ms = matches.elementAt(i).group(0);
-
-      if (ms.startsWith(r'[{"kennelId"')) {
-        await baseService.bulkUpdateDatabase(
-          kennelsTableHelper,
-          Tables.getTableName(kennelsTableHelper),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('kennels updated');
-      }
-
-      if (ms.startsWith(r'[{"hasherId"')) {
-        await baseService.bulkUpdateDatabase(
-          hashersTableHelper,
-          Tables.getTableName(hashersTableHelper),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('hashers updated');
-      }
-
-      if (ms.startsWith(r'[{"hkmId"')) {
-        await baseService.bulkUpdateDatabase(
-          hasherKennelMapTableHelper,
-          Tables.getTableName(hasherKennelMapTableHelper, tableType: TableType.hkmKennelAdmin),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('hasher kennel map for kennel admin updated');
-      }
-
-      if (ms.startsWith(r'[{"adHocDataId"')) {
-        final List<dynamic> adHocItems = jsonDecode('$ms');
-        if ((adHocItems != null) && (adHocItems.isNotEmpty)) {
-          adHocData = adHocItems;
-        }
-        print('server messages received');
-      }
-    }
-
-    return adHocData;
+  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser}) async {
+    return baseService.updateSqlTablesFromJson(jsonResults, kennelTables, internalSqlDb, AppDomainType.kennel);
   }
 }

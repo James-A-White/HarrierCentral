@@ -91,34 +91,31 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                       ),
                     ),
                     Positioned(
-                        top: 190,
-                        bottom: 215,
-                        //width:150,
-                        //height:150,
-                        child: 
-
-Container(
-            padding: EdgeInsets.all(10 * (deviceMaxScaleFactor * 1.5)),
-            child: Stack(
-              alignment: AlignmentDirectional.center,
-              children: <Widget>[
-                Image.asset(
-                  'images/other/qr_scanner.png',
-                ),
-                (controller == null)
-                    ? Container()
-                    : Container(
-                        padding: const EdgeInsets.all(11.0),
-                        child: AspectRatio(
-                          aspectRatio: 1.0,
-                          child: QRReaderPreview(controller),
+                      top: 190,
+                      bottom: 215,
+                      //width:150,
+                      //height:150,
+                      child: Container(
+                        padding: EdgeInsets.all(10 * (deviceMaxScaleFactor * 1.5)),
+                        child: Stack(
+                          alignment: AlignmentDirectional.center,
+                          children: <Widget>[
+                            Image.asset(
+                              'images/other/qr_scanner.png',
+                            ),
+                            (controller == null)
+                                ? Container()
+                                : Container(
+                                    padding: const EdgeInsets.all(11.0),
+                                    child: AspectRatio(
+                                      aspectRatio: 1.0,
+                                      child: QRReaderPreview(controller),
+                                    ),
+                                  ),
+                          ],
                         ),
                       ),
-              ],
-            ),
-          ),
-
-                        ),
+                    ),
                     Positioned(
                       bottom: 140.0,
                       child: Container(
@@ -330,9 +327,21 @@ Container(
         final int attendenceState = isScanningAtRunStart ? attendenceAtHash.value : attendenceOnIn.value;
 
         CommonQueries.getUserIdFromUqr(prefix + content).then((String hasherId) {
-          hasherEventMapService.joinEvent(widget.eventAggregate.event.eventId, TableType.hemEventAdmin, hasherId, null, AppDomainType.event ,rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value, virginVisitorType: enumHasher.value).then((List<dynamic> adHocData) {
+          hasherEventMapService
+              .joinEvent(
+            widget.eventAggregate.event.eventId,
+            hasherId,
+            null,
+            AppDomainType.event,
+            rsvpState: rsvpYes.value,
+            attendenceState: attendenceState,
+            isHare: isHareNo.value,
+            virginVisitorType: enumHasher.value,
+          )
+              .then((
+            List<dynamic> adHocData,
+          ) {
             setState(() {
-              
               if ((adHocData != null) && (adHocData.isNotEmpty)) {
                 final num amount = adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
                 CoreUtilities.showInSnackBar(context, _scaffoldKey, adHocData[0]['userMessage'], durationInSeconds: 10);
@@ -434,16 +443,7 @@ Container(
 
   void payForEvent(String hemId, int paymentType, num amount) {
     final PaymentsService paySrv = PaymentsService();
-    final Future<List<dynamic>> retVal = paySrv.payForEvent(
-      widget.eventAggregate.event.eventId,
-      GUID_EMPTY,
-      hemId,
-      paymentType,
-      amount,
-      attendenceAtHash.value,
-      payForRunOnly,
-      AppDomainType.event
-    );
+    final Future<List<dynamic>> retVal = paySrv.payForEvent(widget.eventAggregate.event.eventId, GUID_EMPTY, hemId, paymentType, amount, attendenceAtHash.value, payForRunOnly, AppDomainType.event);
     retVal.then(
       (List<dynamic> paymentResult) {
         if ((paymentResult != null) && (paymentResult.isNotEmpty)) {

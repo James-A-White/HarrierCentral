@@ -49,7 +49,7 @@ class ReceiptsListState extends State<ReceiptsList> {
 
   void refreshFromTable() {
     try {
-      internalSqlDb.query(receiptsTableHelper.tableName).then((List<Map<String, dynamic>> results) {
+      internalSqlDb.query(receiptsTableHelper.getTableName(AppDomainType.event)).then((List<Map<String, dynamic>> results) {
         setState(() {
           receiptsList = results;
         });
@@ -146,7 +146,7 @@ class ReceiptsListState extends State<ReceiptsList> {
         baseService
             .bulkUpdateDatabase(
           receiptsTableHelper,
-          Tables.getTableName(receiptsTableHelper),
+          receiptsTableHelper.getTableName(AppDomainType.event),
           result,
           internalSqlDb,
         )
@@ -175,7 +175,7 @@ class ReceiptsListState extends State<ReceiptsList> {
         baseService
             .bulkUpdateDatabase(
           receiptsTableHelper,
-          Tables.getTableName(receiptsTableHelper),
+          receiptsTableHelper.getTableName(AppDomainType.event),
           result,
           internalSqlDb,
         )

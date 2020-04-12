@@ -58,21 +58,21 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         allRuns = null;
       });
 
-      String query = 'DELETE FROM ${hasherEventMapTableHelper.getTableName(TableType.hemUser)}';
+      String query = 'DELETE FROM ${hasherEventMapTableHelper.getTableName(AppDomainType.user)}';
       try {
         await internalSqlDb.rawQuery(query);
       } catch (e) {
         print(e);
       }
 
-      query = 'DELETE FROM ${paymentsTableHelper.getTableName(TableType.paymentsUser)}';
+      query = 'DELETE FROM ${paymentsTableHelper.getTableName(AppDomainType.user)}';
       try {
         await internalSqlDb.rawQuery(query);
       } catch (e) {
         print(e);
       }
 
-      query = 'DELETE FROM ${eventsTableHelper.tableName}';
+      query = 'DELETE FROM ${eventsTableHelper.getTableName(AppDomainType.user)}';
       try {
         await internalSqlDb.rawQuery(query);
       } catch (e) {

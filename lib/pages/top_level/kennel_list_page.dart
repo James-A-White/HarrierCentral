@@ -260,14 +260,14 @@ class KennelsListPageState extends State<KennelsListPage> {
       globalKennelMainPageList = null;
     });
 
-    String query = 'DELETE FROM ${kennelsTableHelper.tableName}';
+    String query = 'DELETE FROM ${kennelsTableHelper.getTableName(AppDomainType.user)}';
     try {
       await internalSqlDb.rawQuery(query);
     } catch (e) {
       print(e);
     }
 
-    query = 'DELETE FROM ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)}';
+    query = 'DELETE FROM ${hasherKennelMapTableHelper.getTableName(AppDomainType.user)}';
     try {
       await internalSqlDb.rawQuery(query);
     } catch (e) {

@@ -114,6 +114,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     if (forceRefresh) {
       // always sync user data before editing
 
+      // TODO(James): Make this AppDomainType correct
       switch (widget.dataContext) {
         case EnumDataContext.event:
           final bool res = await syncEventAdminService.updateFromBackend(SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagHasherKennelMapTable | SyncEventAdminService.flagHasherEventMapTable, true, widget.eventId);
@@ -138,7 +139,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             hkm.historicalHaringCount,
             hkm.historicalCountIsEstimate
             FROM hashers h
-            LEFT OUTER JOIN ${hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin)} hkm ON hkm.kennelId = "${widget.kennelId}" AND hkm.userId = "${widget.hasherId}"
+            LEFT OUTER JOIN ${hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm ON hkm.kennelId = "${widget.kennelId}" AND hkm.userId = "${widget.hasherId}"
             WHERE h.hasherId = "${widget.hasherId}"
           
           ''';

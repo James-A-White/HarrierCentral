@@ -158,8 +158,6 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   }
 
   Future<void> refreshKennelMembersFromTable(bool forceRefresh) async {
-    
-
     String orderBy = 'lower(h.dispName)';
 
     switch (_sortBy) {
@@ -256,7 +254,6 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   int countHasRecentRuns = 0;
 
   Future<void> _refreshCounters(bool forceRefresh) async {
-    
     try {
       final String sql = ''' 
 
@@ -265,8 +262,8 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
               COUNT(CASE WHEN ${hasherKennelMapTableHelper.colMembershipExpirationDate} > date('now') THEN 1 ELSE NULL END) as isMember,
               COUNT(CASE WHEN ${hasherKennelMapTableHelper.colKennelId} = ${hashersTableHelper.colHomeKennelId} THEN 1 ELSE NULL END) as isHomeKennel,
               COUNT(CASE WHEN ${hasherKennelMapTableHelper.colDateOfLastRun} >= date('now','-365 day') THEN 1 ELSE NULL END) as hasRecentRuns
-              FROM ${hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin)} hkm
-              INNER JOIN ${hashersTableHelper.tableName} h on h.${hashersTableHelper.colHasherId} = hkm.${hasherKennelMapTableHelper.colUserId}
+              FROM ${hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm
+              INNER JOIN ${hashersTableHelper.getTableName(AppDomainType.user)} h on h.${hashersTableHelper.colHasherId} = hkm.${hasherKennelMapTableHelper.colUserId}
   
           ''';
 
@@ -353,7 +350,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                     final HasherKennelMapService srv = HasherKennelMapService();
                     widget.kennel.extensions.followingRequested = -1;
                     setState(() {});
-                    srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, TableType.hkmKennelAdmin, monthsToAddToMembership: widget.kennel.kennel.membershipDurationInMonths, targetUserId: result['hasher'].hasherId).then((void dummy) {
+                    srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, AppDomainType.kennel, monthsToAddToMembership: widget.kennel.kennel.membershipDurationInMonths, targetUserId: result['hasher'].hasherId).then((void dummy) {
                       refreshKennelMembersFromTable(true).then((void dummy) {
                         _refreshCounters(true);
                       });
@@ -532,7 +529,9 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                   final int emailAlertStatus = snapshot.data[index].kennelEmailAlertPreference != 1 ? 1 : 2;
                                   snapshot.data[index].kennelEmailAlertPreference = -1;
                                   setState(() {});
-                                  srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, TableType.hkmKennelAdmin, emailAlertState: emailAlertStatus, targetUserId: snapshot.data[index].hasherId).then((List<dynamic> queryResults) {
+                                  srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, AppDomainType.kennel, emailAlertState: emailAlertStatus, targetUserId: snapshot.data[index].hasherId).then((
+                                    List<dynamic> queryResults,
+                                  ) {
                                     setState(() {
                                       if ((queryResults != null) && (queryResults.isNotEmpty)) {
                                         snapshot.data[index].kennelEmailAlertPreference = queryResults[0]['kennelEmailAlertPreference'];
@@ -705,7 +704,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
 
   Future<List<KennelMembersResults>> _getAllHashers() async {
     final List<KennelMembersResults> hasherList = <KennelMembersResults>[];
-    
+
     try {
       final String query = ''' 
         SELECT 
@@ -723,9 +722,9 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           k.kennelId,
           hk.kennelName as homeKennelName,
           hk.kennelId as homeKennelId
-          FROM ${hashersTableHelper.tableName} h
+          FROM ${hashersTableHelper.getTableName(AppDomainType.user)} h
           LEFT OUTER JOIN kennels hk on hk.kennelId = h.homeKennelId,
-          ${kennelsTableHelper.tableName} k
+          ${kennelsTableHelper.getTableName(AppDomainType.user)} k
           WHERE h.${hashersTableHelper.colRemoved} = 0 and k.${kennelsTableHelper.remoteDbId} = '${widget.kennel.kennel.kennelId}'
           ORDER BY nameForSort
           
@@ -851,8 +850,6 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   }
 
   Future<void> _handleRefresh() async {
-    
-
     setState(() {
       //_isLoading = true;
     });
@@ -871,7 +868,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     widget.kennel.extensions.followingRequested = -1;
     item.membershipDateBeingUpdated = true;
     setState(() {});
-    srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, TableType.hkmKennelAdmin, monthsToAddToMembership: monthsToAddToMembership, targetUserId: item.hasherId).then((void dummy) {
+    srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, AppDomainType.kennel, monthsToAddToMembership: monthsToAddToMembership, targetUserId: item.hasherId).then((void dummy) {
       refreshKennelMembersFromTable(true).then((void dummy) {
         item.membershipDateBeingUpdated = false;
         _refreshCounters(true);
@@ -885,7 +882,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     widget.kennel.extensions.followingRequested = -1;
     item.homeKennelBeingUpdated = true;
     setState(() {});
-    srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, TableType.hkmKennelAdmin, targetUserId: item.hasherId, followingState: followTypeToggleHomeKennel.value, isHomeKennel: isHomeKennel).then((void dummy) {
+    srv.updateHasherKennelStatus(widget.kennel.kennel.kennelId, AppDomainType.kennel, targetUserId: item.hasherId, followingState: followTypeToggleHomeKennel.value, isHomeKennel: isHomeKennel).then((void dummy) {
       refreshKennelMembersFromTable(true).then((void dummy) {
         item.homeKennelBeingUpdated = false;
         _refreshCounters(true);

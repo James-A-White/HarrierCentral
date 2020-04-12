@@ -156,7 +156,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
           baseService
               .bulkUpdateDatabase(
             receiptsTableHelper,
-            Tables.getTableName(receiptsTableHelper),
+            receiptsTableHelper.getTableName(AppDomainType.event),
             result,
             internalSqlDb,
           )

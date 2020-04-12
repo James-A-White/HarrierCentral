@@ -9,12 +9,10 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:ive_flutter_core/util/connection.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
-import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/util/enums.dart';
+
 
 import 'package:json_annotation/json_annotation.dart';
 
@@ -72,11 +70,23 @@ class HashersTableHelper with BaseFields implements BaseTableHelper {
   @override
   num cacheDuration;
 
-  @override
-  String tableName = 'hashers';
+  // @override
+  // String tableName = 'hashers';
 
   @override
-  String getTableName(dynamic tableType) {
+  String getTableName(dynamic appDomainType) {
+    String tableName;
+    switch (appDomainType) {
+      // case AppDomainType.event:
+      //   break;
+      // case AppDomainType.kennel:
+      //   break;
+      // case AppDomainType.user:
+      //   tableName = 'hashers';
+      //   break;
+      default:
+        tableName = 'hashers';
+    }
     return tableName;
   }
 
@@ -98,7 +108,8 @@ class HashersTableHelper with BaseFields implements BaseTableHelper {
   final String colPreferences = 'preferences';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic tableType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+    final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
             $colId INTEGER PRIMARY KEY,
@@ -188,23 +199,25 @@ class HashersService extends BaseService {
       final num _hashersLastUpdated = await getLastUpdatedTime(
         internalSqlDb,
         hashersTableHelper,
-        Tables.getTableName(hashersTableHelper),
+        hashersTableHelper.getTableName(AppDomainType.user),
         hashersTableHelper.colUpdatedAtValue,
       );
       hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
 
+      // TODO(James): Check the logic here in this call we are using AppDomainType of event but in the next one we have logic to go between event and kennel
       final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(
         internalSqlDb,
         hasherEventMapTableHelper,
-        Tables.getTableName(hasherEventMapTableHelper, tableType: TableType.hemEventAdmin),
+        hasherEventMapTableHelper.getTableName(AppDomainType.event),
         hasherEventMapTableHelper.colUpdatedAtValue,
       );
       hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
 
+      // this one has event and kennel
       final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(
         internalSqlDb,
         hasherKennelMapTableHelper,
-        Tables.getTableName(hasherKennelMapTableHelper, tableType: ((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? TableType.hkmEventAdmin : TableType.hkmKennelAdmin),
+        hasherKennelMapTableHelper.getTableName(((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? AppDomainType.event : AppDomainType.kennel),
         hasherKennelMapTableHelper.colUpdatedAtValue,
       );
       hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
@@ -252,14 +265,14 @@ class HashersService extends BaseService {
       if (((eventId == null) || (eventId == GUID_EMPTY)) && ((kennelId == null) || (kennelId == GUID_EMPTY))) {
         // we don't have either an eventId or a kennelId so all we need to do is update
         // the Hasher table
-        await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+        await syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
       } else if ((eventId != null) && (eventId != GUID_EMPTY)) {
         // if we have an eventId we are definitely editing an event irrespective of whether or not
         // there is also a kennelId
-        await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+        await syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
       } else if ((kennelId != null) && (kennelId != GUID_EMPTY)) {
         // if we get here, we have a kennelId but no eventId, which means we are editing kennel members
-        await SyncKennelAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+        await syncKennelAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
       } else {
         // TODO(James): handle this error, we should never arrive at this point in the code
       }
@@ -341,7 +354,7 @@ class HashersService extends BaseService {
       final num _hashersLastUpdated = await getLastUpdatedTime(
         internalSqlDb,
         hashersTableHelper,
-        Tables.getTableName(hashersTableHelper),
+        hashersTableHelper.getTableName(AppDomainType.user),
         hashersTableHelper.colUpdatedAtValue,
       );
       hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
@@ -379,7 +392,7 @@ class HashersService extends BaseService {
     );
 
     if (!newUserForThisDevice) {
-      await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      await syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     }
 
     return response.body;

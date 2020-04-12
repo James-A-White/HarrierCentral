@@ -244,19 +244,19 @@ class QueryRuns {
 
     switch (queryContext) {
       case EnumRunQueryContext.user:
-        hkmTable = hasherKennelMapTableHelper.getTableName(TableType.hkmUser);
-        hemTable = hasherEventMapTableHelper.getTableName(TableType.hemUser);
-        paymentsTable = paymentsTableHelper.getTableName(TableType.paymentsUser);
+        hkmTable = hasherKennelMapTableHelper.getTableName(AppDomainType.user);
+        hemTable = hasherEventMapTableHelper.getTableName(AppDomainType.user);
+        paymentsTable = paymentsTableHelper.getTableName(AppDomainType.user);
         break;
       case EnumRunQueryContext.kennelAdmin:
-        hkmTable = hasherKennelMapTableHelper.getTableName(TableType.hkmKennelAdmin);
-        hemTable = hasherEventMapTableHelper.getTableName(TableType.hemUser);
-        paymentsTable = paymentsTableHelper.getTableName(TableType.paymentsUser);
+        hkmTable = hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
+        hemTable = hasherEventMapTableHelper.getTableName(AppDomainType.kennel);
+        paymentsTable = paymentsTableHelper.getTableName(AppDomainType.kennel);
         break;
       case EnumRunQueryContext.eventAdmin:
-        hkmTable = hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin);
-        hemTable = hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin);
-        paymentsTable = paymentsTableHelper.getTableName(TableType.paymentsEvent);
+        hkmTable = hasherKennelMapTableHelper.getTableName(AppDomainType.event);
+        hemTable = hasherEventMapTableHelper.getTableName(AppDomainType.event);
+        paymentsTable = paymentsTableHelper.getTableName(AppDomainType.event);
         break;
     }
 

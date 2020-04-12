@@ -7,6 +7,8 @@ import 'package:harrier_central/util/constants.dart';
 
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:ive_flutter_core/util/connection.dart';
+import 'package:ive_flutter_core/database/base_service.dart';
+
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/util/enums.dart';
@@ -46,15 +48,15 @@ class SyncUserDataService {
   }
 
   Future<void> getLastUpdatedTimes(int flags) async {
-    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hashersTableHelper.colUpdatedAtValue, hashersTableHelper.tableName);
-    _citiesLastUpdated = (flags & flagCitiesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(citiesTableHelper.colUpdatedAtValue, citiesTableHelper.tableName);
-    _regionsLastUpdated = (flags & flagRegionsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(regionsTableHelper.colUpdatedAtValue, regionsTableHelper.tableName);
-    _countriesLastUpdated = (flags & flagCountriesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(countriesTableHelper.colUpdatedAtValue, countriesTableHelper.tableName);
-    _kennelsLastUpdated = (flags & flagKennelsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(kennelsTableHelper.colUpdatedAtValue, kennelsTableHelper.tableName);
-    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(paymentsTableHelper.colUpdatedAtValue, paymentsTableHelper.getTableName(TableType.paymentsUser));
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hasherKennelMapTableHelper.colUpdatedAtValue, hasherKennelMapTableHelper.getTableName(TableType.hkmUser));
-    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hasherEventMapTableHelper.colUpdatedAtValue, hasherEventMapTableHelper.getTableName(TableType.hemUser));
-    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(eventsTableHelper.colUpdatedAtValue, eventsTableHelper.tableName);
+    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hashersTableHelper.colUpdatedAtValue, hashersTableHelper.getTableName(AppDomainType.user));
+    _citiesLastUpdated = (flags & flagCitiesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(citiesTableHelper.colUpdatedAtValue, citiesTableHelper.getTableName(AppDomainType.user));
+    _regionsLastUpdated = (flags & flagRegionsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(regionsTableHelper.colUpdatedAtValue, regionsTableHelper.getTableName(AppDomainType.user));
+    _countriesLastUpdated = (flags & flagCountriesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(countriesTableHelper.colUpdatedAtValue, countriesTableHelper.getTableName(AppDomainType.user));
+    _kennelsLastUpdated = (flags & flagKennelsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(kennelsTableHelper.colUpdatedAtValue, kennelsTableHelper.getTableName(AppDomainType.user));
+    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(paymentsTableHelper.colUpdatedAtValue, paymentsTableHelper.getTableName(AppDomainType.user));
+    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hasherKennelMapTableHelper.colUpdatedAtValue, hasherKennelMapTableHelper.getTableName(AppDomainType.user));
+    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hasherEventMapTableHelper.colUpdatedAtValue, hasherEventMapTableHelper.getTableName(AppDomainType.user));
+    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(eventsTableHelper.colUpdatedAtValue, eventsTableHelper.getTableName(AppDomainType.user));
   }
 
   Future<bool> updateFromBackend(int tablesToSync, bool forceRefresh, {Function informUser}) async {
@@ -157,126 +159,22 @@ class SyncUserDataService {
     return true;
   }
 
-  static Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser}) async {
-    List<dynamic> adHocData;
 
-    if (jsonResults.startsWith('[[')) {
-      jsonResults = jsonResults.substring(1, jsonResults.length - 1);
-    }
+  final List<BaseTableHelper> _userTables = <BaseTableHelper>[
+    hashersTableHelper,
+    paymentsTableHelper,
+    citiesTableHelper,
+    regionsTableHelper,
+    countriesTableHelper,
+    kennelsTableHelper,
+    eventsTableHelper,
+    hasherKennelMapTableHelper,
+    hasherEventMapTableHelper
 
-    final RegExp r = RegExp(r'\[(\{(.*?)\})\]', multiLine: true);
-    final Iterable<Match> matches = r.allMatches(jsonResults);
-    for (int i = 0; i < matches.length; i++) {
-      final String ms = matches.elementAt(i).group(0);
+  ];
 
-      // TODO(James): Investigate why we're not using the baseService to do the bulk update for Hashers
-      if (ms.startsWith('[{"${hashersTableHelper.remoteDbId}"')) {
-        await hashersService.bulkUpdateDatabase(
-          hashersTableHelper,
-          Tables.getTableName(hashersTableHelper),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('hashers updated');
-      }
-
-      if (ms.startsWith('[{"${paymentsTableHelper.remoteDbId}"')) {
-        await baseService.bulkUpdateDatabase(
-          paymentsTableHelper,
-          Tables.getTableName(paymentsTableHelper, tableType: TableType.paymentsUser),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('payments updated');
-      }
-
-      if (ms.startsWith('[{"${citiesTableHelper.remoteDbId}"')) {
-        await baseService.bulkUpdateDatabase(
-          citiesTableHelper,
-          Tables.getTableName(citiesTableHelper),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('cities updated');
-      }
-
-      if (ms.startsWith('[{"${regionsTableHelper.remoteDbId}"')) {
-        await baseService.bulkUpdateDatabase(
-          regionsTableHelper,
-          Tables.getTableName(regionsTableHelper),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('regions updated');
-      }
-
-      if (ms.startsWith('[{"${countriesTableHelper.remoteDbId}"')) {
-        await baseService.bulkUpdateDatabase(
-          countriesTableHelper,
-          Tables.getTableName(countriesTableHelper),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('countries updated');
-      }
-
-      if (ms.startsWith('[{"${kennelsTableHelper.remoteDbId}"')) {
-        await baseService.bulkUpdateDatabase(
-          kennelsTableHelper,
-          Tables.getTableName(kennelsTableHelper),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('kennels updated');
-      }
-
-      if (ms.startsWith('[{"${eventsTableHelper.remoteDbId}"')) {
-        await baseService.bulkUpdateDatabase(
-          eventsTableHelper,
-          Tables.getTableName(eventsTableHelper),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('events updated');
-      }
-
-      if (ms.startsWith('[{"${hasherKennelMapTableHelper.remoteDbId}"')) {
-        await baseService.bulkUpdateDatabase(
-          hasherKennelMapTableHelper,
-          Tables.getTableName(hasherKennelMapTableHelper, tableType: TableType.hkmUser),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('hasher kennel map updated');
-      }
-
-      if (ms.startsWith('[{"${hasherEventMapTableHelper.remoteDbId}"')) {
-        await baseService.bulkUpdateDatabase(
-          hasherEventMapTableHelper,
-          Tables.getTableName(hasherEventMapTableHelper,tableType:TableType.hemUser ),
-          '[$ms]',
-          internalSqlDb,
-          informUser: informUser,
-        );
-        print('hasher event map updated');
-      }
-
-      if (ms.startsWith(r'[{"adHocDataId"')) {
-        final List<dynamic> adHocItems = jsonDecode('$ms');
-        if ((adHocItems != null) && (adHocItems.isNotEmpty)) {
-          adHocData = adHocItems;
-        }
-        print('server messages received');
-      }
-    }
-    return adHocData;
+  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser}) async {
+    return baseService.updateSqlTablesFromJson(jsonResults, _userTables, internalSqlDb, AppDomainType.user, informUser: informUser);
   }
+
 }

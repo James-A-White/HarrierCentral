@@ -503,8 +503,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "1aefe76889261f7e44554fb744d796ee10e3bb57"
-      resolved-ref: "1aefe76889261f7e44554fb744d796ee10e3bb57"
+      ref: f21262ae8c28bce556cd8738d7fcde4333f04688
+      resolved-ref: f21262ae8c28bce556cd8738d7fcde4333f04688
       url: "git://github.com/InnoVet-Europe/ive_flutter_core.git"
     source: git
     version: "1.0.1"

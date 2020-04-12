@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -28,7 +26,6 @@ import 'package:ive_flutter_core/database/migrations.dart';
 import 'package:ive_flutter_core/util/connection.dart';
 import 'package:ive_flutter_core/widgets/flippable_box.dart';
 import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
-
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);
@@ -170,7 +167,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 final String userId = getStringPref(StringPrefsEnum.userId);
 
                 if (retVal == enumYesNo_Yes) {
-                  hasherEventMapService.joinEvent(result.eventId, TableType.hemUser, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value).then((List<dynamic> svcResult) {
+                  hasherEventMapService.joinEvent(result.eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value).then((
+                    List<dynamic> svcResult,
+                  ) {
                     futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
                   });
                 }
@@ -431,7 +430,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         OfflineModeRibbon(
           showRibbon: globalConnectionStatus == connectionStatus_notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
-        ribbonImage: 'images/icons/offline_mode.png',
+          ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],
     );

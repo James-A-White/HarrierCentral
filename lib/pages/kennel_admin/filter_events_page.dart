@@ -81,9 +81,9 @@ class FilterEventsPageState extends State<FilterEventsPage> {
             evt.eventStartDatetime,
             hkm.mismanagementRoleFlags,
             evt.canEditRunAttendence,
-            (SELECT COUNT(*) FROM ${eventsTableHelper.tableName} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount
-          FROM ${eventsTableHelper.tableName} evt
-          INNER JOIN ${hasherKennelMapTableHelper.getTableName(TableType.hkmUser)} hkm on hkm.kennelId = "${widget.kennel.kennel.kennelId}" and hkm.userId = "$userId"
+            (SELECT COUNT(*) FROM ${eventsTableHelper.getTableName(AppDomainType.user)} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount
+          FROM ${eventsTableHelper.getTableName(AppDomainType.user)} evt
+          INNER JOIN ${hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.kennelId = "${widget.kennel.kennel.kennelId}" and hkm.userId = "$userId"
           WHERE evt.kennelId = "${widget.kennel.kennel.kennelId}"
           AND datetime(evt.eventStartDatetime) $dateComparer datetime('now','localtime','$dateOffset')
           ORDER BY evt.eventStartDatetime $sortOrder
@@ -437,7 +437,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
   Future<void> updateEvent(Map<String, dynamic> event, {bool isVisible, bool isCountedRun, int asboluteEventNumber}) async {
     await internalSqlDb.transaction<dynamic>((Transaction txn) async {
       final int guidFlag = isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
-      final String sql = 'UPDATE ${eventsTableHelper.tableName} SET canEditRunAttendence = "$guidFlag" where eventId = "${event['eventId']}"';
+      final String sql = 'UPDATE ${eventsTableHelper.getTableName(AppDomainType.user)} SET canEditRunAttendence = "$guidFlag" where eventId = "${event['eventId']}"';
       final int result = await txn.rawUpdate(sql);
       print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
       _refreshEventFromTables(true);

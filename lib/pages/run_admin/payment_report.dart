@@ -133,15 +133,15 @@ class PaymentReportState extends State<PaymentReportPage> {
           COALESCE(confBy.dispName,'') as confByName,
           COALESCE(e.${eventsTableHelper.colExtrasDescription},'<unknown>') as extrasDescription,
           COALESCE(e.${eventsTableHelper.colEventPriceForExtras},0) as extrasPrice
-          FROM ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem
-          INNER JOIN ${eventsTableHelper.tableName} e on e.eventId = hem.eventId
-          INNER JOIN ${kennelsTableHelper.tableName} k on k.kennelId = e.kennelId
-          LEFT OUTER JOIN ${hasherKennelMapTableHelper.getTableName(TableType.hkmEventAdmin)} hkm on hkm.userId = hem.userId and hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
-          LEFT OUTER JOIN ${hashersTableHelper.tableName} h on h.hasherId = hem.userId
-          LEFT OUTER JOIN ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} pay on pay.hemId = hem.hemId and pay.CancelledBy IS NULL
-          LEFT OUTER JOIN ${hashersTableHelper.tableName} paidTo on paidTo.hasherId = pay.paidTo
-          LEFT OUTER JOIN ${kennelCreditsTableHelper.tableName} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
-          LEFT OUTER JOIN ${hashersTableHelper.tableName} confBy on confBy.hasherId = pay.confirmedBy
+          FROM ${hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
+          INNER JOIN ${eventsTableHelper.getTableName(AppDomainType.user)} e on e.eventId = hem.eventId
+          INNER JOIN ${kennelsTableHelper.getTableName(AppDomainType.user)} k on k.kennelId = e.kennelId
+          LEFT OUTER JOIN ${hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.userId = hem.userId and hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
+          LEFT OUTER JOIN ${hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = hem.userId
+          LEFT OUTER JOIN ${paymentsTableHelper.getTableName(AppDomainType.event)} pay on pay.hemId = hem.hemId and pay.CancelledBy IS NULL
+          LEFT OUTER JOIN ${hashersTableHelper.getTableName(AppDomainType.user)} paidTo on paidTo.hasherId = pay.paidTo
+          LEFT OUTER JOIN ${kennelCreditsTableHelper.getTableName(AppDomainType.user)} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
+          LEFT OUTER JOIN ${hashersTableHelper.getTableName(AppDomainType.user)} confBy on confBy.hasherId = pay.confirmedBy
           WHERE hem.attendenceState >= 20
           ''';
 
@@ -171,23 +171,23 @@ class PaymentReportState extends State<PaymentReportPage> {
     try {
       final String sql = '''
 
-          select 0 as paymentType, (SELECT COUNT(*) from ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem 
+          select 0 as paymentType, (SELECT COUNT(*) from ${hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem 
           WHERE  hem.attendenceState >= 20
-          AND hem.hemId not in (SELECT hemId from ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} pay3 where pay3.cancelledBy IS NULL) ) as count, 5.55 as totalCollected
+          AND hem.hemId not in (SELECT hemId from ${paymentsTableHelper.getTableName(AppDomainType.event)} pay3 where pay3.cancelledBy IS NULL) ) as count, 5.55 as totalCollected
             
           UNION
           select paymentType, 
             (
                 SELECT COUNT(*) 
-                FROM ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} pay 
-                INNER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem on hem.hemId = pay.hemId AND hem.attendenceState >= 20
+                FROM ${paymentsTableHelper.getTableName(AppDomainType.event)} pay 
+                INNER JOIN ${hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem on hem.hemId = pay.hemId AND hem.attendenceState >= 20
                 WHERE pay.paymentType = x.paymentType AND pay.cancelledBy IS NULL
 
             ) as count,
             (
                 SELECT SUM(pay2.creditAmount)
-                FROM ${paymentsTableHelper.getTableName(TableType.paymentsEvent)} pay2 
-                INNER JOIN ${hasherEventMapTableHelper.getTableName(TableType.hemEventAdmin)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
+                FROM ${paymentsTableHelper.getTableName(AppDomainType.event)} pay2 
+                INNER JOIN ${hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
                 WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
             ) as totalCollected
           FROM (select 1 as paymentType union values (2), (3), (4), (5), (6), (7) ) x

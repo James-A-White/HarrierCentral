@@ -203,7 +203,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
         OfflineModeRibbon(
           showRibbon: globalConnectionStatus == connectionStatus_notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
-        ribbonImage: 'images/icons/offline_mode.png',
+          ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],
     );
@@ -493,15 +493,30 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   // so assume that the person was not a hare
                                   if (item.attendenceState < attendenceAtHash.value) {
                                     item.isLoading = true;
-                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(item.eventId, TableType.hemUser, userId, item.hemId, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: isHareNo.value);
+                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
+                                      item.eventId,
+                                      userId,
+                                      item.hemId,
+                                      AppDomainType.user,
+                                      rsvpState: rsvpYes.value,
+                                      attendenceState: attendenceAtHash.value,
+                                      isHare: isHareNo.value,
+                                    );
 
                                     retVal.then((List<dynamic> adHocData) {
                                       refreshRunHistoryFromTable(true).then((void dummy) {});
                                     });
                                   } else {
                                     item.isLoading = true;
-                                    final Future<List<dynamic>> retVal =
-                                        hasherEventMapService.joinEvent(item.eventId, TableType.hemUser, userId, item.hemId, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value, isHare: item.isHare == 1 ? isHareNo.value : isHareYes.value);
+                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
+                                      item.eventId,
+                                      userId,
+                                      item.hemId,
+                                      AppDomainType.user,
+                                      rsvpState: rsvpYes.value,
+                                      attendenceState: attendenceAtHash.value,
+                                      isHare: item.isHare == 1 ? isHareNo.value : isHareYes.value,
+                                    );
 
                                     retVal.then((List<dynamic> adHocData) {
                                       refreshRunHistoryFromTable(true).then((void dummy) {});
@@ -511,7 +526,15 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   // swipe from left to right to
                                   // indicate that the hasher did
                                   // not participate in this event
-                                  final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(item.eventId, TableType.hemUser, userId, item.hemId, AppDomainType.user, rsvpState: rsvpNo.value, attendenceState: attendenceNo.value, isHare: isHareNo.value);
+                                  final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
+                                    item.eventId,
+                                    userId,
+                                    item.hemId,
+                                    AppDomainType.user,
+                                    rsvpState: rsvpNo.value,
+                                    attendenceState: attendenceNo.value,
+                                    isHare: isHareNo.value,
+                                  );
 
                                   retVal.then((List<dynamic> adHocData) {
                                     refreshRunHistoryFromTable(true).then((void dummy) {});

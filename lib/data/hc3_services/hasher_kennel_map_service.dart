@@ -9,9 +9,6 @@ import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
-import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
-import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
-import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/database/tables.dart';
 import 'package:ive_flutter_core/util/connection.dart';
@@ -85,18 +82,36 @@ class HasherKennelMapTableHelper with BaseFields implements BaseTableHelper {
   @override
   num cacheDuration;
 
-  @override
   String tableName = '';
 
+  // @override
+  // String getTableName(dynamic tblType) {
+  //   if (tblType == TableType.hkmEventAdmin) {
+  //     return hkmEventAdminTable;
+  //   } else if (tblType == TableType.hkmKennelAdmin) {
+  //     return hkmKennelAdminTable;
+  //   } else {
+  //     return hkmUserTable;
+  //   }
+  // }
+
   @override
-  String getTableName(dynamic tblType) {
-    if (tblType == TableType.hkmEventAdmin) {
-      return hkmEventAdminTable;
-    } else if (tblType == TableType.hkmKennelAdmin) {
-      return hkmKennelAdminTable;
-    } else {
-      return hkmUserTable;
+  String getTableName(dynamic appDomainType) {
+    String tableName;
+    switch (appDomainType) {
+      case AppDomainType.event:
+        tableName = 'hasherKennelMapForRunAdmin';
+        break;
+      case AppDomainType.kennel:
+        tableName = 'hasherKennelMapForKennelAdmin';
+        break;
+      case AppDomainType.user:
+        tableName = 'hasherKennelMap';
+        break;
+      default:
+        assert(false);
     }
+    return tableName;
   }
 
   @override
@@ -185,7 +200,7 @@ class HasherKennelMapTableHelper with BaseFields implements BaseTableHelper {
 class HasherKennelMapService {
   //=================  Domain specific functions ================
 
-  Future<List<dynamic>> updateHasherKennelStatus(String kennelId, TableType tblType, {int monthsToAddToMembership, String targetUserId, int notificationState = -1, int emailAlertState = -1, int followingState = -1, int isHomeKennel = -1}) async {
+  Future<List<dynamic>> updateHasherKennelStatus(String kennelId, AppDomainType appDomainType, {int monthsToAddToMembership, String targetUserId, int notificationState = -1, int emailAlertState = -1, int followingState = -1, int isHomeKennel = -1}) async {
     List<dynamic> adHocData;
 
     if (globalConnectionStatus == connectionStatus_notConnected) {
@@ -204,19 +219,19 @@ class HasherKennelMapService {
     final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
       hasherKennelMapTableHelper,
-      Tables.getTableName(hasherKennelMapTableHelper, tableType: tblType),
+      hasherKennelMapTableHelper.getTableName(appDomainType),
       hasherKennelMapTableHelper.colUpdatedAtValue,
     );
     final num _kennelsLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
       kennelsTableHelper,
-      Tables.getTableName(kennelsTableHelper),
+      kennelsTableHelper.getTableName(appDomainType),
       kennelsTableHelper.colUpdatedAtValue,
     );
     final num _hashersLastUpdated = await hashersService.getLastUpdatedTime(
       internalSqlDb,
       hashersTableHelper,
-      Tables.getTableName(hashersTableHelper),
+      hashersTableHelper.getTableName(AppDomainType.user),
       hashersTableHelper.colUpdatedAtValue,
     );
 
@@ -247,12 +262,14 @@ class HasherKennelMapService {
       },
     );
 
-    if (tblType == TableType.hkmEventAdmin) {
-      adHocData = await SyncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
-    } else if (tblType == TableType.hkmKennelAdmin) {
-      adHocData = await SyncKennelAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    if (appDomainType == AppDomainType.event) {
+      adHocData = await syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    } else if (appDomainType == AppDomainType.kennel) {
+      adHocData = await syncKennelAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    } else if (appDomainType == AppDomainType.kennel) {
+      adHocData = await syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else {
-      adHocData = await SyncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      assert(false);
     }
 
     return adHocData;
