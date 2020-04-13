@@ -26,7 +26,7 @@
 // import 'package:ive_flutter_core/widgets/fancy_divider.dart';
 // import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 // import 'package:harrier_central/data/hc3_services/hashers_service.dart';
-// import 'package:harrier_central/widgets/circular_progress_indicator.dart';
+// import 'package:ive_flutter_core/widgets/circular_progress_indicator.dart';
 
 // class NewUserWidget extends StatefulWidget {
 //   const NewUserWidget({Key key, this.eventId, this.kennelId, this.attendenceState, this.scaffoldKey}) : super(key: key);

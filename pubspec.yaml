@@ -33,7 +33,6 @@ dependencies:
   flutter_map: ^0.8.2 # upgraded Mar 21 from ^0.8.0 # upgraded Dec 19 from ^0.7.3 # upgraded Nov 10 from ^0.7.2 # updated on 11 Sep from 0.7.0+1 # upodated from 0.4.0 on 29 Jul # latest version is 0.5.0, but it depends on cached_network_image 0.5.1 - 19 March 2019
   flutter_map_marker_cluster: ^0.2.7
   flutter_speed_dial: ^1.2.5 # upgraded Dec 19 from ^1.2.1   # updated from 1.1.2 on 8 Jun 19
-  flutter_spinkit: ^3.1.0 
   flutter_staggered_grid_view: ^0.3.0 # upgraded from ^0.2.7 on 29 Jul
   flutter_swiper: ^1.1.6
   flutter_vector_icons: ^0.2.1 # updated on 11 Sep from 0.2.0 # upgraded from 0.1.0 on Jul 29
@@ -66,7 +65,7 @@ dependencies:
   ive_flutter_core: 
     git:
       url: git://github.com/InnoVet-Europe/ive_flutter_core.git
-      ref: f21262ae8c28bce556cd8738d7fcde4333f04688
+      ref: 8c57a1cf52aa943f7c6fd9a96d021742a8da5a92
 
   # # flip_panel: ^1.0.0
   # # qr_mobile_vision: ^0.1.0

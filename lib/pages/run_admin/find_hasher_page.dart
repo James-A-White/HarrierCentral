@@ -13,7 +13,7 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/widgets/circular_progress_indicator.dart';
+import 'package:ive_flutter_core/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 import 'package:harrier_central/database/tables.dart';
 

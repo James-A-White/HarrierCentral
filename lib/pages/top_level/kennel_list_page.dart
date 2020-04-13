@@ -17,7 +17,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:harrier_central/widgets/circular_progress_indicator.dart';
+import 'package:ive_flutter_core/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
 
 class KennelsListPage extends StatefulWidget {

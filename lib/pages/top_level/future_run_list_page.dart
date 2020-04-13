@@ -7,7 +7,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 import 'package:harrier_central/database/query_runs.dart';
 import 'package:harrier_central/widgets/run_list_item.dart';
-import 'package:harrier_central/widgets/circular_progress_indicator.dart';
+import 'package:ive_flutter_core/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';

@@ -357,7 +357,7 @@ packages:
     source: hosted
     version: "1.2.5"
   flutter_spinkit:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: flutter_spinkit
       url: "https://pub.dartlang.org"
@@ -503,8 +503,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: f21262ae8c28bce556cd8738d7fcde4333f04688
-      resolved-ref: f21262ae8c28bce556cd8738d7fcde4333f04688
+      ref: "8c57a1cf52aa943f7c6fd9a96d021742a8da5a92"
+      resolved-ref: "8c57a1cf52aa943f7c6fd9a96d021742a8da5a92"
       url: "git://github.com/InnoVet-Europe/ive_flutter_core.git"
     source: git
     version: "1.0.1"

@@ -23,7 +23,7 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/styles.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/util/bank_transfer_qr.dart';
-import 'package:harrier_central/widgets/circular_progress_indicator.dart';
+import 'package:ive_flutter_core/widgets/circular_progress_indicator.dart';
 import 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 import 'package:harrier_central/widgets/payment_snackbar.dart';
 import 'package:harrier_central/widgets/filter_cell.dart';

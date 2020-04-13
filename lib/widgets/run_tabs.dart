@@ -19,7 +19,7 @@ import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 import 'package:harrier_central/widgets/run_details.dart';
 import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/widgets/circular_progress_indicator.dart';
+import 'package:ive_flutter_core/widgets/circular_progress_indicator.dart';
 import 'package:harrier_central/database/query_runs.dart';
 import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
 import 'package:harrier_central/database/tables.dart';
