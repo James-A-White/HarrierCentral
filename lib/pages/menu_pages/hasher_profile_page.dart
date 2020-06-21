@@ -11,7 +11,6 @@ import 'package:harrier_central/widgets/profile_photo.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-
 import 'package:harrier_central/util/styles.dart';
 import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 import 'package:harrier_central/util/utilities.dart';
@@ -736,22 +735,23 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             : Padding(
                                                                 padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
                                                                 child: RaisedButton(
-                                                                  onPressed: () {
+                                                                  onPressed: () async {
                                                                     if (Platform.isIOS) {
-                                                                      PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.locationWhenInUse]).then((Map<PermissionGroup, PermissionStatus> e) {
+                                                                      if (await Permission.locationWhenInUse.isGranted) {
                                                                         setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
                                                                         hasLocationPermissions = true;
                                                                         Utilities.subscribeToGeoLocationStream();
-                                                                      });
+                                                                      }
                                                                     } else {
-                                                                      PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.location]).then((Map<PermissionGroup, PermissionStatus> e) {
+                                                                      if (await Permission.location.isGranted) {
                                                                         setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
                                                                         hasLocationPermissions = true;
                                                                         Utilities.subscribeToGeoLocationStream();
-                                                                      });
+                                                                      }
                                                                     }
 
-                                                                    CoreUtilities.showAlert(context, 'Location preferences updated', 'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 'OK');
+                                                                    CoreUtilities.showAlert(
+                                                                        context, 'Location preferences updated', 'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 'OK');
                                                                   },
                                                                   child: Text('Enable Location Svcs', style: buttonTextStyle),
                                                                 ),
@@ -899,22 +899,23 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             : Padding(
                                                                 padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
                                                                 child: RaisedButton(
-                                                                  onPressed: () {
+                                                                  onPressed: () async {
                                                                     if (Platform.isIOS) {
-                                                                      PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.locationWhenInUse]).then((Map<PermissionGroup, PermissionStatus> e) {
+                                                                      if (await Permission.locationWhenInUse.isGranted) {
                                                                         setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
                                                                         hasLocationPermissions = true;
                                                                         Utilities.subscribeToGeoLocationStream();
-                                                                      });
+                                                                      }
                                                                     } else {
-                                                                      PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.location]).then((Map<PermissionGroup, PermissionStatus> e) {
+                                                                      if (await Permission.location.isGranted) {
                                                                         setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
                                                                         hasLocationPermissions = true;
                                                                         Utilities.subscribeToGeoLocationStream();
-                                                                      });
+                                                                      }
                                                                     }
 
-                                                                    CoreUtilities.showAlert(context, 'Location preferences updated', 'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 'OK');
+                                                                    CoreUtilities.showAlert(
+                                                                        context, 'Location preferences updated', 'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.', 'OK');
                                                                   },
                                                                   child: Text('Enable Location Svcs', style: buttonTextStyle),
                                                                 ),
@@ -1067,7 +1068,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         OfflineModeRibbon(
           showRibbon: globalConnectionStatus == connectionStatus_notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
-        ribbonImage: 'images/icons/offline_mode.png',
+          ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],
     );

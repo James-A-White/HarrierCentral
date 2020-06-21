@@ -476,7 +476,6 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       text: widget.kennelAggregateItem.kennel.kennelDescription.toString().replaceAll('\r\n', '\n'),
                                       style: bodyStyle,
                                       linkStyle: bodyStyleYellow,
-                                      humanize: true,
                                       onOpen: (LinkableElement link) async {
                                         if (await canLaunch(link.url)) {
                                           await launch(link.url);

@@ -83,7 +83,7 @@ PODS:
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
   - FMDB/standard (2.7.5)
-  - geolocator (5.3.1):
+  - "geolocator (5.3.2+2)":
     - Flutter
   - google_api_availability (2.0.4):
     - Flutter
@@ -129,7 +129,7 @@ PODS:
   - libwebp/mux (1.1.0):
     - libwebp/demux
   - libwebp/webp (1.1.0)
-  - location_permissions (2.0.5):
+  - "location_permissions (3.0.0+1)":
     - Flutter
   - Mantle (2.1.0):
     - Mantle/extobjc (= 2.1.0)
@@ -145,7 +145,7 @@ PODS:
     - Flutter
   - path_provider_macos (0.0.1):
     - Flutter
-  - permission_handler (3.3.0):
+  - permission_handler (5.0.1):
     - Flutter
   - PromisesObjC (1.2.8)
   - Protobuf (3.11.2)
@@ -293,12 +293,12 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   audioplayers: 84f968cea3f2deab00ec4f8ff53358b3c0b3992c
-  device_info: cbf09d2ec12aa7110e0b09fabe54b5bd6c8efe74
+  device_info: d7d233b645a32c40dfdc212de5cf646ca482f175
   fast_qr_reader_view: 53b38a544886e650381ca579e0cdd5ae142fffa6
   FBSDKCoreKit: a72c8d2c42aa4c4d5eaa5f160be9580750f70d2e
   FBSDKLoginKit: 89f3c2f8be892ec8a5359619a8ff657578d47604
   Firebase: 5d77105d9740a07ca6b16927ca971db7e860faaf
-  firebase_messaging: b8543d17dd9825f4f24a585477f77db103e5228e
+  firebase_messaging: 21344b3b3a7d9d325d63a70e3750c0c798fe1e03
   FirebaseAnalytics: e83e64b1231dedcd9ddd4bdecd9bcfd6ba341679
   FirebaseAnalyticsInterop: 3f86269c38ae41f47afeb43ebf32a001f58fcdae
   FirebaseCore: 4aeb81ff53dcd9a3634ca725dc1fb8c2a4622046
@@ -313,38 +313,38 @@ SPEC CHECKSUMS:
   flutter_image_compress: 082f8daaf6c1b0c9fe798251c750ef0ecd98d7ae
   flutter_plugin_android_lifecycle: 47de533a02850f070f5696a623995e93eddcdb9b
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
-  geolocator: 460cc8e850b616f8c0e90944c86517d91ccbb686
+  geolocator: f7622e0e7e2a24718285b73916d60c4a54b9f5b6
   google_api_availability: 15fa42a8cd83c0a6738507ffe6e87096f12abcb8
   GoogleAppMeasurement: a08a43b8677b95ed51fcef880e36737334d804fd
   GoogleDataTransport: 574a983e829327d7c18f2627f65d9e80164ea8a4
   GoogleDataTransportCCTSupport: cad3cd6cdbdbad6b5c2c9206ec413402755faaaa
   GoogleUtilities: f8de7ddf8c706f58e9b405d53e38bbdaa2731e5a
   image_cropper: 3c16d7651730ffe85897f5a1c4e2547e6b54989a
-  image_picker: e3eacd46b94694dde7cf2705955cece853aa1a8f
+  image_picker: 66aa71bc96850a90590a35d4c4a2907b0d823109
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
-  location_permissions: 4a49d4e5bec5b653643e551ab77963cc99bb0e4a
+  location_permissions: 7e0f9aa0f60deb8ff93ddf0e2a164c7e8197bc94
   Mantle: 2fa750afa478cd625a94230fbf1c13462f29395b
   nanopb: 18003b5e52dab79db540fe93fe9579f399bd1ccd
-  package_info: 48b108e75b8802c2d5e126f208ef540561c98aef
+  package_info: 873975fc26034f0b863a300ad47e7f1ac6c7ec62
   path_provider: fb74bd0465e96b594bb3b5088ee4a4e7bb1f2a9d
   path_provider_macos: f760a3c5b04357c380e2fddb6f9db6f3015897e0
-  permission_handler: 67637977b227d62d46bfbf524f335f8568de5a73
+  permission_handler: 7022f8972d2d85ce95c1040db945f28bdbfa45d1
   PromisesObjC: c119f3cd559f50b7ae681fa59dc1acd19173b7e6
   Protobuf: dd1aaea7140debfe4dd0683fb8ef208e527ae153
   SDWebImage: 4d5c027c935438f341ed33dbac53ff9f479922ca
   SDWebImageWebPCoder: e7ae855f058e3dcae99696920b6a5d134e9dcddf
-  shared_preferences: 430726339841afefe5142b9c1f50cb6bd7793e01
+  shared_preferences: af6bfa751691cdc24be3045c43ec037377ada40d
   shared_preferences_macos: f3f29b71ccbb56bf40c9dd6396c9acf15e214087
   shared_preferences_web: 141cce0c3ed1a1c5bf2a0e44f52d31eeb66e5ea9
   sqflite: 4001a31ff81d210346b500c55b17f4d6c7589dd0
   TOCropViewController: e9da34f484aedd4e5d5a8ab230ba217cfe16c729
-  url_launcher: a1c0cc845906122c4784c542523d8cacbded5626
+  url_launcher: 6fef411d543ceb26efce54b05a0a40bfd74cbbef
   url_launcher_macos: fd7894421cd39320dce5f292fc99ea9270b2a313
   url_launcher_web: e5527357f037c87560776e36436bf2b0288b965c
-  video_player: 69c5f029fac4ffe4fc8a85ea7f7b793709661549
+  video_player: 9cc823b1d9da7e8427ee591e8438bfbcde500e6e
   video_player_web: da8cadb8274ed4f8dbee8d7171b420dedd437ce7
   wakelock: 0d4a70faf8950410735e3f61fb15d517c8a6efc4
 
 PODFILE CHECKSUM: 0ba44ad07df4ab62269dc769727cf0f12b1e453d
 
-COCOAPODS: 1.9.1
+COCOAPODS: 1.9.2

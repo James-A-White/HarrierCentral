@@ -704,7 +704,6 @@ class RunDetails extends StatelessWidget {
                       text: event.eventDescription.replaceAll('\r\n', '\n'),
                       style: bodyStyle,
                       linkStyle: bodyStyleYellow,
-                      humanize: true,
                       onOpen: (LinkableElement link) async {
                         if (await canLaunch(link.url)) {
                           await launch(link.url);

@@ -123,18 +123,20 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
   Widget renderNextBtn() {
     return GestureDetector(
         child: Text('Allow', style: navStyle),
-        onTap: () {
+        onTap: () async {
           if (activeTab == 0) {
-            PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.location]).then((Map<PermissionGroup, PermissionStatus> e) {
+            if (await Permission.location.request().isGranted) {
               Utilities.subscribeToGeoLocationStream();
               goToTab(1);
-            });
+            }
           }
 
           if (activeTab == 1) {
-            PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.photos]).then((Map<PermissionGroup, PermissionStatus> e) {
-              goToTab(2);
-            });
+            if (await Permission.camera.request().isGranted) {
+              if (await Permission.photos.request().isGranted) {
+                goToTab(2);
+              }
+            }
           }
 
           if (activeTab == 2) {
@@ -157,12 +159,13 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
 
   Future<void> onSkipPress() async {
     if (activeTab == 0) {
-      CoreUtilities.showAlert(context, 'Location Preference', 'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool allow) {
+      CoreUtilities.showAlert(context, 'Location Preference', 'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow')
+          .then((bool allow) async {
         if (allow) {
-          PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.location]).then((Map<PermissionGroup, PermissionStatus> e) {
+          if (await Permission.location.request().isGranted) {
             Utilities.subscribeToGeoLocationStream();
             goToTab(1);
-          });
+          }
         } else {
           goToTab(1);
         }
@@ -170,11 +173,13 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 1) {
-      CoreUtilities.showAlert(context, 'Camera Preference', 'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool allow) {
+      CoreUtilities.showAlert(context, 'Camera Preference', 'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool allow) async {
         if (allow) {
-          PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.photos]).then((Map<PermissionGroup, PermissionStatus> e) {
-            goToTab(2);
-          });
+          if (await Permission.camera.request().isGranted) {
+            if (await Permission.photos.request().isGranted) {
+              goToTab(2);
+            }
+          }
         } else {
           goToTab(2);
         }
