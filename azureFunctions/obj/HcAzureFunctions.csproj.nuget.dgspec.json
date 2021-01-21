@@ -1,0 +1,92 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/jameswhite/Projects/flutter_old/HC/HarrierCentral/HarrierCentralMobile-Flutter/azureFunctions/HcAzureFunctions.csproj": {}
+  },
+  "projects": {
+    "/Users/jameswhite/Projects/flutter_old/HC/HarrierCentral/HarrierCentralMobile-Flutter/azureFunctions/HcAzureFunctions.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/jameswhite/Projects/flutter_old/HC/HarrierCentral/HarrierCentralMobile-Flutter/azureFunctions/HcAzureFunctions.csproj",
+        "projectName": "HcAzureFunctions",
+        "projectPath": "/Users/jameswhite/Projects/flutter_old/HC/HarrierCentral/HarrierCentralMobile-Flutter/azureFunctions/HcAzureFunctions.csproj",
+        "packagesPath": "/Users/jameswhite/.nuget/packages/",
+        "outputPath": "/Users/jameswhite/Projects/flutter_old/HC/HarrierCentral/HarrierCentralMobile-Flutter/azureFunctions/obj/",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "/Users/jameswhite/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netstandard2.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netstandard2.0": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netstandard2.0": {
+          "dependencies": {
+            "EPPlus": {
+              "target": "Package",
+              "version": "[4.5.3.1, )"
+            },
+            "FirebaseAdmin": {
+              "target": "Package",
+              "version": "[1.6.0, )"
+            },
+            "Microsoft.Azure.WebJobs.Extensions.SendGrid": {
+              "target": "Package",
+              "version": "[3.0.0, )"
+            },
+            "Microsoft.NET.Sdk.Functions": {
+              "target": "Package",
+              "version": "[1.0.26, )"
+            },
+            "NETStandard.Library": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.0.3, )",
+              "autoReferenced": true
+            },
+            "System.Configuration.ConfigurationManager": {
+              "target": "Package",
+              "version": "[4.5.0, )"
+            },
+            "System.Data.SqlClient": {
+              "target": "Package",
+              "version": "[4.6.0, )"
+            },
+            "System.Net.Http": {
+              "target": "Package",
+              "version": "[4.3.4, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.0.101/RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
