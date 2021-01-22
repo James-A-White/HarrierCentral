@@ -25,7 +25,8 @@ dependencies:
   email_validator: ^1.0.6 # updated Jan 20 from 1.0.4
   fancy_bottom_navigation: ^0.3.2
   firebase_messaging: ^7.0.3 # updated Jan 20 from 6.0.16  # upgraded Jun 21 20 from 5.1.8 # upgraded Nov 10 from ^5.1.5 # updated on 11 Sep from 5.1.2 # upgraded from 5.0.4 on 28 Jul #upgraded from 5.0.3 on 5 Jul 19
-  flutter_facebook_login: ^3.0.0 # upgraded from 2.0.1 17 Jan # upgraded from 2.0.0 8 Jun 19 
+  # flutter_facebook_login: ^3.0.0 # upgraded from 2.0.1 17 Jan # upgraded from 2.0.0 8 Jun 19 
+  flutter_facebook_auth: ^2.0.0+1 
   flutter_full_pdf_viewer: ^1.0.6 # upgraded Nov 10 from ^1.0.5 # updated on 11 Sep from 1.0.4
   flutter_image: ^3.0.0 # upgraded Dec 19 from ^2.0.1 # upgraded Nov 10 from ^2.0.0c
   flutter_image_compress: ^0.7.0 # updated Jan 20 from 0.6.8  # upgraded Jun 21 20 from 0.6.5+1 # upgraded Feb 02 from ^0.6.3 # upgraded from 0.4.0 on 28 Jul
