@@ -40,7 +40,7 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.harriercentral.app"
-        minSdkVersion 21 // Min required for fast qr scanner and text to speech
+        minSdkVersion 23 // Min required for audioplayers
         targetSdkVersion 28
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -58,16 +58,11 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
-            ndk {
-                //abiFilters 'armeabi-v7a'
-                //abiFilters 'arm64-v8a'
-            }
+
         }
 
         debug {
-            // ndk {
-            //     abiFilters = []
-            // }
+
         }
     }
 }
@@ -80,6 +75,14 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.android.support:multidex:1.0.3'
+    implementation 'com.google.android.gms:play-services-vision:20.1.1'
+    implementation 'com.google.android.gms:play-services-vision-common:19.1.1'
+    implementation 'com.google.android.gms:play-services-vision-image-label:18.0.5'
+    implementation "com.google.firebase:firebase-ml-vision:24.1.0"
+
 }
 
 apply plugin: 'com.google.gms.google-services'
