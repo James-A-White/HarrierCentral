@@ -59,9 +59,9 @@ dependencies:
   utf: ^0.9.0+5
   video_player: ^1.0.1 # updated Jan 20 from 0.10.11+1 # upgraded Jun 21 20 from 0.10.8+1 # upgraded Feb 25 2020 from 0.10.6 # upgraded Feb 02 from ^0.10.5 # upgraded Dec 19 from ^0.10.2+5 # upgraded Nov 10 from 0.10.2+1 # updated on 11 Sep from 0.10.1+5 #updated from +3 on 29 Jul # from ^0.10.0+8 May 20, from 0.10.1 on 5 July
   
-  fast_qr_reader_view: 
-    git:
-      url: git://github.com/facundomedica/fast_qr_reader_view.git
+  # fast_qr_reader_view: 
+  #   git:
+  #     url: git://github.com/facundomedica/fast_qr_reader_view.git
 
   ive_flutter_core: 
     git:
