@@ -96,8 +96,9 @@ class _LoginPageState extends State<FbLoginPage> {
       final AccessToken accessToken = await FacebookAuth.instance.login();
       print(accessToken.toJson());
       // get the user data
-      final Map<String, dynamic> userData =
-          await FacebookAuth.instance.getUserData();
+      final Map<String, dynamic> userData = await FacebookAuth.instance.getUserData(
+          fields:
+              'name,picture.width(300),email,birthday,gender,link,first_name,last_name');
       print(userData);
 
       onLoginStatusChanged(true,
