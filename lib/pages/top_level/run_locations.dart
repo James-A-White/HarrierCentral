@@ -768,7 +768,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                         padding: EdgeInsets.all(50),
                       ),
                       markers: runLocationMarkers,
-                      polygonOptions: PolygonOptions(
+                      polygonOptions: const PolygonOptions(
                           borderColor: Colors.blueAccent,
                           color: Colors.black12,
                           borderStrokeWidth: 3),
@@ -790,7 +790,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                         padding: EdgeInsets.all(50),
                       ),
                       markers: showKennels == true ? kennelMarkers : <Marker>[],
-                      polygonOptions: PolygonOptions(
+                      polygonOptions: const PolygonOptions(
                           borderColor: Colors.blueAccent,
                           color: Colors.black12,
                           borderStrokeWidth: 3),
