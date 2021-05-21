@@ -13,7 +13,9 @@ KennelCreditsModel _$KennelCreditsModelFromJson(Map<String, dynamic> json) {
     kennelId: json['kennelId'] as String,
     currentBalance: json['currentBalance'] as num,
     balanceAsOfEventId: json['balanceAsOfEventId'] as String,
-    updatedAt: DateTime.parse(json['updatedAt'] as String),
+    updatedAt: json['updatedAt'] == null
+        ? null
+        : DateTime.parse(json['updatedAt'] as String),
     removed: json['removed'] as int,
   );
 }
@@ -25,6 +27,6 @@ Map<String, dynamic> _$KennelCreditsModelToJson(KennelCreditsModel instance) =>
       'kennelId': instance.kennelId,
       'currentBalance': instance.currentBalance,
       'balanceAsOfEventId': instance.balanceAsOfEventId,
-      'updatedAt': instance.updatedAt.toIso8601String(),
+      'updatedAt': instance.updatedAt?.toIso8601String(),
       'removed': instance.removed,
     };

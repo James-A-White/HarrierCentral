@@ -25,7 +25,9 @@ HasherEventMapModel _$HasherEventMapModelFromJson(Map<String, dynamic> json) {
     email: json['email'] as String,
     phoneNumber: json['phoneNumber'] as String,
     removed: json['removed'] as int,
-    updatedAt: DateTime.parse(json['updatedAt'] as String),
+    updatedAt: json['updatedAt'] == null
+        ? null
+        : DateTime.parse(json['updatedAt'] as String),
   );
 }
 
@@ -49,5 +51,5 @@ Map<String, dynamic> _$HasherEventMapModelToJson(
       'email': instance.email,
       'phoneNumber': instance.phoneNumber,
       'removed': instance.removed,
-      'updatedAt': instance.updatedAt.toIso8601String(),
+      'updatedAt': instance.updatedAt?.toIso8601String(),
     };
