@@ -1062,7 +1062,7 @@ class CheckInPackPageState extends State<CheckInPackPage>
       key: _scaffoldKey,
       floatingActionButton: SpeedDial(
         // both default to 16
-        marginEnd: 18,
+        marginRight: 18,
         marginBottom: 30,
         animatedIcon: AnimatedIcons.menu_close,
         animatedIconTheme: const IconThemeData(size: 22.0),

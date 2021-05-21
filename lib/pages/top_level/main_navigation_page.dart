@@ -34,8 +34,7 @@ class MainNavigationPage extends StatefulWidget {
   _MainNavigationPageState createState() => _MainNavigationPageState();
 }
 
-final GlobalKey<RunLocationsPageState> runLocationsPageKey =
-    GlobalKey<RunLocationsPageState>();
+final GlobalKey<RunLocationsPageState> runLocationsPageKey = GlobalKey<RunLocationsPageState>();
 
 class _MainNavigationPageState extends State<MainNavigationPage> {
   //MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
@@ -43,12 +42,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   List<Widget> tabs = <Widget>[];
   List<String> tabTitles = <String>[];
 
-  List<List<String>> tutorials = <List<String>>[
-    tutorialUpcomingRuns,
-    tutorialKennelsView,
-    tutorialRunLocations,
-    tutorialRunCounts
-  ];
+  List<List<String>> tutorials = <List<String>>[tutorialUpcomingRuns, tutorialKennelsView, tutorialRunLocations, tutorialRunCounts];
 
   static List<String> tutorialRunLocations = <String>[
     'images/tutorial/run_locations_help_1.jpg',
@@ -67,9 +61,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     'images/tutorial/upcoming_runs_page_7.jpg',
   ];
 
-  // static List<String> helpNotAvailable = <String>[
-  //   'images/tutorial/help_not_available.jpg',
-  // ];
+  static List<String> helpNotAvailable = <String>[
+    'images/tutorial/help_not_available.jpg',
+  ];
 
   static List<String> tutorialRunCounts = <String>[
     'images/tutorial/run_counts_tutorial_1.jpg',
@@ -123,22 +117,16 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     // the first time this is run, the database will be created. On subsequent
     // runs, the database will simply be opened.
 
-    Tables.migrationList.sort((MigrationsModel a, MigrationsModel b) =>
-        a.dbVersion.compareTo(b.dbVersion));
+    Tables.migrationList.sort((MigrationsModel a, MigrationsModel b) => a.dbVersion.compareTo(b.dbVersion));
 
     // make sure the DB_VERSION is equal to the maximum migration in the list
     assert(DB_VERSION == Tables.migrationList.last.dbVersion);
 
-    openOrInitializeDb(DB_NAME, DB_VERSION, informUser,
-            migrations: Tables.migrationList, createTables: Tables.createTables)
-        .then((void dummy) {
+    openOrInitializeDb(DB_NAME, DB_VERSION, informUser, migrations: Tables.migrationList, createTables: Tables.createTables).then((void dummy) {
       final NotificationSupport notifications = NotificationSupport();
       notifications.configureNotifications(true);
 
-      syncUserDataService
-          .updateFromBackend(SyncUserDataService.flagsAllData, false,
-              informUser: informUser)
-          .then((bool result) {
+      syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false, informUser: informUser).then((bool result) {
         final String resultStr = result ? 'successfully' : 'unsuccessfully';
         print('Master data synchronized $resultStr');
 
@@ -156,11 +144,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
         checkLocationPermissions().then((bool hasLoc) {
           if (hasLoc) {
-            CommonQueries.areWeAtRunStart()
-                .then((AreWeAtRunResult result) async {
-              if ((result.eventId != EMPTY_RESULT) &&
-                  (result.distanceInMeters <=
-                      GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN)) {
+            CommonQueries.areWeAtRunStart().then((AreWeAtRunResult result) async {
+              if ((result.eventId != EMPTY_RESULT) && (result.distanceInMeters <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN)) {
                 final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
                   title: 'Check-in to Run',
                   eventImage: result.eventImage,
@@ -182,16 +167,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 final String userId = getStringPref(StringPrefsEnum.userId);
 
                 if (retVal == enumYesNo_Yes) {
-                  hasherEventMapService
-                      .joinEvent(
-                          result.eventId, userId, null, AppDomainType.user,
-                          rsvpState: rsvpYes.value,
-                          attendenceState: attendenceAtHash.value)
-                      .then((
+                  hasherEventMapService.joinEvent(result.eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value).then((
                     List<dynamic> svcResult,
                   ) {
-                    futureRunsListPageKey.currentState
-                        .forceRefreshFromTableExternal();
+                    futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
                   });
                 }
               }
@@ -218,14 +197,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     //   }
     // }
 
-    PermissionStatus locationPermission = await permissions
-        .checkPermissionStatus(level: LocationPermissionLevel.location);
+    PermissionStatus locationPermission = await permissions.checkPermissionStatus(level: LocationPermissionLevel.location);
     if (locationPermission != PermissionStatus.granted) {
-      locationPermission = await permissions.checkPermissionStatus(
-          level: LocationPermissionLevel.locationWhenInUse);
+      locationPermission = await permissions.checkPermissionStatus(level: LocationPermissionLevel.locationWhenInUse);
       if (locationPermission != PermissionStatus.granted) {
-        locationPermission = await permissions.checkPermissionStatus(
-            level: LocationPermissionLevel.locationAlways);
+        locationPermission = await permissions.checkPermissionStatus(level: LocationPermissionLevel.locationAlways);
         if (locationPermission != PermissionStatus.granted) {
           hasLocPermission = false;
         }
@@ -306,18 +282,14 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                       setState(() {
                         // do this extra setState to ensure the FAB is displayed properly
                       });
-                      Future<void>.delayed(const Duration(milliseconds: 250))
-                          .then((void dummy) {
+                      Future<void>.delayed(const Duration(milliseconds: 250)).then((void dummy) {
                         fabFlipped = isFlipped;
                         setState(() {});
                       });
                     }),
               ],
             ),
-            floatingActionButton: (runLocationsPageKey?.currentState == null) ||
-                    (fabFlipped == true)
-                ? null
-                : runLocationsPageKey.currentState.getFab(),
+            floatingActionButton: (runLocationsPageKey?.currentState == null) || (fabFlipped == true) ? null : runLocationsPageKey.currentState.getFab(),
             body: Container(
                 decoration: const BoxDecoration(color: Colors.white),
                 child: dbCreated == 0
@@ -351,8 +323,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                         back: Container(
                           child: Swiper(
                             pagination: SwiperCustomPagination(
-                              builder: (BuildContext context,
-                                  SwiperPluginConfig config) {
+                              builder: (BuildContext context, SwiperPluginConfig config) {
                                 return Column(
                                   mainAxisSize: MainAxisSize.max,
                                   children: <Widget>[
@@ -362,8 +333,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                                         Expanded(
                                           child: Align(
                                             alignment: Alignment.bottomCenter,
-                                            child:
-                                                const DotSwiperPaginationBuilder(
+                                            child: DotSwiperPaginationBuilder(
                                               color: Colors.grey,
                                               activeColor: Colors.blue,
                                               size: 10.0,
@@ -379,15 +349,12 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                               },
                             ),
                             itemCount: tutorials[currentPage].length,
-                            control: const SwiperControl(
-                                color: Colors.red, disableColor: Colors.blue),
+                            control: const SwiperControl(color: Colors.red, disableColor: Colors.blue),
                             itemBuilder: (BuildContext context, int index) {
                               // this configuration of LayoutBuilder is used to center images that do not
                               // overflow the height of the available render area, but align images
                               // to the top of the render space if they will overflow the available space.
-                              return LayoutBuilder(builder:
-                                  (BuildContext context,
-                                      BoxConstraints constraints) {
+                              return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
                                 return Stack(
                                   overflow: Overflow.clip,
                                   fit: StackFit.passthrough,
@@ -400,12 +367,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                                       child: Column(
                                         children: <Widget>[
                                           ConstrainedBox(
-                                            constraints: BoxConstraints(
-                                                minHeight: constraints
-                                                            .maxHeight >
-                                                        60
-                                                    ? constraints.maxHeight - 60
-                                                    : constraints.maxHeight),
+                                            constraints: BoxConstraints(minHeight: constraints.maxHeight > 60 ? constraints.maxHeight - 60 : constraints.maxHeight),
                                             child: Image.asset(
                                               tutorials[currentPage][index],
                                               fit: BoxFit.fitWidth,
@@ -414,12 +376,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                                         ],
                                       ),
                                     ),
-                                    Positioned(
-                                        bottom: 0.0,
-                                        left: 0.0,
-                                        right: 0.0,
-                                        child: Container(
-                                            height: 60.0, color: Colors.white))
+                                    Positioned(bottom: 0.0, left: 0.0, right: 0.0, child: Container(height: 60.0, color: Colors.white))
                                   ],
                                 );
                               });
@@ -458,8 +415,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                     appBarText = tabTitles[position];
                     currentPage = position;
                     setState(() {});
-                    Future<void>.delayed(const Duration(milliseconds: 100))
-                        .then((void dummy) {
+                    Future<void>.delayed(const Duration(milliseconds: 100)).then((void dummy) {
                       setState(() {});
                     });
                   },

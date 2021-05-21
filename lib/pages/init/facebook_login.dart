@@ -63,7 +63,7 @@ class _LoginPageState extends State<FbLoginPage> {
         //   ),
         // ],
       ),
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomPadding: false,
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         child: Center(
