@@ -39,8 +39,7 @@ class UserEventListItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           item.isLoading
-              ? Icon(delayIcon,
-                  color: Colors.blue[800], size: 35.0)
+              ? Icon(delayIcon, color: Colors.blue[800], size: 35.0)
               : item.attendenceState < attendenceAtHash.value
                   ? const Icon(FontAwesome.times_circle,
                       color: Colors.red, size: 35.0)
@@ -75,8 +74,7 @@ class UserEventListItem extends StatelessWidget {
                     textAlign: TextAlign.left,
                   ),
                   Text(
-                    item.eventStartDatetime.year !=
-                            DateTime.now().year
+                    item.eventStartDatetime.year != DateTime.now().year
                         ? 'Run #${item.eventNumber.toString()} on ${DateFormat("E, MMM d, yyyy \'at\' h:mm a").format(item.eventStartDatetime)}'
                         : 'Run #${item.eventNumber.toString()} on ${DateFormat("E, MMM d \'at\' h:mm a").format(item.eventStartDatetime)}',
                     maxLines: 1,
@@ -105,19 +103,21 @@ class UserEventListItem extends StatelessWidget {
                                   height: 1.0),
                               textAlign: TextAlign.left,
                             ),
-                            item.isHare ==isHareNo.value ? Container() :
-                              Text(
-                              ' and #${item.totalHaringThisKennel} time haring',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  color: Colors.purple[800],
-                                  fontFamily: 'AvenirNextCondensedDemiBold',
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 18.0,
-                                  height: 1.0),
-                              textAlign: TextAlign.left,
-                            ),
+                            item.isHare == isHareNo.value
+                                ? Container()
+                                : Text(
+                                    ' and #${item.totalHaringThisKennel} time haring',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                        color: Colors.purple[800],
+                                        fontFamily:
+                                            'AvenirNextCondensedDemiBold',
+                                        fontStyle: FontStyle.normal,
+                                        fontSize: 18.0,
+                                        height: 1.0),
+                                    textAlign: TextAlign.left,
+                                  ),
                           ],
                         ),
                 ],

@@ -1,5 +1,3 @@
-
-
 import 'dart:async';
 import 'dart:convert';
 
@@ -13,12 +11,8 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:http/http.dart' as http;
 
 class GetResetCodeService {
-
   Future<SingleResultModel> getResetCode(String supportCode) async {
-
-    
-    if (globalConnectionStatus == connectionStatus_notConnected)
-    {
+    if (globalConnectionStatus == connectionStatus_notConnected) {
       return null;
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -26,10 +20,10 @@ class GetResetCodeService {
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final String accessToken = CoreUtilities.generateToken(
-        userId, 'getResetCode');
+    final String accessToken =
+        CoreUtilities.generateToken(userId, 'getResetCode');
 
-    final String body = jsonEncode(<String,String>{
+    final String body = jsonEncode(<String, String>{
       'userId': userId,
       'accessToken': accessToken,
       'supportCode': supportCode
@@ -37,8 +31,8 @@ class GetResetCodeService {
 
     final http.Response response = await http
         .post(BASE_API_URL + 'hc3_get_reset_code',
-            headers: <String,String> {'content-type': 'application/json'}, body: body
-            )
+            headers: <String, String>{'content-type': 'application/json'},
+            body: body)
         .catchError(
       (dynamic error) {
         return false;
@@ -49,9 +43,7 @@ class GetResetCodeService {
 
     json.decode(response.body).forEach(
       (dynamic item) {
-        result = SingleResultModel(
-          result: item['result']
-        );
+        result = SingleResultModel(result: item['result']);
       },
     );
 

@@ -75,10 +75,10 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                         //margin: const EdgeInsets.all(20.0),
                         width: 280.0,
                         child: RaisedButton(
-                          child: Text(
+                          child: const Text(
                             'Scan at start of run',
                             //((controller != null) && isScanningAtRunStart) ? 'Stop Scanning' : 'Scan at start of run',
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontFamily: 'AvenirNextDemiBold',
                                 //color: Colors.white,
                                 fontStyle: FontStyle.normal,
@@ -131,10 +131,10 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                         //margin: const EdgeInsets.all(20.0),
                         width: 280.0,
                         child: RaisedButton(
-                          child: Text(
+                          child: const Text(
                             'Scan at end of run',
                             //((controller != null) && !isScanningAtRunStart) ? 'Stop Scanning' : 'Scan at end of run',
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontFamily: 'AvenirNextDemiBold',
                                 //color: Colors.white,
                                 fontStyle: FontStyle.normal,

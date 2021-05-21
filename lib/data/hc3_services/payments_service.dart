@@ -44,7 +44,8 @@ class PaymentsModel implements BaseModel {
     this.updatedAt,
   });
 
-  factory PaymentsModel.fromJson(Map<String, dynamic> json) => _$PaymentsModelFromJson(json);
+  factory PaymentsModel.fromJson(Map<String, dynamic> json) =>
+      _$PaymentsModelFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$PaymentsModelToJson(this);
@@ -137,7 +138,8 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
   final String colPaymentProvider = 'paymentProvider';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(
+      Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -172,7 +174,8 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
 
     String sql = 'CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);';
     await db.execute(sql);
-    sql = 'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);';
+    sql =
+        'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);';
     await db.execute(sql);
   }
 
@@ -188,7 +191,17 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
 }
 
 class PaymentsService {
-  Future<List<dynamic>> payForEvent(String eventId, String hasherId, String hasherEventMapId, int paymentType, num paymentAmount, int minimumAttendenceValue, EnumPayForExtras<int> doPayForExtras, AppDomainType appDomainType, {num surcharge, String paymentProvider}) async {
+  Future<List<dynamic>> payForEvent(
+      String eventId,
+      String hasherId,
+      String hasherEventMapId,
+      int paymentType,
+      num paymentAmount,
+      int minimumAttendenceValue,
+      EnumPayForExtras<int> doPayForExtras,
+      AppDomainType appDomainType,
+      {num surcharge,
+      String paymentProvider}) async {
     List<dynamic> results;
 
     if (globalConnectionStatus == connectionStatus_notConnected) {
@@ -207,9 +220,17 @@ class PaymentsService {
       hasherId = GUID_EMPTY;
     }
 
-    final String tokenParameterString = hasherEventMapId.toUpperCase() + '#' + hasherId + '#' + paymentAmount.toInt().toString() + '#' + eventId.toUpperCase();
+    final String tokenParameterString = hasherEventMapId.toUpperCase() +
+        '#' +
+        hasherId +
+        '#' +
+        paymentAmount.toInt().toString() +
+        '#' +
+        eventId.toUpperCase();
 
-    final String accessToken = CoreUtilities.generateToken(userId, 'processPayment', paramString: tokenParameterString);
+    final String accessToken = CoreUtilities.generateToken(
+        userId, 'processPayment',
+        paramString: tokenParameterString);
 
     final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
@@ -217,15 +238,24 @@ class PaymentsService {
       hasherEventMapTableHelper.getTableName(appDomainType),
       hasherEventMapTableHelper.colUpdatedAtValue,
     );
-    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+    final DateTime hasherEventMapUpdatedAfter =
+        _hasherEventMapLastUpdated == null
+            ? DateTime(2000, 1, 1)
+            : DateTime.fromMillisecondsSinceEpoch(
+                _hasherEventMapLastUpdated + 1000);
 
-    final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(
+    final num _hasherKennelMapLastUpdated =
+        await baseService.getLastUpdatedTime(
       internalSqlDb,
       hasherKennelMapTableHelper,
       hasherKennelMapTableHelper.getTableName(appDomainType),
       hasherKennelMapTableHelper.colUpdatedAtValue,
     );
-    final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+    final DateTime hasherKennelMapUpdatedAfter =
+        _hasherKennelMapLastUpdated == null
+            ? DateTime(2000, 1, 1)
+            : DateTime.fromMillisecondsSinceEpoch(
+                _hasherKennelMapLastUpdated + 1000);
 
     final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
@@ -233,7 +263,9 @@ class PaymentsService {
       paymentsTableHelper.getTableName(appDomainType),
       paymentsTableHelper.colUpdatedAtValue,
     );
-    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null
+        ? DateTime(2000, 1, 1)
+        : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
 
     final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
@@ -241,7 +273,9 @@ class PaymentsService {
       kennelCreditsTableHelper.getTableName(appDomainType),
       kennelCreditsTableHelper.colUpdatedAtValue,
     );
-    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
+    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null
+        ? DateTime(2000, 1, 1)
+        : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
     final String appDomainStr = appDomainType.toString();
 
@@ -266,7 +300,9 @@ class PaymentsService {
     });
 
     final http.Response response = await http
-        .post(BASE_API_URL + 'hc3_process_payment', headers: <String, String>{'content-type': 'application/json'}, body: body
+        .post(BASE_API_URL + 'hc3_process_payment',
+            headers: <String, String>{'content-type': 'application/json'},
+            body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -277,9 +313,11 @@ class PaymentsService {
     );
 
     if (appDomainType == AppDomainType.event) {
-      results = await syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      results = await syncEventAdminService
+          .updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else {
-      results = await syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      results = await syncUserDataService
+          .updateSqlTablesWithResultsFromBackendApiCall(response.body);
     }
     return results;
   }
@@ -292,7 +330,8 @@ class PaymentsService {
     final String userName = getStringPref(StringPrefsEnum.displayName);
     final String emailAddress = getStringPref(StringPrefsEnum.email);
 
-    final String accessToken = CoreUtilities.generateToken(userId, 'getPaymentReport');
+    final String accessToken =
+        CoreUtilities.generateToken(userId, 'getPaymentReport');
 
     if ((emailAddress ?? '').isNotEmpty) {
       final String body = jsonEncode(<String, String>{
@@ -306,7 +345,9 @@ class PaymentsService {
       });
 
       final http.Response response = await http
-          .post(EMAIL_PAYMENT_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body
+          .post(EMAIL_PAYMENT_API_URL,
+              headers: <String, String>{'content-type': 'application/json'},
+              body: body
               // Send authorization headers to your backend
               //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
               )
@@ -318,6 +359,9 @@ class PaymentsService {
 
       return <String, String>{'result': response.body, 'email': emailAddress};
     }
-    return <String, String>{'result': 'No valid email address found', 'email': ''};
+    return <String, String>{
+      'result': 'No valid email address found',
+      'email': ''
+    };
   }
 }

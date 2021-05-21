@@ -23,21 +23,27 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
   TextStyle titleStyle;
   TextStyle descriptionStyle;
 
-    TextStyle navStyle;
-
+  TextStyle navStyle;
 
   @override
   void initState() {
     super.initState();
   }
 
-
   void addSlides() {
+    descriptionStyle = TextStyle(
+        color: Colors.black,
+        fontSize: 24.0 * deviceWidthScaleFactor,
+        fontFamily: 'AvenirNextRegular');
+    titleStyle = TextStyle(
+        color: Colors.black,
+        fontSize: 32.0 * deviceWidthScaleFactor,
+        fontFamily: 'AvenirNextRegular');
+    navStyle = TextStyle(
+        color: themeAppBarBackground,
+        fontSize: 18.0 * deviceWidthScaleFactor,
+        fontFamily: 'AvenirNextDemiBold');
 
-    descriptionStyle = TextStyle(color: Colors.black, fontSize: 24.0 * deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
-    titleStyle = TextStyle(color: Colors.black, fontSize: 32.0 * deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
-    navStyle = TextStyle(color: themeAppBarBackground, fontSize: 18.0 * deviceWidthScaleFactor, fontFamily: 'AvenirNextDemiBold');
-    
     slides.add(
       Slide(
         title: 'Welcome to Harrier Central',
@@ -116,7 +122,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         directionColorEnd: Alignment.bottomLeft,
       ),
     );
-        slides.add(
+    slides.add(
       Slide(
         title: 'Secure Data',
         maxLineTitle: 2,
@@ -164,15 +170,11 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         directionColorEnd: Alignment.bottomLeft,
       ),
     );
-    
-
   }
 
   Future<void> onDonePress() async {
-    
     Navigator.of(context)
         .pushReplacementNamed(RouteNames.PERMISSIONS_SLIDER.toString());
-
   }
 
   Future<void> onSkipPress() async {
@@ -182,7 +184,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
     // setState(() {
     //   buildIntroSlider();
     // });
-        Navigator.of(context)
+    Navigator.of(context)
         .pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
   }
 
@@ -193,8 +195,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
     //   size: 35.0,
     // );
 
-    return Text('Next', style:navStyle
-    );
+    return Text('Next', style: navStyle);
   }
 
   Widget renderDoneBtn() {
@@ -202,8 +203,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
     //   Icons.done,
     //   color: themeAppBarBackground,
     // );
-        return Text('OK', style:navStyle
-    );
+    return Text('OK', style: navStyle);
   }
 
   Widget renderSkipBtn() {
@@ -211,16 +211,14 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
     //   Icons.skip_next,
     //   color: themeAppBarBackground,
     // );
-        return Text('Skip', style:navStyle
-    );
+    return Text('Skip', style: navStyle);
   }
 
   IntroSlider slider;
 
   @override
   Widget build(BuildContext context) {
-    if (slides.isEmpty)
-    {
+    if (slides.isEmpty) {
       addSlides();
     }
     return IntroSlider(
@@ -248,7 +246,7 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
       sizeDot: 6.5,
 
       // Show or hide status bar
-      shouldHideStatusBar: true,
+      hideStatusBar: true,
     );
   }
 }

@@ -38,13 +38,19 @@ const String BASE_HCWEB_UPLOAD_URL = 'https://hcweb.azurewebsites.net/upload/';
 
 const String BASE_API_URL = 'https://harrier.azurewebsites.net/api/';
 
-const String BASE_PROFILE_PHOTOS_URL = 'https://harriercentral.blob.core.windows.net/profile-photos/';
-const String BASE_RECEIPTS_URL = 'https://harriercentral.blob.core.windows.net/receipts/';
+const String BASE_PROFILE_PHOTOS_URL =
+    'https://harriercentral.blob.core.windows.net/profile-photos/';
+const String BASE_RECEIPTS_URL =
+    'https://harriercentral.blob.core.windows.net/receipts/';
 
-const String EMAIL_RUN_DETAILS_TO_PACK_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendRunDetailEmails';
-const String EMAIL_PAYMENT_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendPaymentReport';
-const String EMAIL_RUN_REPORT_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendRunCountsReport';
-const String EMAIL_KENNEL_RUN_STATS_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendKennelRunStatsReport';
+const String EMAIL_RUN_DETAILS_TO_PACK_API_URL =
+    'https://hcazurefunctions7.azurewebsites.net/api/SendRunDetailEmails';
+const String EMAIL_PAYMENT_API_URL =
+    'https://hcazurefunctions7.azurewebsites.net/api/SendPaymentReport';
+const String EMAIL_RUN_REPORT_API_URL =
+    'https://hcazurefunctions7.azurewebsites.net/api/SendRunCountsReport';
+const String EMAIL_KENNEL_RUN_STATS_API_URL =
+    'https://hcazurefunctions7.azurewebsites.net/api/SendKennelRunStatsReport';
 
 const String GOOGLE_API_KEY = 'AIzaSyAiJXV8P99FwXq2FtYby7To80e9SBTrV2c';
 
@@ -86,18 +92,23 @@ const int hasherPref_150 = 6 * 4;
 const int hasherPref_200 = 7 * 4;
 
 const int mmAuthIsGm = 0x40000000; // TODO(James): Needs implementation
-const int mmAuthCanGrantPermissions = 0x20000000; // TODO(James): Needs implementation
+const int mmAuthCanGrantPermissions =
+    0x20000000; // TODO(James): Needs implementation
 
-const int mmAuthAccessKennelAdmin = 0x00000001; // TODO(James): Needs implementation
+const int mmAuthAccessKennelAdmin =
+    0x00000001; // TODO(James): Needs implementation
 const int mmAuthAllowCheckInAndOutFlag = 0x00000002;
 const int mmAuthAllowHashCashFlag = 0x00000004;
 const int mmAuthAllowAddNewMemberFlag = 0x00000008;
-const int mmAuthAllowEnableDisableFacebookEvents = 0x00000010; // TODO(James): Needs implementation
+const int mmAuthAllowEnableDisableFacebookEvents =
+    0x00000010; // TODO(James): Needs implementation
 const int mmAuthEditRuns = 0x00000020; // TODO(James): Needs implementation
-const int mmAuthGenerateRunQrCodes = 0x00000040; // TODO(James): Needs implementation
+const int mmAuthGenerateRunQrCodes =
+    0x00000040; // TODO(James): Needs implementation
 const int mmAuthManageMembers = 0x00000080; // TODO(James): Needs implementation
 const int mmAuthAllowEditRsvpFlag = 0x00000100;
-const int mmAuthCanEditRunVisibility = 0x00000200; // TODO(James): Needs implementation
+const int mmAuthCanEditRunVisibility =
+    0x00000200; // TODO(James): Needs implementation
 
 const int cacheDurationAllHashers = 60 * 86400000; // 60 days cache duration
 
@@ -110,7 +121,7 @@ const int cacheDurationAllHashers = 60 * 86400000; // 60 days cache duration
 // const String eventPaymentsTable = 'Payments';
 // const String userPaymentsTable = 'userPayments';
 
-const Map<String,int> runTags = <String, int>{
+const Map<String, int> runTags = <String, int>{
   'Normal run': 0x00000001,
   'Red Dress run': 0x00000002,
   'Full Moon run': 0x00000004,
@@ -144,4 +155,3 @@ const Map<String,int> runTags = <String, int>{
   'AGM': 0x40000000,
   'Multi-day event': 0x80000000,
 };
-

@@ -50,9 +50,8 @@ MessageLookupByLibrary _findExact(String localeName) {
 /// User programs should call this before using [localeName] for messages.
 Future<bool> initializeMessages(String localeName) async {
   final String availableLocale = Intl.verifiedLocale(
-    localeName,
-    (String locale) => _deferredLibraries[locale] != null,
-    onFailure: (dynamic _) => null);
+      localeName, (String locale) => _deferredLibraries[locale] != null,
+      onFailure: (dynamic _) => null);
   if (availableLocale == null) {
     // ignore: unnecessary_new
     return Future<bool>.value(false);
@@ -78,8 +77,7 @@ bool _messagesExistFor(String locale) {
 MessageLookupByLibrary _findGeneratedMessagesFor(String locale) {
   final String actualLocale = Intl.verifiedLocale(locale, _messagesExistFor,
       onFailure: (dynamic _) => null);
-  if (actualLocale == null) 
-  {
+  if (actualLocale == null) {
     return null;
   }
   return _findExact(actualLocale);

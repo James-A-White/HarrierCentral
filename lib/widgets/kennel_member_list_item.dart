@@ -13,10 +13,23 @@ import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 import 'package:harrier_central/data/hc3_services/hashers_service.dart';
 import 'package:harrier_central/util/styles.dart';
 
-enum EnumMemberPopupActions { addOneMonth, addSixMonths, subtractOneMonth, subtractSixMonths, cancelMembership, toggleHomeKennel, setHomeKennel, clearHomeKennel }
+enum EnumMemberPopupActions {
+  addOneMonth,
+  addSixMonths,
+  subtractOneMonth,
+  subtractSixMonths,
+  cancelMembership,
+  toggleHomeKennel,
+  setHomeKennel,
+  clearHomeKennel
+}
 
 class KennelMemberListItem extends StatelessWidget {
-  const KennelMemberListItem({@required this.kennelId, @required this.kennelMember, @required this.modifyMembershipCallback, @required this.toggleEmailPreferenceCallback});
+  const KennelMemberListItem(
+      {@required this.kennelId,
+      @required this.kennelMember,
+      @required this.modifyMembershipCallback,
+      @required this.toggleEmailPreferenceCallback});
 
   final String kennelId;
   final KennelMembersResults kennelMember;
@@ -64,7 +77,10 @@ class KennelMemberListItem extends StatelessWidget {
                         // placeholder: (BuildContext context,String url) => const HcCircularProgressIndicator(),
 
                         // TODO(James): Replace avatar icon with missing image icon
-                        errorWidget: (BuildContext context, String url, Object error) => Image.asset('images/avatars/avatar-2.jpg', height: 80, width: 80, fit: BoxFit.fill),
+                        errorWidget:
+                            (BuildContext context, String url, Object error) =>
+                                Image.asset('images/avatars/avatar-2.jpg',
+                                    height: 80, width: 80, fit: BoxFit.fill),
                         //fadeOutDuration:  Duration(seconds: 1),
                         fadeInDuration: const Duration(milliseconds: 0),
                         width: PROFILE_PIC_SIZE,
@@ -75,7 +91,12 @@ class KennelMemberListItem extends StatelessWidget {
                             width: PROFILE_PIC_SIZE,
                             height: PROFILE_PIC_SIZE,
                             fit: BoxFit.fill,
-                            image: AssetImage(('images/avatars/' + kennelMember.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
+                            image: AssetImage(('images/avatars/' +
+                                    kennelMember.photo
+                                        .toLowerCase()
+                                        .replaceFirst('bundle://', '') +
+                                    '.jpg')
+                                .toLowerCase()),
                           )
                         : const Image(
                             width: PROFILE_PIC_SIZE,
@@ -98,7 +119,16 @@ class KennelMemberListItem extends StatelessWidget {
                             child: Text(
                               '${kennelMember.dispName}',
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontFamily: (kennelMember?.membershipExpirationDate ?? DateTime.parse('19900101')).isAfter(DateTime.now()) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensed', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
+                              style: TextStyle(
+                                  fontFamily:
+                                      (kennelMember?.membershipExpirationDate ??
+                                                  DateTime.parse('19900101'))
+                                              .isAfter(DateTime.now())
+                                          ? 'AvenirNextCondensedDemiBold'
+                                          : 'AvenirNextCondensed',
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 22.0,
+                                  height: 1.0),
                               textAlign: TextAlign.left,
                             ),
                           ),
@@ -107,26 +137,44 @@ class KennelMemberListItem extends StatelessWidget {
                       kennelMember.homeKennelBeingUpdated ?? false
                           ? const Text(
                               '<Updating home kennel>',
-                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0, color: Colors.blue),
+                              style: TextStyle(
+                                  fontFamily: 'AvenirNextMedium',
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 15.0,
+                                  height: 1.0,
+                                  color: Colors.blue),
                               textAlign: TextAlign.center,
                             )
                           : Text(
                               '${kennelMember.homeKennelName ?? '<no home hash>'}',
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceWidthScaleFactor, height: 1.0),
+                              style: TextStyle(
+                                  fontFamily: 'AvenirNextMedium',
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 13.0 * deviceWidthScaleFactor,
+                                  height: 1.0),
                               textAlign: TextAlign.left,
                             ),
                       kennelMember.dateOfLastRun == null
                           ? Container()
                           : Text(
                               'Last run: ${DateFormat('MMM dd, yyyy').format(kennelMember.dateOfLastRun)}',
-                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceWidthScaleFactor, height: 1.0),
+                              style: TextStyle(
+                                  fontFamily: 'AvenirNextMedium',
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 13.0 * deviceWidthScaleFactor,
+                                  height: 1.0),
                               textAlign: TextAlign.center,
                             ),
                       kennelMember.membershipDateBeingUpdated ?? false
                           ? Text(
                               '<Updating membership>',
-                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceWidthScaleFactor, height: 1.0, color: Colors.blue),
+                              style: TextStyle(
+                                  fontFamily: 'AvenirNextMedium',
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 13.0 * deviceWidthScaleFactor,
+                                  height: 1.0,
+                                  color: Colors.blue),
                               textAlign: TextAlign.center,
                             )
                           : kennelMember.membershipExpirationDate == null
@@ -134,12 +182,21 @@ class KennelMemberListItem extends StatelessWidget {
                                   ? Container()
                                   : Text(
                                       '(following this Kennel)',
-                                      style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceWidthScaleFactor, height: 1.0),
+                                      style: TextStyle(
+                                          fontFamily: 'AvenirNextMedium',
+                                          fontStyle: FontStyle.normal,
+                                          fontSize:
+                                              13.0 * deviceWidthScaleFactor,
+                                          height: 1.0),
                                       textAlign: TextAlign.center,
                                     )
                               : Text(
                                   'Valid until: ${DateFormat('MMM dd, yyyy').format(kennelMember.membershipExpirationDate)}',
-                                  style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceWidthScaleFactor, height: 1.0),
+                                  style: TextStyle(
+                                      fontFamily: 'AvenirNextMedium',
+                                      fontStyle: FontStyle.normal,
+                                      fontSize: 13.0 * deviceWidthScaleFactor,
+                                      height: 1.0),
                                   textAlign: TextAlign.center,
                                 ),
                     ],
@@ -158,8 +215,13 @@ class KennelMemberListItem extends StatelessWidget {
                             height: 24.0,
                             fit: BoxFit.fill,
                             image: kennelMember.kennelEmailAlertPreference == 1
-                                ? const AssetImage('images/icons/envelope_gold_50px.png')
-                                : kennelMember.kennelEmailAlertPreference == 2 ? const AssetImage('images/icons/envelope_silver_strike_out_50px.png') : const AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
+                                ? const AssetImage(
+                                    'images/icons/envelope_gold_50px.png')
+                                : kennelMember.kennelEmailAlertPreference == 2
+                                    ? const AssetImage(
+                                        'images/icons/envelope_silver_strike_out_50px.png')
+                                    : const AssetImage(
+                                        'images/icons/envelope_silver_strike_out_50px.png'),
                           ),
                   ),
                 ),
@@ -173,14 +235,17 @@ class KennelMemberListItem extends StatelessWidget {
                     onPressed: () {
                       //
 
-                      final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+                      final List<Map<String, dynamic>> buttons =
+                          <Map<String, dynamic>>[
                         <String, dynamic>{
                           'title': 'Add one month',
                           'icon': <Widget>[
                             Container(
                               height: 30,
                               width: 30,
-                              child: const Icon(MaterialCommunityIcons.numeric_1_circle, color: Colors.yellow),
+                              child: const Icon(
+                                  MaterialCommunityIcons.numeric_1_circle,
+                                  color: Colors.yellow),
                             ),
                           ],
                           'returnValue': EnumMemberPopupActions.addOneMonth,
@@ -191,7 +256,9 @@ class KennelMemberListItem extends StatelessWidget {
                             Container(
                               height: 30,
                               width: 30,
-                              child: const Icon(MaterialCommunityIcons.numeric_6_circle, color: Colors.yellow),
+                              child: const Icon(
+                                  MaterialCommunityIcons.numeric_6_circle,
+                                  color: Colors.yellow),
                             ),
                           ],
                           'returnValue': EnumMemberPopupActions.addSixMonths,
@@ -202,10 +269,14 @@ class KennelMemberListItem extends StatelessWidget {
                             Container(
                               height: 30,
                               width: 30,
-                              child: const Icon(MaterialCommunityIcons.numeric_1_circle_outline, color: Colors.yellow),
+                              child: const Icon(
+                                  MaterialCommunityIcons
+                                      .numeric_1_circle_outline,
+                                  color: Colors.yellow),
                             ),
                           ],
-                          'returnValue': EnumMemberPopupActions.subtractOneMonth,
+                          'returnValue':
+                              EnumMemberPopupActions.subtractOneMonth,
                         },
                         <String, dynamic>{
                           'title': 'Subtract six months',
@@ -213,10 +284,14 @@ class KennelMemberListItem extends StatelessWidget {
                             Container(
                               height: 30,
                               width: 30,
-                              child: const Icon(MaterialCommunityIcons.numeric_6_circle_outline, color: Colors.yellow),
+                              child: const Icon(
+                                  MaterialCommunityIcons
+                                      .numeric_6_circle_outline,
+                                  color: Colors.yellow),
                             ),
                           ],
-                          'returnValue': EnumMemberPopupActions.subtractSixMonths,
+                          'returnValue':
+                              EnumMemberPopupActions.subtractSixMonths,
                         },
                         <String, dynamic>{
                           'title': 'Cancel membership',
@@ -224,33 +299,58 @@ class KennelMemberListItem extends StatelessWidget {
                             Container(
                               height: 30,
                               width: 30,
-                              child: Icon(FontAwesome.times_circle, color: Colors.red[200]),
+                              child: Icon(FontAwesome.times_circle,
+                                  color: Colors.red[200]),
                             ),
                           ],
-                          'returnValue': EnumMemberPopupActions.cancelMembership,
+                          'returnValue':
+                              EnumMemberPopupActions.cancelMembership,
                         },
                         kennelMember.homeKennelName == null
                             ? <String, dynamic>{
                                 'title': 'Set home kennel',
-                                'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size: 23)],
-                                'returnValue': EnumMemberPopupActions.setHomeKennel,
+                                'icon': <Widget>[
+                                  Container(
+                                      height: 30,
+                                      width: 30,
+                                      decoration: const BoxDecoration(
+                                          color: Colors.green,
+                                          shape: BoxShape.circle)),
+                                  const Icon(FontAwesome.home,
+                                      color: Colors.white, size: 23)
+                                ],
+                                'returnValue':
+                                    EnumMemberPopupActions.setHomeKennel,
                               }
                             : kennelId == kennelMember.homeKennelId
                                 ? <String, dynamic>{
                                     'title': 'Clear home kennel',
-                                    'icon': <Widget>[Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)), const Icon(FontAwesome.home, color: Colors.white, size: 23)],
-                                    'returnValue': EnumMemberPopupActions.clearHomeKennel,
+                                    'icon': <Widget>[
+                                      Container(
+                                          height: 30,
+                                          width: 30,
+                                          decoration: const BoxDecoration(
+                                              color: Colors.red,
+                                              shape: BoxShape.circle)),
+                                      const Icon(FontAwesome.home,
+                                          color: Colors.white, size: 23)
+                                    ],
+                                    'returnValue':
+                                        EnumMemberPopupActions.clearHomeKennel,
                                   }
                                 : <String, dynamic>{
-                                    'title': '', // NOTE: Because the title is empty, this button will not be displayed
+                                    'title':
+                                        '', // NOTE: Because the title is empty, this button will not be displayed
                                     'icon': <Widget>[
                                       Container(
                                         height: 30,
                                         width: 30,
-                                        child: Icon(FontAwesome.times_circle, color: Colors.red[200]),
+                                        child: Icon(FontAwesome.times_circle,
+                                            color: Colors.red[200]),
                                       ),
                                     ],
-                                    'returnValue': EnumMemberPopupActions.cancelMembership,
+                                    'returnValue':
+                                        EnumMemberPopupActions.cancelMembership,
                                   },
                       ];
 

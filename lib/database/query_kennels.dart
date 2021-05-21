@@ -1,4 +1,3 @@
-
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
@@ -93,14 +92,16 @@ class QueryKennels {
           as searchText
           ''';
 
-  static List<KennelListAggregate> doFilter(String searchText, List<KennelListAggregate> allKennels) {
+  static List<KennelListAggregate> doFilter(
+      String searchText, List<KennelListAggregate> allKennels) {
     List<KennelListAggregate> filteredKennels = <KennelListAggregate>[];
     if (allKennels != null) {
       filteredKennels.addAll(allKennels);
 
       // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
       if ((searchText != null) && (searchText.isNotEmpty)) {
-        final List<String> searchItems = searchText.trim().toLowerCase().split(',');
+        final List<String> searchItems =
+            searchText.trim().toLowerCase().split(',');
         for (String st in searchItems) {
           if (st.trim().isEmpty) {
             continue;
@@ -132,9 +133,9 @@ class QueryKennels {
     return filteredKennels;
   }
 
-  static Future<List<Map<String, dynamic>>> queryKennels(EnumKennelQueryType queryType, EnumKennelQueryContext queryContext, {String hasherId, String kennelId}) async {
-    
-
+  static Future<List<Map<String, dynamic>>> queryKennels(
+      EnumKennelQueryType queryType, EnumKennelQueryContext queryContext,
+      {String hasherId, String kennelId}) async {
     String hkmTable;
 
     switch (queryContext) {
@@ -142,7 +143,8 @@ class QueryKennels {
         hkmTable = hasherKennelMapTableHelper.getTableName(AppDomainType.user);
         break;
       case EnumKennelQueryContext.kennelAdmin:
-        hkmTable = hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
+        hkmTable =
+            hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
         break;
     }
 

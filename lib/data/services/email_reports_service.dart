@@ -11,7 +11,10 @@ import 'package:harrier_central/util/enums.dart';
 
 class EmailReportsService {
   Future<Map<String, String>> sendKennelRunStatsReportByEmail(
-      {String kennelId, String kennelName, int digitsAfterDecimal, String currencySymbol}) async {
+      {String kennelId,
+      String kennelName,
+      int digitsAfterDecimal,
+      String currencySymbol}) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String userName = getStringPref(StringPrefsEnum.displayName);
     final String emailAddress = getStringPref(StringPrefsEnum.email);
@@ -27,8 +30,8 @@ class EmailReportsService {
         'kennelName': kennelName,
         'userName': userName,
         'emailAddress': emailAddress,
-        'digitsAfterDecimal':digitsAfterDecimal.toString(),
-        'currencySymbol':currencySymbol
+        'digitsAfterDecimal': digitsAfterDecimal.toString(),
+        'currencySymbol': currencySymbol
       });
 
       final http.Response response = await http

@@ -5,7 +5,11 @@ import 'package:harrier_central/util/globals.dart';
 import 'package:sqflite/sqflite.dart';
 
 class NotificationsModel {
-  NotificationsModel({this.notificationTag, this.notificationType, this.notificationStatus, this.updatedAtInt});
+  NotificationsModel(
+      {this.notificationTag,
+      this.notificationType,
+      this.notificationStatus,
+      this.updatedAtInt});
 
   final String notificationTag;
   final String notificationType;
@@ -19,7 +23,11 @@ class NotificationsModel {
 
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
-        item = NotificationsModel(notificationTag: jsonItem['notificationTag'], notificationType: jsonItem['notificationType'], notificationStatus: jsonItem['notificationStatus'], updatedAtInt: jsonItem['updatedAtInt']);
+        item = NotificationsModel(
+            notificationTag: jsonItem['notificationTag'],
+            notificationType: jsonItem['notificationType'],
+            notificationStatus: jsonItem['notificationStatus'],
+            updatedAtInt: jsonItem['updatedAtInt']);
 
         items.add(item);
       },
@@ -47,7 +55,8 @@ class NotificationsTableHelper {
 
   // make this a singleton class
 
-  static final NotificationsTableHelper instance = NotificationsTableHelper._privateConstructor();
+  static final NotificationsTableHelper instance =
+      NotificationsTableHelper._privateConstructor();
 
   // SQL code to create the database table
   static Future<dynamic> createTable(Database db, int version) async {
@@ -62,7 +71,8 @@ class NotificationsTableHelper {
           )
           ''');
 
-    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($colNotificationTag);');
+    await db.execute(
+        'CREATE INDEX idx_${tableName}_id ON $tableName($colNotificationTag);');
   }
 
   static Map<String, dynamic> toMap(NotificationsModel item) {
@@ -87,9 +97,11 @@ class NotificationsTableHelper {
     return item;
   }
 
-  static Future<void> recordNotificationStatus(String notificationType, String notificationTag, int status) async {
+  static Future<void> recordNotificationStatus(
+      String notificationType, String notificationTag, int status) async {
     //final String sql = 'INSERT INTO $tableName ($colNotificationType, $colNotificationTag, $colNotificationStatus, $colUpdatedAtInt) VALUES ("$notificationType","$notificationTag",$status,${DateTime.now().millisecondsSinceEpoch}) ON CONFLICT($colNotificationTag) DO UPDATE SET $colNotificationStatus = $status, $colUpdatedAtInt = ${DateTime.now().millisecondsSinceEpoch};';
-    final String sql = 'INSERT OR REPLACE INTO $tableName ($colNotificationType, $colNotificationTag, $colNotificationStatus, $colUpdatedAtInt) VALUES ("$notificationType","$notificationTag",$status,${DateTime.now().millisecondsSinceEpoch});';
+    final String sql =
+        'INSERT OR REPLACE INTO $tableName ($colNotificationType, $colNotificationTag, $colNotificationStatus, $colUpdatedAtInt) VALUES ("$notificationType","$notificationTag",$status,${DateTime.now().millisecondsSinceEpoch});';
     //print(sql);
     internalSqlDb.rawQuery(sql);
   }

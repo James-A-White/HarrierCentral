@@ -7,19 +7,30 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:harrier_central/util/styles.dart';
 
 class BankTransferQr {
-  static void showBankTransferSnackbar(RunDetailAggregate eventAggregate, List<dynamic> results, int paymentType, BuildContext context, String packMemberNameForDisplay, int isMember, num otherAmount) {
+  static void showBankTransferSnackbar(
+      RunDetailAggregate eventAggregate,
+      List<dynamic> results,
+      int paymentType,
+      BuildContext context,
+      String packMemberNameForDisplay,
+      int isMember,
+      num otherAmount) {
     if (eventAggregate.kennel.bankBic != null) {
       String paymentReference = '';
-      if ((results != null) && (results.isNotEmpty) && (results[0]['paymentReference'] != null)) {
+      if ((results != null) &&
+          (results.isNotEmpty) &&
+          (results[0]['paymentReference'] != null)) {
         //paymentReference = ', HC Payment Ref: ${results[0]['paymentReference']}';
         paymentReference = '${results[0]['paymentReference']}';
       }
 
-      if ((paymentType != paymentBankTransferOtherAmount.value) && (paymentType != paymentCashOtherAmount.value)) {
+      if ((paymentType != paymentBankTransferOtherAmount.value) &&
+          (paymentType != paymentCashOtherAmount.value)) {
         otherAmount = -1;
       }
 
-      if ((paymentType == paymentBankTransfer.value) || (paymentType == paymentBankTransferOtherAmount.value)) {
+      if ((paymentType == paymentBankTransfer.value) ||
+          (paymentType == paymentBankTransferOtherAmount.value)) {
         // String paidFor = 'Run fee, ${eventAggregate.event.eventStartDatetime.toString().substring(0, 10)}, ${eventAggregate.event.eventName}';
         // if (paymentType == paymentBankTransferOtherAmount.value) {
         //   paidFor += ' + credit';
@@ -39,8 +50,13 @@ class BankTransferQr {
                 textColor: Colors.white,
                 onPressed: () {
                   Scaffold.of(context).hideCurrentSnackBar();
-                  final String remittanceInfo = paymentReference + '-$packMemberNameForDisplay';
-                  BankTransferQr.showBankTransferQrCode(context, eventAggregate, isMember != 0, remitString: remittanceInfo, remitAmount: otherAmount, packMemberNameForDisplay: packMemberNameForDisplay);
+                  final String remittanceInfo =
+                      paymentReference + '-$packMemberNameForDisplay';
+                  BankTransferQr.showBankTransferQrCode(
+                      context, eventAggregate, isMember != 0,
+                      remitString: remittanceInfo,
+                      remitAmount: otherAmount,
+                      packMemberNameForDisplay: packMemberNameForDisplay);
                 },
               ),
             )));
@@ -48,18 +64,23 @@ class BankTransferQr {
     }
   }
 
-  static void showBankTransferQrCode(BuildContext context, RunDetailAggregate eventAggregate, bool member, {String remitString, num remitAmount, String packMemberNameForDisplay}) {
+  static void showBankTransferQrCode(
+      BuildContext context, RunDetailAggregate eventAggregate, bool member,
+      {String remitString, num remitAmount, String packMemberNameForDisplay}) {
     if (eventAggregate.kennel.bankBic != null) {
       num amount = eventAggregate.extensions.memberPrice;
 
-      String runId = DateFormat('yy-MM-dd').format(eventAggregate.event.eventStartDatetime);
+      String runId = DateFormat('yy-MM-dd')
+          .format(eventAggregate.event.eventStartDatetime);
 
       if (eventAggregate.event.isCountedRun != 0) {
         runId = eventAggregate.event.eventNumber.toString();
       }
 
-      String remittanceInfo = '${eventAggregate.kennel.kennelShortName}:R-$runId-';
-      String beneficiaryInfo = '${eventAggregate.kennel.kennelShortName}:R-$runId-';
+      String remittanceInfo =
+          '${eventAggregate.kennel.kennelShortName}:R-$runId-';
+      String beneficiaryInfo =
+          '${eventAggregate.kennel.kennelShortName}:R-$runId-';
 
       if (remitString != null) {
         remittanceInfo += remitString;
@@ -105,7 +126,8 @@ $beneficiaryInfo
 ''';
 
       final QrPopup pp = QrPopup(
-        dialogTitle: '${(packMemberNameForDisplay != null) ? packMemberNameForDisplay + '\r\n' : ''}Scan to pay by bank transfer',
+        dialogTitle:
+            '${(packMemberNameForDisplay != null) ? packMemberNameForDisplay + '\r\n' : ''}Scan to pay by bank transfer',
         qrText: qrPayload,
       );
 

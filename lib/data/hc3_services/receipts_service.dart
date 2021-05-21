@@ -15,8 +15,6 @@ import 'package:harrier_central/util/enums.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 
-
-
 part 'receipts_service.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.none)
@@ -39,7 +37,8 @@ class ReceiptsModel implements BaseModel {
     this.updatedAt,
   });
 
-  factory ReceiptsModel.fromJson(Map<String, dynamic> json) => _$ReceiptsModelFromJson(json);
+  factory ReceiptsModel.fromJson(Map<String, dynamic> json) =>
+      _$ReceiptsModelFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$ReceiptsModelToJson(this);
@@ -109,7 +108,8 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
   final String colReimbursedNotes = 'reimbursedNotes';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(
+      Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -135,8 +135,10 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
           )
           ''');
 
-    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
+    await db.execute(
+        'CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
+    await db.execute(
+        'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
   @override
@@ -149,7 +151,8 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
     return ReceiptsModel.fromJson(map);
   }
 
-  String toQueryBody(String userId, String accessToken, ReceiptsModel item, String receiptsUploadedAfter) {
+  String toQueryBody(String userId, String accessToken, ReceiptsModel item,
+      String receiptsUploadedAfter) {
     final String map = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
@@ -173,7 +176,8 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
 class ReceiptsService {
   Future<String> uploadReceipt(BuildContext context, ReceiptsModel item) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken = CoreUtilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
+    final String accessToken =
+        CoreUtilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
 
     final num _receiptsLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
@@ -181,11 +185,15 @@ class ReceiptsService {
       receiptsTableHelper.getTableName(AppDomainType.event),
       receiptsTableHelper.colUpdatedAtValue,
     );
-    final DateTime receiptsUpdatedAfter = _receiptsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_receiptsLastUpdated + 1000);
+    final DateTime receiptsUpdatedAfter = _receiptsLastUpdated == null
+        ? DateTime(2000, 1, 1)
+        : DateTime.fromMillisecondsSinceEpoch(_receiptsLastUpdated + 1000);
 
-    final String body = receiptsTableHelper.toQueryBody(userId, accessToken, item, receiptsUpdatedAfter.toString());
+    final String body = receiptsTableHelper.toQueryBody(
+        userId, accessToken, item, receiptsUpdatedAfter.toString());
 
-    final String responseBody = await ServiceCommon.sendRequest(context, 'hc3_add_edit_receipt', body);
+    final String responseBody =
+        await ServiceCommon.sendRequest(context, 'hc3_add_edit_receipt', body);
 
     return responseBody;
   }

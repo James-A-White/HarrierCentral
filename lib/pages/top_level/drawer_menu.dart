@@ -12,7 +12,6 @@ import 'package:harrier_central/pages/menu_pages/support_page.dart';
 import 'package:harrier_central/pages/menu_pages/privacy_policy_page.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 
-
 class DrawerMenu extends StatefulWidget {
   const DrawerMenu({Key key, this.scaffoldKey}) : super(key: key);
 
@@ -100,14 +99,16 @@ class DrawerMenuState extends State<DrawerMenu> {
                     context,
                     MaterialPageRoute<dynamic>(
                       settings: const RouteSettings(),
-
                       builder: (BuildContext context) {
                         return HasherProfilePage(
-                          dataContext: EnumDataContext.user, 
-                          pageType: EnumMyProfilePageType.myProfile, 
+                          dataContext: EnumDataContext.user,
+                          pageType: EnumMyProfilePageType.myProfile,
                           hasherId: userId,
-                          uiElementsToDisplay: HasherProfilePage.flagUiElement_distancePref | HasherProfilePage.flagUiElement_autoDisplayRunsDistance,
-                          );
+                          uiElementsToDisplay:
+                              HasherProfilePage.flagUiElement_distancePref |
+                                  HasherProfilePage
+                                      .flagUiElement_autoDisplayRunsDistance,
+                        );
                       },
                     ),
                   );
@@ -203,7 +204,6 @@ class DrawerMenuState extends State<DrawerMenu> {
                 },
               ),
 
-
               ListTile(
                 leading: const Icon(MaterialCommunityIcons.shield_lock,
                     color: textColor),
@@ -221,8 +221,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                   );
                 },
               ),
-            
-                          
+
               ListTile(
                 leading: const Icon(MaterialCommunityIcons.cloud_download,
                     color: textColor),
@@ -240,8 +239,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                   );
                 },
               ),
-            
-            
+
               ListTile(
                 leading: const Icon(FontAwesome.support, color: textColor),
                 title: Text('Support', style: style),
@@ -266,5 +264,3 @@ class DrawerMenuState extends State<DrawerMenu> {
     );
   }
 }
-
-

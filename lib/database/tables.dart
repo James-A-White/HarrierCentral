@@ -9,7 +9,7 @@ import 'package:harrier_central/util/globals.dart';
 
 import 'package:harrier_central/database/notifications_table.dart';
 
-enum AppDomainType {user,event,kennel}
+enum AppDomainType { user, event, kennel }
 //enum TableType { baseTable, hemUser, hemEventAdmin, hkmUser, hkmEventAdmin, hkmKennelAdmin, paymentsUser, paymentsEvent }
 
 class Tables {
@@ -145,79 +145,86 @@ class Tables {
 
     // MigrationsModel(dbVersion: 252, migrationText: '''
     //               ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colLocationRegion} TEXT;
-    //               ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colLocationSubRegion} TEXT;         
+    //               ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colLocationSubRegion} TEXT;
     //      '''),
 
     // MigrationsModel(dbVersion: 253, migrationText: '''
-    //               ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPinColor} INT;    
+    //               ALTER TABLE ${kennelsTableHelper.tableName} ADD COLUMN ${kennelsTableHelper.colKennelPinColor} INT;
     //      '''),
 
     // MigrationsModel(dbVersion: DB_VERSION, migrationText: '''
-    //               ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colEventGeographicScope} INT;          
+    //               ALTER TABLE ${eventsTableHelper.tableName} ADD COLUMN ${eventsTableHelper.colEventGeographicScope} INT;
     //      '''),
   ];
 
-  static Future<void> createTables(Database db, int version, Function informUser) async {
+  static Future<void> createTables(
+      Database db, int version, Function informUser) async {
     await hashersTableHelper.createTable(db, version, AppDomainType.user);
     await citiesTableHelper.createTable(db, version, AppDomainType.user);
     await regionsTableHelper.createTable(db, version, AppDomainType.user);
     await countriesTableHelper.createTable(db, version, AppDomainType.user);
     await kennelsTableHelper.createTable(db, version, AppDomainType.user);
-    await hasherKennelMapTableHelper.createTable(db, version, AppDomainType.user);
-    await hasherEventMapTableHelper.createTable(db, version, AppDomainType.user);
+    await hasherKennelMapTableHelper.createTable(
+        db, version, AppDomainType.user);
+    await hasherEventMapTableHelper.createTable(
+        db, version, AppDomainType.user);
     await eventsTableHelper.createTable(db, version, AppDomainType.user);
     await paymentsTableHelper.createTable(db, version, AppDomainType.user);
     await NotificationsTableHelper.createTable(db, version);
     await MigrationsTableHelper.createTable(db, version);
 
     // create event admin tables
-    await hasherEventMapTableHelper.createTable(db, version, AppDomainType.event);
-    await hasherKennelMapTableHelper.createTable(db, version, AppDomainType.event);
+    await hasherEventMapTableHelper.createTable(
+        db, version, AppDomainType.event);
+    await hasherKennelMapTableHelper.createTable(
+        db, version, AppDomainType.event);
     await paymentsTableHelper.createTable(db, version, AppDomainType.event);
     await receiptsTableHelper.createTable(db, version, AppDomainType.event);
-    await kennelCreditsTableHelper.createTable(db, version, AppDomainType.event);
+    await kennelCreditsTableHelper.createTable(
+        db, version, AppDomainType.event);
 
     // create kennel admin tables
-    await hasherKennelMapTableHelper.createTable(db, version, AppDomainType.kennel);
+    await hasherKennelMapTableHelper.createTable(
+        db, version, AppDomainType.kennel);
 
-    if (informUser != null) {
-      informUser('Loading city data\r\n0% complete');
-    }
-    // first load the cities from the static text file into SQFLITE
-    final String cityJson = await rootBundle.loadString('database/cities.json');
-    final BaseService citySrv = BaseService();
-    await citySrv.bulkUpdateDatabase(
-      citiesTableHelper,
-      citiesTableHelper.getTableName(AppDomainType.user),
-      cityJson,
-      db,
-      informUser: informUser,
-    );
+    // if (informUser != null) {
+    //   informUser('Loading city data\r\n0% complete');
+    // }
+    // // first load the cities from the static text file into SQFLITE
+    // final String cityJson = await rootBundle.loadString('database/cities.json');
+    // final BaseService citySrv = BaseService();
+    // await citySrv.bulkUpdateDatabase(
+    //   citiesTableHelper,
+    //   citiesTableHelper.getTableName(AppDomainType.user),
+    //   cityJson,
+    //   db,
+    //   informUser: informUser,
+    // );
 
-    if (informUser != null) {
-      informUser('Loading region data\r\n0% complete');
-    }
-    // first load the regions from the static text file into SQFLITE
-    final String regionJson = await rootBundle.loadString('database/regions.json');
-    await baseService.bulkUpdateDatabase(
-      regionsTableHelper,
-      regionsTableHelper.getTableName(AppDomainType.user),
-      regionJson,
-      db,
-      informUser: informUser,
-    );
+    // if (informUser != null) {
+    //   informUser('Loading region data\r\n0% complete');
+    // }
+    // // first load the regions from the static text file into SQFLITE
+    // final String regionJson = await rootBundle.loadString('database/regions.json');
+    // await baseService.bulkUpdateDatabase(
+    //   regionsTableHelper,
+    //   regionsTableHelper.getTableName(AppDomainType.user),
+    //   regionJson,
+    //   db,
+    //   informUser: informUser,
+    // );
 
-    if (informUser != null) {
-      informUser('Loading country data\r\n0% complete');
-    }
+    // if (informUser != null) {
+    //   informUser('Loading country data\r\n0% complete');
+    // }
 
-    final String countriesJson = await rootBundle.loadString('database/countries.json');
-    await baseService.bulkUpdateDatabase(
-      countriesTableHelper,
-      countriesTableHelper.getTableName(AppDomainType.user),
-      countriesJson,
-      db,
-      informUser: informUser,
-    );
+    // final String countriesJson = await rootBundle.loadString('database/countries.json');
+    // await baseService.bulkUpdateDatabase(
+    //   countriesTableHelper,
+    //   countriesTableHelper.getTableName(AppDomainType.user),
+    //   countriesJson,
+    //   db,
+    //   informUser: informUser,
+    // );
   }
 }

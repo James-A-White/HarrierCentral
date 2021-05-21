@@ -12,7 +12,6 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:ive_flutter_core/database/database.dart';
 import 'package:harrier_central/util/enums.dart';
 
-
 class GetResetCodePopup extends StatefulWidget {
   const GetResetCodePopup();
 
@@ -77,7 +76,7 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
             child: const Text('Reset'),
             textColor: Colors.white,
             onPressed: () {
-                clearPrefs();
+              clearPrefs();
             }),
 
         FlatButton(
@@ -99,7 +98,8 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
             onPressed: () {
               final GetResetCodeService svc = GetResetCodeService();
               svc
-                  .getResetCode(QR_PREFIX_USER_SECRET_CODE + getResetCodeTextController.text)
+                  .getResetCode(QR_PREFIX_USER_SECRET_CODE +
+                      getResetCodeTextController.text)
                   .then((SingleResultModel result) {
                 setState(() {
                   getResetCodeTextController.text = result.result;
@@ -112,7 +112,8 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
               // });
             }),
 
-        ((!getResetCodeTextController.text.startsWith(QR_PREFIX_USER_RESET_CODE)) ||
+        ((!getResetCodeTextController.text
+                    .startsWith(QR_PREFIX_USER_RESET_CODE)) ||
                 (getResetCodeTextController.text.length != 9))
             ? Container()
             : FlatButton(
@@ -121,16 +122,15 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
                 textColor: Colors.white,
                 onPressed: () async {
                   if (getResetCodeTextController.text.toUpperCase() ==
-                      QR_PREFIX_USER_RESET_CODE+ 'CLEAR') {
-
+                      QR_PREFIX_USER_RESET_CODE + 'CLEAR') {
                     clearPrefs();
                     await DBProvider.deleteDb(DB_NAME);
-                    
+
                     CoreUtilities.showAlert(
-                              context,
-                              'App Cleared Successful',
-                              'Your app has been successfully cleared. Please close and restart the app to start the installation process again.',
-                              'OK');
+                        context,
+                        'App Cleared Successful',
+                        'Your app has been successfully cleared. Please close and restart the app to start the installation process again.',
+                        'OK');
                   } else {
                     final AuthorizeDeviceService srv = AuthorizeDeviceService();
                     final Future<Map<String, String>> apiCall =

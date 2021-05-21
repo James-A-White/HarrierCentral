@@ -76,7 +76,6 @@ class HistoryListPageState extends State<HistoryListPage> {
   }
 
   Future<void> refreshRunHistoryFromTable(bool forceRefresh) async {
-    
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String query = '''  
@@ -100,13 +99,15 @@ class HistoryListPageState extends State<HistoryListPage> {
 
     runCountsList = <HistoryListResults>[];
     try {
-      final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(query);
+      final List<Map<String, dynamic>> results =
+          await internalSqlDb.rawQuery(query);
 
       _totalHaring = 0;
       _totalRuns = 0;
 
       for (int i = 0; i < results.length; i++) {
-        final HistoryListResults hlrItem = HistoryListResults.fromMap(results[i]);
+        final HistoryListResults hlrItem =
+            HistoryListResults.fromMap(results[i]);
         _totalHaring += hlrItem.totalHaringThisKennel;
         _totalRuns += hlrItem.totalRunsThisKennel;
         runCountsList.add(hlrItem);
@@ -124,7 +125,9 @@ class HistoryListPageState extends State<HistoryListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: _isLoading ? _buildCircularProgressIndicator() : _buildListView());
+    return Scaffold(
+        body:
+            _isLoading ? _buildCircularProgressIndicator() : _buildListView());
   }
 
   Widget _buildCircularProgressIndicator() {
@@ -134,19 +137,25 @@ class HistoryListPageState extends State<HistoryListPage> {
   }
 
   Future<void> _handleRefresh() async {
-    
-
     setState(() {
       _isLoading = true;
     });
 
-    final bool result = await syncUserDataService.updateFromBackend(SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
+    final bool result = await syncUserDataService.updateFromBackend(
+        SyncUserDataService.flagHasherEventMapTable |
+            SyncUserDataService.flagNarrowEventsTable |
+            SyncUserDataService.flagKennelsTable,
+        true);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Hasher data synchronized $resultStr');
     refreshRunHistoryFromTable(true);
   }
 
-  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
+  TextStyle headingStyle = const TextStyle(
+      fontFamily: 'AvenirNextCondensedDemiBold',
+      fontStyle: FontStyle.normal,
+      fontSize: 22.0,
+      height: 0.6);
 
   Widget _buildListView() {
     final String _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
@@ -213,27 +222,49 @@ class HistoryListPageState extends State<HistoryListPage> {
                 width: MediaQuery.of(context).size.width,
                 child: Row(
                   children: <Widget>[
-                    ProfilePhoto(leftPadding: 20.0, photoHeight: 80.0, profilePhotoUrl: _photo),
+                    ProfilePhoto(
+                        leftPadding: 20.0,
+                        photoHeight: 80.0,
+                        profilePhotoUrl: _photo),
                     const SizedBox(width: 20),
                     (runCountsList == null || runCountsList.isEmpty)
                         ? Container()
-                        : Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                            const Text(
-                              'My total run counts',
-                              style: TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
-                              textAlign: TextAlign.center,
-                            ),
-                            Text(
-                              'Total runs: ' + _totalRuns.toString(),
-                              style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
-                              textAlign: TextAlign.left,
-                            ),
-                            Text(
-                              'Total times hared: ' + _totalHaring.toString(),
-                              style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
-                              textAlign: TextAlign.left,
-                            ),
-                          ])
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                                const Text(
+                                  'My total run counts',
+                                  style: TextStyle(
+                                      color: Colors.black87,
+                                      fontFamily: 'AvenirNextBold',
+                                      fontStyle: FontStyle.normal,
+                                      fontSize: 18.0,
+                                      height: 1.2),
+                                  textAlign: TextAlign.center,
+                                ),
+                                Text(
+                                  'Total runs: ' + _totalRuns.toString(),
+                                  style: const TextStyle(
+                                      color: Colors.black87,
+                                      fontFamily: 'AvenirNextDemiBold',
+                                      fontStyle: FontStyle.normal,
+                                      fontSize: 18.0,
+                                      height: 1.2),
+                                  textAlign: TextAlign.left,
+                                ),
+                                Text(
+                                  'Total times hared: ' +
+                                      _totalHaring.toString(),
+                                  style: const TextStyle(
+                                      color: Colors.black87,
+                                      fontFamily: 'AvenirNextDemiBold',
+                                      fontStyle: FontStyle.normal,
+                                      fontSize: 18.0,
+                                      height: 1.2),
+                                  textAlign: TextAlign.left,
+                                ),
+                              ])
                   ],
                 ))),
       ],

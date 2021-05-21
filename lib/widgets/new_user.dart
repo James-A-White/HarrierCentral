@@ -19,7 +19,7 @@
 // import 'package:harrier_central/util/utilities.dart';
 // import 'package:harrier_central/util/enums.dart';
 // import 'package:harrier_central/util/constants.dart';
-// 
+//
 // import 'package:harrier_central/util/styles.dart';
 // import 'package:harrier_central/widgets/user_details_ui.dart';
 // import 'package:flutter_facebook_login/flutter_facebook_login.dart';

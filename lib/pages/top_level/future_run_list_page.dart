@@ -18,7 +18,8 @@ import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/data/hc3_services/kennels_service.dart';
 import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
 
-final GlobalKey<FutureRunListPageState> futureRunsListPageKey = GlobalKey<FutureRunListPageState>();
+final GlobalKey<FutureRunListPageState> futureRunsListPageKey =
+    GlobalKey<FutureRunListPageState>();
 
 class FutureRunsListPage extends StatefulWidget {
   FutureRunsListPage() : super(key: futureRunsListPageKey);
@@ -36,13 +37,16 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   TextEditingController searchController = TextEditingController();
   String searchText;
   bool searchAllRuns = false;
-  ScrollController scrollController = ScrollController(initialScrollOffset: 100.0);
+  ScrollController scrollController =
+      ScrollController(initialScrollOffset: 100.0);
   bool showFilters = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: allRuns == null ? const HcCircularProgressIndicator() : _buildListView(),
+      body: allRuns == null
+          ? const HcCircularProgressIndicator()
+          : _buildListView(),
     );
   }
 
@@ -51,28 +55,29 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   }
 
   Future<void> _refreshFromBackend({bool clearLocalTables = false}) async {
-    
-
     if (clearLocalTables) {
       setState(() {
         allRuns = null;
       });
 
-      String query = 'DELETE FROM ${hasherEventMapTableHelper.getTableName(AppDomainType.user)}';
+      String query =
+          'DELETE FROM ${hasherEventMapTableHelper.getTableName(AppDomainType.user)}';
       try {
         await internalSqlDb.rawQuery(query);
       } catch (e) {
         print(e);
       }
 
-      query = 'DELETE FROM ${paymentsTableHelper.getTableName(AppDomainType.user)}';
+      query =
+          'DELETE FROM ${paymentsTableHelper.getTableName(AppDomainType.user)}';
       try {
         await internalSqlDb.rawQuery(query);
       } catch (e) {
         print(e);
       }
 
-      query = 'DELETE FROM ${eventsTableHelper.getTableName(AppDomainType.user)}';
+      query =
+          'DELETE FROM ${eventsTableHelper.getTableName(AppDomainType.user)}';
       try {
         await internalSqlDb.rawQuery(query);
       } catch (e) {
@@ -80,7 +85,14 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
       }
     }
 
-    syncUserDataService.updateFromBackend(SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable | SyncUserDataService.flagPaymentsTable, false).then((bool result) {
+    syncUserDataService
+        .updateFromBackend(
+            SyncUserDataService.flagHasherEventMapTable |
+                SyncUserDataService.flagNarrowEventsTable |
+                SyncUserDataService.flagKennelsTable |
+                SyncUserDataService.flagPaymentsTable,
+            false)
+        .then((bool result) {
       refreshFromTable(true);
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Events user data synchronized $resultStr');
@@ -89,7 +101,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
   @override
   void initState() {
-    CoreUtilities.logTiming('initState called',appStartTime);
+    CoreUtilities.logTiming('initState called', appStartTime);
     searchController.text = '';
     searchText = '';
     refreshFromTable(true);
@@ -118,7 +130,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 4.0),
-                child: Text('Search all runs', style: headingStyleBlack.copyWith(fontSize: 18.0)),
+                child: Text('Search all runs',
+                    style: headingStyleBlack.copyWith(fontSize: 18.0)),
               ),
             ],
           ),
@@ -143,7 +156,10 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                       focusNode: searchFocusNode,
                       controller: searchController,
                       keyboardType: TextInputType.text,
-                      style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                      style: const TextStyle(
+                          fontFamily: 'WorkSansSemiBold',
+                          fontSize: 16.0,
+                          color: Colors.black),
                       decoration: const InputDecoration(
                         border: InputBorder.none,
                         icon: Icon(
@@ -151,7 +167,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                           color: Colors.black,
                         ),
                         hintText: 'Search...',
-                        hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                        hintStyle: TextStyle(
+                            fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                       ),
                     ),
                   ),
@@ -182,31 +199,46 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   void refreshFromTable(bool forceRefresh) {
     if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
       final Geolocator locator = Geolocator();
-      CoreUtilities.logTiming('Geoquery start',appStartTime);
+      CoreUtilities.logTiming('Geoquery start', appStartTime);
 
-      CoreUtilities.logTiming('Run query start',appStartTime);
-      QueryRuns.queryRuns(EnumRunQueryType.topRunsPage, EnumRunQueryContext.user, searchAllRuns: searchAllRuns).then((List<Map<String, dynamic>> results) {
-        CoreUtilities.logTiming('Run query end',appStartTime);
+      CoreUtilities.logTiming('Run query start', appStartTime);
+      QueryRuns.queryRuns(
+              EnumRunQueryType.topRunsPage, EnumRunQueryContext.user,
+              searchAllRuns: searchAllRuns)
+          .then((List<Map<String, dynamic>> results) {
+        CoreUtilities.logTiming('Run query end', appStartTime);
         allRuns = <RunDetailsAggregate>[];
         for (int i = 0; i < results.length; i++) {
-          locator.distanceBetween(CoreUtilities.unInt(deviceLat), CoreUtilities.unInt(deviceLon), CoreUtilities.unInt(results[i]['narrowEventLatitude']), CoreUtilities.unInt(results[i]['narrowEventLongitude'])).then((num dist) {
+          locator
+              .distanceBetween(
+                  CoreUtilities.unInt(deviceLat),
+                  CoreUtilities.unInt(deviceLon),
+                  CoreUtilities.unInt(results[i]['narrowEventLatitude']),
+                  CoreUtilities.unInt(results[i]['narrowEventLongitude']))
+              .then((num dist) {
             final EventModel eventItem = eventsTableHelper.fromMap(results[i]);
-            final KennelsModel kennelItem = kennelsTableHelper.fromMap(results[i]);
-            final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i],eventItem.eventStartDatetime);
+            final KennelsModel kennelItem =
+                kennelsTableHelper.fromMap(results[i]);
+            final RunDetailsQueryExtensions extensionsItem =
+                RunDetailsQueryExtensions.fromMap(
+                    results[i], eventItem.eventStartDatetime);
             extensionsItem.distToEvent = dist;
 
             String paymentLinkUrl = '';
 
-            if (((eventItem.eventPaymentUrl ?? '') != '') && (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
+            if (((eventItem.eventPaymentUrl ?? '') != '') &&
+                (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
               paymentLinkUrl = eventItem.eventPaymentUrl;
-            } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+            } else if (((kennelItem.kennelPaymentUrl ?? '') != '') &&
+                (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
               paymentLinkUrl = kennelItem.kennelPaymentUrl;
             }
 
             final num julianNow = results[i]['nowJulian'];
             final num eventJulian = results[i]['eventJulian'];
 
-            print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+            print(
+                'Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 
             num meters = 0;
 
@@ -240,19 +272,26 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                 break;
             }
 
-            if ((extensionsItem.distancePreference != 0) || ((extensionsItem.userPrefs & 0x00000002) == 0)) {
+            if ((extensionsItem.distancePreference != 0) ||
+                ((extensionsItem.userPrefs & 0x00000002) == 0)) {
               meters = meters * MILES_TO_METERS / 1000;
             }
 
-            if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < meters))) {
-              final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
+            if ((searchAllRuns == true) ||
+                (extensionsItem.following >= 1) ||
+                ((extensionsItem.following == 0) && (dist < meters))) {
+              final RunDetailsAggregate item = RunDetailsAggregate(
+                  event: eventItem,
+                  kennel: kennelItem,
+                  extensions: extensionsItem,
+                  paymentUrl: paymentLinkUrl);
               allRuns.add(item);
             }
             if (i == results.length - 1) {
-              CoreUtilities.logTiming('Filter start',appStartTime);
+              CoreUtilities.logTiming('Filter start', appStartTime);
               filterRuns();
               setState(() {});
-              CoreUtilities.logTiming('Filter end',appStartTime);
+              CoreUtilities.logTiming('Filter end', appStartTime);
             }
           });
         }
@@ -260,18 +299,18 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     }
   }
 
-/// filterRuns() provides a complex filtering (search) option
-/// where the plus sign (+) is used as a logical OR allowing
-/// query results to be added together and commas (,) to be used
-/// to separate query options and act as a logical AND function, thus
-/// limiting the query results. Finally the text 'not ' at the beginning
-/// of a search term will negate the resdults.
-/// 
-/// For example: "AH3 + FILTH, not Wednesday + Thursday" will show all 
-/// Amsterdam and FILTH hashes that are not on a Wednesday or Thursday
-/// 
-void filterRuns() {
-    filteredRuns = QueryRuns.doFilter(searchText, allRuns); 
+  /// filterRuns() provides a complex filtering (search) option
+  /// where the plus sign (+) is used as a logical OR allowing
+  /// query results to be added together and commas (,) to be used
+  /// to separate query options and act as a logical AND function, thus
+  /// limiting the query results. Finally the text 'not ' at the beginning
+  /// of a search term will negate the resdults.
+  ///
+  /// For example: "AH3 + FILTH, not Wednesday + Thursday" will show all
+  /// Amsterdam and FILTH hashes that are not on a Wednesday or Thursday
+  ///
+  void filterRuns() {
+    filteredRuns = QueryRuns.doFilter(searchText, allRuns);
 
     //buildRunMarkers();
     setState(() {});
@@ -285,7 +324,8 @@ void filterRuns() {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.only(left: 25, right: 25, bottom: 30),
+                  padding:
+                      const EdgeInsets.only(left: 25, right: 25, bottom: 30),
                   child: Center(
                       child: Text(
                     'No Runs available.',
@@ -294,7 +334,8 @@ void filterRuns() {
                   )),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 25.0, right: 25.0, bottom: 30),
+                  padding: const EdgeInsets.only(
+                      left: 25.0, right: 25.0, bottom: 30),
                   child: Center(
                       child: Text(
                     'You might not be following any Kennels with upcoming runs. Check the Kennels page, select several Kennels and then return to this page and hit the "Reload runs" button below.',
@@ -316,7 +357,8 @@ void filterRuns() {
             )
           : NestedScrollView(
               controller: scrollController,
-              headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+              headerSliverBuilder:
+                  (BuildContext context, bool innerBoxIsScrolled) {
                 return <Widget>[
                   // SliverAppBar(
                   //   expandedHeight: 200.0,
@@ -333,15 +375,12 @@ void filterRuns() {
                   ),
                 ];
               },
-              body: 
-              
-              RefreshIndicator(
+              body: RefreshIndicator(
                 onRefresh: () => _refreshFromBackend(clearLocalTables: true),
                 displacement: 40.0,
-                child: 
-                
-                ListView.builder(
-                  padding: const EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 50),
+                child: ListView.builder(
+                  padding: const EdgeInsets.only(
+                      left: 10, right: 10, top: 0, bottom: 50),
                   physics: const AlwaysScrollableScrollPhysics(),
                   //padding: const EdgeInsets.only( bottom: 40.0),
                   itemCount: filteredRuns.length,
@@ -352,10 +391,12 @@ void filterRuns() {
                         Navigator.push<dynamic>(
                           this.context,
                           MaterialPageRoute<dynamic>(
-                            builder: (BuildContext context) => RunDetailsPage(futureRun: filteredRuns[index]),
+                            builder: (BuildContext context) =>
+                                RunDetailsPage(futureRun: filteredRuns[index]),
                           ),
                         ).then((void dummy) {
-                          _refreshFromBackend(clearLocalTables: false).then((void dummy) {
+                          _refreshFromBackend(clearLocalTables: false)
+                              .then((void dummy) {
                             setState(() {});
                           });
                         });

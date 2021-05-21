@@ -81,8 +81,13 @@ SyncEventAdminService syncEventAdminService;
 
 Database internalSqlDb;
 
-Future<void> openOrInitializeDb(String dbName, int dbVersion, Function informUser, {@required List<MigrationsModel> migrations, @required Function createTables}) async {
-  internalSqlDb = await DBProvider.openOrInitDb(DB_NAME, dbVersion, informUser, migrations, createTables: createTables);
+Future<void> openOrInitializeDb(
+    String dbName, int dbVersion, Function informUser,
+    {@required List<MigrationsModel> migrations,
+    @required Function createTables}) async {
+  internalSqlDb = await DBProvider.openOrInitDb(
+      DB_NAME, dbVersion, informUser, migrations,
+      createTables: createTables);
 }
 
 void initializeGlobals() {

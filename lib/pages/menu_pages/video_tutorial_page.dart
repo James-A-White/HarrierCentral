@@ -9,7 +9,8 @@ import 'package:chewie/chewie.dart';
 class VideoTutorialPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const VideoTutorialPage({Key key, this.title, this.videoUrl}) : super(key: key);
+  const VideoTutorialPage({Key key, this.title, this.videoUrl})
+      : super(key: key);
 
   final String title;
   final String videoUrl;
@@ -28,14 +29,13 @@ class VideoTutorialPageState extends State<VideoTutorialPage> {
     _controller = VideoPlayerController.network(widget.videoUrl)
       ..addListener(listener)
       ..initialize().then((_) {
-
         setState(() {
-                  _chewieController = ChewieController(
-          videoPlayerController: _controller,
-          aspectRatio: 1080/1920,
-          autoPlay: true,
-          looping: false,
-        );
+          _chewieController = ChewieController(
+            videoPlayerController: _controller,
+            aspectRatio: 1080 / 1920,
+            autoPlay: true,
+            looping: false,
+          );
         });
       });
     // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
@@ -82,13 +82,12 @@ class VideoTutorialPageState extends State<VideoTutorialPage> {
         height: MediaQuery.of(context).size.height,
         child: Center(
           child: Container(
-            margin: const EdgeInsets.all(20.0),
-            child: _chewieController == null ? Container():
-            Chewie(
+              margin: const EdgeInsets.all(20.0),
+              child: _chewieController == null
+                  ? Container()
+                  : Chewie(
                       controller: _chewieController,
-                    )
-                
-          ),
+                    )),
         ),
       ),
     );

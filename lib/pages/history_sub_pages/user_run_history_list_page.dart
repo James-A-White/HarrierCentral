@@ -22,16 +22,29 @@ import 'package:harrier_central/pages/top_level/history_list_page.dart';
 import 'package:ive_flutter_core/util/connection.dart';
 
 class UserRunHistoryListPage extends StatefulWidget {
-  const UserRunHistoryListPage({Key key, @required this.kennelInfo}) : super(key: key);
+  const UserRunHistoryListPage({Key key, @required this.kennelInfo})
+      : super(key: key);
 
   final HistoryListResults kennelInfo;
 
   @override
-  UserRunHistoryPageState createState() => UserRunHistoryPageState(kennelId: kennelInfo.kennelId);
+  UserRunHistoryPageState createState() =>
+      UserRunHistoryPageState(kennelId: kennelInfo.kennelId);
 }
 
 class UserRunHistoryResults {
-  UserRunHistoryResults({this.eventId, this.eventName, this.eventNumber, this.eventStartDatetime, this.canEditRunAttendence, this.hemId, this.attendenceState, this.isHare, this.totalHaringThisKennel, this.totalRunsThisKennel, this.isLoading});
+  UserRunHistoryResults(
+      {this.eventId,
+      this.eventName,
+      this.eventNumber,
+      this.eventStartDatetime,
+      this.canEditRunAttendence,
+      this.hemId,
+      this.attendenceState,
+      this.isHare,
+      this.totalHaringThisKennel,
+      this.totalRunsThisKennel,
+      this.isLoading});
 
   final String eventId;
   final String eventName;
@@ -50,7 +63,8 @@ class UserRunHistoryResults {
       eventName: map['eventName'],
       eventId: map['eventId'],
       eventNumber: map['eventNumber'],
-      eventStartDatetime: DateTime.parse(map['eventStartDatetime'].toString().substring(0, 19)),
+      eventStartDatetime:
+          DateTime.parse(map['eventStartDatetime'].toString().substring(0, 19)),
       canEditRunAttendence: map['canEditRunAttendence'],
       hemId: map['hemId'],
       attendenceState: map['attendenceState'],
@@ -97,10 +111,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
     runCountsList = <UserRunHistoryResults>[];
     try {
-      final List<Map<String, dynamic>> results = await internalSqlDb.rawQuery(query);
+      final List<Map<String, dynamic>> results =
+          await internalSqlDb.rawQuery(query);
 
       for (int i = 0; i < results.length; i++) {
-        final UserRunHistoryResults hlrItem = UserRunHistoryResults.fromMap(results[i]);
+        final UserRunHistoryResults hlrItem =
+            UserRunHistoryResults.fromMap(results[i]);
         hlrItem.totalHaringThisKennel = -1;
         hlrItem.totalRunsThisKennel = -1;
         hlrItem.isLoading = false;
@@ -124,7 +140,9 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        Container(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -144,7 +162,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
             ),
             floatingActionButton: SpeedDial(
               // both default to 16
-              marginRight: 18,
+              marginEnd: 18,
               marginBottom: 30,
               animatedIcon: AnimatedIcons.menu_close,
               animatedIconTheme: const IconThemeData(size: 22.0),
@@ -171,13 +189,25 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                   label: 'Email run counts\r\n(this kennel)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
-                    hasherEventMapService.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelInfo.kennelName).then((Map<String, String> result) {
+                    hasherEventMapService
+                        .sendRunCountReportByEmail(
+                            kennelId: kennelId,
+                            kennelName: widget.kennelInfo.kennelName)
+                        .then((Map<String, String> result) {
                       _scaffoldKey.currentState?.hideCurrentSnackBar();
-                      if (result['result'].toLowerCase().startsWith('success')) {
-                        CoreUtilities.showAlert(context, 'E-mail successfully sent', 'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+                      if (result['result']
+                          .toLowerCase()
+                          .startsWith('success')) {
+                        CoreUtilities.showAlert(
+                            context,
+                            'E-mail successfully sent',
+                            'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                            'OK');
                       }
                     });
-                    CoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
+                    CoreUtilities.showInSnackBar(context, _scaffoldKey,
+                        'Run count report being processed...',
+                        durationInSeconds: 10);
                   },
                 ),
                 SpeedDialChild(
@@ -186,18 +216,32 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                   label: 'Email run counts\r\n(all kennels)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
-                    hasherEventMapService.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
+                    hasherEventMapService
+                        .sendRunCountReportByEmail(
+                            kennelId: GUID_EMPTY,
+                            kennelName: 'All of your Hash Kennels')
+                        .then((Map<String, String> result) {
                       _scaffoldKey.currentState?.hideCurrentSnackBar();
-                      if (result['result'].toLowerCase().startsWith('success')) {
-                        CoreUtilities.showAlert(context, 'E-mail successfully sent', 'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
+                      if (result['result']
+                          .toLowerCase()
+                          .startsWith('success')) {
+                        CoreUtilities.showAlert(
+                            context,
+                            'E-mail successfully sent',
+                            'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                            'OK');
                       }
                     });
-                    CoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
+                    CoreUtilities.showInSnackBar(context, _scaffoldKey,
+                        'Run count report being processed...',
+                        durationInSeconds: 10);
                   },
                 ),
               ],
             ),
-            body: _isLoading ? _buildCircularProgressIndicator() : _buildListView(),
+            body: _isLoading
+                ? _buildCircularProgressIndicator()
+                : _buildListView(),
           ),
         ),
         OfflineModeRibbon(
@@ -220,7 +264,11 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
       _isLoading = true;
     });
 
-    final bool result = await syncUserDataService.updateFromBackend(SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
+    final bool result = await syncUserDataService.updateFromBackend(
+        SyncUserDataService.flagHasherEventMapTable |
+            SyncUserDataService.flagNarrowEventsTable |
+            SyncUserDataService.flagKennelsTable,
+        true);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('User data synchronized $resultStr');
     refreshRunHistoryFromTable(true);
@@ -241,7 +289,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //   return  Scaffold(
   //       floatingActionButton: SpeedDial(
   //         // both default to 16
-  //         marginRight: 18,
+  //         marginEnd: 18,
   //         marginBottom: 30,
   //         animatedIcon: AnimatedIcons.menu_close,
   //         animatedIconTheme: const IconThemeData(size: 22.0),
@@ -318,11 +366,25 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //   //model.notifyListeners();
   // }
 
-  static const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0);
+  static const TextStyle headingStyle = TextStyle(
+      fontFamily: 'AvenirNextCondensedDemiBold',
+      fontStyle: FontStyle.normal,
+      fontSize: 22.0,
+      height: 1.0);
 
-  static TextStyle numberStyle = TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * deviceWidthScaleFactor, height: 1.0);
+  static TextStyle numberStyle = TextStyle(
+      color: Colors.black87,
+      fontFamily: 'AvenirNextDemiBold',
+      fontStyle: FontStyle.normal,
+      fontSize: 16.0 * deviceWidthScaleFactor,
+      height: 1.0);
 
-  static TextStyle boldTitleStyle = TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 16.0 * deviceWidthScaleFactor, height: 1.0);
+  static TextStyle boldTitleStyle = TextStyle(
+      color: Colors.black87,
+      fontFamily: 'AvenirNextBold',
+      fontStyle: FontStyle.normal,
+      fontSize: 16.0 * deviceWidthScaleFactor,
+      height: 1.0);
 
   int myRunCount = 0;
   int myHaringCount = 0;
@@ -338,8 +400,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
       if (runCountsList[i].attendenceState >= 20) {
         runCount++;
       }
-      runCountsList[i].totalHaringThisKennel = haringCount + widget.kennelInfo.historicalHaringCount;
-      runCountsList[i].totalRunsThisKennel = runCount + widget.kennelInfo.historicalPackRunCount;
+      runCountsList[i].totalHaringThisKennel =
+          haringCount + widget.kennelInfo.historicalHaringCount;
+      runCountsList[i].totalRunsThisKennel =
+          runCount + widget.kennelInfo.historicalPackRunCount;
     }
 
     myRunCount = runCount;
@@ -373,7 +437,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                       ],
                     ),
                     //color:Color.fromARGB(30, 0, 0, 0),
-                    padding: const EdgeInsets.only(left: 5, top: 5, right: 0, bottom: 5),
+                    padding: const EdgeInsets.only(
+                        left: 5, top: 5, right: 0, bottom: 5),
 
                     child: Row(children: <Widget>[
                       Container(
@@ -470,7 +535,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: runCountsList.length,
                       padding: const EdgeInsets.only(top: 5),
-                      separatorBuilder: (BuildContext context, int index) => const Divider(
+                      separatorBuilder: (BuildContext context, int index) =>
+                          const Divider(
                         height: 1.0,
                         color: Colors.black45,
                       ),
@@ -491,9 +557,11 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   // here, we're going from an attendence state of
                                   // not at the Hash to being at the Hash,
                                   // so assume that the person was not a hare
-                                  if (item.attendenceState < attendenceAtHash.value) {
+                                  if (item.attendenceState <
+                                      attendenceAtHash.value) {
                                     item.isLoading = true;
-                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
+                                    final Future<List<dynamic>> retVal =
+                                        hasherEventMapService.joinEvent(
                                       item.eventId,
                                       userId,
                                       item.hemId,
@@ -504,29 +572,35 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                     );
 
                                     retVal.then((List<dynamic> adHocData) {
-                                      refreshRunHistoryFromTable(true).then((void dummy) {});
+                                      refreshRunHistoryFromTable(true)
+                                          .then((void dummy) {});
                                     });
                                   } else {
                                     item.isLoading = true;
-                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
+                                    final Future<List<dynamic>> retVal =
+                                        hasherEventMapService.joinEvent(
                                       item.eventId,
                                       userId,
                                       item.hemId,
                                       AppDomainType.user,
                                       rsvpState: rsvpYes.value,
                                       attendenceState: attendenceAtHash.value,
-                                      isHare: item.isHare == 1 ? isHareNo.value : isHareYes.value,
+                                      isHare: item.isHare == 1
+                                          ? isHareNo.value
+                                          : isHareYes.value,
                                     );
 
                                     retVal.then((List<dynamic> adHocData) {
-                                      refreshRunHistoryFromTable(true).then((void dummy) {});
+                                      refreshRunHistoryFromTable(true)
+                                          .then((void dummy) {});
                                     });
                                   }
                                 } else {
                                   // swipe from left to right to
                                   // indicate that the hasher did
                                   // not participate in this event
-                                  final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
+                                  final Future<List<dynamic>> retVal =
+                                      hasherEventMapService.joinEvent(
                                     item.eventId,
                                     userId,
                                     item.hemId,
@@ -537,7 +611,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   );
 
                                   retVal.then((List<dynamic> adHocData) {
-                                    refreshRunHistoryFromTable(true).then((void dummy) {});
+                                    refreshRunHistoryFromTable(true)
+                                        .then((void dummy) {});
                                   });
                                 }
                               });
@@ -550,14 +625,20 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   child: Row(children: const <Widget>[
                                     Padding(
                                       padding: EdgeInsets.only(left: 10.0),
-                                      child: Icon(FontAwesome.lock, color: Colors.white, size: 35.0),
+                                      child: Icon(FontAwesome.lock,
+                                          color: Colors.white, size: 35.0),
                                     ),
                                     Padding(
                                       padding: EdgeInsets.only(left: 15.0),
                                       child: Text(
                                           // '${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'Run locked',
-                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                          style: TextStyle(
+                                              fontFamily: 'AvenirNextDemiBold',
+                                              fontStyle: FontStyle.normal,
+                                              color: Colors.white,
+                                              fontSize: 17.0,
+                                              height: 1.0)),
                                     )
                                   ]))
                               : Container(
@@ -565,7 +646,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   child: Row(children: const <Widget>[
                                     Padding(
                                       padding: EdgeInsets.only(left: 10.0),
-                                      child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
+                                      child: Icon(FontAwesome.times_circle,
+                                          color: Colors.white, size: 35.0),
                                     ),
                                     Padding(
                                       padding: EdgeInsets.only(left: 15.0),
@@ -573,43 +655,73 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                           // '${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'I was not\r\nat the Hash',
                                           maxLines: 2,
-                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                          style: TextStyle(
+                                              fontFamily: 'AvenirNextDemiBold',
+                                              fontStyle: FontStyle.normal,
+                                              color: Colors.white,
+                                              fontSize: 17.0,
+                                              height: 1.0)),
                                     )
                                   ])),
                           secondaryBackground: item.canEditRunAttendence == 0
                               ? Container(
                                   color: Colors.grey,
-                                  child: Row(mainAxisAlignment: MainAxisAlignment.end, children: const <Widget>[
-                                    Padding(
-                                      padding: EdgeInsets.only(right: 15.0),
-                                      child: Icon(FontAwesome.lock, color: Colors.white, size: 35.0),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(right: 15.0),
-                                      child: Text(
-                                          //'${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                          'Run locked',
-                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                    )
-                                  ]))
-                              : (item.attendenceState < attendenceAtHash.value) || ((item.attendenceState >= attendenceAtHash.value) && (item.isHare == isHareYes.value))
+                                  child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: const <Widget>[
+                                        Padding(
+                                          padding: EdgeInsets.only(right: 15.0),
+                                          child: Icon(FontAwesome.lock,
+                                              color: Colors.white, size: 35.0),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.only(right: 15.0),
+                                          child: Text(
+                                              //'${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                              'Run locked',
+                                              style: TextStyle(
+                                                  fontFamily:
+                                                      'AvenirNextDemiBold',
+                                                  fontStyle: FontStyle.normal,
+                                                  color: Colors.white,
+                                                  fontSize: 17.0,
+                                                  height: 1.0)),
+                                        )
+                                      ]))
+                              : (item.attendenceState <
+                                          attendenceAtHash.value) ||
+                                      ((item.attendenceState >=
+                                              attendenceAtHash.value) &&
+                                          (item.isHare == isHareYes.value))
                                   ? Container(
                                       color: Colors.green,
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
                                         children: const <Widget>[
                                           Padding(
-                                            padding: EdgeInsets.only(right: 15.0),
-                                            child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
+                                            padding:
+                                                EdgeInsets.only(right: 15.0),
+                                            child: Icon(
+                                                FontAwesome.check_circle,
+                                                color: Colors.white,
+                                                size: 35.0),
                                           ),
                                           Padding(
-                                            padding: EdgeInsets.only(right: 15.0),
+                                            padding:
+                                                EdgeInsets.only(right: 15.0),
                                             child: Text(
                                                 //'${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                                 'I was at\r\nthe Hash',
                                                 maxLines: 2,
                                                 textAlign: TextAlign.right,
-                                                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                style: TextStyle(
+                                                    fontFamily:
+                                                        'AvenirNextDemiBold',
+                                                    fontStyle: FontStyle.normal,
+                                                    color: Colors.white,
+                                                    fontSize: 17.0,
+                                                    height: 1.0)),
                                           )
                                         ],
                                       ),
@@ -617,27 +729,42 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   : Container(
                                       color: Colors.purple,
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
                                         children: const <Widget>[
                                           Padding(
-                                            padding: EdgeInsets.only(right: 15.0),
+                                            padding:
+                                                EdgeInsets.only(right: 15.0),
                                             child: Padding(
-                                              padding: EdgeInsets.only(left: 2.5, right: 2.5),
-                                              child: ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.white, size: 30.0),
+                                              padding: EdgeInsets.only(
+                                                  left: 2.5, right: 2.5),
+                                              child: ImageIcon(
+                                                  AssetImage(
+                                                      'images/icons/hare_icon.png'),
+                                                  color: Colors.white,
+                                                  size: 30.0),
                                             ),
                                           ),
                                           Padding(
-                                            padding: EdgeInsets.only(right: 15.0),
+                                            padding:
+                                                EdgeInsets.only(right: 15.0),
                                             child: Text(
                                                 //'${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                                 'I was a Hare',
-                                                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                style: TextStyle(
+                                                    fontFamily:
+                                                        'AvenirNextDemiBold',
+                                                    fontStyle: FontStyle.normal,
+                                                    color: Colors.white,
+                                                    fontSize: 17.0,
+                                                    height: 1.0)),
                                           )
                                         ],
                                       ),
                                     ),
                           onDismissed: (DismissDirection direction) {
-                            print(direction.toString() + ' NOTE: We should never reach this point');
+                            print(direction.toString() +
+                                ' NOTE: We should never reach this point');
                           },
                           child: UserEventListItem(
                             item: item,

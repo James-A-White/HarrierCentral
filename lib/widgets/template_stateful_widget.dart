@@ -3,7 +3,6 @@
 // import 'package:flutter/foundation.dart';
 // import 'package:flutter/material.dart';
 
-
 // class UserDetailsUi extends StatefulWidget {
 //   UserDetailsUi({Key key, this.firstName, this.lastName, this.email, this.hashName}) : super(key: key);
 
@@ -30,7 +29,6 @@
 //     WidgetsBinding.instance.removeObserver(this);
 //     super.dispose();
 //   }
-
 
 //   @override
 //   Widget build(BuildContext context) {

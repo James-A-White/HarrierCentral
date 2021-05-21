@@ -20,10 +20,11 @@ class KennelCreditsModel implements BaseModel {
     this.removed,
   });
 
-  factory KennelCreditsModel.fromJson(Map<String,dynamic> json) => _$KennelCreditsModelFromJson(json);
- 
+  factory KennelCreditsModel.fromJson(Map<String, dynamic> json) =>
+      _$KennelCreditsModelFromJson(json);
+
   @override
-  Map<String,dynamic> toJson() => _$KennelCreditsModelToJson(this);
+  Map<String, dynamic> toJson() => _$KennelCreditsModelToJson(this);
 
   final String kennelCreditId;
   final String userId;
@@ -73,7 +74,8 @@ class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
   final String colBalanceAsOfEventId = 'balanceAsOfEventId';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(
+      Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -91,8 +93,10 @@ class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
           )
           ''');
 
-    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
+    await db.execute(
+        'CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
+    await db.execute(
+        'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
   // @override

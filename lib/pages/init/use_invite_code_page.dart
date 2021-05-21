@@ -28,7 +28,9 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        Container(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -56,7 +58,7 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
         OfflineModeRibbon(
           showRibbon: globalConnectionStatus == connectionStatus_notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
-        ribbonImage: 'images/icons/offline_mode.png',
+          ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],
     );
@@ -67,7 +69,8 @@ class UseInviteCodePageContent extends StatefulWidget {
   const UseInviteCodePageContent({Key key}) : super(key: key);
 
   @override
-  _UseInviteCodePageContentState createState() => _UseInviteCodePageContentState();
+  _UseInviteCodePageContentState createState() =>
+      _UseInviteCodePageContentState();
 }
 
 class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
@@ -97,10 +100,12 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints viewportConstraints) {
       final num newFontSize = headingStyle.fontSize * deviceWidthScaleFactor;
 
-      final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
+      final TextStyle localHeadingStyle =
+          headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
 
       return SingleChildScrollView(
         padding: const EdgeInsets.all(15),
@@ -141,7 +146,8 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
               key: _formKey,
               child: Container(
                 margin: const EdgeInsets.only(left: 15, right: 15),
-                padding: const EdgeInsets.only(left: 15, right: 15, top: 15, bottom: 5),
+                padding: const EdgeInsets.only(
+                    left: 15, right: 15, top: 15, bottom: 5),
                 color: Colors.yellow[100],
                 child: Column(
                   children: <Widget>[
@@ -160,7 +166,10 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                       },
                       keyboardType: TextInputType.text,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontFamily: 'Poppins', fontSize: 24.0, color: Theme.of(context).accentColor),
+                      style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 24.0,
+                          color: Theme.of(context).accentColor),
                     ),
                     const SizedBox(height: 20, width: 10),
                     Row(
@@ -198,7 +207,8 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                           child: Container(
                             padding: const EdgeInsets.only(left: 20),
                             height: 26,
-                            child: Image.asset('images/icons/more_info_button.png'),
+                            child: Image.asset(
+                                'images/icons/more_info_button.png'),
                           ),
                         ),
                       ],
@@ -220,25 +230,41 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                   isLoading = true;
 
                   final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                  final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + inviteCodeTextController.text.toUpperCase(), includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
+                  final Future<Map<String, String>> apiCall =
+                      srv.authorizeDevice(
+                          context,
+                          QR_PREFIX_USER_RESET_CODE +
+                              inviteCodeTextController.text.toUpperCase(),
+                          includeInGlobalHashDirectory:
+                              includeInGlobalHashDirectory ? 1 : 0);
                   apiCall.then((Map<String, String> result) {
                     setState(() {
                       isLoading = false;
                     });
 
                     if (result['result'] != 'failed') {
-                      final String userName = getStringPref(StringPrefsEnum.displayName);
+                      final String userName =
+                          getStringPref(StringPrefsEnum.displayName);
 
-                      String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
-                      profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
+                      String profilePhotoUrl =
+                          getStringPref(StringPrefsEnum.profilePhotoUrl);
+                      profilePhotoUrl ??= 'bundle://avatar-' +
+                          (Random.secure().nextInt(49) + 1).toString();
 
-                      CoreUtilities.showAlert(context, 'Success!', 'The app has been successfully set up for $userName.', 'OK').then((void dummy) {
+                      CoreUtilities.showAlert(
+                              context,
+                              'Success!',
+                              'The app has been successfully set up for $userName.',
+                              'OK')
+                          .then((void dummy) {
                         Navigator.pushReplacement<dynamic, dynamic>(
                             context,
                             MaterialPageRoute<dynamic>(
-                              builder: (BuildContext context) => ChooseProfileImage(
+                              builder: (BuildContext context) =>
+                                  ChooseProfileImage(
                                 isForThisDevice: true,
-                                fileNamePrefix: getStringPref(StringPrefsEnum.supportCode),
+                                fileNamePrefix:
+                                    getStringPref(StringPrefsEnum.supportCode),
                                 currentProfileImage: profilePhotoUrl,
                                 popToCaller: false,
                               ),

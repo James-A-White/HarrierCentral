@@ -99,7 +99,6 @@
 //                 print(ModalRoute.of(_contentNavigator.currentContext).settings.name);
 //                 //_contentNavigator.currentState.popUntil(ModalRoute.withName(Navigator.defaultRouteName));
 
-
 //                 // Navigator.of(_contentNavigator.currentContext).push<dynamic>(MaterialPageRoute<dynamic>(
 //                 //       settings: RouteSettings(),
 //                 //       builder: (BuildContext context) {
@@ -149,7 +148,7 @@
 //         String s = settings.name;
 //         return MaterialPageRoute<dynamic>(builder: (BuildContext context) {
 //           return Container(
-            
+
 //             width: MediaQuery.of(context).size.width,
 //             height: MediaQuery.of(context).size.height,
 //             color: Colors.blue,
@@ -179,7 +178,7 @@
 
 //   @override
 //   Widget build(BuildContext context) {
-//     var x = 
+//     var x =
 //      Material(
 //       child: Stack(children: <Widget>[
 //         Positioned(
@@ -201,7 +200,7 @@
 //     );
 
 //     print(ModalRoute.of(_contentNavigator.currentContext).settings.name);
-    
+
 //     return x;
 
 //     // return Scaffold(

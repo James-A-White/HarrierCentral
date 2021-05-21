@@ -5,7 +5,6 @@ import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-
 part 'cities_service.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.none)
@@ -22,7 +21,8 @@ class CitiesModel implements BaseModel {
     this.updatedAt,
   });
 
-  factory CitiesModel.fromJson(Map<String, dynamic> json) => _$CitiesModelFromJson(json);
+  factory CitiesModel.fromJson(Map<String, dynamic> json) =>
+      _$CitiesModelFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$CitiesModelToJson(this);
@@ -76,7 +76,8 @@ class CitiesTableHelper with BaseFields implements BaseTableHelper {
   final String colFlagFile = 'flagFile';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(
+      Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -96,8 +97,10 @@ class CitiesTableHelper with BaseFields implements BaseTableHelper {
           )
           ''');
 
-    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
+    await db.execute(
+        'CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
+    await db.execute(
+        'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
   @override

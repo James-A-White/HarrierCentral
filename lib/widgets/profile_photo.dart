@@ -2,7 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePhoto extends StatelessWidget {
-  const ProfilePhoto({@required this.profilePhotoUrl, this.photoHeight, this.leftPadding});
+  const ProfilePhoto(
+      {@required this.profilePhotoUrl, this.photoHeight, this.leftPadding});
 
   final String profilePhotoUrl;
   final num photoHeight;
@@ -20,7 +21,10 @@ class ProfilePhoto extends StatelessWidget {
               )
             : profilePhotoUrl.contains('bundle://')
                 ? Stack(alignment: Alignment.center, children: <Widget>[
-                    Image.asset(('images/avatars/' + profilePhotoUrl.replaceAll('bundle://', '') + '.jpg').toLowerCase()),
+                    Image.asset(('images/avatars/' +
+                            profilePhotoUrl.replaceAll('bundle://', '') +
+                            '.jpg')
+                        .toLowerCase()),
                   ])
                 : CachedNetworkImage(
                     imageUrl: profilePhotoUrl,

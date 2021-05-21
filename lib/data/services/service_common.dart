@@ -7,15 +7,12 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:ive_flutter_core/util/connection.dart';
 
-
 import 'package:http/http.dart' as http;
 
 class ServiceCommon {
-  static Future<String> sendRequest(BuildContext context, String procName, String requestBody) async {
-
-    
-    if (globalConnectionStatus == connectionStatus_notConnected)
-    {
+  static Future<String> sendRequest(
+      BuildContext context, String procName, String requestBody) async {
+    if (globalConnectionStatus == connectionStatus_notConnected) {
       return null;
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -37,8 +34,8 @@ class ServiceCommon {
     if (response.body.contains('"errorId"')) {
       final DbErrorModel result = DbErrorModel.itemFromJson(response.body);
       if (result != null) {
-        await CoreUtilities.showAlert(context, result.errorTitle,
-            result.errorUserMessage, 'OK');
+        await CoreUtilities.showAlert(
+            context, result.errorTitle, result.errorUserMessage, 'OK');
       }
 
       return ERROR_KEY;

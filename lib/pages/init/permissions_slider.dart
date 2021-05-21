@@ -37,9 +37,18 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
   void initState() {
     super.initState();
 
-    descriptionStyle = TextStyle(color: Colors.black, fontSize: 24.0 * deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
-    titleStyle = TextStyle(color: Colors.black, fontSize: 32.0 * deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
-    navStyle = TextStyle(color: themeAppBarBackground, fontSize: 18.0 * deviceWidthScaleFactor, fontFamily: 'AvenirNextDemiBold');
+    descriptionStyle = TextStyle(
+        color: Colors.black,
+        fontSize: 24.0 * deviceWidthScaleFactor,
+        fontFamily: 'AvenirNextRegular');
+    titleStyle = TextStyle(
+        color: Colors.black,
+        fontSize: 32.0 * deviceWidthScaleFactor,
+        fontFamily: 'AvenirNextRegular');
+    navStyle = TextStyle(
+        color: themeAppBarBackground,
+        fontSize: 18.0 * deviceWidthScaleFactor,
+        fontFamily: 'AvenirNextDemiBold');
 
     slides.add(
       Slide(
@@ -62,7 +71,8 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         title: 'Smile for the camera!',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description: 'Can we access your camera for your profile photo and to scan QR codes?',
+        description:
+            'Can we access your camera for your profile photo and to scan QR codes?',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_old_camera.png',
         heightImage: 120 * deviceMaxScaleFactor,
@@ -78,7 +88,8 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         title: 'Keep up to date',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description: 'Let us notify you about changes to runs you are following',
+        description:
+            'Let us notify you about changes to runs you are following',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_notification.png',
         heightImage: 150 * deviceMaxScaleFactor,
@@ -94,7 +105,8 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         title: 'Some Last\r\nDetails',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description: 'Please Provide Just a Tiny Bit of Personal Information...',
+        description:
+            'Please Provide Just a Tiny Bit of Personal Information...',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_pen.png',
         heightImage: 150 * deviceMaxScaleFactor,
@@ -107,7 +119,8 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
   }
 
   Future<void> onDonePress() async {
-    Navigator.of(context).pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
+    Navigator.of(context)
+        .pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
   }
 
   bool permission1requested = false;
@@ -159,7 +172,13 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
 
   Future<void> onSkipPress() async {
     if (activeTab == 0) {
-      CoreUtilities.showAlert(context, 'Location Preference', 'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow')
+      CoreUtilities.showAlert(
+              context,
+              'Location Preference',
+              'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.',
+              'Allow',
+              showCancelButton: true,
+              cancelButtonText: 'Disallow')
           .then((bool allow) async {
         if (allow) {
           if (await Permission.location.request().isGranted) {
@@ -173,7 +192,14 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 1) {
-      CoreUtilities.showAlert(context, 'Camera Preference', 'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool allow) async {
+      CoreUtilities.showAlert(
+              context,
+              'Camera Preference',
+              'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.',
+              'Allow',
+              showCancelButton: true,
+              cancelButtonText: 'Disallow')
+          .then((bool allow) async {
         if (allow) {
           if (await Permission.camera.request().isGranted) {
             if (await Permission.photos.request().isGranted) {
@@ -187,7 +213,14 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 2) {
-      CoreUtilities.showAlert(context, 'Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow', showCancelButton: true, cancelButtonText: 'Disallow').then((bool allow) {
+      CoreUtilities.showAlert(
+              context,
+              'Notification Preference',
+              'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change',
+              'Allow',
+              showCancelButton: true,
+              cancelButtonText: 'Disallow')
+          .then((bool allow) {
         if (allow) {
           final NotificationSupport notifications = NotificationSupport();
           notifications.configureNotifications(false);
@@ -208,12 +241,12 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
       colorSkipBtn: const Color(0x00000000),
       highlightColorSkipBtn: const Color(0xff000000),
       onSkipPress: onSkipPress,
-      isShowSkipBtn: true,
+      showSkipBtn: true,
 
       onTabChangeCompleted: onTabChangeCompleted,
 
       // Dot indicator
-      isShowDotIndicator: true,
+      showDotIndicator: true,
       colorDot: themeAppBarBackground40,
       colorActiveDot: themeAppBarBackground,
       sizeDot: 6.0,
@@ -228,7 +261,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
       highlightColorDoneBtn: const Color(0xff000000),
 
       // Show or hide status bar
-      shouldHideStatusBar: true,
+      hideStatusBar: true,
 
       refFuncGoToTab: (dynamic refFunc) {
         goToTab = refFunc;

@@ -7,7 +7,7 @@ import 'package:harrier_central/util/styles.dart';
 import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 import 'package:harrier_central/database/query_runs.dart';
 
-class RunDetailsPage extends StatelessWidget { 
+class RunDetailsPage extends StatelessWidget {
   const RunDetailsPage({Key key, @required this.futureRun}) : super(key: key);
 
   final RunDetailsAggregate futureRun;
@@ -17,19 +17,18 @@ class RunDetailsPage extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           actions: <Widget>[
-            (futureRun.extensions.mismanagementRoleFlags ?? 0) == 0 
+            (futureRun.extensions.mismanagementRoleFlags ?? 0) == 0
                 ? Container()
                 : IconButton(
                     icon: const Icon(FontAwesome.gear, color: Colors.white),
                     onPressed: () {
                       Navigator.push<dynamic>(
-                context,
-                MaterialPageRoute<dynamic>(
-                  builder: (BuildContext context) => RunDetailPage(
-                        eventId: futureRun.event.eventId
-                      ),
-                ),
-              );//_select(choices[0]);
+                        context,
+                        MaterialPageRoute<dynamic>(
+                          builder: (BuildContext context) =>
+                              RunDetailPage(eventId: futureRun.event.eventId),
+                        ),
+                      ); //_select(choices[0]);
                     },
                   ),
           ],

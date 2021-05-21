@@ -24,21 +24,14 @@ HasherKennelMapModel _$HasherKennelMapModelFromJson(Map<String, dynamic> json) {
     historicalPackRunCount: json['historicalPackRunCount'] as int,
     historicalHaringCount: json['historicalHaringCount'] as int,
     historicalCountIsEstimate: json['historicalCountIsEstimate'] as int,
-    dateOfLastRun: json['dateOfLastRun'] == null
-        ? null
-        : DateTime.parse(json['dateOfLastRun'] as String),
-    membershipExpirationDate: json['membershipExpirationDate'] == null
-        ? null
-        : DateTime.parse(json['membershipExpirationDate'] as String),
-    memberSince: json['memberSince'] == null
-        ? null
-        : DateTime.parse(json['memberSince'] as String),
+    dateOfLastRun: DateTime.parse(json['dateOfLastRun'] as String),
+    membershipExpirationDate:
+        DateTime.parse(json['membershipExpirationDate'] as String),
+    memberSince: DateTime.parse(json['memberSince'] as String),
     isKennelFollowing: json['isKennelFollowing'] as int,
     mismanagementRoles: json['mismanagementRoles'] as int,
     removed: json['removed'] as int,
-    updatedAt: json['updatedAt'] == null
-        ? null
-        : DateTime.parse(json['updatedAt'] as String),
+    updatedAt: DateTime.parse(json['updatedAt'] as String),
   );
 }
 
@@ -61,12 +54,12 @@ Map<String, dynamic> _$HasherKennelMapModelToJson(
       'historicalPackRunCount': instance.historicalPackRunCount,
       'historicalHaringCount': instance.historicalHaringCount,
       'historicalCountIsEstimate': instance.historicalCountIsEstimate,
-      'dateOfLastRun': instance.dateOfLastRun?.toIso8601String(),
+      'dateOfLastRun': instance.dateOfLastRun.toIso8601String(),
       'membershipExpirationDate':
-          instance.membershipExpirationDate?.toIso8601String(),
-      'memberSince': instance.memberSince?.toIso8601String(),
+          instance.membershipExpirationDate.toIso8601String(),
+      'memberSince': instance.memberSince.toIso8601String(),
       'isKennelFollowing': instance.isKennelFollowing,
       'mismanagementRoles': instance.mismanagementRoles,
-      'updatedAt': instance.updatedAt?.toIso8601String(),
+      'updatedAt': instance.updatedAt.toIso8601String(),
       'removed': instance.removed,
     };

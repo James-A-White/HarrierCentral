@@ -13,18 +13,19 @@ final MessageLookup messages = MessageLookup();
 final String _keepAnalysisHappy = Intl.defaultLocale;
 
 // ignore: non_constant_identifier_names
-typedef MessageIfAbsent = dynamic Function(String message_str, List<String> args);
+typedef MessageIfAbsent = dynamic Function(
+    String message_str, List<String> args);
 
 class MessageLookup extends MessageLookupByLibrary {
   @override
   String get localeName => 'de';
 
   @override
-  Map<String,dynamic> get messages => _notInlinedMessages(_notInlinedMessages);
+  Map<String, dynamic> get messages => _notInlinedMessages(_notInlinedMessages);
 
-  static dynamic _notInlinedMessages(dynamic _) => <String, Function> {
-    'hello' : MessageLookupByLibrary.simpleMessage('Hello'),
-    'kilometers' : MessageLookupByLibrary.simpleMessage('Kilometers'),
-    'title' : MessageLookupByLibrary.simpleMessage('Hello world App')
-  };
+  static dynamic _notInlinedMessages(dynamic _) => <String, Function>{
+        'hello': MessageLookupByLibrary.simpleMessage('Hello'),
+        'kilometers': MessageLookupByLibrary.simpleMessage('Kilometers'),
+        'title': MessageLookupByLibrary.simpleMessage('Hello world App')
+      };
 }

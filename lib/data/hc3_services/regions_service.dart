@@ -6,7 +6,6 @@ import 'package:ive_flutter_core/database/base_service.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 
-
 part 'regions_service.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.none)
@@ -20,10 +19,11 @@ class RegionsModel implements BaseModel {
     this.updatedAt,
   });
 
-  factory RegionsModel.fromJson(Map<String,dynamic> json) => _$RegionsModelFromJson(json);
- 
+  factory RegionsModel.fromJson(Map<String, dynamic> json) =>
+      _$RegionsModelFromJson(json);
+
   @override
-  Map<String,dynamic> toJson() => _$RegionsModelToJson(this);
+  Map<String, dynamic> toJson() => _$RegionsModelToJson(this);
 
   final String regionId;
   final String regionName;
@@ -31,7 +31,6 @@ class RegionsModel implements BaseModel {
   final String flagFile;
   final int removed;
   final DateTime updatedAt;
-
 }
 
 // TODO(James): Eventually add the flag file to the Regions and Cities JSON or remove it completely from the app
@@ -74,7 +73,8 @@ class RegionsTableHelper with BaseFields implements BaseTableHelper {
   final String colFlagFile = 'flagFile';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(
+      Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -91,10 +91,11 @@ class RegionsTableHelper with BaseFields implements BaseTableHelper {
           )
           ''');
 
-    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
+    await db.execute(
+        'CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
+    await db.execute(
+        'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
-
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {

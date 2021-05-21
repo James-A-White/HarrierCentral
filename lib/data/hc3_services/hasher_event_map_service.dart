@@ -38,7 +38,8 @@ class HasherEventMapModel implements BaseModel {
       this.removed,
       this.updatedAt});
 
-  factory HasherEventMapModel.fromJson(Map<String, dynamic> json) => _$HasherEventMapModelFromJson(json);
+  factory HasherEventMapModel.fromJson(Map<String, dynamic> json) =>
+      _$HasherEventMapModelFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$HasherEventMapModelToJson(this);
@@ -151,8 +152,10 @@ class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
           )
           ''');
 
-    await db.execute('CREATE INDEX idx_${getTableName(tblType)}_id ON ${getTableName(tblType)}($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${getTableName(tblType)}_update_at_value ON ${getTableName(tblType)}($colUpdatedAtValue);');
+    await db.execute(
+        'CREATE INDEX idx_${getTableName(tblType)}_id ON ${getTableName(tblType)}($remoteDbId);');
+    await db.execute(
+        'CREATE INDEX idx_${getTableName(tblType)}_update_at_value ON ${getTableName(tblType)}($colUpdatedAtValue);');
   }
 
   // @override
@@ -176,19 +179,34 @@ class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
 class HasherEventMapService {
   //==============  Domain specific functions ===========
 
-  Future<Map<String, String>> sendRunCountReportByEmail({String kennelId, String kennelName}) async {
+  Future<Map<String, String>> sendRunCountReportByEmail(
+      {String kennelId, String kennelName}) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
     final String userName = getStringPref(StringPrefsEnum.displayName);
     final String emailAddress = getStringPref(StringPrefsEnum.email);
 
-    final String accessToken1 = CoreUtilities.generateToken(userId.toUpperCase(), 'getRuns');
+    final String accessToken1 =
+        CoreUtilities.generateToken(userId.toUpperCase(), 'getRuns');
 
-    final String accessToken2 = CoreUtilities.generateToken(userId, 'getMyKennelRunTotals');
+    final String accessToken2 =
+        CoreUtilities.generateToken(userId, 'getMyKennelRunTotals');
 
     if ((emailAddress ?? '').isNotEmpty) {
-      final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken1': accessToken1, 'accessToken2': accessToken2, 'kennelId': kennelId, 'kennelName': kennelName, 'userName': userName, 'emailAddress': emailAddress});
+      final String body = jsonEncode(<String, String>{
+        'userId': userId,
+        'accessToken1': accessToken1,
+        'accessToken2': accessToken2,
+        'kennelId': kennelId,
+        'kennelName': kennelName,
+        'userName': userName,
+        'emailAddress': emailAddress
+      });
 
-      final http.Response response = await http.post(EMAIL_RUN_REPORT_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
+      final http.Response response = await http
+          .post(EMAIL_RUN_REPORT_API_URL,
+              headers: <String, String>{'content-type': 'application/json'},
+              body: body)
+          .catchError(
         (dynamic error) {
           return <String, String>{'result': 'error', 'email': ''};
         },
@@ -196,10 +214,20 @@ class HasherEventMapService {
 
       return <String, String>{'result': response.body, 'email': emailAddress};
     }
-    return <String, String>{'result': 'No valid email address found', 'email': ''};
+    return <String, String>{
+      'result': 'No valid email address found',
+      'email': ''
+    };
   }
 
-  Future<List<dynamic>> joinEvent(String eventId, String hasherId, String hasherEventMapId, AppDomainType appDomainType, {int rsvpState = -1, int attendenceState = -1, int isHare = -1, int virginVisitorType = 0, int notificationState = -1, int emailAlertState = -1}) async {
+  Future<List<dynamic>> joinEvent(String eventId, String hasherId,
+      String hasherEventMapId, AppDomainType appDomainType,
+      {int rsvpState = -1,
+      int attendenceState = -1,
+      int isHare = -1,
+      int virginVisitorType = 0,
+      int notificationState = -1,
+      int emailAlertState = -1}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return null;
       // TODO(James): fix this so we can return a bool
@@ -207,7 +235,8 @@ class HasherEventMapService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken = CoreUtilities.generateToken(userId.toUpperCase(), 'joinEvent');
+    final String accessToken =
+        CoreUtilities.generateToken(userId.toUpperCase(), 'joinEvent');
 
     final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
@@ -215,7 +244,8 @@ class HasherEventMapService {
       hasherEventMapTableHelper.getTableName(appDomainType),
       hasherEventMapTableHelper.colUpdatedAtValue,
     );
-    final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(
+    final num _hasherKennelMapLastUpdated =
+        await baseService.getLastUpdatedTime(
       internalSqlDb,
       hasherKennelMapTableHelper,
       hasherKennelMapTableHelper.getTableName(appDomainType),
@@ -234,10 +264,22 @@ class HasherEventMapService {
       kennelCreditsTableHelper.colUpdatedAtValue,
     );
 
-    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
-    final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
-    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
-    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
+    final DateTime hasherEventMapUpdatedAfter =
+        _hasherEventMapLastUpdated == null
+            ? DateTime(2000, 1, 1)
+            : DateTime.fromMillisecondsSinceEpoch(
+                _hasherEventMapLastUpdated + 1000);
+    final DateTime hasherKennelMapUpdatedAfter =
+        _hasherKennelMapLastUpdated == null
+            ? DateTime(2000, 1, 1)
+            : DateTime.fromMillisecondsSinceEpoch(
+                _hasherKennelMapLastUpdated + 1000);
+    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null
+        ? DateTime(2000, 1, 1)
+        : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null
+        ? DateTime(2000, 1, 1)
+        : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
     final String body = jsonEncode(<String, Object>{
       'userId': userId,
@@ -257,7 +299,11 @@ class HasherEventMapService {
       'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString()
     });
 
-    final http.Response response = await http.post(BASE_API_URL + 'hc3_join_event', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
+    final http.Response response = await http
+        .post(BASE_API_URL + 'hc3_join_event',
+            headers: <String, String>{'content-type': 'application/json'},
+            body: body)
+        .catchError(
       (dynamic error) {
         return false;
       },
@@ -266,9 +312,11 @@ class HasherEventMapService {
     List<dynamic> adHocData;
 
     if (appDomainType == AppDomainType.event) {
-      adHocData = await syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      adHocData = await syncEventAdminService
+          .updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else if (appDomainType == AppDomainType.user) {
-      adHocData = await syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      adHocData = await syncUserDataService
+          .updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else {
       assert(false);
     }
@@ -276,7 +324,14 @@ class HasherEventMapService {
     return adHocData;
   }
 
-  Future<List<dynamic>> joinEventAsVisitor(String eventId, String displayName, int virginVisitorType, int attendenceState, String email, String phoneNumber, AppDomainType appDomainType) async {
+  Future<List<dynamic>> joinEventAsVisitor(
+      String eventId,
+      String displayName,
+      int virginVisitorType,
+      int attendenceState,
+      String email,
+      String phoneNumber,
+      AppDomainType appDomainType) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return null;
       // TODO(James): fix this so we can return a bool
@@ -284,7 +339,8 @@ class HasherEventMapService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken = CoreUtilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor');
+    final String accessToken =
+        CoreUtilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor');
 
     final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(
       internalSqlDb,
@@ -305,17 +361,27 @@ class HasherEventMapService {
       kennelCreditsTableHelper.colUpdatedAtValue,
     );
 
-    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
-    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
-    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
+    final DateTime hasherEventMapUpdatedAfter =
+        _hasherEventMapLastUpdated == null
+            ? DateTime(2000, 1, 1)
+            : DateTime.fromMillisecondsSinceEpoch(
+                _hasherEventMapLastUpdated + 1000);
+    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null
+        ? DateTime(2000, 1, 1)
+        : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null
+        ? DateTime(2000, 1, 1)
+        : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
     final String body = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
       'eventId': eventId,
       'displayName': displayName ?? '<no name>',
-      'virginVisitorType': virginVisitorType == null ? null : virginVisitorType.toString(),
-      'attendenceState': attendenceState == null ? null : attendenceState.toString(),
+      'virginVisitorType':
+          virginVisitorType == null ? null : virginVisitorType.toString(),
+      'attendenceState':
+          attendenceState == null ? null : attendenceState.toString(),
       'email': email,
       'phoneNumber': phoneNumber,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
@@ -323,13 +389,18 @@ class HasherEventMapService {
       'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString()
     });
 
-    final http.Response response = await http.post(BASE_API_URL + 'hc3_join_event_as_visitor', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
+    final http.Response response = await http
+        .post(BASE_API_URL + 'hc3_join_event_as_visitor',
+            headers: <String, String>{'content-type': 'application/json'},
+            body: body)
+        .catchError(
       (dynamic error) {
         return false;
       },
     );
 
-    final List<dynamic> adHocData = await syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    final List<dynamic> adHocData = await syncEventAdminService
+        .updateSqlTablesWithResultsFromBackendApiCall(response.body);
 
     return adHocData;
   }

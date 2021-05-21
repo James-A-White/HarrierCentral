@@ -7,7 +7,15 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class ConfirmAutoCheckinPopup extends StatefulWidget {
-  const ConfirmAutoCheckinPopup({@required this.title, @required this.kennelLogo, @required this.eventName, @required this.eventImage, @required this.cancelButtonTitle, @required this.okButtonTitle, @required this.kennelShortName, @required this.eventNumber});
+  const ConfirmAutoCheckinPopup(
+      {@required this.title,
+      @required this.kennelLogo,
+      @required this.eventName,
+      @required this.eventImage,
+      @required this.cancelButtonTitle,
+      @required this.okButtonTitle,
+      @required this.kennelShortName,
+      @required this.eventNumber});
 
   final String title;
   final String kennelLogo;
@@ -19,12 +27,14 @@ class ConfirmAutoCheckinPopup extends StatefulWidget {
   final num eventNumber;
 
   @override
-  _ConfirmAutoCheckinPopupState createState() => _ConfirmAutoCheckinPopupState();
+  _ConfirmAutoCheckinPopupState createState() =>
+      _ConfirmAutoCheckinPopupState();
 }
 
 class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
   final FocusNode myFocusNodeFirstName = FocusNode();
-  TextEditingController followKennelAmountTextController = TextEditingController();
+  TextEditingController followKennelAmountTextController =
+      TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -34,23 +44,24 @@ class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
       content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
         CachedNetworkImage(
           height: 120.0,
-          imageUrl: widget.eventImage != null ? widget.eventImage : widget.kennelLogo,
+          imageUrl:
+              widget.eventImage != null ? widget.eventImage : widget.kennelLogo,
           // errorWidget:
           //     (BuildContext context, String url, Exception error) =>
           //         const  Icon(Icons.error),
         ),
         Padding(
-          padding: const EdgeInsets.only(top:15.0,bottom:5.0),
-          child:
-        ((widget.eventNumber != null) && (widget.eventNumber != 0))
-            ? Text(
-                'Would you like to check in to ${widget.kennelShortName}\'s ${widget.eventName} (Run #${widget.eventNumber})',
-              )
-            : Text(
-                'Would you like to check in to ${widget.kennelShortName}\'s ${widget.eventName}',
-              ),),
+          padding: const EdgeInsets.only(top: 15.0, bottom: 5.0),
+          child: ((widget.eventNumber != null) && (widget.eventNumber != 0))
+              ? Text(
+                  'Would you like to check in to ${widget.kennelShortName}\'s ${widget.eventName} (Run #${widget.eventNumber})',
+                )
+              : Text(
+                  'Would you like to check in to ${widget.kennelShortName}\'s ${widget.eventName}',
+                ),
+        ),
         Padding(
-          padding: const EdgeInsets.only(top:8.0),
+          padding: const EdgeInsets.only(top: 8.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[

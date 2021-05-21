@@ -32,7 +32,9 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        Container(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -60,7 +62,7 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
         OfflineModeRibbon(
           showRibbon: globalConnectionStatus == connectionStatus_notConnected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
-        ribbonImage: 'images/icons/offline_mode.png',
+          ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],
     );
@@ -71,10 +73,12 @@ class CreateNewAccountPageContent extends StatefulWidget {
   const CreateNewAccountPageContent({Key key}) : super(key: key);
 
   @override
-  _CreateNewAccountPageContentState createState() => _CreateNewAccountPageContentState();
+  _CreateNewAccountPageContentState createState() =>
+      _CreateNewAccountPageContentState();
 }
 
-class _CreateNewAccountPageContentState extends State<CreateNewAccountPageContent> {
+class _CreateNewAccountPageContentState
+    extends State<CreateNewAccountPageContent> {
   TextEditingController inviteCodeTextController;
   InputDecoration inviteCodeDecoration;
   final FocusNode inviteCodeFocusNode = FocusNode();
@@ -99,10 +103,12 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
       email: '',
       hashName: '',
     );
-    return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints viewportConstraints) {
       final num newFontSize = headingStyle.fontSize * deviceWidthScaleFactor;
 
-      final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
+      final TextStyle localHeadingStyle =
+          headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
 
       return SingleChildScrollView(
         child: Container(
@@ -186,7 +192,8 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                           child: Container(
                             padding: const EdgeInsets.only(left: 20),
                             height: 26,
-                            child: Image.asset('images/icons/more_info_button.png'),
+                            child: Image.asset(
+                                'images/icons/more_info_button.png'),
                           ),
                         ),
                       ],
@@ -206,50 +213,75 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                     // you'd often call a server or save the information in a database.
                     isLoading = true;
 
-                    setStringPref(StringPrefsEnum.firstName, userDetailsUi.firstName);
-                    setStringPref(StringPrefsEnum.lastName, userDetailsUi.lastName);
+                    setStringPref(
+                        StringPrefsEnum.firstName, userDetailsUi.firstName);
+                    setStringPref(
+                        StringPrefsEnum.lastName, userDetailsUi.lastName);
                     setStringPref(StringPrefsEnum.email, userDetailsUi.email);
-                    setStringPref(StringPrefsEnum.hashName, userDetailsUi.hashName);
+                    setStringPref(
+                        StringPrefsEnum.hashName, userDetailsUi.hashName);
 
                     final HashersService srv = HashersService();
 
-                    final String profilePhotoUrl = 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
+                    final String profilePhotoUrl = 'bundle://avatar-' +
+                        (Random.secure().nextInt(49) + 1).toString();
 
-                    final Future<String> apiCall =
-                        srv.addEditUser(targetUserId: GUID_EMPTY, firstName: userDetailsUi.firstName, lastName: userDetailsUi.lastName, email: userDetailsUi.email, hashName: userDetailsUi.hashName, photo: profilePhotoUrl, includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
+                    final Future<String> apiCall = srv.addEditUser(
+                        targetUserId: GUID_EMPTY,
+                        firstName: userDetailsUi.firstName,
+                        lastName: userDetailsUi.lastName,
+                        email: userDetailsUi.email,
+                        hashName: userDetailsUi.hashName,
+                        photo: profilePhotoUrl,
+                        includeInGlobalHashDirectory:
+                            includeInGlobalHashDirectory ? 1 : 0);
 
                     apiCall.then((String responseBody) async {
                       bool isSuccessfulLoad = false;
 
-                      final List<dynamic> jsonResultSets = json.decode(responseBody);
+                      final List<dynamic> jsonResultSets =
+                          json.decode(responseBody);
                       if (jsonResultSets.isNotEmpty) {
                         final List<dynamic> subSet = jsonResultSets[0];
                         if (subSet.isNotEmpty) {
                           final Map<String, dynamic> result = subSet[0];
                           if (result.isNotEmpty) {
-                            setStringPref(StringPrefsEnum.profilePhotoUrl, result['photo']);
-                            setStringPref(StringPrefsEnum.displayName, result['displayName']);
+                            setStringPref(StringPrefsEnum.profilePhotoUrl,
+                                result['photo']);
+                            setStringPref(StringPrefsEnum.displayName,
+                                result['displayName']);
                             //setStringPref(StringPrefsEnum.email, result['email']);
-                            setStringPref(StringPrefsEnum.facebookId, result['facebookId']);
-                            setStringPref(StringPrefsEnum.firstName, result['firstName']);
-                            setStringPref(StringPrefsEnum.hashName, result['hashName']);
-                            setStringPref(StringPrefsEnum.lastName, result['lastName']);
-                            setStringPref(StringPrefsEnum.qrCode, result['qrCode']);
-                            setStringPref(StringPrefsEnum.supportCode, result['supportCode']);
-                            setStringPref(StringPrefsEnum.resetCode, result['resetCode']);
-                            setStringPref(StringPrefsEnum.qrSecretCode, result['qrSecretCode']);
-                            setStringPref(StringPrefsEnum.userId, result['hasherId']);
+                            setStringPref(StringPrefsEnum.facebookId,
+                                result['facebookId']);
+                            setStringPref(
+                                StringPrefsEnum.firstName, result['firstName']);
+                            setStringPref(
+                                StringPrefsEnum.hashName, result['hashName']);
+                            setStringPref(
+                                StringPrefsEnum.lastName, result['lastName']);
+                            setStringPref(
+                                StringPrefsEnum.qrCode, result['qrCode']);
+                            setStringPref(StringPrefsEnum.supportCode,
+                                result['supportCode']);
+                            setStringPref(
+                                StringPrefsEnum.resetCode, result['resetCode']);
+                            setStringPref(StringPrefsEnum.qrSecretCode,
+                                result['qrSecretCode']);
+                            setStringPref(
+                                StringPrefsEnum.userId, result['hasherId']);
 
                             isSuccessfulLoad = true;
 
                             //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
-                            final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode);
+                            final String fileNamePrefix =
+                                getStringPref(StringPrefsEnum.supportCode);
                             //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
                             Navigator.pushReplacement<dynamic, dynamic>(
                                 context,
                                 MaterialPageRoute<dynamic>(
-                                  builder: (BuildContext context) => ChooseProfileImage(
+                                  builder: (BuildContext context) =>
+                                      ChooseProfileImage(
                                     isForThisDevice: true,
                                     fileNamePrefix: fileNamePrefix,
                                     currentProfileImage: null,
@@ -260,7 +292,11 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                         }
                       }
                       if (!isSuccessfulLoad) {
-                        CoreUtilities.showAlert(context, 'Account not created', 'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!', 'OK');
+                        CoreUtilities.showAlert(
+                            context,
+                            'Account not created',
+                            'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!',
+                            'OK');
                         print(jsonResultSets.length);
                       }
                     });

@@ -6,7 +6,6 @@ import 'package:ive_flutter_core/database/base_service.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 
-
 part 'kennels_service.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.none)
@@ -62,10 +61,11 @@ class KennelsModel implements BaseModel {
       this.updatedAt,
       this.removed});
 
-  factory KennelsModel.fromJson(Map<String,dynamic> json) => _$KennelsModelFromJson(json);
- 
+  factory KennelsModel.fromJson(Map<String, dynamic> json) =>
+      _$KennelsModelFromJson(json);
+
   @override
-  Map<String,dynamic> toJson() => _$KennelsModelToJson(this);
+  Map<String, dynamic> toJson() => _$KennelsModelToJson(this);
 
   final String kennelId;
   final String cityId;
@@ -116,7 +116,6 @@ class KennelsModel implements BaseModel {
   final int distancePreference;
   final DateTime updatedAt;
   final int removed;
-
 }
 
 class KennelsTableHelper with BaseFields implements BaseTableHelper {
@@ -182,23 +181,29 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
   final String colKennelPaymentUrl = 'kennelPaymentUrl';
   final String colKennelPaymentUrlExpires = 'kennelPaymentUrlExpires';
   final String colKennelPaymentMemberSurcharge = 'kennelPaymentMemberSurcharge';
-  final String colKennelPaymentNonMemberSurcharge = 'kennelPaymentNonMemberSurcharge';
+  final String colKennelPaymentNonMemberSurcharge =
+      'kennelPaymentNonMemberSurcharge';
   final String colKennelPaymentScheme2 = 'kennelPaymentScheme2';
   final String colKennelPaymentUrl2 = 'kennelPaymentUrl2';
   final String colKennelPaymentUrlExpires2 = 'kennelPaymentUrlExpires2';
-  final String colKennelPaymentMemberSurcharge2 = 'kennelPaymentMemberSurcharge2';
-  final String colKennelPaymentNonMemberSurcharge2 = 'kennelPaymentNonMemberSurcharge2';
+  final String colKennelPaymentMemberSurcharge2 =
+      'kennelPaymentMemberSurcharge2';
+  final String colKennelPaymentNonMemberSurcharge2 =
+      'kennelPaymentNonMemberSurcharge2';
   final String colKennelPaymentScheme3 = 'kennelPaymentScheme3';
   final String colKennelPaymentUrl3 = 'kennelPaymentUrl3';
   final String colKennelPaymentUrlExpires3 = 'kennelPaymentUrlExpires3';
-  final String colKennelPaymentMemberSurcharge3 = 'kennelPaymentMemberSurcharge3';
-  final String colKennelPaymentNonMemberSurcharge3 = 'kennelPaymentNonMemberSurcharge3';
+  final String colKennelPaymentMemberSurcharge3 =
+      'kennelPaymentMemberSurcharge3';
+  final String colKennelPaymentNonMemberSurcharge3 =
+      'kennelPaymentNonMemberSurcharge3';
   final String colRunCountStartDate = 'runCountStartDate';
   final String colKennelMismanagementTeam = 'kennelMismanagementTeam';
   final String colDistancePreference = 'distancePreference';
 
   @override
-  Future<dynamic> createTable(Database db, int version,dynamic appDomainType) async {
+  Future<dynamic> createTable(
+      Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -258,8 +263,10 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
           )
           ''');
 
-    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
+    await db.execute(
+        'CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
+    await db.execute(
+        'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
   // @override

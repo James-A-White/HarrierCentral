@@ -752,10 +752,10 @@ class _QrScannerTabState extends State<QrScannerTab>
           width: 280.0,
           child: Connection.styleForConnected(
             RaisedButton(
-                child: Text(
+                child: const Text(
                   'Start scanning',
                   //controller == null ? 'Start Scanning' : 'Stop Scanning',
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'AvenirNextDemiBold',
                       color: Colors.white,
                       fontStyle: FontStyle.normal,

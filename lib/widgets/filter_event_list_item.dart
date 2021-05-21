@@ -14,7 +14,10 @@ import 'package:harrier_central/util/enums.dart';
 import 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 
 class FilterEventListItem extends StatelessWidget {
-  const FilterEventListItem({@required this.event, @required this.kennelShortName, @required this.updateEvent});
+  const FilterEventListItem(
+      {@required this.event,
+      @required this.kennelShortName,
+      @required this.updateEvent});
 
   final Map<String, dynamic> event;
   final String kennelShortName;
@@ -28,7 +31,8 @@ class FilterEventListItem extends StatelessWidget {
         Navigator.push<void>(
           context,
           MaterialPageRoute<num>(
-            builder: (BuildContext context) => RunDetailPage(eventId: event['eventId']),
+            builder: (BuildContext context) =>
+                RunDetailPage(eventId: event['eventId']),
           ),
         ).then((void dummy) {
           //updateEvent(value);
@@ -42,8 +46,16 @@ class FilterEventListItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             (event['eventFacebookId']?.length ?? 0) > 2
-                ? event['canEditRunAttendence'] == -2 || event['canEditRunAttendence'] == -3 ? Icon(delayIcon, size: iconSize, color: Colors.blue) : Icon(FontAwesome.facebook_square, color: event['isVisible'] == 1 ? const Color.fromARGB(255, 59, 89, 152) : Colors.grey, size: iconSize)
-                : event['canEditRunAttendence'] == -2 || event['canEditRunAttendence'] == -3
+                ? event['canEditRunAttendence'] == -2 ||
+                        event['canEditRunAttendence'] == -3
+                    ? Icon(delayIcon, size: iconSize, color: Colors.blue)
+                    : Icon(FontAwesome.facebook_square,
+                        color: event['isVisible'] == 1
+                            ? const Color.fromARGB(255, 59, 89, 152)
+                            : Colors.grey,
+                        size: iconSize)
+                : event['canEditRunAttendence'] == -2 ||
+                        event['canEditRunAttendence'] == -3
                     ? Icon(delayIcon, size: iconSize, color: Colors.blue)
                     : Container(
                         foregroundDecoration: event['isVisible'] == 1
@@ -52,7 +64,10 @@ class FilterEventListItem extends StatelessWidget {
                                 color: Colors.grey,
                                 backgroundBlendMode: BlendMode.saturation,
                               ),
-                        child: Opacity(opacity: event['isVisible'] == 1 ? 1.0 : 0.5, child: Image.asset('images/other/hc_app_icon.png', height: iconSize, width: iconSize)),
+                        child: Opacity(
+                            opacity: event['isVisible'] == 1 ? 1.0 : 0.5,
+                            child: Image.asset('images/other/hc_app_icon.png',
+                                height: iconSize, width: iconSize)),
                       ),
 
             Expanded(
@@ -66,14 +81,28 @@ class FilterEventListItem extends StatelessWidget {
                       '${event['eventName']}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: event['isVisible'] == 1 ? Colors.black87 : Colors.grey, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 14.0 * deviceWidthScaleFactor, height: 1.0),
+                      style: TextStyle(
+                          color: event['isVisible'] == 1
+                              ? Colors.black87
+                              : Colors.grey,
+                          fontFamily: 'AvenirNextCondensedDemiBold',
+                          fontStyle: FontStyle.normal,
+                          fontSize: 14.0 * deviceWidthScaleFactor,
+                          height: 1.0),
                       textAlign: TextAlign.left,
                     ),
                     Text(
                       '${DateTime.parse(event['eventStartDatetime']).year != DateTime.now().year ? DateFormat("E, MMM d, yyyy \'at\' h:mm a").format(DateTime.parse(event['eventStartDatetime'])) : DateFormat("E, MMM d \'at\' h:mm a").format(DateTime.parse(event['eventStartDatetime']))}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: event['isVisible'] == 1 ? Colors.black87 : Colors.grey, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 14.0 * deviceWidthScaleFactor, height: 1.0),
+                      style: TextStyle(
+                          color: event['isVisible'] == 1
+                              ? Colors.black87
+                              : Colors.grey,
+                          fontFamily: 'AvenirNextCondensedDemiBold',
+                          fontStyle: FontStyle.normal,
+                          fontSize: 14.0 * deviceWidthScaleFactor,
+                          height: 1.0),
                       textAlign: TextAlign.left,
                     ),
                     ((event['isVisible'] == 1) && (event['isCountedRun'] == 1))
@@ -81,10 +110,26 @@ class FilterEventListItem extends StatelessWidget {
                             TextSpan(
                               text: 'Run ',
                               children: <TextSpan>[
-                                TextSpan(text: '#${event['eventNumber'].toString()}', style: TextStyle(fontFamily: 'AvenirNextCondensedBold', decoration: ((event['absoluteEventNumber'] ?? 0) >= 1) ? TextDecoration.underline : TextDecoration.none)),
+                                TextSpan(
+                                    text: '#${event['eventNumber'].toString()}',
+                                    style: TextStyle(
+                                        fontFamily: 'AvenirNextCondensedBold',
+                                        decoration:
+                                            ((event['absoluteEventNumber'] ??
+                                                        0) >=
+                                                    1)
+                                                ? TextDecoration.underline
+                                                : TextDecoration.none)),
                               ],
                             ),
-                            style: TextStyle(color: event['isVisible'] == 1 ? Colors.black87 : Colors.grey, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 14.0 * deviceWidthScaleFactor, height: 1.0),
+                            style: TextStyle(
+                                color: event['isVisible'] == 1
+                                    ? Colors.black87
+                                    : Colors.grey,
+                                fontFamily: 'AvenirNextCondensedDemiBold',
+                                fontStyle: FontStyle.normal,
+                                fontSize: 14.0 * deviceWidthScaleFactor,
+                                height: 1.0),
                             textAlign: TextAlign.left,
                           )
                         : Container()
@@ -102,28 +147,44 @@ class FilterEventListItem extends StatelessWidget {
                 onPressed: () {
                   //
 
-                  final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+                  final List<Map<String, dynamic>> buttons =
+                      <Map<String, dynamic>>[
                     <String, dynamic>{
-                      'title': event['isVisible'] == 0 ? 'Show Event' : 'Hide Event',
+                      'title':
+                          event['isVisible'] == 0 ? 'Show Event' : 'Hide Event',
                       'icon': <Widget>[
                         Container(
                           height: 30,
                           width: 30,
-                          child: Icon(event['isVisible'] == 0 ? Ionicons.md_eye : Ionicons.md_eye_off, color: Colors.yellow),
+                          child: Icon(
+                              event['isVisible'] == 0
+                                  ? Ionicons.md_eye
+                                  : Ionicons.md_eye_off,
+                              color: Colors.yellow),
                         ),
                       ],
-                      'returnValue': event['isVisible'] == 0 ? eventFilterType_showEvent : eventFilterType_hideEvent,
+                      'returnValue': event['isVisible'] == 0
+                          ? eventFilterType_showEvent
+                          : eventFilterType_hideEvent,
                     },
                     <String, dynamic>{
-                      'title': event['isCountedRun'] == 0 ? 'Count Run' : 'Don\'t Count Run',
+                      'title': event['isCountedRun'] == 0
+                          ? 'Count Run'
+                          : 'Don\'t Count Run',
                       'icon': <Widget>[
                         Container(
                           height: 30,
                           width: 30,
-                          child: Icon(event['isCountedRun'] == 0 ? MaterialCommunityIcons.pencil : MaterialCommunityIcons.pencil_off, color: Colors.blue[200]),
+                          child: Icon(
+                              event['isCountedRun'] == 0
+                                  ? MaterialCommunityIcons.pencil
+                                  : MaterialCommunityIcons.pencil_off,
+                              color: Colors.blue[200]),
                         ),
                       ],
-                      'returnValue': event['isCountedRun'] == 0 ? eventFilterType_countEvent : eventFilterType_doNotCountEvent,
+                      'returnValue': event['isCountedRun'] == 0
+                          ? eventFilterType_countEvent
+                          : eventFilterType_doNotCountEvent,
                     },
                     <String, dynamic>{
                       'title': 'Set run number',
@@ -131,7 +192,8 @@ class FilterEventListItem extends StatelessWidget {
                         Container(
                           height: 30,
                           width: 30,
-                          child: Icon(FontAwesome.hashtag, color: Colors.red[200]),
+                          child:
+                              Icon(FontAwesome.hashtag, color: Colors.red[200]),
                         ),
                       ],
                       'returnValue': eventFilterType_setRunNumber,

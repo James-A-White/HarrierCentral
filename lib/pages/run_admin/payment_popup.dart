@@ -5,17 +5,21 @@ import 'package:flutter/material.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
 import 'package:harrier_central/pages/run_admin/other_payment_popup.dart';
 
-
-class PaymentPopupResult{
-
-  PaymentPopupResult({this.transactionType,this.transactionValue});
+class PaymentPopupResult {
+  PaymentPopupResult({this.transactionType, this.transactionValue});
 
   final int transactionType;
   final num transactionValue;
 }
 
 class PaymentPopup extends StatefulWidget {
-  const PaymentPopup({@required this.hemId, @required this.currencySymbol, @required this.amount, @required this.creditRemaining, @required this.creditAllowed, @required this.decimalDigits
+  const PaymentPopup(
+      {@required this.hemId,
+      @required this.currencySymbol,
+      @required this.amount,
+      @required this.creditRemaining,
+      @required this.creditAllowed,
+      @required this.decimalDigits
       // @required this.valueChanged
       });
 
@@ -102,27 +106,36 @@ class _PaymentPopupState extends State<PaymentPopup> {
               ]..addAll((widget.creditAllowed == 0)
                   ? List<Widget>.from(<Widget>[otherAmountRow()])
                   : List<Widget>.from(<Widget>[
-                      Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                        Radio<int>(
-                          value: 6,
-                          groupValue: selectedValue,
-                          onChanged: _handleRadioValueChange1,
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
-                            Text(
-                              'Credit (${CoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
-                              style: const TextStyle(fontSize: 16.0),
+                            Radio<int>(
+                              value: 6,
+                              groupValue: selectedValue,
+                              onChanged: _handleRadioValueChange1,
                             ),
-                            Text(
-                              '${CoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ' + ((widget.creditRemaining >= 0) ? 'remaining' : 'owed'),
-                              style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  'Credit (${CoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
+                                  style: const TextStyle(fontSize: 16.0),
+                                ),
+                                Text(
+                                  '${CoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ' +
+                                      ((widget.creditRemaining >= 0)
+                                          ? 'remaining'
+                                          : 'owed'),
+                                  style: TextStyle(
+                                      fontSize: 16.0,
+                                      color: (widget.creditRemaining >= 0)
+                                          ? Colors.green[800]
+                                          : Colors.red[800]),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ]),
+                          ]),
                       otherAmountRow()
                       // Row(
                       //     //crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,7 +190,8 @@ class _PaymentPopupState extends State<PaymentPopup> {
               child: const Text('Cancel'),
               textColor: Colors.white,
               onPressed: () {
-                final PaymentPopupResult popupResult = PaymentPopupResult(transactionType: -1, transactionValue: 0);
+                final PaymentPopupResult popupResult = PaymentPopupResult(
+                    transactionType: -1, transactionValue: 0);
                 Navigator.of(context).pop(popupResult);
               },
             ),
@@ -191,13 +205,14 @@ class _PaymentPopupState extends State<PaymentPopup> {
             onPressed: () {
               num resultAmount = widget.amount;
               int resultTransType = selectedValue;
-              if (selectedValue == PaymentPopup.otherAmountRowId)
-              {
+              if (selectedValue == PaymentPopup.otherAmountRowId) {
                 resultAmount = otherAmount;
                 resultTransType = otherTransType;
               }
 
-              final PaymentPopupResult result = PaymentPopupResult(transactionType: resultTransType, transactionValue: resultAmount);
+              final PaymentPopupResult result = PaymentPopupResult(
+                  transactionType: resultTransType,
+                  transactionValue: resultAmount);
               Navigator.of(context).pop(result);
             },
           ),
@@ -213,7 +228,8 @@ class _PaymentPopupState extends State<PaymentPopup> {
           _handleRadioValueChange1(PaymentPopup.otherAmountRowId);
         }
       },
-      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+      child:
+          Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
         Radio<int>(
           value: PaymentPopup.otherAmountRowId,
           groupValue: selectedValue,
@@ -228,10 +244,15 @@ class _PaymentPopupState extends State<PaymentPopup> {
               style: TextStyle(fontSize: 16.0),
             ),
             otherTransType == null
-                ? Container(height:1, width:1)
+                ? Container(height: 1, width: 1)
                 : Text(
-                    '${CoreUtilities.getFormattedMoney(otherAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ' + ((otherTransType == 5) ? ' cash' : ' bank transfer'),
-                    style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
+                    '${CoreUtilities.getFormattedMoney(otherAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ' +
+                        ((otherTransType == 5) ? ' cash' : ' bank transfer'),
+                    style: TextStyle(
+                        fontSize: 16.0,
+                        color: (widget.creditRemaining >= 0)
+                            ? Colors.green[800]
+                            : Colors.red[800]),
                   ),
           ],
         ),

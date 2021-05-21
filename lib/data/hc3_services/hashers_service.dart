@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 
-
 import 'package:harrier_central/util/globals.dart';
 import 'package:ive_flutter_core/util/connection.dart';
 import 'package:ive_flutter_core/util/core_utilities.dart';
@@ -12,7 +11,6 @@ import 'package:harrier_central/util/constants.dart';
 import 'package:ive_flutter_core/database/base_service.dart';
 import 'package:harrier_central/database/tables.dart';
 import 'package:harrier_central/util/enums.dart';
-
 
 import 'package:json_annotation/json_annotation.dart';
 
@@ -38,7 +36,8 @@ class HashersModel implements BaseModel {
     this.updatedAt,
   });
 
-  factory HashersModel.fromJson(Map<String, dynamic> json) => _$HashersModelFromJson(json);
+  factory HashersModel.fromJson(Map<String, dynamic> json) =>
+      _$HashersModelFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$HashersModelToJson(this);
@@ -108,7 +107,8 @@ class HashersTableHelper with BaseFields implements BaseTableHelper {
   final String colPreferences = 'preferences';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(
+      Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -134,8 +134,10 @@ class HashersTableHelper with BaseFields implements BaseTableHelper {
           )
           ''');
 
-    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
+    await db.execute(
+        'CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
+    await db.execute(
+        'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
   // @override
@@ -182,14 +184,17 @@ class HashersService extends BaseService {
 
     bool newUserForThisDevice = false;
 
-    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
+    final String hcVersion =
+        getStringPref(StringPrefsEnum.harrierCentralVersion);
     String userId = getStringPref(StringPrefsEnum.userId);
     if ((userId == null) || (userId.isEmpty)) {
       userId = GUID_EMPTY;
       newUserForThisDevice = true;
     }
 
-    final String accessToken = CoreUtilities.generateToken(userId.toUpperCase(), 'addEditUser', paramString: targetUserId.toUpperCase());
+    final String accessToken = CoreUtilities.generateToken(
+        userId.toUpperCase(), 'addEditUser',
+        paramString: targetUserId.toUpperCase());
 
     DateTime hashersUpdatedAfter;
     DateTime hasherEventMapUpdatedAfter;
@@ -202,25 +207,39 @@ class HashersService extends BaseService {
         hashersTableHelper.getTableName(AppDomainType.user),
         hashersTableHelper.colUpdatedAtValue,
       );
-      hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
+      hashersUpdatedAfter = _hashersLastUpdated == null
+          ? DateTime(2000, 1, 1)
+          : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
 
       // TODO(James): Check the logic here in this call we are using AppDomainType of event but in the next one we have logic to go between event and kennel
-      final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(
+      final num _hasherEventMapLastUpdated =
+          await baseService.getLastUpdatedTime(
         internalSqlDb,
         hasherEventMapTableHelper,
         hasherEventMapTableHelper.getTableName(AppDomainType.event),
         hasherEventMapTableHelper.colUpdatedAtValue,
       );
-      hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+      hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null
+          ? DateTime(2000, 1, 1)
+          : DateTime.fromMillisecondsSinceEpoch(
+              _hasherEventMapLastUpdated + 1000);
 
       // this one has event and kennel
-      final num _hasherKennelMapLastUpdated = await baseService.getLastUpdatedTime(
+      final num _hasherKennelMapLastUpdated =
+          await baseService.getLastUpdatedTime(
         internalSqlDb,
         hasherKennelMapTableHelper,
-        hasherKennelMapTableHelper.getTableName(((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? AppDomainType.event : AppDomainType.kennel),
+        hasherKennelMapTableHelper.getTableName(((eventId != null) &&
+                (eventId.isNotEmpty) &&
+                (eventId != GUID_EMPTY))
+            ? AppDomainType.event
+            : AppDomainType.kennel),
         hasherKennelMapTableHelper.colUpdatedAtValue,
       );
-      hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+      hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null
+          ? DateTime(2000, 1, 1)
+          : DateTime.fromMillisecondsSinceEpoch(
+              _hasherKennelMapLastUpdated + 1000);
     } else {
       // do this to suppress any records being returned through the sync mechanism
       hashersUpdatedAfter = DateTime(2050, 1, 1);
@@ -232,8 +251,15 @@ class HashersService extends BaseService {
       'accessToken': accessToken,
       'hcVersion': hcVersion,
       'hashersUpdatedAfter': hashersUpdatedAfter.toString(),
-      'hasherEventMapUpdatedAfter': ((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY)) ? hasherEventMapUpdatedAfter.toString() : 'ignore',
-      'hasherKennelMapUpdatedAfter': ((kennelId != null) && (kennelId.isNotEmpty) && (kennelId != GUID_EMPTY)) ? hasherKennelMapUpdatedAfter.toString() : 'ignore',
+      'hasherEventMapUpdatedAfter':
+          ((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY))
+              ? hasherEventMapUpdatedAfter.toString()
+              : 'ignore',
+      'hasherKennelMapUpdatedAfter': ((kennelId != null) &&
+              (kennelId.isNotEmpty) &&
+              (kennelId != GUID_EMPTY))
+          ? hasherKennelMapUpdatedAfter.toString()
+          : 'ignore',
       'targetUserId': targetUserId,
       'email': email,
       'firstName': firstName,
@@ -246,12 +272,17 @@ class HashersService extends BaseService {
       'kennelId': kennelId,
       'historicalPackRunCount': historicalPackRunCount,
       'historicalHaringCount': historicalHaringCount,
-      'historicalCountIsEstimate': (historicalCountIsEstimate ?? false) ? '1' : '0',
-      'followKennelOnAddNewUser': followKennelOnAddNewUser == null ? null : followKennelOnAddNewUser.toString()
+      'historicalCountIsEstimate':
+          (historicalCountIsEstimate ?? false) ? '1' : '0',
+      'followKennelOnAddNewUser': followKennelOnAddNewUser == null
+          ? null
+          : followKennelOnAddNewUser.toString()
     });
 
     final http.Response response = await http
-        .post(BASE_API_URL + 'hc3_add_edit_user', headers: <String, String>{'content-type': 'application/json'}, body: body
+        .post(BASE_API_URL + 'hc3_add_edit_user',
+            headers: <String, String>{'content-type': 'application/json'},
+            body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -262,17 +293,21 @@ class HashersService extends BaseService {
     );
 
     if (!newUserForThisDevice) {
-      if (((eventId == null) || (eventId == GUID_EMPTY)) && ((kennelId == null) || (kennelId == GUID_EMPTY))) {
+      if (((eventId == null) || (eventId == GUID_EMPTY)) &&
+          ((kennelId == null) || (kennelId == GUID_EMPTY))) {
         // we don't have either an eventId or a kennelId so all we need to do is update
         // the Hasher table
-        await syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+        await syncUserDataService
+            .updateSqlTablesWithResultsFromBackendApiCall(response.body);
       } else if ((eventId != null) && (eventId != GUID_EMPTY)) {
         // if we have an eventId we are definitely editing an event irrespective of whether or not
         // there is also a kennelId
-        await syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+        await syncEventAdminService
+            .updateSqlTablesWithResultsFromBackendApiCall(response.body);
       } else if ((kennelId != null) && (kennelId != GUID_EMPTY)) {
         // if we get here, we have a kennelId but no eventId, which means we are editing kennel members
-        await syncKennelAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+        await syncKennelAdminService
+            .updateSqlTablesWithResultsFromBackendApiCall(response.body);
       } else {
         // TODO(James): handle this error, we should never arrive at this point in the code
       }
@@ -281,20 +316,24 @@ class HashersService extends BaseService {
     return response.body;
   }
 
-  Future<String> changeProfilePicture({String targetUserId, String photo}) async {
+  Future<String> changeProfilePicture(
+      {String targetUserId, String photo}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return '';
       // TODO(James): fix this so we can return a bool
       //return false;
     }
 
-    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
+    final String hcVersion =
+        getStringPref(StringPrefsEnum.harrierCentralVersion);
     String userId = getStringPref(StringPrefsEnum.userId);
     if ((userId == null) || (userId.isEmpty)) {
       userId = GUID_EMPTY;
     }
 
-    final String accessToken = CoreUtilities.generateToken(userId.toUpperCase(), 'addEditUser', paramString: targetUserId.toUpperCase());
+    final String accessToken = CoreUtilities.generateToken(
+        userId.toUpperCase(), 'addEditUser',
+        paramString: targetUserId.toUpperCase());
 
     final String body = jsonEncode(<String, String>{
       'userId': userId,
@@ -319,7 +358,9 @@ class HashersService extends BaseService {
     });
 
     final http.Response response = await http
-        .post(BASE_API_URL + 'hc3_add_edit_user', headers: <String, String>{'content-type': 'application/json'}, body: body
+        .post(BASE_API_URL + 'hc3_add_edit_user',
+            headers: <String, String>{'content-type': 'application/json'},
+            body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -332,7 +373,15 @@ class HashersService extends BaseService {
     return response.body;
   }
 
-  Future<String> processFacebookLogin({String firstName, String lastName, String email, String hashName, String photo, String facebookId, String facebookAccessToken, int includeInGlobalHashDirectory = -1}) async {
+  Future<String> processFacebookLogin(
+      {String firstName,
+      String lastName,
+      String email,
+      String hashName,
+      String photo,
+      String facebookId,
+      String facebookAccessToken,
+      int includeInGlobalHashDirectory = -1}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return '';
       // TODO(James): fix this so we can return a bool
@@ -341,7 +390,8 @@ class HashersService extends BaseService {
 
     bool newUserForThisDevice = false;
 
-    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
+    final String hcVersion =
+        getStringPref(StringPrefsEnum.harrierCentralVersion);
     String userId = getStringPref(StringPrefsEnum.userId);
     if ((userId == null) || (userId.isEmpty)) {
       userId = GUID_EMPTY;
@@ -357,13 +407,17 @@ class HashersService extends BaseService {
         hashersTableHelper.getTableName(AppDomainType.user),
         hashersTableHelper.colUpdatedAtValue,
       );
-      hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
+      hashersUpdatedAfter = _hashersLastUpdated == null
+          ? DateTime(2000, 1, 1)
+          : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
     } else {
       // do this to suppress any records being returned through the sync mechanism
       hashersUpdatedAfter = DateTime(2050, 1, 1);
     }
 
-    final String accessToken = CoreUtilities.generateToken(userId.toUpperCase(), 'processFacebookLogin', paramString: userId.toUpperCase());
+    final String accessToken = CoreUtilities.generateToken(
+        userId.toUpperCase(), 'processFacebookLogin',
+        paramString: userId.toUpperCase());
 
     final String body = jsonEncode(<String, String>{
       'userId': userId,
@@ -381,7 +435,9 @@ class HashersService extends BaseService {
     });
 
     final http.Response response = await http
-        .post(BASE_API_URL + 'hc3_process_facebook_login', headers: <String, String>{'content-type': 'application/json'}, body: body
+        .post(BASE_API_URL + 'hc3_process_facebook_login',
+            headers: <String, String>{'content-type': 'application/json'},
+            body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -392,7 +448,8 @@ class HashersService extends BaseService {
     );
 
     if (!newUserForThisDevice) {
-      await syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      await syncUserDataService
+          .updateSqlTablesWithResultsFromBackendApiCall(response.body);
     }
 
     return response.body;

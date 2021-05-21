@@ -1,5 +1,3 @@
-
-
 // class AddVisitorVirginPopup extends StatefulWidget {
 //   const AddVisitorVirginPopup();
 
@@ -108,5 +106,3 @@
 //     );
 //   }
 // }
-
-

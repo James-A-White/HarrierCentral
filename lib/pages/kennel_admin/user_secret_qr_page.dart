@@ -4,7 +4,7 @@
 
 // import 'package:qr_flutter/qr_flutter.dart';
 
-// 
+//
 // import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 // import 'package:harrier_central/data/models/kennel_member_model.dart';
 // import 'package:harrier_central/util/styles.dart';
@@ -49,8 +49,8 @@
 //               ),
 //               child: Padding(
 //                 padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-//                 child: 
-                
+//                 child:
+
 //                 TabBar(
 //                   labelStyle: const TextStyle(
 //                       fontFamily: 'AvenirNextCondensedMedium',

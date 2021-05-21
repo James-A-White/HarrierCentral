@@ -41,25 +41,54 @@ class SyncUserDataService {
   num _narrowEventsLastUpdated;
 
   Future<num> getLastUpdatedTime(String colName, String tableName) async {
-    final List<Map<String, dynamic>> table = await internalSqlDb.rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
+    final List<Map<String, dynamic>> table = await internalSqlDb
+        .rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
     final num timeValue = table.first['maxDate'];
     print(timeValue.toString());
     return timeValue;
   }
 
   Future<void> getLastUpdatedTimes(int flags) async {
-    _hashersLastUpdated = (flags & flagHashersTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hashersTableHelper.colUpdatedAtValue, hashersTableHelper.getTableName(AppDomainType.user));
-    _citiesLastUpdated = (flags & flagCitiesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(citiesTableHelper.colUpdatedAtValue, citiesTableHelper.getTableName(AppDomainType.user));
-    _regionsLastUpdated = (flags & flagRegionsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(regionsTableHelper.colUpdatedAtValue, regionsTableHelper.getTableName(AppDomainType.user));
-    _countriesLastUpdated = (flags & flagCountriesTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(countriesTableHelper.colUpdatedAtValue, countriesTableHelper.getTableName(AppDomainType.user));
-    _kennelsLastUpdated = (flags & flagKennelsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(kennelsTableHelper.colUpdatedAtValue, kennelsTableHelper.getTableName(AppDomainType.user));
-    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(paymentsTableHelper.colUpdatedAtValue, paymentsTableHelper.getTableName(AppDomainType.user));
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hasherKennelMapTableHelper.colUpdatedAtValue, hasherKennelMapTableHelper.getTableName(AppDomainType.user));
-    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(hasherEventMapTableHelper.colUpdatedAtValue, hasherEventMapTableHelper.getTableName(AppDomainType.user));
-    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : await getLastUpdatedTime(eventsTableHelper.colUpdatedAtValue, eventsTableHelper.getTableName(AppDomainType.user));
+    _hashersLastUpdated = (flags & flagHashersTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await getLastUpdatedTime(hashersTableHelper.colUpdatedAtValue,
+            hashersTableHelper.getTableName(AppDomainType.user));
+    _citiesLastUpdated = (flags & flagCitiesTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await getLastUpdatedTime(citiesTableHelper.colUpdatedAtValue,
+            citiesTableHelper.getTableName(AppDomainType.user));
+    _regionsLastUpdated = (flags & flagRegionsTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await getLastUpdatedTime(regionsTableHelper.colUpdatedAtValue,
+            regionsTableHelper.getTableName(AppDomainType.user));
+    _countriesLastUpdated = (flags & flagCountriesTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await getLastUpdatedTime(countriesTableHelper.colUpdatedAtValue,
+            countriesTableHelper.getTableName(AppDomainType.user));
+    _kennelsLastUpdated = (flags & flagKennelsTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await getLastUpdatedTime(kennelsTableHelper.colUpdatedAtValue,
+            kennelsTableHelper.getTableName(AppDomainType.user));
+    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await getLastUpdatedTime(paymentsTableHelper.colUpdatedAtValue,
+            paymentsTableHelper.getTableName(AppDomainType.user));
+    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await getLastUpdatedTime(hasherKennelMapTableHelper.colUpdatedAtValue,
+            hasherKennelMapTableHelper.getTableName(AppDomainType.user));
+    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await getLastUpdatedTime(hasherEventMapTableHelper.colUpdatedAtValue,
+            hasherEventMapTableHelper.getTableName(AppDomainType.user));
+    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await getLastUpdatedTime(eventsTableHelper.colUpdatedAtValue,
+            eventsTableHelper.getTableName(AppDomainType.user));
   }
 
-  Future<bool> updateFromBackend(int tablesToSync, bool forceRefresh, {Function informUser}) async {
+  Future<bool> updateFromBackend(int tablesToSync, bool forceRefresh,
+      {Function informUser}) async {
     if (globalConnectionStatus == connectionStatus_notConnected) {
       return false;
     }
@@ -110,39 +139,86 @@ class SyncUserDataService {
       // the table and add one second to it
       await getLastUpdatedTimes(tablesToSync);
 
-      final DateTime hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
-      final DateTime citiesUpdatedAfter = _citiesLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_citiesLastUpdated + 1000);
-      final DateTime regionsUpdatedAfter = _regionsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_regionsLastUpdated + 1000);
-      final DateTime countriesUpdatedAfter = _countriesLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_countriesLastUpdated + 1000);
-      final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
-      final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
-      final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
-      final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
-      final DateTime narrowEventsUpdatedAfter = _narrowEventsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_narrowEventsLastUpdated + 1000);
+      final DateTime hashersUpdatedAfter = _hashersLastUpdated == null
+          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
+          : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
+      final DateTime citiesUpdatedAfter = _citiesLastUpdated == null
+          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
+          : DateTime.fromMillisecondsSinceEpoch(_citiesLastUpdated + 1000);
+      final DateTime regionsUpdatedAfter = _regionsLastUpdated == null
+          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
+          : DateTime.fromMillisecondsSinceEpoch(_regionsLastUpdated + 1000);
+      final DateTime countriesUpdatedAfter = _countriesLastUpdated == null
+          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
+          : DateTime.fromMillisecondsSinceEpoch(_countriesLastUpdated + 1000);
+      final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null
+          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
+          : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
+      final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null
+          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
+          : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+      final DateTime hasherKennelMapUpdatedAfter =
+          _hasherKennelMapLastUpdated == null
+              ? DateTime.fromMillisecondsSinceEpoch(
+                  FORCE_ALL_REPLICATION_TIMESTAMP)
+              : DateTime.fromMillisecondsSinceEpoch(
+                  _hasherKennelMapLastUpdated + 1000);
+      final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated ==
+              null
+          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
+          : DateTime.fromMillisecondsSinceEpoch(
+              _hasherEventMapLastUpdated + 1000);
+      final DateTime narrowEventsUpdatedAfter = _narrowEventsLastUpdated == null
+          ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
+          : DateTime.fromMillisecondsSinceEpoch(
+              _narrowEventsLastUpdated + 1000);
 
       String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
         userId = GUID_EMPTY;
       }
 
-      final String accessToken = CoreUtilities.generateToken(userId, 'syncUserData');
+      final String accessToken =
+          CoreUtilities.generateToken(userId, 'syncUserData');
 
       final String body = jsonEncode(<String, String>{
         'userId': userId,
         'accessToken': accessToken,
-        'hashersUpdatedAfter': (tablesToSync & flagHashersTable) == 0 ? 'ignore' : hashersUpdatedAfter.toString().substring(0, 19),
-        'citiesUpdatedAfter': (tablesToSync & flagCitiesTable) == 0 ? 'ignore' : citiesUpdatedAfter.toString().substring(0, 19),
-        'regionsUpdatedAfter': (tablesToSync & flagRegionsTable) == 0 ? 'ignore' : regionsUpdatedAfter.toString().substring(0, 19),
-        'countriesUpdatedAfter': (tablesToSync & flagCountriesTable) == 0 ? 'ignore' : countriesUpdatedAfter.toString().substring(0, 19),
-        'kennelsUpdatedAfter': (tablesToSync & flagKennelsTable) == 0 ? 'ignore' : kennelsUpdatedAfter.toString().substring(0, 19),
-        'hasherKennelMapUpdatedAfter': (tablesToSync & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
-        'hasherEventMapUpdatedAfter': (tablesToSync & flagHasherEventMapTable) == 0 ? 'ignore' : hasherEventMapUpdatedAfter.toString().substring(0, 19),
-        'narrowEventsUpdatedAfter': (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : narrowEventsUpdatedAfter.toString().substring(0, 19),
-        'paymentsUpdatedAfter': (tablesToSync & flagPaymentsTable) == 0 ? 'ignore' : paymentsUpdatedAfter.toString().substring(0, 19),
+        'hashersUpdatedAfter': (tablesToSync & flagHashersTable) == 0
+            ? 'ignore'
+            : hashersUpdatedAfter.toString().substring(0, 19),
+        'citiesUpdatedAfter': (tablesToSync & flagCitiesTable) == 0
+            ? 'ignore'
+            : citiesUpdatedAfter.toString().substring(0, 19),
+        'regionsUpdatedAfter': (tablesToSync & flagRegionsTable) == 0
+            ? 'ignore'
+            : regionsUpdatedAfter.toString().substring(0, 19),
+        'countriesUpdatedAfter': (tablesToSync & flagCountriesTable) == 0
+            ? 'ignore'
+            : countriesUpdatedAfter.toString().substring(0, 19),
+        'kennelsUpdatedAfter': (tablesToSync & flagKennelsTable) == 0
+            ? 'ignore'
+            : kennelsUpdatedAfter.toString().substring(0, 19),
+        'hasherKennelMapUpdatedAfter':
+            (tablesToSync & flagHasherKennelMapTable) == 0
+                ? 'ignore'
+                : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
+        'hasherEventMapUpdatedAfter':
+            (tablesToSync & flagHasherEventMapTable) == 0
+                ? 'ignore'
+                : hasherEventMapUpdatedAfter.toString().substring(0, 19),
+        'narrowEventsUpdatedAfter': (tablesToSync & flagNarrowEventsTable) == 0
+            ? 'ignore'
+            : narrowEventsUpdatedAfter.toString().substring(0, 19),
+        'paymentsUpdatedAfter': (tablesToSync & flagPaymentsTable) == 0
+            ? 'ignore'
+            : paymentsUpdatedAfter.toString().substring(0, 19),
       });
 
       final http.Response response = await http
-          .post(BASE_API_URL + 'hc3_sync_user_data', headers: <String, String>{'content-type': 'application/json'}, body: body
+          .post(BASE_API_URL + 'hc3_sync_user_data',
+              headers: <String, String>{'content-type': 'application/json'},
+              body: body
               // Send authorization headers to your backend
               //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
               )
@@ -152,13 +228,14 @@ class SyncUserDataService {
         },
       );
 
-      await updateSqlTablesWithResultsFromBackendApiCall(response.body, informUser: informUser);
+      await updateSqlTablesWithResultsFromBackendApiCall(response.body,
+          informUser: informUser);
       //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
-      await setDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate, DateTime.now());
+      await setDatePref(
+          DatePrefsEnum.lastSuccessfulUserDataSyncAsDate, DateTime.now());
     }
     return true;
   }
-
 
   final List<BaseTableHelper> _userTables = <BaseTableHelper>[
     hashersTableHelper,
@@ -170,11 +247,13 @@ class SyncUserDataService {
     eventsTableHelper,
     hasherKennelMapTableHelper,
     hasherEventMapTableHelper
-
   ];
 
-  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(String jsonResults, {Function informUser}) async {
-    return baseService.updateSqlTablesFromJson(jsonResults, _userTables, internalSqlDb, AppDomainType.user, informUser: informUser);
+  Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(
+      String jsonResults,
+      {Function informUser}) async {
+    return baseService.updateSqlTablesFromJson(
+        jsonResults, _userTables, internalSqlDb, AppDomainType.user,
+        informUser: informUser);
   }
-
 }

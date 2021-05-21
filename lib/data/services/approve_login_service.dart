@@ -54,8 +54,9 @@ class ApproveLoginService {
       manufacturer = 'Apple';
     }
 
-    final String accessToken =
-        CoreUtilities.generateToken(userId, 'approveLogin', paramString: deviceId);
+    final String accessToken = CoreUtilities.generateToken(
+        userId, 'approveLogin',
+        paramString: deviceId);
 
     final String body = jsonEncode(<String, String>{
       'userId': userId,
@@ -70,7 +71,7 @@ class ApproveLoginService {
       'longitude': (deviceLon ?? DEFAULT_LONGITUDE).toString(),
       'hcVersion': hcVersion,
     });
-    
+
     Future<http.Response> response;
 
     response = http
@@ -87,18 +88,17 @@ class ApproveLoginService {
       },
     );
 
-    if (response == null)
-    {
-        return null;
+    if (response == null) {
+      return null;
     }
 
     // if the response times out, show an error
-    response.timeout(const Duration(seconds: LOGIN_TIMEOUT), onTimeout: () => _onTimeout(context));
+    response.timeout(const Duration(seconds: LOGIN_TIMEOUT),
+        onTimeout: () => _onTimeout(context));
 
     final http.Response resp = await response;
 
-    if (resp == null)
-    {
+    if (resp == null) {
       return null;
     }
 
@@ -109,10 +109,15 @@ class ApproveLoginService {
   }
 
   Future<http.Response> _onTimeout(BuildContext context) {
-    CoreUtilities.showAlert(context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit').then((void dummy) async {
-        await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
+    CoreUtilities.showAlert(
+            context,
+            'Network Error',
+            'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.',
+            'Quit')
+        .then((void dummy) async {
+      await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
     });
-    
+
     return null;
   }
 }

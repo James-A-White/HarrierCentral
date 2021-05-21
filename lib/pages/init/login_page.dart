@@ -1,4 +1,3 @@
-
 // import 'dart:core';
 
 // import 'package:flutter/cupertino.dart';
@@ -26,7 +25,7 @@
 //         onNotification: (OverscrollIndicatorNotification overscroll) {
 //           overscroll.disallowGlow();
 // TODO(James): What shoudl the return type really be?
-//           return true; 
+//           return true;
 //         },
 //         child: NewUserWidget(scaffoldKey: _scaffoldKey),
 //       ),

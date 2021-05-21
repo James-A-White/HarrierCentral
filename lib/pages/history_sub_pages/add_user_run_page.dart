@@ -8,7 +8,7 @@
 // import 'package:qr_flutter/qr_flutter.dart';
 
 // import 'package:ive_flutter_core/database/database.dart';
-// 
+//
 // import 'package:harrier_central/util/styles.dart';
 // import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
 // import 'package:harrier_central/util/utilities.dart';
@@ -34,7 +34,6 @@
 //   const AddUserRunPage({Key key, @required this.pageType}) : super(key: key);
 
 //   final EnumAddUserRunType pageType;
-
 
 //   static const int flagUiElement_followKennel = 0x00000001;
 //   static const int flagUiElement_inviteCode = 0x00000002;
@@ -359,7 +358,6 @@
 //   @override
 //   Widget build(BuildContext context) {
 
-
 //     return Stack(
 //       children: <Widget>[
 //         Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
@@ -402,7 +400,7 @@
 //                                 mainAxisSize: MainAxisSize.min,
 //                                 mainAxisAlignment: MainAxisAlignment.start,
 //                                 children: <Widget>[
-                               // TODO(James): Bring this back eventually
+// TODO(James): Bring this back eventually
 //                                   // UserDetailsUi(firstName: firstName, lastName: lastName, email: email, hashName: hashName,),
 //                                   // const FancyDivider(innerColor: Colors.white),
 //                                   Container(
@@ -412,7 +410,7 @@
 //                                         fit: StackFit.expand,
 //                                         alignment: AlignmentDirectional.center,
 //                                         children: <Widget>[
-                                          
+
 //                                           Positioned(
 //                                             top: 10,
 //                                             left: 0,
