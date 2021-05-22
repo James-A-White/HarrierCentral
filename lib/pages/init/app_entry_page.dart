@@ -1,28 +1,5 @@
 import 'package:harrier_central/imports.dart';
 
-// import 'dart:async';
-// import 'dart:math';
-
-// import 'package:flutter/material.dart';
-// import 'package:flutter/services.dart';
-
-// import 'package:package_info/package_info.dart';
-
-// import 'package:ive_flutter_core/database/database.dart';
-// import 'package:harrier_central/data/models/approve_login_model.dart';
-// import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
-// import 'package:harrier_central/data/services/approve_login_service.dart';
-// import 'package:harrier_central/util/constants.dart';
-// import 'package:harrier_central/util/enums.dart';
-// import 'package:harrier_central/util/globals.dart';
-
-// import 'package:harrier_central/util/routes.dart';
-// import 'package:harrier_central/util/utilities.dart';
-// import 'package:ive_flutter_core/util/core_utilities.dart';
-// import 'package:harrier_central/data/services/authorize_device_service.dart';
-// import 'package:ive_flutter_core_mobile/util/connection.dart';
-// import 'package:harrier_central/util/secure_prefs.dart';
-
 class AppEntryPage extends StatefulWidget {
   @override
   _AppEntryPageState createState() => _AppEntryPageState();
@@ -36,23 +13,25 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
     final PackageInfo p = await PackageInfo.fromPlatform();
     final String hcVersion = 'HC Ver: ${p.version}, Bld: ${p.buildNumber}';
 
-    appStartTime = DateTime.now();
+    G0<AppModel>().appStartTime = DateTime.now();
 
-    await SecurePrefs.setPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
+    await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
+
+    setupLocalServices(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height);
 
     // await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);
 
     Utilities.subscribeToGeoLocationStream();
 
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final ApproveLoginService svc = ApproveLoginService();
     final ApproveLoginModel loginResult = await svc.approveLogin(context);
 
     if (loginResult != null) {
-      await SecurePrefs.setPref(StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);
-      await SecurePrefs.setPref(StringPrefsEnum.androidDownloadLink, loginResult.androidDownloadLink);
-      await SecurePrefs.setPref(StringPrefsEnum.imageRootUrl, loginResult.imageRootUrl);
+      await setStringPref(StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);
+      await setStringPref(StringPrefsEnum.androidDownloadLink, loginResult.androidDownloadLink);
+      await setStringPref(StringPrefsEnum.imageRootUrl, loginResult.imageRootUrl);
     }
 
     if ((loginResult == null) && ((userId == null) || (userId.isEmpty))) {
@@ -80,7 +59,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
       if (allowContinueFromMessage) {
         if (loginResult.serverStatusCode == serverStatusUp.value) {
           if (loginResult.approvalCode == loginApprovalApproved.value) {
-            G0<AppModel>().connectionStatus = connectionStatus_connected;
+            G0<AppModel>().connectionStatus = EnumConnectionStatus.connected;
             //if (true) {
             if (userId == null) {
               // first time the app has run
@@ -93,7 +72,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
                 // if the version numbers are greater than 10 apart,
                 // reload the entire DB.
 
-                final String resetCode = await SecurePrefs.getStringPref(StringPrefsEnum.resetCode);
+                final String resetCode = getStringPref(StringPrefsEnum.resetCode);
 
                 DBProvider.deleteDb(DB_NAME);
                 await setIntPref(IntPrefsEnum.dbCreated, 0);
@@ -109,7 +88,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
                   });
 
                   if (result['result'] != 'failed') {
-                    userName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
+                    userName = getStringPref(StringPrefsEnum.displayName);
 
                     await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 
@@ -199,13 +178,13 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    deviceWidthScaleFactor ??= MediaQuery.of(context).size.width / BASE_DEVICE_WIDTH;
-    deviceHeightScaleFactor ??= MediaQuery.of(context).size.height / BASE_DEVICE_HEIGHT;
-    deviceMaxScaleFactor ??= max(deviceWidthScaleFactor, deviceHeightScaleFactor);
-    deviceMinScaleFactor ??= min(deviceWidthScaleFactor, deviceHeightScaleFactor);
+    G0<DeviceInfo>().deviceWidthScaleFactor ??= MediaQuery.of(context).size.width / BASE_DEVICE_WIDTH;
+    G0<DeviceInfo>().deviceHeightScaleFactor ??= MediaQuery.of(context).size.height / BASE_DEVICE_HEIGHT;
+    G0<DeviceInfo>().deviceMaxScaleFactor ??= max(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
+    G0<DeviceInfo>().deviceMinScaleFactor ??= min(G0<DeviceInfo>().deviceWidthScaleFactor, G0<DeviceInfo>().deviceHeightScaleFactor);
 
-    deviceWidth ??= MediaQuery.of(context).size.width;
-    deviceHeight ??= MediaQuery.of(context).size.height;
+    G0<DeviceInfo>().deviceWidth ??= MediaQuery.of(context).size.width;
+    G0<DeviceInfo>().deviceHeight ??= MediaQuery.of(context).size.height;
 
     return Image.asset('images/init/splash_screen.jpg');
   }

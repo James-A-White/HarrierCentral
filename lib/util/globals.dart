@@ -24,7 +24,7 @@ void _initTables() {
     G0.unregister<TableModel>();
   }
   G0.registerSingleton<TableModel>(TableModel());
-  G0<TableModel>().init();
+  G0<TableModel>().initializeGlobals();
 
   G0<TableModel>().tablesForRemoteSync = <BaseTableHelper>[
     G0<TableModel>().citiesTableHelper,
@@ -74,8 +74,8 @@ Future<void> _createTables(dynamic db, int version, Function informUser, String 
       );
 
   await Tables.createIndexes(db, version, informUser, clientAppIdentifier);
-  await SecurePrefs.setPref(IntPrefsEnum.databaseVersion, DB_VERSION);
-  await SecurePrefs.setPref(BoolPrefsEnum.dbCreated, true);
+  await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
+  await setBoolPref(BoolPrefsEnum.dbCreated, true);
 }
 
 class AppModel {
@@ -83,6 +83,8 @@ class AppModel {
   EnumConnectionStatus connectionStatus = EnumConnectionStatus.not_connected;
   StreamSubscription<Position> geoLocationStream;
   DateTime appStartTime;
+
+  bool hasLocationPermissions = false;
 
   // TODO(DevTeam): Make sure this is eventually called
   void dispose() {
@@ -112,8 +114,14 @@ class TableModel {
   BaseService baseService;
 
   HashersService hashersService;
+  PaymentsService paymentsService;
+  EventsService eventsService;
+  HasherEventMapService hasherEventMapService;
+  HasherKennelMapService hasherKennelMapService;
 
-  void init() {
+  List<KennelListAggregate> globalKennelMainPageList = <KennelListAggregate>[];
+
+  void initializeGlobals() {
     citiesTableHelper = CitiesTableHelper();
     countriesTableHelper = CountriesTableHelper();
     regionsTableHelper = RegionsTableHelper();
@@ -133,6 +141,10 @@ class TableModel {
 
     baseService = BaseService();
     hashersService = HashersService();
+    paymentsService = PaymentsService();
+    eventsService = EventsService();
+    hasherEventMapService = HasherEventMapService();
+    hasherKennelMapService = HasherKennelMapService();
   }
 
   List<BaseTableHelper> tablesForRemoteSync;
@@ -157,8 +169,8 @@ class DeviceInfo {
   num deviceMinScaleFactor;
   num deviceWidth;
   num deviceHeight;
-  num G0<DeviceInfo>().deviceLat;
-  num G0<DeviceInfo>().deviceLon;
+  num deviceLat;
+  num deviceLon;
 
   // a flag to indicate if we are running in the simulator
   bool isPhysicalDevice = true;
@@ -193,6 +205,28 @@ class DeviceInfo {
       isPhysicalDevice = iosInfo.isPhysicalDevice;
     }
   }
+
+//   void initializeGlobals() {
+//   G0<TableModel>().citiesTableHelper = CitiesTableHelper();
+//   G0<TableModel>().countriesTableHelper = CountriesTableHelper();
+//   G0<TableModel>().regionsTableHelper = RegionsTableHelper();
+//   G0<TableModel>().receiptsTableHelper = ReceiptsTableHelper();
+//   G0<TableModel>().paymentsTableHelper = PaymentsTableHelper();
+//   G0<TableModel>().hashersTableHelper = HashersTableHelper();
+//   G0<TableModel>().kennelCreditsTableHelper = KennelCreditsTableHelper();
+//   G0<TableModel>().kennelsTableHelper = KennelsTableHelper();
+//   G0<TableModel>().eventsTableHelper = EventsTableHelper();
+//   G0<TableModel>().hasherEventMapTableHelper = HasherEventMapTableHelper();
+//   G0<TableModel>().hasherKennelMapTableHelper = HasherKennelMapTableHelper();
+
+//   G0<TableModel>().baseService = BaseService();
+//   hashersService = HashersService();
+
+//   G0<TableModel>().syncUserDataService = SyncUserDataService();
+//   G0<TableModel>().syncKennelAdminService = SyncKennelAdminService();
+//   G0<TableModel>().syncEventAdminService = SyncEventAdminService();
+// }
+
 }
 
 // // Ambient variable to access the service locator
@@ -214,11 +248,11 @@ class DeviceInfo {
 //   }
 // }
 
-// Future<void> setupLocalServices(num deviceWidth, num deviceHeight) async {
+// Future<void> setupLocalServices(num G0<DeviceInfo>().deviceWidth, num G0<DeviceInfo>().deviceHeight) async {
 //   G0.registerSingleton<AppModel>(AppModel());
 //   // G0.registerSingletonAsync<DeviceInfo>(() async {
 //   //   final DeviceInfo deviceInfo = DeviceInfo();
-//   //   await deviceInfo.init(deviceWidth, deviceHeight);
+//   //   await deviceInfo.init(G0<DeviceInfo>().deviceWidth, G0<DeviceInfo>().deviceHeight);
 //   //   return deviceInfo;
 //   // });
 
@@ -230,17 +264,17 @@ class DeviceInfo {
 
 // // NEEDS MIGRATION
 
-// List<KennelListAggregate> globalKennelMainPageList;
+// List<KennelListAggregate> G0<TableModel>().globalKennelMainPageList;
 
-// num deviceWidthScaleFactor;
-// num deviceHeightScaleFactor;
-// num deviceMaxScaleFactor;
-// num deviceMinScaleFactor;
+// num G0<DeviceInfo>().deviceWidthScaleFactor;
+// num G0<DeviceInfo>().deviceHeightScaleFactor;
+// num G0<DeviceInfo>().deviceMaxScaleFactor;
+// num G0<DeviceInfo>().deviceMinScaleFactor;
 
-// num deviceWidth;
-// num deviceHeight;
+// num G0<DeviceInfo>().deviceWidth;
+// num G0<DeviceInfo>().deviceHeight;
 
-// bool hasLocationPermissions = false;
+// bool G0<AppModel>().hasLocationPermissions = false;
 
 // DateTime appStartTime;
 
@@ -274,10 +308,10 @@ class DeviceInfo {
 
 // BaseService G0<TableModel>().baseService;
 // HashersService hashersService;
-// PaymentsService paymentsService;
-// EventsService eventsService;
-// HasherEventMapService hasherEventMapService;
-// HasherKennelMapService hasherKennelMapService;
+// PaymentsService G0<TableModel>().paymentsService;
+// EventsService G0<TableModel>().eventsService;
+// HasherEventMapService G0<TableModel>().hasherEventMapService;
+// HasherKennelMapService G0<TableModel>.hasherKennelMapService;
 // SyncUserDataService G0<TableModel>().syncUserDataService;
 // SyncKennelAdminService G0<TableModel>().syncKennelAdminService;
 // SyncEventAdminService G0<TableModel>().syncEventAdminService;
@@ -308,10 +342,10 @@ class DeviceInfo {
 
 //   G0<TableModel>().baseService = BaseService();
 //   hashersService = HashersService();
-//   paymentsService = PaymentsService();
-//   eventsService = EventsService();
-//   hasherEventMapService = HasherEventMapService();
-//   hasherKennelMapService = HasherKennelMapService();
+//   G0<TableModel>().paymentsService = PaymentsService();
+//   G0<TableModel>().eventsService = EventsService();
+//   G0<TableModel>().hasherEventMapService = HasherEventMapService();
+//   G0<TableModel>.hasherKennelMapService = HasherKennelMapService();
 
 //   G0<TableModel>().syncUserDataService = SyncUserDataService();
 //   G0<TableModel>().syncKennelAdminService = SyncKennelAdminService();

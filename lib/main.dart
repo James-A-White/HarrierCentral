@@ -14,8 +14,6 @@ void main() {
     //DeviceOrientation.landscapeRight
   ]);
 
-  initializeGlobals();
-
   runApp(
     MaterialApp(
         debugShowCheckedModeBanner: false,

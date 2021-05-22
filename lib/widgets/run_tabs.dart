@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:latlong/latlong.dart' as latLng;
 
 class RunTabs extends StatefulWidget {
   const RunTabs({Key key, @required this.futureRun}) : super(key: key);
@@ -119,7 +120,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 
   //final GetPackService _getPackService = GetPackService();
 
-  final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+  final String userId = getStringPref(StringPrefsEnum.userId);
 
   @override
   void initState() {
@@ -176,7 +177,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   }
 
   TextStyle rsvpTitlesView =
-      TextStyle(color: Colors.white, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0 * deviceWidthScaleFactor, height: 1);
+      TextStyle(color: Colors.white, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1);
 
   EnumRsvpState<int> rsvpRequested = rsvpUnknown;
 
@@ -422,16 +423,16 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                       rsvpRequested = rsvpYes;
                                     }
                                   });
-                                  //final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+                                  //final String userId = getStringPref(StringPrefsEnum.userId);
 
-                                  final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
-                                    widget.futureRun.event.eventId,
-                                    userId,
-                                    null,
-                                    AppDomainType.user,
-                                    rsvpState: rsvpYes.value,
-                                    isHare: isHareYes.value,
-                                  );
+                                  final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
+                                        widget.futureRun.event.eventId,
+                                        userId,
+                                        null,
+                                        AppDomainType.user,
+                                        rsvpState: rsvpYes.value,
+                                        isHare: isHareYes.value,
+                                      );
 
                                   retVal.then((List<dynamic> adHocData) async {
                                     _refreshHemTableFromBackend(false);
@@ -639,18 +640,18 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         rsvpRequested = rsvpState;
       }
     });
-    //final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    //final String userId = getStringPref(StringPrefsEnum.userId);
 
     final int attendenceValue = rsvpState.value <= rsvpMaybe.value ? attendenceNo.value : attendenceNoChange.value;
-    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
-      widget.futureRun.event.eventId,
-      userId,
-      null,
-      AppDomainType.user,
-      rsvpState: rsvpState.value,
-      attendenceState: attendenceValue,
-      isHare: isHareNo.value,
-    );
+    final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
+          widget.futureRun.event.eventId,
+          userId,
+          null,
+          AppDomainType.user,
+          rsvpState: rsvpState.value,
+          attendenceState: attendenceValue,
+          isHare: isHareNo.value,
+        );
 
     retVal.then((List<dynamic> adHocData) async {
       _refreshHemTableFromBackend(false);
@@ -664,7 +665,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         // Map
         child: FlutterMap(
           options: MapOptions(
-            center: LatLng(IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLatitude), IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLongitude)),
+            center: latLng.LatLng(IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLatitude), IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLongitude)),
             zoom: 15.0,
           ),
           layers: <LayerOptions>[
@@ -679,7 +680,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                 Marker(
                   width: 120.0,
                   height: 120.0,
-                  point: LatLng(IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLatitude), IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLongitude)),
+                  point: latLng.LatLng(IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLatitude), IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLongitude)),
                   builder: (BuildContext ctx) => GestureDetector(
                     onTap: () => _launchMaps(widget.futureRun.event),
                     child: Container(
@@ -773,16 +774,16 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         rsvpRequested = rsvpYes;
                       }
                     });
-                    //final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
-                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
-                      widget.futureRun.event.eventId,
-                      userId,
-                      null,
-                      AppDomainType.user,
-                      rsvpState: rsvpYes.value,
-                      attendenceState: attendenceNoChange.value,
-                      isHare: isHareYes.value,
-                    );
+                    //final String userId = getStringPref(StringPrefsEnum.userId);
+                    final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
+                          widget.futureRun.event.eventId,
+                          userId,
+                          null,
+                          AppDomainType.user,
+                          rsvpState: rsvpYes.value,
+                          attendenceState: attendenceNoChange.value,
+                          isHare: isHareYes.value,
+                        );
 
                     retVal.then((List<dynamic> adHocData) async {
                       _refreshHemTableFromBackend(false);
