@@ -151,7 +151,7 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
 
 class ReceiptsService {
   Future<String> uploadReceipt(BuildContext context, ReceiptsModel item) async {
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
 
     final num _receiptsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(

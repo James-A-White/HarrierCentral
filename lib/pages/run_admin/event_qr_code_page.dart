@@ -33,7 +33,7 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
   PageController _pageController;
   TabController _tabController;
 
-  final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+  final String userId = getStringPref(StringPrefsEnum.userId);
 
   GlobalKey tabKey;
 
@@ -283,7 +283,7 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
 
   Key tabKey;
 
-  num spacer = 12.0 + (deviceMaxScaleFactor * 30);
+  num spacer = 12.0 + (G0<DeviceInfo>().deviceMaxScaleFactor * 30);
 
   @override
   Widget build(BuildContext context) {
@@ -305,7 +305,7 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
               color: Colors.white,
               fontFamily: 'AvenirNextDemiBold',
               fontStyle: FontStyle.normal,
-              fontSize: 14.0 * deviceWidthScaleFactor,
+              fontSize: 14.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
               height: 1.0,
             ),
           ),

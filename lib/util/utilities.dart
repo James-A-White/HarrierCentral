@@ -72,13 +72,13 @@ class Utilities {
 
     final Geolocator geolocator = Geolocator();
 
-    IveCoreUtilities.logTiming('Geostatus query start', appStartTime);
+    IveCoreUtilities.logTiming('Geostatus query start', G0<AppModel>().appStartTime);
     final GeolocationStatus status = await Geolocator().checkGeolocationPermissionStatus(locationPermission: GeolocationPermission.location);
 
-    IveCoreUtilities.logTiming('Geolocation query start', appStartTime);
+    IveCoreUtilities.logTiming('Geolocation query start', G0<AppModel>().appStartTime);
     if (status == GeolocationStatus.granted) {
       const LocationOptions locationOptions = LocationOptions(accuracy: LocationAccuracy.high, distanceFilter: 50);
-      geoLocationStream = geolocator.getPositionStream(locationOptions).listen((Position position) {
+      G0<AppModel>().geoLocationStream = geolocator.getPositionStream(locationOptions).listen((Position position) {
         if (position != null) {
           G0<DeviceInfo>().deviceLat = position.latitude;
           G0<DeviceInfo>().deviceLon = position.longitude;
@@ -93,7 +93,7 @@ class Utilities {
   }
 
   static String getDistance(num meters, BuildContext context, {bool isMetric = true}) {
-    if (!hasLocationPermissions) {
+    if (!G0<AppModel>().hasLocationPermissions) {
       return '';
     }
 

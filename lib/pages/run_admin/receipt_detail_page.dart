@@ -11,10 +11,10 @@ class ReceiptDetailPage extends StatefulWidget {
 }
 
 class ReceiptDetailPageState extends State<ReceiptDetailPage> {
-  // String firstName = await SecurePrefs.getStringPref(StringPrefsEnum.firstName);
-  // String lastName = await SecurePrefs.getStringPref(StringPrefsEnum.lastName);
-  // String email = await SecurePrefs.getStringPref(StringPrefsEnum.email);
-  // String hashName = await SecurePrefs.getStringPref(StringPrefsEnum.hashName);
+  // String firstName = getStringPref(StringPrefsEnum.firstName);
+  // String lastName = getStringPref(StringPrefsEnum.lastName);
+  // String email = getStringPref(StringPrefsEnum.email);
+  // String hashName = getStringPref(StringPrefsEnum.hashName);
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _autoValidate = false;

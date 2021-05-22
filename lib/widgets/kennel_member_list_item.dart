@@ -107,21 +107,25 @@ class KennelMemberListItem extends StatelessWidget {
                           : Text(
                               '${kennelMember.homeKennelName ?? '<no home hash>'}',
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceWidthScaleFactor, height: 1.0),
+                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
                               textAlign: TextAlign.left,
                             ),
                       kennelMember.dateOfLastRun == null
                           ? Container()
                           : Text(
                               'Last run: ${DateFormat('MMM dd, yyyy').format(kennelMember.dateOfLastRun)}',
-                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceWidthScaleFactor, height: 1.0),
+                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
                               textAlign: TextAlign.center,
                             ),
                       kennelMember.membershipDateBeingUpdated ?? false
                           ? Text(
                               '<Updating membership>',
-                              style:
-                                  TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceWidthScaleFactor, height: 1.0, color: Colors.blue),
+                              style: TextStyle(
+                                  fontFamily: 'AvenirNextMedium',
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                                  height: 1.0,
+                                  color: Colors.blue),
                               textAlign: TextAlign.center,
                             )
                           : kennelMember.membershipExpirationDate == null
@@ -129,12 +133,14 @@ class KennelMemberListItem extends StatelessWidget {
                                   ? Container()
                                   : Text(
                                       '(following this Kennel)',
-                                      style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceWidthScaleFactor, height: 1.0),
+                                      style: TextStyle(
+                                          fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
                                       textAlign: TextAlign.center,
                                     )
                               : Text(
                                   'Valid until: ${DateFormat('MMM dd, yyyy').format(kennelMember.membershipExpirationDate)}',
-                                  style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceWidthScaleFactor, height: 1.0),
+                                  style:
+                                      TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
                                   textAlign: TextAlign.center,
                                 ),
                     ],

@@ -62,7 +62,7 @@ class HistoryListPageState extends State<HistoryListPage> {
   }
 
   Future<void> refreshRunHistoryFromTable(bool forceRefresh) async {
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String query = '''  
           SELECT count(case when hem.attendenceState >= 20 then 1 else null end) + coalesce(hkm.historicalPackRunCount,0) as totalRunsThisKennel,
@@ -134,7 +134,7 @@ class HistoryListPageState extends State<HistoryListPage> {
   TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
 
   Widget _buildListView() {
-    final String _photo = await SecurePrefs.getStringPref(StringPrefsEnum.profilePhotoUrl);
+    final String _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
     return Stack(
       children: <Widget>[
         Container(

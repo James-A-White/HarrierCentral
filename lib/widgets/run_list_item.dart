@@ -82,17 +82,17 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       widget.futureRun.extensions.rsvpState = -1;
     });
 
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
     final int attendenceValue = rsvpState.value <= rsvpMaybe.value ? attendenceNo.value : attendenceNoChange.value;
-    final List<dynamic> adHocData = await hasherEventMapService.joinEvent(
-      widget.futureRun.event.eventId,
-      userId,
-      null,
-      AppDomainType.user,
-      rsvpState: rsvpState.value,
-      attendenceState: attendenceValue,
-      isHare: willHare ? isHareYes.value : isHareNo.value,
-    );
+    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService.joinEvent(
+          widget.futureRun.event.eventId,
+          userId,
+          null,
+          AppDomainType.user,
+          rsvpState: rsvpState.value,
+          attendenceState: attendenceValue,
+          isHare: willHare ? isHareYes.value : isHareNo.value,
+        );
 
     final int rsvpResult = adHocData[0]['rsvpState'];
     final int willHareResult = adHocData[0]['willHareState'];
@@ -260,7 +260,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                           textAlign: TextAlign.left,
                                           overflow: TextOverflow.ellipsis,
                                         ),
-                                  (widget.futureRun.extensions.distToEvent >= 0 && hasLocationPermissions)
+                                  (widget.futureRun.extensions.distToEvent >= 0 && G0<AppModel>().hasLocationPermissions)
                                       ? Text(
                                           Utilities.getDistance(widget.futureRun.extensions.distToEvent, context, isMetric: widget.futureRun.extensions.distancePreference == 0) +
                                               ' from here',
@@ -287,7 +287,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
                           // (widget.futureRun.event.hares ?? '') == '' ? Container(
                           //   padding: const EdgeInsets.only(top:15),
-                          //   child:Image(width: 40.0 * deviceWidthScaleFactor, height: 40.0 * deviceWidthScaleFactor, fit: BoxFit.fill, image: const AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
+                          //   child:Image(width: 40.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 40.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fit: BoxFit.fill, image: const AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
                         ],
                       ),
                     ),
@@ -334,7 +334,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   }
 
   void showRsvpOptionsPopup(BuildContext context) {
-    if (Connection.checkForConnection(context, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
+    if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
           'title': 'I\'ll be there!',
@@ -393,7 +393,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
   }
 
   void showAllOptionsPopup(BuildContext context) {
-    if (Connection.checkForConnection(context, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
+    if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus, message: 'Setting run options is not available in offline mode. Please connect to the Internet.')) {
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
           'title': 'I\'ll be there!',
@@ -604,20 +604,21 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
   void setNotificationState(EnumNotificationState<int> retVal) {
     if ((retVal == notificationsOn) || (retVal == notificationsOff) || (retVal == notificationsAuto)) {
-      final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+      final String userId = getStringPref(StringPrefsEnum.userId);
       final EnumNotificationState<int> nState = retVal;
       setState(() {
         widget.futureRun.extensions.notificationPreference = -1;
       });
 
-      hasherEventMapService
+      G0<TableModel>()
+          .hasherEventMapService
           .joinEvent(
-        widget.futureRun.event.eventId,
-        userId,
-        null,
-        AppDomainType.user,
-        notificationState: nState.value,
-      )
+            widget.futureRun.event.eventId,
+            userId,
+            null,
+            AppDomainType.user,
+            notificationState: nState.value,
+          )
           .then((List<dynamic> results) {
         setState(() {
           final NotificationSupport notifications = NotificationSupport();
@@ -704,20 +705,21 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
 
   void setEmailAlertState(EnumEmailAlertState<int> retVal) {
     if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff) || (retVal == emailAlertsAuto)) {
-      final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+      final String userId = getStringPref(StringPrefsEnum.userId);
       final EnumEmailAlertState<int> nState = retVal;
       setState(() {
         widget.futureRun.extensions.emailAlertPreference = -1;
       });
 
-      hasherEventMapService
+      G0<TableModel>()
+          .hasherEventMapService
           .joinEvent(
-        widget.futureRun.event.eventId,
-        userId,
-        null,
-        AppDomainType.user,
-        emailAlertState: nState.value,
-      )
+            widget.futureRun.event.eventId,
+            userId,
+            null,
+            AppDomainType.user,
+            emailAlertState: nState.value,
+          )
           .then((List<dynamic> results) {
         setState(() {
           widget.futureRun.extensions.emailAlertPreference = results[0]['emailAlertPreference'] ?? 0;

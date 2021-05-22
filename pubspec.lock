@@ -606,20 +606,20 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "5a49459c0555c6d3ef5ee7ca1d218e59b23aa9d4"
-      resolved-ref: "5a49459c0555c6d3ef5ee7ca1d218e59b23aa9d4"
+      ref: "8a22a083318d840cead0d694be7fa2e83c4012ad"
+      resolved-ref: "8a22a083318d840cead0d694be7fa2e83c4012ad"
       url: "git://github.com/InnoVet-Europe/ive_flutter_core.git"
     source: git
-    version: "1.1.0+1"
+    version: "1.1.0+2"
   ive_flutter_core_mobile:
     dependency: "direct main"
     description:
       path: "."
-      ref: d1db837f20af5d496351d7d42aa392d23cecdc30
-      resolved-ref: d1db837f20af5d496351d7d42aa392d23cecdc30
+      ref: b8a431387cf3f99b8ea0a0dfc99bfcee0ae1ec83
+      resolved-ref: b8a431387cf3f99b8ea0a0dfc99bfcee0ae1ec83
       url: "git://github.com/InnoVet-Europe/ive_flutter_core_mobile.git"
     source: git
-    version: "1.1.0+1"
+    version: "1.1.0+2"
   js:
     dependency: transitive
     description:
@@ -907,6 +907,48 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.25.0"
+  shared_preferences:
+    dependency: "direct main"
+    description:
+      name: shared_preferences
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.5.12+4"
+  shared_preferences_linux:
+    dependency: transitive
+    description:
+      name: shared_preferences_linux
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.2+4"
+  shared_preferences_macos:
+    dependency: transitive
+    description:
+      name: shared_preferences_macos
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.1+11"
+  shared_preferences_platform_interface:
+    dependency: transitive
+    description:
+      name: shared_preferences_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.4"
+  shared_preferences_web:
+    dependency: transitive
+    description:
+      name: shared_preferences_web
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.2+7"
+  shared_preferences_windows:
+    dependency: transitive
+    description:
+      name: shared_preferences_windows
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.2+3"
   shelf:
     dependency: transitive
     description:

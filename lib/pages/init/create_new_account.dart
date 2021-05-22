@@ -41,7 +41,7 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
         ),
         OfflineModeRibbon(
           showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
-          lastSync: SecurePrefs.getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],
@@ -82,7 +82,7 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
       hashName: '',
     );
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
-      final num newFontSize = headingStyle.fontSize * deviceWidthScaleFactor;
+      final num newFontSize = headingStyle.fontSize * G0<DeviceInfo>().deviceWidthScaleFactor;
 
       final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
 
@@ -188,10 +188,10 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                     // you'd often call a server or save the information in a database.
                     isLoading = true;
 
-                    SecurePrefs.setPref(StringPrefsEnum.firstName, userDetailsUi.firstName);
-                    SecurePrefs.setPref(StringPrefsEnum.lastName, userDetailsUi.lastName);
-                    SecurePrefs.setPref(StringPrefsEnum.email, userDetailsUi.email);
-                    SecurePrefs.setPref(StringPrefsEnum.hashName, userDetailsUi.hashName);
+                    setStringPref(StringPrefsEnum.firstName, userDetailsUi.firstName);
+                    setStringPref(StringPrefsEnum.lastName, userDetailsUi.lastName);
+                    setStringPref(StringPrefsEnum.email, userDetailsUi.email);
+                    setStringPref(StringPrefsEnum.hashName, userDetailsUi.hashName);
 
                     final HashersService srv = HashersService();
 
@@ -215,23 +215,23 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                         if (subSet.isNotEmpty) {
                           final Map<String, dynamic> result = subSet[0];
                           if (result.isNotEmpty) {
-                            SecurePrefs.setPref(StringPrefsEnum.profilePhotoUrl, result['photo']);
-                            SecurePrefs.setPref(StringPrefsEnum.displayName, result['displayName']);
-                            //SecurePrefs.setPref(StringPrefsEnum.email, result['email']);
-                            SecurePrefs.setPref(StringPrefsEnum.facebookId, result['facebookId']);
-                            SecurePrefs.setPref(StringPrefsEnum.firstName, result['firstName']);
-                            SecurePrefs.setPref(StringPrefsEnum.hashName, result['hashName']);
-                            SecurePrefs.setPref(StringPrefsEnum.lastName, result['lastName']);
-                            SecurePrefs.setPref(StringPrefsEnum.qrCode, result['qrCode']);
-                            SecurePrefs.setPref(StringPrefsEnum.supportCode, result['supportCode']);
-                            SecurePrefs.setPref(StringPrefsEnum.resetCode, result['resetCode']);
-                            SecurePrefs.setPref(StringPrefsEnum.qrSecretCode, result['qrSecretCode']);
-                            SecurePrefs.setPref(StringPrefsEnum.userId, result['hasherId']);
+                            setStringPref(StringPrefsEnum.profilePhotoUrl, result['photo']);
+                            setStringPref(StringPrefsEnum.displayName, result['displayName']);
+                            //setStringPref(StringPrefsEnum.email, result['email']);
+                            setStringPref(StringPrefsEnum.facebookId, result['facebookId']);
+                            setStringPref(StringPrefsEnum.firstName, result['firstName']);
+                            setStringPref(StringPrefsEnum.hashName, result['hashName']);
+                            setStringPref(StringPrefsEnum.lastName, result['lastName']);
+                            setStringPref(StringPrefsEnum.qrCode, result['qrCode']);
+                            setStringPref(StringPrefsEnum.supportCode, result['supportCode']);
+                            setStringPref(StringPrefsEnum.resetCode, result['resetCode']);
+                            setStringPref(StringPrefsEnum.qrSecretCode, result['qrSecretCode']);
+                            setStringPref(StringPrefsEnum.userId, result['hasherId']);
 
                             isSuccessfulLoad = true;
 
-                            //final String profilePhotoUrl = await SecurePrefs.getStringPref(StringPrefsEnum.profilePhotoUrl);
-                            final String fileNamePrefix = await SecurePrefs.getStringPref(StringPrefsEnum.supportCode);
+                            //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
+                            final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode);
                             //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
                             Navigator.pushReplacement<dynamic, dynamic>(

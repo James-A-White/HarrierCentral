@@ -5,44 +5,35 @@ class OfflineModeRibbon extends StatelessWidget {
   const OfflineModeRibbon({@required this.showRibbon, @required this.lastSync, this.ribbonImage = 'images/icons/offline_mode.png'});
 
   final bool showRibbon;
-  final Future<DateTime> lastSync;
+  final DateTime lastSync;
   final String ribbonImage;
 
   @override
   Widget build(BuildContext context) {
-    return showRibbon
-        ? FutureBuilder<DateTime>(
-            future: lastSync,
-            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-              if (snapshot.data != null) {
-                return Positioned(
-                  right: 0,
-                  top: 0,
-                  child: GestureDetector(
-                    onTap: () {
-                      if (snapshot.data != null) {
-                        showAlert(
-                            context,
-                            'Offline Mode',
-                            'The data displayed in this app might be out of date. The last time the app connected to the server was ${DateFormat("E, MMM d \'at\' h:mm a").format(snapshot.data)}',
-                            'OK');
-                      } else {
-                        showAlert(context, 'Offline Mode', 'The data displayed in this app might be out of date. There is no record indicating when the last sync occurred.', 'OK');
-                      }
-                    },
-                    child: Image.asset(
-                      'images/icons/offline_mode.png',
-                      height: 60,
-                      width: 60,
-                    ),
-                  ),
-                );
-              } else {
-                return const SizedBox.shrink();
-              }
-            },
-          )
-        : const SizedBox.shrink();
+    return !showRibbon
+        ? const SizedBox.shrink()
+        : Positioned(
+            right: 0,
+            top: 0,
+            child: GestureDetector(
+              onTap: () {
+                if (lastSync != null) {
+                  showAlert(
+                      context,
+                      'Offline Mode',
+                      'The data displayed in this app might be out of date. The last time the app connected to the server was ${DateFormat("E, MMM d \'at\' h:mm a").format(lastSync)}',
+                      'OK');
+                } else {
+                  showAlert(context, 'Offline Mode', 'The data displayed in this app might be out of date. There is no record indicating when the last sync occurred.', 'OK');
+                }
+              },
+              child: Image.asset(
+                'images/icons/offline_mode.png',
+                height: 60,
+                width: 60,
+              ),
+            ),
+          );
   }
 
   static Future<bool> showAlert(BuildContext context, String title, String body, String buttonText, {bool showCancelButton = false, String cancelButtonText = 'Cancel'}) async {

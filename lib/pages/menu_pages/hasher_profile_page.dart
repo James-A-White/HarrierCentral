@@ -36,23 +36,23 @@ class HasherProfilePage extends StatefulWidget {
 }
 
 class HasherProfilePageState extends State<HasherProfilePage> {
-  // String firstName = await SecurePrefs.getStringPref(StringPrefsEnum.firstName);
-  // String lastName = await SecurePrefs.getStringPref(StringPrefsEnum.lastName);
-  // String email = await SecurePrefs.getStringPref(StringPrefsEnum.email);
-  // String hashName = await SecurePrefs.getStringPref(StringPrefsEnum.hashName);
+  // String firstName = getStringPref(StringPrefsEnum.firstName);
+  // String lastName = getStringPref(StringPrefsEnum.lastName);
+  // String email = getStringPref(StringPrefsEnum.email);
+  // String hashName = getStringPref(StringPrefsEnum.hashName);
 
   final GlobalKey<FormState> _profileFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _runCountFormKey = GlobalKey<FormState>();
 
   bool _autoValidate = false;
 
-  final String deviceUserId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+  final String deviceUserId = getStringPref(StringPrefsEnum.userId);
 
-  // String _firstName = await SecurePrefs.getStringPref(StringPrefsEnum.firstName);
-  // String _lastName = await SecurePrefs.getStringPref(StringPrefsEnum.lastName);
-  // String _email = await SecurePrefs.getStringPref(StringPrefsEnum.email);
-  // String _hashName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
-  // String _photo = await SecurePrefs.getStringPref(StringPrefsEnum.profilePhotoUrl);
+  // String _firstName = getStringPref(StringPrefsEnum.firstName);
+  // String _lastName = getStringPref(StringPrefsEnum.lastName);
+  // String _email = getStringPref(StringPrefsEnum.email);
+  // String _hashName = getStringPref(StringPrefsEnum.displayName);
+  // String _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
 
   bool _isLoading = true;
   bool _isDirty = false;
@@ -143,7 +143,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
         // fill in the e-mail for the user of the app.
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          hasher.email = await SecurePrefs.getStringPref(StringPrefsEnum.email);
+          hasher.email = getStringPref(StringPrefsEnum.email);
           emailController.text = hasher.email;
         }
       }
@@ -307,7 +307,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       setState(() {
         // write the value of the email address to local preferences
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          SecurePrefs.setPref(StringPrefsEnum.email, emailController.text);
+          setStringPref(StringPrefsEnum.email, emailController.text);
         }
 
         _isLoading = true;
@@ -334,14 +334,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           final HashersModel h = HashersModel.fromJson(jsonResult[0][0]);
           setState(() {
             if (widget.pageType == EnumMyProfilePageType.myProfile) {
-              SecurePrefs.setPref(StringPrefsEnum.profilePhotoUrl, h.photo);
-              SecurePrefs.setPref(StringPrefsEnum.displayName, h.dispName);
+              setStringPref(StringPrefsEnum.profilePhotoUrl, h.photo);
+              setStringPref(StringPrefsEnum.displayName, h.dispName);
               // don't set the e-mail with the result from the
               // api call. Use the local value in hasher.email instead
-              //SecurePrefs.setPref(StringPrefsEnum.email, hasher.email);
-              SecurePrefs.setPref(StringPrefsEnum.firstName, h.firstName);
-              SecurePrefs.setPref(StringPrefsEnum.hashName, h.hashName);
-              SecurePrefs.setPref(StringPrefsEnum.lastName, h.lastName);
+              //setStringPref(StringPrefsEnum.email, hasher.email);
+              setStringPref(StringPrefsEnum.firstName, h.firstName);
+              setStringPref(StringPrefsEnum.hashName, h.hashName);
+              setStringPref(StringPrefsEnum.lastName, h.lastName);
               setIntPref(IntPrefsEnum.hasherPreferences, h.preferences);
             }
 
@@ -557,7 +557,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                       textAlign: TextAlign.center,
                                     ),
                                     Container(
-                                      padding: EdgeInsets.only(top: 30.0, left: (deviceWidthScaleFactor - 1) * 30, right: (deviceWidthScaleFactor - 1) * 30),
+                                      padding: EdgeInsets.only(
+                                          top: 30.0, left: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 30, right: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 30),
                                       child: Container(
                                         child: Center(
                                           child: Column(
@@ -706,7 +707,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             ],
                                                           ),
                                                         ),
-                                                        hasLocationPermissions
+                                                        G0<AppModel>().hasLocationPermissions
                                                             ? Container()
                                                             : Padding(
                                                                 padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
@@ -715,13 +716,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                     if (Platform.isIOS) {
                                                                       if (await Permission.locationWhenInUse.isGranted) {
                                                                         setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
-                                                                        hasLocationPermissions = true;
+                                                                        G0<AppModel>().hasLocationPermissions = true;
                                                                         Utilities.subscribeToGeoLocationStream();
                                                                       }
                                                                     } else {
                                                                       if (await Permission.location.isGranted) {
                                                                         setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
-                                                                        hasLocationPermissions = true;
+                                                                        G0<AppModel>().hasLocationPermissions = true;
                                                                         Utilities.subscribeToGeoLocationStream();
                                                                       }
                                                                     }
@@ -873,7 +874,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             ],
                                                           ),
                                                         ),
-                                                        hasLocationPermissions
+                                                        G0<AppModel>().hasLocationPermissions
                                                             ? Container()
                                                             : Padding(
                                                                 padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
@@ -882,13 +883,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                     if (Platform.isIOS) {
                                                                       if (await Permission.locationWhenInUse.isGranted) {
                                                                         setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
-                                                                        hasLocationPermissions = true;
+                                                                        G0<AppModel>().hasLocationPermissions = true;
                                                                         Utilities.subscribeToGeoLocationStream();
                                                                       }
                                                                     } else {
                                                                       if (await Permission.location.isGranted) {
                                                                         setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
-                                                                        hasLocationPermissions = true;
+                                                                        G0<AppModel>().hasLocationPermissions = true;
                                                                         Utilities.subscribeToGeoLocationStream();
                                                                       }
                                                                     }
@@ -1054,7 +1055,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                 color: Colors.yellow[100])),
         OfflineModeRibbon(
           showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
-          lastSync: SecurePrefs.getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],

@@ -110,7 +110,7 @@ class ReceiptsListState extends State<ReceiptsList> {
   }
 
   Future<void> setReceiptReimbursementStatus(String receiptId, bool cancelReimbursement) async {
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     await G0<Database>().transaction<dynamic>((Transaction txn) async {
       final String guidFlag = cancelReimbursement ? GUID_9 : GUID_8;

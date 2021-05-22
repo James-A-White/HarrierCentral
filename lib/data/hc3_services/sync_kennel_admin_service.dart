@@ -35,7 +35,7 @@ class SyncKennelAdminService {
       return false;
     }
 
-    if (await SecurePrefs.getStringPref(StringPrefsEnum.adminKennelId) != kennelId) {
+    if (getStringPref(StringPrefsEnum.adminKennelId) != kennelId) {
       // NOTE: kennels and hashers are not cleared here because all kennels and all hashers are loaded all the time for all users
       G0<TableModel>().baseService.clearTable(
             G0<Database>(),
@@ -43,7 +43,7 @@ class SyncKennelAdminService {
             G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel),
           );
 
-      await SecurePrefs.setPref(StringPrefsEnum.adminKennelId, kennelId);
+      await setStringPref(StringPrefsEnum.adminKennelId, kennelId);
     }
 
     // final int kennelsLastUpdate = (flags & flagKennelTable) == 0 ? null : getIntPref(KennelsTableHelper.lastUpdatedKey) ?? 0;
@@ -88,7 +88,7 @@ class SyncKennelAdminService {
           ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
           : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
 
-      String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+      String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
         userId = GUID_EMPTY;
       }

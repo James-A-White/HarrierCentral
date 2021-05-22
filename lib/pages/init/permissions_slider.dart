@@ -22,9 +22,9 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
   void initState() {
     super.initState();
 
-    descriptionStyle = TextStyle(color: Colors.black, fontSize: 24.0 * deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
-    titleStyle = TextStyle(color: Colors.black, fontSize: 32.0 * deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
-    navStyle = TextStyle(color: themeAppBarBackground, fontSize: 18.0 * deviceWidthScaleFactor, fontFamily: 'AvenirNextDemiBold');
+    descriptionStyle = TextStyle(color: Colors.black, fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
+    titleStyle = TextStyle(color: Colors.black, fontSize: 32.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
+    navStyle = TextStyle(color: themeAppBarBackground, fontSize: 18.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextDemiBold');
 
     slides.add(
       Slide(
@@ -34,7 +34,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         description: 'This lets us find the Hash events closest to you',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_phone_location.png',
-        heightImage: 140 * deviceMaxScaleFactor,
+        heightImage: 140 * G0<DeviceInfo>().deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 230, 203, 203),
         colorEnd: const Color.fromARGB(255, 230, 203, 203),
         directionColorBegin: Alignment.topRight,
@@ -50,7 +50,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         description: 'Can we access your camera for your profile photo and to scan QR codes?',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_old_camera.png',
-        heightImage: 120 * deviceMaxScaleFactor,
+        heightImage: 120 * G0<DeviceInfo>().deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 222, 215, 252),
         colorEnd: const Color.fromARGB(255, 222, 215, 252),
         directionColorBegin: Alignment.topRight,
@@ -66,7 +66,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         description: 'Let us notify you about changes to runs you are following',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_notification.png',
-        heightImage: 150 * deviceMaxScaleFactor,
+        heightImage: 150 * G0<DeviceInfo>().deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 252, 212, 212),
         colorEnd: const Color.fromARGB(255, 252, 212, 212),
         directionColorBegin: Alignment.topRight,
@@ -82,7 +82,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         description: 'Please Provide Just a Tiny Bit of Personal Information...',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_pen.png',
-        heightImage: 150 * deviceMaxScaleFactor,
+        heightImage: 150 * G0<DeviceInfo>().deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 227, 227, 227),
         colorEnd: const Color.fromARGB(255, 227, 227, 227),
         directionColorBegin: Alignment.topRight,

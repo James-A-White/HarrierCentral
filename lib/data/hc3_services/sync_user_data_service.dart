@@ -137,7 +137,7 @@ class SyncUserDataService {
           ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
           : DateTime.fromMillisecondsSinceEpoch(_narrowEventsLastUpdated + 1000);
 
-      String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+      String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
         userId = GUID_EMPTY;
       }
@@ -170,7 +170,7 @@ class SyncUserDataService {
 
       await updateSqlTablesWithResultsFromBackendApiCall(response.body, informUser: informUser);
       //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
-      await SecurePrefs.setPref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate, DateTime.now());
+      await setDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate, DateTime.now());
     }
     return true;
   }

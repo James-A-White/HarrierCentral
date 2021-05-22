@@ -56,7 +56,7 @@ class SyncEventAdminService {
       return false;
     }
 
-    if (await SecurePrefs.getStringPref(StringPrefsEnum.adminEventId) != eventId) {
+    if (getStringPref(StringPrefsEnum.adminEventId) != eventId) {
       //final HashersService hSrv = HashersService();
       // narrowEvents is not included here because all events are loaded all the time for all hashers.
       // TODO(James): create separate events table for event management
@@ -78,7 +78,7 @@ class SyncEventAdminService {
           .clearTable(G0<Database>(), G0<TableModel>().kennelCreditsTableHelper, G0<TableModel>().kennelCreditsTableHelper.getTableName(AppDomainType.event));
       // we don't want to clear the Hashers table since it is meant to be persistent and not tied to a single event
 
-      await SecurePrefs.setPref(StringPrefsEnum.adminEventId, eventId);
+      await setStringPref(StringPrefsEnum.adminEventId, eventId);
     }
 
     // final int hasherEventMapLastUpdate = (flags & flagHasherEventMapTable) == 0 ? IGNORE_REPLICATION_TIMESTAMP : getIntPref(HasherEventMapTableHelper.getLastUpdatedKey(HasherEventMapTableType.eventAdmin)) ?? 0;
@@ -144,7 +144,7 @@ class SyncEventAdminService {
           ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
           : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
-      String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+      String userId = getStringPref(StringPrefsEnum.userId);
       if ((userId ?? '').isEmpty) {
         userId = GUID_EMPTY;
       }

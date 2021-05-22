@@ -193,7 +193,7 @@ class HasherKennelMapService {
       followingState = -1;
     }
 
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'joinKennel');
 
     final num _hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(

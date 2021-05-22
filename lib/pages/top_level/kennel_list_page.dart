@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:geolocator/geolocator.dart';
 
 class KennelsListPage extends StatefulWidget {
   const KennelsListPage({Key key}) : super(key: key);
@@ -84,15 +85,15 @@ class KennelsListPageState extends State<KennelsListPage> {
   }
 
   void refreshFromTable(bool forceRefresh) {
-    if (forceRefresh || (globalKennelMainPageList == null) || (globalKennelMainPageList.isEmpty)) {
+    if (forceRefresh || (G0<TableModel>().globalKennelMainPageList == null) || (G0<TableModel>().globalKennelMainPageList.isEmpty)) {
       final Geolocator locator = Geolocator();
-      if (globalKennelMainPageList != null) {
-        globalKennelMainPageList.clear();
+      if (G0<TableModel>().globalKennelMainPageList != null) {
+        G0<TableModel>().globalKennelMainPageList.clear();
       }
 
-      final String hasherId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+      final String hasherId = getStringPref(StringPrefsEnum.userId);
 
-      globalKennelMainPageList = <KennelListAggregate>[];
+      G0<TableModel>().globalKennelMainPageList = <KennelListAggregate>[];
       try {
         QueryKennels.queryKennels(EnumKennelQueryType.topKennelPage, EnumKennelQueryContext.user, hasherId: hasherId).then((List<Map<String, dynamic>> results) {
           for (int i = 0; i < results.length; i++) {
@@ -110,15 +111,15 @@ class KennelsListPageState extends State<KennelsListPage> {
 
               final KennelListAggregate item = KennelListAggregate(kennel: kennelItem, extensions: extensionsItem, hkm: hkmItem);
 
-              globalKennelMainPageList.add(item);
+              G0<TableModel>().globalKennelMainPageList.add(item);
               if (i == results.length - 1) {
-                if (hasLocationPermissions) {
-                  globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.distToKennel.compareTo(b.extensions.distToKennel));
+                if (G0<AppModel>().hasLocationPermissions) {
+                  G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.distToKennel.compareTo(b.extensions.distToKennel));
                 } else {
-                  globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.kennel.kennelName.compareTo(b.kennel.kennelName));
+                  G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.kennel.kennelName.compareTo(b.kennel.kennelName));
                 }
 
-                globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (a.hkm.following == 1
+                G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (a.hkm.following == 1
                         ? 0
                         : a.hkm.following == 2
                             ? 1
@@ -129,7 +130,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                             ? 1
                             : 2));
 
-                globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (b.hkm.isHomeKennel).compareTo(a.hkm.isHomeKennel));
+                G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (b.hkm.isHomeKennel).compareTo(a.hkm.isHomeKennel));
                 filterResults();
                 setState(() {});
               }
@@ -149,12 +150,12 @@ class KennelsListPageState extends State<KennelsListPage> {
   }
 
   void filterResults() {
-    if (globalKennelMainPageList != null) {
+    if (G0<TableModel>().globalKennelMainPageList != null) {
       if (searchController.text.isEmpty) {
         filteredList = <KennelListAggregate>[];
-        filteredList.addAll(globalKennelMainPageList);
+        filteredList.addAll(G0<TableModel>().globalKennelMainPageList);
       } else {
-        filteredList = QueryKennels.doFilter(searchText, globalKennelMainPageList);
+        filteredList = QueryKennels.doFilter(searchText, G0<TableModel>().globalKennelMainPageList);
       }
     }
   }
@@ -163,14 +164,14 @@ class KennelsListPageState extends State<KennelsListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      body: globalKennelMainPageList == null
+      body: G0<TableModel>().globalKennelMainPageList == null
           ? const Center(
               child: HcCircularProgressIndicator(),
             )
           : Container(
               decoration: Backgrounds.defaultHcBackground(),
               padding: const EdgeInsets.only(top: 0.0),
-              child: ((globalKennelMainPageList == null) || (globalKennelMainPageList.isEmpty))
+              child: ((G0<TableModel>().globalKennelMainPageList == null) || (G0<TableModel>().globalKennelMainPageList.isEmpty))
                   ? Center(child: Text('No Kennels available.', style: headingStyle))
                   : NestedScrollView(
                       controller: scrollController,
@@ -218,7 +219,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                                   // // route tree, the list would get refreshed, which I think was causing
                                   // // a bug where the selected Kennel itself would occasioinall change.
                                   // // By deleting the list, I'm hoping that this bug will be fixed.
-                                  globalKennelMainPageList.clear();
+                                  G0<TableModel>().globalKennelMainPageList.clear();
                                   Navigator.of(context)
                                       .push<dynamic>(
                                     MaterialPageRoute<dynamic>(
@@ -245,7 +246,7 @@ class KennelsListPageState extends State<KennelsListPage> {
 
   Future<void> _handleRefresh() async {
     setState(() {
-      globalKennelMainPageList = null;
+      G0<TableModel>().globalKennelMainPageList = null;
     });
 
     String query = 'DELETE FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)}';

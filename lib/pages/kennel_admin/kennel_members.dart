@@ -97,8 +97,8 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   static const int FILTER_IS_HOME_KENNEL = 2;
   static const int FILTER_RUNS_IN_LAST_YEAR = 3;
 
-  TextStyle localFootnoteSmallRed = footnoteSmallRed.copyWith(fontSize: 12 * deviceWidthScaleFactor);
-  TextStyle localFootnoteSmall = footnoteSmall.copyWith(fontSize: 12 * deviceWidthScaleFactor);
+  TextStyle localFootnoteSmallRed = footnoteSmallRed.copyWith(fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor);
+  TextStyle localFootnoteSmall = footnoteSmall.copyWith(fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor);
 
   String searchText = '';
 
@@ -507,7 +507,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                 }
                               },
                               toggleEmailPreferenceCallback: () {
-                                if (Connection.checkForConnection(context,
+                                if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
                                     message:
                                         'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
                                   final HasherKennelMapService srv = HasherKennelMapService();

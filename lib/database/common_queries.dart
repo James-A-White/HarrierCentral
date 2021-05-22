@@ -51,7 +51,7 @@ class CommonQueries {
     result.eventId = EMPTY_RESULT;
 
     try {
-      final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+      final String userId = getStringPref(StringPrefsEnum.userId);
 
       final String sql = ''' 
 
@@ -81,8 +81,8 @@ class CommonQueries {
 
       if (queryResults.isNotEmpty) {
         for (int i = 0; i < queryResults.length; i++) {
-          final num dist = await locator.distanceBetween(
-              G0<DeviceInfo>().G0<DeviceInfo>().deviceLat + 0.0, G0<DeviceInfo>().G0<DeviceInfo>().deviceLon + 0.0, queryResults[i]['lat'] + 0.0, queryResults[i]['lon'] + 0.0);
+          final num dist =
+              await locator.distanceBetween(G0<DeviceInfo>().deviceLat + 0.0, G0<DeviceInfo>().deviceLon + 0.0, queryResults[i]['lat'] + 0.0, queryResults[i]['lon'] + 0.0);
           if (closestRun < dist) {
             continue;
           }
@@ -102,7 +102,7 @@ class CommonQueries {
           // For partial URLs we need to append the root URL. The Root URL is stored in the
           // Server settings table and copied into the string prefs on app startup.
           if ((result.eventImage != null) && (result.eventImage.isNotEmpty) && (!result.eventImage.startsWith('http'))) {
-            final String s = await SecurePrefs.getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+            final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
             if ((s != null) && (s.isNotEmpty)) {
               result.eventImage = s + result.eventImage;
             }

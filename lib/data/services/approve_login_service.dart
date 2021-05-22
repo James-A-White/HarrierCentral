@@ -2,12 +2,12 @@ import 'package:harrier_central/imports.dart';
 
 class ApproveLoginService {
   Future<ApproveLoginModel> approveLogin(BuildContext context) async {
-    String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    String userId = getStringPref(StringPrefsEnum.userId);
     if ((userId ?? '').isEmpty) {
       userId = GUID_EMPTY;
     }
 
-    final String hcVersion = await SecurePrefs.getStringPref(StringPrefsEnum.harrierCentralVersion);
+    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
 
     String deviceId = 'unknown';
     String deviceType = 'unknown';

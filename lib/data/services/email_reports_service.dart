@@ -2,9 +2,9 @@ import 'package:harrier_central/imports.dart';
 
 class EmailReportsService {
   Future<Map<String, String>> sendKennelRunStatsReportByEmail({String kennelId, String kennelName, int digitsAfterDecimal, String currencySymbol}) async {
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
-    final String userName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
-    final String emailAddress = await SecurePrefs.getStringPref(StringPrefsEnum.email);
+    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userName = getStringPref(StringPrefsEnum.displayName);
+    final String emailAddress = getStringPref(StringPrefsEnum.email);
 
     final String accessToken = IveCoreUtilities.generateToken(userId, 'rptKennelRunStats');
 

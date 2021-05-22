@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:geolocator/geolocator.dart';
 
 class RunDetailAggregate {
   RunDetailAggregate({
@@ -68,7 +69,7 @@ class RunDetailPageState extends State<RunDetailPage> {
     super.initState();
   }
 
-  String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+  String userId = getStringPref(StringPrefsEnum.userId);
 
   Future<void> refreshFromTables() async {
     try {

@@ -41,7 +41,7 @@ class NewAccountPageState extends State<NewAccountPage> {
         ),
         OfflineModeRibbon(
           showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
-          lastSync: SecurePrefs.getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],
@@ -60,13 +60,13 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
-      num newFontSize = smallTitleStyle.fontSize * deviceWidthScaleFactor;
+      num newFontSize = smallTitleStyle.fontSize * G0<DeviceInfo>().deviceWidthScaleFactor;
       final TextStyle localTitleStyle = smallTitleStyle.copyWith(fontSize: newFontSize, color: Colors.black);
 
-      newFontSize = bodyStyleSc.fontSize * deviceWidthScaleFactor;
+      newFontSize = bodyStyleSc.fontSize * G0<DeviceInfo>().deviceWidthScaleFactor;
       final TextStyle localBodyStyle = bodyStyleSc.copyWith(fontSize: newFontSize, color: Colors.black);
 
-      newFontSize = headingStyle.fontSize * deviceWidthScaleFactor;
+      newFontSize = headingStyle.fontSize * G0<DeviceInfo>().deviceWidthScaleFactor;
       final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
 
       return Container(
@@ -100,8 +100,8 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                 child: Row(
                   children: <Widget>[
                     Image(
-                      width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-                      height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
+                      width: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                      height: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
                       fit: BoxFit.fill,
                       image: const AssetImage('images/icons/inviteCode.png'),
                     ),
@@ -140,8 +140,8 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                 child: Row(
                   children: <Widget>[
                     Image(
-                      width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-                      height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
+                      width: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                      height: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
                       fit: BoxFit.fill,
                       image: const AssetImage('images/icons/facebookLogoCircle.png'),
                     ),
@@ -174,8 +174,8 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                   child: Row(
                     children: <Widget>[
                       Image(
-                        width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-                        height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
+                        width: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                        height: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
                         fit: BoxFit.fill,
                         image: const AssetImage('images/icons/qrPhone.png'),
                       ),
@@ -214,8 +214,8 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                 child: Row(
                   children: <Widget>[
                     Image(
-                      width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
-                      height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
+                      width: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                      height: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
                       fit: BoxFit.fill,
                       image: const AssetImage('images/icons/pencil.png'),
                     ),

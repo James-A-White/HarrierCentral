@@ -216,7 +216,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
     // For partial URLs we need to append the root URL. The Root URL is stored in the
     // Server settings table and copied into the string prefs on app startup.
     if ((outputMap['eventImage'] != null) && (outputMap['eventImage'].isNotEmpty) && (!outputMap['eventImage'].startsWith('http'))) {
-      final String s = SecurePrefs.getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+      final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
       if ((s != null) && (s.isNotEmpty)) {
         outputMap['eventImage'] = s + outputMap['eventImage'];
       }
@@ -234,7 +234,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
     // For partial URLs we need to append the root URL. The Root URL is stored in the
     // Server settings table and copied into the string prefs on app startup.
     if ((item.eventImage != null) && (item.eventImage.isNotEmpty) && (!item.eventImage.startsWith('http'))) {
-      final String s = SecurePrefs.getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+      final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
       if ((s != null) && (s.isNotEmpty)) {
         item.eventImage = s + item.eventImage;
       }
@@ -252,7 +252,7 @@ class EventsService extends BaseService {
       //return false;
     }
 
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String accessToken = IveCoreUtilities.generateToken(userId, 'addEditEvent');
 
@@ -300,7 +300,7 @@ class EventsService extends BaseService {
   }
 
   Future<Map<String, String>> sendRunDetailsByEmail({String eventId, String emailBody = ''}) async {
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = IveCoreUtilities.generateToken(userId, 'rptApi_emailRunDetails', paramString: eventId);
 
     final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'eventId': eventId, 'emailBody': emailBody});

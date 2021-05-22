@@ -1,5 +1,6 @@
 import 'package:harrier_central/imports.dart';
-import 'package:location_permissions/location_permissions.dart';
+import 'package:location_permissions/location_permissions.dart' as perms;
+import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({Key key}) : super(key: key);
@@ -96,7 +97,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     // make sure the DB_VERSION is equal to the maximum migration in the list
     assert(DB_VERSION == Tables.migrationList.last.dbVersion);
 
-    openOrInitializeDb(DB_NAME, DB_VERSION, informUser, migrations: Tables.migrationList, createTables: Tables.createTables).then((void dummy) {
+    // DANGER - need to look into definition of ClientApp
+    setupDatabase(informUser, 'PRO_APP').then((void dummy) {
       final NotificationSupport notifications = NotificationSupport();
       notifications.configureNotifications(true);
 
@@ -138,10 +140,13 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                       return popup;
                     });
 
-                final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+                final String userId = getStringPref(StringPrefsEnum.userId);
 
                 if (retVal == enumYesNo_Yes) {
-                  hasherEventMapService.joinEvent(result.eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value).then((
+                  G0<TableModel>()
+                      .hasherEventMapService
+                      .joinEvent(result.eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value)
+                      .then((
                     List<dynamic> svcResult,
                   ) {
                     futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
@@ -158,7 +163,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   Future<bool> checkLocationPermissions() async {
     bool hasLocPermission = true;
 
-    final LocationPermissions permissions = LocationPermissions();
+    final perms.LocationPermissions permissions = perms.LocationPermissions();
 
     // ServiceStatus locationStatus = await permissions.checkServiceStatus(PermissionGroup.location);
     // if (locationStatus != ServiceStatus.enabled) {
@@ -171,19 +176,19 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     //   }
     // }
 
-    PermissionStatus locationPermission = await permissions.checkPermissionStatus(level: LocationPermissionLevel.location);
-    if (locationPermission != PermissionStatus.granted) {
-      locationPermission = await permissions.checkPermissionStatus(level: LocationPermissionLevel.locationWhenInUse);
-      if (locationPermission != PermissionStatus.granted) {
-        locationPermission = await permissions.checkPermissionStatus(level: LocationPermissionLevel.locationAlways);
-        if (locationPermission != PermissionStatus.granted) {
+    perms.PermissionStatus locationPermission = await permissions.checkPermissionStatus(level: perms.LocationPermissionLevel.location);
+    if (locationPermission != perms.PermissionStatus.granted) {
+      locationPermission = await permissions.checkPermissionStatus(level: perms.LocationPermissionLevel.locationWhenInUse);
+      if (locationPermission != perms.PermissionStatus.granted) {
+        locationPermission = await permissions.checkPermissionStatus(level: perms.LocationPermissionLevel.locationAlways);
+        if (locationPermission != perms.PermissionStatus.granted) {
           hasLocPermission = false;
         }
       }
     }
 
     setIntPref(IntPrefsEnum.hasLocationPermissions, hasLocPermission ? 1 : 0);
-    hasLocationPermissions = hasLocPermission;
+    G0<AppModel>().hasLocationPermissions = hasLocPermission;
     return hasLocPermission;
   }
 
@@ -403,7 +408,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         ),
         OfflineModeRibbon(
           showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
-          lastSync: SecurePrefs.getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],

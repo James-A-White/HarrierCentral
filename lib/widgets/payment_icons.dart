@@ -323,7 +323,7 @@ class PaymentIcons extends StatelessWidget {
   }
 
   Future<List<dynamic>> payForEvent(num amount, EnumPayForExtras<int> extras, num surcharge, String paymentProvider) async {
-    final String hasherId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String hasherId = getStringPref(StringPrefsEnum.userId);
     final PaymentsService paySrv = PaymentsService();
     return paySrv.payForEvent(
       event.eventId,

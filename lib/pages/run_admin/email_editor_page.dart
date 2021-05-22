@@ -10,10 +10,10 @@ class EmailEditorPage extends StatefulWidget {
 }
 
 class EmailEditorPageState extends State<EmailEditorPage> {
-  // String firstName = await SecurePrefs.getStringPref(StringPrefsEnum.firstName);
-  // String lastName = await SecurePrefs.getStringPref(StringPrefsEnum.lastName);
-  // String email = await SecurePrefs.getStringPref(StringPrefsEnum.email);
-  // String hashName = await SecurePrefs.getStringPref(StringPrefsEnum.hashName);
+  // String firstName = getStringPref(StringPrefsEnum.firstName);
+  // String lastName = getStringPref(StringPrefsEnum.lastName);
+  // String email = getStringPref(StringPrefsEnum.email);
+  // String hashName = getStringPref(StringPrefsEnum.hashName);
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -21,7 +21,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
 
   @override
   void initState() {
-    bodyController.text = await SecurePrefs.getStringPref(StringPrefsEnum.customEmailBody) ?? '';
+    bodyController.text = getStringPref(StringPrefsEnum.customEmailBody) ?? '';
     super.initState();
   }
 
@@ -59,7 +59,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future<bool> _requestPop() {
-    SecurePrefs.setPref(StringPrefsEnum.customEmailBody, bodyController.text);
+    setStringPref(StringPrefsEnum.customEmailBody, bodyController.text);
     return Future<bool>.value(true);
   }
 
@@ -211,7 +211,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                 const SizedBox(height: 20),
                 RaisedButton(
                   onPressed: () {
-                    SecurePrefs.setPref(StringPrefsEnum.customEmailBody, bodyController.text);
+                    setStringPref(StringPrefsEnum.customEmailBody, bodyController.text);
                     sendEmail(context, bodyController.text);
                   },
                   child: Text('Send Email', style: buttonTextStyle),
@@ -296,7 +296,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
             showCancelButton: true)
         .then((bool result) {
       if (result) {
-        eventsService.sendRunDetailsByEmail(eventId: widget.eventId, emailBody: emailBody).then((Map<String, String> result) {
+        G0<TableModel>().eventsService.sendRunDetailsByEmail(eventId: widget.eventId, emailBody: emailBody).then((Map<String, String> result) {
           _scaffoldKey.currentState?.hideCurrentSnackBar();
           if (result['result'].toLowerCase().startsWith('success')) {
             IveCoreUtilities.showAlert(context, 'E-mails successfully sent', result['result'], 'OK');

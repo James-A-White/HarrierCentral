@@ -178,7 +178,7 @@ class PaymentsService {
       //return false;
     }
 
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     if ((hasherEventMapId ?? '').isEmpty) {
       hasherEventMapId = GUID_EMPTY;
@@ -269,9 +269,9 @@ class PaymentsService {
     String eventId,
     String eventName,
   }) async {
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
-    final String userName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
-    final String emailAddress = await SecurePrefs.getStringPref(StringPrefsEnum.email);
+    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userName = getStringPref(StringPrefsEnum.displayName);
+    final String emailAddress = getStringPref(StringPrefsEnum.email);
 
     final String accessToken = IveCoreUtilities.generateToken(userId, 'getPaymentReport');
 

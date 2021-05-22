@@ -319,7 +319,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
   }
 
   Future<void> loadEvents() async {
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     String query = ''' 
 
@@ -427,7 +427,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
   }
 
   Future<void> loadKennels() async {
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     String query = ''' 
 
@@ -524,7 +524,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
       onTap: () async {
         final Geolocator locator = Geolocator();
 
-        final String hasherId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+        final String hasherId = getStringPref(StringPrefsEnum.userId);
         final List<Map<String, dynamic>> results =
             await QueryKennels.queryKennels(EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user, hasherId: hasherId, kennelId: kennelId);
 
@@ -733,7 +733,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
       ),
       OfflineModeRibbon(
         showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
-        lastSync: SecurePrefs.getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+        lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
         ribbonImage: 'images/icons/offline_mode.png',
       ),
     ]);

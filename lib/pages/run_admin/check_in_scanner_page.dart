@@ -82,7 +82,7 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                       //width:150,
                       //height:150,
                       child: Container(
-                        padding: EdgeInsets.all(10 * (deviceMaxScaleFactor * 1.5)),
+                        padding: EdgeInsets.all(10 * (G0<DeviceInfo>().deviceMaxScaleFactor * 1.5)),
                         child: Stack(
                           alignment: AlignmentDirectional.center,
                           children: <Widget>[
@@ -316,17 +316,18 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
         final int attendenceState = isScanningAtRunStart ? attendenceAtHash.value : attendenceOnIn.value;
 
         CommonQueries.getUserIdFromUqr(prefix + content).then((String hasherId) {
-          hasherEventMapService
+          G0<TableModel>()
+              .hasherEventMapService
               .joinEvent(
-            widget.eventAggregate.event.eventId,
-            hasherId,
-            null,
-            AppDomainType.event,
-            rsvpState: rsvpYes.value,
-            attendenceState: attendenceState,
-            isHare: isHareNo.value,
-            virginVisitorType: enumHasher.value,
-          )
+                widget.eventAggregate.event.eventId,
+                hasherId,
+                null,
+                AppDomainType.event,
+                rsvpState: rsvpYes.value,
+                attendenceState: attendenceState,
+                isHare: isHareNo.value,
+                virginVisitorType: enumHasher.value,
+              )
               .then((
             List<dynamic> adHocData,
           ) {

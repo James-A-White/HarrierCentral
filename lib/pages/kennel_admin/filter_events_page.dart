@@ -44,7 +44,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
     final String dateComparer = widget.pageType == FilterEventsPageType.future ? '>=' : '<=';
     final String dateOffset = widget.pageType == FilterEventsPageType.future ? '-5 minutes' : '+5 minutes';
 
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     try {
       final String sql = ''' 

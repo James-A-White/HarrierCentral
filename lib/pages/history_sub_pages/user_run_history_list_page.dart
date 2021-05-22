@@ -81,7 +81,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   bool _isLoading = false;
 
   List<UserRunHistoryResults> runCountsList = <UserRunHistoryResults>[];
-  final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+  final String userId = getStringPref(StringPrefsEnum.userId);
 
   @override
   void initState() {
@@ -184,7 +184,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                   label: 'Email run counts\r\n(this kennel)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
-                    hasherEventMapService.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelInfo.kennelName).then((Map<String, String> result) {
+                    G0<TableModel>()
+                        .hasherEventMapService
+                        .sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelInfo.kennelName)
+                        .then((Map<String, String> result) {
                       _scaffoldKey.currentState?.hideCurrentSnackBar();
                       if (result['result'].toLowerCase().startsWith('success')) {
                         IveCoreUtilities.showAlert(
@@ -203,7 +206,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                   label: 'Email run counts\r\n(all kennels)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
-                    hasherEventMapService.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
+                    G0<TableModel>()
+                        .hasherEventMapService
+                        .sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels')
+                        .then((Map<String, String> result) {
                       _scaffoldKey.currentState?.hideCurrentSnackBar();
                       if (result['result'].toLowerCase().startsWith('success')) {
                         IveCoreUtilities.showAlert(
@@ -223,7 +229,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
         ),
         OfflineModeRibbon(
           showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
-          lastSync: SecurePrefs.getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],
@@ -344,10 +350,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   static const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0);
 
   static TextStyle numberStyle =
-      TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * deviceWidthScaleFactor, height: 1.0);
+      TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0);
 
   static TextStyle boldTitleStyle =
-      TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 16.0 * deviceWidthScaleFactor, height: 1.0);
+      TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0);
 
   int myRunCount = 0;
   int myHaringCount = 0;
@@ -407,7 +413,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                         child: KennelLogo(
                           kennelLogoUrl: widget.kennelInfo.kennelLogo,
                           kennelShortName: widget.kennelInfo.kennelShortName,
-                          logoHeight: 60.0 * deviceWidthScaleFactor,
+                          logoHeight: 60.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
                           leftPadding: 5.0,
                         ),
                       ),
@@ -518,30 +524,30 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   // so assume that the person was not a hare
                                   if (item.attendenceState < attendenceAtHash.value) {
                                     item.isLoading = true;
-                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
-                                      item.eventId,
-                                      userId,
-                                      item.hemId,
-                                      AppDomainType.user,
-                                      rsvpState: rsvpYes.value,
-                                      attendenceState: attendenceAtHash.value,
-                                      isHare: isHareNo.value,
-                                    );
+                                    final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
+                                          item.eventId,
+                                          userId,
+                                          item.hemId,
+                                          AppDomainType.user,
+                                          rsvpState: rsvpYes.value,
+                                          attendenceState: attendenceAtHash.value,
+                                          isHare: isHareNo.value,
+                                        );
 
                                     retVal.then((List<dynamic> adHocData) {
                                       refreshRunHistoryFromTable(true).then((void dummy) {});
                                     });
                                   } else {
                                     item.isLoading = true;
-                                    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
-                                      item.eventId,
-                                      userId,
-                                      item.hemId,
-                                      AppDomainType.user,
-                                      rsvpState: rsvpYes.value,
-                                      attendenceState: attendenceAtHash.value,
-                                      isHare: item.isHare == 1 ? isHareNo.value : isHareYes.value,
-                                    );
+                                    final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
+                                          item.eventId,
+                                          userId,
+                                          item.hemId,
+                                          AppDomainType.user,
+                                          rsvpState: rsvpYes.value,
+                                          attendenceState: attendenceAtHash.value,
+                                          isHare: item.isHare == 1 ? isHareNo.value : isHareYes.value,
+                                        );
 
                                     retVal.then((List<dynamic> adHocData) {
                                       refreshRunHistoryFromTable(true).then((void dummy) {});
@@ -551,15 +557,15 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   // swipe from left to right to
                                   // indicate that the hasher did
                                   // not participate in this event
-                                  final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
-                                    item.eventId,
-                                    userId,
-                                    item.hemId,
-                                    AppDomainType.user,
-                                    rsvpState: rsvpNo.value,
-                                    attendenceState: attendenceNo.value,
-                                    isHare: isHareNo.value,
-                                  );
+                                  final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
+                                        item.eventId,
+                                        userId,
+                                        item.hemId,
+                                        AppDomainType.user,
+                                        rsvpState: rsvpNo.value,
+                                        attendenceState: attendenceNo.value,
+                                        isHare: isHareNo.value,
+                                      );
 
                                   retVal.then((List<dynamic> adHocData) {
                                     refreshRunHistoryFromTable(true).then((void dummy) {});

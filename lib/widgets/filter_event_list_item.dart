@@ -10,7 +10,7 @@ class FilterEventListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final num iconSize = 45 * deviceWidthScaleFactor;
+    final num iconSize = 45 * G0<DeviceInfo>().deviceWidthScaleFactor;
     return GestureDetector(
       onTap: () {
         Navigator.push<void>(
@@ -60,7 +60,7 @@ class FilterEventListItem extends StatelessWidget {
                           color: event['isVisible'] == 1 ? Colors.black87 : Colors.grey,
                           fontFamily: 'AvenirNextCondensedDemiBold',
                           fontStyle: FontStyle.normal,
-                          fontSize: 14.0 * deviceWidthScaleFactor,
+                          fontSize: 14.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
                           height: 1.0),
                       textAlign: TextAlign.left,
                     ),
@@ -72,7 +72,7 @@ class FilterEventListItem extends StatelessWidget {
                           color: event['isVisible'] == 1 ? Colors.black87 : Colors.grey,
                           fontFamily: 'AvenirNextCondensedDemiBold',
                           fontStyle: FontStyle.normal,
-                          fontSize: 14.0 * deviceWidthScaleFactor,
+                          fontSize: 14.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
                           height: 1.0),
                       textAlign: TextAlign.left,
                     ),
@@ -92,7 +92,7 @@ class FilterEventListItem extends StatelessWidget {
                                 color: event['isVisible'] == 1 ? Colors.black87 : Colors.grey,
                                 fontFamily: 'AvenirNextCondensedDemiBold',
                                 fontStyle: FontStyle.normal,
-                                fontSize: 14.0 * deviceWidthScaleFactor,
+                                fontSize: 14.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
                                 height: 1.0),
                             textAlign: TextAlign.left,
                           )

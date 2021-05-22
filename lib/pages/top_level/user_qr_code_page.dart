@@ -18,7 +18,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
   PageController _pageController;
   TabController _tabController;
 
-  final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+  final String userId = getStringPref(StringPrefsEnum.userId);
 
   GlobalKey tabKey;
 
@@ -299,8 +299,8 @@ class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixi
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final String userName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
-    final String userQrCode = await SecurePrefs.getStringPref(StringPrefsEnum.qrCode);
+    final String userName = getStringPref(StringPrefsEnum.displayName);
+    final String userQrCode = getStringPref(StringPrefsEnum.qrCode);
 
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
       print('Height = ${constraints.maxHeight}');
@@ -312,7 +312,7 @@ class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixi
           children: <Widget>[
             SizedBox(
               width: 10,
-              height: (deviceWidthScaleFactor - 1) * 90,
+              height: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 90,
             ),
             Container(
               padding: const EdgeInsets.only(top: 0, bottom: 30, right: 25, left: 25),
@@ -323,7 +323,7 @@ class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixi
                   color: Colors.white,
                   fontFamily: 'AvenirNextDemiBold',
                   fontStyle: FontStyle.normal,
-                  fontSize: 16.0 * deviceWidthScaleFactor,
+                  fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
                   height: 1.0,
                 ),
               ),
@@ -334,7 +334,8 @@ class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixi
               //'QR Code for xxx',
               textAlign: TextAlign.center,
               maxLines: 1,
-              style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 24.0 * deviceWidthScaleFactor, height: 1.0),
+              style: TextStyle(
+                  fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
             ),
 
             // Positioned(
@@ -454,19 +455,20 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
       if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) || (prefix == QR_PREFIX_SPECIFIC_RUN_END)) {
         final int attendenceState = prefix == QR_PREFIX_SPECIFIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
 
-        final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+        final String userId = getStringPref(StringPrefsEnum.userId);
 
-        hasherEventMapService
+        G0<TableModel>()
+            .hasherEventMapService
             .joinEvent(
-          content,
-          userId,
-          null,
-          AppDomainType.user,
-          rsvpState: rsvpYes.value,
-          attendenceState: attendenceState,
-          isHare: isHareNo.value,
-          virginVisitorType: enumHasher.value,
-        )
+              content,
+              userId,
+              null,
+              AppDomainType.user,
+              rsvpState: rsvpYes.value,
+              attendenceState: attendenceState,
+              isHare: isHareNo.value,
+              virginVisitorType: enumHasher.value,
+            )
             .then((
           List<dynamic> adHocData,
         ) {
@@ -507,9 +509,12 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
               onScreenMessage = 'There is no event for this Kennel at this time';
             });
           } else {
-            final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+            final String userId = getStringPref(StringPrefsEnum.userId);
 
-            hasherEventMapService.joinEvent(eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value).then((
+            G0<TableModel>()
+                .hasherEventMapService
+                .joinEvent(eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value)
+                .then((
               List<dynamic> adHocData,
             ) {
               setState(() {
@@ -629,7 +634,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
       children: <Widget>[
         SizedBox(
           width: 10,
-          height: (deviceWidthScaleFactor - 1) * 90,
+          height: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 90,
         ),
         Container(
           padding: const EdgeInsets.only(left: 20, right: 20),
@@ -637,14 +642,15 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
             'Use this scanner to either scan in at the beginning or end of runs or to scan the QR codes of other Hashers who you want to add to your friend list.',
             textAlign: TextAlign.justify,
             maxLines: 4,
-            style: TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * deviceMaxScaleFactor, height: 1.0),
+            style:
+                TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceMaxScaleFactor, height: 1.0),
           ),
         ),
 
         //_cameraPreviewWidget(),
         Expanded(
           child: Container(
-            padding: EdgeInsets.all(10 * (deviceMaxScaleFactor * 1.5)),
+            padding: EdgeInsets.all(10 * (G0<DeviceInfo>().deviceMaxScaleFactor * 1.5)),
             child: Stack(
               alignment: AlignmentDirectional.center,
               children: <Widget>[

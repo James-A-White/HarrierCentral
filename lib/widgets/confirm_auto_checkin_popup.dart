@@ -120,7 +120,7 @@ class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
   //             Navigator.of(context).pop<dynamic>(btnDef['returnValue']);
   //           },
   //           child: Container(
-  //             //padding: EdgeInsets.only(top: 6.0 * deviceHeightScaleFactor, left: 8.0, bottom: 6.0 * deviceHeightScaleFactor),
+  //             //padding: EdgeInsets.only(top: 6.0 * G0<DeviceInfo>().deviceHeightScaleFactor, left: 8.0, bottom: 6.0 * G0<DeviceInfo>().deviceHeightScaleFactor),
   //             color: Colors.blue[900],
   //             child: Row(children: <Widget>[
   //               const SizedBox(width: 8.0,),

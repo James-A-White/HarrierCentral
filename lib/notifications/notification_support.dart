@@ -29,7 +29,7 @@ class NotificationSupport {
 
   Future<void> initNotificationTopics(FirebaseMessaging _firebaseMessaging) async {
     try {
-      final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+      final String userId = getStringPref(StringPrefsEnum.userId);
       print('UserId = $userId');
 
       //
@@ -130,7 +130,7 @@ class NotificationSupport {
     final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
     try {
-      final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+      final String userId = getStringPref(StringPrefsEnum.userId);
       print('UserId = $userId');
 
       //

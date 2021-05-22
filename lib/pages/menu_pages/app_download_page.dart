@@ -16,7 +16,7 @@ class _AppDownloadPageState extends State<AppDownloadPage> with SingleTickerProv
   PageController _pageController;
   TabController _tabController;
 
-  final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+  final String userId = getStringPref(StringPrefsEnum.userId);
 
   GlobalKey tabKey;
 
@@ -247,9 +247,9 @@ class TabIndicationPainter extends CustomPainter {
     final Offset target = Offset(left2right ? dxTarget : dxEntry, dy);
 
     final Path path = Path();
-    path.addArc(Rect.fromCircle(center: entry, radius: radius), 0.5 * math.pi, 1 * math.pi);
+    path.addArc(Rect.fromCircle(center: entry, radius: radius), 0.5 * pi, 1 * pi);
     path.addRect(Rect.fromLTRB(entry.dx, dy - radius, target.dx, dy + radius));
-    path.addArc(Rect.fromCircle(center: target, radius: radius), 1.5 * math.pi, 1 * math.pi);
+    path.addArc(Rect.fromCircle(center: target, radius: radius), 1.5 * pi, 1 * pi);
 
     canvas.translate(size.width * pageOffset, 0.0);
     canvas.drawShadow(path, const Color(0xFFfbab66), 3.0, true);
@@ -319,7 +319,7 @@ class _IosDownloadTabState extends State<IosDownloadTab> with AutomaticKeepAlive
           children: <Widget>[
             SizedBox(
               width: 10,
-              height: (deviceWidthScaleFactor - 1) * 90,
+              height: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 90,
             ),
             Container(
               padding: const EdgeInsets.only(top: 10, bottom: 20, right: 25, left: 25),
@@ -330,7 +330,7 @@ class _IosDownloadTabState extends State<IosDownloadTab> with AutomaticKeepAlive
                   color: Colors.white,
                   fontFamily: 'AvenirNextDemiBold',
                   fontStyle: FontStyle.normal,
-                  fontSize: 16.0 * deviceWidthScaleFactor,
+                  fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
                   height: 1.2,
                 ),
               ),
@@ -360,7 +360,7 @@ class _IosDownloadTabState extends State<IosDownloadTab> with AutomaticKeepAlive
                   color: Colors.white,
                   fontFamily: 'AvenirNextDemiBold',
                   fontStyle: FontStyle.normal,
-                  fontSize: 16.0 * deviceWidthScaleFactor,
+                  fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
                   height: 1.2,
                 ),
               ),
@@ -441,7 +441,7 @@ class _AndroidDownloadTabState extends State<AndroidDownloadTab> with AutomaticK
           children: <Widget>[
             SizedBox(
               width: 10,
-              height: (deviceWidthScaleFactor - 1) * 90,
+              height: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 90,
             ),
             Container(
               padding: const EdgeInsets.only(top: 10, bottom: 20, right: 25, left: 25),
@@ -452,7 +452,7 @@ class _AndroidDownloadTabState extends State<AndroidDownloadTab> with AutomaticK
                   color: Colors.white,
                   fontFamily: 'AvenirNextDemiBold',
                   fontStyle: FontStyle.normal,
-                  fontSize: 16.0 * deviceWidthScaleFactor,
+                  fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
                   height: 1.2,
                 ),
               ),
@@ -482,7 +482,7 @@ class _AndroidDownloadTabState extends State<AndroidDownloadTab> with AutomaticK
                   color: Colors.white,
                   fontFamily: 'AvenirNextDemiBold',
                   fontStyle: FontStyle.normal,
-                  fontSize: 16.0 * deviceWidthScaleFactor,
+                  fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
                   height: 1.2,
                 ),
               ),

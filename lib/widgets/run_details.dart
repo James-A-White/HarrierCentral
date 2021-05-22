@@ -400,7 +400,7 @@ class RunDetails extends StatelessWidget {
                           ],
                         ),
                       ),
-                hasLocationPermissions
+                G0<AppModel>().hasLocationPermissions
                     ? Container(
                         //height: spaceBetweenRows,
                         child: Row(
@@ -421,7 +421,7 @@ class RunDetails extends StatelessWidget {
                             ),
                             Expanded(
                                 child: Text(
-                                  hasLocationPermissions
+                                  G0<AppModel>().hasLocationPermissions
                                       ? distToEvent >= 0
                                           ? Utilities.getDistance(distToEvent, context, isMetric: distancePreference == 0) + ' from here'
                                           : '<unknown>'
@@ -431,7 +431,7 @@ class RunDetails extends StatelessWidget {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                flex: hasLocationPermissions ? flexRight : 0),
+                                flex: G0<AppModel>().hasLocationPermissions ? flexRight : 0),
                           ],
                         ),
                       )
@@ -684,7 +684,7 @@ class RunDetails extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          SizedBox(width: deviceWidth), // this is required to force the column to be the full width of the device
+                          SizedBox(width: G0<DeviceInfo>().deviceWidth), // this is required to force the column to be the full width of the device
                           for (int i = 0; i < runTags.length; i++)
                             ((runTags.values.elementAt(i) ?? 0) & event.tags1) == 0
                                 ? Container()

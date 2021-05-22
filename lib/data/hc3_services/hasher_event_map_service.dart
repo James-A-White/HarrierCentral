@@ -149,9 +149,9 @@ class HasherEventMapService {
   //==============  Domain specific functions ===========
 
   Future<Map<String, String>> sendRunCountReportByEmail({String kennelId, String kennelName}) async {
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
-    final String userName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
-    final String emailAddress = await SecurePrefs.getStringPref(StringPrefsEnum.email);
+    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userName = getStringPref(StringPrefsEnum.displayName);
+    final String emailAddress = getStringPref(StringPrefsEnum.email);
 
     final String accessToken1 = IveCoreUtilities.generateToken(userId.toUpperCase(), 'getRuns');
 
@@ -187,7 +187,7 @@ class HasherEventMapService {
       //return false;
     }
 
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'joinEvent');
 
     final num _hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
@@ -266,7 +266,7 @@ class HasherEventMapService {
       //return false;
     }
 
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
     final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor');
 
     final num _hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(

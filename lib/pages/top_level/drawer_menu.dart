@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/pages/menu_pages/app_download_page.dart';
 
 class DrawerMenu extends StatefulWidget {
   const DrawerMenu({Key key, this.scaffoldKey}) : super(key: key);
@@ -73,7 +74,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                 title: Text('My Profile', style: style),
                 onTap: () async {
                   //onTabTapped(EnumAppPages.settings);
-                  final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+                  final String userId = getStringPref(StringPrefsEnum.userId);
                   Navigator.pop(context);
                   Navigator.push<dynamic>(
                     context,

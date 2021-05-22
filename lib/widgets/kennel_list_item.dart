@@ -72,7 +72,7 @@ class KennelListItemState extends State<KennelsListItem> {
                     alignment: Alignment.topCenter,
                     splashColor: Colors.greenAccent,
                     onPressed: () {
-                      if (Connection.checkForConnection(context,
+                      if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
                           message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
                         final HasherKennelMapService srv = HasherKennelMapService();
                         int followingRequested = widget.kennelItem.hkm.following + 1;
@@ -219,7 +219,7 @@ class KennelListItemState extends State<KennelsListItem> {
                             '${widget.kennelItem.extensions.location}',
                             style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                           ),
-                          hasLocationPermissions
+                          G0<AppModel>().hasLocationPermissions
                               ? Text(
                                   '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel, context, isMetric: widget.kennelItem.extensions.distancePreference == 0)} from here',
                                   style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
@@ -235,7 +235,7 @@ class KennelListItemState extends State<KennelsListItem> {
                     color: Colors.black54,
                     splashColor: Theme.of(context).highlightColor,
                     onPressed: () {
-                      if (Connection.checkForConnection(context,
+                      if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
                           message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
                         final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
                           <String, dynamic>{
@@ -383,7 +383,7 @@ class KennelListItemState extends State<KennelsListItem> {
         }).then((dynamic retVal) {
       if ((retVal == notificationsOn) || (retVal == notificationsOff)) {
         {
-          if (Connection.checkForConnection(context,
+          if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
               message: 'Setting Kennel notifications is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
             final HasherKennelMapService srv = HasherKennelMapService();
             final int notificationStatus = retVal.value;
@@ -460,7 +460,7 @@ class KennelListItemState extends State<KennelsListItem> {
           return popup;
         }).then((dynamic retVal) {
       if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff)) {
-        if (Connection.checkForConnection(context,
+        if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
             message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
           final HasherKennelMapService srv = HasherKennelMapService();
           final int emailAlertStatus = retVal.value;

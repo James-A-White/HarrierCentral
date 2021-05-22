@@ -43,23 +43,23 @@
 // }
 
 // class AddUserRunPageState extends State<AddUserRunPage> {
-//   // String firstName = await SecurePrefs.getStringPref(StringPrefsEnum.firstName);
-//   // String lastName = await SecurePrefs.getStringPref(StringPrefsEnum.lastName);
-//   // String email = await SecurePrefs.getStringPref(StringPrefsEnum.email);
-//   // String hashName = await SecurePrefs.getStringPref(StringPrefsEnum.hashName);
+//   // String firstName = getStringPref(StringPrefsEnum.firstName);
+//   // String lastName = getStringPref(StringPrefsEnum.lastName);
+//   // String email = getStringPref(StringPrefsEnum.email);
+//   // String hashName = getStringPref(StringPrefsEnum.hashName);
 
 //   final GlobalKey<FormState> _profileFormKey = GlobalKey<FormState>();
 //   final GlobalKey<FormState> _runCountFormKey = GlobalKey<FormState>();
 
 //   bool _autoValidate = false;
 
-//   final String deviceUserId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+//   final String deviceUserId = getStringPref(StringPrefsEnum.userId);
 
-//   // String _firstName = await SecurePrefs.getStringPref(StringPrefsEnum.firstName);
-//   // String _lastName = await SecurePrefs.getStringPref(StringPrefsEnum.lastName);
-//   // String _email = await SecurePrefs.getStringPref(StringPrefsEnum.email);
-//   // String _hashName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
-//   // String _photo = await SecurePrefs.getStringPref(StringPrefsEnum.profilePhotoUrl);
+//   // String _firstName = getStringPref(StringPrefsEnum.firstName);
+//   // String _lastName = getStringPref(StringPrefsEnum.lastName);
+//   // String _email = getStringPref(StringPrefsEnum.email);
+//   // String _hashName = getStringPref(StringPrefsEnum.displayName);
+//   // String _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
 
 //   bool _isLoading = true;
 //   bool _isDirty = false;
@@ -201,12 +201,12 @@
 // //           refreshUserDataFromTable(false).then((void dummy) {
 // //             setState(() {
 // //               if (widget.pageType == EnumMyProfilePageType.myProfile) {
-// //                 SecurePrefs.setPref(StringPrefsEnum.profilePhotoUrl, hasher.photo);
-// //                 SecurePrefs.setPref(StringPrefsEnum.displayName, hasher.dispName);
-// //                 SecurePrefs.setPref(StringPrefsEnum.email, hasher.email);
-// //                 SecurePrefs.setPref(StringPrefsEnum.firstName, hasher.firstName);
-// //                 SecurePrefs.setPref(StringPrefsEnum.hashName, hasher.hashName);
-// //                 SecurePrefs.setPref(StringPrefsEnum.lastName, hasher.lastName);
+// //                 setStringPref(StringPrefsEnum.profilePhotoUrl, hasher.photo);
+// //                 setStringPref(StringPrefsEnum.displayName, hasher.dispName);
+// //                 setStringPref(StringPrefsEnum.email, hasher.email);
+// //                 setStringPref(StringPrefsEnum.firstName, hasher.firstName);
+// //                 setStringPref(StringPrefsEnum.hashName, hasher.hashName);
+// //                 setStringPref(StringPrefsEnum.lastName, hasher.lastName);
 // //               }
 // //               _isLoading = false;
 // //               checkDirty();

@@ -254,7 +254,7 @@ class QueryRuns {
         break;
     }
 
-    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String queryBase = ''' 
       

@@ -257,7 +257,8 @@ class PaymentReportState extends State<PaymentReportPage> {
               label: 'Email me payment report',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
-                paymentsService
+                G0<TableModel>()
+                    .paymentsService
                     .sendPaymentReportByEmail(eventId: widget.eventAggregate.event.eventId, eventName: widget.eventAggregate.event.eventName)
                     .then((Map<String, String> result) {
                   _scaffoldKey.currentState?.hideCurrentSnackBar();

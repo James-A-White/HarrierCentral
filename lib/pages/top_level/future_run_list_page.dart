@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:geolocator/geolocator.dart';
 
 final GlobalKey<FutureRunListPageState> futureRunsListPageKey = GlobalKey<FutureRunListPageState>();
 
@@ -74,7 +75,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
   @override
   void initState() {
-    IveCoreUtilities.logTiming('initState called', appStartTime);
+    IveCoreUtilities.logTiming('initState called', G0<AppModel>().appStartTime);
     searchController.text = '';
     searchText = '';
     refreshFromTable(true);
@@ -167,11 +168,11 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   void refreshFromTable(bool forceRefresh) {
     if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
       final Geolocator locator = Geolocator();
-      IveCoreUtilities.logTiming('Geoquery start', appStartTime);
+      IveCoreUtilities.logTiming('Geoquery start', G0<AppModel>().appStartTime);
 
-      IveCoreUtilities.logTiming('Run query start', appStartTime);
+      IveCoreUtilities.logTiming('Run query start', G0<AppModel>().appStartTime);
       QueryRuns.queryRuns(EnumRunQueryType.topRunsPage, EnumRunQueryContext.user, searchAllRuns: searchAllRuns).then((List<Map<String, dynamic>> results) {
-        IveCoreUtilities.logTiming('Run query end', appStartTime);
+        IveCoreUtilities.logTiming('Run query end', G0<AppModel>().appStartTime);
         allRuns = <RunDetailsAggregate>[];
         for (int i = 0; i < results.length; i++) {
           locator
@@ -237,10 +238,10 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
               allRuns.add(item);
             }
             if (i == results.length - 1) {
-              IveCoreUtilities.logTiming('Filter start', appStartTime);
+              IveCoreUtilities.logTiming('Filter start', G0<AppModel>().appStartTime);
               filterRuns();
               setState(() {});
-              IveCoreUtilities.logTiming('Filter end', appStartTime);
+              IveCoreUtilities.logTiming('Filter end', G0<AppModel>().appStartTime);
             }
           });
         }

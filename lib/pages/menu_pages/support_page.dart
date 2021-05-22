@@ -12,10 +12,10 @@ class SupportPage extends StatefulWidget {
 }
 
 class SupportPageState extends State<SupportPage> {
-  String firstName = await SecurePrefs.getStringPref(StringPrefsEnum.firstName);
-  String lastName = await SecurePrefs.getStringPref(StringPrefsEnum.lastName);
-  String email = await SecurePrefs.getStringPref(StringPrefsEnum.email);
-  String hashName = await SecurePrefs.getStringPref(StringPrefsEnum.hashName);
+  String firstName = getStringPref(StringPrefsEnum.firstName);
+  String lastName = getStringPref(StringPrefsEnum.lastName);
+  String email = getStringPref(StringPrefsEnum.email);
+  String hashName = getStringPref(StringPrefsEnum.hashName);
 
   final FocusNode resetCodeFocusNode = FocusNode();
   TextEditingController resetCodeTextController;
@@ -35,9 +35,9 @@ class SupportPageState extends State<SupportPage> {
     );
   }
 
-  String userName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
-  String userSecretCode = await SecurePrefs.getStringPref(StringPrefsEnum.qrSecretCode);
-  String supportCode = await SecurePrefs.getStringPref(StringPrefsEnum.supportCode);
+  String userName = getStringPref(StringPrefsEnum.displayName);
+  String userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
+  String supportCode = getStringPref(StringPrefsEnum.supportCode);
 
   bool isLoading = false;
 
@@ -227,8 +227,8 @@ class SupportPageState extends State<SupportPage> {
                                                         });
 
                                                         if (result['result'] != 'failed') {
-                                                          userName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
-                                                          userSecretCode = await SecurePrefs.getStringPref(StringPrefsEnum.qrSecretCode);
+                                                          userName = getStringPref(StringPrefsEnum.displayName);
+                                                          userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
 
                                                           IveCoreUtilities.showAlert(
                                                               context,
@@ -275,8 +275,8 @@ class SupportPageState extends State<SupportPage> {
                                                         });
 
                                                         if (result['result'] != 'failed') {
-                                                          userName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
-                                                          userSecretCode = await SecurePrefs.getStringPref(StringPrefsEnum.qrSecretCode);
+                                                          userName = getStringPref(StringPrefsEnum.displayName);
+                                                          userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode);
 
                                                           IveCoreUtilities.showAlert(
                                                               context,
@@ -312,7 +312,7 @@ class SupportPageState extends State<SupportPage> {
         ),
         OfflineModeRibbon(
           showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
-          lastSync: SecurePrefs.getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],

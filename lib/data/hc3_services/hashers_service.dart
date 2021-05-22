@@ -159,8 +159,8 @@ class HashersService extends BaseService {
 
     bool newUserForThisDevice = false;
 
-    final String hcVersion = await SecurePrefs.getStringPref(StringPrefsEnum.harrierCentralVersion);
-    String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
+    String userId = getStringPref(StringPrefsEnum.userId);
     if ((userId == null) || (userId.isEmpty)) {
       userId = GUID_EMPTY;
       newUserForThisDevice = true;
@@ -266,8 +266,8 @@ class HashersService extends BaseService {
       //return false;
     }
 
-    final String hcVersion = await SecurePrefs.getStringPref(StringPrefsEnum.harrierCentralVersion);
-    String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
+    String userId = getStringPref(StringPrefsEnum.userId);
     if ((userId == null) || (userId.isEmpty)) {
       userId = GUID_EMPTY;
     }
@@ -326,8 +326,8 @@ class HashersService extends BaseService {
 
     bool newUserForThisDevice = false;
 
-    final String hcVersion = await SecurePrefs.getStringPref(StringPrefsEnum.harrierCentralVersion);
-    String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
+    String userId = getStringPref(StringPrefsEnum.userId);
     if ((userId == null) || (userId.isEmpty)) {
       userId = GUID_EMPTY;
       newUserForThisDevice = true;

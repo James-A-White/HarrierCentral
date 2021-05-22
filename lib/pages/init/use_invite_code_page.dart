@@ -41,7 +41,7 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
         ),
         OfflineModeRibbon(
           showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
-          lastSync: SecurePrefs.getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],
@@ -84,7 +84,7 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
-      final num newFontSize = headingStyle.fontSize * deviceWidthScaleFactor;
+      final num newFontSize = headingStyle.fontSize * G0<DeviceInfo>().deviceWidthScaleFactor;
 
       final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
 
@@ -214,9 +214,9 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                     });
 
                     if (result['result'] != 'failed') {
-                      final String userName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
+                      final String userName = getStringPref(StringPrefsEnum.displayName);
 
-                      String profilePhotoUrl = await SecurePrefs.getStringPref(StringPrefsEnum.profilePhotoUrl);
+                      String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
                       profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
                       IveCoreUtilities.showAlert(context, 'Success!', 'The app has been successfully set up for $userName.', 'OK').then((void dummy) {

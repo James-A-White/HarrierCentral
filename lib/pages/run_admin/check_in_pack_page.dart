@@ -114,7 +114,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   num snackBarButtonSize = 35.0;
   static const num LIST_ITEM_HEIGHT = 84.0;
 
-  String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+  String userId = getStringPref(StringPrefsEnum.userId);
 
   AnimationController animationController;
   Animation<double> buttonAnimation;
@@ -130,8 +130,8 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
   static const String searchAllHashers = 'Searching all Hashers';
   bool highlightSearchType = false;
 
-  TextStyle localFootnoteSmallRed = footnoteSmallRed.copyWith(fontSize: 12 * deviceWidthScaleFactor);
-  TextStyle localFootnoteSmall = footnoteSmall.copyWith(fontSize: 12 * deviceWidthScaleFactor);
+  TextStyle localFootnoteSmallRed = footnoteSmallRed.copyWith(fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor);
+  TextStyle localFootnoteSmall = footnoteSmall.copyWith(fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor);
 
   List<int> filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
@@ -492,16 +492,16 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       ),
     ).then((Map<String, dynamic> result) {
       if ((result != null) && (result['hasher']?.hasherId != null)) {
-        final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
-          widget.eventAggregate.event.eventId,
-          result['hasher'].hasherId,
-          null,
-          AppDomainType.event,
-          rsvpState: rsvpYes.value,
-          attendenceState: attendenceAtHash.value,
-          isHare: isHareNo.value,
-          virginVisitorType: result['virginVisitorType'],
-        );
+        final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
+              widget.eventAggregate.event.eventId,
+              result['hasher'].hasherId,
+              null,
+              AppDomainType.event,
+              rsvpState: rsvpYes.value,
+              attendenceState: attendenceAtHash.value,
+              isHare: isHareNo.value,
+              virginVisitorType: result['virginVisitorType'],
+            );
 
         retVal.then((List<dynamic> adHocData) {
           _refreshPackListFromTables(false).then((void dummy) {
@@ -539,15 +539,15 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
         setState(() {
           _isLoading = true;
         });
-        final Future<List<dynamic>> retVal = hasherEventMapService.joinEventAsVisitor(
-          widget.eventAggregate.event.eventId,
-          name,
-          evv.value,
-          attendenceUnknown.value,
-          email,
-          phoneNumber,
-          AppDomainType.event,
-        );
+        final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEventAsVisitor(
+              widget.eventAggregate.event.eventId,
+              name,
+              evv.value,
+              attendenceUnknown.value,
+              email,
+              phoneNumber,
+              AppDomainType.event,
+            );
 
         retVal.then((List<dynamic> adHocData) {
           _refreshPackListFromTables(false).then((void dummy) {
@@ -1382,16 +1382,16 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
     // });
 
-    final Future<List<dynamic>> retVal = hasherEventMapService.joinEvent(
-      widget.eventAggregate.event.eventId,
-      hasherId,
-      hemId,
-      AppDomainType.event,
-      rsvpState: rsvpState,
-      attendenceState: attendenceState,
-      isHare: isHare,
-      virginVisitorType: -1,
-    );
+    final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
+          widget.eventAggregate.event.eventId,
+          hasherId,
+          hemId,
+          AppDomainType.event,
+          rsvpState: rsvpState,
+          attendenceState: attendenceState,
+          isHare: isHare,
+          virginVisitorType: -1,
+        );
 
     retVal.then((List<dynamic> adHocData) {
       _refreshPackListFromTables(false).then((void dummy) {

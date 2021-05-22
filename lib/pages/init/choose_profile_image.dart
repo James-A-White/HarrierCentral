@@ -35,8 +35,8 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
   bool _showCircularProgressIndicator = true;
 
-  Future<platform.File> _imageFromCamera;
-  Future<platform.File> _imageFromGallery;
+  Future<File> _imageFromCamera;
+  Future<File> _imageFromGallery;
 
   CachedNetworkImage facebookProfileImage;
 
@@ -174,7 +174,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                   //overflow: Overflow.visible,
                   alignment: AlignmentDirectional.center,
                   children: <Widget>[
-                    Container(width: deviceWidth, height: deviceHeight),
+                    Container(width: G0<DeviceInfo>().deviceWidth, height: G0<DeviceInfo>().deviceHeight),
                     Positioned(
                       top: 25.0,
                       child: Container(
@@ -382,11 +382,11 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     }
 
     if (imageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
-      _imageFromCamera.then((platform.File file) {
+      _imageFromCamera.then((File file) {
         _upload(file, fileName);
       });
     } else if (imageTypeSelection == _SelectedImageTypeEnum.fromGallery) {
-      _imageFromGallery.then((platform.File file) {
+      _imageFromGallery.then((File file) {
         _upload(file, fileName);
       });
     }
@@ -399,7 +399,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     if (widget.popToCaller) {
       Navigator.of(context).pop(profileImageUrl);
     } else {
-      final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+      final String userId = getStringPref(StringPrefsEnum.userId);
 
       final HashersService srv = HashersService();
 
@@ -409,7 +409,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       final Future<dynamic> apiCall = srv.changeProfilePicture(targetUserId: userId, photo: profileImageUrl);
 
       apiCall.then((void dummy) async {
-        SecurePrefs.setPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
+        setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
 
         Navigator.pushReplacement<dynamic, dynamic>(
             context,
@@ -420,18 +420,18 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     }
   }
 
-  String _upload(platform.File imageFile, String fileName) {
+  String _upload(File imageFile, String fileName) {
     final Uri uri = Uri.parse(
         'http://harriercentral.blob.core.windows.net/profile-photos/$fileName?st=2018-11-22T07%3A36%3A49Z&se=2028-11-23T07%3A36%3A00Z&sp=rwl&sv=2018-03-28&sr=c&sig=GdHEgSU7Qbp6nEMbOeuxnTjKVVIXw1AImXUff8GPq2U%3D');
 
-    final http.Request request = http.Request('PUT', uri);
+    final Request request = Request('PUT', uri);
 
     final Map<String, String> headers = <String, String>{'content-type': 'image/jpeg', 'x-ms-blob-type': 'BlockBlob'};
 
     request.headers.addAll(headers);
 
     request.bodyBytes = imageFile.readAsBytesSync();
-    request.send().then((http.StreamedResponse response) {
+    request.send().then((StreamedResponse response) {
       print('Avatar thumbnail upload response = ${response.statusCode}');
     });
 
@@ -541,7 +541,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
   void _onImageButtonPressed(ImageSource source) {
     setState(() {
-      ImagePicker.pickImage(source: source).then((platform.File image) {
+      ImagePicker.pickImage(source: source).then((File image) {
         setState(() {
           if (image == null) {
             setState(() {
@@ -549,7 +549,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
               imageTypeSelection = previousImageTypeSelection;
             });
           } else {
-            final Future<platform.File> img = ImageCropper.cropImage(
+            final Future<File> img = ImageCropper.cropImage(
               sourcePath: image.path,
               aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
               aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
@@ -569,9 +569,9 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
   }
 
   Widget _previewImage() {
-    return FutureBuilder<platform.File>(
+    return FutureBuilder<File>(
         future: (imageTypeSelection == _SelectedImageTypeEnum.fromCamera) ? _imageFromCamera : _imageFromGallery,
-        builder: (BuildContext context, AsyncSnapshot<platform.File> snapshot) {
+        builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
           if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
             return Image.file(snapshot.data);
           } else if (snapshot.error != null) {
