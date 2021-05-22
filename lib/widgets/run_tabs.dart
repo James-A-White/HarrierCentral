@@ -495,7 +495,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                               color: Colors.grey[300],
                               width: 70.0,
                               height: 70.0,
-                              child: const Padding(padding: EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator())),
+                              child: Padding(padding: const EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator(key: UniqueKey()))),
                             )
                           : GestureDetector(
                               onTap: () {
@@ -539,7 +539,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                   thePackList[index].hasher.photo.startsWith('http')
                                       ? CachedNetworkImage(
                                           imageUrl: thePackList[index].hasher.photo,
-                                          //placeholder: const HcCircularProgressIndicator(),
+                                          //placeholder: HcCircularProgressIndicator(key: UniqueKey()),
                                           //errorWidget: const  Icon(Icons.error),
 
                                           // placeholder:

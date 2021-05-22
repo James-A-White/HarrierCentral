@@ -76,6 +76,7 @@ class RunDetails extends StatelessWidget {
                             context,
                             MaterialPageRoute<void>(
                               builder: (BuildContext context) => ZoomableImagePage(
+                                key: UniqueKey(),
                                 pageTitle: 'Zoomable Event Image',
                                 imageUrl: event.eventImage,
                                 appBarBackgroundColor: themeAppBarBackground,
@@ -95,18 +96,18 @@ class RunDetails extends StatelessWidget {
                   )
                 : Container(),
             ((event.eventImage ?? '').isNotEmpty && event.eventImage.startsWith('http'))
-                ? const Padding(
-                    padding: EdgeInsets.only(top: 32.0, bottom: 0.0),
-                    child: FancyDivider(innerColor: Colors.white),
+                ? Padding(
+                    padding: const EdgeInsets.only(top: 32.0, bottom: 0.0),
+                    child: FancyDivider(key: UniqueKey(), innerColor: Colors.white),
                   )
                 : Container(),
             Padding(
               padding: const EdgeInsets.only(top: 25, left: 20, right: 20, bottom: 10),
               child: AutoSizeText(event.eventName, style: titleStyle, textAlign: TextAlign.center, maxLines: 2),
             ),
-            const Padding(
-              padding: EdgeInsets.only(top: 40.0, bottom: 10.0),
-              child: FancyDivider(innerColor: Colors.white),
+            Padding(
+              padding: const EdgeInsets.only(top: 40.0, bottom: 10.0),
+              child: FancyDivider(key: UniqueKey(), innerColor: Colors.white),
             ),
             Text('Event details', style: headingStyle),
             const SizedBox(
@@ -651,7 +652,7 @@ class RunDetails extends StatelessWidget {
             //     ? Container()
             //     : const Padding(
             //         padding: EdgeInsets.only(top: 32.0),
-            //         child: FancyDivider(innerColor: Colors.white),
+            //         child: FancyDivider(key: UniqueKey(),innerColor: Colors.white),
             //       ),
             // (paymentLinkUrl == '')
             //     ? Container()
@@ -672,7 +673,8 @@ class RunDetails extends StatelessWidget {
                 ? Container()
                 : Column(
                     children: <Widget>[
-                      const FancyDivider(
+                      FancyDivider(
+                        key: UniqueKey(),
                         innerColor: Colors.white,
                         topMargin: 30.0,
                         bottomMargin: 10.0,
@@ -704,7 +706,8 @@ class RunDetails extends StatelessWidget {
                   ),
             (event.eventDescription ?? '') == ''
                 ? Container()
-                : const FancyDivider(
+                : FancyDivider(
+                    key: UniqueKey(),
                     innerColor: Colors.white,
                     topMargin: 30.0,
                   ),
@@ -726,7 +729,8 @@ class RunDetails extends StatelessWidget {
                     ),
                   ),
             if ((event.eventFacebookId ?? '') != '') ...<Widget>[
-              const FancyDivider(
+              FancyDivider(
+                key: UniqueKey(),
                 innerColor: Colors.white,
                 topMargin: 30.0,
               ),

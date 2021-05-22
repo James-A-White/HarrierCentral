@@ -47,9 +47,9 @@ class KennelMemberListItem extends StatelessWidget {
                 child: kennelMember.photo.startsWith('http')
                     ? CachedNetworkImage(
                         imageUrl: kennelMember.photo,
-                        //placeholder: const HcCircularProgressIndicator(),
+                        //placeholder: HcCircularProgressIndicator(key: UniqueKey()),
                         //errorWidget: const  Icon(Icons.error),
-                        // placeholder: (BuildContext context,String url) => const HcCircularProgressIndicator(),
+                        // placeholder: (BuildContext context,String url) => HcCircularProgressIndicator(key: UniqueKey()),
 
                         // TODO(James): Replace avatar icon with missing image icon
                         errorWidget: (BuildContext context, String url, Object error) => Image.asset('images/avatars/avatar-2.jpg', height: 80, width: 80, fit: BoxFit.fill),
@@ -264,6 +264,7 @@ class KennelMemberListItem extends StatelessWidget {
                       ];
 
                       final MultipleChoicePopup popup = MultipleChoicePopup(
+                        key: UniqueKey(),
                         title: 'Membership options',
                         buttons: buttons,
                         cancelButtonTitle: 'Cancel',

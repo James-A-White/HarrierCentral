@@ -47,10 +47,10 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     if ((facebookProfileImage == null) && widget.isForThisDevice && ((facebookProfileUrl ?? '').isNotEmpty)) {
       facebookProfileImage = CachedNetworkImage(
           imageUrl: facebookProfileUrl,
-          //placeholder: const HcCircularProgressIndicator(),
+          //placeholder: HcCircularProgressIndicator(key: UniqueKey()),
           //errorWidget: const  Icon(Icons.error),
           // placeholder: (BuildContext context, String url) =>
-          //     const HcCircularProgressIndicator(),
+          //     HcCircularProgressIndicator(key: UniqueKey()),
           // errorWidget: (BuildContext context, String url, Exception error) =>
           //     const  Icon(Icons.error),
           //fadeOutDuration:  Duration(seconds: 1),
@@ -308,9 +308,9 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
             style: TextStyle(color: Colors.white, fontSize: 32.0, fontFamily: 'WorkSansSemiBold'),
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.only(top: 32.0, bottom: 20.0),
-          child: FancyDivider(innerColor: Colors.white),
+        Padding(
+          padding: const EdgeInsets.only(top: 32.0, bottom: 20.0),
+          child: FancyDivider(key: UniqueKey(), innerColor: Colors.white),
         ),
         Container(
           child: _getPreviewImage(),

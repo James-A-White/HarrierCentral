@@ -850,6 +850,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
+      key: UniqueKey(),
       title: 'Common filter options',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',
@@ -1024,7 +1025,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       ),
       appBar: getAppBar((_isLoading || (widget?.eventAggregate?.event?.eventName == null)) ? '... Loading' : (widget?.eventAggregate?.event?.eventName ?? '') + ' Check In'),
       body: _isLoading
-          ? const HcCircularProgressIndicator()
+          ? HcCircularProgressIndicator(key: UniqueKey())
           : Stack(fit: StackFit.loose, alignment: AlignmentDirectional.topStart, children: <Widget>[
               Container(height: MediaQuery.of(context).size.height, width: 10),
               (filteredList == null || filteredList.isEmpty)
@@ -1126,6 +1127,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
       ];
 
       final MultipleChoicePopup popup = MultipleChoicePopup(
+        key: UniqueKey(),
         title: 'Payment options',
         buttons: buttons,
         cancelButtonTitle: 'Cancel',

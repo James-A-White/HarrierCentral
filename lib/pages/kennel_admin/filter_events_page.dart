@@ -174,7 +174,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
             ),
           ),
         ),
-        body: _isLoading ? const HcCircularProgressIndicator() : _buildListView());
+        body: _isLoading ? HcCircularProgressIndicator(key: UniqueKey()) : _buildListView());
   }
 
   Future<void> _handleRefresh() async {

@@ -102,6 +102,7 @@ $beneficiaryInfo
 ''';
 
       final QrPopup pp = QrPopup(
+        key: UniqueKey(),
         dialogTitle: '${(packMemberNameForDisplay != null) ? packMemberNameForDisplay + '\r\n' : ''}Scan to pay by bank transfer',
         qrText: qrPayload,
       );

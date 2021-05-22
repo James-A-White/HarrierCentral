@@ -113,8 +113,8 @@ class HistoryListPageState extends State<HistoryListPage> {
   }
 
   Widget _buildCircularProgressIndicator() {
-    return const Center(
-      child: HcCircularProgressIndicator(),
+    return Center(
+      child: HcCircularProgressIndicator(key: UniqueKey()),
     );
   }
 

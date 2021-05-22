@@ -576,7 +576,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                   child: profileFormUi(),
                                                 ),
                                               ),
-                                              const FancyDivider(innerColor: Colors.white),
+                                              FancyDivider(key: UniqueKey(), innerColor: Colors.white),
                                               Container(
                                                 height: 220,
                                                 color: Colors.white,
@@ -641,7 +641,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                   ? Container()
                                                   : Column(
                                                       children: <Widget>[
-                                                        const FancyDivider(
+                                                        FancyDivider(
+                                                          key: UniqueKey(),
                                                           innerColor: Colors.white,
                                                           topMargin: 30.0,
                                                           bottomMargin: 20.0,
@@ -742,7 +743,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                   ? Container()
                                                   : Column(
                                                       children: <Widget>[
-                                                        const FancyDivider(
+                                                        FancyDivider(
+                                                          key: UniqueKey(),
                                                           innerColor: Colors.white,
                                                           topMargin: 45.0,
                                                           bottomMargin: 20.0,
@@ -918,7 +920,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         ? Container()
                                         : Column(
                                             children: <Widget>[
-                                              const FancyDivider(
+                                              FancyDivider(
+                                                key: UniqueKey(),
                                                 innerColor: Colors.white,
                                                 bottomMargin: 20.0,
                                               ),
@@ -960,7 +963,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         : Column(
                                             crossAxisAlignment: CrossAxisAlignment.stretch,
                                             children: <Widget>[
-                                              const FancyDivider(
+                                              FancyDivider(
+                                                key: UniqueKey(),
                                                 innerColor: Colors.white,
                                                 bottomMargin: 20.0,
                                               ),
@@ -989,7 +993,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                   child: runCountUi(),
                                                 ),
                                               ),
-                                              const FancyDivider(
+                                              FancyDivider(
+                                                key: UniqueKey(),
                                                 innerColor: Colors.white,
                                                 bottomMargin: 20.0,
                                               ),

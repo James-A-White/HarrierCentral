@@ -158,7 +158,7 @@ class RunDetailPageState extends State<RunDetailPage> {
         width: MediaQuery.of(context).size.width,
         padding: const EdgeInsets.only(left: 20, right: 20),
         child: _isLoading
-            ? const HcCircularProgressIndicator()
+            ? HcCircularProgressIndicator(key: UniqueKey())
             : SingleChildScrollView(
                 child: Column(
                   children: <Widget>[
@@ -166,13 +166,15 @@ class RunDetailPageState extends State<RunDetailPage> {
                       padding: const EdgeInsets.only(top: 20, bottom: 20),
                       child: AutoSizeText(eventAggregate.event.eventName, style: titleStyle, textAlign: TextAlign.center, maxLines: 2),
                     ),
-                    const FancyDivider(
+                    FancyDivider(
+                      key: UniqueKey(),
                       innerColor: Colors.white,
                       topMargin: 20.0,
                       bottomMargin: 5.0,
                     ),
                     Column(mainAxisAlignment: MainAxisAlignment.start, mainAxisSize: MainAxisSize.max, children: <Widget>[]..addAll(kiddies())),
-                    const FancyDivider(
+                    FancyDivider(
+                      key: UniqueKey(),
                       innerColor: Colors.white,
                       topMargin: 35.0,
                       bottomMargin: 5.0,

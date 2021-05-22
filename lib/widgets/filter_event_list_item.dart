@@ -148,6 +148,7 @@ class FilterEventListItem extends StatelessWidget {
                   ];
 
                   final MultipleChoicePopup popup = MultipleChoicePopup(
+                    key: UniqueKey(),
                     title: 'Set event details',
                     buttons: buttons,
                     cancelButtonTitle: 'Cancel',

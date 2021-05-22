@@ -402,7 +402,7 @@
 //                                 children: <Widget>[
 // TODO(James): Bring this back eventually
 //                                   // UserDetailsUi(firstName: firstName, lastName: lastName, email: email, hashName: hashName,),
-//                                   // const FancyDivider(innerColor: Colors.white),
+//                                   // FancyDivider(key: UniqueKey(),innerColor: Colors.white),
 //                                   Container(
 //                                     width: MediaQuery.of(context).size.width,
 //                                     child: IntrinsicHeight(
@@ -445,7 +445,7 @@
 //                                                           ),
 //                                                         ),
 
-//                                                         const FancyDivider(innerColor: Colors.white),
+//                                                         FancyDivider(key: UniqueKey(),innerColor: Colors.white),
 
 //                                                         //SizedBox(height: 30),
 //                                                         Container(
@@ -496,7 +496,7 @@
 //                                                   ),
 //                                                 ),
 //                                               )),
-//                                          // Positioned(top: 740, left: 30, right: 30, child: (widget.uiElementsToDisplay & (AddUserRunPage.flagUiElement_followKennel | AddUserRunPage.flagUiElement_inviteCode) == 0) ? Container() : const FancyDivider(innerColor: Colors.white)),
+//                                          // Positioned(top: 740, left: 30, right: 30, child: (widget.uiElementsToDisplay & (AddUserRunPage.flagUiElement_followKennel | AddUserRunPage.flagUiElement_inviteCode) == 0) ? Container() : FancyDivider(key: UniqueKey(),innerColor: Colors.white)),
 //                                           // Positioned(
 //                                           //   top: 760,
 //                                           //   child: (widget.uiElementsToDisplay & AddUserRunPage.flagUiElement_followKennel == 0)
@@ -563,7 +563,7 @@
 //                                           //               ),
 //                                           //               child: Form(key: _runCountFormKey, autovalidate: _autoValidate, child: runCountUi()),
 //                                           //             ),
-//                                           //             const FancyDivider(innerColor: Colors.white),
+//                                           //             FancyDivider(key: UniqueKey(),innerColor: Colors.white),
 //                                           //             Text(
 //                                           //               'Invite code:',
 //                                           //               style: headingStyle,

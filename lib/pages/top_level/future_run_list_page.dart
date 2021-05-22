@@ -25,7 +25,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: allRuns == null ? const HcCircularProgressIndicator() : _buildListView(),
+      body: allRuns == null ? HcCircularProgressIndicator(key: UniqueKey()) : _buildListView(),
     );
   }
 

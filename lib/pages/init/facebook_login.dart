@@ -54,8 +54,8 @@ class _LoginPageState extends State<FbLoginPage> {
         decoration: Backgrounds.defaultHcBackground(),
         child: Center(
           child: isLoading
-              ? const Center(
-                  child: HcCircularProgressIndicator(),
+              ? Center(
+                  child: HcCircularProgressIndicator(key: UniqueKey()),
                 )
               : isLoggedIn
                   ? _displayUserData(profileData)
@@ -158,7 +158,8 @@ class _LoginPageState extends State<FbLoginPage> {
           ),
         ),
 
-        const FancyDivider(
+        FancyDivider(
+          key: UniqueKey(),
           innerColor: Colors.white,
           topMargin: 35.0,
           bottomMargin: 15.0,

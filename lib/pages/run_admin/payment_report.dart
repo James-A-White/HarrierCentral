@@ -279,7 +279,7 @@ class PaymentReportState extends State<PaymentReportPage> {
           ],
         ),
         body: (_isLoading || (paymentTotals == null) || (paymentTotals.isEmpty))
-            ? const HcCircularProgressIndicator()
+            ? HcCircularProgressIndicator(key: UniqueKey())
             : Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
@@ -538,6 +538,7 @@ class PaymentReportState extends State<PaymentReportPage> {
       ];
 
       final MultipleChoicePopup popup = MultipleChoicePopup(
+        key: UniqueKey(),
         title: 'Payment options',
         buttons: buttons,
         cancelButtonTitle: 'Cancel',

@@ -267,7 +267,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                                     child: formUi(),
                                                   ),
                                                 ),
-                                                const FancyDivider(innerColor: Colors.white),
+                                                FancyDivider(key: UniqueKey(), innerColor: Colors.white),
                                                 const SizedBox(height: 20),
                                                 RaisedButton(
                                                   onPressed: () {
@@ -296,7 +296,9 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                             context,
                                             MaterialPageRoute<void>(
                                               builder: (BuildContext context) => ZoomableImagePage(
+                                                key: UniqueKey(),
                                                 image: _imageFromCamera != null ? _imageFromCamera : _imageFromCache,
+                                                imageUrl: '<not required, need to fix ZoomableImagePage>', // The imageUrl parameter should not be marked as required
                                                 pageTitle: 'Zoomable Receipt',
                                                 appBarBackgroundColor: themeAppBarBackground,
                                                 background: Backgrounds.defaultHcBackground(),

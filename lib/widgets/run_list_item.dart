@@ -371,6 +371,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       ];
 
       final MultipleChoicePopup popup = MultipleChoicePopup(
+        key: UniqueKey(),
         title: 'Run Options',
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
@@ -500,6 +501,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
       ];
 
       final MultipleChoicePopup popup = MultipleChoicePopup(
+        key: UniqueKey(),
         title: 'Run Options',
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
@@ -586,6 +588,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
+      key: UniqueKey(),
       title: 'Notification options for this run',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',
@@ -687,6 +690,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
     ];
 
     final MultipleChoicePopup popup = MultipleChoicePopup(
+      key: UniqueKey(),
       title: 'Email options for this run',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',

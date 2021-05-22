@@ -298,6 +298,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                         )),
                       )
                     : FlippableBox(
+                        key: UniqueKey(),
                         front: front(),
                         back: Container(
                           child: Swiper(
@@ -365,6 +366,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                         isFlipped: isFlipped,
                       )),
             bottomNavigationBar: FlippableBox(
+              key: UniqueKey(),
               front: Container(
                 child: FancyBottomNavigation(
                   circleColor: themeButtonColors,

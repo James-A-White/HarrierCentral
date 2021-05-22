@@ -165,8 +165,8 @@ class KennelsListPageState extends State<KennelsListPage> {
     return Scaffold(
       extendBody: true,
       body: G0<TableModel>().globalKennelMainPageList == null
-          ? const Center(
-              child: HcCircularProgressIndicator(),
+          ? Center(
+              child: HcCircularProgressIndicator(key: UniqueKey()),
             )
           : Container(
               decoration: Backgrounds.defaultHcBackground(),
