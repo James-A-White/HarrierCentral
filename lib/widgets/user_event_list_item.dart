@@ -1,19 +1,8 @@
-import 'dart:core';
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
-import 'package:harrier_central/pages/history_sub_pages/user_run_history_list_page.dart';
-import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/styles.dart';
-
 class UserEventListItem extends StatelessWidget {
-  const UserEventListItem(
-      {@required this.item, @required this.kennelShortName});
+  const UserEventListItem({@required this.item, @required this.kennelShortName});
 
   final UserRunHistoryResults item;
   final String kennelShortName;
@@ -41,17 +30,12 @@ class UserEventListItem extends StatelessWidget {
           item.isLoading
               ? Icon(delayIcon, color: Colors.blue[800], size: 35.0)
               : item.attendenceState < attendenceAtHash.value
-                  ? const Icon(FontAwesome.times_circle,
-                      color: Colors.red, size: 35.0)
+                  ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 35.0)
                   : item.isHare == isHareNo.value
-                      ? const Icon(FontAwesome.check_circle,
-                          color: Colors.green, size: 35.0)
+                      ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 35.0)
                       : const Padding(
                           padding: EdgeInsets.only(left: 2.5, right: 2.5),
-                          child: ImageIcon(
-                              AssetImage('images/icons/hare_icon.png'),
-                              color: Colors.purple,
-                              size: 30.0),
+                          child: ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.purple, size: 30.0),
                         ),
 
           Expanded(
@@ -65,12 +49,7 @@ class UserEventListItem extends StatelessWidget {
                     '${item.eventName}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        color: Colors.black87,
-                        fontFamily: 'AvenirNextCondensedDemiBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 18.0,
-                        height: 1.0),
+                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
                     textAlign: TextAlign.left,
                   ),
                   Text(
@@ -79,12 +58,7 @@ class UserEventListItem extends StatelessWidget {
                         : 'Run #${item.eventNumber.toString()} on ${DateFormat("E, MMM d \'at\' h:mm a").format(item.eventStartDatetime)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        color: Colors.black87,
-                        fontFamily: 'AvenirNextCondensedDemiBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 18.0,
-                        height: 1.0),
+                    style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
                     textAlign: TextAlign.left,
                   ),
                   item.attendenceState < attendenceAtHash.value
@@ -95,12 +69,7 @@ class UserEventListItem extends StatelessWidget {
                               'My $kennelShortName run #${item.totalRunsThisKennel}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  color: Colors.green[800],
-                                  fontFamily: 'AvenirNextCondensedDemiBold',
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 18.0,
-                                  height: 1.0),
+                              style: TextStyle(color: Colors.green[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
                               textAlign: TextAlign.left,
                             ),
                             item.isHare == isHareNo.value
@@ -109,13 +78,8 @@ class UserEventListItem extends StatelessWidget {
                                     ' and #${item.totalHaringThisKennel} time haring',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                        color: Colors.purple[800],
-                                        fontFamily:
-                                            'AvenirNextCondensedDemiBold',
-                                        fontStyle: FontStyle.normal,
-                                        fontSize: 18.0,
-                                        height: 1.0),
+                                    style:
+                                        TextStyle(color: Colors.purple[800], fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
                                     textAlign: TextAlign.left,
                                   ),
                           ],

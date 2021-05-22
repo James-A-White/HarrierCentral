@@ -1,18 +1,4 @@
-import 'dart:async';
-
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-
-import 'package:keyboard_avoider/keyboard_avoider.dart';
-
-import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/globals.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:ive_flutter_core/widgets/fancy_divider.dart';
-import 'package:harrier_central/util/enums.dart';
-
-// import 'package:harrier_central/widgets/user_details_ui.dart';
-// import 'package:ive_flutter_core/widgets/fancy_divider.dart';
+import 'package:harrier_central/imports.dart';
 
 class EmailEditorPage extends StatefulWidget {
   const EmailEditorPage({Key key, this.eventId}) : super(key: key);
@@ -24,10 +10,10 @@ class EmailEditorPage extends StatefulWidget {
 }
 
 class EmailEditorPageState extends State<EmailEditorPage> {
-  // String firstName = getStringPref(StringPrefsEnum.firstName);
-  // String lastName = getStringPref(StringPrefsEnum.lastName);
-  // String email = getStringPref(StringPrefsEnum.email);
-  // String hashName = getStringPref(StringPrefsEnum.hashName);
+  // String firstName = await SecurePrefs.getStringPref(StringPrefsEnum.firstName);
+  // String lastName = await SecurePrefs.getStringPref(StringPrefsEnum.lastName);
+  // String email = await SecurePrefs.getStringPref(StringPrefsEnum.email);
+  // String hashName = await SecurePrefs.getStringPref(StringPrefsEnum.hashName);
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -35,7 +21,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
 
   @override
   void initState() {
-    bodyController.text = getStringPref(StringPrefsEnum.customEmailBody) ?? '';
+    bodyController.text = await SecurePrefs.getStringPref(StringPrefsEnum.customEmailBody) ?? '';
     super.initState();
   }
 
@@ -64,31 +50,16 @@ class EmailEditorPageState extends State<EmailEditorPage> {
   //   );
   // }
 
-  TextStyle headingStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.yellow,
-      fontSize: 22.0,
-      height: 1.0);
+  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 22.0, height: 1.0);
 
-  TextStyle buttonTextStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.white,
-      fontSize: 16.0,
-      height: 1.0);
+  TextStyle buttonTextStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 16.0, height: 1.0);
 
-  TextStyle insertTokenButtonTextStyle = const TextStyle(
-      fontFamily: 'AvenirNextDemiBold',
-      fontStyle: FontStyle.normal,
-      color: Colors.black,
-      fontSize: 16.0,
-      height: 0.8);
+  TextStyle insertTokenButtonTextStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 16.0, height: 0.8);
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future<bool> _requestPop() {
-    setStringPref(StringPrefsEnum.customEmailBody, bodyController.text);
+    SecurePrefs.setPref(StringPrefsEnum.customEmailBody, bodyController.text);
     return Future<bool>.value(true);
   }
 
@@ -141,8 +112,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                 ),
                 Container(
                   padding: const EdgeInsets.all(10.0),
-                  margin: const EdgeInsets.only(
-                      bottom: 20, left: 20, right: 20, top: 20),
+                  margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20, top: 20),
                   decoration: BoxDecoration(
                     color: Colors.yellow[100],
                     borderRadius: BorderRadius.circular(5.0),
@@ -153,8 +123,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                     child: TextField(
                       autocorrect: false,
                       //initialValue: _shortDescription,
-                      decoration: const InputDecoration.collapsed(
-                          hintText: 'Email body'),
+                      decoration: const InputDecoration.collapsed(hintText: 'Email body'),
                       keyboardType: TextInputType.multiline,
                       maxLines: null,
                       minLines: 10,
@@ -242,8 +211,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                 const SizedBox(height: 20),
                 RaisedButton(
                   onPressed: () {
-                    setStringPref(
-                        StringPrefsEnum.customEmailBody, bodyController.text);
+                    SecurePrefs.setPref(StringPrefsEnum.customEmailBody, bodyController.text);
                     sendEmail(context, bodyController.text);
                   },
                   child: Text('Send Email', style: buttonTextStyle),
@@ -324,43 +292,28 @@ class EmailEditorPageState extends State<EmailEditorPage> {
   }
 
   void sendEmail(BuildContext context, String emailBody) {
-    CoreUtilities.showAlert(
-            context,
-            'Email run details',
-            'Would you like to e-mail the run details to hashers who have signed up for e-mail notifications?',
-            'OK',
+    IveCoreUtilities.showAlert(context, 'Email run details', 'Would you like to e-mail the run details to hashers who have signed up for e-mail notifications?', 'OK',
             showCancelButton: true)
         .then((bool result) {
       if (result) {
-        eventsService
-            .sendRunDetailsByEmail(
-                eventId: widget.eventId, emailBody: emailBody)
-            .then((Map<String, String> result) {
+        eventsService.sendRunDetailsByEmail(eventId: widget.eventId, emailBody: emailBody).then((Map<String, String> result) {
           _scaffoldKey.currentState?.hideCurrentSnackBar();
           if (result['result'].toLowerCase().startsWith('success')) {
-            CoreUtilities.showAlert(
-                context, 'E-mails successfully sent', result['result'], 'OK');
+            IveCoreUtilities.showAlert(context, 'E-mails successfully sent', result['result'], 'OK');
           } else {
-            CoreUtilities.showAlert(
-                context,
-                'Error sending emails',
-                'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com',
-                'OK');
+            IveCoreUtilities.showAlert(context, 'Error sending emails',
+                'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
           }
         });
-        CoreUtilities.showInSnackBar(
-            context, _scaffoldKey, 'Run detail emails being sent ..',
-            durationInSeconds: 10);
+        IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run detail emails being sent ..', durationInSeconds: 10);
       }
     });
   }
 
   void insertText(String textToInsert) {
     final int bo = bodyController.selection.baseOffset + textToInsert.length;
-    final String textBefore =
-        bodyController.text.substring(0, bodyController.selection.baseOffset);
-    final String textAfter =
-        bodyController.text.substring(bodyController.selection.baseOffset);
+    final String textBefore = bodyController.text.substring(0, bodyController.selection.baseOffset);
+    final String textAfter = bodyController.text.substring(bodyController.selection.baseOffset);
     bodyController.text = textBefore + textToInsert + textAfter;
     bodyController.selection = TextSelection.collapsed(offset: bo);
   }

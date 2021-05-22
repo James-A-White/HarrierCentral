@@ -1,19 +1,4 @@
-import 'dart:async';
-import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter/services.dart' show rootBundle;
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_full_pdf_viewer/full_pdf_viewer_scaffold.dart';
-import 'package:path_provider/path_provider.dart';
-
-import 'package:harrier_central/util/styles.dart';
-import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-
-import 'package:ive_flutter_core/util/connection.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/imports.dart';
 
 class PrivacyPolicyPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -25,8 +10,7 @@ class PrivacyPolicyPage extends StatefulWidget {
 }
 
 Future<File> createFileOfPdfUrl() async {
-  final ByteData bytes =
-      await rootBundle.load('assets/documents/privacy_policy.pdf');
+  final ByteData bytes = await rootBundle.load('assets/documents/privacy_policy.pdf');
   final String dir = (await getApplicationDocumentsDirectory()).path;
   final File file = File('$dir/privacy_policy_internal.pdf');
   await file.writeAsBytes(bytes.buffer.asInt8List());
@@ -47,27 +31,15 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
     });
   }
 
-  TextStyle headingStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.yellow,
-      fontSize: 24.0,
-      height: 1.0);
+  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 24.0, height: 1.0);
 
-  TextStyle bodyStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.white,
-      fontSize: 18.0,
-      height: 1.0);
+  TextStyle bodyStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0);
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width),
+        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -88,17 +60,13 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                       child: Text('Open Privacy Policy', style: headingStyle),
                       onPressed: () => Navigator.push<dynamic>(
                         context,
-                        MaterialPageRoute<dynamic>(
-                            builder: (BuildContext context) =>
-                                PDFScreen(pathPDF)),
+                        MaterialPageRoute<dynamic>(builder: (BuildContext context) => PDFScreen(pathPDF)),
                       ),
                     ),
                     Container(
                       margin: const EdgeInsets.all(30),
-                      child: Text(
-                          'The Harrier Central Privacy Policy can also be found on our website for easier reading: \r\n\r\nhttp://www.harriercentral.com',
-                          textAlign: TextAlign.center,
-                          style: bodyStyle),
+                      child: Text('The Harrier Central Privacy Policy can also be found on our website for easier reading: \r\n\r\nhttp://www.harriercentral.com',
+                          textAlign: TextAlign.center, style: bodyStyle),
                     ),
                   ],
                 ),
@@ -107,8 +75,8 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: globalConnectionStatus == connectionStatus_notConnected,
-          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
+          lastSync: SecurePrefs.getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],

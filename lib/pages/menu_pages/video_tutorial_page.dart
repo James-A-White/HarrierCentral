@@ -1,16 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-
-import 'package:video_player/video_player.dart';
-
-import 'package:harrier_central/util/styles.dart';
-import 'package:chewie/chewie.dart';
+import 'package:harrier_central/imports.dart';
 
 class VideoTutorialPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const VideoTutorialPage({Key key, this.title, this.videoUrl})
-      : super(key: key);
+  const VideoTutorialPage({Key key, this.title, this.videoUrl}) : super(key: key);
 
   final String title;
   final String videoUrl;

@@ -1,15 +1,7 @@
-import 'dart:core';
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:email_validator/email_validator.dart';
+import 'package:harrier_central/imports.dart';
 
 class UserDetailsUi extends StatefulWidget {
-  UserDetailsUi(
-      {Key key, this.firstName, this.lastName, this.email, this.hashName})
-      : super(key: key);
+  UserDetailsUi({Key key, this.firstName, this.lastName, this.email, this.hashName}) : super(key: key);
 
   String firstName;
   String lastName;
@@ -22,8 +14,7 @@ class UserDetailsUi extends StatefulWidget {
   _UserDetailsUiState createState() => _UserDetailsUiState();
 }
 
-class _UserDetailsUiState extends State<UserDetailsUi>
-    with WidgetsBindingObserver {
+class _UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserver {
   _UserDetailsUiState();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -90,8 +81,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
           child: Column(
             children: <Widget>[
               Padding(
-                padding: const EdgeInsets.only(
-                    top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
+                padding: const EdgeInsets.only(top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
                 child: TextFormField(
                   focusNode: myFocusNodeFirstName,
                   controller: signupFirstNameController,
@@ -107,10 +97,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
                     }
                   },
                   textCapitalization: TextCapitalization.words,
-                  style: const TextStyle(
-                      fontFamily: 'WorkSansSemiBold',
-                      fontSize: 16.0,
-                      color: Colors.black),
+                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     icon: Icon(
@@ -118,8 +105,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
                       color: Colors.black,
                     ),
                     hintText: 'First Name',
-                    hintStyle: TextStyle(
-                        fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                    hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                   ),
                 ),
               ),
@@ -129,8 +115,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
                 color: Colors.grey[400],
               ),
               Padding(
-                padding: const EdgeInsets.only(
-                    top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
+                padding: const EdgeInsets.only(top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
                 child: TextFormField(
                   onChanged: (String text) {
                     widget.lastName = text;
@@ -146,10 +131,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
                   },
                   keyboardType: TextInputType.text,
                   textCapitalization: TextCapitalization.words,
-                  style: const TextStyle(
-                      fontFamily: 'WorkSansSemiBold',
-                      fontSize: 16.0,
-                      color: Colors.black),
+                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     icon: Icon(
@@ -157,8 +139,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
                       color: Colors.black,
                     ),
                     hintText: 'Last Name',
-                    hintStyle: TextStyle(
-                        fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                    hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                   ),
                 ),
               ),
@@ -168,8 +149,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
                 color: Colors.grey[400],
               ),
               Padding(
-                padding: const EdgeInsets.only(
-                    top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
+                padding: const EdgeInsets.only(top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
                 child: TextFormField(
                   onChanged: (String text) {
                     widget.email = text;
@@ -188,10 +168,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
                       }
                     }
                   },
-                  style: const TextStyle(
-                      fontFamily: 'WorkSansSemiBold',
-                      fontSize: 16.0,
-                      color: Colors.black),
+                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     icon: Icon(
@@ -199,8 +176,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
                       color: Colors.black,
                     ),
                     hintText: 'Email Address',
-                    hintStyle: TextStyle(
-                        fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                    hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                   ),
                 ),
               ),
@@ -210,18 +186,14 @@ class _UserDetailsUiState extends State<UserDetailsUi>
                 color: Colors.grey[400],
               ),
               Padding(
-                padding: const EdgeInsets.only(
-                    top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
+                padding: const EdgeInsets.only(top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
                 child: TextFormField(
                   onChanged: (String text) {
                     widget.hashName = text;
                   },
                   focusNode: myFocusNodeHashName,
                   controller: signupHashNameController,
-                  style: const TextStyle(
-                      fontFamily: 'WorkSansSemiBold',
-                      fontSize: 16.0,
-                      color: Colors.black),
+                  style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     icon: Icon(
@@ -229,8 +201,7 @@ class _UserDetailsUiState extends State<UserDetailsUi>
                       color: Colors.black,
                     ),
                     hintText: 'Hash Name (optional)',
-                    hintStyle: TextStyle(
-                        fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                    hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                   ),
                 ),
               ),

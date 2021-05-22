@@ -1,14 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:package_info/package_info.dart';
-
-import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/constants.dart';
-import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-
-import 'package:ive_flutter_core/util/connection.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/imports.dart';
 
 class ImprintPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -24,9 +14,7 @@ class ImprintPageState extends State<ImprintPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width),
+        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -51,8 +39,8 @@ class ImprintPageState extends State<ImprintPage> {
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: globalConnectionStatus == connectionStatus_notConnected,
-          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
+          lastSync: SecurePrefs.getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],
@@ -68,19 +56,9 @@ class ImprintPageContent extends StatefulWidget {
 }
 
 class _ImprintPageContentState extends State<ImprintPageContent> {
-  TextStyle headingStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.yellow,
-      fontSize: 24.0,
-      height: 1.2);
+  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 24.0, height: 1.2);
 
-  TextStyle bodyStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.white,
-      fontSize: 20.0,
-      height: 1.2);
+  TextStyle bodyStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.2);
 
   String appName;
   String packageName;
@@ -98,8 +76,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
       });
     });
 
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints viewportConstraints) {
+    return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
       return SingleChildScrollView(
         child: ConstrainedBox(
           constraints: const BoxConstraints(
@@ -121,9 +98,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text(
-                          'Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nDatabase version: ${DB_VERSION.toString()}',
-                          style: bodyStyle),
+                      Text('Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nDatabase version: ${DB_VERSION.toString()}', style: bodyStyle),
                     ],
                   ),
                   Row(
@@ -135,8 +110,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text(
-                          'Harrier Central\r\n\r\nInnoVet Europe\r\nFluwelen Burgwal 58\r\n2511 CJ, Den Haag\r\nNetherlands\r\n\r\nKvK number: 68759207\r\nVAT #: NL002452779B31',
+                      Text('Harrier Central\r\n\r\nInnoVet Europe\r\nFluwelen Burgwal 58\r\n2511 CJ, Den Haag\r\nNetherlands\r\n\r\nKvK number: 68759207\r\nVAT #: NL002452779B31',
                           style: bodyStyle),
                     ],
                   ),
@@ -163,8 +137,7 @@ class _ImprintPageContentState extends State<ImprintPageContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text('© 2020, InnoVet Europe\r\nAll rights reserved',
-                          style: bodyStyle),
+                      Text('© 2020, InnoVet Europe\r\nAll rights reserved', style: bodyStyle),
                     ],
                   ),
                   Row(

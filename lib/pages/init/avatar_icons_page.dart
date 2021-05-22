@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/imports.dart';
 
 class AvatarIconsPage extends StatefulWidget {
   const AvatarIconsPage({Key key, this.selectedAvatarIcon}) : super(key: key);
@@ -40,19 +39,13 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
             padding: const EdgeInsets.only(top: 20.0),
             child: GridView.builder(
               scrollDirection: Axis.vertical,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: (MediaQuery.of(context).orientation ==
-                          Orientation.portrait)
-                      ? 3
-                      : 4),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: (MediaQuery.of(context).orientation == Orientation.portrait) ? 3 : 4),
               padding: const EdgeInsets.only(top: 10.0),
               itemCount: 50,
               itemBuilder: (BuildContext bldCtx, int index) {
                 return MaterialButton(
                     child: Container(
-                      color: widget.selectedAvatarIcon == index + 1
-                          ? Theme.of(context).accentColor
-                          : Theme.of(context).scaffoldBackgroundColor,
+                      color: widget.selectedAvatarIcon == index + 1 ? Theme.of(context).accentColor : Theme.of(context).scaffoldBackgroundColor,
                       child: Padding(
                         padding: EdgeInsets.all(imagePadding),
                         child: Image.asset(

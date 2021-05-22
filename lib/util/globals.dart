@@ -1,116 +1,319 @@
-import 'dart:async';
-
-import 'package:flutter/material.dart';
-
+import 'package:harrier_central/imports.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:sqflite/sqflite.dart';
 
-import 'package:ive_flutter_core/database/migrations.dart';
-import 'package:ive_flutter_core/database/database.dart';
-import 'package:ive_flutter_core/database/base_service.dart';
+// Ambient variable to access the service locator
+// NOTE: I've given this variable a very unique name even if it is against normal
+// DART style conventions.
 
-import 'package:harrier_central/data/hc3_services/events_service.dart';
-import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/database/query_kennels.dart';
+// ignore: non_constant_identifier_names
+final GetIt G0 = GetIt.instance;
 
-import 'package:harrier_central/data/hc3_services/cities_service.dart';
-import 'package:harrier_central/data/hc3_services/countries_service.dart';
-import 'package:harrier_central/data/hc3_services/regions_service.dart';
-import 'package:harrier_central/data/hc3_services/receipts_service.dart';
-import 'package:harrier_central/data/hc3_services/payments_service.dart';
-import 'package:harrier_central/data/hc3_services/hashers_service.dart';
-import 'package:harrier_central/data/hc3_services/kennel_credits_service.dart';
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_event_map_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
-import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
+Future<void> setupLocalServices(num deviceWidth, num deviceHeight) async {
+  G0.registerSingleton<AppModel>(AppModel());
+  G0.registerSingletonAsync<DeviceInfo>(() async {
+    final DeviceInfo deviceInfo = DeviceInfo();
+    await deviceInfo.init(deviceWidth, deviceHeight);
+    return deviceInfo;
+  });
 
-List<KennelListAggregate> globalKennelMainPageList;
-
-num deviceWidthScaleFactor;
-num deviceHeightScaleFactor;
-num deviceMaxScaleFactor;
-num deviceMinScaleFactor;
-
-num deviceWidth;
-num deviceHeight;
-
-bool hasLocationPermissions = false;
-
-DateTime appStartTime;
-
-StreamSubscription<Position> geoLocationStream;
-num deviceLat;
-num deviceLon;
-
-CitiesTableHelper citiesTableHelper;
-CountriesTableHelper countriesTableHelper;
-RegionsTableHelper regionsTableHelper;
-ReceiptsTableHelper receiptsTableHelper;
-PaymentsTableHelper paymentsTableHelper;
-HashersTableHelper hashersTableHelper;
-KennelCreditsTableHelper kennelCreditsTableHelper;
-KennelsTableHelper kennelsTableHelper;
-EventsTableHelper eventsTableHelper;
-HasherEventMapTableHelper hasherEventMapTableHelper;
-HasherKennelMapTableHelper hasherKennelMapTableHelper;
-
-List<BaseTableHelper> userTables = <BaseTableHelper>[
-  citiesTableHelper,
-  countriesTableHelper,
-  regionsTableHelper,
-  paymentsTableHelper,
-  hashersTableHelper,
-  kennelsTableHelper,
-  eventsTableHelper,
-  hasherEventMapTableHelper,
-  hasherKennelMapTableHelper,
-];
-
-BaseService baseService;
-HashersService hashersService;
-PaymentsService paymentsService;
-EventsService eventsService;
-HasherEventMapService hasherEventMapService;
-HasherKennelMapService hasherKennelMapService;
-SyncUserDataService syncUserDataService;
-SyncKennelAdminService syncKennelAdminService;
-SyncEventAdminService syncEventAdminService;
-
-Database internalSqlDb;
-
-Future<void> openOrInitializeDb(
-    String dbName, int dbVersion, Function informUser,
-    {@required List<MigrationsModel> migrations,
-    @required Function createTables}) async {
-  internalSqlDb = await DBProvider.openOrInitDb(
-      DB_NAME, dbVersion, informUser, migrations,
-      createTables: createTables);
+  _initTables();
 }
 
-void initializeGlobals() {
-  citiesTableHelper = CitiesTableHelper();
-  countriesTableHelper = CountriesTableHelper();
-  regionsTableHelper = RegionsTableHelper();
-  receiptsTableHelper = ReceiptsTableHelper();
-  paymentsTableHelper = PaymentsTableHelper();
-  hashersTableHelper = HashersTableHelper();
-  kennelCreditsTableHelper = KennelCreditsTableHelper();
-  kennelsTableHelper = KennelsTableHelper();
-  eventsTableHelper = EventsTableHelper();
-  hasherEventMapTableHelper = HasherEventMapTableHelper();
-  hasherKennelMapTableHelper = HasherKennelMapTableHelper();
+void _initTables() {
+  if (G0.isRegistered<TableModel>()) {
+    G0.unregister<TableModel>();
+  }
+  G0.registerSingleton<TableModel>(TableModel());
+  G0<TableModel>().init();
 
-  baseService = BaseService();
-  hashersService = HashersService();
-  paymentsService = PaymentsService();
-  eventsService = EventsService();
-  hasherEventMapService = HasherEventMapService();
-  hasherKennelMapService = HasherKennelMapService();
-
-  syncUserDataService = SyncUserDataService();
-  syncKennelAdminService = SyncKennelAdminService();
-  syncEventAdminService = SyncEventAdminService();
+  G0<TableModel>().tablesForRemoteSync = <BaseTableHelper>[
+    G0<TableModel>().citiesTableHelper,
+    G0<TableModel>().countriesTableHelper,
+    G0<TableModel>().regionsTableHelper,
+    G0<TableModel>().receiptsTableHelper,
+    G0<TableModel>().paymentsTableHelper,
+    G0<TableModel>().hashersTableHelper,
+    G0<TableModel>().kennelCreditsTableHelper,
+    G0<TableModel>().kennelsTableHelper,
+    G0<TableModel>().eventsTableHelper,
+    G0<TableModel>().hasherEventMapTableHelper,
+    G0<TableModel>().hasherKennelMapTableHelper
+  ];
 }
+
+Future<void> setupDatabase(Function informUser, String clientAppIdentifier) async {
+  G0.registerSingletonAsync<Database>(() async {
+    _initTables();
+    return DBProvider.openOrInitDb(
+      DB_NAME,
+      DB_VERSION,
+      informUser,
+      Tables.migrationList,
+      createTables: _createTables,
+      openDb: _openDb,
+      clientAppIdentifier: clientAppIdentifier,
+    );
+  });
+}
+
+Future<void> _openDb(dynamic db, Function informUser, String clientAppIdentifier) async {
+  await G0<TableModel>().syncUserDataService.updateFromBackend(
+        SyncUserDataService.flagsAllData,
+        false,
+        informUser: informUser,
+      );
+}
+
+Future<void> _createTables(dynamic db, int version, Function informUser, String clientAppIdentifier) async {
+  await Tables.createTables(db, version, informUser);
+
+  await G0<TableModel>().syncUserDataService.updateFromBackend(
+        SyncUserDataService.flagAllMasterData,
+        false,
+        informUser: informUser,
+      );
+
+  await Tables.createIndexes(db, version, informUser, clientAppIdentifier);
+  await SecurePrefs.setPref(IntPrefsEnum.databaseVersion, DB_VERSION);
+  await SecurePrefs.setPref(BoolPrefsEnum.dbCreated, true);
+}
+
+class AppModel {
+  AppModel();
+  EnumConnectionStatus connectionStatus = EnumConnectionStatus.not_connected;
+  StreamSubscription<Position> geoLocationStream;
+  DateTime appStartTime;
+
+  // TODO(DevTeam): Make sure this is eventually called
+  void dispose() {
+    geoLocationStream.cancel();
+  }
+}
+
+class TableModel {
+  TableModel();
+
+  CitiesTableHelper citiesTableHelper;
+  CountriesTableHelper countriesTableHelper;
+  RegionsTableHelper regionsTableHelper;
+  ReceiptsTableHelper receiptsTableHelper;
+  PaymentsTableHelper paymentsTableHelper;
+  HashersTableHelper hashersTableHelper;
+  KennelCreditsTableHelper kennelCreditsTableHelper;
+  KennelsTableHelper kennelsTableHelper;
+  EventsTableHelper eventsTableHelper;
+  HasherEventMapTableHelper hasherEventMapTableHelper;
+  HasherKennelMapTableHelper hasherKennelMapTableHelper;
+
+  SyncUserDataService syncUserDataService;
+  SyncKennelAdminService syncKennelAdminService;
+  SyncEventAdminService syncEventAdminService;
+
+  BaseService baseService;
+
+  HashersService hashersService;
+
+  void init() {
+    citiesTableHelper = CitiesTableHelper();
+    countriesTableHelper = CountriesTableHelper();
+    regionsTableHelper = RegionsTableHelper();
+    receiptsTableHelper = ReceiptsTableHelper();
+    paymentsTableHelper = PaymentsTableHelper();
+    hashersTableHelper = HashersTableHelper();
+    kennelCreditsTableHelper = KennelCreditsTableHelper();
+    kennelsTableHelper = KennelsTableHelper();
+    eventsTableHelper = EventsTableHelper();
+    hasherEventMapTableHelper = HasherEventMapTableHelper();
+    hasherKennelMapTableHelper = HasherKennelMapTableHelper();
+
+    //
+    syncUserDataService = SyncUserDataService();
+    syncKennelAdminService = SyncKennelAdminService();
+    syncEventAdminService = SyncEventAdminService();
+
+    baseService = BaseService();
+    hashersService = HashersService();
+  }
+
+  List<BaseTableHelper> tablesForRemoteSync;
+}
+
+class DeviceInfo {
+  DeviceInfo();
+
+  IosDeviceInfo iosInfo;
+  AndroidDeviceInfo androidInfo;
+
+  String deviceId = 'unknown';
+  String deviceType = 'unknown';
+  String deviceName = 'unknown';
+  String systemName = 'unknown';
+  String systemVersion = 'unknown';
+  String manufacturer = 'unknown';
+
+  num deviceWidthScaleFactor;
+  num deviceHeightScaleFactor;
+  num deviceMaxScaleFactor;
+  num deviceMinScaleFactor;
+  num deviceWidth;
+  num deviceHeight;
+  num G0<DeviceInfo>().deviceLat;
+  num G0<DeviceInfo>().deviceLon;
+
+  // a flag to indicate if we are running in the simulator
+  bool isPhysicalDevice = true;
+  bool get supportsCamera => Platform.isAndroid || isPhysicalDevice;
+
+  Future<void> init(num deviceWidth, num deviceHeight) async {
+    deviceWidth = deviceWidth;
+    deviceHeight = deviceHeight;
+    deviceWidthScaleFactor = deviceWidth / BASE_DEVICE_WIDTH;
+    deviceHeightScaleFactor = deviceHeight / BASE_DEVICE_HEIGHT;
+    deviceMaxScaleFactor = max(deviceWidthScaleFactor, deviceHeightScaleFactor);
+    deviceMinScaleFactor = min(deviceWidthScaleFactor, deviceHeightScaleFactor);
+
+    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    if (Platform.isAndroid) {
+      androidInfo = await deviceInfo.androidInfo;
+      deviceId = androidInfo.androidId.toUpperCase();
+      deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
+      deviceName = '<unknown>';
+      systemName = androidInfo.host;
+      systemVersion = '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch}';
+      manufacturer = androidInfo.brand;
+      isPhysicalDevice = androidInfo.isPhysicalDevice;
+    } else if (Platform.isIOS) {
+      iosInfo = await deviceInfo.iosInfo;
+      deviceId = iosInfo.identifierForVendor.toUpperCase();
+      deviceType = iosInfo.model;
+      deviceName = iosInfo.name;
+      systemName = iosInfo.systemName;
+      systemVersion = iosInfo.systemVersion;
+      manufacturer = 'Apple';
+      isPhysicalDevice = iosInfo.isPhysicalDevice;
+    }
+  }
+}
+
+// // Ambient variable to access the service locator
+// // NOTE: I've given this variable a very unique name even if it is against normal
+// // DART style conventions.
+
+// // ignore: non_constant_identifier_names
+// final GetIt G0 = GetIt.instance;
+
+// class AppModel {
+//   AppModel();
+//   EnumConnectionStatus connectionStatus = EnumConnectionStatus.not_connected;
+//   StreamSubscription<Position> geoLocationStream;
+//   DateTime appStartTime;
+
+//   // TODO(DevTeam): Make sure this is eventually called
+//   void dispose() {
+//     geoLocationStream.cancel();
+//   }
+// }
+
+// Future<void> setupLocalServices(num deviceWidth, num deviceHeight) async {
+//   G0.registerSingleton<AppModel>(AppModel());
+//   // G0.registerSingletonAsync<DeviceInfo>(() async {
+//   //   final DeviceInfo deviceInfo = DeviceInfo();
+//   //   await deviceInfo.init(deviceWidth, deviceHeight);
+//   //   return deviceInfo;
+//   // });
+
+//   // G0.registerSingleton<HelperMapsModel>(HelperMapsModel());
+//   // G0<HelperMapsModel>().init();
+
+//   _initTables();
+// }
+
+// // NEEDS MIGRATION
+
+// List<KennelListAggregate> globalKennelMainPageList;
+
+// num deviceWidthScaleFactor;
+// num deviceHeightScaleFactor;
+// num deviceMaxScaleFactor;
+// num deviceMinScaleFactor;
+
+// num deviceWidth;
+// num deviceHeight;
+
+// bool hasLocationPermissions = false;
+
+// DateTime appStartTime;
+
+// StreamSubscription<Position> geoLocationStream;
+// num G0<DeviceInfo>().deviceLat;
+// num G0<DeviceInfo>().deviceLon;
+
+// CitiesTableHelper G0<TableModel>().citiesTableHelper;
+// CountriesTableHelper G0<TableModel>().countriesTableHelper;
+// RegionsTableHelper G0<TableModel>().regionsTableHelper;
+// ReceiptsTableHelper G0<TableModel>().receiptsTableHelper;
+// PaymentsTableHelper G0<TableModel>().paymentsTableHelper;
+// HashersTableHelper G0<TableModel>().hashersTableHelper;
+// KennelCreditsTableHelper G0<TableModel>().kennelCreditsTableHelper;
+// KennelsTableHelper G0<TableModel>().kennelsTableHelper;
+// EventsTableHelper G0<TableModel>().eventsTableHelper;
+// HasherEventMapTableHelper G0<TableModel>().hasherEventMapTableHelper;
+// HasherKennelMapTableHelper G0<TableModel>().hasherKennelMapTableHelper;
+
+// List<BaseTableHelper> userTables = <BaseTableHelper>[
+//   G0<TableModel>().citiesTableHelper,
+//   G0<TableModel>().countriesTableHelper,
+//   G0<TableModel>().regionsTableHelper,
+//   G0<TableModel>().paymentsTableHelper,
+//   G0<TableModel>().hashersTableHelper,
+//   G0<TableModel>().kennelsTableHelper,
+//   G0<TableModel>().eventsTableHelper,
+//   G0<TableModel>().hasherEventMapTableHelper,
+//   G0<TableModel>().hasherKennelMapTableHelper,
+// ];
+
+// BaseService G0<TableModel>().baseService;
+// HashersService hashersService;
+// PaymentsService paymentsService;
+// EventsService eventsService;
+// HasherEventMapService hasherEventMapService;
+// HasherKennelMapService hasherKennelMapService;
+// SyncUserDataService G0<TableModel>().syncUserDataService;
+// SyncKennelAdminService G0<TableModel>().syncKennelAdminService;
+// SyncEventAdminService G0<TableModel>().syncEventAdminService;
+
+// Database G0<Database>();
+
+// Future<void> openOrInitializeDb(
+//     String dbName, int dbVersion, Function informUser,
+//     {@required List<MigrationsModel> migrations,
+//     @required Function createTables}) async {
+//   G0<Database>() = await DBProvider.openOrInitDb(
+//       DB_NAME, dbVersion, informUser, migrations,
+//       createTables: createTables);
+// }
+
+// void initializeGlobals() {
+//   G0<TableModel>().citiesTableHelper = CitiesTableHelper();
+//   G0<TableModel>().countriesTableHelper = CountriesTableHelper();
+//   G0<TableModel>().regionsTableHelper = RegionsTableHelper();
+//   G0<TableModel>().receiptsTableHelper = ReceiptsTableHelper();
+//   G0<TableModel>().paymentsTableHelper = PaymentsTableHelper();
+//   G0<TableModel>().hashersTableHelper = HashersTableHelper();
+//   G0<TableModel>().kennelCreditsTableHelper = KennelCreditsTableHelper();
+//   G0<TableModel>().kennelsTableHelper = KennelsTableHelper();
+//   G0<TableModel>().eventsTableHelper = EventsTableHelper();
+//   G0<TableModel>().hasherEventMapTableHelper = HasherEventMapTableHelper();
+//   G0<TableModel>().hasherKennelMapTableHelper = HasherKennelMapTableHelper();
+
+//   G0<TableModel>().baseService = BaseService();
+//   hashersService = HashersService();
+//   paymentsService = PaymentsService();
+//   eventsService = EventsService();
+//   hasherEventMapService = HasherEventMapService();
+//   hasherKennelMapService = HasherKennelMapService();
+
+//   G0<TableModel>().syncUserDataService = SyncUserDataService();
+//   G0<TableModel>().syncKennelAdminService = SyncKennelAdminService();
+//   G0<TableModel>().syncEventAdminService = SyncEventAdminService();
+// }

@@ -1,18 +1,4 @@
-import 'dart:async';
-
-import 'package:flutter/material.dart';
-
-import 'package:harrier_central/widgets/kennel_run_history_count_list_item.dart';
-import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-
-import 'package:harrier_central/util/globals.dart';
-import 'package:ive_flutter_core/widgets/circular_progress_indicator.dart';
-import 'package:harrier_central/widgets/profile_photo.dart';
-import 'package:harrier_central/util/enums.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-
-//import 'package:auto_size_text/auto_size_text.dart';
+import 'package:harrier_central/imports.dart';
 
 class HistoryListPage extends StatefulWidget {
   const HistoryListPage({Key key}) : super(key: key);
@@ -76,7 +62,7 @@ class HistoryListPageState extends State<HistoryListPage> {
   }
 
   Future<void> refreshRunHistoryFromTable(bool forceRefresh) async {
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
 
     final String query = '''  
           SELECT count(case when hem.attendenceState >= 20 then 1 else null end) + coalesce(hkm.historicalPackRunCount,0) as totalRunsThisKennel,
@@ -99,15 +85,13 @@ class HistoryListPageState extends State<HistoryListPage> {
 
     runCountsList = <HistoryListResults>[];
     try {
-      final List<Map<String, dynamic>> results =
-          await internalSqlDb.rawQuery(query);
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
 
       _totalHaring = 0;
       _totalRuns = 0;
 
       for (int i = 0; i < results.length; i++) {
-        final HistoryListResults hlrItem =
-            HistoryListResults.fromMap(results[i]);
+        final HistoryListResults hlrItem = HistoryListResults.fromMap(results[i]);
         _totalHaring += hlrItem.totalHaringThisKennel;
         _totalRuns += hlrItem.totalRunsThisKennel;
         runCountsList.add(hlrItem);
@@ -125,9 +109,7 @@ class HistoryListPageState extends State<HistoryListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body:
-            _isLoading ? _buildCircularProgressIndicator() : _buildListView());
+    return Scaffold(body: _isLoading ? _buildCircularProgressIndicator() : _buildListView());
   }
 
   Widget _buildCircularProgressIndicator() {
@@ -141,24 +123,18 @@ class HistoryListPageState extends State<HistoryListPage> {
       _isLoading = true;
     });
 
-    final bool result = await syncUserDataService.updateFromBackend(
-        SyncUserDataService.flagHasherEventMapTable |
-            SyncUserDataService.flagNarrowEventsTable |
-            SyncUserDataService.flagKennelsTable,
-        true);
+    final bool result = await G0<TableModel>()
+        .syncUserDataService
+        .updateFromBackend(SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Hasher data synchronized $resultStr');
     refreshRunHistoryFromTable(true);
   }
 
-  TextStyle headingStyle = const TextStyle(
-      fontFamily: 'AvenirNextCondensedDemiBold',
-      fontStyle: FontStyle.normal,
-      fontSize: 22.0,
-      height: 0.6);
+  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
 
   Widget _buildListView() {
-    final String _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
+    final String _photo = await SecurePrefs.getStringPref(StringPrefsEnum.profilePhotoUrl);
     return Stack(
       children: <Widget>[
         Container(
@@ -222,49 +198,27 @@ class HistoryListPageState extends State<HistoryListPage> {
                 width: MediaQuery.of(context).size.width,
                 child: Row(
                   children: <Widget>[
-                    ProfilePhoto(
-                        leftPadding: 20.0,
-                        photoHeight: 80.0,
-                        profilePhotoUrl: _photo),
+                    ProfilePhoto(leftPadding: 20.0, photoHeight: 80.0, profilePhotoUrl: _photo),
                     const SizedBox(width: 20),
                     (runCountsList == null || runCountsList.isEmpty)
                         ? Container()
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                                const Text(
-                                  'My total run counts',
-                                  style: TextStyle(
-                                      color: Colors.black87,
-                                      fontFamily: 'AvenirNextBold',
-                                      fontStyle: FontStyle.normal,
-                                      fontSize: 18.0,
-                                      height: 1.2),
-                                  textAlign: TextAlign.center,
-                                ),
-                                Text(
-                                  'Total runs: ' + _totalRuns.toString(),
-                                  style: const TextStyle(
-                                      color: Colors.black87,
-                                      fontFamily: 'AvenirNextDemiBold',
-                                      fontStyle: FontStyle.normal,
-                                      fontSize: 18.0,
-                                      height: 1.2),
-                                  textAlign: TextAlign.left,
-                                ),
-                                Text(
-                                  'Total times hared: ' +
-                                      _totalHaring.toString(),
-                                  style: const TextStyle(
-                                      color: Colors.black87,
-                                      fontFamily: 'AvenirNextDemiBold',
-                                      fontStyle: FontStyle.normal,
-                                      fontSize: 18.0,
-                                      height: 1.2),
-                                  textAlign: TextAlign.left,
-                                ),
-                              ])
+                        : Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                            const Text(
+                              'My total run counts',
+                              style: TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
+                              textAlign: TextAlign.center,
+                            ),
+                            Text(
+                              'Total runs: ' + _totalRuns.toString(),
+                              style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
+                              textAlign: TextAlign.left,
+                            ),
+                            Text(
+                              'Total times hared: ' + _totalHaring.toString(),
+                              style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
+                              textAlign: TextAlign.left,
+                            ),
+                          ])
                   ],
                 ))),
       ],

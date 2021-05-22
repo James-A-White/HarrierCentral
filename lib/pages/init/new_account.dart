@@ -1,17 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-
-import 'package:harrier_central/pages/init/create_new_account.dart';
-import 'package:harrier_central/pages/init/use_invite_code_page.dart';
-import 'package:harrier_central/pages/init/facebook_login.dart';
-import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/enums.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/constants.dart';
-
-import 'package:ive_flutter_core/util/connection.dart';
-import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
+import 'package:harrier_central/imports.dart';
 
 class NewAccountPage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -27,9 +14,7 @@ class NewAccountPageState extends State<NewAccountPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width),
+        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -55,8 +40,8 @@ class NewAccountPageState extends State<NewAccountPage> {
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: globalConnectionStatus == connectionStatus_notConnected,
-          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
+          lastSync: SecurePrefs.getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],
@@ -74,19 +59,15 @@ class NewAccountPageContent extends StatefulWidget {
 class _NewAccountPageContentState extends State<NewAccountPageContent> {
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints viewportConstraints) {
+    return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
       num newFontSize = smallTitleStyle.fontSize * deviceWidthScaleFactor;
-      final TextStyle localTitleStyle =
-          smallTitleStyle.copyWith(fontSize: newFontSize, color: Colors.black);
+      final TextStyle localTitleStyle = smallTitleStyle.copyWith(fontSize: newFontSize, color: Colors.black);
 
       newFontSize = bodyStyleSc.fontSize * deviceWidthScaleFactor;
-      final TextStyle localBodyStyle =
-          bodyStyleSc.copyWith(fontSize: newFontSize, color: Colors.black);
+      final TextStyle localBodyStyle = bodyStyleSc.copyWith(fontSize: newFontSize, color: Colors.black);
 
       newFontSize = headingStyle.fontSize * deviceWidthScaleFactor;
-      final TextStyle localHeadingStyle =
-          headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
+      final TextStyle localHeadingStyle = headingStyle.copyWith(fontSize: newFontSize, height: 1.2);
 
       return Container(
         padding: const EdgeInsets.all(15),
@@ -103,9 +84,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
               onTap: () {
                 Navigator.push<dynamic>(
                   context,
-                  MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) =>
-                          const UseInviteCodePage()),
+                  MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()),
                 );
               },
               child: Container(
@@ -128,18 +107,14 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                     ),
                     const SizedBox(height: 1, width: 10),
                     Expanded(
-                      child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text('Use Invite Code', style: localTitleStyle),
-                            Text(
-                              'Use the invite code provided by your kennel to create or reconnect to your Harrier Central account',
-                              style: localBodyStyle,
-                              //softWrap: true,
-                            ),
-                          ]),
+                      child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                        Text('Use Invite Code', style: localTitleStyle),
+                        Text(
+                          'Use the invite code provided by your kennel to create or reconnect to your Harrier Central account',
+                          style: localBodyStyle,
+                          //softWrap: true,
+                        ),
+                      ]),
                     ),
                   ],
                 ),
@@ -149,8 +124,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
               onTap: () {
                 Navigator.push<dynamic>(
                   context,
-                  MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => FbLoginPage()),
+                  MaterialPageRoute<dynamic>(builder: (BuildContext context) => FbLoginPage()),
                 );
               },
               child: Container(
@@ -169,29 +143,24 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                       width: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
                       height: PROFILE_PIC_SIZE2 * deviceWidthScaleFactor,
                       fit: BoxFit.fill,
-                      image: const AssetImage(
-                          'images/icons/facebookLogoCircle.png'),
+                      image: const AssetImage('images/icons/facebookLogoCircle.png'),
                     ),
                     const SizedBox(height: 1, width: 10),
                     Expanded(
-                      child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text('Use Facebook', style: localTitleStyle),
-                            Text(
-                              'Create a new Harrier Central account or connect to your existing account using your Facebook login',
-                              style: localBodyStyle,
-                              //softWrap: true,
-                            ),
-                          ]),
+                      child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                        Text('Use Facebook', style: localTitleStyle),
+                        Text(
+                          'Create a new Harrier Central account or connect to your existing account using your Facebook login',
+                          style: localBodyStyle,
+                          //softWrap: true,
+                        ),
+                      ]),
                     ),
                   ],
                 ),
               ),
             ),
-            CoreUtilities.styleForDisabled(
+            IveCoreUtilities.styleForDisabled(
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
@@ -212,18 +181,14 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                       ),
                       const SizedBox(height: 1, width: 10),
                       Expanded(
-                        child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text('Transfer app', style: localTitleStyle),
-                              Text(
-                                'Use a QR code to transfer your Harrier Central account to this phone from another phone',
-                                style: localBodyStyle,
-                                //softWrap: true,
-                              ),
-                            ]),
+                        child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                          Text('Transfer app', style: localTitleStyle),
+                          Text(
+                            'Use a QR code to transfer your Harrier Central account to this phone from another phone',
+                            style: localBodyStyle,
+                            //softWrap: true,
+                          ),
+                        ]),
                       ),
                     ],
                   ),
@@ -233,9 +198,7 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
               onTap: () {
                 Navigator.push<dynamic>(
                   context,
-                  MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) =>
-                          const CreateNewAccountPage()),
+                  MaterialPageRoute<dynamic>(builder: (BuildContext context) => const CreateNewAccountPage()),
                 );
               },
               child: Container(
@@ -258,18 +221,14 @@ class _NewAccountPageContentState extends State<NewAccountPageContent> {
                     ),
                     const SizedBox(height: 1, width: 10),
                     Expanded(
-                      child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text('Create New Account', style: localTitleStyle),
-                            Text(
-                              'Provide information to create a new Harrier Central account if you are not already in the system',
-                              style: localBodyStyle,
-                              //softWrap: true,
-                            ),
-                          ]),
+                      child: Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                        Text('Create New Account', style: localTitleStyle),
+                        Text(
+                          'Provide information to create a new Harrier Central account if you are not already in the system',
+                          style: localBodyStyle,
+                          //softWrap: true,
+                        ),
+                      ]),
                     ),
                   ],
                 ),

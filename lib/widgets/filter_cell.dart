@@ -1,10 +1,4 @@
-import 'dart:core';
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:auto_size_text/auto_size_text.dart';
+import 'package:harrier_central/imports.dart';
 
 class CheckinFiltersCell extends StatelessWidget {
   const CheckinFiltersCell({
@@ -29,12 +23,9 @@ class CheckinFiltersCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //final String total = (creditAmount ?? 0) <= 0 ? '' : CoreUtilities.getFormattedMoney(creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
+    //final String total = (creditAmount ?? 0) <= 0 ? '' : IveCoreUtilities.getFormattedMoney(creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
-    const TextStyle textStyle = TextStyle(
-        color: Colors.black,
-        fontSize: 24.0,
-        fontFamily: 'AvenirNextCondensedDemiBold');
+    const TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 24.0, fontFamily: 'AvenirNextCondensedDemiBold');
     return Container(
       width: 50,
       child: Column(

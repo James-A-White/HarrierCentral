@@ -1,19 +1,4 @@
-import 'dart:async';
-import 'dart:convert';
-
-import 'package:sqflite/sqflite.dart';
-import 'package:http/http.dart' as http;
-
-import 'package:ive_flutter_core/database/base_service.dart';
-
-import 'package:harrier_central/util/constants.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/database/tables.dart';
-import 'package:ive_flutter_core/util/connection.dart';
-
-import 'package:json_annotation/json_annotation.dart';
+import 'package:harrier_central/imports.dart';
 
 part 'payments_service.g.dart';
 
@@ -44,10 +29,8 @@ class PaymentsModel implements BaseModel {
     this.updatedAt,
   });
 
-  factory PaymentsModel.fromJson(Map<String, dynamic> json) =>
-      _$PaymentsModelFromJson(json);
+  factory PaymentsModel.fromJson(Map<String, dynamic> json) => _$PaymentsModelFromJson(json);
 
-  @override
   Map<String, dynamic> toJson() => _$PaymentsModelToJson(this);
 
   final String paymentId;
@@ -74,14 +57,11 @@ class PaymentsModel implements BaseModel {
   final DateTime updatedAt;
 }
 
-class PaymentsTableHelper with BaseFields implements BaseTableHelper {
-  PaymentsTableHelper();
-
-  @override
-  num forceRequeryInterval;
-
-  @override
-  num cacheDuration;
+class PaymentsTableHelper extends BaseTableHelper with BaseFields {
+  PaymentsTableHelper() {
+    remoteDbId = 'paymentId';
+    humanReadableTableName = 'Payments';
+  }
 
   // @override
   // String tableName = '';
@@ -113,9 +93,6 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
     return tableName;
   }
 
-  @override
-  String remoteDbId = 'paymentId';
-
   final String colPaymentId = 'paymentId';
   final String colKennelId = 'kennelId';
   final String colPaidBy = 'paidBy';
@@ -138,8 +115,7 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
   final String colPaymentProvider = 'paymentProvider';
 
   @override
-  Future<dynamic> createTable(
-      Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -171,17 +147,17 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
             $colUpdatedAtValue NUM NULL
           )
           ''');
-
-    String sql = 'CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);';
-    await db.execute(sql);
-    sql =
-        'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);';
-    await db.execute(sql);
   }
 
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
-    return PaymentsModel.fromJson(map).toJson();
+  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
+  }
+
+  @override
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    return PaymentsModel.fromJson(inputMap).toJson();
   }
 
   @override
@@ -191,26 +167,18 @@ class PaymentsTableHelper with BaseFields implements BaseTableHelper {
 }
 
 class PaymentsService {
-  Future<List<dynamic>> payForEvent(
-      String eventId,
-      String hasherId,
-      String hasherEventMapId,
-      int paymentType,
-      num paymentAmount,
-      int minimumAttendenceValue,
-      EnumPayForExtras<int> doPayForExtras,
-      AppDomainType appDomainType,
-      {num surcharge,
-      String paymentProvider}) async {
+  Future<List<dynamic>> payForEvent(String eventId, String hasherId, String hasherEventMapId, int paymentType, num paymentAmount, int minimumAttendenceValue,
+      EnumPayForExtras<int> doPayForExtras, AppDomainType appDomainType,
+      {num surcharge, String paymentProvider}) async {
     List<dynamic> results;
 
-    if (globalConnectionStatus == connectionStatus_notConnected) {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return results;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
 
     if ((hasherEventMapId ?? '').isEmpty) {
       hasherEventMapId = GUID_EMPTY;
@@ -220,62 +188,42 @@ class PaymentsService {
       hasherId = GUID_EMPTY;
     }
 
-    final String tokenParameterString = hasherEventMapId.toUpperCase() +
-        '#' +
-        hasherId +
-        '#' +
-        paymentAmount.toInt().toString() +
-        '#' +
-        eventId.toUpperCase();
+    final String tokenParameterString = hasherEventMapId.toUpperCase() + '#' + hasherId + '#' + paymentAmount.toInt().toString() + '#' + eventId.toUpperCase();
 
-    final String accessToken = CoreUtilities.generateToken(
-        userId, 'processPayment',
-        paramString: tokenParameterString);
+    final String accessToken = IveCoreUtilities.generateToken(userId, 'processPayment', paramString: tokenParameterString);
 
-    final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(
-      internalSqlDb,
-      hasherEventMapTableHelper,
-      hasherEventMapTableHelper.getTableName(appDomainType),
-      hasherEventMapTableHelper.colUpdatedAtValue,
-    );
-    final DateTime hasherEventMapUpdatedAfter =
-        _hasherEventMapLastUpdated == null
-            ? DateTime(2000, 1, 1)
-            : DateTime.fromMillisecondsSinceEpoch(
-                _hasherEventMapLastUpdated + 1000);
+    final num _hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherEventMapTableHelper,
+          G0<TableModel>().hasherEventMapTableHelper.getTableName(appDomainType),
+          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+        );
+    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
 
-    final num _hasherKennelMapLastUpdated =
-        await baseService.getLastUpdatedTime(
-      internalSqlDb,
-      hasherKennelMapTableHelper,
-      hasherKennelMapTableHelper.getTableName(appDomainType),
-      hasherKennelMapTableHelper.colUpdatedAtValue,
-    );
+    final num _hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherKennelMapTableHelper,
+          G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomainType),
+          G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+        );
     final DateTime hasherKennelMapUpdatedAfter =
-        _hasherKennelMapLastUpdated == null
-            ? DateTime(2000, 1, 1)
-            : DateTime.fromMillisecondsSinceEpoch(
-                _hasherKennelMapLastUpdated + 1000);
+        _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
 
-    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(
-      internalSqlDb,
-      paymentsTableHelper,
-      paymentsTableHelper.getTableName(appDomainType),
-      paymentsTableHelper.colUpdatedAtValue,
-    );
-    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null
-        ? DateTime(2000, 1, 1)
-        : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+    final num _paymentsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().paymentsTableHelper,
+          G0<TableModel>().paymentsTableHelper.getTableName(appDomainType),
+          G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
+        );
+    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
 
-    final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(
-      internalSqlDb,
-      kennelCreditsTableHelper,
-      kennelCreditsTableHelper.getTableName(appDomainType),
-      kennelCreditsTableHelper.colUpdatedAtValue,
-    );
-    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null
-        ? DateTime(2000, 1, 1)
-        : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
+    final num _kennelCreditsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().kennelCreditsTableHelper,
+          G0<TableModel>().kennelCreditsTableHelper.getTableName(appDomainType),
+          G0<TableModel>().kennelCreditsTableHelper.colUpdatedAtValue,
+        );
+    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
     final String appDomainStr = appDomainType.toString();
 
@@ -299,10 +247,7 @@ class PaymentsService {
       'appDomainType': appDomainStr
     });
 
-    final http.Response response = await http
-        .post(BASE_API_URL + 'hc3_process_payment',
-            headers: <String, String>{'content-type': 'application/json'},
-            body: body
+    final Response response = await post(BASE_API_URL + 'hc3_process_payment', headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -313,11 +258,9 @@ class PaymentsService {
     );
 
     if (appDomainType == AppDomainType.event) {
-      results = await syncEventAdminService
-          .updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      results = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else {
-      results = await syncUserDataService
-          .updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      results = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     }
     return results;
   }
@@ -326,12 +269,11 @@ class PaymentsService {
     String eventId,
     String eventName,
   }) async {
-    final String userId = getStringPref(StringPrefsEnum.userId);
-    final String userName = getStringPref(StringPrefsEnum.displayName);
-    final String emailAddress = getStringPref(StringPrefsEnum.email);
+    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
+    final String emailAddress = await SecurePrefs.getStringPref(StringPrefsEnum.email);
 
-    final String accessToken =
-        CoreUtilities.generateToken(userId, 'getPaymentReport');
+    final String accessToken = IveCoreUtilities.generateToken(userId, 'getPaymentReport');
 
     if ((emailAddress ?? '').isNotEmpty) {
       final String body = jsonEncode(<String, String>{
@@ -344,10 +286,7 @@ class PaymentsService {
         'emailAddress': emailAddress
       });
 
-      final http.Response response = await http
-          .post(EMAIL_PAYMENT_API_URL,
-              headers: <String, String>{'content-type': 'application/json'},
-              body: body
+      final Response response = await post(EMAIL_PAYMENT_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body
               // Send authorization headers to your backend
               //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
               )
@@ -359,9 +298,6 @@ class PaymentsService {
 
       return <String, String>{'result': response.body, 'email': emailAddress};
     }
-    return <String, String>{
-      'result': 'No valid email address found',
-      'email': ''
-    };
+    return <String, String>{'result': 'No valid email address found', 'email': ''};
   }
 }

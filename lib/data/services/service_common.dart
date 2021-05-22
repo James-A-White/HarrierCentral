@@ -1,27 +1,14 @@
-import 'dart:async';
-
-import 'package:flutter/material.dart';
-
-import 'package:harrier_central/data/models/db_error_model.dart';
-import 'package:harrier_central/util/constants.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:ive_flutter_core/util/connection.dart';
-
-import 'package:http/http.dart' as http;
+import 'package:harrier_central/imports.dart';
 
 class ServiceCommon {
-  static Future<String> sendRequest(
-      BuildContext context, String procName, String requestBody) async {
-    if (globalConnectionStatus == connectionStatus_notConnected) {
+  static Future<String> sendRequest(BuildContext context, String procName, String requestBody) async {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return null;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
 
-    final http.Response response = await http
-        .post(BASE_API_URL + procName,
-            headers: <String, String>{'content-type': 'application/json'},
-            body: requestBody
+    final Response response = await post(BASE_API_URL + procName, headers: <String, String>{'content-type': 'application/json'}, body: requestBody
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -34,8 +21,7 @@ class ServiceCommon {
     if (response.body.contains('"errorId"')) {
       final DbErrorModel result = DbErrorModel.itemFromJson(response.body);
       if (result != null) {
-        await CoreUtilities.showAlert(
-            context, result.errorTitle, result.errorUserMessage, 'OK');
+        await IveCoreUtilities.showAlert(context, result.errorTitle, result.errorUserMessage, 'OK');
       }
 
       return ERROR_KEY;

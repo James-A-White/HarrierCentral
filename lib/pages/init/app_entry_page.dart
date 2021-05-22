@@ -1,32 +1,34 @@
-import 'dart:async';
-import 'dart:math';
+import 'package:harrier_central/imports.dart';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+// import 'dart:async';
+// import 'dart:math';
 
-import 'package:package_info/package_info.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter/services.dart';
 
-import 'package:ive_flutter_core/database/database.dart';
-import 'package:harrier_central/data/models/approve_login_model.dart';
-import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
-import 'package:harrier_central/data/services/approve_login_service.dart';
-import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/globals.dart';
+// import 'package:package_info/package_info.dart';
 
-import 'package:harrier_central/util/routes.dart';
-import 'package:harrier_central/util/utilities.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:harrier_central/data/services/authorize_device_service.dart';
-import 'package:ive_flutter_core/util/connection.dart';
+// import 'package:ive_flutter_core/database/database.dart';
+// import 'package:harrier_central/data/models/approve_login_model.dart';
+// import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
+// import 'package:harrier_central/data/services/approve_login_service.dart';
+// import 'package:harrier_central/util/constants.dart';
+// import 'package:harrier_central/util/enums.dart';
+// import 'package:harrier_central/util/globals.dart';
+
+// import 'package:harrier_central/util/routes.dart';
+// import 'package:harrier_central/util/utilities.dart';
+// import 'package:ive_flutter_core/util/core_utilities.dart';
+// import 'package:harrier_central/data/services/authorize_device_service.dart';
+// import 'package:ive_flutter_core_mobile/util/connection.dart';
+// import 'package:harrier_central/util/secure_prefs.dart';
 
 class AppEntryPage extends StatefulWidget {
   @override
   _AppEntryPageState createState() => _AppEntryPageState();
 }
 
-class _AppEntryPageState extends State<AppEntryPage>
-    with SingleTickerProviderStateMixin {
+class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderStateMixin {
   AnimationController _iconAnimationController;
   CurvedAnimation _iconAnimation;
 
@@ -36,76 +38,62 @@ class _AppEntryPageState extends State<AppEntryPage>
 
     appStartTime = DateTime.now();
 
-    await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
+    await SecurePrefs.setPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
 
     // await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.camera, PermissionGroup.location]);
 
     Utilities.subscribeToGeoLocationStream();
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
 
     final ApproveLoginService svc = ApproveLoginService();
     final ApproveLoginModel loginResult = await svc.approveLogin(context);
 
     if (loginResult != null) {
-      await setStringPref(
-          StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);
-      await setStringPref(
-          StringPrefsEnum.androidDownloadLink, loginResult.androidDownloadLink);
-      await setStringPref(
-          StringPrefsEnum.imageRootUrl, loginResult.imageRootUrl);
+      await SecurePrefs.setPref(StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);
+      await SecurePrefs.setPref(StringPrefsEnum.androidDownloadLink, loginResult.androidDownloadLink);
+      await SecurePrefs.setPref(StringPrefsEnum.imageRootUrl, loginResult.imageRootUrl);
     }
 
     if ((loginResult == null) && ((userId == null) || (userId.isEmpty))) {
       // we get here if we are disconnected and the app has never been run before
       // we can't operate in offline mode because there is no data in the cache
-      CoreUtilities.showAlert(
-              context,
-              'Network Error',
-              'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.',
-              'Quit')
+      IveCoreUtilities.showAlert(
+              context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit')
           .then((void dummy) async {
         await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
         return null;
       });
     } else if (loginResult == null) {
-      globalConnectionStatus = connectionStatus_notConnected;
-      Navigator.pushReplacement<dynamic, dynamic>(
-          context,
-          MaterialPageRoute<dynamic>(
-              builder: (BuildContext context) => const MainNavigationPage()));
+      G0<AppModel>().connectionStatus = EnumConnectionStatus.not_connected;
+      Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
       return;
     } else {
       const bool allowContinueFromMessage = true;
 
       if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
         if (loginResult.messageDisplayType == loginMessageTypeAlert.value) {
-          await _displayAlert(
-              context, loginResult.loginMessage, loginResult.loginMessageTitle);
+          await _displayAlert(context, loginResult.loginMessage, loginResult.loginMessageTitle);
         }
       }
 
       if (allowContinueFromMessage) {
         if (loginResult.serverStatusCode == serverStatusUp.value) {
           if (loginResult.approvalCode == loginApprovalApproved.value) {
-            globalConnectionStatus = connectionStatus_connected;
+            G0<AppModel>().connectionStatus = connectionStatus_connected;
             //if (true) {
             if (userId == null) {
               // first time the app has run
-              Navigator.of(context)
-                  .pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+              Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
             } else {
               // app has been run before... let's check the DB version.
-              final int installedDbVersion =
-                  getIntPref(IntPrefsEnum.databaseVersion) ?? 0;
-              if ((installedDbVersion != DB_VERSION) &&
-                  ((installedDbVersion + 9) < DB_VERSION)) {
+              final int installedDbVersion = getIntPref(IntPrefsEnum.databaseVersion) ?? 0;
+              if ((installedDbVersion != DB_VERSION) && ((installedDbVersion + 9) < DB_VERSION)) {
                 // the installed DB version is not up to date
                 // if the version numbers are greater than 10 apart,
                 // reload the entire DB.
 
-                final String resetCode =
-                    getStringPref(StringPrefsEnum.resetCode);
+                final String resetCode = await SecurePrefs.getStringPref(StringPrefsEnum.resetCode);
 
                 DBProvider.deleteDb(DB_NAME);
                 await setIntPref(IntPrefsEnum.dbCreated, 0);
@@ -114,40 +102,26 @@ class _AppEntryPageState extends State<AppEntryPage>
                 String userName;
 
                 final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                final Future<Map<String, String>> apiCall =
-                    srv.authorizeDevice(context, resetCode.toUpperCase());
+                final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, resetCode.toUpperCase());
                 apiCall.then((Map<String, String> result) async {
                   setState(() {
                     //isLoading = false;
                   });
 
                   if (result['result'] != 'failed') {
-                    userName = getStringPref(StringPrefsEnum.displayName);
+                    userName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
 
                     await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 
-                    CoreUtilities.showAlert(
-                            context,
-                            'Profile Load Successful',
-                            'The app has been successfully updated for $userName.',
-                            'OK')
-                        .then((void dummy) {
-                      Navigator.pushReplacement<dynamic, dynamic>(
-                          context,
-                          MaterialPageRoute<dynamic>(
-                              builder: (BuildContext context) =>
-                                  const MainNavigationPage()));
+                    IveCoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully updated for $userName.', 'OK').then((void dummy) {
+                      Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
                     });
                   } else {
                     // TODO(James): Do something here if the auth device fails
                   }
                 });
               } else {
-                Navigator.pushReplacement<dynamic, dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) =>
-                            const MainNavigationPage()));
+                Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
               }
             }
           } else {
@@ -164,8 +138,7 @@ class _AppEntryPageState extends State<AppEntryPage>
     //// return Future<void>(() {});((){});
   }
 
-  Future<bool> _displayAlert(
-      BuildContext context, String alertText, String alertTitle) async {
+  Future<bool> _displayAlert(BuildContext context, String alertText, String alertTitle) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -178,11 +151,7 @@ class _AppEntryPageState extends State<AppEntryPage>
                 Text(
                   alertText,
                   textAlign: TextAlign.justify,
-                  style: const TextStyle(
-                      fontFamily: 'AvenirNextRegular',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 16.0,
-                      height: 1.0),
+                  style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                 )
               ],
             ),
@@ -208,8 +177,7 @@ class _AppEntryPageState extends State<AppEntryPage>
 
   Future<void> startTimeout() async {
     await initPrefs();
-    await Future<dynamic>.delayed(
-        const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME));
+    await Future<dynamic>.delayed(const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME));
     await handleStartup(context);
     return;
   }
@@ -219,11 +187,9 @@ class _AppEntryPageState extends State<AppEntryPage>
   void initState() {
     super.initState();
 
-    _iconAnimationController = AnimationController(
-        duration: const Duration(milliseconds: 3000), vsync: this);
+    _iconAnimationController = AnimationController(duration: const Duration(milliseconds: 3000), vsync: this);
 
-    _iconAnimation =
-        CurvedAnimation(parent: _iconAnimationController, curve: Curves.easeIn);
+    _iconAnimation = CurvedAnimation(parent: _iconAnimationController, curve: Curves.easeIn);
     _iconAnimation.addListener(() => setState(() {}));
 
     _iconAnimationController.forward();
@@ -233,14 +199,10 @@ class _AppEntryPageState extends State<AppEntryPage>
 
   @override
   Widget build(BuildContext context) {
-    deviceWidthScaleFactor ??=
-        MediaQuery.of(context).size.width / BASE_DEVICE_WIDTH;
-    deviceHeightScaleFactor ??=
-        MediaQuery.of(context).size.height / BASE_DEVICE_HEIGHT;
-    deviceMaxScaleFactor ??=
-        max(deviceWidthScaleFactor, deviceHeightScaleFactor);
-    deviceMinScaleFactor ??=
-        min(deviceWidthScaleFactor, deviceHeightScaleFactor);
+    deviceWidthScaleFactor ??= MediaQuery.of(context).size.width / BASE_DEVICE_WIDTH;
+    deviceHeightScaleFactor ??= MediaQuery.of(context).size.height / BASE_DEVICE_HEIGHT;
+    deviceMaxScaleFactor ??= max(deviceWidthScaleFactor, deviceHeightScaleFactor);
+    deviceMinScaleFactor ??= min(deviceWidthScaleFactor, deviceHeightScaleFactor);
 
     deviceWidth ??= MediaQuery.of(context).size.width;
     deviceHeight ??= MediaQuery.of(context).size.height;

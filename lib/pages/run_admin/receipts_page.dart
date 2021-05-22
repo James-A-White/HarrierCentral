@@ -1,25 +1,7 @@
-import 'dart:async';
-
-import 'package:flutter/material.dart';
-import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-
-import 'package:harrier_central/pages/run_admin/receipt_detail_page.dart';
-import 'package:harrier_central/util/styles.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/globals.dart';
-
-import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
-import 'package:harrier_central/data/hc3_services/receipts_service.dart';
-import 'package:harrier_central/database/tables.dart';
+import 'package:harrier_central/imports.dart';
 
 class ReceiptsList extends StatefulWidget {
-  const ReceiptsList({Key key, @required this.eventAggregate})
-      : super(key: key);
+  const ReceiptsList({Key key, @required this.eventAggregate}) : super(key: key);
 
   final RunDetailAggregate eventAggregate;
 
@@ -50,9 +32,7 @@ class ReceiptsListState extends State<ReceiptsList> {
 
   void refreshFromTable() {
     try {
-      internalSqlDb
-          .query(receiptsTableHelper.getTableName(AppDomainType.event))
-          .then((List<Map<String, dynamic>> results) {
+      G0<Database>().query(G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event)).then((List<Map<String, dynamic>> results) {
         setState(() {
           receiptsList = results;
         });
@@ -123,26 +103,20 @@ class ReceiptsListState extends State<ReceiptsList> {
   }
 
   Future<void> _handleRefresh() async {
-    final bool result = await syncEventAdminService.updateFromBackend(
-        SyncEventAdminService.flagReceiptsTable,
-        true,
-        widget.eventAggregate.event.eventId);
+    final bool result = await G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagReceiptsTable, true, widget.eventAggregate.event.eventId);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Receipts data synchronized $resultStr');
     refreshFromTable();
   }
 
-  Future<void> setReceiptReimbursementStatus(
-      String receiptId, bool cancelReimbursement) async {
-    final String userId = getStringPref(StringPrefsEnum.userId);
+  Future<void> setReceiptReimbursementStatus(String receiptId, bool cancelReimbursement) async {
+    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
 
-    await internalSqlDb.transaction<dynamic>((Transaction txn) async {
+    await G0<Database>().transaction<dynamic>((Transaction txn) async {
       final String guidFlag = cancelReimbursement ? GUID_9 : GUID_8;
-      final String sql =
-          'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
+      final String sql = 'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
       final int result = await txn.rawUpdate(sql);
-      print(result.toString() +
-          ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+      print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
       refreshFromTable();
     });
 
@@ -162,13 +136,14 @@ class ReceiptsListState extends State<ReceiptsList> {
     setState(() {
       final ReceiptsService srv = ReceiptsService();
       srv.uploadReceipt(context, item).then((String result) {
-        baseService
+        G0<TableModel>()
+            .baseService
             .bulkUpdateDatabase(
-          receiptsTableHelper,
-          receiptsTableHelper.getTableName(AppDomainType.event),
-          result,
-          internalSqlDb,
-        )
+              G0<TableModel>().receiptsTableHelper,
+              G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
+              result,
+              G0<Database>(),
+            )
             .then((int notUsed) {
           refreshFromTable();
         });
@@ -177,13 +152,11 @@ class ReceiptsListState extends State<ReceiptsList> {
   }
 
   Future<void> setReceiptRemovedStatus(String receiptId, bool removed) async {
-    await internalSqlDb.transaction<dynamic>((Transaction txn) async {
+    await G0<Database>().transaction<dynamic>((Transaction txn) async {
       final String guidFlag = removed ? GUID_9 : GUID_8;
-      final String sql =
-          'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
+      final String sql = 'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
       final int result = await txn.rawUpdate(sql);
-      print(result.toString() +
-          ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+      print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
       refreshFromTable();
     });
 
@@ -203,13 +176,14 @@ class ReceiptsListState extends State<ReceiptsList> {
     setState(() {
       final ReceiptsService srv = ReceiptsService();
       srv.uploadReceipt(context, item).then((String result) {
-        baseService
+        G0<TableModel>()
+            .baseService
             .bulkUpdateDatabase(
-          receiptsTableHelper,
-          receiptsTableHelper.getTableName(AppDomainType.event),
-          result,
-          internalSqlDb,
-        )
+              G0<TableModel>().receiptsTableHelper,
+              G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
+              result,
+              G0<Database>(),
+            )
             .then((int notUsed) {
           refreshFromTable();
         });
@@ -230,28 +204,21 @@ class ReceiptsListState extends State<ReceiptsList> {
                     onRefresh: () => _handleRefresh(),
                     displacement: 40.0,
                     child: ListView.separated(
-                      separatorBuilder: (BuildContext context, int index) =>
-                          const Divider(
+                      separatorBuilder: (BuildContext context, int index) => const Divider(
                         height: 1.0,
                         color: Colors.black45,
                       ),
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: receiptsList.length,
                       itemBuilder: (BuildContext context, int index) {
-                        final Map<String, dynamic> receipt =
-                            receiptsList[index];
+                        final Map<String, dynamic> receipt = receiptsList[index];
                         return Dismissible(
                           key: Key(receipt['receiptId']),
                           confirmDismiss: (DismissDirection direction) {
                             if (direction == DismissDirection.endToStart) {
-                              setReceiptReimbursementStatus(
-                                  receipt['receiptId'],
-                                  (receipt['reimbursedBy'] != null) &&
-                                      (receipt['reimbursedBy'] != GUID_EMPTY));
-                            } else if (direction ==
-                                DismissDirection.startToEnd) {
-                              setReceiptRemovedStatus(receipt['receiptId'],
-                                  receipt['removed'] == 1);
+                              setReceiptReimbursementStatus(receipt['receiptId'], (receipt['reimbursedBy'] != null) && (receipt['reimbursedBy'] != GUID_EMPTY));
+                            } else if (direction == DismissDirection.startToEnd) {
+                              setReceiptRemovedStatus(receipt['receiptId'], receipt['removed'] == 1);
                             }
                             return Future<bool>.value(false);
                           },
@@ -261,20 +228,14 @@ class ReceiptsListState extends State<ReceiptsList> {
                                   child: Row(children: const <Widget>[
                                     Padding(
                                       padding: EdgeInsets.only(left: 10.0),
-                                      child: Icon(FontAwesome.times_circle,
-                                          color: Colors.white, size: 35.0),
+                                      child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
                                     ),
                                     Padding(
                                       padding: EdgeInsets.only(left: 15.0),
                                       child: Text(
-                                          // '${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                          // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'Ignore receipt',
-                                          style: TextStyle(
-                                              fontFamily: 'AvenirNextDemiBold',
-                                              fontStyle: FontStyle.normal,
-                                              color: Colors.white,
-                                              fontSize: 17.0,
-                                              height: 1.0)),
+                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                     )
                                   ]))
                               : Container(
@@ -282,26 +243,17 @@ class ReceiptsListState extends State<ReceiptsList> {
                                   child: Row(children: const <Widget>[
                                     Padding(
                                       padding: EdgeInsets.only(left: 10.0),
-                                      child: Icon(FontAwesome.check_circle,
-                                          color: Colors.white, size: 35.0),
+                                      child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
                                     ),
                                     Padding(
                                       padding: EdgeInsets.only(left: 15.0),
                                       child: Text(
-                                          // '${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                          // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'Restore receipt',
-                                          style: TextStyle(
-                                              fontFamily: 'AvenirNextDemiBold',
-                                              fontStyle: FontStyle.normal,
-                                              color: Colors.white,
-                                              fontSize: 17.0,
-                                              height: 1.0)),
+                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                     )
                                   ])),
-                          secondaryBackground: (receipt['reimbursedBy'] !=
-                                      null) &&
-                                  (receipt['reimbursedBy'] != GUID_EMPTY) &&
-                                  (receipt['reimbursedBy'] != GUID_8)
+                          secondaryBackground: (receipt['reimbursedBy'] != null) && (receipt['reimbursedBy'] != GUID_EMPTY) && (receipt['reimbursedBy'] != GUID_8)
                               ? Container(
                                   color: Colors.yellow,
                                   child: Row(
@@ -309,21 +261,14 @@ class ReceiptsListState extends State<ReceiptsList> {
                                     children: const <Widget>[
                                       Padding(
                                         padding: EdgeInsets.only(right: 15.0),
-                                        child: Icon(FontAwesome.times_circle,
-                                            color: Colors.black, size: 35.0),
+                                        child: Icon(FontAwesome.times_circle, color: Colors.black, size: 35.0),
                                       ),
                                       Padding(
                                         padding: EdgeInsets.only(right: 15.0),
                                         child: Text(
-                                            //'${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                            //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                             'Cancel Reimbursement',
-                                            style: TextStyle(
-                                                fontFamily:
-                                                    'AvenirNextDemiBold',
-                                                fontStyle: FontStyle.normal,
-                                                color: Colors.black,
-                                                fontSize: 17.0,
-                                                height: 1.0)),
+                                            style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 17.0, height: 1.0)),
                                       )
                                     ],
                                   ),
@@ -335,59 +280,42 @@ class ReceiptsListState extends State<ReceiptsList> {
                                     children: const <Widget>[
                                       Padding(
                                         padding: EdgeInsets.only(right: 15.0),
-                                        child: Icon(FontAwesome.check_circle,
-                                            color: Colors.white, size: 35.0),
+                                        child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
                                       ),
                                       Padding(
                                         padding: EdgeInsets.only(right: 15.0),
                                         child: Text(
-                                            //'${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                            //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                             'Receipt reimbursed',
-                                            style: TextStyle(
-                                                fontFamily:
-                                                    'AvenirNextDemiBold',
-                                                fontStyle: FontStyle.normal,
-                                                color: Colors.white,
-                                                fontSize: 17.0,
-                                                height: 1.0)),
+                                            style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                       )
                                     ],
                                   ),
                                 ),
                           onDismissed: (DismissDirection direction) {
-                            print(direction.toString() +
-                                ' NOTE: We should never reach this point');
+                            print(direction.toString() + ' NOTE: We should never reach this point');
                           },
                           child: Container(
                             height: 50.0,
                             padding: const EdgeInsets.all(0.0),
-                            child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                children: <Widget>[
-                                  ReceiptListItem(
-                                      currencySymbol: widget
-                                          .eventAggregate.extensions.curSym,
-                                      digitsAfterDecimal: widget.eventAggregate
-                                          .extensions.digAfterDec,
-                                      receipt: receiptsList[index],
-                                      itemPressed: () {
-                                        Navigator.push<void>(
-                                          context,
-                                          MaterialPageRoute<void>(
-                                              builder: (BuildContext context) =>
-                                                  ReceiptDetailPage(
-                                                    eventId: widget
-                                                        .eventAggregate
-                                                        .event
-                                                        .eventId,
-                                                    receiptItem:
-                                                        receiptsList[index],
-                                                  )),
-                                        ).then<dynamic>((void receipt) {
-                                          refreshFromTable();
-                                        });
-                                      }),
-                                ]),
+                            child: ListView(scrollDirection: Axis.horizontal, children: <Widget>[
+                              ReceiptListItem(
+                                  currencySymbol: widget.eventAggregate.extensions.curSym,
+                                  digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
+                                  receipt: receiptsList[index],
+                                  itemPressed: () {
+                                    Navigator.push<void>(
+                                      context,
+                                      MaterialPageRoute<void>(
+                                          builder: (BuildContext context) => ReceiptDetailPage(
+                                                eventId: widget.eventAggregate.event.eventId,
+                                                receiptItem: receiptsList[index],
+                                              )),
+                                    ).then<dynamic>((void receipt) {
+                                      refreshFromTable();
+                                    });
+                                  }),
+                            ]),
                           ),
                         );
                       },
@@ -421,11 +349,7 @@ class ReceiptsListState extends State<ReceiptsList> {
 }
 
 class ReceiptListItem extends StatelessWidget {
-  const ReceiptListItem(
-      {@required this.receipt,
-      @required this.itemPressed,
-      @required this.currencySymbol,
-      @required this.digitsAfterDecimal});
+  const ReceiptListItem({@required this.receipt, @required this.itemPressed, @required this.currencySymbol, @required this.digitsAfterDecimal});
 
   final Map<String, dynamic> receipt;
   final Function itemPressed;
@@ -448,18 +372,11 @@ class ReceiptListItem extends StatelessWidget {
               flex: 1,
               child: Padding(
                 padding: const EdgeInsets.only(left: 10.0),
-                child: ((receipt['reimbursedBy'] == null) ||
-                        (receipt['reimbursedBy'] == GUID_EMPTY))
-                    ? const Icon(FontAwesome.circle_thin,
-                        size: 35.0, color: Colors.grey)
-                    : receipt['reimbursedBy'] == GUID_8 ||
-                            receipt['reimbursedBy'] == GUID_9
+                child: ((receipt['reimbursedBy'] == null) || (receipt['reimbursedBy'] == GUID_EMPTY))
+                    ? const Icon(FontAwesome.circle_thin, size: 35.0, color: Colors.grey)
+                    : receipt['reimbursedBy'] == GUID_8 || receipt['reimbursedBy'] == GUID_9
                         ? Icon(delayIcon, size: 35.0, color: Colors.blue)
-                        : Icon(FontAwesome.check_circle,
-                            size: 35.0,
-                            color: receipt['removed'] == 0
-                                ? Colors.green
-                                : Colors.grey),
+                        : Icon(FontAwesome.check_circle, size: 35.0, color: receipt['removed'] == 0 ? Colors.green : Colors.grey),
               ),
             ),
             Expanded(
@@ -467,15 +384,13 @@ class ReceiptListItem extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.only(left: 10.0),
                 child: Text(
-                  '${CoreUtilities.getFormattedMoney(receipt['receiptAmount'], digitsAfterDecimal, currencySymbol)}',
+                  '${IveCoreUtilities.getFormattedMoney(receipt['receiptAmount'], digitsAfterDecimal, currencySymbol)}',
                   style: TextStyle(
                       fontFamily: 'AvenirNextCondensedDemiBold',
                       fontStyle: FontStyle.normal,
                       fontSize: 22.0,
                       height: 1.0,
-                      color: receipt['removed'] == 0
-                          ? Colors.blue[700]
-                          : Colors.grey),
+                      color: receipt['removed'] == 0 ? Colors.blue[700] : Colors.grey),
                   textAlign: TextAlign.right,
                 ),
               ),
@@ -493,8 +408,7 @@ class ReceiptListItem extends StatelessWidget {
                     fontStyle: FontStyle.normal,
                     fontSize: 22.0,
                     height: 1.0,
-                    color:
-                        receipt['removed'] == 0 ? Colors.black : Colors.grey),
+                    color: receipt['removed'] == 0 ? Colors.black : Colors.grey),
                 textAlign: TextAlign.left,
               ),
             ),

@@ -1,5 +1,4 @@
-import 'dart:convert';
-import 'dart:core';
+import 'package:harrier_central/imports.dart';
 
 class ApproveLoginModel {
   ApproveLoginModel(
@@ -39,8 +38,7 @@ class ApproveLoginModel {
             serverStatusCode: jsonItem['serverStatusCode'],
             loginMessage: jsonItem['loginMessage'],
             loginMessageTitle: jsonItem['loginMessageTitle'],
-            messageEndDate: DateTime.parse(
-                jsonItem['serverStatusEndDate'] ?? '2000-01-01 19:00:00'),
+            messageEndDate: DateTime.parse(jsonItem['serverStatusEndDate'] ?? '2000-01-01 19:00:00'),
             messageDisplayType: jsonItem['messageDisplayType'],
             iosDownloadLink: jsonItem['iosDownloadLink'],
             androidDownloadLink: jsonItem['androidDownloadLink'],

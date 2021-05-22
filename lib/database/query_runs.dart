@@ -1,12 +1,6 @@
+import 'package:harrier_central/imports.dart';
+
 import 'package:intl/intl.dart';
-
-import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/data/hc3_services/events_service.dart';
-import 'package:harrier_central/database/tables.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
-
-import 'package:harrier_central/util/enums.dart';
 
 class RunDetailsQueryExtensions {
   RunDetailsQueryExtensions({
@@ -48,16 +42,12 @@ class RunDetailsQueryExtensions {
   String searchText;
 
   static String getSearchDateString(DateTime eventStartDateTime) {
-    final DateFormat df = DateFormat(
-        "' is' y ' is' EEEE ' is' LLLL d y ' is' LLL d y h:mm aaa HH:mm",
-        'en_US');
+    final DateFormat df = DateFormat("' is' y ' is' EEEE ' is' LLLL d y ' is' LLL d y h:mm aaa HH:mm", 'en_US');
     String days = '';
     String weekend = '';
     String thisDay = '';
 
-    final int deltaDays =
-        eventStartDateTime.millisecondsSinceEpoch ~/ (86400 * 1000) -
-            DateTime.now().millisecondsSinceEpoch ~/ (86400 * 1000);
+    final int deltaDays = eventStartDateTime.millisecondsSinceEpoch ~/ (86400 * 1000) - DateTime.now().millisecondsSinceEpoch ~/ (86400 * 1000);
     if (deltaDays < 0) {
       if (deltaDays == 1) {
         days = ' 1 day ago is yesterday ';
@@ -100,20 +90,17 @@ class RunDetailsQueryExtensions {
       }
     }
 
-    if ((eventStartDateTime.weekday == DateTime.sunday) ||
-        (eventStartDateTime.weekday == DateTime.saturday)) {
+    if ((eventStartDateTime.weekday == DateTime.sunday) || (eventStartDateTime.weekday == DateTime.saturday)) {
       weekend = ' is weekend ';
     }
 
-    final String test =
-        ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
+    final String test = ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
     print(test);
 
     return ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
   }
 
-  static RunDetailsQueryExtensions fromMap(
-      Map<String, dynamic> map, DateTime eventStartDateTime) {
+  static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map, DateTime eventStartDateTime) {
     // make dates and tiems searchable
 
     final RunDetailsQueryExtensions item = RunDetailsQueryExtensions(
@@ -160,37 +147,37 @@ class QueryRuns {
   // character to ensure that searches run properly.
 
   static String searchField = '''
-               " " || coalesce(evt.${eventsTableHelper.colEventName},"")
-            || " is " || coalesce(k.${kennelsTableHelper.colKennelShortName},"") 
-            || " is " || coalesce(k.${kennelsTableHelper.colKennelName},"")   
-            || " " || coalesce(evt.${eventsTableHelper.colEventDescription},"")
-            || " " || coalesce(evt.${eventsTableHelper.colHares},'')
-            || " " || coalesce(evt.${eventsTableHelper.colLocationCity},'')
-            || " " || coalesce(evt.${eventsTableHelper.colLocationCountry},'')
-            || " " || coalesce(evt.${eventsTableHelper.colLocationOneLineDesc},'')
-            || " " || coalesce(evt.${eventsTableHelper.colLocationPostCode},'')
-            || " " || coalesce(evt.${eventsTableHelper.colLocationRegion},'')
-            || " " || coalesce(evt.${eventsTableHelper.colLocationStreet},'')
-            || " " || coalesce(evt.${eventsTableHelper.colLocationSubRegion},'')
-            || " " || case when evt.${eventsTableHelper.colEventNumber} IS NOT NULL THEN cast(evt.${eventsTableHelper.colEventNumber} as TEXT) END
+               " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colEventName},"")
+            || " is " || coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},"") 
+            || " is " || coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelName},"")   
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colEventDescription},"")
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colHares},'')
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationCity},'')
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationCountry},'')
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationOneLineDesc},'')
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationPostCode},'')
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationRegion},'')
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationStreet},'')
+            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationSubRegion},'')
+            || " " || case when evt.${G0<TableModel>().eventsTableHelper.colEventNumber} IS NOT NULL THEN cast(evt.${G0<TableModel>().eventsTableHelper.colEventNumber} as TEXT) END
             || " " || 
               case 
-              when evt.${eventsTableHelper.colEventGeographicScope} = 1 THEN "is event is local" 
-              when evt.${eventsTableHelper.colEventGeographicScope} = 2 THEN "is event is regional" 
-              when evt.${eventsTableHelper.colEventGeographicScope} = 3 THEN "is event is national is nash hash" 
-              when evt.${eventsTableHelper.colEventGeographicScope} = 4 THEN "is event is continental is interhash" 
-              when evt.${eventsTableHelper.colEventGeographicScope} = 5 THEN "is event is global is world interhash" 
+              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 1 THEN "is event is local" 
+              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 2 THEN "is event is regional" 
+              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 3 THEN "is event is national is nash hash" 
+              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 4 THEN "is event is continental is interhash" 
+              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 5 THEN "is event is global is world interhash" 
               else "" 
               end 
             || " " || 
               case 
-              when n.${countriesTableHelper.colContinentCode} = "EU" then "europe" 
-              when n.${countriesTableHelper.colContinentCode} = "AF" then "africa" 
-              when n.${countriesTableHelper.colContinentCode} = "AS" then "asia" 
-              when n.${countriesTableHelper.colContinentCode} = "NA" then "north america" 
-              when n.${countriesTableHelper.colContinentCode} = "SA" then "south america" 
-              when n.${countriesTableHelper.colContinentCode} = "OC" then "oceania" 
-              when n.${countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "EU" then "europe" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AF" then "africa" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AS" then "asia" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "NA" then "north america" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "SA" then "south america" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "OC" then "oceania" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
               else "" 
               end 
             || " "
@@ -204,16 +191,14 @@ class QueryRuns {
   // this.addOption("4", "Continental");
   // this.addOption("5", "Worldwide");
 
-  static List<RunDetailsAggregate> doFilter(
-      String searchText, List<RunDetailsAggregate> allRuns) {
+  static List<RunDetailsAggregate> doFilter(String searchText, List<RunDetailsAggregate> allRuns) {
     List<RunDetailsAggregate> filteredRuns = <RunDetailsAggregate>[];
     if (allRuns != null) {
       filteredRuns.addAll(allRuns);
 
       // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
       if ((searchText != null) && (searchText.isNotEmpty)) {
-        final List<String> searchItems =
-            searchText.trim().toLowerCase().split(',');
+        final List<String> searchItems = searchText.trim().toLowerCase().split(',');
         for (String st in searchItems) {
           if (st.trim().isEmpty) {
             continue;
@@ -245,8 +230,7 @@ class QueryRuns {
     return filteredRuns;
   }
 
-  static Future<List<Map<String, dynamic>>> queryRuns(
-      EnumRunQueryType queryType, EnumRunQueryContext queryContext,
+  static Future<List<Map<String, dynamic>>> queryRuns(EnumRunQueryType queryType, EnumRunQueryContext queryContext,
       {String kennelId, bool searchAllRuns = true, String eventId}) async {
     String hkmTable;
     String hemTable;
@@ -254,24 +238,23 @@ class QueryRuns {
 
     switch (queryContext) {
       case EnumRunQueryContext.user:
-        hkmTable = hasherKennelMapTableHelper.getTableName(AppDomainType.user);
-        hemTable = hasherEventMapTableHelper.getTableName(AppDomainType.user);
-        paymentsTable = paymentsTableHelper.getTableName(AppDomainType.user);
+        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user);
+        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user);
+        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user);
         break;
       case EnumRunQueryContext.kennelAdmin:
-        hkmTable =
-            hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
-        hemTable = hasherEventMapTableHelper.getTableName(AppDomainType.kennel);
-        paymentsTable = paymentsTableHelper.getTableName(AppDomainType.kennel);
+        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
+        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.kennel);
+        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.kennel);
         break;
       case EnumRunQueryContext.eventAdmin:
-        hkmTable = hasherKennelMapTableHelper.getTableName(AppDomainType.event);
-        hemTable = hasherEventMapTableHelper.getTableName(AppDomainType.event);
-        paymentsTable = paymentsTableHelper.getTableName(AppDomainType.event);
+        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event);
+        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event);
+        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event);
         break;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
 
     final String queryBase = ''' 
       
@@ -281,7 +264,7 @@ class QueryRuns {
           coalesce(hkm.mismanagementRoleFlags,0) as mismanagementRoleFlags,
           coalesce(hkm.following,0) as following,
           coalesce(hem.rsvpState,0) as rsvpState,
-          coalesce(hem.${hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
           CASE WHEN coalesce(pay.paymentType,0) >= 2 THEN 1 ELSE 0 END as isPaid,
           coalesce(hem.isHare,0) as isHare,
           case when ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime'))) then 1 else 0 end as isMember,
@@ -303,11 +286,11 @@ class QueryRuns {
           INNER JOIN hashers h on h.hasherId = "$userId"
           LEFT OUTER JOIN $hkmTable hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
           LEFT OUTER JOIN $hemTable hem on hem.eventId = evt.eventId and hem.userId = "$userId"
-          LEFT OUTER JOIN $paymentsTable pay on pay.${paymentsTableHelper.colHemId} = hem.${hasherEventMapTableHelper.colHemId} AND pay.${paymentsTableHelper.colCancelledBy} IS NULL
+          LEFT OUTER JOIN $paymentsTable pay on pay.${G0<TableModel>().paymentsTableHelper.colHemId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AND pay.${G0<TableModel>().paymentsTableHelper.colCancelledBy} IS NULL
           ''';
 
     final String whereClauseForTopRunsPage = '''
-            WHERE evt.${eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-4 hours') and evt.${eventsTableHelper.colIsVisible} = 1
+            WHERE evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-4 hours') and evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
             AND (
                   "${searchAllRuns.toString()}" == "true"
                   OR
@@ -319,14 +302,14 @@ class QueryRuns {
           ''';
 
     final String whereClauseForKennelDetailsPage = '''
-            WHERE evt.${eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-4 hours') and evt.${eventsTableHelper.colIsVisible} = 1
-            AND evt.${eventsTableHelper.colKennelId} = "$kennelId"
-            ORDER BY evt.${eventsTableHelper.colEventStartDatetime}
+            WHERE evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-4 hours') and evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
+            AND evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "$kennelId"
+            ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}
             LIMIT 10
           ''';
 
     final String whereClauseForSingleRun = '''
-            WHERE evt.${eventsTableHelper.colEventId} = "$eventId"
+            WHERE evt.${G0<TableModel>().eventsTableHelper.colEventId} = "$eventId"
           ''';
 
     String query = queryBase;
@@ -340,6 +323,6 @@ class QueryRuns {
       assert(false);
     }
 
-    return internalSqlDb.rawQuery(query);
+    return G0<Database>().rawQuery(query);
   }
 }

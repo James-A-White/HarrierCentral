@@ -1,25 +1,6 @@
-import 'dart:async';
+import 'package:harrier_central/imports.dart';
 
-import 'package:flutter/material.dart';
-
-import 'package:geolocator/geolocator.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-
-import 'package:harrier_central/database/query_runs.dart';
-import 'package:harrier_central/widgets/run_list_item.dart';
-import 'package:ive_flutter_core/widgets/circular_progress_indicator.dart';
-import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/constants.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-import 'package:harrier_central/data/hc3_services/events_service.dart';
-import 'package:harrier_central/database/tables.dart';
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
-import 'package:harrier_central/pages/detail_pages/run_details_page.dart';
-
-final GlobalKey<FutureRunListPageState> futureRunsListPageKey =
-    GlobalKey<FutureRunListPageState>();
+final GlobalKey<FutureRunListPageState> futureRunsListPageKey = GlobalKey<FutureRunListPageState>();
 
 class FutureRunsListPage extends StatefulWidget {
   FutureRunsListPage() : super(key: futureRunsListPageKey);
@@ -37,16 +18,13 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   TextEditingController searchController = TextEditingController();
   String searchText;
   bool searchAllRuns = false;
-  ScrollController scrollController =
-      ScrollController(initialScrollOffset: 100.0);
+  ScrollController scrollController = ScrollController(initialScrollOffset: 100.0);
   bool showFilters = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: allRuns == null
-          ? const HcCircularProgressIndicator()
-          : _buildListView(),
+      body: allRuns == null ? const HcCircularProgressIndicator() : _buildListView(),
     );
   }
 
@@ -60,37 +38,32 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
         allRuns = null;
       });
 
-      String query =
-          'DELETE FROM ${hasherEventMapTableHelper.getTableName(AppDomainType.user)}';
+      String query = 'DELETE FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)}';
       try {
-        await internalSqlDb.rawQuery(query);
+        await G0<Database>().rawQuery(query);
       } catch (e) {
         print(e);
       }
 
-      query =
-          'DELETE FROM ${paymentsTableHelper.getTableName(AppDomainType.user)}';
+      query = 'DELETE FROM ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)}';
       try {
-        await internalSqlDb.rawQuery(query);
+        await G0<Database>().rawQuery(query);
       } catch (e) {
         print(e);
       }
 
-      query =
-          'DELETE FROM ${eventsTableHelper.getTableName(AppDomainType.user)}';
+      query = 'DELETE FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)}';
       try {
-        await internalSqlDb.rawQuery(query);
+        await G0<Database>().rawQuery(query);
       } catch (e) {
         print(e);
       }
     }
 
-    syncUserDataService
+    G0<TableModel>()
+        .syncUserDataService
         .updateFromBackend(
-            SyncUserDataService.flagHasherEventMapTable |
-                SyncUserDataService.flagNarrowEventsTable |
-                SyncUserDataService.flagKennelsTable |
-                SyncUserDataService.flagPaymentsTable,
+            SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable | SyncUserDataService.flagPaymentsTable,
             false)
         .then((bool result) {
       refreshFromTable(true);
@@ -101,7 +74,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
 
   @override
   void initState() {
-    CoreUtilities.logTiming('initState called', appStartTime);
+    IveCoreUtilities.logTiming('initState called', appStartTime);
     searchController.text = '';
     searchText = '';
     refreshFromTable(true);
@@ -130,8 +103,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 4.0),
-                child: Text('Search all runs',
-                    style: headingStyleBlack.copyWith(fontSize: 18.0)),
+                child: Text('Search all runs', style: headingStyleBlack.copyWith(fontSize: 18.0)),
               ),
             ],
           ),
@@ -156,10 +128,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                       focusNode: searchFocusNode,
                       controller: searchController,
                       keyboardType: TextInputType.text,
-                      style: const TextStyle(
-                          fontFamily: 'WorkSansSemiBold',
-                          fontSize: 16.0,
-                          color: Colors.black),
+                      style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
                       decoration: const InputDecoration(
                         border: InputBorder.none,
                         icon: Icon(
@@ -167,8 +136,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                           color: Colors.black,
                         ),
                         hintText: 'Search...',
-                        hintStyle: TextStyle(
-                            fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                        hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
                       ),
                     ),
                   ),
@@ -199,46 +167,34 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   void refreshFromTable(bool forceRefresh) {
     if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
       final Geolocator locator = Geolocator();
-      CoreUtilities.logTiming('Geoquery start', appStartTime);
+      IveCoreUtilities.logTiming('Geoquery start', appStartTime);
 
-      CoreUtilities.logTiming('Run query start', appStartTime);
-      QueryRuns.queryRuns(
-              EnumRunQueryType.topRunsPage, EnumRunQueryContext.user,
-              searchAllRuns: searchAllRuns)
-          .then((List<Map<String, dynamic>> results) {
-        CoreUtilities.logTiming('Run query end', appStartTime);
+      IveCoreUtilities.logTiming('Run query start', appStartTime);
+      QueryRuns.queryRuns(EnumRunQueryType.topRunsPage, EnumRunQueryContext.user, searchAllRuns: searchAllRuns).then((List<Map<String, dynamic>> results) {
+        IveCoreUtilities.logTiming('Run query end', appStartTime);
         allRuns = <RunDetailsAggregate>[];
         for (int i = 0; i < results.length; i++) {
           locator
-              .distanceBetween(
-                  CoreUtilities.unInt(deviceLat),
-                  CoreUtilities.unInt(deviceLon),
-                  CoreUtilities.unInt(results[i]['narrowEventLatitude']),
-                  CoreUtilities.unInt(results[i]['narrowEventLongitude']))
+              .distanceBetween(IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLat), IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLon),
+                  IveCoreUtilities.unInt(results[i]['narrowEventLatitude']), IveCoreUtilities.unInt(results[i]['narrowEventLongitude']))
               .then((num dist) {
-            final EventModel eventItem = eventsTableHelper.fromMap(results[i]);
-            final KennelsModel kennelItem =
-                kennelsTableHelper.fromMap(results[i]);
-            final RunDetailsQueryExtensions extensionsItem =
-                RunDetailsQueryExtensions.fromMap(
-                    results[i], eventItem.eventStartDatetime);
+            final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[i]);
+            final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
+            final RunDetailsQueryExtensions extensionsItem = RunDetailsQueryExtensions.fromMap(results[i], eventItem.eventStartDatetime);
             extensionsItem.distToEvent = dist;
 
             String paymentLinkUrl = '';
 
-            if (((eventItem.eventPaymentUrl ?? '') != '') &&
-                (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
+            if (((eventItem.eventPaymentUrl ?? '') != '') && (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
               paymentLinkUrl = eventItem.eventPaymentUrl;
-            } else if (((kennelItem.kennelPaymentUrl ?? '') != '') &&
-                (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+            } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
               paymentLinkUrl = kennelItem.kennelPaymentUrl;
             }
 
             final num julianNow = results[i]['nowJulian'];
             final num eventJulian = results[i]['eventJulian'];
 
-            print(
-                'Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
+            print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 
             num meters = 0;
 
@@ -272,26 +228,19 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                 break;
             }
 
-            if ((extensionsItem.distancePreference != 0) ||
-                ((extensionsItem.userPrefs & 0x00000002) == 0)) {
+            if ((extensionsItem.distancePreference != 0) || ((extensionsItem.userPrefs & 0x00000002) == 0)) {
               meters = meters * MILES_TO_METERS / 1000;
             }
 
-            if ((searchAllRuns == true) ||
-                (extensionsItem.following >= 1) ||
-                ((extensionsItem.following == 0) && (dist < meters))) {
-              final RunDetailsAggregate item = RunDetailsAggregate(
-                  event: eventItem,
-                  kennel: kennelItem,
-                  extensions: extensionsItem,
-                  paymentUrl: paymentLinkUrl);
+            if ((searchAllRuns == true) || (extensionsItem.following >= 1) || ((extensionsItem.following == 0) && (dist < meters))) {
+              final RunDetailsAggregate item = RunDetailsAggregate(event: eventItem, kennel: kennelItem, extensions: extensionsItem, paymentUrl: paymentLinkUrl);
               allRuns.add(item);
             }
             if (i == results.length - 1) {
-              CoreUtilities.logTiming('Filter start', appStartTime);
+              IveCoreUtilities.logTiming('Filter start', appStartTime);
               filterRuns();
               setState(() {});
-              CoreUtilities.logTiming('Filter end', appStartTime);
+              IveCoreUtilities.logTiming('Filter end', appStartTime);
             }
           });
         }
@@ -324,8 +273,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Padding(
-                  padding:
-                      const EdgeInsets.only(left: 25, right: 25, bottom: 30),
+                  padding: const EdgeInsets.only(left: 25, right: 25, bottom: 30),
                   child: Center(
                       child: Text(
                     'No Runs available.',
@@ -334,8 +282,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                   )),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(
-                      left: 25.0, right: 25.0, bottom: 30),
+                  padding: const EdgeInsets.only(left: 25.0, right: 25.0, bottom: 30),
                   child: Center(
                       child: Text(
                     'You might not be following any Kennels with upcoming runs. Check the Kennels page, select several Kennels and then return to this page and hit the "Reload runs" button below.',
@@ -357,8 +304,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
             )
           : NestedScrollView(
               controller: scrollController,
-              headerSliverBuilder:
-                  (BuildContext context, bool innerBoxIsScrolled) {
+              headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
                 return <Widget>[
                   // SliverAppBar(
                   //   expandedHeight: 200.0,
@@ -379,8 +325,7 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                 onRefresh: () => _refreshFromBackend(clearLocalTables: true),
                 displacement: 40.0,
                 child: ListView.builder(
-                  padding: const EdgeInsets.only(
-                      left: 10, right: 10, top: 0, bottom: 50),
+                  padding: const EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 50),
                   physics: const AlwaysScrollableScrollPhysics(),
                   //padding: const EdgeInsets.only( bottom: 40.0),
                   itemCount: filteredRuns.length,
@@ -391,12 +336,10 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                         Navigator.push<dynamic>(
                           this.context,
                           MaterialPageRoute<dynamic>(
-                            builder: (BuildContext context) =>
-                                RunDetailsPage(futureRun: filteredRuns[index]),
+                            builder: (BuildContext context) => RunDetailsPage(futureRun: filteredRuns[index]),
                           ),
                         ).then((void dummy) {
-                          _refreshFromBackend(clearLocalTables: false)
-                              .then((void dummy) {
+                          _refreshFromBackend(clearLocalTables: false).then((void dummy) {
                             setState(() {});
                           });
                         });

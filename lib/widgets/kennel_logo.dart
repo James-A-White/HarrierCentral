@@ -1,14 +1,7 @@
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
+import 'package:harrier_central/imports.dart';
 
 class KennelLogo extends StatelessWidget {
-  const KennelLogo(
-      {@required this.kennelLogoUrl,
-      @required this.kennelShortName,
-      @required this.logoHeight,
-      this.leftPadding,
-      this.rightPadding});
+  const KennelLogo({@required this.kennelLogoUrl, @required this.kennelShortName, @required this.logoHeight, this.leftPadding, this.rightPadding});
 
   final String kennelLogoUrl;
   final String kennelShortName;
@@ -21,28 +14,19 @@ class KennelLogo extends StatelessWidget {
     return Container(
         width: logoHeight,
         height: logoHeight,
-        margin:
-            EdgeInsets.only(left: leftPadding ?? 0, right: rightPadding ?? 0),
+        margin: EdgeInsets.only(left: leftPadding ?? 0, right: rightPadding ?? 0),
         child: kennelLogoUrl.contains('bundle://')
             ? Stack(alignment: Alignment.center, children: <Widget>[
-                Image.asset(((kennelLogoUrl.toLowerCase().contains('avatar')
-                            ? 'images/avatars/'
-                            : 'images/generic_logos/') +
-                        kennelLogoUrl.replaceAll('bundle://', '') +
-                        '.png')
+                Image.asset(((kennelLogoUrl.toLowerCase().contains('avatar') ? 'images/avatars/' : 'images/generic_logos/') + kennelLogoUrl.replaceAll('bundle://', '') + '.png')
                     .toLowerCase()),
                 Padding(
-                  padding: EdgeInsets.only(
-                      left: logoHeight / 6, right: logoHeight / 6),
+                  padding: EdgeInsets.only(left: logoHeight / 6, right: logoHeight / 6),
                   child: AutoSizeText(
                     kennelShortName.toLowerCase().contains('my runs')
                         ? ''
                         : // TODO(James): find a more elegant way of doing this
                         '$kennelShortName',
-                    style: const TextStyle(
-                        fontFamily: 'AvenirNextCondensedBold',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 400.0),
+                    style: const TextStyle(fontFamily: 'AvenirNextCondensedBold', fontStyle: FontStyle.normal, fontSize: 400.0),
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     minFontSize: 1.0,

@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-
-import 'package:harrier_central/util/styles.dart';
+import 'package:harrier_central/imports.dart';
 
 class InAppPurchasePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -47,33 +44,20 @@ class InAppPurchasePageContent extends StatefulWidget {
   const InAppPurchasePageContent({Key key}) : super(key: key);
 
   @override
-  _InAppPurchasePageContentState createState() =>
-      _InAppPurchasePageContentState();
+  _InAppPurchasePageContentState createState() => _InAppPurchasePageContentState();
 }
 
 class _InAppPurchasePageContentState extends State<InAppPurchasePageContent> {
-  TextStyle headingStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.yellow,
-      fontSize: 24.0,
-      height: 1.0);
+  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 24.0, height: 1.0);
 
-  TextStyle bodyStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.white,
-      fontSize: 20.0,
-      height: 1.0);
+  TextStyle bodyStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
-      child: Center(
-          child: Text(' In App Purchase\r\nPage Placeholder',
-              textAlign: TextAlign.center, style: headingStyle)),
+      child: Center(child: Text(' In App Purchase\r\nPage Placeholder', textAlign: TextAlign.center, style: headingStyle)),
     );
   }
 }

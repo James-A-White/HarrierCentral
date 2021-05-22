@@ -1,31 +1,9 @@
-import 'dart:async';
-
-import 'package:flutter/material.dart';
-
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:harrier_central/database/query_kennels.dart';
-import 'package:sqflite/sqflite.dart';
-
-import 'package:harrier_central/database/tables.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-import 'package:harrier_central/data/hc3_services/events_service.dart';
-import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/pages/kennel_admin/run_number_popup.dart';
-import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/widgets/kennel_logo.dart';
-import 'package:harrier_central/widgets/filter_event_list_item.dart';
-import 'package:ive_flutter_core/widgets/circular_progress_indicator.dart';
+import 'package:harrier_central/imports.dart';
 
 enum FilterEventsPageType { past, future }
 
 class FilterEventsPage extends StatefulWidget {
-  const FilterEventsPage(
-      {Key key, @required this.kennel, @required this.pageType})
-      : super(key: key);
+  const FilterEventsPage({Key key, @required this.kennel, @required this.pageType}) : super(key: key);
 
   final KennelListAggregate kennel;
   final FilterEventsPageType pageType;
@@ -52,8 +30,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
       });
     }
 
-    final bool result = await syncUserDataService.updateFromBackend(
-        SyncUserDataService.flagNarrowEventsTable, true);
+    final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Events data synchronized $resultStr');
 
@@ -63,15 +40,11 @@ class FilterEventsPageState extends State<FilterEventsPage> {
   List<Map<String, dynamic>> events = <Map<String, dynamic>>[];
 
   Future<void> _refreshEventFromTables(bool forceRefresh) async {
-    final String sortOrder =
-        widget.pageType == FilterEventsPageType.future ? 'ASC' : 'DESC';
-    final String dateComparer =
-        widget.pageType == FilterEventsPageType.future ? '>=' : '<=';
-    final String dateOffset = widget.pageType == FilterEventsPageType.future
-        ? '-5 minutes'
-        : '+5 minutes';
+    final String sortOrder = widget.pageType == FilterEventsPageType.future ? 'ASC' : 'DESC';
+    final String dateComparer = widget.pageType == FilterEventsPageType.future ? '>=' : '<=';
+    final String dateOffset = widget.pageType == FilterEventsPageType.future ? '-5 minutes' : '+5 minutes';
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
 
     try {
       final String sql = ''' 
@@ -87,16 +60,16 @@ class FilterEventsPageState extends State<FilterEventsPage> {
             evt.eventStartDatetime,
             hkm.mismanagementRoleFlags,
             evt.canEditRunAttendence,
-            (SELECT COUNT(*) FROM ${eventsTableHelper.getTableName(AppDomainType.user)} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount
-          FROM ${eventsTableHelper.getTableName(AppDomainType.user)} evt
-          INNER JOIN ${hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.kennelId = "${widget.kennel.kennel.kennelId}" and hkm.userId = "$userId"
+            (SELECT COUNT(*) FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount
+          FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt
+          INNER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.kennelId = "${widget.kennel.kennel.kennelId}" and hkm.userId = "$userId"
           WHERE evt.kennelId = "${widget.kennel.kennel.kennelId}"
           AND datetime(evt.eventStartDatetime) $dateComparer datetime('now','localtime','$dateOffset')
           ORDER BY evt.eventStartDatetime $sortOrder
         
           ''';
 
-      internalSqlDb.rawQuery(sql).then((List<Map<String, dynamic>> results) {
+      G0<Database>().rawQuery(sql).then((List<Map<String, dynamic>> results) {
         events = results;
         setState(() {
           _isLoading = false;
@@ -157,7 +130,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
         //               if (result['result']
         //                   .toLowerCase()
         //                   .startsWith('success')) {
-        //                 CoreUtilities.showAlert(
+        //                 IveCoreUtilities.showAlert(
         //                     context,
         //                     'E-mail successfully sent',
         //                     'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
@@ -180,7 +153,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
         //               if (result['result']
         //                   .toLowerCase()
         //                   .startsWith('success')) {
-        //                 CoreUtilities.showAlert(
+        //                 IveCoreUtilities.showAlert(
         //                     context,
         //                     'E-mail successfully sent',
         //                     'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
@@ -201,9 +174,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
             ),
           ),
         ),
-        body: _isLoading
-            ? const HcCircularProgressIndicator()
-            : _buildListView());
+        body: _isLoading ? const HcCircularProgressIndicator() : _buildListView());
   }
 
   Future<void> _handleRefresh() async {
@@ -211,18 +182,13 @@ class FilterEventsPageState extends State<FilterEventsPage> {
       _isLoading = true;
     });
 
-    final bool result = await syncUserDataService.updateFromBackend(
-        SyncUserDataService.flagNarrowEventsTable, true);
+    final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Receipts data synchronized $resultStr');
     _refreshEventFromTables(true);
   }
 
-  static const TextStyle headingStyle = TextStyle(
-      fontFamily: 'AvenirNextCondensedDemiBold',
-      fontStyle: FontStyle.normal,
-      fontSize: 22.0,
-      height: 0.6);
+  static const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
 
   static const TextStyle numberStyle = TextStyle(
     fontFamily: 'AvenirNextCondensedDemiBold',
@@ -262,8 +228,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                       ],
                     ),
                     //color:Color.fromARGB(30, 0, 0, 0),
-                    padding: const EdgeInsets.only(
-                        left: 5, top: 5, right: 0, bottom: 5),
+                    padding: const EdgeInsets.only(left: 5, top: 5, right: 0, bottom: 5),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
@@ -271,8 +236,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                           height: 75,
                           child: KennelLogo(
                             kennelLogoUrl: widget.kennel.kennel.kennelLogo,
-                            kennelShortName:
-                                widget.kennel.kennel.kennelShortName,
+                            kennelShortName: widget.kennel.kennel.kennelShortName,
                             logoHeight: 75.0,
                             rightPadding: 15.0,
                           ),
@@ -320,8 +284,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: events.length,
                       padding: const EdgeInsets.only(top: 5),
-                      separatorBuilder: (BuildContext context, int index) =>
-                          const Divider(
+                      separatorBuilder: (BuildContext context, int index) => const Divider(
                         height: 1.0,
                         color: Colors.black45,
                       ),
@@ -332,82 +295,57 @@ class FilterEventsPageState extends State<FilterEventsPage> {
                         return Dismissible(
                           key: Key(event['eventId']),
                           confirmDismiss: (DismissDirection direction) {
-                            if ((event['mismanagementRoleFlags'] &
-                                    mmAuthCanEditRunVisibility) !=
-                                0) {
+                            if ((event['mismanagementRoleFlags'] & mmAuthCanEditRunVisibility) != 0) {
                               setState(() {
                                 // swipe from right to left to indicate that
                                 // the hasher either attended the run as a pack
                                 // member or as a hare
-                                final bool isVisible =
-                                    direction == DismissDirection.endToStart;
+                                final bool isVisible = direction == DismissDirection.endToStart;
                                 updateEvent(event, isVisible: isVisible);
                               });
                             }
                             return Future<bool>.value(false);
                           },
                           background: Container(
-                              color: ((event['mismanagementRoleFlags'] &
-                                          mmAuthCanEditRunVisibility) ==
-                                      0)
-                                  ? Colors.grey[350]
-                                  : Colors.red,
+                              color: ((event['mismanagementRoleFlags'] & mmAuthCanEditRunVisibility) == 0) ? Colors.grey[350] : Colors.red,
                               child: Row(children: const <Widget>[
                                 Padding(
                                   padding: EdgeInsets.only(left: 10.0),
-                                  child: Icon(Ionicons.ios_eye_off,
-                                      color: Colors.white, size: 35.0),
+                                  child: Icon(Ionicons.ios_eye_off, color: Colors.white, size: 35.0),
                                 ),
                                 Padding(
                                   padding: EdgeInsets.only(left: 15.0),
                                   child: Text(
-                                      // '${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                      // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                       'Hide event',
-                                      style: TextStyle(
-                                          fontFamily: 'AvenirNextDemiBold',
-                                          fontStyle: FontStyle.normal,
-                                          color: Colors.white,
-                                          fontSize: 17.0,
-                                          height: 1.0)),
+                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                 )
                               ])),
                           secondaryBackground: Container(
-                            color: ((event['mismanagementRoleFlags'] &
-                                        mmAuthCanEditRunVisibility) ==
-                                    0)
-                                ? Colors.grey[350]
-                                : Colors.green,
+                            color: ((event['mismanagementRoleFlags'] & mmAuthCanEditRunVisibility) == 0) ? Colors.grey[350] : Colors.green,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: const <Widget>[
                                 Padding(
                                   padding: EdgeInsets.only(right: 15.0),
-                                  child: Icon(Ionicons.ios_eye,
-                                      color: Colors.white, size: 35.0),
+                                  child: Icon(Ionicons.ios_eye, color: Colors.white, size: 35.0),
                                 ),
                                 Padding(
                                   padding: EdgeInsets.only(right: 15.0),
                                   child: Text(
-                                      //'${CoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                      //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                       'Show event',
-                                      style: TextStyle(
-                                          fontFamily: 'AvenirNextDemiBold',
-                                          fontStyle: FontStyle.normal,
-                                          color: Colors.white,
-                                          fontSize: 17.0,
-                                          height: 1.0)),
+                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                 )
                               ],
                             ),
                           ),
                           onDismissed: (DismissDirection direction) {
-                            print(direction.toString() +
-                                ' NOTE: We should never reach this point');
+                            print(direction.toString() + ' NOTE: We should never reach this point');
                           },
                           child: FilterEventListItem(
                             event: event,
-                            kennelShortName:
-                                widget.kennel.kennel.kennelShortName,
+                            kennelShortName: widget.kennel.kennel.kennelShortName,
                             updateEvent: (dynamic retVal) {
                               final EnumEventFilterType<int> ft = retVal;
                               switch (ft) {
@@ -450,8 +388,7 @@ class FilterEventsPageState extends State<FilterEventsPage> {
   }
 
   void setRunNumber(Map<String, dynamic> event, BuildContext context) {
-    final RunNumberPopup otherPaymentPopup =
-        RunNumberPopup(runNumber: event['absoluteEventNumber']);
+    final RunNumberPopup otherPaymentPopup = RunNumberPopup(runNumber: event['absoluteEventNumber']);
 
     final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
         context: context,
@@ -476,26 +413,18 @@ class FilterEventsPageState extends State<FilterEventsPage> {
     });
   }
 
-  Future<void> updateEvent(Map<String, dynamic> event,
-      {bool isVisible, bool isCountedRun, int asboluteEventNumber}) async {
-    await internalSqlDb.transaction<dynamic>((Transaction txn) async {
-      final int guidFlag =
-          isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
+  Future<void> updateEvent(Map<String, dynamic> event, {bool isVisible, bool isCountedRun, int asboluteEventNumber}) async {
+    await G0<Database>().transaction<dynamic>((Transaction txn) async {
+      final int guidFlag = isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
       final String sql =
-          'UPDATE ${eventsTableHelper.getTableName(AppDomainType.user)} SET canEditRunAttendence = "$guidFlag" where eventId = "${event['eventId']}"';
+          'UPDATE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} SET canEditRunAttendence = "$guidFlag" where eventId = "${event['eventId']}"';
       final int result = await txn.rawUpdate(sql);
-      print(result.toString() +
-          ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+      print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
       _refreshEventFromTables(true);
     });
 
     final EventsService nSvc = EventsService();
-    nSvc
-        .updateEventDetails(event['eventId'],
-            isVisible: isVisible,
-            isCountedRun: isCountedRun,
-            absoluteEventNumber: asboluteEventNumber)
-        .then((void dummy) {
+    nSvc.updateEventDetails(event['eventId'], isVisible: isVisible, isCountedRun: isCountedRun, absoluteEventNumber: asboluteEventNumber).then((void dummy) {
       _refreshEventFromTables(true).then((void dummy) {
         setState(() {});
       });

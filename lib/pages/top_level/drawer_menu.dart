@@ -1,16 +1,4 @@
-import 'package:flutter/material.dart';
-
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-
-import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
-import 'package:harrier_central/pages/menu_pages/imprint_page.dart';
-import 'package:harrier_central/pages/menu_pages/legal_page.dart';
-import 'package:harrier_central/pages/menu_pages/faq_page.dart';
-import 'package:harrier_central/pages/menu_pages/app_download_page.dart';
-import 'package:harrier_central/pages/menu_pages/support_page.dart';
-import 'package:harrier_central/pages/menu_pages/privacy_policy_page.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
+import 'package:harrier_central/imports.dart';
 
 class DrawerMenu extends StatefulWidget {
   const DrawerMenu({Key key, this.scaffoldKey}) : super(key: key);
@@ -29,12 +17,7 @@ class DrawerMenuState extends State<DrawerMenu> {
   static const int opacity = 160;
   static const Color textColor = Color.fromARGB(opacity, 255, 255, 255);
 
-  TextStyle style = const TextStyle(
-      fontFamily: 'AvenirNext',
-      fontStyle: FontStyle.normal,
-      color: textColor,
-      fontSize: 24.0,
-      height: 1.0);
+  TextStyle style = const TextStyle(fontFamily: 'AvenirNext', fontStyle: FontStyle.normal, color: textColor, fontSize: 24.0, height: 1.0);
 
   @override
   Widget build(BuildContext context) {
@@ -55,10 +38,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                   //     image: const AssetImage("images/other/drawer_image.jpg"),
                   //   ),
                   // ),
-                  child: Image.asset('images/other/drawer_image.jpg',
-                      fit: BoxFit.fill,
-                      height: MediaQuery.of(context).size.height,
-                      width: MediaQuery.of(context).size.width),
+                  child: Image.asset('images/other/drawer_image.jpg', fit: BoxFit.fill, height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
                 ),
               ],
             ),
@@ -93,7 +73,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                 title: Text('My Profile', style: style),
                 onTap: () async {
                   //onTabTapped(EnumAppPages.settings);
-                  final String userId = getStringPref(StringPrefsEnum.userId);
+                  final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
                   Navigator.pop(context);
                   Navigator.push<dynamic>(
                     context,
@@ -104,10 +84,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                           dataContext: EnumDataContext.user,
                           pageType: EnumMyProfilePageType.myProfile,
                           hasherId: userId,
-                          uiElementsToDisplay:
-                              HasherProfilePage.flagUiElement_distancePref |
-                                  HasherProfilePage
-                                      .flagUiElement_autoDisplayRunsDistance,
+                          uiElementsToDisplay: HasherProfilePage.flagUiElement_distancePref | HasherProfilePage.flagUiElement_autoDisplayRunsDistance,
                         );
                       },
                     ),
@@ -139,8 +116,7 @@ class DrawerMenuState extends State<DrawerMenu> {
               //   },
               // ),
               ListTile(
-                leading:
-                    const Icon(FontAwesome.question_circle, color: textColor),
+                leading: const Icon(FontAwesome.question_circle, color: textColor),
                 title: Text('FAQs', style: style),
                 onTap: () {
                   Navigator.pop(context);
@@ -205,8 +181,7 @@ class DrawerMenuState extends State<DrawerMenu> {
               ),
 
               ListTile(
-                leading: const Icon(MaterialCommunityIcons.shield_lock,
-                    color: textColor),
+                leading: const Icon(MaterialCommunityIcons.shield_lock, color: textColor),
                 title: Text('Privacy Policy', style: style),
                 onTap: () {
                   Navigator.pop(context);
@@ -223,8 +198,7 @@ class DrawerMenuState extends State<DrawerMenu> {
               ),
 
               ListTile(
-                leading: const Icon(MaterialCommunityIcons.cloud_download,
-                    color: textColor),
+                leading: const Icon(MaterialCommunityIcons.cloud_download, color: textColor),
                 title: Text('App Download Links', style: style),
                 onTap: () {
                   Navigator.pop(context);

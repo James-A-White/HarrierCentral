@@ -1,10 +1,4 @@
-import 'dart:async';
-
-import 'package:sqflite/sqflite.dart';
-
-import 'package:ive_flutter_core/database/base_service.dart';
-
-import 'package:json_annotation/json_annotation.dart';
+import 'package:harrier_central/imports.dart';
 
 part 'regions_service.g.dart';
 
@@ -19,10 +13,8 @@ class RegionsModel implements BaseModel {
     this.updatedAt,
   });
 
-  factory RegionsModel.fromJson(Map<String, dynamic> json) =>
-      _$RegionsModelFromJson(json);
+  factory RegionsModel.fromJson(Map<String, dynamic> json) => _$RegionsModelFromJson(json);
 
-  @override
   Map<String, dynamic> toJson() => _$RegionsModelToJson(this);
 
   final String regionId;
@@ -35,17 +27,11 @@ class RegionsModel implements BaseModel {
 
 // TODO(James): Eventually add the flag file to the Regions and Cities JSON or remove it completely from the app
 
-class RegionsTableHelper with BaseFields implements BaseTableHelper {
-  RegionsTableHelper();
-
-  @override
-  num forceRequeryInterval;
-
-  @override
-  num cacheDuration;
-
-  // @override
-  // String tableName = 'regions';
+class RegionsTableHelper extends BaseTableHelper with BaseFields {
+  RegionsTableHelper() {
+    remoteDbId = 'regionId';
+    humanReadableTableName = 'Regions';
+  }
 
   @override
   String getTableName(dynamic appDomainType) {
@@ -64,17 +50,13 @@ class RegionsTableHelper with BaseFields implements BaseTableHelper {
     return tableName;
   }
 
-  @override
-  String remoteDbId = 'regionId';
-
   final String colRegionId = 'regionId';
   final String colRegionName = 'regionName';
   final String colCountryId = 'countryId';
   final String colFlagFile = 'flagFile';
 
   @override
-  Future<dynamic> createTable(
-      Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -90,16 +72,17 @@ class RegionsTableHelper with BaseFields implements BaseTableHelper {
             $colUpdatedAtValue NUM NULL
           )
           ''');
-
-    await db.execute(
-        'CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute(
-        'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
-    return RegionsModel.fromJson(map).toJson();
+  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
+  }
+
+  @override
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    return RegionsModel.fromJson(inputMap).toJson();
   }
 
   @override

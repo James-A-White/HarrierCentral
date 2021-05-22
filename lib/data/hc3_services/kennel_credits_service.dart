@@ -1,10 +1,4 @@
-import 'dart:async';
-
-import 'package:sqflite/sqflite.dart';
-
-import 'package:ive_flutter_core/database/base_service.dart';
-
-import 'package:json_annotation/json_annotation.dart';
+import 'package:harrier_central/imports.dart';
 
 part 'kennel_credits_service.g.dart';
 
@@ -20,10 +14,8 @@ class KennelCreditsModel implements BaseModel {
     this.removed,
   });
 
-  factory KennelCreditsModel.fromJson(Map<String, dynamic> json) =>
-      _$KennelCreditsModelFromJson(json);
+  factory KennelCreditsModel.fromJson(Map<String, dynamic> json) => _$KennelCreditsModelFromJson(json);
 
-  @override
   Map<String, dynamic> toJson() => _$KennelCreditsModelToJson(this);
 
   final String kennelCreditId;
@@ -35,14 +27,11 @@ class KennelCreditsModel implements BaseModel {
   final int removed;
 }
 
-class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
-  KennelCreditsTableHelper();
-
-  @override
-  num forceRequeryInterval;
-
-  @override
-  num cacheDuration;
+class KennelCreditsTableHelper extends BaseTableHelper with BaseFields {
+  KennelCreditsTableHelper() {
+    remoteDbId = 'kennelCreditId';
+    humanReadableTableName = 'Kennels';
+  }
 
   // @override
   // String tableName = 'kennelCredits';
@@ -64,9 +53,6 @@ class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
     return tableName;
   }
 
-  @override
-  String remoteDbId = 'kennelCreditId';
-
   final String colKennelCreditId = 'kennelCreditId';
   final String colUserId = 'userId';
   final String colKennelId = 'kennelId';
@@ -74,8 +60,7 @@ class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
   final String colBalanceAsOfEventId = 'balanceAsOfEventId';
 
   @override
-  Future<dynamic> createTable(
-      Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -92,11 +77,12 @@ class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
             $colUpdatedAtValue NUM NULL
           )
           ''');
+  }
 
-    await db.execute(
-        'CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute(
-        'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
+  @override
+  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
   }
 
   // @override
@@ -106,8 +92,8 @@ class KennelCreditsTableHelper with BaseFields implements BaseTableHelper {
   // }
 
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
-    return KennelCreditsModel.fromJson(map).toJson();
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    return KennelCreditsModel.fromJson(inputMap).toJson();
   }
 
   @override

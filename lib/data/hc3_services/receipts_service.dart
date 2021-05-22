@@ -1,19 +1,4 @@
-import 'dart:async';
-import 'dart:convert';
-
-import 'package:flutter/material.dart';
-import 'package:harrier_central/util/globals.dart';
-
-import 'package:sqflite/sqflite.dart';
-
-import 'package:ive_flutter_core/database/base_service.dart';
-
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:harrier_central/data/services/service_common.dart';
-import 'package:harrier_central/database/tables.dart';
-import 'package:harrier_central/util/enums.dart';
-
-import 'package:json_annotation/json_annotation.dart';
+import 'package:harrier_central/imports.dart';
 
 part 'receipts_service.g.dart';
 
@@ -37,10 +22,8 @@ class ReceiptsModel implements BaseModel {
     this.updatedAt,
   });
 
-  factory ReceiptsModel.fromJson(Map<String, dynamic> json) =>
-      _$ReceiptsModelFromJson(json);
+  factory ReceiptsModel.fromJson(Map<String, dynamic> json) => _$ReceiptsModelFromJson(json);
 
-  @override
   Map<String, dynamic> toJson() => _$ReceiptsModelToJson(this);
 
   final String receiptId;
@@ -60,14 +43,11 @@ class ReceiptsModel implements BaseModel {
   final DateTime updatedAt;
 }
 
-class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
-  ReceiptsTableHelper();
-
-  @override
-  num forceRequeryInterval;
-
-  @override
-  num cacheDuration;
+class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
+  ReceiptsTableHelper() {
+    remoteDbId = 'receiptId';
+    humanReadableTableName = 'Receipts';
+  }
 
   // @override
   // String tableName = 'receipts';
@@ -90,9 +70,6 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
     return tableName;
   }
 
-  @override
-  String remoteDbId = 'receiptId';
-
   final String colReceiptId = 'receiptId';
   final String colEventId = 'eventId';
   final String colUserId = 'userId';
@@ -108,8 +85,7 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
   final String colReimbursedNotes = 'reimbursedNotes';
 
   @override
-  Future<dynamic> createTable(
-      Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -134,16 +110,17 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
             $colUpdatedAtValue NUM NULL
           )
           ''');
-
-    await db.execute(
-        'CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute(
-        'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
   }
 
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
-    return ReceiptsModel.fromJson(map).toJson();
+  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
+  }
+
+  @override
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    return ReceiptsModel.fromJson(inputMap).toJson();
   }
 
   @override
@@ -151,8 +128,7 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
     return ReceiptsModel.fromJson(map);
   }
 
-  String toQueryBody(String userId, String accessToken, ReceiptsModel item,
-      String receiptsUploadedAfter) {
+  String toQueryBody(String userId, String accessToken, ReceiptsModel item, String receiptsUploadedAfter) {
     final String map = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
@@ -175,25 +151,20 @@ class ReceiptsTableHelper with BaseFields implements BaseTableHelper {
 
 class ReceiptsService {
   Future<String> uploadReceipt(BuildContext context, ReceiptsModel item) async {
-    final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken =
-        CoreUtilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
+    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
 
-    final num _receiptsLastUpdated = await baseService.getLastUpdatedTime(
-      internalSqlDb,
-      receiptsTableHelper,
-      receiptsTableHelper.getTableName(AppDomainType.event),
-      receiptsTableHelper.colUpdatedAtValue,
-    );
-    final DateTime receiptsUpdatedAfter = _receiptsLastUpdated == null
-        ? DateTime(2000, 1, 1)
-        : DateTime.fromMillisecondsSinceEpoch(_receiptsLastUpdated + 1000);
+    final num _receiptsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().receiptsTableHelper,
+          G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
+          G0<TableModel>().receiptsTableHelper.colUpdatedAtValue,
+        );
+    final DateTime receiptsUpdatedAfter = _receiptsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_receiptsLastUpdated + 1000);
 
-    final String body = receiptsTableHelper.toQueryBody(
-        userId, accessToken, item, receiptsUpdatedAfter.toString());
+    final String body = G0<TableModel>().receiptsTableHelper.toQueryBody(userId, accessToken, item, receiptsUpdatedAfter.toString());
 
-    final String responseBody =
-        await ServiceCommon.sendRequest(context, 'hc3_add_edit_receipt', body);
+    final String responseBody = await ServiceCommon.sendRequest(context, 'hc3_add_edit_receipt', body);
 
     return responseBody;
   }

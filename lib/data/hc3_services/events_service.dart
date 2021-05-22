@@ -1,18 +1,4 @@
-import 'dart:async';
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-import 'package:sqflite/sqflite.dart';
-
-import 'package:harrier_central/util/constants.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/database/tables.dart';
-import 'package:ive_flutter_core/util/connection.dart';
-import 'package:ive_flutter_core/database/base_service.dart';
-import 'package:harrier_central/util/enums.dart';
-
-import 'package:json_annotation/json_annotation.dart';
+import 'package:harrier_central/imports.dart';
 
 part 'events_service.g.dart';
 
@@ -57,10 +43,8 @@ class EventModel implements BaseModel {
       this.removed,
       this.updatedAt});
 
-  factory EventModel.fromJson(Map<String, dynamic> json) =>
-      _$EventModelFromJson(json);
+  factory EventModel.fromJson(Map<String, dynamic> json) => _$EventModelFromJson(json);
 
-  @override
   Map<String, dynamic> toJson() => _$EventModelToJson(this);
 
   final String eventId;
@@ -102,17 +86,11 @@ class EventModel implements BaseModel {
   final DateTime updatedAt;
 }
 
-class EventsTableHelper with BaseFields implements BaseTableHelper {
-  EventsTableHelper();
-
-  @override
-  num forceRequeryInterval;
-
-  @override
-  num cacheDuration;
-
-  // @override
-  // String tableName = 'narrowEvents';
+class EventsTableHelper extends BaseTableHelper with BaseFields {
+  EventsTableHelper() {
+    remoteDbId = 'eventId';
+    humanReadableTableName = 'Events';
+  }
 
   @override
   String getTableName(dynamic appDomainType) {
@@ -130,9 +108,6 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
     }
     return tableName;
   }
-
-  @override
-  String remoteDbId = 'eventId';
 
   final String colEventId = 'eventId';
   final String colEventStartDatetime = 'eventStartDatetime';
@@ -171,8 +146,7 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
   final String colTags3 = 'tags3';
 
   @override
-  Future<dynamic> createTable(
-      Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -219,11 +193,12 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
             $colUpdatedAtValue NUM NULL
           )
           ''');
+  }
 
-    await db.execute(
-        'CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute(
-        'CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
+  @override
+  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
   }
 
   // @override
@@ -233,19 +208,15 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
   // }
 
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
-    final Map<String, dynamic> outputMap =
-        _$EventModelToJson(EventModel.fromJson(map));
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    final Map<String, dynamic> outputMap = _$EventModelToJson(EventModel.fromJson(inputMap));
 
     // NOTE: Event images can either be full URLs or they can be partial URLs in the case
     // when events have been uploaded directly to the DB using the HcWeb application.
     // For partial URLs we need to append the root URL. The Root URL is stored in the
     // Server settings table and copied into the string prefs on app startup.
-    if ((outputMap['eventImage'] != null) &&
-        (outputMap['eventImage'].isNotEmpty) &&
-        (!outputMap['eventImage'].startsWith('http'))) {
-      final String s =
-          getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+    if ((outputMap['eventImage'] != null) && (outputMap['eventImage'].isNotEmpty) && (!outputMap['eventImage'].startsWith('http'))) {
+      final String s = SecurePrefs.getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
       if ((s != null) && (s.isNotEmpty)) {
         outputMap['eventImage'] = s + outputMap['eventImage'];
       }
@@ -262,11 +233,8 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
     // when events have been uploaded directly to the DB using the HcWeb application.
     // For partial URLs we need to append the root URL. The Root URL is stored in the
     // Server settings table and copied into the string prefs on app startup.
-    if ((item.eventImage != null) &&
-        (item.eventImage.isNotEmpty) &&
-        (!item.eventImage.startsWith('http'))) {
-      final String s =
-          getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+    if ((item.eventImage != null) && (item.eventImage.isNotEmpty) && (!item.eventImage.startsWith('http'))) {
+      final String s = SecurePrefs.getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
       if ((s != null) && (s.isNotEmpty)) {
         item.eventImage = s + item.eventImage;
       }
@@ -277,28 +245,24 @@ class EventsTableHelper with BaseFields implements BaseTableHelper {
 }
 
 class EventsService extends BaseService {
-  Future<void> updateEventDetails(String eventId,
-      {bool isVisible, bool isCountedRun, int absoluteEventNumber}) async {
-    if (globalConnectionStatus == connectionStatus_notConnected) {
+  Future<void> updateEventDetails(String eventId, {bool isVisible, bool isCountedRun, int absoluteEventNumber}) async {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
 
-    final String accessToken =
-        CoreUtilities.generateToken(userId, 'addEditEvent');
+    final String accessToken = IveCoreUtilities.generateToken(userId, 'addEditEvent');
 
     final num _eventsLastUpdated = await getLastUpdatedTime(
-      internalSqlDb,
-      eventsTableHelper,
-      eventsTableHelper.getTableName(AppDomainType.user),
-      eventsTableHelper.colUpdatedAtValue,
+      G0<Database>(),
+      G0<TableModel>().eventsTableHelper,
+      G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user),
+      G0<TableModel>().eventsTableHelper.colUpdatedAtValue,
     );
-    final DateTime eventUpdatedAfter = _eventsLastUpdated == null
-        ? DateTime(2000, 1, 1)
-        : DateTime.fromMillisecondsSinceEpoch(_eventsLastUpdated + 1000);
+    final DateTime eventUpdatedAfter = _eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_eventsLastUpdated + 1000);
 
     final Map<String, String> bodyMap = <String, String>{
       'userId': userId,
@@ -311,22 +275,16 @@ class EventsService extends BaseService {
     }
 
     if (isCountedRun != null) {
-      bodyMap
-          .addAll(<String, String>{'isCountedRun': isCountedRun ? '1' : '0'});
+      bodyMap.addAll(<String, String>{'isCountedRun': isCountedRun ? '1' : '0'});
     }
 
     if (absoluteEventNumber != null) {
-      bodyMap.addAll(<String, String>{
-        'absoluteEventNumber': absoluteEventNumber.toString()
-      });
+      bodyMap.addAll(<String, String>{'absoluteEventNumber': absoluteEventNumber.toString()});
     }
 
     final String body = jsonEncode(bodyMap);
 
-    final http.Response response = await http
-        .post(BASE_API_URL + 'hc3_add_edit_event',
-            headers: <String, String>{'content-type': 'application/json'},
-            body: body
+    final Response response = await post(BASE_API_URL + 'hc3_add_edit_event', headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -336,32 +294,20 @@ class EventsService extends BaseService {
       },
     );
 
-    await syncUserDataService
-        .updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
 
     return;
   }
 
-  Future<Map<String, String>> sendRunDetailsByEmail(
-      {String eventId, String emailBody = ''}) async {
-    final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken = CoreUtilities.generateToken(
-        userId, 'rptApi_emailRunDetails',
-        paramString: eventId);
+  Future<Map<String, String>> sendRunDetailsByEmail({String eventId, String emailBody = ''}) async {
+    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String accessToken = IveCoreUtilities.generateToken(userId, 'rptApi_emailRunDetails', paramString: eventId);
 
-    final String body = jsonEncode(<String, String>{
-      'userId': userId,
-      'accessToken': accessToken,
-      'eventId': eventId,
-      'emailBody': emailBody
-    });
+    final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'eventId': eventId, 'emailBody': emailBody});
 
     print(body);
 
-    final http.Response response = await http
-        .post(EMAIL_RUN_DETAILS_TO_PACK_API_URL,
-            headers: <String, String>{'content-type': 'application/json'},
-            body: body
+    final Response response = await post(EMAIL_RUN_DETAILS_TO_PACK_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )

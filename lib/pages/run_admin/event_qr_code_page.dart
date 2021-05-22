@@ -1,15 +1,6 @@
-import 'dart:math' as math;
+import 'package:harrier_central/imports.dart';
 
-import 'package:flutter/material.dart';
-
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-
-import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/widgets/bubble_tab_indicator.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
+//import 'dart:math' as math;
 
 class EventQrCodePage extends StatefulWidget {
   const EventQrCodePage(
@@ -33,8 +24,7 @@ class EventQrCodePage extends StatefulWidget {
   _EventQrCodePageState createState() => _EventQrCodePageState();
 }
 
-class _EventQrCodePageState extends State<EventQrCodePage>
-    with SingleTickerProviderStateMixin {
+class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProviderStateMixin {
   List<Tab> tabs = <Tab>[];
 
   String barcode = '';
@@ -43,7 +33,7 @@ class _EventQrCodePageState extends State<EventQrCodePage>
   PageController _pageController;
   TabController _tabController;
 
-  final String userId = getStringPref(StringPrefsEnum.userId);
+  final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
 
   GlobalKey tabKey;
 
@@ -93,22 +83,13 @@ class _EventQrCodePageState extends State<EventQrCodePage>
                 child: Padding(
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
                   child: TabBar(
-                    labelStyle: const TextStyle(
-                        fontFamily: 'AvenirNextCondensedMedium',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 18.0,
-                        height: 1.0),
-                    unselectedLabelStyle: const TextStyle(
-                        fontFamily: 'AvenirNextCondensedMedium',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 18.0,
-                        height: 1.0),
+                    labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                    unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
                     isScrollable: false,
                     unselectedLabelColor: Colors.black,
                     labelColor: Colors.white,
                     indicatorSize: TabBarIndicatorSize.tab,
-                    labelPadding:
-                        const EdgeInsets.only(top: 5, left: 20, right: 20),
+                    labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
                       indicatorColor: Theme.of(context).buttonColor,
@@ -212,14 +193,7 @@ class _EventQrCodePageState extends State<EventQrCodePage>
 }
 
 class TabIndicationPainter extends CustomPainter {
-  TabIndicationPainter(
-      {this.context,
-      this.dxTarget = 125.0,
-      this.dxEntry = 25.0,
-      this.radius = 21.0,
-      this.dy = 25.0,
-      this.pageController})
-      : super(repaint: pageController) {
+  TabIndicationPainter({this.context, this.dxTarget = 125.0, this.dxEntry = 25.0, this.radius = 21.0, this.dy = 25.0, this.pageController}) : super(repaint: pageController) {
     painter = Paint()
       ..color = Theme.of(context).accentColor
       ..style = PaintingStyle.fill;
@@ -237,8 +211,7 @@ class TabIndicationPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final ScrollPosition pos = pageController.position;
-    final num fullExtent =
-        pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
+    final num fullExtent = pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
 
     final num pageOffset = pos.extentBefore / fullExtent;
 
@@ -247,11 +220,9 @@ class TabIndicationPainter extends CustomPainter {
     final Offset target = Offset(left2right ? dxTarget : dxEntry, dy);
 
     final Path path = Path();
-    path.addArc(Rect.fromCircle(center: entry, radius: radius), 0.5 * math.pi,
-        1 * math.pi);
+    path.addArc(Rect.fromCircle(center: entry, radius: radius), 0.5 * pi, 1 * pi);
     path.addRect(Rect.fromLTRB(entry.dx, dy - radius, target.dx, dy + radius));
-    path.addArc(Rect.fromCircle(center: target, radius: radius), 1.5 * math.pi,
-        1 * math.pi);
+    path.addArc(Rect.fromCircle(center: target, radius: radius), 1.5 * pi, 1 * pi);
 
     canvas.translate(size.width * pageOffset, 0.0);
     canvas.drawShadow(path, const Color(0xFFfbab66), 3.0, true);
@@ -263,14 +234,7 @@ class TabIndicationPainter extends CustomPainter {
 }
 
 class QrTab extends StatefulWidget {
-  const QrTab(
-      {Key key,
-      @required this.isRunStart,
-      @required this.qrContent,
-      @required this.title,
-      @required this.qrPrefix,
-      this.eventStartDatetime})
-      : super(key: key);
+  const QrTab({Key key, @required this.isRunStart, @required this.qrContent, @required this.title, @required this.qrPrefix, this.eventStartDatetime}) : super(key: key);
 
   final bool isRunStart;
   final String qrPrefix;
@@ -282,8 +246,7 @@ class QrTab extends StatefulWidget {
   _QrTabState createState() => _QrTabState();
 }
 
-class _QrTabState extends State<QrTab>
-    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -300,11 +263,7 @@ class _QrTabState extends State<QrTab>
                 Text(
                   'This QR code allows other Hashers to quickly scan you using their Harrier Central apps.\r\n\r\nAny Hasher can scan this code to easily add you as their friend.\r\n\r\nHares and mis-management can use this code to scan you in at the beginning and end of runs in order to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.',
                   textAlign: TextAlign.justify,
-                  style: TextStyle(
-                      fontFamily: 'AvenirNextRegular',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 16.0,
-                      height: 1.0),
+                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                 )
               ],
             ),
@@ -356,18 +315,11 @@ class _QrTabState extends State<QrTab>
           ),
           AutoSizeText(
             //widget.eventName,
-            widget.isRunStart
-                ? 'QR code for run start at:'
-                : 'QR code for run end at:',
+            widget.isRunStart ? 'QR code for run start at:' : 'QR code for run end at:',
             maxLines: 1,
             minFontSize: 22.0,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-                color: Colors.white,
-                fontFamily: 'AvenirNextDemiBold',
-                fontStyle: FontStyle.normal,
-                fontSize: 24.0,
-                height: 0.8),
+            style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 24.0, height: 0.8),
           ),
           SizedBox(
             width: spacer / 3,
@@ -380,12 +332,7 @@ class _QrTabState extends State<QrTab>
             minFontSize: 22.0,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-                color: Colors.white,
-                fontFamily: 'AvenirNextMedium',
-                fontStyle: FontStyle.normal,
-                fontSize: 24.0,
-                height: 1.0),
+            style: const TextStyle(color: Colors.white, fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 24.0, height: 1.0),
           ),
 
           //               Text(

@@ -1,9 +1,4 @@
-import 'dart:core';
-
-import 'package:flutter/material.dart';
-
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:harrier_central/pages/run_admin/other_payment_popup.dart';
+import 'package:harrier_central/imports.dart';
 
 class PaymentPopupResult {
   PaymentPopupResult({this.transactionType, this.transactionValue});
@@ -14,12 +9,7 @@ class PaymentPopupResult {
 
 class PaymentPopup extends StatefulWidget {
   const PaymentPopup(
-      {@required this.hemId,
-      @required this.currencySymbol,
-      @required this.amount,
-      @required this.creditRemaining,
-      @required this.creditAllowed,
-      @required this.decimalDigits
+      {@required this.hemId, @required this.currencySymbol, @required this.amount, @required this.creditRemaining, @required this.creditAllowed, @required this.decimalDigits
       // @required this.valueChanged
       });
 
@@ -88,7 +78,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                     onChanged: _handleRadioValueChange1,
                   ),
                   Text(
-                    'Cash (${CoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
+                    'Cash (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
                     style: const TextStyle(fontSize: 16.0),
                   ),
                 ]),
@@ -99,43 +89,35 @@ class _PaymentPopupState extends State<PaymentPopup> {
                     onChanged: _handleRadioValueChange1,
                   ),
                   Text(
-                    'Bank transfer (${CoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
+                    'Bank transfer (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
                     style: const TextStyle(fontSize: 16.0),
                   ),
                 ]),
               ]..addAll((widget.creditAllowed == 0)
                   ? List<Widget>.from(<Widget>[otherAmountRow()])
                   : List<Widget>.from(<Widget>[
-                      Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                      Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                        Radio<int>(
+                          value: 6,
+                          groupValue: selectedValue,
+                          onChanged: _handleRadioValueChange1,
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            Radio<int>(
-                              value: 6,
-                              groupValue: selectedValue,
-                              onChanged: _handleRadioValueChange1,
+                            Text(
+                              'Credit (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
+                              style: const TextStyle(fontSize: 16.0),
                             ),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  'Credit (${CoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
-                                  style: const TextStyle(fontSize: 16.0),
-                                ),
-                                Text(
-                                  '${CoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ' +
-                                      ((widget.creditRemaining >= 0)
-                                          ? 'remaining'
-                                          : 'owed'),
-                                  style: TextStyle(
-                                      fontSize: 16.0,
-                                      color: (widget.creditRemaining >= 0)
-                                          ? Colors.green[800]
-                                          : Colors.red[800]),
-                                ),
-                              ],
+                            Text(
+                              '${IveCoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ' +
+                                  ((widget.creditRemaining >= 0) ? 'remaining' : 'owed'),
+                              style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
                             ),
-                          ]),
+                          ],
+                        ),
+                      ]),
                       otherAmountRow()
                       // Row(
                       //     //crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,7 +132,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                       //         crossAxisAlignment: CrossAxisAlignment.start,
                       //         children: <Widget>[
                       //           Text(
-                      //             'Pay ${CoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)} & top up',
+                      //             'Pay ${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)} & top up',
                       //             style: const TextStyle(fontSize: 16.0),
                       //           ),
 
@@ -190,8 +172,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
               child: const Text('Cancel'),
               textColor: Colors.white,
               onPressed: () {
-                final PaymentPopupResult popupResult = PaymentPopupResult(
-                    transactionType: -1, transactionValue: 0);
+                final PaymentPopupResult popupResult = PaymentPopupResult(transactionType: -1, transactionValue: 0);
                 Navigator.of(context).pop(popupResult);
               },
             ),
@@ -210,9 +191,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
                 resultTransType = otherTransType;
               }
 
-              final PaymentPopupResult result = PaymentPopupResult(
-                  transactionType: resultTransType,
-                  transactionValue: resultAmount);
+              final PaymentPopupResult result = PaymentPopupResult(transactionType: resultTransType, transactionValue: resultAmount);
               Navigator.of(context).pop(result);
             },
           ),
@@ -228,8 +207,7 @@ class _PaymentPopupState extends State<PaymentPopup> {
           _handleRadioValueChange1(PaymentPopup.otherAmountRowId);
         }
       },
-      child:
-          Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
         Radio<int>(
           value: PaymentPopup.otherAmountRowId,
           groupValue: selectedValue,
@@ -246,13 +224,8 @@ class _PaymentPopupState extends State<PaymentPopup> {
             otherTransType == null
                 ? Container(height: 1, width: 1)
                 : Text(
-                    '${CoreUtilities.getFormattedMoney(otherAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ' +
-                        ((otherTransType == 5) ? ' cash' : ' bank transfer'),
-                    style: TextStyle(
-                        fontSize: 16.0,
-                        color: (widget.creditRemaining >= 0)
-                            ? Colors.green[800]
-                            : Colors.red[800]),
+                    '${IveCoreUtilities.getFormattedMoney(otherAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ' + ((otherTransType == 5) ? ' cash' : ' bank transfer'),
+                    style: TextStyle(fontSize: 16.0, color: (widget.creditRemaining >= 0) ? Colors.green[800] : Colors.red[800]),
                   ),
           ],
         ),

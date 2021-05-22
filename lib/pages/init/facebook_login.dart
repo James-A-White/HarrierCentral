@@ -1,17 +1,4 @@
-import 'dart:convert';
-
-// import 'package:flutter_facebook_login/flutter_facebook_login.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:harrier_central/data/hc3_services/hashers_service.dart';
-
-import 'package:harrier_central/util/styles.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-
-import 'package:ive_flutter_core/widgets/fancy_divider.dart';
-import 'package:harrier_central/pages/top_level/main_navigation_page.dart';
-import 'package:ive_flutter_core/widgets/circular_progress_indicator.dart';
-import 'package:harrier_central/util/enums.dart';
+import 'package:harrier_central/imports.dart';
 
 class FbLoginPage extends StatefulWidget {
   @override
@@ -38,8 +25,7 @@ class _LoginPageState extends State<FbLoginPage> {
     hashNameTextController = TextEditingController();
   }
 
-  void onLoginStatusChanged(bool loggedIn,
-      {dynamic profData, String accessToken}) {
+  void onLoginStatusChanged(bool loggedIn, {dynamic profData, String accessToken}) {
     setState(() {
       isLoggedIn = loggedIn;
       profileData = profData;
@@ -96,13 +82,10 @@ class _LoginPageState extends State<FbLoginPage> {
       final AccessToken accessToken = await FacebookAuth.instance.login();
       print(accessToken.toJson());
       // get the user data
-      final Map<String, dynamic> userData = await FacebookAuth.instance.getUserData(
-          fields:
-              'name,picture.width(300),email,birthday,gender,link,first_name,last_name');
+      final Map<String, dynamic> userData = await FacebookAuth.instance.getUserData(fields: 'name,picture.width(300),email,birthday,gender,link,first_name,last_name');
       print(userData);
 
-      onLoginStatusChanged(true,
-          profData: userData, accessToken: accessToken.token);
+      onLoginStatusChanged(true, profData: userData, accessToken: accessToken.token);
     } on FacebookAuthException catch (e) {
       switch (e.errorCode) {
         case FacebookAuthErrorCode.OPERATION_IN_PROGRESS:
@@ -147,13 +130,11 @@ class _LoginPageState extends State<FbLoginPage> {
         //const SizedBox(height: 28.0),
         Padding(
           padding: const EdgeInsets.only(top: 25.0, bottom: 15.0),
-          child: Text('Logged in as:',
-              textAlign: TextAlign.center, style: smallTitleStyle),
+          child: Text('Logged in as:', textAlign: TextAlign.center, style: smallTitleStyle),
         ),
         Padding(
           padding: const EdgeInsets.only(bottom: 15.0),
-          child: Text(profileData['name'],
-              textAlign: TextAlign.center, style: largeTitleStyle),
+          child: Text(profileData['name'], textAlign: TextAlign.center, style: largeTitleStyle),
         ),
 
         Expanded(
@@ -186,8 +167,7 @@ class _LoginPageState extends State<FbLoginPage> {
           key: _formKey,
           child: Container(
             margin: const EdgeInsets.only(left: 15, right: 15),
-            padding:
-                const EdgeInsets.only(left: 15, right: 15, top: 15, bottom: 5),
+            padding: const EdgeInsets.only(left: 15, right: 15, top: 15, bottom: 5),
 
             decoration: BoxDecoration(
               shape: BoxShape.rectangle,
@@ -221,10 +201,7 @@ class _LoginPageState extends State<FbLoginPage> {
                   // },
                   //keyboardType: TextInputType.,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 24.0,
-                      color: Theme.of(context).accentColor),
+                  style: TextStyle(fontFamily: 'Poppins', fontSize: 24.0, color: Theme.of(context).accentColor),
                 ),
                 const SizedBox(height: 20, width: 10),
                 Row(
@@ -253,7 +230,7 @@ class _LoginPageState extends State<FbLoginPage> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        CoreUtilities.showAlert(
+                        IveCoreUtilities.showAlert(
                             context,
                             'What is the Global Hash Directory?',
                             'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
@@ -295,36 +272,24 @@ class _LoginPageState extends State<FbLoginPage> {
                     photo: profileData['picture']['data']['url'],
                     facebookId: profileData['id'],
                     facebookAccessToken: facebookAccessToken,
-                    includeInGlobalHashDirectory:
-                        includeInGlobalHashDirectory ? 1 : 0);
+                    includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
 
                 final dynamic result = json.decode(responseBody);
 
-                setStringPref(
-                    StringPrefsEnum.profilePhotoUrl, result[0]['photo']);
-                setStringPref(
-                    StringPrefsEnum.displayName, result[0]['displayName']);
-                setStringPref(StringPrefsEnum.email, result[0]['email']);
-                setStringPref(
-                    StringPrefsEnum.facebookId, result[0]['facebookId']);
-                setStringPref(
-                    StringPrefsEnum.firstName, result[0]['firstName']);
-                setStringPref(StringPrefsEnum.hashName, result[0]['hashName']);
-                setStringPref(StringPrefsEnum.lastName, result[0]['lastName']);
-                setStringPref(StringPrefsEnum.qrCode, result[0]['qrCode']);
-                setStringPref(
-                    StringPrefsEnum.supportCode, result[0]['supportCode']);
-                setStringPref(
-                    StringPrefsEnum.resetCode, result[0]['resetCode']);
-                setStringPref(
-                    StringPrefsEnum.qrSecretCode, result[0]['qrSecretCode']);
-                setStringPref(StringPrefsEnum.userId, result[0]['hasherId']);
+                SecurePrefs.setPref(StringPrefsEnum.profilePhotoUrl, result[0]['photo']);
+                SecurePrefs.setPref(StringPrefsEnum.displayName, result[0]['displayName']);
+                SecurePrefs.setPref(StringPrefsEnum.email, result[0]['email']);
+                SecurePrefs.setPref(StringPrefsEnum.facebookId, result[0]['facebookId']);
+                SecurePrefs.setPref(StringPrefsEnum.firstName, result[0]['firstName']);
+                SecurePrefs.setPref(StringPrefsEnum.hashName, result[0]['hashName']);
+                SecurePrefs.setPref(StringPrefsEnum.lastName, result[0]['lastName']);
+                SecurePrefs.setPref(StringPrefsEnum.qrCode, result[0]['qrCode']);
+                SecurePrefs.setPref(StringPrefsEnum.supportCode, result[0]['supportCode']);
+                SecurePrefs.setPref(StringPrefsEnum.resetCode, result[0]['resetCode']);
+                SecurePrefs.setPref(StringPrefsEnum.qrSecretCode, result[0]['qrSecretCode']);
+                SecurePrefs.setPref(StringPrefsEnum.userId, result[0]['hasherId']);
 
-                Navigator.pushReplacement<dynamic, dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) =>
-                            const MainNavigationPage()));
+                Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
               }
             },
           ),

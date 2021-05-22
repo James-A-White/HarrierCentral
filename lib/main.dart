@@ -1,12 +1,4 @@
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
-
-import 'package:harrier_central/localization.dart';
-import 'package:harrier_central/pages/init/app_entry_page.dart';
-import 'package:harrier_central/util/routes.dart';
-import 'package:harrier_central/util/globals.dart';
+import 'package:harrier_central/imports.dart';
 
 //import 'package:flutter/scheduler.dart' show timeDilation;
 

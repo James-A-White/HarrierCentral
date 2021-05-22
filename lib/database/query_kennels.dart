@@ -1,8 +1,4 @@
-import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-import 'package:harrier_central/database/tables.dart';
+import 'package:harrier_central/imports.dart';
 
 class KennelListQueryExtenstions {
   KennelListQueryExtenstions({
@@ -72,36 +68,34 @@ class QueryKennels {
   // character to ensure that searches run properly.
 
   static String searchField = '''
-               lower(k.${kennelsTableHelper.colKennelName} 
-            || " " || k.${kennelsTableHelper.colKennelShortName} 
-            || " " || c.${citiesTableHelper.colCityName} 
-            || " " || r.${regionsTableHelper.colRegionName} 
-            || " " || n.${countriesTableHelper.colCountryName} 
+               lower(k.${G0<TableModel>().kennelsTableHelper.colKennelName} 
+            || " " || k.${G0<TableModel>().kennelsTableHelper.colKennelShortName} 
+            || " " || c.${G0<TableModel>().citiesTableHelper.colCityName} 
+            || " " || r.${G0<TableModel>().regionsTableHelper.colRegionName} 
+            || " " || n.${G0<TableModel>().countriesTableHelper.colCountryName} 
             || " " || 
               case 
-              when n.${countriesTableHelper.colContinentCode} = "EU" then "europe" 
-              when n.${countriesTableHelper.colContinentCode} = "AF" then "africa" 
-              when n.${countriesTableHelper.colContinentCode} = "AS" then "asia" 
-              when n.${countriesTableHelper.colContinentCode} = "NA" then "north america" 
-              when n.${countriesTableHelper.colContinentCode} = "SA" then "south america" 
-              when n.${countriesTableHelper.colContinentCode} = "OC" then "oceania" 
-              when n.${countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "EU" then "europe" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AF" then "africa" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AS" then "asia" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "NA" then "north america" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "SA" then "south america" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "OC" then "oceania" 
+              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
               else "" 
               end
             )
           as searchText
           ''';
 
-  static List<KennelListAggregate> doFilter(
-      String searchText, List<KennelListAggregate> allKennels) {
+  static List<KennelListAggregate> doFilter(String searchText, List<KennelListAggregate> allKennels) {
     List<KennelListAggregate> filteredKennels = <KennelListAggregate>[];
     if (allKennels != null) {
       filteredKennels.addAll(allKennels);
 
       // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
       if ((searchText != null) && (searchText.isNotEmpty)) {
-        final List<String> searchItems =
-            searchText.trim().toLowerCase().split(',');
+        final List<String> searchItems = searchText.trim().toLowerCase().split(',');
         for (String st in searchItems) {
           if (st.trim().isEmpty) {
             continue;
@@ -133,18 +127,15 @@ class QueryKennels {
     return filteredKennels;
   }
 
-  static Future<List<Map<String, dynamic>>> queryKennels(
-      EnumKennelQueryType queryType, EnumKennelQueryContext queryContext,
-      {String hasherId, String kennelId}) async {
+  static Future<List<Map<String, dynamic>>> queryKennels(EnumKennelQueryType queryType, EnumKennelQueryContext queryContext, {String hasherId, String kennelId}) async {
     String hkmTable;
 
     switch (queryContext) {
       case EnumKennelQueryContext.user:
-        hkmTable = hasherKennelMapTableHelper.getTableName(AppDomainType.user);
+        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user);
         break;
       case EnumKennelQueryContext.kennelAdmin:
-        hkmTable =
-            hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
+        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
         break;
     }
 
@@ -162,21 +153,21 @@ class QueryKennels {
           (SELECT max(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime <= datetime('now','localtime') ) as lastRunDate,
           n.digitsAfterDecimal,
           n.currencySymbol,
-          coalesce(k.${kennelsTableHelper.colKennelLatitude},c.${citiesTableHelper.colLatitude},$DEFAULT_LATITUDE) as cityLat,
-          coalesce(k.${kennelsTableHelper.colKennelLongitude},c.${citiesTableHelper.colLongitude},$DEFAULT_LONGITUDE) as cityLon,
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelLatitude},c.${G0<TableModel>().citiesTableHelper.colLatitude},$DEFAULT_LATITUDE) as cityLat,
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelLongitude},c.${G0<TableModel>().citiesTableHelper.colLongitude},$DEFAULT_LONGITUDE) as cityLon,
           CASE WHEN ((h.homeKennelId IS NOT NULL) AND (h.homeKennelId = k.kennelId)) then 1 else 0 end as isHomeKennel,
           CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,n.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference,
           $searchField
-          FROM ${kennelsTableHelper.getTableName(AppDomainType.user)} k
-          INNER JOIN ${citiesTableHelper.getTableName(AppDomainType.user)} c on c.cityId = k.cityId
-          INNER JOIN ${regionsTableHelper.getTableName(AppDomainType.user)} r on r.regionId = k.regionId
-          INNER JOIN ${countriesTableHelper.getTableName(AppDomainType.user)} n on n.countryId = k.countryId
-          INNER JOIN ${hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = "$hasherId"
-          LEFT OUTER JOIN $hkmTable hkm on hkm.kennelId = k.kennelId and hkm.${hasherKennelMapTableHelper.colUserId} = "$hasherId"
+          FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
+          INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} c on c.cityId = k.cityId
+          INNER JOIN ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} r on r.regionId = k.regionId
+          INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} n on n.countryId = k.countryId
+          INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = "$hasherId"
+          LEFT OUTER JOIN $hkmTable hkm on hkm.kennelId = k.kennelId and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$hasherId"
           ''';
 
     final String whereClauseForSingleKenenel = '''
-            WHERE k.${kennelsTableHelper.colKennelId} = "$kennelId"
+            WHERE k.${G0<TableModel>().kennelsTableHelper.colKennelId} = "$kennelId"
           ''';
 
     String query = queryBase;
@@ -188,6 +179,6 @@ class QueryKennels {
       assert(false);
     }
 
-    return internalSqlDb.rawQuery(query);
+    return G0<Database>().rawQuery(query);
   }
 }

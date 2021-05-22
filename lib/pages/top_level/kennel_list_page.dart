@@ -1,24 +1,4 @@
-import 'dart:async';
-
-import 'package:flutter/material.dart';
-
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-
-import 'package:geolocator/geolocator.dart';
-
-import 'package:harrier_central/database/query_kennels.dart';
-
-import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-import 'package:harrier_central/data/hc3_services/kennels_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-import 'package:harrier_central/database/tables.dart';
-import 'package:harrier_central/widgets/kennel_list_item.dart';
-import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/globals.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:ive_flutter_core/widgets/circular_progress_indicator.dart';
-import 'package:harrier_central/pages/detail_pages/kennel_admin_main.dart';
+import 'package:harrier_central/imports.dart';
 
 class KennelsListPage extends StatefulWidget {
   const KennelsListPage({Key key}) : super(key: key);
@@ -72,10 +52,7 @@ class KennelsListPageState extends State<KennelsListPage> {
               focusNode: searchFocusNode,
               controller: searchController,
               keyboardType: TextInputType.text,
-              style: const TextStyle(
-                  fontFamily: 'WorkSansSemiBold',
-                  fontSize: 16.0,
-                  color: Colors.black),
+              style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 icon: Icon(
@@ -83,8 +60,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                   color: Colors.black,
                 ),
                 hintText: 'Search...',
-                hintStyle:
-                    TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
               ),
             ),
           ),
@@ -108,73 +84,52 @@ class KennelsListPageState extends State<KennelsListPage> {
   }
 
   void refreshFromTable(bool forceRefresh) {
-    if (forceRefresh ||
-        (globalKennelMainPageList == null) ||
-        (globalKennelMainPageList.isEmpty)) {
+    if (forceRefresh || (globalKennelMainPageList == null) || (globalKennelMainPageList.isEmpty)) {
       final Geolocator locator = Geolocator();
       if (globalKennelMainPageList != null) {
         globalKennelMainPageList.clear();
       }
 
-      final String hasherId = getStringPref(StringPrefsEnum.userId);
+      final String hasherId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
 
       globalKennelMainPageList = <KennelListAggregate>[];
       try {
-        QueryKennels.queryKennels(
-                EnumKennelQueryType.topKennelPage, EnumKennelQueryContext.user,
-                hasherId: hasherId)
-            .then((List<Map<String, dynamic>> results) {
+        QueryKennels.queryKennels(EnumKennelQueryType.topKennelPage, EnumKennelQueryContext.user, hasherId: hasherId).then((List<Map<String, dynamic>> results) {
           for (int i = 0; i < results.length; i++) {
             locator
-                .distanceBetween(
-                    CoreUtilities.unInt(deviceLat),
-                    CoreUtilities.unInt(deviceLon),
-                    CoreUtilities.unInt(results[i]['cityLat']),
-                    CoreUtilities.unInt(results[i]['cityLon']))
+                .distanceBetween(IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLat), IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLon),
+                    IveCoreUtilities.unInt(results[i]['cityLat']), IveCoreUtilities.unInt(results[i]['cityLon']))
                 .then((num dist) {
-              final KennelsModel kennelItem =
-                  kennelsTableHelper.fromMap(results[i]);
-              final HasherKennelMapModel hkmItem =
-                  hasherKennelMapTableHelper.fromMap(results[i]);
-              final KennelListQueryExtenstions extensionsItem =
-                  KennelListQueryExtenstions.fromMap(results[i]);
+              final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper.fromMap(results[i]);
+              final HasherKennelMapModel hkmItem = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[i]);
+              final KennelListQueryExtenstions extensionsItem = KennelListQueryExtenstions.fromMap(results[i]);
               extensionsItem.distToKennel = dist;
               extensionsItem.followingRequested = -1;
               extensionsItem.notificationsRequested = -1;
               extensionsItem.emailAlertRequested = -1;
 
-              final KennelListAggregate item = KennelListAggregate(
-                  kennel: kennelItem, extensions: extensionsItem, hkm: hkmItem);
+              final KennelListAggregate item = KennelListAggregate(kennel: kennelItem, extensions: extensionsItem, hkm: hkmItem);
 
               globalKennelMainPageList.add(item);
               if (i == results.length - 1) {
                 if (hasLocationPermissions) {
-                  globalKennelMainPageList.sort(
-                      (KennelListAggregate a, KennelListAggregate b) => a
-                          .extensions.distToKennel
-                          .compareTo(b.extensions.distToKennel));
+                  globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.extensions.distToKennel.compareTo(b.extensions.distToKennel));
                 } else {
-                  globalKennelMainPageList.sort(
-                      (KennelListAggregate a, KennelListAggregate b) =>
-                          a.kennel.kennelName.compareTo(b.kennel.kennelName));
+                  globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => a.kennel.kennelName.compareTo(b.kennel.kennelName));
                 }
 
-                globalKennelMainPageList.sort(
-                    (KennelListAggregate a, KennelListAggregate b) =>
-                        (a.hkm.following == 1
-                                ? 0
-                                : a.hkm.following == 2
-                                    ? 1
-                                    : 2)
-                            .compareTo(b.hkm.following == 1
-                                ? 0
-                                : b.hkm.following == 2
-                                    ? 1
-                                    : 2));
+                globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (a.hkm.following == 1
+                        ? 0
+                        : a.hkm.following == 2
+                            ? 1
+                            : 2)
+                    .compareTo(b.hkm.following == 1
+                        ? 0
+                        : b.hkm.following == 2
+                            ? 1
+                            : 2));
 
-                globalKennelMainPageList.sort(
-                    (KennelListAggregate a, KennelListAggregate b) =>
-                        (b.hkm.isHomeKennel).compareTo(a.hkm.isHomeKennel));
+                globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (b.hkm.isHomeKennel).compareTo(a.hkm.isHomeKennel));
                 filterResults();
                 setState(() {});
               }
@@ -199,8 +154,7 @@ class KennelsListPageState extends State<KennelsListPage> {
         filteredList = <KennelListAggregate>[];
         filteredList.addAll(globalKennelMainPageList);
       } else {
-        filteredList =
-            QueryKennels.doFilter(searchText, globalKennelMainPageList);
+        filteredList = QueryKennels.doFilter(searchText, globalKennelMainPageList);
       }
     }
   }
@@ -216,15 +170,11 @@ class KennelsListPageState extends State<KennelsListPage> {
           : Container(
               decoration: Backgrounds.defaultHcBackground(),
               padding: const EdgeInsets.only(top: 0.0),
-              child: ((globalKennelMainPageList == null) ||
-                      (globalKennelMainPageList.isEmpty))
-                  ? Center(
-                      child: Text('No Kennels available.', style: headingStyle))
+              child: ((globalKennelMainPageList == null) || (globalKennelMainPageList.isEmpty))
+                  ? Center(child: Text('No Kennels available.', style: headingStyle))
                   : NestedScrollView(
                       controller: scrollController,
-                      headerSliverBuilder:
-                          (BuildContext context, bool innerBoxScrolled) =>
-                              <Widget>[
+                      headerSliverBuilder: (BuildContext context, bool innerBoxScrolled) => <Widget>[
                         //!innerBoxScrolled ? Container() :
                         SliverAppBar(
                           floating: false,
@@ -241,49 +191,28 @@ class KennelsListPageState extends State<KennelsListPage> {
                           itemBuilder: (BuildContext context, int index) {
                             //print('buildListView called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
                             return Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 10.0, right: 10.0),
+                              padding: const EdgeInsets.only(left: 10.0, right: 10.0),
                               child: KennelsListItem(
                                 kennelItem: filteredList[index],
-                                kennelFollowingUpdated: (int following,
-                                    int notificationStatus,
-                                    int emailAlertStatus,
-                                    int isHomeKennel) {
-                                  filteredList[index]
-                                      .extensions
-                                      .followingRequested = -1;
-                                  filteredList[index]
-                                      .extensions
-                                      .notificationsRequested = -1;
-                                  filteredList[index]
-                                      .extensions
-                                      .emailAlertRequested = -1;
+                                kennelFollowingUpdated: (int following, int notificationStatus, int emailAlertStatus, int isHomeKennel) {
+                                  filteredList[index].extensions.followingRequested = -1;
+                                  filteredList[index].extensions.notificationsRequested = -1;
+                                  filteredList[index].extensions.emailAlertRequested = -1;
                                   filteredList[index].hkm.following = following;
-                                  filteredList[index]
-                                          .hkm
-                                          .kennelNotificationPreference =
-                                      notificationStatus;
-                                  filteredList[index]
-                                          .hkm
-                                          .kennelEmailAlertPreference =
-                                      emailAlertStatus;
+                                  filteredList[index].hkm.kennelNotificationPreference = notificationStatus;
+                                  filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
                                   // if this kennel has been set as the home kennel, clear the home kennel
                                   // flag on the rest of the kennels
                                   if (isHomeKennel != 0) {
-                                    for (int i = 0;
-                                        i < filteredList.length;
-                                        i++) {
-                                      filteredList[i].extensions.isHomeKennel =
-                                          0;
+                                    for (int i = 0; i < filteredList.length; i++) {
+                                      filteredList[i].extensions.isHomeKennel = 0;
                                     }
                                   }
-                                  filteredList[index].extensions.isHomeKennel =
-                                      isHomeKennel;
+                                  filteredList[index].extensions.isHomeKennel = isHomeKennel;
                                   setState(() {});
                                 },
                                 kennelSelected: () {
-                                  final KennelListAggregate kennel =
-                                      filteredList[index];
+                                  final KennelListAggregate kennel = filteredList[index];
                                   // // this is a bit of a hack where we clear the list before navigating to the
                                   // // next page. When state changes occurred in child pages further down the
                                   // // route tree, the list would get refreshed, which I think was causing
@@ -293,25 +222,15 @@ class KennelsListPageState extends State<KennelsListPage> {
                                   Navigator.of(context)
                                       .push<dynamic>(
                                     MaterialPageRoute<dynamic>(
-                                      builder: (BuildContext context) =>
-                                          KennelAdminMainPage(
-                                              kennelAggregateItem: kennel),
+                                      builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
                                     ),
                                   )
                                       .then((void dummy) async {
                                     refreshFromTable(true);
 
-                                    final bool result =
-                                        await syncUserDataService
-                                            .updateFromBackend(
-                                                SyncUserDataService
-                                                    .flagHasherEventMapTable,
-                                                true);
-                                    final String resultStr = result
-                                        ? 'successfully'
-                                        : 'unsuccessfully';
-                                    print(
-                                        'Pack member data synchronized $resultStr');
+                                    final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagHasherEventMapTable, true);
+                                    final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                                    print('Pack member data synchronized $resultStr');
                                   });
                                 },
                               ),
@@ -329,28 +248,21 @@ class KennelsListPageState extends State<KennelsListPage> {
       globalKennelMainPageList = null;
     });
 
-    String query =
-        'DELETE FROM ${kennelsTableHelper.getTableName(AppDomainType.user)}';
+    String query = 'DELETE FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)}';
     try {
-      await internalSqlDb.rawQuery(query);
+      await G0<Database>().rawQuery(query);
     } catch (e) {
       print(e);
     }
 
-    query =
-        'DELETE FROM ${hasherKennelMapTableHelper.getTableName(AppDomainType.user)}';
+    query = 'DELETE FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)}';
     try {
-      await internalSqlDb.rawQuery(query);
+      await G0<Database>().rawQuery(query);
     } catch (e) {
       print(e);
     }
 
-    syncUserDataService
-        .updateFromBackend(
-            SyncUserDataService.flagKennelsTable |
-                SyncUserDataService.flagHasherKennelMapTable,
-            false)
-        .then((bool result) {
+    G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable, false).then((bool result) {
       refreshFromTable(true);
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Kennel user data synchronized $resultStr');

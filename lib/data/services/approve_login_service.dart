@@ -1,30 +1,13 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io' show Platform;
-
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-
-import 'package:device_info/device_info.dart';
-
-import 'package:harrier_central/data/models/approve_login_model.dart';
-import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/globals.dart';
-
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:harrier_central/util/enums.dart';
-
-import 'package:http/http.dart' as http;
+import 'package:harrier_central/imports.dart';
 
 class ApproveLoginService {
   Future<ApproveLoginModel> approveLogin(BuildContext context) async {
-    String userId = getStringPref(StringPrefsEnum.userId);
+    String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
     if ((userId ?? '').isEmpty) {
       userId = GUID_EMPTY;
     }
 
-    final String hcVersion =
-        getStringPref(StringPrefsEnum.harrierCentralVersion);
+    final String hcVersion = await SecurePrefs.getStringPref(StringPrefsEnum.harrierCentralVersion);
 
     String deviceId = 'unknown';
     String deviceType = 'unknown';
@@ -41,8 +24,7 @@ class ApproveLoginService {
       deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
       deviceName = '<unknown>';
       systemName = androidInfo.host;
-      systemVersion =
-          '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch}';
+      systemVersion = '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch}';
       manufacturer = androidInfo.brand;
     } else if (Platform.isIOS) {
       final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
@@ -54,9 +36,7 @@ class ApproveLoginService {
       manufacturer = 'Apple';
     }
 
-    final String accessToken = CoreUtilities.generateToken(
-        userId, 'approveLogin',
-        paramString: deviceId);
+    final String accessToken = IveCoreUtilities.generateToken(userId, 'approveLogin', paramString: deviceId);
 
     final String body = jsonEncode(<String, String>{
       'userId': userId,
@@ -67,17 +47,14 @@ class ApproveLoginService {
       'systemName': systemName,
       'systemVersion': systemVersion,
       'manufacturer': manufacturer,
-      'latitude': (deviceLat ?? DEFAULT_LATITUDE).toString(),
-      'longitude': (deviceLon ?? DEFAULT_LONGITUDE).toString(),
+      'latitude': (G0<DeviceInfo>().deviceLat ?? DEFAULT_LATITUDE).toString(),
+      'longitude': (G0<DeviceInfo>().deviceLon ?? DEFAULT_LONGITUDE).toString(),
       'hcVersion': hcVersion,
     });
 
-    Future<http.Response> response;
+    Future<Response> response;
 
-    response = http
-        .post(BASE_API_URL + 'hc3_approve_login',
-            headers: <String, String>{'content-type': 'application/json'},
-            body: body
+    response = post(BASE_API_URL + 'hc3_approve_login', headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -93,27 +70,22 @@ class ApproveLoginService {
     }
 
     // if the response times out, show an error
-    response.timeout(const Duration(seconds: LOGIN_TIMEOUT),
-        onTimeout: () => _onTimeout(context));
+    response.timeout(const Duration(seconds: LOGIN_TIMEOUT), onTimeout: () => _onTimeout(context));
 
-    final http.Response resp = await response;
+    final Response resp = await response;
 
     if (resp == null) {
       return null;
     }
 
-    final ApproveLoginModel loginResult =
-        ApproveLoginModel.itemFromJson(resp.body);
+    final ApproveLoginModel loginResult = ApproveLoginModel.itemFromJson(resp.body);
 
     return loginResult;
   }
 
-  Future<http.Response> _onTimeout(BuildContext context) {
-    CoreUtilities.showAlert(
-            context,
-            'Network Error',
-            'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.',
-            'Quit')
+  Future<Response> _onTimeout(BuildContext context) {
+    IveCoreUtilities.showAlert(
+            context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit')
         .then((void dummy) async {
       await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
     });

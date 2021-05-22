@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:harrier_central/imports.dart';
 
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+// import 'package:flutter/material.dart';
 
-import 'package:harrier_central/widgets/run_tabs.dart';
-import 'package:harrier_central/util/styles.dart';
-import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
-import 'package:harrier_central/database/query_runs.dart';
+// import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+
+// import 'package:harrier_central/widgets/run_tabs.dart';
+// import 'package:harrier_central/util/styles.dart';
+// import 'package:harrier_central/pages/run_admin/run_admin_main.dart';
+// import 'package:harrier_central/database/query_runs.dart';
 
 class RunDetailsPage extends StatelessWidget {
   const RunDetailsPage({Key key, @required this.futureRun}) : super(key: key);
@@ -25,8 +27,7 @@ class RunDetailsPage extends StatelessWidget {
                       Navigator.push<dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) =>
-                              RunDetailPage(eventId: futureRun.event.eventId),
+                          builder: (BuildContext context) => RunDetailPage(eventId: futureRun.event.eventId),
                         ),
                       ); //_select(choices[0]);
                     },

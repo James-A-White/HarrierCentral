@@ -59,7 +59,7 @@
 
 //   String userName = '';
 
-//   final String userId = getStringPref(StringPrefsEnum.userId);
+//   final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
 
 //   GlobalKey tabKey;
 
@@ -266,9 +266,9 @@
 //                                     });
 
 //                                     if (result['result'] != 'failed') {
-//                                       userName = getStringPref(StringPrefsEnum.displayName);
+//                                       userName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
 
-//                                       CoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully loaded for $userName.', 'OK').then((void dummy) {
+//                                       IveCoreUtilities.showAlert(context, 'Profile Load Successful', 'The app has been successfully loaded for $userName.', 'OK').then((void dummy) {
 //                                         Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
 //                                       });
 //                                     } else {
@@ -401,17 +401,17 @@
 //                           final String gender = profile['gender'];
 //                           final dynamic picture = profile['picture']['data']['url'];
 
-//                           setStringPref(StringPrefsEnum.facebookProfilePhoto, picture);
-//                           setStringPref(StringPrefsEnum.facebookId, facebookId);
-//                           setStringPref(StringPrefsEnum.facebookAccessToken, token);
-//                           setStringPref(StringPrefsEnum.gender, gender);
+//                           SecurePrefs.setPref(StringPrefsEnum.facebookProfilePhoto, picture);
+//                           SecurePrefs.setPref(StringPrefsEnum.facebookId, facebookId);
+//                           SecurePrefs.setPref(StringPrefsEnum.facebookAccessToken, token);
+//                           SecurePrefs.setPref(StringPrefsEnum.gender, gender);
 
 //                           userDetailsUi.updateUi(firstName, lastName, email);
 //                           userDetailsUi.firstName = firstName;
 //                           userDetailsUi.lastName = lastName;
 //                           userDetailsUi.email = email;
 
-//                           CoreUtilities.showAlert(context, 'Facebook profile loaded', 'We have copied your Facebook profile information (name, email and profile photo) to the app. Please continue to register by adding your Hash name.', 'OK');
+//                           IveCoreUtilities.showAlert(context, 'Facebook profile loaded', 'We have copied your Facebook profile information (name, email and profile photo) to the app. Please continue to register by adding your Hash name.', 'OK');
 //                         });
 //                       },
 //                       child: Container(
@@ -421,7 +421,7 @@
 //                     ),
 //                     GestureDetector(
 //                       onTap: () {
-//                         CoreUtilities.showAlert(
+//                         IveCoreUtilities.showAlert(
 //                             context,
 //                             'Why Connect with Facebook?',
 //                             'If you are not on a Hash group\'s Mismanagement, this only saves you time typing in your name and e-mail address. For those with administrative access to Harrier Central, having your Facebook credentials allows us to automatically download run information from your Hash group\'s Facebook events and add them to the app.',
@@ -475,12 +475,12 @@
 
 //     if (userDetailsUi != null && userDetailsUi.firstName.isEmpty) {
 //       canProcess = false;
-//       CoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Please enter your first name', durationInSeconds: 7);
+//       IveCoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Please enter your first name', durationInSeconds: 7);
 //     }
 
 //     if (userDetailsUi != null && userDetailsUi.lastName.isEmpty) {
 //       canProcess = false;
-//       CoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Please enter your last name', durationInSeconds: 7);
+//       IveCoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Please enter your last name', durationInSeconds: 7);
 //     }
 
 //     bool emailValid = false;
@@ -491,7 +491,7 @@
 
 //     if (canProcess && !emailValid) {
 //       canProcess = false;
-//       CoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Please enter a valid email address', durationInSeconds: 7);
+//       IveCoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Please enter a valid email address', durationInSeconds: 7);
 //     }
 
 //     if (canProcess && (userDetailsUi != null)) {
@@ -499,10 +499,10 @@
 //         _scanState = 1;
 //       });
 
-//       setStringPref(StringPrefsEnum.firstName, userDetailsUi.firstName);
-//       setStringPref(StringPrefsEnum.lastName, userDetailsUi.lastName);
-//       setStringPref(StringPrefsEnum.email, userDetailsUi.email);
-//       setStringPref(StringPrefsEnum.hashName, userDetailsUi.hashName);
+//       SecurePrefs.setPref(StringPrefsEnum.firstName, userDetailsUi.firstName);
+//       SecurePrefs.setPref(StringPrefsEnum.lastName, userDetailsUi.lastName);
+//       SecurePrefs.setPref(StringPrefsEnum.email, userDetailsUi.email);
+//       SecurePrefs.setPref(StringPrefsEnum.hashName, userDetailsUi.hashName);
 
 //       isLoading = true;
 //       Navigator.push(
@@ -529,18 +529,18 @@
 //               final Map<String,dynamic> result = subSet[0];
 //               if (result.isNotEmpty)
 //               {
-//                 setStringPref(StringPrefsEnum.profilePhotoUrl, result['photo']);
-//                 setStringPref(StringPrefsEnum.displayName, result['displayName']);
-//                 setStringPref(StringPrefsEnum.email, result['email']);
-//                 setStringPref(StringPrefsEnum.facebookId, result['facebookId']);
-//                 setStringPref(StringPrefsEnum.firstName, result['firstName']);
-//                 setStringPref(StringPrefsEnum.hashName, result['hashName']);
-//                 setStringPref(StringPrefsEnum.lastName, result['lastName']);
-//                 setStringPref(StringPrefsEnum.qrCode, result['qrCode']);
-//                 setStringPref(StringPrefsEnum.supportCode, result['supportCode']);
-//                 setStringPref(StringPrefsEnum.resetCode, result['resetCode']);
-//                 setStringPref(StringPrefsEnum.qrSecretCode, result['qrSecretCode']);
-//                 setStringPref(StringPrefsEnum.userId, result['hasherId']);
+//                 SecurePrefs.setPref(StringPrefsEnum.profilePhotoUrl, result['photo']);
+//                 SecurePrefs.setPref(StringPrefsEnum.displayName, result['displayName']);
+//                 SecurePrefs.setPref(StringPrefsEnum.email, result['email']);
+//                 SecurePrefs.setPref(StringPrefsEnum.facebookId, result['facebookId']);
+//                 SecurePrefs.setPref(StringPrefsEnum.firstName, result['firstName']);
+//                 SecurePrefs.setPref(StringPrefsEnum.hashName, result['hashName']);
+//                 SecurePrefs.setPref(StringPrefsEnum.lastName, result['lastName']);
+//                 SecurePrefs.setPref(StringPrefsEnum.qrCode, result['qrCode']);
+//                 SecurePrefs.setPref(StringPrefsEnum.supportCode, result['supportCode']);
+//                 SecurePrefs.setPref(StringPrefsEnum.resetCode, result['resetCode']);
+//                 SecurePrefs.setPref(StringPrefsEnum.qrSecretCode, result['qrSecretCode']);
+//                 SecurePrefs.setPref(StringPrefsEnum.userId, result['hasherId']);
 //               }
 //             }
 //           }
@@ -600,7 +600,7 @@
 //             } else {
 //               // downloading from the cloud failed
 //               setState(() => _scanState = 2);
-//               CoreUtilities.showInSnackBar(context, widget.scaffoldKey, result['message'], durationInSeconds: 7);
+//               IveCoreUtilities.showInSnackBar(context, widget.scaffoldKey, result['message'], durationInSeconds: 7);
 //             }
 //           });
 //         }
@@ -663,7 +663,7 @@
 //         setState(() {});
 //       }
 //       if (controller.value.hasError) {
-//         CoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Camera error ${controller.value.errorDescription}', durationInSeconds: 7);
+//         IveCoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Camera error ${controller.value.errorDescription}', durationInSeconds: 7);
 //       }
 //     });
 
@@ -671,7 +671,7 @@
 //       await controller.initialize();
 //     } on QRReaderException catch (e) {
 //       //logError(e.code, e.description);
-//       CoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Error: ${e.code}\n${e.description}', durationInSeconds: 7);
+//       IveCoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Error: ${e.code}\n${e.description}', durationInSeconds: 7);
 //     }
 
 //     if (mounted) {

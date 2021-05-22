@@ -28,7 +28,7 @@
 //   PageController _pageController;
 //   TabController _tabController;
 
-//   final String userId = getStringPref(StringPrefsEnum.userId);
+//   final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
 
 //   @override
 //   Widget build(BuildContext context) {
@@ -281,8 +281,8 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     super.build(context);
-//     // final String userName = getStringPref(StringPrefsEnum.displayName);
-//     // final String userQrCode = getStringPref(StringPrefsEnum.qrCode);
+//     // final String userName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
+//     // final String userQrCode = await SecurePrefs.getStringPref(StringPrefsEnum.qrCode);
 
 //     return Center(
 //       child: Column(

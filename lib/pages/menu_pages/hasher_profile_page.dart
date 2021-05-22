@@ -1,35 +1,4 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io' show Platform;
-import 'dart:math';
-
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:harrier_central/widgets/profile_photo.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
-
-import 'package:harrier_central/util/styles.dart';
-import 'package:ive_flutter_core/widgets/offline_mode_ribbon.dart';
-import 'package:harrier_central/util/utilities.dart';
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:harrier_central/util/enums.dart';
-import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/constants.dart';
-import 'package:ive_flutter_core/widgets/fancy_divider.dart';
-import 'package:harrier_central/pages/init/choose_profile_image.dart';
-import 'package:harrier_central/database/tables.dart';
-import 'package:harrier_central/data/hc3_services/hashers_service.dart';
-import 'package:harrier_central/data/hc3_services/hasher_kennel_map_service.dart';
-import 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
-import 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
-import 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
-import 'package:ive_flutter_core/util/connection.dart';
-
-// import 'package:harrier_central/widgets/user_details_ui.dart';
-// import 'package:ive_flutter_core/widgets/fancy_divider.dart';
+import 'package:harrier_central/imports.dart';
 
 enum EnumMyProfilePageType { myProfile, anyHasherProfile, newHasherProfile }
 
@@ -67,23 +36,23 @@ class HasherProfilePage extends StatefulWidget {
 }
 
 class HasherProfilePageState extends State<HasherProfilePage> {
-  // String firstName = getStringPref(StringPrefsEnum.firstName);
-  // String lastName = getStringPref(StringPrefsEnum.lastName);
-  // String email = getStringPref(StringPrefsEnum.email);
-  // String hashName = getStringPref(StringPrefsEnum.hashName);
+  // String firstName = await SecurePrefs.getStringPref(StringPrefsEnum.firstName);
+  // String lastName = await SecurePrefs.getStringPref(StringPrefsEnum.lastName);
+  // String email = await SecurePrefs.getStringPref(StringPrefsEnum.email);
+  // String hashName = await SecurePrefs.getStringPref(StringPrefsEnum.hashName);
 
   final GlobalKey<FormState> _profileFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _runCountFormKey = GlobalKey<FormState>();
 
   bool _autoValidate = false;
 
-  final String deviceUserId = getStringPref(StringPrefsEnum.userId);
+  final String deviceUserId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
 
-  // String _firstName = getStringPref(StringPrefsEnum.firstName);
-  // String _lastName = getStringPref(StringPrefsEnum.lastName);
-  // String _email = getStringPref(StringPrefsEnum.email);
-  // String _hashName = getStringPref(StringPrefsEnum.displayName);
-  // String _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
+  // String _firstName = await SecurePrefs.getStringPref(StringPrefsEnum.firstName);
+  // String _lastName = await SecurePrefs.getStringPref(StringPrefsEnum.lastName);
+  // String _email = await SecurePrefs.getStringPref(StringPrefsEnum.email);
+  // String _hashName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
+  // String _photo = await SecurePrefs.getStringPref(StringPrefsEnum.profilePhotoUrl);
 
   bool _isLoading = true;
   bool _isDirty = false;
@@ -116,32 +85,22 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       // TODO(James): Make this AppDomainType correct
       switch (widget.dataContext) {
         case EnumDataContext.event:
-          final bool res = await syncEventAdminService.updateFromBackend(
-              SyncEventAdminService.flagHashersTable |
-                  SyncEventAdminService.flagHasherKennelMapTable |
-                  SyncEventAdminService.flagHasherEventMapTable,
-              true,
-              widget.eventId);
+          final bool res = await G0<TableModel>().syncEventAdminService.updateFromBackend(
+              SyncEventAdminService.flagHashersTable | SyncEventAdminService.flagHasherKennelMapTable | SyncEventAdminService.flagHasherEventMapTable, true, widget.eventId);
           final String resultStr = res ? 'successfully' : 'unsuccessfully';
-          print(
-              'Event data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          print('Event data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
         case EnumDataContext.user:
-          final bool res = await syncUserDataService.updateFromBackend(
-              SyncUserDataService.flagHashersTable, true);
+          final bool res = await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagHashersTable, true);
           final String resultStr = res ? 'successfully' : 'unsuccessfully';
-          print(
-              'User master Hashers data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          print('User master Hashers data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
         case EnumDataContext.kennel:
-          final bool res = await syncKennelAdminService.updateFromBackend(
-              SyncKennelAdminService.flagHashersTable |
-                  SyncKennelAdminService.flagHasherKennelMapTable,
-              true,
-              widget.kennelId);
+          final bool res = await G0<TableModel>()
+              .syncKennelAdminService
+              .updateFromBackend(SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennelId);
           final String resultStr = res ? 'successfully' : 'unsuccessfully';
-          print(
-              'Kennel data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+          print('Kennel data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
 
           query = ''' 
 
@@ -151,7 +110,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             hkm.historicalHaringCount,
             hkm.historicalCountIsEstimate
             FROM hashers h
-            LEFT OUTER JOIN ${hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm ON hkm.kennelId = "${widget.kennelId}" AND hkm.userId = "${widget.hasherId}"
+            LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm ON hkm.kennelId = "${widget.kennelId}" AND hkm.userId = "${widget.hasherId}"
             WHERE h.hasherId = "${widget.hasherId}"
           
           ''';
@@ -164,35 +123,27 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       setState(() {
         _isLoading = true;
       });
-      final List<Map<String, dynamic>> results =
-          await internalSqlDb.rawQuery(query);
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
       if ((results != null) && (results.isNotEmpty)) {
         hasher = HashersModel.fromJson(results[0]);
         if (widget.dataContext == EnumDataContext.kennel) {
-          hkmData = hasherKennelMapTableHelper.fromMap(results[0]);
+          hkmData = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
         }
 
         firstNameController.text = hasher.firstName;
         lastNameController.text = hasher.lastName;
-        emailController.text =
-            ''; // we don't reveal e-mail in the app for users other than the user of the app
+        emailController.text = ''; // we don't reveal e-mail in the app for users other than the user of the app
         hashNameController.text = hasher.hashName;
-        newPhoto = hasher
-            .photo; // if we have returned from the photo chooser, don't overwrite
-        previousRunCountController.text =
-            (hkmData?.historicalPackRunCount ?? 0).toString();
-        previousHaringCountController.text =
-            (hkmData?.historicalHaringCount ?? 0).toString();
-        historicalCountIsEstimate =
-            (hkmData?.historicalCountIsEstimate ?? 0) == 1;
-        _distancePreference =
-            hasher.preferences & hasherPref_distanceMeasuredIn;
-        _autoRunPreference =
-            hasher.preferences & hasherPref_distanceForAutoDisplay;
+        newPhoto = hasher.photo; // if we have returned from the photo chooser, don't overwrite
+        previousRunCountController.text = (hkmData?.historicalPackRunCount ?? 0).toString();
+        previousHaringCountController.text = (hkmData?.historicalHaringCount ?? 0).toString();
+        historicalCountIsEstimate = (hkmData?.historicalCountIsEstimate ?? 0) == 1;
+        _distancePreference = hasher.preferences & hasherPref_distanceMeasuredIn;
+        _autoRunPreference = hasher.preferences & hasherPref_distanceForAutoDisplay;
 
         // fill in the e-mail for the user of the app.
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          hasher.email = getStringPref(StringPrefsEnum.email);
+          hasher.email = await SecurePrefs.getStringPref(StringPrefsEnum.email);
           emailController.text = hasher.email;
         }
       }
@@ -223,14 +174,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       refreshUserDataFromTable(true);
       photoPrefix = widget.hasherId;
     } else {
-      if ((widget.kennelId != null) &&
-          (widget.kennelId.isNotEmpty) &&
-          (widget.kennelId != GUID_EMPTY)) {
+      if ((widget.kennelId != null) && (widget.kennelId.isNotEmpty) && (widget.kennelId != GUID_EMPTY)) {
         _addAsKennelFollower = true;
       }
       hasher = HashersModel(hasherId: GUID_EMPTY);
-      photoPrefix =
-          'newHcUser_' + DateTime.now().microsecondsSinceEpoch.toString();
+      photoPrefix = 'newHcUser_' + DateTime.now().microsecondsSinceEpoch.toString();
 
       _isLoading = false;
     }
@@ -239,9 +187,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
       title: Text(
-        widget.pageType == EnumMyProfilePageType.myProfile
-            ? 'My Profile'
-            : 'Hasher Profile',
+        widget.pageType == EnumMyProfilePageType.myProfile ? 'My Profile' : 'Hasher Profile',
         style: const TextStyle(
           color: Colors.white,
         ),
@@ -291,8 +237,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     if (lastNameController.text != hasher?.lastName ?? '') {
       isDirty = true;
     }
-    if ((hasher?.email != null) &&
-        ((emailController.text ?? '') != (hasher?.email ?? ''))) {
+    if ((hasher?.email != null) && ((emailController.text ?? '') != (hasher?.email ?? ''))) {
       isDirty = true;
     }
     if (hashNameController.text != hasher?.hashName ?? '') {
@@ -301,16 +246,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     if (newPhoto != hasher?.photo ?? '') {
       isDirty = true;
     }
-    if (previousRunCountController.text !=
-        (hkmData?.historicalPackRunCount ?? 0).toString()) {
+    if (previousRunCountController.text != (hkmData?.historicalPackRunCount ?? 0).toString()) {
       isDirty = true;
     }
-    if (previousHaringCountController.text !=
-        (hkmData?.historicalHaringCount ?? 0).toString()) {
+    if (previousHaringCountController.text != (hkmData?.historicalHaringCount ?? 0).toString()) {
       isDirty = true;
     }
-    if (historicalCountIsEstimate !=
-        ((hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
+    if (historicalCountIsEstimate != ((hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
       isDirty = true;
     }
 
@@ -321,8 +263,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       }
     }
 
-    if (historicalCountIsEstimate !=
-        ((hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
+    if (historicalCountIsEstimate != ((hkmData?.historicalCountIsEstimate ?? 0) == 1)) {
       isDirty = true;
     }
 
@@ -335,28 +276,24 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   Widget _buildCircularProgressIndicator() {
     return Center(
-      child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Loading / Updating User Profile',
-              style: headingStyle,
-              textAlign: TextAlign.center,
-            ),
-            Container(height: 30),
-            SpinKitCircle(
-              size: 75.0,
-              itemBuilder: (_, int index) {
-                return DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: index.isEven
-                        ? Colors.grey[50]
-                        : Theme.of(context).accentColor,
-                  ),
-                );
-              },
-            ),
-          ]),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        Text(
+          'Loading / Updating User Profile',
+          style: headingStyle,
+          textAlign: TextAlign.center,
+        ),
+        Container(height: 30),
+        SpinKitCircle(
+          size: 75.0,
+          itemBuilder: (_, int index) {
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                color: index.isEven ? Colors.grey[50] : Theme.of(context).accentColor,
+              ),
+            );
+          },
+        ),
+      ]),
     );
   }
 
@@ -370,7 +307,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       setState(() {
         // write the value of the email address to local preferences
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          setStringPref(StringPrefsEnum.email, emailController.text);
+          SecurePrefs.setPref(StringPrefsEnum.email, emailController.text);
         }
 
         _isLoading = true;
@@ -385,9 +322,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             hashName: hashNameController.text,
             photo: newPhoto,
             eventId: widget.eventId,
-            kennelId: ((widget.kennelId == null) || (widget.kennelId == ''))
-                ? GUID_EMPTY
-                : widget.kennelId,
+            kennelId: ((widget.kennelId == null) || (widget.kennelId == '')) ? GUID_EMPTY : widget.kennelId,
             historicalPackRunCount: previousRunCountController.text,
             historicalHaringCount: previousHaringCountController.text,
             historicalCountIsEstimate: historicalCountIsEstimate,
@@ -399,14 +334,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           final HashersModel h = HashersModel.fromJson(jsonResult[0][0]);
           setState(() {
             if (widget.pageType == EnumMyProfilePageType.myProfile) {
-              setStringPref(StringPrefsEnum.profilePhotoUrl, h.photo);
-              setStringPref(StringPrefsEnum.displayName, h.dispName);
+              SecurePrefs.setPref(StringPrefsEnum.profilePhotoUrl, h.photo);
+              SecurePrefs.setPref(StringPrefsEnum.displayName, h.dispName);
               // don't set the e-mail with the result from the
               // api call. Use the local value in hasher.email instead
-              //setStringPref(StringPrefsEnum.email, hasher.email);
-              setStringPref(StringPrefsEnum.firstName, h.firstName);
-              setStringPref(StringPrefsEnum.hashName, h.hashName);
-              setStringPref(StringPrefsEnum.lastName, h.lastName);
+              //SecurePrefs.setPref(StringPrefsEnum.email, hasher.email);
+              SecurePrefs.setPref(StringPrefsEnum.firstName, h.firstName);
+              SecurePrefs.setPref(StringPrefsEnum.hashName, h.hashName);
+              SecurePrefs.setPref(StringPrefsEnum.lastName, h.lastName);
               setIntPref(IntPrefsEnum.hasherPreferences, h.preferences);
             }
 
@@ -417,8 +352,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             if (widget.pageType != EnumMyProfilePageType.myProfile) {
               Navigator.of(context).pop(h);
             } else {
-              CoreUtilities.showAlert(context, 'Profile Updated',
-                  'Your profile was updated successfully.', 'OK');
+              IveCoreUtilities.showAlert(context, 'Profile Updated', 'Your profile was updated successfully.', 'OK');
             }
           });
         });
@@ -438,8 +372,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           autocorrect: false,
           controller: firstNameController,
           //initialValue: hasher.firstName,
-          decoration:
-              const InputDecoration(labelText: 'First name (or initial)'),
+          decoration: const InputDecoration(labelText: 'First name (or initial)'),
           keyboardType: TextInputType.text,
           validator: (String arg) {
             if (arg.isEmpty)
@@ -455,8 +388,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           autocorrect: false,
           //initialValue: hasher.lastName,
           controller: lastNameController,
-          decoration:
-              const InputDecoration(labelText: 'Last Name (or initial)'),
+          decoration: const InputDecoration(labelText: 'Last Name (or initial)'),
           keyboardType: TextInputType.text,
           validator: (String arg) {
             if (arg.isEmpty)
@@ -511,8 +443,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         TextFormField(
           autocorrect: false,
           controller: previousHaringCountController,
-          decoration:
-              const InputDecoration(labelText: 'Historical haring count'),
+          decoration: const InputDecoration(labelText: 'Historical haring count'),
           keyboardType: TextInputType.number,
           onSaved: (String val) {
             hasher.firstName = val;
@@ -554,8 +485,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   String validateEmail(String value) {
     if (value.isNotEmpty) {
-      const Pattern pattern =
-          r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
+      const Pattern pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
       final RegExp regex = RegExp(pattern, caseSensitive: false);
       if (!regex.hasMatch(value))
         return 'Please enter a valid Email';
@@ -588,9 +518,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width),
+        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -601,14 +529,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             appBar: appBar,
             body: _isLoading
                 ? Container(
-                    height: MediaQuery.of(context).size.height -
-                        appBar.preferredSize.height,
+                    height: MediaQuery.of(context).size.height - appBar.preferredSize.height,
                     decoration: Backgrounds.defaultHcBackground(),
                     child: _buildCircularProgressIndicator())
                 : Container(
                     decoration: Backgrounds.defaultHcBackground(),
-                    height: MediaQuery.of(context).size.height -
-                        appBar.preferredSize.height,
+                    height: MediaQuery.of(context).size.height - appBar.preferredSize.height,
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onPanDown: (_) {
@@ -616,8 +542,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                       },
                       child: SingleChildScrollView(
                         child: Padding(
-                          padding: const EdgeInsets.only(
-                              top: 30, left: 20, right: 20),
+                          padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -627,70 +552,45 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                 child: Column(
                                   children: <Widget>[
                                     Text(
-                                      widget.pageType ==
-                                              EnumMyProfilePageType.myProfile
-                                          ? 'My Profile Information'
-                                          : 'Hasher Profile Information',
+                                      widget.pageType == EnumMyProfilePageType.myProfile ? 'My Profile Information' : 'Hasher Profile Information',
                                       style: headingStyle,
                                       textAlign: TextAlign.center,
                                     ),
                                     Container(
-                                      padding: EdgeInsets.only(
-                                          top: 30.0,
-                                          left:
-                                              (deviceWidthScaleFactor - 1) * 30,
-                                          right: (deviceWidthScaleFactor - 1) *
-                                              30),
+                                      padding: EdgeInsets.only(top: 30.0, left: (deviceWidthScaleFactor - 1) * 30, right: (deviceWidthScaleFactor - 1) * 30),
                                       child: Container(
                                         child: Center(
                                           child: Column(
                                             children: <Widget>[
                                               Container(
-                                                padding:
-                                                    const EdgeInsets.all(10.0),
-                                                margin: const EdgeInsets.only(
-                                                    bottom: 45),
+                                                padding: const EdgeInsets.all(10.0),
+                                                margin: const EdgeInsets.only(bottom: 45),
                                                 decoration: BoxDecoration(
                                                   color: Colors.yellow[100],
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          5.0),
+                                                  borderRadius: BorderRadius.circular(5.0),
                                                 ),
                                                 child: Form(
                                                   key: _profileFormKey,
-                                                  autovalidateMode:
-                                                      _autoValidate
-                                                          ? AutovalidateMode
-                                                              .always
-                                                          : AutovalidateMode
-                                                              .disabled,
+                                                  autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
                                                   child: profileFormUi(),
                                                 ),
                                               ),
-                                              const FancyDivider(
-                                                  innerColor: Colors.white),
+                                              const FancyDivider(innerColor: Colors.white),
                                               Container(
                                                 height: 220,
                                                 color: Colors.white,
-                                                padding:
-                                                    const EdgeInsets.all(10.0),
-                                                margin: const EdgeInsets.only(
-                                                    top: 20, bottom: 30),
+                                                padding: const EdgeInsets.all(10.0),
+                                                margin: const EdgeInsets.only(top: 20, bottom: 30),
                                                 child: newPhoto.isEmpty
                                                     ? Image.asset(
                                                         'images/icons/create_profile_photo.png',
                                                       )
                                                     : Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                    .only(
-                                                                left: 0,
-                                                                right: 0),
+                                                        padding: const EdgeInsets.only(left: 0, right: 0),
                                                         child: AspectRatio(
                                                           aspectRatio: 1.0,
                                                           child: ProfilePhoto(
-                                                            profilePhotoUrl:
-                                                                newPhoto,
+                                                            profilePhotoUrl: newPhoto,
                                                             //photoHeight: 200.0,
                                                             //leftPadding: 0.0,
                                                           ),
@@ -711,33 +611,21 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       ),
                                               ),
                                               Connection.styleForConnected(
+                                                G0<AppModel>().connectionStatus,
                                                 RaisedButton(
                                                   onPressed: () {
-                                                    if (Connection
-                                                        .checkForConnection(
-                                                            context)) {
+                                                    if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
                                                       Navigator.push(
                                                         context,
-                                                        MaterialPageRoute<
-                                                            String>(
-                                                          builder: (BuildContext
-                                                                  context) =>
-                                                              ChooseProfileImage(
-                                                            isForThisDevice: widget
-                                                                    .pageType ==
-                                                                EnumMyProfilePageType
-                                                                    .myProfile,
-                                                            fileNamePrefix:
-                                                                photoPrefix,
-                                                            currentProfileImage:
-                                                                hasher?.photo ??
-                                                                    newPhoto,
+                                                        MaterialPageRoute<String>(
+                                                          builder: (BuildContext context) => ChooseProfileImage(
+                                                            isForThisDevice: widget.pageType == EnumMyProfilePageType.myProfile,
+                                                            fileNamePrefix: photoPrefix,
+                                                            currentProfileImage: hasher?.photo ?? newPhoto,
                                                           ),
                                                         ),
                                                       ).then((String result) {
-                                                        if ((result != null) &&
-                                                            (result
-                                                                .isNotEmpty)) {
+                                                        if ((result != null) && (result.isNotEmpty)) {
                                                           newPhoto = result;
                                                           checkDirty();
                                                           //setState(() {});
@@ -745,33 +633,22 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       });
                                                     }
                                                   },
-                                                  child: Text(
-                                                      'Update Profile Image',
-                                                      style: buttonTextStyle),
+                                                  child: Text('Update Profile Image', style: buttonTextStyle),
                                                 ),
                                               ),
-                                              (widget.uiElementsToDisplay &
-                                                          HasherProfilePage
-                                                              .flagUiElement_distancePref ==
-                                                      0)
+                                              (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_distancePref == 0)
                                                   ? Container()
                                                   : Column(
                                                       children: <Widget>[
                                                         const FancyDivider(
-                                                          innerColor:
-                                                              Colors.white,
+                                                          innerColor: Colors.white,
                                                           topMargin: 30.0,
                                                           bottomMargin: 20.0,
                                                         ),
                                                         Container(
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: Colors
-                                                                .yellow[100],
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        5.0),
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.yellow[100],
+                                                            borderRadius: BorderRadius.circular(5.0),
                                                           ),
                                                           child: Column(
                                                             children: <Widget>[
@@ -781,64 +658,48 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               ),
                                                               Text(
                                                                 'Distance Preference',
-                                                                style:
-                                                                    headingStyle20Black,
+                                                                style: headingStyle20Black,
                                                               ),
                                                               const SizedBox(
                                                                 height: 10,
                                                                 width: 10,
                                                               ),
                                                               Row(
-                                                                children: <
-                                                                    Widget>[
+                                                                children: <Widget>[
                                                                   Radio<int>(
                                                                     value: 0,
-                                                                    groupValue:
-                                                                        _distancePreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange1,
+                                                                    groupValue: _distancePreference,
+                                                                    onChanged: _handleRadioValueChange1,
                                                                   ),
                                                                   const Text(
                                                                     'Auto',
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                    style: TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <
-                                                                    Widget>[
+                                                                children: <Widget>[
                                                                   Radio<int>(
                                                                     value: 2,
-                                                                    groupValue:
-                                                                        _distancePreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange1,
+                                                                    groupValue: _distancePreference,
+                                                                    onChanged: _handleRadioValueChange1,
                                                                   ),
                                                                   const Text(
                                                                     'Kilometers',
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                    style: TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <
-                                                                    Widget>[
+                                                                children: <Widget>[
                                                                   Radio<int>(
                                                                     value: 3,
-                                                                    groupValue:
-                                                                        _distancePreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange1,
+                                                                    groupValue: _distancePreference,
+                                                                    onChanged: _handleRadioValueChange1,
                                                                   ),
                                                                   const Text(
                                                                     'Miles',
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                    style: TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
                                                               ),
@@ -848,78 +709,47 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         hasLocationPermissions
                                                             ? Container()
                                                             : Padding(
-                                                                padding: const EdgeInsets
-                                                                        .only(
-                                                                    top: 22.0,
-                                                                    bottom:
-                                                                        10.0),
-                                                                child:
-                                                                    RaisedButton(
-                                                                  onPressed:
-                                                                      () async {
-                                                                    if (Platform
-                                                                        .isIOS) {
-                                                                      if (await Permission
-                                                                          .locationWhenInUse
-                                                                          .isGranted) {
-                                                                        setIntPref(
-                                                                            IntPrefsEnum.hasLocationPermissions,
-                                                                            1);
-                                                                        hasLocationPermissions =
-                                                                            true;
-                                                                        Utilities
-                                                                            .subscribeToGeoLocationStream();
+                                                                padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
+                                                                child: RaisedButton(
+                                                                  onPressed: () async {
+                                                                    if (Platform.isIOS) {
+                                                                      if (await Permission.locationWhenInUse.isGranted) {
+                                                                        setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                        hasLocationPermissions = true;
+                                                                        Utilities.subscribeToGeoLocationStream();
                                                                       }
                                                                     } else {
-                                                                      if (await Permission
-                                                                          .location
-                                                                          .isGranted) {
-                                                                        setIntPref(
-                                                                            IntPrefsEnum.hasLocationPermissions,
-                                                                            1);
-                                                                        hasLocationPermissions =
-                                                                            true;
-                                                                        Utilities
-                                                                            .subscribeToGeoLocationStream();
+                                                                      if (await Permission.location.isGranted) {
+                                                                        setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                        hasLocationPermissions = true;
+                                                                        Utilities.subscribeToGeoLocationStream();
                                                                       }
                                                                     }
 
-                                                                    CoreUtilities.showAlert(
+                                                                    IveCoreUtilities.showAlert(
                                                                         context,
                                                                         'Location preferences updated',
                                                                         'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
                                                                         'OK');
                                                                   },
-                                                                  child: Text(
-                                                                      'Enable Location Svcs',
-                                                                      style:
-                                                                          buttonTextStyle),
+                                                                  child: Text('Enable Location Svcs', style: buttonTextStyle),
                                                                 ),
                                                               ),
                                                       ],
                                                     ),
-                                              (widget.uiElementsToDisplay &
-                                                          HasherProfilePage
-                                                              .flagUiElement_autoDisplayRunsDistance ==
-                                                      0)
+                                              (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_autoDisplayRunsDistance == 0)
                                                   ? Container()
                                                   : Column(
                                                       children: <Widget>[
                                                         const FancyDivider(
-                                                          innerColor:
-                                                              Colors.white,
+                                                          innerColor: Colors.white,
                                                           topMargin: 45.0,
                                                           bottomMargin: 20.0,
                                                         ),
                                                         Container(
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: Colors
-                                                                .yellow[100],
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        5.0),
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.yellow[100],
+                                                            borderRadius: BorderRadius.circular(5.0),
                                                           ),
                                                           child: Column(
                                                             children: <Widget>[
@@ -928,172 +758,115 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 width: 10,
                                                               ),
                                                               Row(
-                                                                children: <
-                                                                    Widget>[
+                                                                children: <Widget>[
                                                                   Radio<int>(
                                                                     value: 0,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   const Text(
                                                                     'Do not auto show runs',
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                    style: TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Text(
                                                                 'Or...\r\n...Automatically Show\r\nAll Runs Within...',
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                style:
-                                                                    headingStyle20Black,
+                                                                textAlign: TextAlign.center,
+                                                                style: headingStyle20Black,
                                                               ),
                                                               const SizedBox(
                                                                 height: 10,
                                                                 width: 10,
                                                               ),
                                                               Row(
-                                                                children: <
-                                                                    Widget>[
+                                                                children: <Widget>[
                                                                   Radio<int>(
                                                                     value: 4,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
-                                                                    '10 ' +
-                                                                        getDistancePreferenceAsString(
-                                                                            _distancePreference),
-                                                                    style: const TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                    '10 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <
-                                                                    Widget>[
+                                                                children: <Widget>[
                                                                   Radio<int>(
                                                                     value: 8,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
-                                                                    '25 ' +
-                                                                        getDistancePreferenceAsString(
-                                                                            _distancePreference),
-                                                                    style: const TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                    '25 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <
-                                                                    Widget>[
+                                                                children: <Widget>[
                                                                   Radio<int>(
                                                                     value: 12,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
-                                                                    '50 ' +
-                                                                        getDistancePreferenceAsString(
-                                                                            _distancePreference),
-                                                                    style: const TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                    '50 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <
-                                                                    Widget>[
+                                                                children: <Widget>[
                                                                   Radio<int>(
                                                                     value: 16,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
-                                                                    '75 ' +
-                                                                        getDistancePreferenceAsString(
-                                                                            _distancePreference),
-                                                                    style: const TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                    '75 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <
-                                                                    Widget>[
+                                                                children: <Widget>[
                                                                   Radio<int>(
                                                                     value: 20,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
-                                                                    '100 ' +
-                                                                        getDistancePreferenceAsString(
-                                                                            _distancePreference),
-                                                                    style: const TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                    '100 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <
-                                                                    Widget>[
+                                                                children: <Widget>[
                                                                   Radio<int>(
                                                                     value: 24,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
-                                                                    '150 ' +
-                                                                        getDistancePreferenceAsString(
-                                                                            _distancePreference),
-                                                                    style: const TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                    '150 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <
-                                                                    Widget>[
+                                                                children: <Widget>[
                                                                   Radio<int>(
                                                                     value: 28,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
+                                                                    groupValue: _autoRunPreference,
+                                                                    onChanged: _handleRadioValueChange2,
                                                                   ),
                                                                   Text(
-                                                                    '200 ' +
-                                                                        getDistancePreferenceAsString(
-                                                                            _distancePreference),
-                                                                    style: const TextStyle(
-                                                                        fontSize:
-                                                                            16.0),
+                                                                    '200 ' + getDistancePreferenceAsString(_distancePreference),
+                                                                    style: const TextStyle(fontSize: 16.0),
                                                                   ),
                                                                 ],
                                                               ),
@@ -1103,52 +876,30 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         hasLocationPermissions
                                                             ? Container()
                                                             : Padding(
-                                                                padding: const EdgeInsets
-                                                                        .only(
-                                                                    top: 22.0,
-                                                                    bottom:
-                                                                        10.0),
-                                                                child:
-                                                                    RaisedButton(
-                                                                  onPressed:
-                                                                      () async {
-                                                                    if (Platform
-                                                                        .isIOS) {
-                                                                      if (await Permission
-                                                                          .locationWhenInUse
-                                                                          .isGranted) {
-                                                                        setIntPref(
-                                                                            IntPrefsEnum.hasLocationPermissions,
-                                                                            1);
-                                                                        hasLocationPermissions =
-                                                                            true;
-                                                                        Utilities
-                                                                            .subscribeToGeoLocationStream();
+                                                                padding: const EdgeInsets.only(top: 22.0, bottom: 10.0),
+                                                                child: RaisedButton(
+                                                                  onPressed: () async {
+                                                                    if (Platform.isIOS) {
+                                                                      if (await Permission.locationWhenInUse.isGranted) {
+                                                                        setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                        hasLocationPermissions = true;
+                                                                        Utilities.subscribeToGeoLocationStream();
                                                                       }
                                                                     } else {
-                                                                      if (await Permission
-                                                                          .location
-                                                                          .isGranted) {
-                                                                        setIntPref(
-                                                                            IntPrefsEnum.hasLocationPermissions,
-                                                                            1);
-                                                                        hasLocationPermissions =
-                                                                            true;
-                                                                        Utilities
-                                                                            .subscribeToGeoLocationStream();
+                                                                      if (await Permission.location.isGranted) {
+                                                                        setIntPref(IntPrefsEnum.hasLocationPermissions, 1);
+                                                                        hasLocationPermissions = true;
+                                                                        Utilities.subscribeToGeoLocationStream();
                                                                       }
                                                                     }
 
-                                                                    CoreUtilities.showAlert(
+                                                                    IveCoreUtilities.showAlert(
                                                                         context,
                                                                         'Location preferences updated',
                                                                         'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
                                                                         'OK');
                                                                   },
-                                                                  child: Text(
-                                                                      'Enable Location Svcs',
-                                                                      style:
-                                                                          buttonTextStyle),
+                                                                  child: Text('Enable Location Svcs', style: buttonTextStyle),
                                                                 ),
                                                               ),
                                                       ],
@@ -1162,10 +913,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         ),
                                       ),
                                     ),
-                                    (widget.uiElementsToDisplay &
-                                                HasherProfilePage
-                                                    .flagUiElement_followKennel ==
-                                            0)
+                                    (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_followKennel == 0)
                                         ? Container()
                                         : Column(
                                             children: <Widget>[
@@ -1174,33 +922,24 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 bottomMargin: 20.0,
                                               ),
                                               Container(
-                                                padding:
-                                                    const EdgeInsets.all(10.0),
-                                                margin: const EdgeInsets.only(
-                                                    bottom: 45),
+                                                padding: const EdgeInsets.all(10.0),
+                                                margin: const EdgeInsets.only(bottom: 45),
                                                 decoration: BoxDecoration(
                                                   color: Colors.yellow[100],
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          5.0),
+                                                  borderRadius: BorderRadius.circular(5.0),
                                                 ),
                                                 child: Row(
                                                   children: <Widget>[
                                                     Container(
-                                                      margin:
-                                                          const EdgeInsets.only(
-                                                              right: 10),
+                                                      margin: const EdgeInsets.only(right: 10),
                                                       height: 25,
                                                       width: 25,
                                                       color: Colors.yellow[100],
                                                       child: Checkbox(
-                                                        value:
-                                                            _addAsKennelFollower,
-                                                        onChanged:
-                                                            (bool value) {
+                                                        value: _addAsKennelFollower,
+                                                        onChanged: (bool value) {
                                                           setState(() {
-                                                            _addAsKennelFollower =
-                                                                value;
+                                                            _addAsKennelFollower = value;
                                                           });
                                                         },
                                                       ),
@@ -1208,22 +947,17 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     const Text(
                                                       'Follow this Kennel',
                                                       //style: headingStyle,
-                                                      textAlign:
-                                                          TextAlign.center,
+                                                      textAlign: TextAlign.center,
                                                     ),
                                                   ],
                                                 ),
                                               ),
                                             ],
                                           ),
-                                    (widget.uiElementsToDisplay &
-                                                HasherProfilePage
-                                                    .flagUiElement_inviteCode ==
-                                            0)
+                                    (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_inviteCode == 0)
                                         ? Container()
                                         : Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.stretch,
+                                            crossAxisAlignment: CrossAxisAlignment.stretch,
                                             children: <Widget>[
                                               const FancyDivider(
                                                 innerColor: Colors.white,
@@ -1240,26 +974,17 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 textAlign: TextAlign.center,
                                               ),
                                               Container(
-                                                padding:
-                                                    const EdgeInsets.all(10.0),
-                                                margin: const EdgeInsets.only(
-                                                    top: 20, bottom: 40),
+                                                padding: const EdgeInsets.all(10.0),
+                                                margin: const EdgeInsets.only(top: 20, bottom: 40),
                                                 // width: 100,
                                                 // height: 50,
                                                 decoration: BoxDecoration(
                                                   color: Colors.yellow[100],
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          5.0),
+                                                  borderRadius: BorderRadius.circular(5.0),
                                                 ),
                                                 child: Form(
                                                   key: _runCountFormKey,
-                                                  autovalidateMode:
-                                                      _autoValidate
-                                                          ? AutovalidateMode
-                                                              .always
-                                                          : AutovalidateMode
-                                                              .disabled,
+                                                  autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
                                                   child: runCountUi(),
                                                 ),
                                               ),
@@ -1277,26 +1002,18 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 width: 10,
                                               ),
                                               Text(
-                                                (hasher?.resetCode ?? '')
-                                                    .replaceAll(
-                                                        QR_PREFIX_USER_RESET_CODE,
-                                                        ''),
+                                                (hasher?.resetCode ?? '').replaceAll(QR_PREFIX_USER_RESET_CODE, ''),
                                                 style: largeText,
                                                 textAlign: TextAlign.center,
                                               ),
                                               Container(
-                                                margin: const EdgeInsets.only(
-                                                    top: 20),
+                                                margin: const EdgeInsets.only(top: 20),
                                                 // height: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
                                                 // width: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
                                                 child: QrImage(
-                                                    backgroundColor:
-                                                        Colors.white,
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            20.0),
-                                                    data:
-                                                        hasher?.resetCode ?? '',
+                                                    backgroundColor: Colors.white,
+                                                    padding: const EdgeInsets.all(20.0),
+                                                    data: hasher?.resetCode ?? '',
                                                     //data: 'testing123',
                                                     version: 4,
                                                     //size: 200.0,
@@ -1319,31 +1036,25 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         Positioned(
             bottom: 0,
             child: Container(
-                padding: const EdgeInsets.only(
-                    top: 10, right: 20, bottom: 10, left: 20),
+                padding: const EdgeInsets.only(top: 10, right: 20, bottom: 10, left: 20),
                 child: Connection.styleForConnected(
+                  G0<AppModel>().connectionStatus,
                   RaisedButton(
-                    color:
-                        _isDirty ? Theme.of(context).accentColor : Colors.grey,
+                    color: _isDirty ? Theme.of(context).accentColor : Colors.grey,
                     onPressed: () {
-                      if (Connection.checkForConnection(context) && _isDirty) {
+                      if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus) && _isDirty) {
                         _updateProfile();
                       }
                     },
-                    child: Text(
-                        widget.pageType ==
-                                EnumMyProfilePageType.newHasherProfile
-                            ? 'Add Hasher'
-                            : 'Save Changes',
-                        style: buttonTextStyle),
+                    child: Text(widget.pageType == EnumMyProfilePageType.newHasherProfile ? 'Add Hasher' : 'Save Changes', style: buttonTextStyle),
                   ),
                 ),
                 height: 60,
                 width: MediaQuery.of(context).size.width,
                 color: Colors.yellow[100])),
         OfflineModeRibbon(
-          showRibbon: globalConnectionStatus == connectionStatus_notConnected,
-          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
+          lastSync: SecurePrefs.getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
         ),
       ],

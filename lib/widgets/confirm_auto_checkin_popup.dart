@@ -1,10 +1,4 @@
-import 'dart:core';
-
-import 'package:flutter/material.dart';
-
-import 'package:harrier_central/util/enums.dart';
-
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:harrier_central/imports.dart';
 
 class ConfirmAutoCheckinPopup extends StatefulWidget {
   const ConfirmAutoCheckinPopup(
@@ -27,14 +21,12 @@ class ConfirmAutoCheckinPopup extends StatefulWidget {
   final num eventNumber;
 
   @override
-  _ConfirmAutoCheckinPopupState createState() =>
-      _ConfirmAutoCheckinPopupState();
+  _ConfirmAutoCheckinPopupState createState() => _ConfirmAutoCheckinPopupState();
 }
 
 class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
   final FocusNode myFocusNodeFirstName = FocusNode();
-  TextEditingController followKennelAmountTextController =
-      TextEditingController();
+  TextEditingController followKennelAmountTextController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -44,8 +36,7 @@ class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
       content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
         CachedNetworkImage(
           height: 120.0,
-          imageUrl:
-              widget.eventImage != null ? widget.eventImage : widget.kennelLogo,
+          imageUrl: widget.eventImage != null ? widget.eventImage : widget.kennelLogo,
           // errorWidget:
           //     (BuildContext context, String url, Exception error) =>
           //         const  Icon(Icons.error),

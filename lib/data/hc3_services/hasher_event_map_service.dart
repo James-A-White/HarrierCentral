@@ -1,18 +1,4 @@
-import 'dart:async';
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-import 'package:sqflite/sqflite.dart';
-
-import 'package:ive_flutter_core/util/core_utilities.dart';
-import 'package:harrier_central/util/constants.dart';
-import 'package:harrier_central/util/globals.dart';
-import 'package:ive_flutter_core/util/connection.dart';
-import 'package:ive_flutter_core/database/base_service.dart';
-import 'package:harrier_central/database/tables.dart';
-import 'package:harrier_central/util/enums.dart';
-
-import 'package:json_annotation/json_annotation.dart';
+import 'package:harrier_central/imports.dart';
 
 part 'hasher_event_map_service.g.dart';
 
@@ -38,10 +24,8 @@ class HasherEventMapModel implements BaseModel {
       this.removed,
       this.updatedAt});
 
-  factory HasherEventMapModel.fromJson(Map<String, dynamic> json) =>
-      _$HasherEventMapModelFromJson(json);
+  factory HasherEventMapModel.fromJson(Map<String, dynamic> json) => _$HasherEventMapModelFromJson(json);
 
-  @override
   Map<String, dynamic> toJson() => _$HasherEventMapModelToJson(this);
 
   final String hemId;
@@ -65,24 +49,11 @@ class HasherEventMapModel implements BaseModel {
   final DateTime updatedAt;
 }
 
-class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
-  HasherEventMapTableHelper();
-
-  @override
-  num forceRequeryInterval;
-
-  @override
-  num cacheDuration;
-
-  String tableName = '';
-
-  // @override
-  // String getTableName(dynamic tblType) {
-  //   if (tblType == TableType.hemEventAdmin) {
-  //     return hemAdminTable;
-  //   }
-  //   return hemUserTable;
-  // }
+class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
+  HasherEventMapTableHelper() {
+    remoteDbId = 'hemId';
+    humanReadableTableName = 'Event Data';
+  }
 
   @override
   String getTableName(dynamic appDomainType) {
@@ -102,9 +73,6 @@ class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
     return tableName;
   }
 
-  @override
-  String remoteDbId = 'hemId';
-
   final String colHemId = 'hemId';
   final String colUserId = 'userId';
   final String colEventId = 'eventId';
@@ -123,9 +91,9 @@ class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
   final String colPhoneNumber = 'phoneNumber';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic tblType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
     await db.execute('''
-          CREATE TABLE ${getTableName(tblType)} (
+          CREATE TABLE ${getTableName(appDomainType)} (
             $colId INTEGER PRIMARY KEY,
 
             $colHemId TEXT NOT NULL,
@@ -151,11 +119,12 @@ class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
 
           )
           ''');
+  }
 
-    await db.execute(
-        'CREATE INDEX idx_${getTableName(tblType)}_id ON ${getTableName(tblType)}($remoteDbId);');
-    await db.execute(
-        'CREATE INDEX idx_${getTableName(tblType)}_update_at_value ON ${getTableName(tblType)}($colUpdatedAtValue);');
+  @override
+  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
   }
 
   // @override
@@ -166,8 +135,8 @@ class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
   // }
 
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
-    return HasherEventMapModel.fromJson(map).toJson();
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    return HasherEventMapModel.fromJson(inputMap).toJson();
   }
 
   @override
@@ -179,17 +148,14 @@ class HasherEventMapTableHelper with BaseFields implements BaseTableHelper {
 class HasherEventMapService {
   //==============  Domain specific functions ===========
 
-  Future<Map<String, String>> sendRunCountReportByEmail(
-      {String kennelId, String kennelName}) async {
-    final String userId = getStringPref(StringPrefsEnum.userId);
-    final String userName = getStringPref(StringPrefsEnum.displayName);
-    final String emailAddress = getStringPref(StringPrefsEnum.email);
+  Future<Map<String, String>> sendRunCountReportByEmail({String kennelId, String kennelName}) async {
+    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String userName = await SecurePrefs.getStringPref(StringPrefsEnum.displayName);
+    final String emailAddress = await SecurePrefs.getStringPref(StringPrefsEnum.email);
 
-    final String accessToken1 =
-        CoreUtilities.generateToken(userId.toUpperCase(), 'getRuns');
+    final String accessToken1 = IveCoreUtilities.generateToken(userId.toUpperCase(), 'getRuns');
 
-    final String accessToken2 =
-        CoreUtilities.generateToken(userId, 'getMyKennelRunTotals');
+    final String accessToken2 = IveCoreUtilities.generateToken(userId, 'getMyKennelRunTotals');
 
     if ((emailAddress ?? '').isNotEmpty) {
       final String body = jsonEncode(<String, String>{
@@ -202,11 +168,7 @@ class HasherEventMapService {
         'emailAddress': emailAddress
       });
 
-      final http.Response response = await http
-          .post(EMAIL_RUN_REPORT_API_URL,
-              headers: <String, String>{'content-type': 'application/json'},
-              body: body)
-          .catchError(
+      final Response response = await post(EMAIL_RUN_REPORT_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
         (dynamic error) {
           return <String, String>{'result': 'error', 'email': ''};
         },
@@ -214,72 +176,50 @@ class HasherEventMapService {
 
       return <String, String>{'result': response.body, 'email': emailAddress};
     }
-    return <String, String>{
-      'result': 'No valid email address found',
-      'email': ''
-    };
+    return <String, String>{'result': 'No valid email address found', 'email': ''};
   }
 
-  Future<List<dynamic>> joinEvent(String eventId, String hasherId,
-      String hasherEventMapId, AppDomainType appDomainType,
-      {int rsvpState = -1,
-      int attendenceState = -1,
-      int isHare = -1,
-      int virginVisitorType = 0,
-      int notificationState = -1,
-      int emailAlertState = -1}) async {
-    if (globalConnectionStatus == connectionStatus_notConnected) {
+  Future<List<dynamic>> joinEvent(String eventId, String hasherId, String hasherEventMapId, AppDomainType appDomainType,
+      {int rsvpState = -1, int attendenceState = -1, int isHare = -1, int virginVisitorType = 0, int notificationState = -1, int emailAlertState = -1}) async {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return null;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken =
-        CoreUtilities.generateToken(userId.toUpperCase(), 'joinEvent');
+    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'joinEvent');
 
-    final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(
-      internalSqlDb,
-      hasherEventMapTableHelper,
-      hasherEventMapTableHelper.getTableName(appDomainType),
-      hasherEventMapTableHelper.colUpdatedAtValue,
-    );
-    final num _hasherKennelMapLastUpdated =
-        await baseService.getLastUpdatedTime(
-      internalSqlDb,
-      hasherKennelMapTableHelper,
-      hasherKennelMapTableHelper.getTableName(appDomainType),
-      hasherKennelMapTableHelper.colUpdatedAtValue,
-    );
-    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(
-      internalSqlDb,
-      paymentsTableHelper,
-      paymentsTableHelper.getTableName(appDomainType),
-      paymentsTableHelper.colUpdatedAtValue,
-    );
-    final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(
-      internalSqlDb,
-      kennelCreditsTableHelper,
-      kennelCreditsTableHelper.getTableName(appDomainType),
-      kennelCreditsTableHelper.colUpdatedAtValue,
-    );
+    final num _hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherEventMapTableHelper,
+          G0<TableModel>().hasherEventMapTableHelper.getTableName(appDomainType),
+          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+        );
+    final num _hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherKennelMapTableHelper,
+          G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomainType),
+          G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+        );
+    final num _paymentsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().paymentsTableHelper,
+          G0<TableModel>().paymentsTableHelper.getTableName(appDomainType),
+          G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
+        );
+    final num _kennelCreditsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().kennelCreditsTableHelper,
+          G0<TableModel>().kennelCreditsTableHelper.getTableName(appDomainType),
+          G0<TableModel>().kennelCreditsTableHelper.colUpdatedAtValue,
+        );
 
-    final DateTime hasherEventMapUpdatedAfter =
-        _hasherEventMapLastUpdated == null
-            ? DateTime(2000, 1, 1)
-            : DateTime.fromMillisecondsSinceEpoch(
-                _hasherEventMapLastUpdated + 1000);
+    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
     final DateTime hasherKennelMapUpdatedAfter =
-        _hasherKennelMapLastUpdated == null
-            ? DateTime(2000, 1, 1)
-            : DateTime.fromMillisecondsSinceEpoch(
-                _hasherKennelMapLastUpdated + 1000);
-    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null
-        ? DateTime(2000, 1, 1)
-        : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
-    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null
-        ? DateTime(2000, 1, 1)
-        : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
+        _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
     final String body = jsonEncode(<String, Object>{
       'userId': userId,
@@ -299,11 +239,7 @@ class HasherEventMapService {
       'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString()
     });
 
-    final http.Response response = await http
-        .post(BASE_API_URL + 'hc3_join_event',
-            headers: <String, String>{'content-type': 'application/json'},
-            body: body)
-        .catchError(
+    final Response response = await post(BASE_API_URL + 'hc3_join_event', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
       (dynamic error) {
         return false;
       },
@@ -312,11 +248,9 @@ class HasherEventMapService {
     List<dynamic> adHocData;
 
     if (appDomainType == AppDomainType.event) {
-      adHocData = await syncEventAdminService
-          .updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else if (appDomainType == AppDomainType.user) {
-      adHocData = await syncUserDataService
-          .updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      adHocData = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else {
       assert(false);
     }
@@ -325,63 +259,46 @@ class HasherEventMapService {
   }
 
   Future<List<dynamic>> joinEventAsVisitor(
-      String eventId,
-      String displayName,
-      int virginVisitorType,
-      int attendenceState,
-      String email,
-      String phoneNumber,
-      AppDomainType appDomainType) async {
-    if (globalConnectionStatus == connectionStatus_notConnected) {
+      String eventId, String displayName, int virginVisitorType, int attendenceState, String email, String phoneNumber, AppDomainType appDomainType) async {
+    if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return null;
       // TODO(James): fix this so we can return a bool
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken =
-        CoreUtilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor');
+    final String userId = await SecurePrefs.getStringPref(StringPrefsEnum.userId);
+    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'joinEventAsVisitor');
 
-    final num _hasherEventMapLastUpdated = await baseService.getLastUpdatedTime(
-      internalSqlDb,
-      hasherEventMapTableHelper,
-      hasherEventMapTableHelper.getTableName(appDomainType),
-      hasherEventMapTableHelper.colUpdatedAtValue,
-    );
-    final num _paymentsLastUpdated = await baseService.getLastUpdatedTime(
-      internalSqlDb,
-      paymentsTableHelper,
-      paymentsTableHelper.getTableName(appDomainType),
-      paymentsTableHelper.colUpdatedAtValue,
-    );
-    final num _kennelCreditsLastUpdated = await baseService.getLastUpdatedTime(
-      internalSqlDb,
-      kennelCreditsTableHelper,
-      kennelCreditsTableHelper.getTableName(appDomainType),
-      kennelCreditsTableHelper.colUpdatedAtValue,
-    );
+    final num _hasherEventMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherEventMapTableHelper,
+          G0<TableModel>().hasherEventMapTableHelper.getTableName(appDomainType),
+          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+        );
+    final num _paymentsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().paymentsTableHelper,
+          G0<TableModel>().paymentsTableHelper.getTableName(appDomainType),
+          G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
+        );
+    final num _kennelCreditsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().kennelCreditsTableHelper,
+          G0<TableModel>().kennelCreditsTableHelper.getTableName(appDomainType),
+          G0<TableModel>().kennelCreditsTableHelper.colUpdatedAtValue,
+        );
 
-    final DateTime hasherEventMapUpdatedAfter =
-        _hasherEventMapLastUpdated == null
-            ? DateTime(2000, 1, 1)
-            : DateTime.fromMillisecondsSinceEpoch(
-                _hasherEventMapLastUpdated + 1000);
-    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null
-        ? DateTime(2000, 1, 1)
-        : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
-    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null
-        ? DateTime(2000, 1, 1)
-        : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
+    final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
+    final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
     final String body = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
       'eventId': eventId,
       'displayName': displayName ?? '<no name>',
-      'virginVisitorType':
-          virginVisitorType == null ? null : virginVisitorType.toString(),
-      'attendenceState':
-          attendenceState == null ? null : attendenceState.toString(),
+      'virginVisitorType': virginVisitorType == null ? null : virginVisitorType.toString(),
+      'attendenceState': attendenceState == null ? null : attendenceState.toString(),
       'email': email,
       'phoneNumber': phoneNumber,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
@@ -389,18 +306,13 @@ class HasherEventMapService {
       'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString()
     });
 
-    final http.Response response = await http
-        .post(BASE_API_URL + 'hc3_join_event_as_visitor',
-            headers: <String, String>{'content-type': 'application/json'},
-            body: body)
-        .catchError(
+    final Response response = await post(BASE_API_URL + 'hc3_join_event_as_visitor', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
       (dynamic error) {
         return false;
       },
     );
 
-    final List<dynamic> adHocData = await syncEventAdminService
-        .updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    final List<dynamic> adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
 
     return adHocData;
   }

@@ -1,4 +1,4 @@
-import 'dart:core';
+import 'package:harrier_central/imports.dart';
 
 class SingleResultModel {
   SingleResultModel({

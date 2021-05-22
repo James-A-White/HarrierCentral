@@ -1,10 +1,4 @@
-import 'dart:async';
-
-import 'package:sqflite/sqflite.dart';
-
-import 'package:ive_flutter_core/database/base_service.dart';
-
-import 'package:json_annotation/json_annotation.dart';
+import 'package:harrier_central/imports.dart';
 
 part 'kennels_service.g.dart';
 
@@ -63,7 +57,6 @@ class KennelsModel implements BaseModel {
 
   factory KennelsModel.fromJson(Map<String, dynamic> json) => _$KennelsModelFromJson(json);
 
-  @override
   Map<String, dynamic> toJson() => _$KennelsModelToJson(this);
 
   final String kennelId;
@@ -117,15 +110,11 @@ class KennelsModel implements BaseModel {
   final int removed;
 }
 
-class KennelsTableHelper with BaseFields implements BaseTableHelper {
-  @override
-  num forceRequeryInterval;
-
-  @override
-  num cacheDuration;
-
-  // @override
-  // String tableName = 'kennels';
+class KennelsTableHelper extends BaseTableHelper with BaseFields {
+  KennelsTableHelper() {
+    remoteDbId = 'kennelId';
+    humanReadableTableName = 'Kennels';
+  }
 
   @override
   String getTableName(dynamic appDomainType) {
@@ -143,9 +132,6 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
     }
     return tableName;
   }
-
-  @override
-  String remoteDbId = 'kennelId';
 
   final String colKennelId = 'kennelId';
   final String colCityId = 'cityId';
@@ -255,9 +241,12 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
             $colUpdatedAtValue NUM NULL
           )
           ''');
+  }
 
-    await db.execute('CREATE INDEX idx_${tableName}_id ON $tableName($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${tableName}_update_at_value ON $tableName($colUpdatedAtValue);');
+  @override
+  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
   }
 
   // @override
@@ -267,8 +256,8 @@ class KennelsTableHelper with BaseFields implements BaseTableHelper {
   // }
 
   @override
-  Map<String, dynamic> normalizeMap(Map<String, dynamic> map) {
-    return KennelsModel.fromJson(map).toJson();
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    return KennelsModel.fromJson(inputMap).toJson();
   }
 
   @override
