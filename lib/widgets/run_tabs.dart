@@ -42,7 +42,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       });
     }
 
-    final bool result = await G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagHasherEventMapTable, true, widget.futureRun.event.eventId);
+    final bool result = await G0<TableModel>()
+        .syncEventAdminService
+        .updateFromBackend(SyncEventAdminService.flagHasherEventMapTable, true,
+            widget.futureRun.event.eventId);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Pack member data synchronized $resultStr');
 
@@ -64,10 +67,12 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
 
     thePackList = <PackListAggregate>[];
     try {
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
+      final List<Map<String, dynamic>> results =
+          await G0<Database>().rawQuery(query);
 
       for (int i = 0; i < results.length; i++) {
-        final HasherEventMapModel packItem = G0<TableModel>().hasherEventMapTableHelper.fromMap(results[i]);
+        final HasherEventMapModel packItem =
+            G0<TableModel>().hasherEventMapTableHelper.fromMap(results[i]);
         final HashersModel hasherItem = HashersModel.fromJson(results[i]);
         thePackList.add(PackListAggregate(hem: packItem, hasher: hasherItem));
         if (packItem.userId == userId) {
@@ -128,11 +133,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     _initTabs();
     _tabController = TabController(vsync: this, length: tabs.length);
     _tabController.addListener(() async {
-      if (fabIsVisible != (tabs[_tabController.index].text.toLowerCase() == 'rsvp')) {
+      if (fabIsVisible !=
+          (tabs[_tabController.index].text.toLowerCase() == 'rsvp')) {
         setState(() {
-          fabIsVisible = tabs[_tabController.index].text.toLowerCase() == 'rsvp';
+          fabIsVisible =
+              tabs[_tabController.index].text.toLowerCase() == 'rsvp';
           if (tabs[_tabController.index].text.toLowerCase() == 'rsvp') {
-            print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+            print(
+                'refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
             _refreshHemTableFromBackend(false);
           }
         });
@@ -176,8 +184,12 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     );
   }
 
-  TextStyle rsvpTitlesView =
-      TextStyle(color: Colors.white, fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1);
+  TextStyle rsvpTitlesView = TextStyle(
+      color: Colors.white,
+      fontFamily: 'AvenirNextCondensedDemiBold',
+      fontStyle: FontStyle.normal,
+      fontSize: 20.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+      height: 1);
 
   EnumRsvpState<int> rsvpRequested = rsvpUnknown;
 
@@ -220,9 +232,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             icon: const Icon(FontAwesome.check_circle),
                             color: _thisUserIndex == -1
                                 ? Colors.grey
-                                : thePackList[_thisUserIndex].hem.rsvpState == rsvpYes.value
+                                : thePackList[_thisUserIndex].hem.rsvpState ==
+                                        rsvpYes.value
                                     ? Colors.green
-                                    : (thePackList[_thisUserIndex].hem.rsvpState == -1 && rsvpRequested == rsvpYes)
+                                    : (thePackList[_thisUserIndex]
+                                                    .hem
+                                                    .rsvpState ==
+                                                -1 &&
+                                            rsvpRequested == rsvpYes)
                                         ? Colors.blue
                                         : Colors.grey,
                             //tooltip: 'Select to follow a Kennel',
@@ -250,7 +267,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         ],
                       ),
                       Text(
-                        (packCount['rsvpYesCount'] ?? 0) >= 0 ? (packCount['rsvpYesCount'] ?? 0).toString() : '',
+                        (packCount['rsvpYesCount'] ?? 0) >= 0
+                            ? (packCount['rsvpYesCount'] ?? 0).toString()
+                            : '',
                         style: rsvpTitlesView,
                       ),
                     ],
@@ -284,9 +303,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             icon: const Icon(FontAwesome.question_circle),
                             color: _thisUserIndex == -1
                                 ? Colors.grey
-                                : thePackList[_thisUserIndex].hem.rsvpState == rsvpMaybe.value
+                                : thePackList[_thisUserIndex].hem.rsvpState ==
+                                        rsvpMaybe.value
                                     ? Colors.orange
-                                    : (thePackList[_thisUserIndex].hem.rsvpState == -1 && rsvpRequested == rsvpMaybe)
+                                    : (thePackList[_thisUserIndex]
+                                                    .hem
+                                                    .rsvpState ==
+                                                -1 &&
+                                            rsvpRequested == rsvpMaybe)
                                         ? Colors.blue
                                         : Colors.grey,
                             //tooltip: 'Select to follow a Kennel',
@@ -300,7 +324,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         ],
                       ),
                       Text(
-                        (packCount['rsvpMaybeCount'] ?? 0) >= 0 ? (packCount['rsvpMaybeCount'] ?? 0).toString() : '',
+                        (packCount['rsvpMaybeCount'] ?? 0) >= 0
+                            ? (packCount['rsvpMaybeCount'] ?? 0).toString()
+                            : '',
                         style: rsvpTitlesView,
                       ),
                       // Text(
@@ -345,9 +371,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             icon: const Icon(FontAwesome.times_circle),
                             color: _thisUserIndex == -1
                                 ? Colors.grey
-                                : thePackList[_thisUserIndex].hem.rsvpState == rsvpNo.value
+                                : thePackList[_thisUserIndex].hem.rsvpState ==
+                                        rsvpNo.value
                                     ? Colors.red
-                                    : (thePackList[_thisUserIndex].hem.rsvpState == -1 && rsvpRequested == rsvpNo)
+                                    : (thePackList[_thisUserIndex]
+                                                    .hem
+                                                    .rsvpState ==
+                                                -1 &&
+                                            rsvpRequested == rsvpNo)
                                         ? Colors.blue
                                         : Colors.grey,
                             //tooltip: 'Select to follow a Kennel',
@@ -361,7 +392,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         ],
                       ),
                       Text(
-                        (packCount['rsvpNoCount'] ?? 0) >= 0 ? (packCount['rsvpNoCount'] ?? 0).toString() : '',
+                        (packCount['rsvpNoCount'] ?? 0) >= 0
+                            ? (packCount['rsvpNoCount'] ?? 0).toString()
+                            : '',
                         style: rsvpTitlesView,
                       ),
 
@@ -401,12 +434,15 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             ),
                           ),
                           IconButton(
-                            icon: const ImageIcon(AssetImage('images/icons/hare_icon.png')),
+                            icon: const ImageIcon(
+                                AssetImage('images/icons/hare_icon.png')),
                             color: _thisUserIndex == -1
                                 ? Colors.grey
-                                : thePackList[_thisUserIndex].hem.isHare == isHareYes.value
+                                : thePackList[_thisUserIndex].hem.isHare ==
+                                        isHareYes.value
                                     ? Colors.deepPurple
-                                    : thePackList[_thisUserIndex].hem.isHare == -1
+                                    : thePackList[_thisUserIndex].hem.isHare ==
+                                            -1
                                         ? Colors.blue
                                         : Colors.grey,
                             //tooltip: 'Select to follow a Kennel',
@@ -414,25 +450,32 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             alignment: Alignment.center,
                             splashColor: Colors.greenAccent,
                             onPressed: () {
-                              _promptForHare(widget.futureRun.event.hares ?? '').then<dynamic>((bool willHare) {
+                              _promptForHare(widget.futureRun.event.hares ?? '')
+                                  .then<dynamic>((bool willHare) {
                                 if (willHare) {
                                   setState(() {
                                     if (_thisUserIndex >= 0) {
-                                      thePackList[_thisUserIndex].hem.rsvpState = -1;
-                                      thePackList[_thisUserIndex].hem.isHare = -1;
+                                      thePackList[_thisUserIndex]
+                                          .hem
+                                          .rsvpState = -1;
+                                      thePackList[_thisUserIndex].hem.isHare =
+                                          -1;
                                       rsvpRequested = rsvpYes;
                                     }
                                   });
                                   //final String userId = getStringPref(StringPrefsEnum.userId);
 
-                                  final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
-                                        widget.futureRun.event.eventId,
-                                        userId,
-                                        null,
-                                        AppDomainType.user,
-                                        rsvpState: rsvpYes.value,
-                                        isHare: isHareYes.value,
-                                      );
+                                  final Future<List<dynamic>> retVal =
+                                      G0<TableModel>()
+                                          .hasherEventMapService
+                                          .joinEvent(
+                                            widget.futureRun.event.eventId,
+                                            userId,
+                                            null,
+                                            AppDomainType.user,
+                                            rsvpState: rsvpYes.value,
+                                            isHare: isHareYes.value,
+                                          );
 
                                   retVal.then((List<dynamic> adHocData) async {
                                     _refreshHemTableFromBackend(false);
@@ -452,7 +495,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         ],
                       ),
                       Text(
-                        (packCount['isHareCount'] ?? 0) >= 0 ? (packCount['isHareCount'] ?? 0).toString() : '',
+                        (packCount['isHareCount'] ?? 0) >= 0
+                            ? (packCount['isHareCount'] ?? 0).toString()
+                            : '',
                         style: rsvpTitlesView,
                       ),
 
@@ -476,7 +521,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
             child: Container(
               key: packListBox,
               color: const Color.fromARGB(60, 255, 255, 255),
-              margin: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 15.0),
+              margin:
+                  const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 15.0),
               padding: const EdgeInsets.all(8.0),
               child: Scrollbar(
                 child: RefreshIndicator(
@@ -495,7 +541,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                               color: Colors.grey[300],
                               width: 70.0,
                               height: 70.0,
-                              child: Padding(padding: const EdgeInsets.all(5.0), child: Center(child: HcCircularProgressIndicator(key: UniqueKey()))),
+                              child: Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: Center(
+                                      child: HcCircularProgressIndicator(
+                                          key: UniqueKey()))),
                             )
                           : GestureDetector(
                               onTap: () {
@@ -526,19 +576,33 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 final SnackBar snackBar = SnackBar(
                                   duration: const Duration(seconds: 2),
                                   content: Text(
-                                    (thePackList[index].hasher.dispName ?? thePackList[index].hem.displayName) + actionText,
-                                    style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                    (thePackList[index].hasher.dispName ??
+                                            thePackList[index]
+                                                .hem
+                                                .displayName) +
+                                        actionText,
+                                    style: const TextStyle(
+                                        fontFamily:
+                                            'AvenirNextCondensedDemiBold',
+                                        fontStyle: FontStyle.normal,
+                                        fontSize: 20.0,
+                                        height: 0.85),
                                   ),
-                                  backgroundColor: Theme.of(context).accentColor,
+                                  backgroundColor:
+                                      Theme.of(context).accentColor,
                                 );
 
                                 Scaffold.of(context).showSnackBar(snackBar);
                               },
                               child: Stack(
                                 children: <Widget>[
-                                  thePackList[index].hasher.photo.startsWith('http')
+                                  thePackList[index]
+                                          .hasher
+                                          .photo
+                                          .startsWith('http')
                                       ? CachedNetworkImage(
-                                          imageUrl: thePackList[index].hasher.photo,
+                                          imageUrl:
+                                              thePackList[index].hasher.photo,
                                           //placeholder: HcCircularProgressIndicator(key: UniqueKey()),
                                           //errorWidget: const  Icon(Icons.error),
 
@@ -570,23 +634,37 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                           //     const  Icon(Icons
                                           //         .error),
 
-                                          fadeInDuration: const Duration(milliseconds: 0),
+                                          fadeInDuration:
+                                              const Duration(milliseconds: 0),
                                           width: 300.0,
                                           height: 300.0,
                                           fit: BoxFit.fill)
-                                      : thePackList[index].hasher.photo.startsWith('bundle')
+                                      : thePackList[index]
+                                              .hasher
+                                              .photo
+                                              .startsWith('bundle')
                                           ? Image(
                                               width: 300.0,
                                               height: 300.0,
                                               fit: BoxFit.fill,
                                               image: AssetImage(
-                                                  ('images/avatars/' + thePackList[index].hasher.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
+                                                  ('images/avatars/' +
+                                                          thePackList[index]
+                                                              .hasher
+                                                              .photo
+                                                              .toLowerCase()
+                                                              .replaceFirst(
+                                                                  'bundle://',
+                                                                  '') +
+                                                          '.jpg')
+                                                      .toLowerCase()),
                                             )
                                           : const Image(
                                               width: 300.0,
                                               height: 300.0,
                                               fit: BoxFit.fill,
-                                              image: AssetImage('images/avatars/avatar-2.jpg'),
+                                              image: AssetImage(
+                                                  'images/avatars/avatar-2.jpg'),
                                             ),
                                   Positioned(
                                     right: 1.0,
@@ -598,18 +676,45 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                           backgroundColor: Colors.white,
                                           radius: 11.0,
                                         ),
-                                        (thePackList[index].hem.rsvpState ?? 0) <= 0
+                                        (thePackList[index].hem.rsvpState ??
+                                                    0) <=
+                                                0
                                             ? const CircleAvatar(
                                                 backgroundColor: Colors.blue,
                                                 radius: 10.0,
                                               )
-                                            : thePackList[index].hem.rsvpState == 1
-                                                ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 21.0)
-                                                : thePackList[index].hem.rsvpState == 2
-                                                    ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 21.0)
-                                                    : thePackList[index].hem.isHare == 0
-                                                        ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 21.0)
-                                                        : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 18.0, width: 18.0),
+                                            : thePackList[index]
+                                                        .hem
+                                                        .rsvpState ==
+                                                    1
+                                                ? const Icon(
+                                                    FontAwesome.times_circle,
+                                                    color: Colors.red,
+                                                    size: 21.0)
+                                                : thePackList[index]
+                                                            .hem
+                                                            .rsvpState ==
+                                                        2
+                                                    ? const Icon(
+                                                        FontAwesome
+                                                            .question_circle,
+                                                        color: Colors.orange,
+                                                        size: 21.0)
+                                                    : thePackList[index]
+                                                                .hem
+                                                                .isHare ==
+                                                            0
+                                                        ? const Icon(
+                                                            FontAwesome
+                                                                .check_circle,
+                                                            color: Colors.green,
+                                                            size: 21.0)
+                                                        : Image.asset(
+                                                            'images/icons/hare_icon.png',
+                                                            color: Colors
+                                                                .deepPurple,
+                                                            height: 18.0,
+                                                            width: 18.0),
                                       ],
                                     ),
                                   ),
@@ -618,7 +723,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             ); // TODO(James): Replace this with another avatar for missing image
                     },
                     staggeredTileBuilder: (int index) {
-                      return thePackList[index].hem.isHare != 1 ? const StaggeredTile.count(1, 1) : const StaggeredTile.count(2, 2);
+                      return thePackList[index].hem.isHare != 1
+                          ? const StaggeredTile.count(1, 1)
+                          : const StaggeredTile.count(2, 2);
                     },
                     mainAxisSpacing: 8.0,
                     crossAxisSpacing: 8.0,
@@ -642,16 +749,19 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     });
     //final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final int attendenceValue = rsvpState.value <= rsvpMaybe.value ? attendenceNo.value : attendenceNoChange.value;
-    final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
-          widget.futureRun.event.eventId,
-          userId,
-          null,
-          AppDomainType.user,
-          rsvpState: rsvpState.value,
-          attendenceState: attendenceValue,
-          isHare: isHareNo.value,
-        );
+    final int attendenceValue = rsvpState.value <= rsvpMaybe.value
+        ? attendenceNo.value
+        : attendenceNoChange.value;
+    final Future<List<dynamic>> retVal =
+        G0<TableModel>().hasherEventMapService.joinEvent(
+              widget.futureRun.event.eventId,
+              userId,
+              null,
+              AppDomainType.user,
+              rsvpState: rsvpState.value,
+              attendenceState: attendenceValue,
+              isHare: isHareNo.value,
+            );
 
     retVal.then((List<dynamic> adHocData) async {
       _refreshHemTableFromBackend(false);
@@ -665,7 +775,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         // Map
         child: FlutterMap(
           options: MapOptions(
-            center: latLng.LatLng(IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLatitude), IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLongitude)),
+            center: latLng.LatLng(
+                IveCoreUtilities.unInt(
+                    widget.futureRun.event.narrowEventLatitude),
+                IveCoreUtilities.unInt(
+                    widget.futureRun.event.narrowEventLongitude)),
             zoom: 15.0,
           ),
           layers: <LayerOptions>[
@@ -680,7 +794,11 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                 Marker(
                   width: 120.0,
                   height: 120.0,
-                  point: latLng.LatLng(IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLatitude), IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLongitude)),
+                  point: latLng.LatLng(
+                      IveCoreUtilities.unInt(
+                          widget.futureRun.event.narrowEventLatitude),
+                      IveCoreUtilities.unInt(
+                          widget.futureRun.event.narrowEventLongitude)),
                   builder: (BuildContext ctx) => GestureDetector(
                     onTap: () => _launchMaps(widget.futureRun.event),
                     child: Container(
@@ -760,12 +878,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
               },
             ),
             SpeedDialChild(
-              child: const ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.purple),
+              child: const ImageIcon(AssetImage('images/icons/hare_icon.png'),
+                  color: Colors.purple),
               backgroundColor: Colors.white,
               label: 'I will hare',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
-                _promptForHare(widget.futureRun.event.hares ?? '').then<dynamic>((bool willHare) {
+                _promptForHare(widget.futureRun.event.hares ?? '')
+                    .then<dynamic>((bool willHare) {
                   if (willHare) {
                     setState(() {
                       if (_thisUserIndex >= 0) {
@@ -775,15 +895,16 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                       }
                     });
                     //final String userId = getStringPref(StringPrefsEnum.userId);
-                    final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
-                          widget.futureRun.event.eventId,
-                          userId,
-                          null,
-                          AppDomainType.user,
-                          rsvpState: rsvpYes.value,
-                          attendenceState: attendenceNoChange.value,
-                          isHare: isHareYes.value,
-                        );
+                    final Future<List<dynamic>> retVal =
+                        G0<TableModel>().hasherEventMapService.joinEvent(
+                              widget.futureRun.event.eventId,
+                              userId,
+                              null,
+                              AppDomainType.user,
+                              rsvpState: rsvpYes.value,
+                              attendenceState: attendenceNoChange.value,
+                              isHare: isHareYes.value,
+                            );
 
                     retVal.then((List<dynamic> adHocData) async {
                       _refreshHemTableFromBackend(false);
@@ -802,7 +923,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
             PreferredSize(
               preferredSize: const Size.fromHeight(120.0),
               child: Padding(
-                padding: const EdgeInsets.only(top: 0, left: 0, right: 0, bottom: 15),
+                padding: const EdgeInsets.only(
+                    top: 0, left: 0, right: 0, bottom: 15),
                 child: Container(
                   width: MediaQuery.of(context).size.width,
                   height: 50.0,
@@ -814,10 +936,19 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 5.0, right: 5.0),
                       child: TabBar(
-                        labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                        unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                        labelStyle: const TextStyle(
+                            fontFamily: 'AvenirNextCondensedMedium',
+                            fontStyle: FontStyle.normal,
+                            fontSize: 18.0,
+                            height: 1.0),
+                        unselectedLabelStyle: const TextStyle(
+                            fontFamily: 'AvenirNextCondensedMedium',
+                            fontStyle: FontStyle.normal,
+                            fontSize: 18.0,
+                            height: 1.0),
                         isScrollable: true,
-                        labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
+                        labelPadding:
+                            const EdgeInsets.only(top: 5, left: 20, right: 20),
                         unselectedLabelColor: Colors.black,
                         labelColor: Colors.white,
                         indicatorSize: TabBarIndicatorSize.tab,
@@ -1153,10 +1284,15 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
     } else if ((latStr != '') && (lonStr != '')) {
       url = latStr + ',' + lonStr;
     } else {
-      IveCoreUtilities.showAlert(context, 'No location information available', 'There is no location information available for this run and so we cannot display a map', 'OK');
+      IveCoreUtilities.showAlert(
+          context,
+          'No location information available',
+          'There is no location information available for this run and so we cannot display a map',
+          'OK');
     }
 
-    final String googleWebUrl = 'https://www.google.com/maps/search/?api=1&query=$url';
+    final String googleWebUrl =
+        'https://www.google.com/maps/search/?api=1&query=$url';
     final String googleAppUrl = 'comgooglemaps://?q=$url';
     String appleUrl = '';
     if ((latStr.isNotEmpty) && (lonStr.isNotEmpty)) {
@@ -1187,7 +1323,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Please confirm that you are signing up to hare this run' + ((hareList == null) ? '.' : ' with ' + hareList)),
+                Text('Please confirm that you are signing up to hare this run' +
+                    ((hareList == null) ? '.' : ' with ' + hareList)),
               ],
             ),
           ),

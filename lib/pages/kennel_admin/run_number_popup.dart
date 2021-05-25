@@ -15,7 +15,8 @@ class _RunNumberPopupState extends State<RunNumberPopup> {
 
   @override
   void initState() {
-    runNumberAmountTextController = TextEditingController(text: widget.runNumber == null ? '' : widget.runNumber.toString());
+    runNumberAmountTextController = TextEditingController(
+        text: widget.runNumber == null ? '' : widget.runNumber.toString());
 
     super.initState();
   }
@@ -29,7 +30,10 @@ class _RunNumberPopupState extends State<RunNumberPopup> {
         focusNode: myFocusNodeFirstName,
         controller: runNumberAmountTextController,
         keyboardType: TextInputType.number,
-        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+        style: const TextStyle(
+            fontFamily: 'WorkSansSemiBold',
+            fontSize: 16.0,
+            color: Colors.black),
         decoration: const InputDecoration(
           border: InputBorder.none,
           icon: Icon(
@@ -78,7 +82,9 @@ class _RunNumberPopupState extends State<RunNumberPopup> {
             child: const Text('OK'),
             textColor: Colors.white,
             onPressed: () {
-              Navigator.of(context).pop(<String, String>{'runNumber': runNumberAmountTextController.text});
+              Navigator.of(context).pop(<String, String>{
+                'runNumber': runNumberAmountTextController.text
+              });
             }),
         // ),
       ],

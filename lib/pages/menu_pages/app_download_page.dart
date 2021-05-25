@@ -7,7 +7,8 @@ class AppDownloadPage extends StatefulWidget {
   _AppDownloadPageState createState() => _AppDownloadPageState();
 }
 
-class _AppDownloadPageState extends State<AppDownloadPage> with SingleTickerProviderStateMixin {
+class _AppDownloadPageState extends State<AppDownloadPage>
+    with SingleTickerProviderStateMixin {
   List<Tab> tabs = <Tab>[];
 
   String barcode = '';
@@ -66,12 +67,21 @@ class _AppDownloadPageState extends State<AppDownloadPage> with SingleTickerProv
                 child: Padding(
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
                   child: TabBar(
-                    labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                    unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                    labelStyle: const TextStyle(
+                        fontFamily: 'AvenirNextCondensedMedium',
+                        fontStyle: FontStyle.normal,
+                        fontSize: 18.0,
+                        height: 1.0),
+                    unselectedLabelStyle: const TextStyle(
+                        fontFamily: 'AvenirNextCondensedMedium',
+                        fontStyle: FontStyle.normal,
+                        fontSize: 18.0,
+                        height: 1.0),
                     isScrollable: false,
                     unselectedLabelColor: Colors.black,
                     labelColor: Colors.white,
-                    labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
+                    labelPadding:
+                        const EdgeInsets.only(top: 5, left: 20, right: 20),
                     indicatorSize: TabBarIndicatorSize.tab,
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
@@ -94,7 +104,10 @@ class _AppDownloadPageState extends State<AppDownloadPage> with SingleTickerProv
                   width: MediaQuery.of(context).size.width,
                   child: TabBarView(
                     controller: _tabController,
-                    children: const <Widget>[IosDownloadTab(), AndroidDownloadTab()],
+                    children: const <Widget>[
+                      IosDownloadTab(),
+                      AndroidDownloadTab()
+                    ],
                   ),
                 )),
           ],
@@ -220,7 +233,14 @@ class _AppDownloadPageState extends State<AppDownloadPage> with SingleTickerProv
 }
 
 class TabIndicationPainter extends CustomPainter {
-  TabIndicationPainter({this.context, this.dxTarget = 125.0, this.dxEntry = 25.0, this.radius = 21.0, this.dy = 25.0, this.pageController}) : super(repaint: pageController) {
+  TabIndicationPainter(
+      {this.context,
+      this.dxTarget = 125.0,
+      this.dxEntry = 25.0,
+      this.radius = 21.0,
+      this.dy = 25.0,
+      this.pageController})
+      : super(repaint: pageController) {
     painter = Paint()
       ..color = Theme.of(context).accentColor
       ..style = PaintingStyle.fill;
@@ -238,7 +258,8 @@ class TabIndicationPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final ScrollPosition pos = pageController.position;
-    final num fullExtent = pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
+    final num fullExtent =
+        pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
 
     final num pageOffset = pos.extentBefore / fullExtent;
 
@@ -247,9 +268,11 @@ class TabIndicationPainter extends CustomPainter {
     final Offset target = Offset(left2right ? dxTarget : dxEntry, dy);
 
     final Path path = Path();
-    path.addArc(Rect.fromCircle(center: entry, radius: radius), 0.5 * pi, 1 * pi);
+    path.addArc(
+        Rect.fromCircle(center: entry, radius: radius), 0.5 * pi, 1 * pi);
     path.addRect(Rect.fromLTRB(entry.dx, dy - radius, target.dx, dy + radius));
-    path.addArc(Rect.fromCircle(center: target, radius: radius), 1.5 * pi, 1 * pi);
+    path.addArc(
+        Rect.fromCircle(center: target, radius: radius), 1.5 * pi, 1 * pi);
 
     canvas.translate(size.width * pageOffset, 0.0);
     canvas.drawShadow(path, const Color(0xFFfbab66), 3.0, true);
@@ -267,7 +290,8 @@ class IosDownloadTab extends StatefulWidget {
   _IosDownloadTabState createState() => _IosDownloadTabState();
 }
 
-class _IosDownloadTabState extends State<IosDownloadTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class _IosDownloadTabState extends State<IosDownloadTab>
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -285,7 +309,11 @@ class _IosDownloadTabState extends State<IosDownloadTab> with AutomaticKeepAlive
                   'Get your friends to download Harrier Central!\r\n\r\nIt'
                   's easy. They can either scan these QR codes or use the link to access the app download pages.',
                   textAlign: TextAlign.justify,
-                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                  style: TextStyle(
+                      fontFamily: 'AvenirNextRegular',
+                      fontStyle: FontStyle.normal,
+                      fontSize: 16.0,
+                      height: 1.0),
                 )
               ],
             ),
@@ -309,7 +337,8 @@ class _IosDownloadTabState extends State<IosDownloadTab> with AutomaticKeepAlive
   Widget build(BuildContext context) {
     super.build(context);
 
-    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
       print('Height = ${constraints.maxHeight}');
       print('Width = ${constraints.maxWidth}');
       return Center(
@@ -322,7 +351,8 @@ class _IosDownloadTabState extends State<IosDownloadTab> with AutomaticKeepAlive
               height: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 90,
             ),
             Container(
-              padding: const EdgeInsets.only(top: 10, bottom: 20, right: 25, left: 25),
+              padding: const EdgeInsets.only(
+                  top: 10, bottom: 20, right: 25, left: 25),
               child: Text(
                 'Have friends scan this QR code or use the link below to download Harrier Central for iOS.',
                 textAlign: TextAlign.justify,
@@ -337,7 +367,8 @@ class _IosDownloadTabState extends State<IosDownloadTab> with AutomaticKeepAlive
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(top: 0, bottom: 10, left: 30, right: 30),
+                padding: const EdgeInsets.only(
+                    top: 0, bottom: 10, left: 30, right: 30),
                 child: Stack(alignment: AlignmentDirectional.center,
                     //height: math.min(constraints.maxHeight, constraints.maxWidth) * 0.65,
                     children: <Widget>[
@@ -352,7 +383,8 @@ class _IosDownloadTabState extends State<IosDownloadTab> with AutomaticKeepAlive
               ),
             ),
             Container(
-              padding: const EdgeInsets.only(top: 10, bottom: 0, right: 25, left: 25),
+              padding: const EdgeInsets.only(
+                  top: 10, bottom: 0, right: 25, left: 25),
               child: Text(
                 getStringPref(StringPrefsEnum.iosDownloadLink),
                 textAlign: TextAlign.center,
@@ -389,7 +421,8 @@ class AndroidDownloadTab extends StatefulWidget {
   _AndroidDownloadTabState createState() => _AndroidDownloadTabState();
 }
 
-class _AndroidDownloadTabState extends State<AndroidDownloadTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class _AndroidDownloadTabState extends State<AndroidDownloadTab>
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -407,7 +440,11 @@ class _AndroidDownloadTabState extends State<AndroidDownloadTab> with AutomaticK
                   'Get your friends to download Harrier Central!\r\n\r\nIt'
                   's easy. They can either scan these QR codes or use the link to access the app download pages.',
                   textAlign: TextAlign.justify,
-                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                  style: TextStyle(
+                      fontFamily: 'AvenirNextRegular',
+                      fontStyle: FontStyle.normal,
+                      fontSize: 16.0,
+                      height: 1.0),
                 )
               ],
             ),
@@ -431,7 +468,8 @@ class _AndroidDownloadTabState extends State<AndroidDownloadTab> with AutomaticK
   Widget build(BuildContext context) {
     super.build(context);
 
-    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
       print('Height = ${constraints.maxHeight}');
       print('Width = ${constraints.maxWidth}');
       return Center(
@@ -444,7 +482,8 @@ class _AndroidDownloadTabState extends State<AndroidDownloadTab> with AutomaticK
               height: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 90,
             ),
             Container(
-              padding: const EdgeInsets.only(top: 10, bottom: 20, right: 25, left: 25),
+              padding: const EdgeInsets.only(
+                  top: 10, bottom: 20, right: 25, left: 25),
               child: Text(
                 'Have friends scan this QR code or use the link below to download Harrier Central for Android.',
                 textAlign: TextAlign.justify,
@@ -459,14 +498,16 @@ class _AndroidDownloadTabState extends State<AndroidDownloadTab> with AutomaticK
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(top: 0, bottom: 10, left: 30, right: 30),
+                padding: const EdgeInsets.only(
+                    top: 0, bottom: 10, left: 30, right: 30),
                 child: Stack(alignment: AlignmentDirectional.center,
                     //height: math.min(constraints.maxHeight, constraints.maxWidth) * 0.65,
                     children: <Widget>[
                       QrImage(
                           backgroundColor: Colors.white,
                           padding: const EdgeInsets.all(10.0),
-                          data: getStringPref(StringPrefsEnum.androidDownloadLink),
+                          data: getStringPref(
+                              StringPrefsEnum.androidDownloadLink),
                           //data: 'testing 123',
                           version: 3,
                           errorCorrectionLevel: 3),
@@ -474,7 +515,8 @@ class _AndroidDownloadTabState extends State<AndroidDownloadTab> with AutomaticK
               ),
             ),
             Container(
-              padding: const EdgeInsets.only(top: 10, bottom: 0, right: 25, left: 25),
+              padding: const EdgeInsets.only(
+                  top: 10, bottom: 0, right: 25, left: 25),
               child: Text(
                 getStringPref(StringPrefsEnum.androidDownloadLink),
                 textAlign: TextAlign.center,

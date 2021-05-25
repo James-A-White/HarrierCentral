@@ -42,12 +42,16 @@ class RunDetailsQueryExtensions {
   String searchText;
 
   static String getSearchDateString(DateTime eventStartDateTime) {
-    final DateFormat df = DateFormat("' is' y ' is' EEEE ' is' LLLL d y ' is' LLL d y h:mm aaa HH:mm", 'en_US');
+    final DateFormat df = DateFormat(
+        "' is' y ' is' EEEE ' is' LLLL d y ' is' LLL d y h:mm aaa HH:mm",
+        'en_US');
     String days = '';
     String weekend = '';
     String thisDay = '';
 
-    final int deltaDays = eventStartDateTime.millisecondsSinceEpoch ~/ (86400 * 1000) - DateTime.now().millisecondsSinceEpoch ~/ (86400 * 1000);
+    final int deltaDays =
+        eventStartDateTime.millisecondsSinceEpoch ~/ (86400 * 1000) -
+            DateTime.now().millisecondsSinceEpoch ~/ (86400 * 1000);
     if (deltaDays < 0) {
       if (deltaDays == 1) {
         days = ' 1 day ago is yesterday ';
@@ -90,17 +94,20 @@ class RunDetailsQueryExtensions {
       }
     }
 
-    if ((eventStartDateTime.weekday == DateTime.sunday) || (eventStartDateTime.weekday == DateTime.saturday)) {
+    if ((eventStartDateTime.weekday == DateTime.sunday) ||
+        (eventStartDateTime.weekday == DateTime.saturday)) {
       weekend = ' is weekend ';
     }
 
-    final String test = ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
+    final String test =
+        ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
     print(test);
 
     return ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
   }
 
-  static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map, DateTime eventStartDateTime) {
+  static RunDetailsQueryExtensions fromMap(
+      Map<String, dynamic> map, DateTime eventStartDateTime) {
     // make dates and tiems searchable
 
     final RunDetailsQueryExtensions item = RunDetailsQueryExtensions(
@@ -191,14 +198,16 @@ class QueryRuns {
   // this.addOption("4", "Continental");
   // this.addOption("5", "Worldwide");
 
-  static List<RunDetailsAggregate> doFilter(String searchText, List<RunDetailsAggregate> allRuns) {
+  static List<RunDetailsAggregate> doFilter(
+      String searchText, List<RunDetailsAggregate> allRuns) {
     List<RunDetailsAggregate> filteredRuns = <RunDetailsAggregate>[];
     if (allRuns != null) {
       filteredRuns.addAll(allRuns);
 
       // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
       if ((searchText != null) && (searchText.isNotEmpty)) {
-        final List<String> searchItems = searchText.trim().toLowerCase().split(',');
+        final List<String> searchItems =
+            searchText.trim().toLowerCase().split(',');
         for (String st in searchItems) {
           if (st.trim().isEmpty) {
             continue;
@@ -230,7 +239,8 @@ class QueryRuns {
     return filteredRuns;
   }
 
-  static Future<List<Map<String, dynamic>>> queryRuns(EnumRunQueryType queryType, EnumRunQueryContext queryContext,
+  static Future<List<Map<String, dynamic>>> queryRuns(
+      EnumRunQueryType queryType, EnumRunQueryContext queryContext,
       {String kennelId, bool searchAllRuns = true, String eventId}) async {
     String hkmTable;
     String hemTable;
@@ -238,19 +248,37 @@ class QueryRuns {
 
     switch (queryContext) {
       case EnumRunQueryContext.user:
-        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user);
-        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user);
-        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user);
+        hkmTable = G0<TableModel>()
+            .hasherKennelMapTableHelper
+            .getTableName(AppDomainType.user);
+        hemTable = G0<TableModel>()
+            .hasherEventMapTableHelper
+            .getTableName(AppDomainType.user);
+        paymentsTable = G0<TableModel>()
+            .paymentsTableHelper
+            .getTableName(AppDomainType.user);
         break;
       case EnumRunQueryContext.kennelAdmin:
-        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
-        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.kennel);
-        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.kennel);
+        hkmTable = G0<TableModel>()
+            .hasherKennelMapTableHelper
+            .getTableName(AppDomainType.kennel);
+        hemTable = G0<TableModel>()
+            .hasherEventMapTableHelper
+            .getTableName(AppDomainType.kennel);
+        paymentsTable = G0<TableModel>()
+            .paymentsTableHelper
+            .getTableName(AppDomainType.kennel);
         break;
       case EnumRunQueryContext.eventAdmin:
-        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event);
-        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event);
-        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event);
+        hkmTable = G0<TableModel>()
+            .hasherKennelMapTableHelper
+            .getTableName(AppDomainType.event);
+        hemTable = G0<TableModel>()
+            .hasherEventMapTableHelper
+            .getTableName(AppDomainType.event);
+        paymentsTable = G0<TableModel>()
+            .paymentsTableHelper
+            .getTableName(AppDomainType.event);
         break;
     }
 

@@ -1,6 +1,14 @@
 import 'package:harrier_central/imports.dart';
 
-enum EnumAppPages { settings, futureRuns, kennelList, runCounts, qrCodePage, friends, fab }
+enum EnumAppPages {
+  settings,
+  futureRuns,
+  kennelList,
+  runCounts,
+  qrCodePage,
+  friends,
+  fab
+}
 
 enum StringPrefsEnum {
   userId,
@@ -81,10 +89,14 @@ class EnumNotificationState<int> extends Enum<int> {
   const EnumNotificationState(int val) : super(val);
 }
 
-const EnumNotificationState<int> notificationsUnchanged = EnumNotificationState<int>(-1);
-const EnumNotificationState<int> notificationsAuto = EnumNotificationState<int>(0);
-const EnumNotificationState<int> notificationsOn = EnumNotificationState<int>(1);
-const EnumNotificationState<int> notificationsOff = EnumNotificationState<int>(2);
+const EnumNotificationState<int> notificationsUnchanged =
+    EnumNotificationState<int>(-1);
+const EnumNotificationState<int> notificationsAuto =
+    EnumNotificationState<int>(0);
+const EnumNotificationState<int> notificationsOn =
+    EnumNotificationState<int>(1);
+const EnumNotificationState<int> notificationsOff =
+    EnumNotificationState<int>(2);
 
 //////////////////////////
 ///
@@ -92,7 +104,8 @@ class EnumEmailAlertState<int> extends Enum<int> {
   const EnumEmailAlertState(int val) : super(val);
 }
 
-const EnumEmailAlertState<int> emailAlertsUnchanged = EnumEmailAlertState<int>(-1);
+const EnumEmailAlertState<int> emailAlertsUnchanged =
+    EnumEmailAlertState<int>(-1);
 const EnumEmailAlertState<int> emailAlertsAuto = EnumEmailAlertState<int>(0);
 const EnumEmailAlertState<int> emailAlertsOn = EnumEmailAlertState<int>(1);
 const EnumEmailAlertState<int> emailAlertsOff = EnumEmailAlertState<int>(2);
@@ -136,8 +149,10 @@ class EnumAttendenceState<int> extends Enum<int> {
   const EnumAttendenceState(int val) : super(val);
 }
 
-const EnumAttendenceState<int> attendenceUpdating = EnumAttendenceState<int>(-2);
-const EnumAttendenceState<int> attendenceNoChange = EnumAttendenceState<int>(-1);
+const EnumAttendenceState<int> attendenceUpdating =
+    EnumAttendenceState<int>(-2);
+const EnumAttendenceState<int> attendenceNoChange =
+    EnumAttendenceState<int>(-1);
 const EnumAttendenceState<int> attendenceUnknown = EnumAttendenceState<int>(0);
 const EnumAttendenceState<int> attendenceNo = EnumAttendenceState<int>(10);
 const EnumAttendenceState<int> attendenceAtHash = EnumAttendenceState<int>(20);
@@ -167,8 +182,10 @@ const EnumPaymentType<int> paymentCash = EnumPaymentType<int>(3);
 const EnumPaymentType<int> paymentBankTransfer = EnumPaymentType<int>(4);
 const EnumPaymentType<int> paymentCashOtherAmount = EnumPaymentType<int>(5);
 const EnumPaymentType<int> paymentHashCredit = EnumPaymentType<int>(6);
-const EnumPaymentType<int> paymentBankTransferOtherAmount = EnumPaymentType<int>(7);
-const EnumPaymentType<int> paymentConfirmBankTransfer = EnumPaymentType<int>(100);
+const EnumPaymentType<int> paymentBankTransferOtherAmount =
+    EnumPaymentType<int>(7);
+const EnumPaymentType<int> paymentConfirmBankTransfer =
+    EnumPaymentType<int>(100);
 
 //////////////////////////
 
@@ -226,10 +243,14 @@ class EnumNotificationType<int> extends Enum<int> {
   const EnumNotificationType(int val) : super(val);
 }
 
-const EnumNotificationType<int> notificationTypeCancel = EnumNotificationType<int>(-1);
-const EnumNotificationType<int> notificationTypeAuto = EnumNotificationType<int>(0);
-const EnumNotificationType<int> notificationTypeAlways = EnumNotificationType<int>(1);
-const EnumNotificationType<int> notificationTypeBlock = EnumNotificationType<int>(2);
+const EnumNotificationType<int> notificationTypeCancel =
+    EnumNotificationType<int>(-1);
+const EnumNotificationType<int> notificationTypeAuto =
+    EnumNotificationType<int>(0);
+const EnumNotificationType<int> notificationTypeAlways =
+    EnumNotificationType<int>(1);
+const EnumNotificationType<int> notificationTypeBlock =
+    EnumNotificationType<int>(2);
 
 //////////////////////////
 
@@ -237,11 +258,16 @@ class EnumEventFilterType<int> extends Enum<int> {
   const EnumEventFilterType(int val) : super(val);
 }
 
-const EnumEventFilterType<int> eventFilterType_hideEvent = EnumEventFilterType<int>(1);
-const EnumEventFilterType<int> eventFilterType_showEvent = EnumEventFilterType<int>(2);
-const EnumEventFilterType<int> eventFilterType_countEvent = EnumEventFilterType<int>(3);
-const EnumEventFilterType<int> eventFilterType_doNotCountEvent = EnumEventFilterType<int>(4);
-const EnumEventFilterType<int> eventFilterType_setRunNumber = EnumEventFilterType<int>(5);
+const EnumEventFilterType<int> eventFilterType_hideEvent =
+    EnumEventFilterType<int>(1);
+const EnumEventFilterType<int> eventFilterType_showEvent =
+    EnumEventFilterType<int>(2);
+const EnumEventFilterType<int> eventFilterType_countEvent =
+    EnumEventFilterType<int>(3);
+const EnumEventFilterType<int> eventFilterType_doNotCountEvent =
+    EnumEventFilterType<int>(4);
+const EnumEventFilterType<int> eventFilterType_setRunNumber =
+    EnumEventFilterType<int>(5);
 
 //////////////////////////
 ///
@@ -249,7 +275,8 @@ class EnumServerStatus<int> extends Enum<int> {
   const EnumServerStatus(int val) : super(val);
 }
 
-const EnumServerStatus<int> serverStatusDownForMaintenance = EnumServerStatus<int>(0);
+const EnumServerStatus<int> serverStatusDownForMaintenance =
+    EnumServerStatus<int>(0);
 const EnumServerStatus<int> serverStatusUp = EnumServerStatus<int>(1);
 const EnumServerStatus<int> serverStatusDegraded = EnumServerStatus<int>(2);
 
@@ -259,12 +286,18 @@ class EnumLoginMessageType<int> extends Enum<int> {
   const EnumLoginMessageType(int val) : super(val);
 }
 
-const EnumLoginMessageType<int> loginMessageTypeNone = EnumLoginMessageType<int>(0);
-const EnumLoginMessageType<int> loginMessageTypeAlert = EnumLoginMessageType<int>(1);
-const EnumLoginMessageType<int> loginMessageTypeFullView = EnumLoginMessageType<int>(2);
-const EnumLoginMessageType<int> loginMessageTypeFullViewWithCountdown = EnumLoginMessageType<int>(3);
-const EnumLoginMessageType<int> loginMessageTypeImageViewNoContinue = EnumLoginMessageType<int>(4);
-const EnumLoginMessageType<int> loginMessageTypeImageViewWithContinue = EnumLoginMessageType<int>(5);
+const EnumLoginMessageType<int> loginMessageTypeNone =
+    EnumLoginMessageType<int>(0);
+const EnumLoginMessageType<int> loginMessageTypeAlert =
+    EnumLoginMessageType<int>(1);
+const EnumLoginMessageType<int> loginMessageTypeFullView =
+    EnumLoginMessageType<int>(2);
+const EnumLoginMessageType<int> loginMessageTypeFullViewWithCountdown =
+    EnumLoginMessageType<int>(3);
+const EnumLoginMessageType<int> loginMessageTypeImageViewNoContinue =
+    EnumLoginMessageType<int>(4);
+const EnumLoginMessageType<int> loginMessageTypeImageViewWithContinue =
+    EnumLoginMessageType<int>(5);
 
 //////////////////////////
 
@@ -274,9 +307,12 @@ class EnumLoginApproval<int> extends Enum<int> {
 
 const EnumLoginApproval<int> loginApprovalUnknown = EnumLoginApproval<int>(0);
 const EnumLoginApproval<int> loginApprovalApproved = EnumLoginApproval<int>(1);
-const EnumLoginApproval<int> loginApprovalUnauthorizedDevice = EnumLoginApproval<int>(2);
-const EnumLoginApproval<int> loginApprovalUserAccountDoesNotExist = EnumLoginApproval<int>(3);
-const EnumLoginApproval<int> loginApprovalNotAuthorized = EnumLoginApproval<int>(4);
+const EnumLoginApproval<int> loginApprovalUnauthorizedDevice =
+    EnumLoginApproval<int>(2);
+const EnumLoginApproval<int> loginApprovalUserAccountDoesNotExist =
+    EnumLoginApproval<int>(3);
+const EnumLoginApproval<int> loginApprovalNotAuthorized =
+    EnumLoginApproval<int>(4);
 
 //////////////////////////
 ///
@@ -284,5 +320,6 @@ class EnumMapCenterOption<int> extends Enum<int> {
   const EnumMapCenterOption(int val) : super(val);
 }
 
-const EnumMapCenterOption<int> centerOnCurrentLocation = EnumMapCenterOption<int>(0);
+const EnumMapCenterOption<int> centerOnCurrentLocation =
+    EnumMapCenterOption<int>(0);
 const EnumMapCenterOption<int> centerOnHomeKennel = EnumMapCenterOption<int>(1);

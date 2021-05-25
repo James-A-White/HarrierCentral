@@ -50,11 +50,26 @@ class EmailEditorPageState extends State<EmailEditorPage> {
   //   );
   // }
 
-  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 22.0, height: 1.0);
+  TextStyle headingStyle = const TextStyle(
+      fontFamily: 'AvenirNextRegular',
+      fontStyle: FontStyle.normal,
+      color: Colors.yellow,
+      fontSize: 22.0,
+      height: 1.0);
 
-  TextStyle buttonTextStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 16.0, height: 1.0);
+  TextStyle buttonTextStyle = const TextStyle(
+      fontFamily: 'AvenirNextRegular',
+      fontStyle: FontStyle.normal,
+      color: Colors.white,
+      fontSize: 16.0,
+      height: 1.0);
 
-  TextStyle insertTokenButtonTextStyle = const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.black, fontSize: 16.0, height: 0.8);
+  TextStyle insertTokenButtonTextStyle = const TextStyle(
+      fontFamily: 'AvenirNextDemiBold',
+      fontStyle: FontStyle.normal,
+      color: Colors.black,
+      fontSize: 16.0,
+      height: 0.8);
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -103,7 +118,10 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                   child: Text('Quick Send Email', style: buttonTextStyle),
                 ),
                 const SizedBox(height: 10),
-                FancyDivider(key: UniqueKey(), innerColor: Colors.white, useTextOr: true),
+                FancyDivider(
+                    key: UniqueKey(),
+                    innerColor: Colors.white,
+                    useTextOr: true),
                 const SizedBox(height: 20),
                 Text(
                   'Compose custom email',
@@ -112,7 +130,8 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                 ),
                 Container(
                   padding: const EdgeInsets.all(10.0),
-                  margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20, top: 20),
+                  margin: const EdgeInsets.only(
+                      bottom: 20, left: 20, right: 20, top: 20),
                   decoration: BoxDecoration(
                     color: Colors.yellow[100],
                     borderRadius: BorderRadius.circular(5.0),
@@ -123,7 +142,8 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                     child: TextField(
                       autocorrect: false,
                       //initialValue: _shortDescription,
-                      decoration: const InputDecoration.collapsed(hintText: 'Email body'),
+                      decoration: const InputDecoration.collapsed(
+                          hintText: 'Email body'),
                       keyboardType: TextInputType.multiline,
                       maxLines: null,
                       minLines: 10,
@@ -211,7 +231,8 @@ class EmailEditorPageState extends State<EmailEditorPage> {
                 const SizedBox(height: 20),
                 RaisedButton(
                   onPressed: () {
-                    setStringPref(StringPrefsEnum.customEmailBody, bodyController.text);
+                    setStringPref(
+                        StringPrefsEnum.customEmailBody, bodyController.text);
                     sendEmail(context, bodyController.text);
                   },
                   child: Text('Send Email', style: buttonTextStyle),
@@ -292,28 +313,44 @@ class EmailEditorPageState extends State<EmailEditorPage> {
   }
 
   void sendEmail(BuildContext context, String emailBody) {
-    IveCoreUtilities.showAlert(context, 'Email run details', 'Would you like to e-mail the run details to hashers who have signed up for e-mail notifications?', 'OK',
+    IveCoreUtilities.showAlert(
+            context,
+            'Email run details',
+            'Would you like to e-mail the run details to hashers who have signed up for e-mail notifications?',
+            'OK',
             showCancelButton: true)
         .then((bool result) {
       if (result) {
-        G0<TableModel>().eventsService.sendRunDetailsByEmail(eventId: widget.eventId, emailBody: emailBody).then((Map<String, String> result) {
+        G0<TableModel>()
+            .eventsService
+            .sendRunDetailsByEmail(
+                eventId: widget.eventId, emailBody: emailBody)
+            .then((Map<String, String> result) {
           _scaffoldKey.currentState?.hideCurrentSnackBar();
           if (result['result'].toLowerCase().startsWith('success')) {
-            IveCoreUtilities.showAlert(context, 'E-mails successfully sent', result['result'], 'OK');
+            IveCoreUtilities.showAlert(
+                context, 'E-mails successfully sent', result['result'], 'OK');
           } else {
-            IveCoreUtilities.showAlert(context, 'Error sending emails',
-                'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
+            IveCoreUtilities.showAlert(
+                context,
+                'Error sending emails',
+                'There was a problem sending run detail e-mails to hashers.\r\n\r\nPlease try again later or contact us at connect@harriercentral.com',
+                'OK');
           }
         });
-        IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run detail emails being sent ..', durationInSeconds: 10);
+        IveCoreUtilities.showInSnackBar(
+            context, _scaffoldKey, 'Run detail emails being sent ..',
+            durationInSeconds: 10);
       }
     });
   }
 
   void insertText(String textToInsert) {
     final int bo = bodyController.selection.baseOffset + textToInsert.length;
-    final String textBefore = bodyController.text.substring(0, bodyController.selection.baseOffset);
-    final String textAfter = bodyController.text.substring(bodyController.selection.baseOffset);
+    final String textBefore =
+        bodyController.text.substring(0, bodyController.selection.baseOffset);
+    final String textAfter =
+        bodyController.text.substring(bodyController.selection.baseOffset);
     bodyController.text = textBefore + textToInsert + textAfter;
     bodyController.selection = TextSelection.collapsed(offset: bo);
   }

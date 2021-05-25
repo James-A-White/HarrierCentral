@@ -10,7 +10,8 @@ class PrivacyPolicyPage extends StatefulWidget {
 }
 
 Future<File> createFileOfPdfUrl() async {
-  final ByteData bytes = await rootBundle.load('assets/documents/privacy_policy.pdf');
+  final ByteData bytes =
+      await rootBundle.load('assets/documents/privacy_policy.pdf');
   final String dir = (await getApplicationDocumentsDirectory()).path;
   final File file = File('$dir/privacy_policy_internal.pdf');
   await file.writeAsBytes(bytes.buffer.asInt8List());
@@ -31,15 +32,27 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
     });
   }
 
-  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 24.0, height: 1.0);
+  TextStyle headingStyle = const TextStyle(
+      fontFamily: 'AvenirNextRegular',
+      fontStyle: FontStyle.normal,
+      color: Colors.yellow,
+      fontSize: 24.0,
+      height: 1.0);
 
-  TextStyle bodyStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 18.0, height: 1.0);
+  TextStyle bodyStyle = const TextStyle(
+      fontFamily: 'AvenirNextRegular',
+      fontStyle: FontStyle.normal,
+      color: Colors.white,
+      fontSize: 18.0,
+      height: 1.0);
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
+        Container(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -60,13 +73,17 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                       child: Text('Open Privacy Policy', style: headingStyle),
                       onPressed: () => Navigator.push<dynamic>(
                         context,
-                        MaterialPageRoute<dynamic>(builder: (BuildContext context) => PDFScreen(pathPDF)),
+                        MaterialPageRoute<dynamic>(
+                            builder: (BuildContext context) =>
+                                PDFScreen(pathPDF)),
                       ),
                     ),
                     Container(
                       margin: const EdgeInsets.all(30),
-                      child: Text('The Harrier Central Privacy Policy can also be found on our website for easier reading: \r\n\r\nhttp://www.harriercentral.com',
-                          textAlign: TextAlign.center, style: bodyStyle),
+                      child: Text(
+                          'The Harrier Central Privacy Policy can also be found on our website for easier reading: \r\n\r\nhttp://www.harriercentral.com',
+                          textAlign: TextAlign.center,
+                          style: bodyStyle),
                     ),
                   ],
                 ),
@@ -75,7 +92,8 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
+          showRibbon: G0<AppModel>().connectionStatus ==
+              EnumConnectionStatus.not_connected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
         ),

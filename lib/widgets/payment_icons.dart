@@ -1,8 +1,19 @@
 import 'package:harrier_central/imports.dart';
 
 class PaymentIcons extends StatelessWidget {
-  const PaymentIcons(this.event, this.kennel, this.digitsAfterDecimal, this.currencySymbol, this.distancePreference, this.distToEvent, this.paymentLinkUrl, this.rsvpState,
-      this.isMember, this.isPaid, this.showHairlineDivider, this.stateSetter);
+  const PaymentIcons(
+      this.event,
+      this.kennel,
+      this.digitsAfterDecimal,
+      this.currencySymbol,
+      this.distancePreference,
+      this.distToEvent,
+      this.paymentLinkUrl,
+      this.rsvpState,
+      this.isMember,
+      this.isPaid,
+      this.showHairlineDivider,
+      this.stateSetter);
 
   final EventModel event;
   final KennelsModel kennel;
@@ -77,7 +88,8 @@ class PaymentIcons extends StatelessWidget {
                         child: Text('Pay for your run with...'),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(top: 28.0, left: 30, right: 30),
+                        padding: const EdgeInsets.only(
+                            top: 28.0, left: 30, right: 30),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: getPaymentIcons(context),
@@ -97,26 +109,47 @@ class PaymentIcons extends StatelessWidget {
 
     final KennelsModel k = kennel;
 
-    Widget w = getPaymentIcon(context, k.kennelPaymentUrl, k.kennelPaymentUrlExpires, k.kennelPaymentScheme, k.kennelPaymentMemberSurcharge, k.kennelPaymentNonMemberSurcharge);
+    Widget w = getPaymentIcon(
+        context,
+        k.kennelPaymentUrl,
+        k.kennelPaymentUrlExpires,
+        k.kennelPaymentScheme,
+        k.kennelPaymentMemberSurcharge,
+        k.kennelPaymentNonMemberSurcharge);
     if (w != null) {
       icons.add(w);
     }
 
-    w = getPaymentIcon(context, k.kennelPaymentUrl2, k.kennelPaymentUrlExpires2, k.kennelPaymentScheme2, k.kennelPaymentMemberSurcharge2, k.kennelPaymentNonMemberSurcharge2);
+    w = getPaymentIcon(
+        context,
+        k.kennelPaymentUrl2,
+        k.kennelPaymentUrlExpires2,
+        k.kennelPaymentScheme2,
+        k.kennelPaymentMemberSurcharge2,
+        k.kennelPaymentNonMemberSurcharge2);
     if (w != null) {
       icons.add(w);
     }
 
-    w = getPaymentIcon(context, k.kennelPaymentUrl3, k.kennelPaymentUrlExpires3, k.kennelPaymentScheme3, k.kennelPaymentMemberSurcharge3, k.kennelPaymentNonMemberSurcharge3);
+    w = getPaymentIcon(
+        context,
+        k.kennelPaymentUrl3,
+        k.kennelPaymentUrlExpires3,
+        k.kennelPaymentScheme3,
+        k.kennelPaymentMemberSurcharge3,
+        k.kennelPaymentNonMemberSurcharge3);
     if (w != null) {
       icons.add(w);
     }
     return icons;
   }
 
-  Future<dynamic> showExtrasDialog(BuildContext context, num runOnlyPrice, num extrasPrice) {
-    final String runOnlyPriceStr = IveCoreUtilities.getFormattedMoney(runOnlyPrice, digitsAfterDecimal, currencySymbol);
-    final String runPlusExtrasPriceStr = IveCoreUtilities.getFormattedMoney(runOnlyPrice + extrasPrice, digitsAfterDecimal, currencySymbol);
+  Future<dynamic> showExtrasDialog(
+      BuildContext context, num runOnlyPrice, num extrasPrice) {
+    final String runOnlyPriceStr = IveCoreUtilities.getFormattedMoney(
+        runOnlyPrice, digitsAfterDecimal, currencySymbol);
+    final String runPlusExtrasPriceStr = IveCoreUtilities.getFormattedMoney(
+        runOnlyPrice + extrasPrice, digitsAfterDecimal, currencySymbol);
 
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
@@ -127,7 +160,8 @@ class PaymentIcons extends StatelessWidget {
         'returnValue': payForRunOnly,
       },
       <String, dynamic>{
-        'title': 'Run + ' + event.extrasDescription + ' ($runPlusExtrasPriceStr)',
+        'title':
+            'Run + ' + event.extrasDescription + ' ($runPlusExtrasPriceStr)',
         'icon': <Widget>[
           Container(),
         ],
@@ -151,7 +185,8 @@ class PaymentIcons extends StatelessWidget {
         });
   }
 
-  Widget getPaymentIcon(BuildContext context, String url, DateTime urlExpires, String paymentProvider, num memberSurcharge, num nonMemberSurcharge) {
+  Widget getPaymentIcon(BuildContext context, String url, DateTime urlExpires,
+      String paymentProvider, num memberSurcharge, num nonMemberSurcharge) {
     if ((url == null) || (paymentProvider == null) || (urlExpires == null)) {
       return null;
     }
@@ -160,7 +195,8 @@ class PaymentIcons extends StatelessWidget {
       return null;
     }
 
-    if ((!urlExpires.isBefore(DateTime(2010))) && (urlExpires.isBefore(DateTime.now()))) {
+    if ((!urlExpires.isBefore(DateTime(2010))) &&
+        (urlExpires.isBefore(DateTime.now()))) {
       return null;
     }
 
@@ -170,19 +206,24 @@ class PaymentIcons extends StatelessWidget {
 
     switch (paymentProvider.toLowerCase()) {
       case 'paypal':
-        w = Image.asset('images/logos/paypal_logo.png', height: imgSize, width: imgSize);
+        w = Image.asset('images/logos/paypal_logo.png',
+            height: imgSize, width: imgSize);
         break;
       case 'zelle':
-        w = Image.asset('images/logos/zelle_logo.png', height: imgSize, width: imgSize);
+        w = Image.asset('images/logos/zelle_logo.png',
+            height: imgSize, width: imgSize);
         break;
       case 'transferwise':
-        w = Image.asset('images/logos/transferwise_logo.png', height: imgSize, width: imgSize);
+        w = Image.asset('images/logos/transferwise_logo.png',
+            height: imgSize, width: imgSize);
         break;
       case 'venmo':
-        w = Image.asset('images/logos/venmo_logo.png', height: imgSize, width: imgSize);
+        w = Image.asset('images/logos/venmo_logo.png',
+            height: imgSize, width: imgSize);
         break;
       case 'tikkie':
-        w = Image.asset('images/logos/tikkie_logo.png', height: imgSize, width: imgSize);
+        w = Image.asset('images/logos/tikkie_logo.png',
+            height: imgSize, width: imgSize);
         break;
     }
 
@@ -202,13 +243,19 @@ class PaymentIcons extends StatelessWidget {
 
               String extrasStr = '';
               num extrasPrice = event.eventPriceForExtras ?? 0;
-              final num surcharge = (isMember == 0 ? nonMemberSurcharge : memberSurcharge) ?? 0;
-              final num eventPrice =
-                  (isMember == 0 ? event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers : event.eventPriceForMembers ?? kennel.defaultPriceForMembers) ?? 0;
+              final num surcharge =
+                  (isMember == 0 ? nonMemberSurcharge : memberSurcharge) ?? 0;
+              final num eventPrice = (isMember == 0
+                      ? event.eventPriceForNonMembers ??
+                          kennel.defaultPriceForNonMembers
+                      : event.eventPriceForMembers ??
+                          kennel.defaultPriceForMembers) ??
+                  0;
 
               if (extrasPrice > 0) {
                 // if there are extras, show the extras dialog
-                final dynamic x = await showExtrasDialog(context, eventPrice, extrasPrice);
+                final dynamic x =
+                    await showExtrasDialog(context, eventPrice, extrasPrice);
                 if (x == followTypeCancel) {
                   return;
                 } else {
@@ -223,30 +270,50 @@ class PaymentIcons extends StatelessWidget {
 
               if (extrasPrice > 0) {
                 // build the string if we need to
-                extrasStr = ' ,and a\r\n' + IveCoreUtilities.getFormattedMoney(extrasPrice, digitsAfterDecimal, currencySymbol) + ' charge for ${event.extrasDescription}';
+                extrasStr = ' ,and a\r\n' +
+                    IveCoreUtilities.getFormattedMoney(
+                        extrasPrice, digitsAfterDecimal, currencySymbol) +
+                    ' charge for ${event.extrasDescription}';
               }
 
               final num total = surcharge + eventPrice + extrasPrice;
 
               // build the other strings for the total price and event prices
-              final String totalStr = IveCoreUtilities.getFormattedMoney(total, digitsAfterDecimal, currencySymbol);
-              final String eventPriceStr = IveCoreUtilities.getFormattedMoney(eventPrice, digitsAfterDecimal, currencySymbol);
+              final String totalStr = IveCoreUtilities.getFormattedMoney(
+                  total, digitsAfterDecimal, currencySymbol);
+              final String eventPriceStr = IveCoreUtilities.getFormattedMoney(
+                  eventPrice, digitsAfterDecimal, currencySymbol);
 
               String surchargeStr = '';
               if (surcharge > 0) {
                 // if there is a surcharge, build the surcharge string
-                surchargeStr = ' ,and a\r\n' + IveCoreUtilities.getFormattedMoney(surcharge, digitsAfterDecimal, currencySymbol) + ' surcharge for $paymentProvider';
+                surchargeStr = ' ,and a\r\n' +
+                    IveCoreUtilities.getFormattedMoney(
+                        surcharge, digitsAfterDecimal, currencySymbol) +
+                    ' surcharge for $paymentProvider';
               }
 
               // show the alert so the user knows how much to pay
-              IveCoreUtilities.showAlert(context, 'Please pay $totalStr', 'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr', 'OK',
-                      showCancelButton: true, cancelButtonText: 'Cancel')
+              IveCoreUtilities.showAlert(
+                      context,
+                      'Please pay $totalStr',
+                      'Please pay $totalStr, which includes:\r\n\r\n$eventPriceStr for the run$extrasStr$surchargeStr',
+                      'OK',
+                      showCancelButton: true,
+                      cancelButtonText: 'Cancel')
                   .then((bool result) {
                 if (result) {
                   // now launch into the payment provider
-                  launch(url.replaceAll('<payment amount>', total.toString().replaceAll(',', '.'))).then((bool launched) {
+                  launch(url.replaceAll('<payment amount>',
+                          total.toString().replaceAll(',', '.')))
+                      .then((bool launched) {
                     if (kennel.allowSelfPayment == 0) {
-                      IveCoreUtilities.showAlert(context, 'Thank you', 'Please let the Wanker Banker know that you\'ve paid', 'OK').then((bool result2) {});
+                      IveCoreUtilities.showAlert(
+                              context,
+                              'Thank you',
+                              'Please let the Wanker Banker know that you\'ve paid',
+                              'OK')
+                          .then((bool result2) {});
                     } else {
                       // show the alert so the user knows how much to pay
                       IveCoreUtilities.showAlert(
@@ -260,13 +327,19 @@ class PaymentIcons extends StatelessWidget {
                         if (result2) {
                           //rsvpState = -1;
                           stateSetter(-1, -1); // call setState on the parent
-                          payForEvent(eventPrice + extrasPrice, didPayForExtras, surcharge, paymentProvider).then((List<dynamic> adHocItems) {
+                          payForEvent(eventPrice + extrasPrice, didPayForExtras,
+                                  surcharge, paymentProvider)
+                              .then((List<dynamic> adHocItems) {
                             // rsvpState = adHocItems[0]['rsvpState'];
                             // isPaid = 1;
                             stateSetter(adHocItems[0]['rsvpState'], 1);
                           });
                         } else {
-                          IveCoreUtilities.showAlert(context, 'Please pay for the Hash', 'Please pay the Wanker Banker for your Hash run.', 'OK');
+                          IveCoreUtilities.showAlert(
+                              context,
+                              'Please pay for the Hash',
+                              'Please pay the Wanker Banker for your Hash run.',
+                              'OK');
                         }
                       });
                     }
@@ -274,8 +347,11 @@ class PaymentIcons extends StatelessWidget {
                 }
               });
             } else {
-              IveCoreUtilities.showAlert(context, 'Bad payment URL',
-                  'The payment URL provided by the Kennel is not valid. Please check with the Kennel\'s mismanagement to have them fix the problem.', 'OK');
+              IveCoreUtilities.showAlert(
+                  context,
+                  'Bad payment URL',
+                  'The payment URL provided by the Kennel is not valid. Please check with the Kennel\'s mismanagement to have them fix the problem.',
+                  'OK');
             }
           });
         },
@@ -286,8 +362,10 @@ class PaymentIcons extends StatelessWidget {
   }
 
   bool showPaymentIcons() {
-    if ((DateTime.now().isBefore(event.eventStartDatetime.subtract(Duration(days: daysToDisplayPaymentIcons)))) ||
-        (DateTime.now().isAfter(event.eventStartDatetime.add(Duration(days: daysToDisplayPaymentIcons))))) {
+    if ((DateTime.now().isBefore(event.eventStartDatetime
+            .subtract(Duration(days: daysToDisplayPaymentIcons)))) ||
+        (DateTime.now().isAfter(event.eventStartDatetime
+            .add(Duration(days: daysToDisplayPaymentIcons))))) {
       return false;
     }
 
@@ -305,26 +383,30 @@ class PaymentIcons extends StatelessWidget {
 
     if ((kennel.kennelPaymentUrl != null) &&
         (kennel.kennelPaymentUrl.toLowerCase().startsWith('http')) &&
-        (kennel.kennelPaymentUrlExpires.isBefore(DateTime(2010)) || kennel.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+        (kennel.kennelPaymentUrlExpires.isBefore(DateTime(2010)) ||
+            kennel.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
       return true;
     }
 
     if ((kennel.kennelPaymentUrl2 != null) &&
         (kennel.kennelPaymentUrl2.toLowerCase().startsWith('http')) &&
-        (kennel.kennelPaymentUrlExpires2.isBefore(DateTime(2010)) || kennel.kennelPaymentUrlExpires2.isAfter(DateTime.now()))) {
+        (kennel.kennelPaymentUrlExpires2.isBefore(DateTime(2010)) ||
+            kennel.kennelPaymentUrlExpires2.isAfter(DateTime.now()))) {
       return true;
     }
 
     if ((kennel.kennelPaymentUrl3 != null) &&
         (kennel.kennelPaymentUrl3.toLowerCase().startsWith('http')) &&
-        (kennel.kennelPaymentUrlExpires3.isBefore(DateTime(2010)) || kennel.kennelPaymentUrlExpires3.isAfter(DateTime.now()))) {
+        (kennel.kennelPaymentUrlExpires3.isBefore(DateTime(2010)) ||
+            kennel.kennelPaymentUrlExpires3.isAfter(DateTime.now()))) {
       return true;
     }
 
     return false;
   }
 
-  Future<List<dynamic>> payForEvent(num amount, EnumPayForExtras<int> extras, num surcharge, String paymentProvider) async {
+  Future<List<dynamic>> payForEvent(num amount, EnumPayForExtras<int> extras,
+      num surcharge, String paymentProvider) async {
     final String hasherId = getStringPref(StringPrefsEnum.userId);
     final PaymentsService paySrv = PaymentsService();
     return paySrv.payForEvent(

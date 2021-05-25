@@ -22,7 +22,8 @@ class ReceiptsModel implements BaseModel {
     this.updatedAt,
   });
 
-  factory ReceiptsModel.fromJson(Map<String, dynamic> json) => _$ReceiptsModelFromJson(json);
+  factory ReceiptsModel.fromJson(Map<String, dynamic> json) =>
+      _$ReceiptsModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$ReceiptsModelToJson(this);
 
@@ -85,7 +86,8 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
   final String colReimbursedNotes = 'reimbursedNotes';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(
+      Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -113,9 +115,12 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
   }
 
   @override
-  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
-    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
+  Future<void> createIndexes(
+      Database db, int version, dynamic appDomainType) async {
+    await db.execute(
+        'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+    await db.execute(
+        'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
   }
 
   @override
@@ -128,7 +133,8 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
     return ReceiptsModel.fromJson(map);
   }
 
-  String toQueryBody(String userId, String accessToken, ReceiptsModel item, String receiptsUploadedAfter) {
+  String toQueryBody(String userId, String accessToken, ReceiptsModel item,
+      String receiptsUploadedAfter) {
     final String map = jsonEncode(<String, Object>{
       'userId': userId,
       'accessToken': accessToken,
@@ -152,19 +158,27 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
 class ReceiptsService {
   Future<String> uploadReceipt(BuildContext context, ReceiptsModel item) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
+    final String accessToken =
+        IveCoreUtilities.generateToken(userId.toUpperCase(), 'addEditReceipt');
 
-    final num _receiptsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().receiptsTableHelper,
-          G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
-          G0<TableModel>().receiptsTableHelper.colUpdatedAtValue,
-        );
-    final DateTime receiptsUpdatedAfter = _receiptsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_receiptsLastUpdated + 1000);
+    final num _receiptsLastUpdated =
+        await G0<TableModel>().baseService.getLastUpdatedTime(
+              G0<Database>(),
+              G0<TableModel>().receiptsTableHelper,
+              G0<TableModel>()
+                  .receiptsTableHelper
+                  .getTableName(AppDomainType.event),
+              G0<TableModel>().receiptsTableHelper.colUpdatedAtValue,
+            );
+    final DateTime receiptsUpdatedAfter = _receiptsLastUpdated == null
+        ? DateTime(2000, 1, 1)
+        : DateTime.fromMillisecondsSinceEpoch(_receiptsLastUpdated + 1000);
 
-    final String body = G0<TableModel>().receiptsTableHelper.toQueryBody(userId, accessToken, item, receiptsUpdatedAfter.toString());
+    final String body = G0<TableModel>().receiptsTableHelper.toQueryBody(
+        userId, accessToken, item, receiptsUpdatedAfter.toString());
 
-    final String responseBody = await ServiceCommon.sendRequest(context, 'hc3_add_edit_receipt', body);
+    final String responseBody =
+        await ServiceCommon.sendRequest(context, 'hc3_add_edit_receipt', body);
 
     return responseBody;
   }

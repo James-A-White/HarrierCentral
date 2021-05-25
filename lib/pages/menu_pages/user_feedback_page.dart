@@ -44,20 +44,33 @@ class UserFeedbackPageContent extends StatefulWidget {
   const UserFeedbackPageContent({Key key}) : super(key: key);
 
   @override
-  _UserFeedbackPageContentState createState() => _UserFeedbackPageContentState();
+  _UserFeedbackPageContentState createState() =>
+      _UserFeedbackPageContentState();
 }
 
 class _UserFeedbackPageContentState extends State<UserFeedbackPageContent> {
-  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 24.0, height: 1.0);
+  TextStyle headingStyle = const TextStyle(
+      fontFamily: 'AvenirNextRegular',
+      fontStyle: FontStyle.normal,
+      color: Colors.yellow,
+      fontSize: 24.0,
+      height: 1.0);
 
-  TextStyle bodyStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0);
+  TextStyle bodyStyle = const TextStyle(
+      fontFamily: 'AvenirNextRegular',
+      fontStyle: FontStyle.normal,
+      color: Colors.white,
+      fontSize: 20.0,
+      height: 1.0);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
-      child: Center(child: Text('Your Feedback\r\nPage Placeholder', textAlign: TextAlign.center, style: headingStyle)),
+      child: Center(
+          child: Text('Your Feedback\r\nPage Placeholder',
+              textAlign: TextAlign.center, style: headingStyle)),
     );
   }
 }

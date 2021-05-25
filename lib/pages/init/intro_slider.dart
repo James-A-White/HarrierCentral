@@ -21,9 +21,18 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
   }
 
   void addSlides() {
-    descriptionStyle = TextStyle(color: Colors.black, fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
-    titleStyle = TextStyle(color: Colors.black, fontSize: 32.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
-    navStyle = TextStyle(color: themeAppBarBackground, fontSize: 18.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextDemiBold');
+    descriptionStyle = TextStyle(
+        color: Colors.black,
+        fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+        fontFamily: 'AvenirNextRegular');
+    titleStyle = TextStyle(
+        color: Colors.black,
+        fontSize: 32.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+        fontFamily: 'AvenirNextRegular');
+    navStyle = TextStyle(
+        color: themeAppBarBackground,
+        fontSize: 18.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+        fontFamily: 'AvenirNextDemiBold');
 
     slides.add(
       Slide(
@@ -45,7 +54,8 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         title: 'Discover Hash Runs',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description: 'Instantly Find Hash Runs Around the Corner or Across the Globe!',
+        description:
+            'Instantly Find Hash Runs Around the Corner or Across the Globe!',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_map.png',
         heightImage: 120 * G0<DeviceInfo>().deviceMaxScaleFactor,
@@ -75,7 +85,8 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         title: 'Easy\r\nHash Cash',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description: 'With new ways to pay for the Hash, you\'ll never fumble for cash again',
+        description:
+            'With new ways to pay for the Hash, you\'ll never fumble for cash again',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_cash.png',
         heightImage: 140 * G0<DeviceInfo>().deviceMaxScaleFactor,
@@ -90,7 +101,8 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         title: 'Built for\r\nMis-Management',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description: 'Powerful Tools Designed to Make It Easier to Manage Your Kennel',
+        description:
+            'Powerful Tools Designed to Make It Easier to Manage Your Kennel',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_admin_tools.png',
         heightImage: 100 * G0<DeviceInfo>().deviceMaxScaleFactor,
@@ -105,7 +117,8 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         title: 'Secure Data',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description: 'We don\'t Share Your Data with *Anyone* Outside of Harrier Central',
+        description:
+            'We don\'t Share Your Data with *Anyone* Outside of Harrier Central',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_data_security.png',
         heightImage: 140 * G0<DeviceInfo>().deviceMaxScaleFactor,
@@ -120,7 +133,8 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         title: 'More to Come!',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description: 'There are dozens more features designed just for the Hash coming soon!',
+        description:
+            'There are dozens more features designed just for the Hash coming soon!',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_rocket.png',
         heightImage: 150 * G0<DeviceInfo>().deviceMaxScaleFactor,
@@ -135,7 +149,8 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
         title: 'OK! Let\'s\r\nGet Started!',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description: 'Now We Need Just a Bit of Information to Create Your Custom Harrier Central Experience!',
+        description:
+            'Now We Need Just a Bit of Information to Create Your Custom Harrier Central Experience!',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_info_sign.png',
         heightImage: 100 * G0<DeviceInfo>().deviceMaxScaleFactor,
@@ -148,7 +163,8 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
   }
 
   Future<void> onDonePress() async {
-    Navigator.of(context).pushReplacementNamed(RouteNames.PERMISSIONS_SLIDER.toString());
+    Navigator.of(context)
+        .pushReplacementNamed(RouteNames.PERMISSIONS_SLIDER.toString());
   }
 
   Future<void> onSkipPress() async {
@@ -158,7 +174,8 @@ class _IntroSliderPageState extends State<IntroSliderPage> {
     // setState(() {
     //   buildIntroSlider();
     // });
-    Navigator.of(context).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+    Navigator.of(context)
+        .pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
   }
 
   Widget renderNextBtn() {

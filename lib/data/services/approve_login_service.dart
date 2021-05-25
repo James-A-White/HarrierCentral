@@ -7,7 +7,8 @@ class ApproveLoginService {
       userId = GUID_EMPTY;
     }
 
-    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
+    final String hcVersion =
+        getStringPref(StringPrefsEnum.harrierCentralVersion);
 
     String deviceId = 'unknown';
     String deviceType = 'unknown';
@@ -24,7 +25,8 @@ class ApproveLoginService {
       deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
       deviceName = '<unknown>';
       systemName = androidInfo.host;
-      systemVersion = '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch}';
+      systemVersion =
+          '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch}';
       manufacturer = androidInfo.brand;
     } else if (Platform.isIOS) {
       final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
@@ -36,7 +38,9 @@ class ApproveLoginService {
       manufacturer = 'Apple';
     }
 
-    final String accessToken = IveCoreUtilities.generateToken(userId, 'approveLogin', paramString: deviceId);
+    final String accessToken = IveCoreUtilities.generateToken(
+        userId, 'approveLogin',
+        paramString: deviceId);
 
     final String body = jsonEncode(<String, String>{
       'userId': userId,
@@ -54,7 +58,9 @@ class ApproveLoginService {
 
     Future<Response> response;
 
-    response = post(BASE_API_URL + 'hc3_approve_login', headers: <String, String>{'content-type': 'application/json'}, body: body
+    response = post(BASE_API_URL + 'hc3_approve_login',
+            headers: <String, String>{'content-type': 'application/json'},
+            body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -70,7 +76,8 @@ class ApproveLoginService {
     }
 
     // if the response times out, show an error
-    response.timeout(const Duration(seconds: LOGIN_TIMEOUT), onTimeout: () => _onTimeout(context));
+    response.timeout(const Duration(seconds: LOGIN_TIMEOUT),
+        onTimeout: () => _onTimeout(context));
 
     final Response resp = await response;
 
@@ -78,14 +85,18 @@ class ApproveLoginService {
       return null;
     }
 
-    final ApproveLoginModel loginResult = ApproveLoginModel.itemFromJson(resp.body);
+    final ApproveLoginModel loginResult =
+        ApproveLoginModel.itemFromJson(resp.body);
 
     return loginResult;
   }
 
   Future<Response> _onTimeout(BuildContext context) {
     IveCoreUtilities.showAlert(
-            context, 'Network Error', 'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.', 'Quit')
+            context,
+            'Network Error',
+            'Harrier Central was not able to contact the server. Please try again later.\r\n\r\nPlease check your network connection.',
+            'Quit')
         .then((void dummy) async {
       await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
     });

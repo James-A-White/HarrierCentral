@@ -13,7 +13,8 @@ class RegionsModel implements BaseModel {
     this.updatedAt,
   });
 
-  factory RegionsModel.fromJson(Map<String, dynamic> json) => _$RegionsModelFromJson(json);
+  factory RegionsModel.fromJson(Map<String, dynamic> json) =>
+      _$RegionsModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$RegionsModelToJson(this);
 
@@ -56,7 +57,8 @@ class RegionsTableHelper extends BaseTableHelper with BaseFields {
   final String colFlagFile = 'flagFile';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(
+      Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -75,9 +77,12 @@ class RegionsTableHelper extends BaseTableHelper with BaseFields {
   }
 
   @override
-  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
-    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
+  Future<void> createIndexes(
+      Database db, int version, dynamic appDomainType) async {
+    await db.execute(
+        'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+    await db.execute(
+        'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
   }
 
   @override

@@ -55,7 +55,8 @@ class PaymentQueryExtensions {
 }
 
 class PaymentReportPage extends StatefulWidget {
-  const PaymentReportPage({Key key, @required this.eventAggregate}) : super(key: key);
+  const PaymentReportPage({Key key, @required this.eventAggregate})
+      : super(key: key);
 
   final RunDetailAggregate eventAggregate;
 
@@ -85,10 +86,14 @@ class PaymentReportState extends State<PaymentReportPage> {
       _isLoading = true;
     });
 
-    final bool result = await G0<TableModel>().syncEventAdminService.updateFromBackend(
-        SyncEventAdminService.flagPaymentsTable | SyncEventAdminService.flagHasherEventMapTable | SyncEventAdminService.flagHasherKennelMapTable,
-        true,
-        widget.eventAggregate.event.eventId);
+    final bool result = await G0<TableModel>()
+        .syncEventAdminService
+        .updateFromBackend(
+            SyncEventAdminService.flagPaymentsTable |
+                SyncEventAdminService.flagHasherEventMapTable |
+                SyncEventAdminService.flagHasherKennelMapTable,
+            true,
+            widget.eventAggregate.event.eventId);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Payments data synchronized $resultStr');
 
@@ -129,18 +134,23 @@ class PaymentReportState extends State<PaymentReportPage> {
           WHERE hem.attendenceState >= 20
           ''';
 
-    final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
+    final List<Map<String, dynamic>> results =
+        await G0<Database>().rawQuery(sql);
 
     paymentsList.clear();
 
     for (int i = 0; i < results.length; i++) {
-      final PaymentsModel paymentItem = G0<TableModel>().paymentsTableHelper.fromMap(results[i]);
-      final PaymentQueryExtensions extensions = PaymentQueryExtensions.fromMap(results[i]);
-      final PaymentAggregate item = PaymentAggregate(payment: paymentItem, extensions: extensions);
+      final PaymentsModel paymentItem =
+          G0<TableModel>().paymentsTableHelper.fromMap(results[i]);
+      final PaymentQueryExtensions extensions =
+          PaymentQueryExtensions.fromMap(results[i]);
+      final PaymentAggregate item =
+          PaymentAggregate(payment: paymentItem, extensions: extensions);
 
       paymentsList.add(item);
       if (i == results.length - 1) {
-        paymentsList.sort((PaymentAggregate a, PaymentAggregate b) => a.extensions.paidByName.compareTo(b.extensions.paidByName));
+        paymentsList.sort((PaymentAggregate a, PaymentAggregate b) =>
+            a.extensions.paidByName.compareTo(b.extensions.paidByName));
         applyFilter();
         setState(() {});
       }
@@ -188,28 +198,48 @@ class PaymentReportState extends State<PaymentReportPage> {
       print(e);
     }
 
-    print('Payment totals refreshed at ' + DateTime.now().millisecondsSinceEpoch.toString());
+    print('Payment totals refreshed at ' +
+        DateTime.now().millisecondsSinceEpoch.toString());
   }
 
-  Future<List<dynamic>> payForEvent(PaymentAggregate item, int paymentType, num amount, {EnumPayForExtras<int> doPayForExtras = payForRunOnly}) {
+  Future<List<dynamic>> payForEvent(
+      PaymentAggregate item, int paymentType, num amount,
+      {EnumPayForExtras<int> doPayForExtras = payForRunOnly}) {
     final PaymentsService paySrv = PaymentsService();
     return paySrv.payForEvent(
-        widget.eventAggregate.event.eventId, GUID_EMPTY, item.extensions.pkHemId, paymentType, amount, attendenceAtHash.value, doPayForExtras, AppDomainType.event);
+        widget.eventAggregate.event.eventId,
+        GUID_EMPTY,
+        item.extensions.pkHemId,
+        paymentType,
+        amount,
+        attendenceAtHash.value,
+        doPayForExtras,
+        AppDomainType.event);
   }
 
   void applyFilter() {
     filteredList = paymentsList
         .where((PaymentAggregate evt) =>
-            ((filterValue & 1) != 0 && ((evt.payment.paymentType ?? paymentNotPaid.value) == paymentNotPaid.value)) ||
-            ((filterValue & 2) != 0 && (evt.payment.paymentType == paymentCash.value)) ||
-            ((filterValue & 4) != 0 && (evt.payment.paymentType == paymentCashOtherAmount.value)) ||
-            ((filterValue & 8) != 0 && (evt.payment.paymentType == paymentFreeRun.value)) ||
-            ((filterValue & 16) != 0 && (evt.payment.paymentType == paymentBankTransfer.value)) ||
-            ((filterValue & 32) != 0 && (evt.payment.paymentType == paymentBankTransferOtherAmount.value)) ||
-            ((filterValue & 64) != 0 && (evt.payment.paymentType == paymentHashCredit.value)))
+            ((filterValue & 1) != 0 &&
+                ((evt.payment.paymentType ?? paymentNotPaid.value) ==
+                    paymentNotPaid.value)) ||
+            ((filterValue & 2) != 0 &&
+                (evt.payment.paymentType == paymentCash.value)) ||
+            ((filterValue & 4) != 0 &&
+                (evt.payment.paymentType == paymentCashOtherAmount.value)) ||
+            ((filterValue & 8) != 0 &&
+                (evt.payment.paymentType == paymentFreeRun.value)) ||
+            ((filterValue & 16) != 0 &&
+                (evt.payment.paymentType == paymentBankTransfer.value)) ||
+            ((filterValue & 32) != 0 &&
+                (evt.payment.paymentType ==
+                    paymentBankTransferOtherAmount.value)) ||
+            ((filterValue & 64) != 0 &&
+                (evt.payment.paymentType == paymentHashCredit.value)))
         .toList();
 
-    filteredList.sort((PaymentAggregate a, PaymentAggregate b) => a.extensions.paidByName.compareTo(b.extensions.paidByName));
+    filteredList.sort((PaymentAggregate a, PaymentAggregate b) =>
+        a.extensions.paidByName.compareTo(b.extensions.paidByName));
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -259,7 +289,9 @@ class PaymentReportState extends State<PaymentReportPage> {
               onTap: () {
                 G0<TableModel>()
                     .paymentsService
-                    .sendPaymentReportByEmail(eventId: widget.eventAggregate.event.eventId, eventName: widget.eventAggregate.event.eventName)
+                    .sendPaymentReportByEmail(
+                        eventId: widget.eventAggregate.event.eventId,
+                        eventName: widget.eventAggregate.event.eventName)
                     .then((Map<String, String> result) {
                   _scaffoldKey.currentState?.hideCurrentSnackBar();
                   if (result['result'].toLowerCase().startsWith('success')) {
@@ -269,11 +301,16 @@ class PaymentReportState extends State<PaymentReportPage> {
                         'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
                         'OK');
                   } else {
-                    IveCoreUtilities.showAlert(context, 'Error sending report',
-                        'There was a problem sending the report to:\r\n\r\n${result['email']}\r\n\r\nPlease try again later or contact us at connect@harriercentral.com', 'OK');
+                    IveCoreUtilities.showAlert(
+                        context,
+                        'Error sending report',
+                        'There was a problem sending the report to:\r\n\r\n${result['email']}\r\n\r\nPlease try again later or contact us at connect@harriercentral.com',
+                        'OK');
                   }
                 });
-                IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Payment Report being processed...', durationInSeconds: 10);
+                IveCoreUtilities.showInSnackBar(
+                    context, _scaffoldKey, 'Payment Report being processed...',
+                    durationInSeconds: 10);
               },
             ),
           ],
@@ -305,77 +342,124 @@ class PaymentReportState extends State<PaymentReportPage> {
                           children: <Widget>[
                             PaymentTotalsCell(
                               creditAmount: 0,
-                              counter: paymentTotals[0]['count'] + paymentTotals[paymentNotPaid.value]['count'],
-                              color: (filterValue & 1) != 0 ? Colors.red : Colors.black26,
+                              counter: paymentTotals[0]['count'] +
+                                  paymentTotals[paymentNotPaid.value]['count'],
+                              color: (filterValue & 1) != 0
+                                  ? Colors.red
+                                  : Colors.black26,
                               paymentRecordType: paymentNotPaid,
-                              currencySymbol: widget.eventAggregate.extensions.curSym,
-                              digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
+                              currencySymbol:
+                                  widget.eventAggregate.extensions.curSym,
+                              digitsAfterDecimal:
+                                  widget.eventAggregate.extensions.digAfterDec,
                               onTap: () {
                                 filterTapped(1);
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: paymentTotals[paymentCash.value]['totalCollected'],
-                              counter: paymentTotals[paymentCash.value]['count'],
-                              color: (filterValue & 2) != 0 ? Colors.green : Colors.black26,
+                              creditAmount: paymentTotals[paymentCash.value]
+                                  ['totalCollected'],
+                              counter: paymentTotals[paymentCash.value]
+                                  ['count'],
+                              color: (filterValue & 2) != 0
+                                  ? Colors.green
+                                  : Colors.black26,
                               paymentRecordType: paymentCash,
-                              currencySymbol: widget.eventAggregate.extensions.curSym,
-                              digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
+                              currencySymbol:
+                                  widget.eventAggregate.extensions.curSym,
+                              digitsAfterDecimal:
+                                  widget.eventAggregate.extensions.digAfterDec,
                               onTap: () {
                                 filterTapped(2);
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: paymentTotals[paymentBankTransfer.value]['totalCollected'],
-                              counter: paymentTotals[paymentBankTransfer.value]['count'],
-                              color: (filterValue & 16) != 0 ? Colors.green : Colors.black26,
+                              creditAmount:
+                                  paymentTotals[paymentBankTransfer.value]
+                                      ['totalCollected'],
+                              counter: paymentTotals[paymentBankTransfer.value]
+                                  ['count'],
+                              color: (filterValue & 16) != 0
+                                  ? Colors.green
+                                  : Colors.black26,
                               paymentRecordType: paymentBankTransfer,
-                              currencySymbol: widget.eventAggregate.extensions.curSym,
-                              digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
+                              currencySymbol:
+                                  widget.eventAggregate.extensions.curSym,
+                              digitsAfterDecimal:
+                                  widget.eventAggregate.extensions.digAfterDec,
                               onTap: () {
                                 filterTapped(16);
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: paymentTotals[paymentFreeRun.value]['totalCollected'],
-                              counter: paymentTotals[paymentFreeRun.value]['count'],
-                              color: (filterValue & 8) != 0 ? Colors.green : Colors.black26,
+                              creditAmount: paymentTotals[paymentFreeRun.value]
+                                  ['totalCollected'],
+                              counter: paymentTotals[paymentFreeRun.value]
+                                  ['count'],
+                              color: (filterValue & 8) != 0
+                                  ? Colors.green
+                                  : Colors.black26,
                               paymentRecordType: paymentFreeRun,
-                              currencySymbol: widget.eventAggregate.extensions.curSym,
-                              digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
+                              currencySymbol:
+                                  widget.eventAggregate.extensions.curSym,
+                              digitsAfterDecimal:
+                                  widget.eventAggregate.extensions.digAfterDec,
                               onTap: () {
                                 filterTapped(8);
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: paymentTotals[paymentHashCredit.value]['totalCollected'],
-                              counter: paymentTotals[paymentHashCredit.value]['count'],
-                              color: (filterValue & 64) != 0 ? Colors.green : Colors.black26,
+                              creditAmount:
+                                  paymentTotals[paymentHashCredit.value]
+                                      ['totalCollected'],
+                              counter: paymentTotals[paymentHashCredit.value]
+                                  ['count'],
+                              color: (filterValue & 64) != 0
+                                  ? Colors.green
+                                  : Colors.black26,
                               paymentRecordType: paymentHashCredit,
-                              currencySymbol: widget.eventAggregate.extensions.curSym,
-                              digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
+                              currencySymbol:
+                                  widget.eventAggregate.extensions.curSym,
+                              digitsAfterDecimal:
+                                  widget.eventAggregate.extensions.digAfterDec,
                               onTap: () {
                                 filterTapped(64);
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: paymentTotals[paymentCashOtherAmount.value]['totalCollected'],
-                              counter: paymentTotals[paymentCashOtherAmount.value]['count'],
-                              color: (filterValue & 4) != 0 ? Colors.green : Colors.black26,
+                              creditAmount:
+                                  paymentTotals[paymentCashOtherAmount.value]
+                                      ['totalCollected'],
+                              counter:
+                                  paymentTotals[paymentCashOtherAmount.value]
+                                      ['count'],
+                              color: (filterValue & 4) != 0
+                                  ? Colors.green
+                                  : Colors.black26,
                               paymentRecordType: paymentCashOtherAmount,
-                              currencySymbol: widget.eventAggregate.extensions.curSym,
-                              digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
+                              currencySymbol:
+                                  widget.eventAggregate.extensions.curSym,
+                              digitsAfterDecimal:
+                                  widget.eventAggregate.extensions.digAfterDec,
                               onTap: () {
                                 filterTapped(4);
                               },
                             ),
                             PaymentTotalsCell(
-                              creditAmount: paymentTotals[paymentBankTransferOtherAmount.value]['totalCollected'],
-                              counter: paymentTotals[paymentBankTransferOtherAmount.value]['count'],
-                              color: (filterValue & 32) != 0 ? Colors.green : Colors.black26,
+                              creditAmount: paymentTotals[
+                                      paymentBankTransferOtherAmount.value]
+                                  ['totalCollected'],
+                              counter: paymentTotals[
+                                      paymentBankTransferOtherAmount.value]
+                                  ['count'],
+                              color: (filterValue & 32) != 0
+                                  ? Colors.green
+                                  : Colors.black26,
                               paymentRecordType: paymentBankTransferOtherAmount,
-                              currencySymbol: widget.eventAggregate.extensions.curSym,
-                              digitsAfterDecimal: widget.eventAggregate.extensions.digAfterDec,
+                              currencySymbol:
+                                  widget.eventAggregate.extensions.curSym,
+                              digitsAfterDecimal:
+                                  widget.eventAggregate.extensions.digAfterDec,
                               onTap: () {
                                 filterTapped(32);
                               },
@@ -389,44 +473,96 @@ class PaymentReportState extends State<PaymentReportPage> {
                     child: Padding(
                       padding: const EdgeInsets.only(top: 10.0),
                       child: filteredList.isEmpty
-                          ? const Center(child: Text('No transactions available.'))
+                          ? const Center(
+                              child: Text('No transactions available.'))
                           : RefreshIndicator(
                               onRefresh: () => _refreshSqlTablesFromBackend(),
                               displacement: 40.0,
                               child: ListView.separated(
-                                separatorBuilder: (BuildContext context, int index) => const Divider(
+                                separatorBuilder:
+                                    (BuildContext context, int index) =>
+                                        const Divider(
                                   height: 1.0,
                                   color: Colors.black45,
                                 ),
                                 physics: const AlwaysScrollableScrollPhysics(),
                                 itemCount: filteredList.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  final bool needsConfirm = ((filteredList[index].payment.paymentType == paymentBankTransfer.value) ||
-                                          (filteredList[index].payment.paymentType == paymentBankTransferOtherAmount.value)) &&
-                                      (filteredList[index].payment.confirmedBy == null);
-                                  return (((filteredList[index].payment.paymentType ?? paymentNotPaid.value) != paymentNotPaid.value) && !needsConfirm)
+                                  final bool needsConfirm =
+                                      ((filteredList[index]
+                                                      .payment
+                                                      .paymentType ==
+                                                  paymentBankTransfer.value) ||
+                                              (filteredList[index]
+                                                      .payment
+                                                      .paymentType ==
+                                                  paymentBankTransferOtherAmount
+                                                      .value)) &&
+                                          (filteredList[index]
+                                                  .payment
+                                                  .confirmedBy ==
+                                              null);
+                                  return (((filteredList[index]
+                                                      .payment
+                                                      .paymentType ??
+                                                  paymentNotPaid.value) !=
+                                              paymentNotPaid.value) &&
+                                          !needsConfirm)
                                       ? listItem(filteredList[index], context)
                                       : Dismissible(
                                           key: Key(index.toString()),
-                                          confirmDismiss: (DismissDirection direction) {
-                                            print(direction.toString() + ' ' + index.toString() + ' ' + widget.eventAggregate.extensions.nonMemberPrice.toString());
+                                          confirmDismiss:
+                                              (DismissDirection direction) {
+                                            print(direction.toString() +
+                                                ' ' +
+                                                index.toString() +
+                                                ' ' +
+                                                widget.eventAggregate.extensions
+                                                    .nonMemberPrice
+                                                    .toString());
                                             setState(() {
-                                              filteredList[index].extensions.isLoading = true;
+                                              filteredList[index]
+                                                  .extensions
+                                                  .isLoading = true;
                                             });
                                             if (needsConfirm) {
-                                              payForEvent(filteredList[index], paymentConfirmBankTransfer.value, -1).then((List<dynamic> results) {
-                                                _refreshListsFromTable().then((void dummy) {
+                                              payForEvent(
+                                                      filteredList[index],
+                                                      paymentConfirmBankTransfer
+                                                          .value,
+                                                      -1)
+                                                  .then(
+                                                      (List<dynamic> results) {
+                                                _refreshListsFromTable()
+                                                    .then((void dummy) {
                                                   setState(() {
                                                     refreshTotals();
                                                   });
                                                 });
                                               });
                                             } else {
-                                              final num paymentAmount = (filteredList[index].extensions.isMember != 0)
-                                                  ? filteredList[index].extensions.eventPriceForMembers
-                                                  : filteredList[index].extensions.eventPriceForNonMembers;
-                                              showExtrasDialog(context, _scaffoldKey.currentState,
-                                                  direction == DismissDirection.endToStart ? paymentCash.value : paymentBankTransfer.value, filteredList[index], paymentAmount);
+                                              final num paymentAmount =
+                                                  (filteredList[index]
+                                                              .extensions
+                                                              .isMember !=
+                                                          0)
+                                                      ? filteredList[index]
+                                                          .extensions
+                                                          .eventPriceForMembers
+                                                      : filteredList[index]
+                                                          .extensions
+                                                          .eventPriceForNonMembers;
+                                              showExtrasDialog(
+                                                  context,
+                                                  _scaffoldKey.currentState,
+                                                  direction ==
+                                                          DismissDirection
+                                                              .endToStart
+                                                      ? paymentCash.value
+                                                      : paymentBankTransfer
+                                                          .value,
+                                                  filteredList[index],
+                                                  paymentAmount);
                                             }
                                             return Future<bool>.value(false);
                                           },
@@ -435,65 +571,146 @@ class PaymentReportState extends State<PaymentReportPage> {
                                                   color: Colors.purple,
                                                   child: Row(children: <Widget>[
                                                     Padding(
-                                                      padding: const EdgeInsets.only(left: 15.0),
-                                                      child: Image.asset('images/icons/payment_type_4.png', height: 25.0, width: 25.0, color: Colors.white),
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              left: 15.0),
+                                                      child: Image.asset(
+                                                          'images/icons/payment_type_4.png',
+                                                          height: 25.0,
+                                                          width: 25.0,
+                                                          color: Colors.white),
                                                     ),
                                                     const Padding(
-                                                      padding: EdgeInsets.only(left: 15.0),
-                                                      child: Text('Confirm Bank Transfer',
+                                                      padding: EdgeInsets.only(
+                                                          left: 15.0),
+                                                      child: Text(
+                                                          'Confirm Bank Transfer',
                                                           style: TextStyle(
-                                                              fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                              fontFamily:
+                                                                  'AvenirNextDemiBold',
+                                                              fontStyle:
+                                                                  FontStyle
+                                                                      .normal,
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 17.0,
+                                                              height: 1.0)),
                                                     )
                                                   ]))
                                               : Container(
                                                   color: Colors.blue,
                                                   child: Row(children: <Widget>[
                                                     Padding(
-                                                      padding: const EdgeInsets.only(left: 15.0),
-                                                      child: Image.asset('images/icons/payment_type_4.png', height: 25.0, width: 25.0, color: Colors.white),
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              left: 15.0),
+                                                      child: Image.asset(
+                                                          'images/icons/payment_type_4.png',
+                                                          height: 25.0,
+                                                          width: 25.0,
+                                                          color: Colors.white),
                                                     ),
                                                     Padding(
-                                                      padding: const EdgeInsets.only(left: 15.0),
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              left: 15.0),
                                                       child: Text(
                                                           '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Bank Transfer',
                                                           style: const TextStyle(
-                                                              fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                                              fontFamily:
+                                                                  'AvenirNextDemiBold',
+                                                              fontStyle:
+                                                                  FontStyle
+                                                                      .normal,
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 17.0,
+                                                              height: 1.0)),
                                                     )
                                                   ])),
                                           secondaryBackground: needsConfirm
                                               ? Container(
                                                   color: Colors.purple,
-                                                  child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(right: 15.0),
-                                                      child: Image.asset('images/icons/payment_type_4.png', height: 25.0, width: 25.0, color: Colors.white),
-                                                    ),
-                                                    const Padding(
-                                                      padding: EdgeInsets.only(right: 15.0),
-                                                      child: Text('Confirm bank transfer',
-                                                          style: TextStyle(
-                                                              fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                                    )
-                                                  ]))
+                                                  child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment.end,
+                                                      children: <Widget>[
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                      .only(
+                                                                  right: 15.0),
+                                                          child: Image.asset(
+                                                              'images/icons/payment_type_4.png',
+                                                              height: 25.0,
+                                                              width: 25.0,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                        const Padding(
+                                                          padding:
+                                                              EdgeInsets.only(
+                                                                  right: 15.0),
+                                                          child: Text(
+                                                              'Confirm bank transfer',
+                                                              style: TextStyle(
+                                                                  fontFamily:
+                                                                      'AvenirNextDemiBold',
+                                                                  fontStyle:
+                                                                      FontStyle
+                                                                          .normal,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize:
+                                                                      17.0,
+                                                                  height: 1.0)),
+                                                        )
+                                                      ]))
                                               : Container(
                                                   color: Colors.green,
-                                                  child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(right: 15.0),
-                                                      child: Image.asset('images/icons/payment_type_3.png', height: 25.0, width: 25.0, color: Colors.white),
-                                                    ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(right: 15.0),
-                                                      child: Text(
-                                                          '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Cash',
-                                                          style: const TextStyle(
-                                                              fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                                    )
-                                                  ])),
-                                          onDismissed: (DismissDirection direction) {
-                                            print(direction.toString() + ' NOTE: We should never reach this point');
+                                                  child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment.end,
+                                                      children: <Widget>[
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                      .only(
+                                                                  right: 15.0),
+                                                          child: Image.asset(
+                                                              'images/icons/payment_type_3.png',
+                                                              height: 25.0,
+                                                              width: 25.0,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                      .only(
+                                                                  right: 15.0),
+                                                          child: Text(
+                                                              '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : IveCoreUtilities.getFormattedMoney((filteredList[index].extensions.isMember != 0) ? filteredList[index].extensions.eventPriceForMembers : filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym) + ' '}Cash',
+                                                              style: const TextStyle(
+                                                                  fontFamily:
+                                                                      'AvenirNextDemiBold',
+                                                                  fontStyle:
+                                                                      FontStyle
+                                                                          .normal,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize:
+                                                                      17.0,
+                                                                  height: 1.0)),
+                                                        )
+                                                      ])),
+                                          onDismissed:
+                                              (DismissDirection direction) {
+                                            print(direction.toString() +
+                                                ' NOTE: We should never reach this point');
                                           },
-                                          child: listItem(filteredList[index], context),
+                                          child: listItem(
+                                              filteredList[index], context),
                                         );
                                 },
                               ),
@@ -504,7 +721,8 @@ class PaymentReportState extends State<PaymentReportPage> {
               ));
   }
 
-  void showExtrasDialog(BuildContext context, ScaffoldState scaffoldState, int paymentType, PaymentAggregate packMember, num otherAmount) {
+  void showExtrasDialog(BuildContext context, ScaffoldState scaffoldState,
+      int paymentType, PaymentAggregate packMember, num otherAmount) {
     scaffoldState.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
     if (((paymentType == paymentFreeRun.value) ||
             (paymentType == paymentCash.value) ||
@@ -513,12 +731,20 @@ class PaymentReportState extends State<PaymentReportPage> {
             (paymentType == paymentHashCredit.value) ||
             (paymentType == paymentBankTransferOtherAmount.value)) &&
         ((widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0)) {
-      final num runOnlyPrice = packMember.extensions.isMember != 0 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
-      final num runPlusExtrasPrice = runOnlyPrice + widget.eventAggregate.event.eventPriceForExtras;
+      final num runOnlyPrice = packMember.extensions.isMember != 0
+          ? widget.eventAggregate.extensions.memberPrice
+          : widget.eventAggregate.extensions.nonMemberPrice;
+      final num runPlusExtrasPrice =
+          runOnlyPrice + widget.eventAggregate.event.eventPriceForExtras;
 
-      final String runOnlyPriceStr = IveCoreUtilities.getFormattedMoney(runOnlyPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
-      final String runPlusExtrasPriceStr =
-          IveCoreUtilities.getFormattedMoney(runPlusExtrasPrice, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+      final String runOnlyPriceStr = IveCoreUtilities.getFormattedMoney(
+          runOnlyPrice,
+          widget.eventAggregate.extensions.digAfterDec,
+          widget.eventAggregate.extensions.curSym);
+      final String runPlusExtrasPriceStr = IveCoreUtilities.getFormattedMoney(
+          runPlusExtrasPrice,
+          widget.eventAggregate.extensions.digAfterDec,
+          widget.eventAggregate.extensions.curSym);
 
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
@@ -529,7 +755,9 @@ class PaymentReportState extends State<PaymentReportPage> {
           'returnValue': payForRunOnly,
         },
         <String, dynamic>{
-          'title': 'Run + ' + widget.eventAggregate.event.extrasDescription + ' ($runPlusExtrasPriceStr)',
+          'title': 'Run + ' +
+              widget.eventAggregate.event.extrasDescription +
+              ' ($runPlusExtrasPriceStr)',
           'icon': <Widget>[
             Container(),
           ],
@@ -551,24 +779,40 @@ class PaymentReportState extends State<PaymentReportPage> {
           builder: (BuildContext context) {
             return popup;
           }).then((dynamic payForExtras) {
-        payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForExtras).then((List<dynamic> results) {
+        payForEvent(packMember, paymentType, otherAmount,
+                doPayForExtras: payForExtras)
+            .then((List<dynamic> results) {
           _refreshListsFromTable().then((void dummy) {
             setState(() {
               refreshTotals();
               BankTransferQr.showBankTransferSnackbar(
-                  widget.eventAggregate, results, paymentType, context, packMember.extensions.paidByName, packMember.extensions.isMember, otherAmount);
+                  widget.eventAggregate,
+                  results,
+                  paymentType,
+                  context,
+                  packMember.extensions.paidByName,
+                  packMember.extensions.isMember,
+                  otherAmount);
             });
           });
         });
       });
     } else {
       // there are no extras so just pay for the run without any extras dialog
-      payForEvent(packMember, paymentType, otherAmount, doPayForExtras: payForRunOnly).then((List<dynamic> results) {
+      payForEvent(packMember, paymentType, otherAmount,
+              doPayForExtras: payForRunOnly)
+          .then((List<dynamic> results) {
         _refreshListsFromTable().then((void dummy) {
           setState(() {
             refreshTotals();
             BankTransferQr.showBankTransferSnackbar(
-                widget.eventAggregate, results, paymentType, context, packMember.extensions.paidByName, packMember.extensions.isMember, otherAmount);
+                widget.eventAggregate,
+                results,
+                paymentType,
+                context,
+                packMember.extensions.paidByName,
+                packMember.extensions.isMember,
+                otherAmount);
           });
         });
       });
@@ -600,10 +844,14 @@ class PaymentReportState extends State<PaymentReportPage> {
         paymentReportItem: item,
         onTap: () {
           Scaffold.of(topContext).hideCurrentSnackBar();
-          if ((item.payment.paymentType == null) || (item.payment.paymentType == paymentNotPaid.value)) {
+          if ((item.payment.paymentType == null) ||
+              (item.payment.paymentType == paymentNotPaid.value)) {
             final PaymentPopup pp = PaymentPopup(
-              amount: (item.extensions.isMember != 0) ? item.extensions.eventPriceForMembers : item.extensions.eventPriceForNonMembers,
-              creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
+              amount: (item.extensions.isMember != 0)
+                  ? item.extensions.eventPriceForMembers
+                  : item.extensions.eventPriceForNonMembers,
+              creditAllowed:
+                  1, // TODO(James): fix this in the DB so that Kennnels can disable credit
               creditRemaining: item.extensions.creditAvailable,
               currencySymbol: widget.eventAggregate.extensions.curSym,
               hemId: item.extensions.pkHemId,
@@ -613,12 +861,13 @@ class PaymentReportState extends State<PaymentReportPage> {
               // },
             );
 
-            final Future<PaymentPopupResult> dlg = showDialog<PaymentPopupResult>(
-                context: context,
-                barrierDismissible: false, // user must tap button!
-                builder: (BuildContext context) {
-                  return pp;
-                });
+            final Future<PaymentPopupResult> dlg =
+                showDialog<PaymentPopupResult>(
+                    context: context,
+                    barrierDismissible: false, // user must tap button!
+                    builder: (BuildContext context) {
+                      return pp;
+                    });
 
             dlg.then(
               (PaymentPopupResult paymentValue) {
@@ -628,7 +877,12 @@ class PaymentReportState extends State<PaymentReportPage> {
                   });
 
                   //final num paymentAmount = (item.extensions.isMember != 0) ? item.extensions.eventPriceForMembers : item.extensions.eventPriceForNonMembers;
-                  showExtrasDialog(context, _scaffoldKey.currentState, paymentValue.transactionType, item, paymentValue.transactionValue);
+                  showExtrasDialog(
+                      context,
+                      _scaffoldKey.currentState,
+                      paymentValue.transactionType,
+                      item,
+                      paymentValue.transactionValue);
 
                   // payForEvent(item, paymentValue.transactionType, paymentValue.transactionValue).then((List<dynamic> results) {
                   //   _refreshListsFromTable().then((void dummy) {
@@ -647,7 +901,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                 setState(() {
                   item.extensions.isLoading = true;
                 });
-                payForEvent(item, paymentNotPaid.value, 0).then((List<dynamic> results) {
+                payForEvent(item, paymentNotPaid.value, 0)
+                    .then((List<dynamic> results) {
                   _refreshListsFromTable().then((void dummy) {
                     setState(() {
                       refreshTotals();
@@ -658,7 +913,8 @@ class PaymentReportState extends State<PaymentReportPage> {
                 setState(() {
                   item.extensions.isLoading = true;
                 });
-                payForEvent(item, paymentConfirmBankTransfer.value, -1).then((List<dynamic> results) {
+                payForEvent(item, paymentConfirmBankTransfer.value, -1)
+                    .then((List<dynamic> results) {
                   _refreshListsFromTable().then((void dummy) {
                     setState(() {
                       refreshTotals();
@@ -673,15 +929,26 @@ class PaymentReportState extends State<PaymentReportPage> {
     );
   }
 
-  Future<String> _displayPaymentDetails(PaymentAggregate item, BuildContext context) async {
+  Future<String> _displayPaymentDetails(
+      PaymentAggregate item, BuildContext context) async {
     return showDialog<String>(
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
-        const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 16.0);
+        const TextStyle headingStyle = TextStyle(
+            fontFamily: 'AvenirNextMedium',
+            fontStyle: FontStyle.normal,
+            fontSize: 16.0);
 
-        const TextStyle bodyStyle = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0);
-        final TextStyle bodyStyleRed = TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, color: Colors.red[600]);
+        const TextStyle bodyStyle = TextStyle(
+            fontFamily: 'AvenirNextDemiBold',
+            fontStyle: FontStyle.normal,
+            fontSize: 16.0);
+        final TextStyle bodyStyleRed = TextStyle(
+            fontFamily: 'AvenirNextDemiBold',
+            fontStyle: FontStyle.normal,
+            fontSize: 16.0,
+            color: Colors.red[600]);
 
         String paymentTypeStr = '';
 
@@ -715,10 +982,14 @@ class PaymentReportState extends State<PaymentReportPage> {
         const int flexRight = 63;
         const num spacer = 6.0;
 
-        final String amountStr =
-            IveCoreUtilities.getFormattedMoney(item?.payment?.creditAmount ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
-        final String extrasPriceStr =
-            IveCoreUtilities.getFormattedMoney(item?.extensions?.extrasPrice ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+        final String amountStr = IveCoreUtilities.getFormattedMoney(
+            item?.payment?.creditAmount ?? 0,
+            widget.eventAggregate.extensions.digAfterDec,
+            widget.eventAggregate.extensions.curSym);
+        final String extrasPriceStr = IveCoreUtilities.getFormattedMoney(
+            item?.extensions?.extrasPrice ?? 0,
+            widget.eventAggregate.extensions.digAfterDec,
+            widget.eventAggregate.extensions.curSym);
 
         return AlertDialog(
           title: const Text('Payment Detail'),
@@ -839,7 +1110,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                         const SizedBox(width: spacer, height: 10.0),
                         Expanded(
                             child: Text(
-                              item.payment.doPayForExtras == 0 ? 'No' : extrasPriceStr,
+                              item.payment.doPayForExtras == 0
+                                  ? 'No'
+                                  : extrasPriceStr,
                               style: bodyStyle,
                             ),
                             flex: flexRight),
@@ -858,7 +1131,10 @@ class PaymentReportState extends State<PaymentReportPage> {
                   const SizedBox(width: spacer, height: 10.0),
                   Expanded(
                       child: Text(
-                        (item?.payment?.paidDate == null) ? '' : DateFormat('MMM dd, yyyy').format(item.payment.paidDate),
+                        (item?.payment?.paidDate == null)
+                            ? ''
+                            : DateFormat('MMM dd, yyyy')
+                                .format(item.payment.paidDate),
                         style: bodyStyle,
                       ),
                       flex: flexRight),
@@ -877,7 +1153,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                   const SizedBox(width: spacer, height: 10.0),
                   Expanded(
                       child: Text(
-                        (item?.payment?.paidDate == null) ? '' : DateFormat('kk:mm').format(item.payment.paidDate),
+                        (item?.payment?.paidDate == null)
+                            ? ''
+                            : DateFormat('kk:mm').format(item.payment.paidDate),
                         style: bodyStyle,
                       ),
                       flex: flexRight),
@@ -918,7 +1196,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                         Expanded(
                             child: Text(
                               IveCoreUtilities.getFormattedMoney(
-                                  item?.payment?.surcharge ?? 0, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym),
+                                  item?.payment?.surcharge ?? 0,
+                                  widget.eventAggregate.extensions.digAfterDec,
+                                  widget.eventAggregate.extensions.curSym),
                               style: bodyStyle,
                             ),
                             flex: flexRight),
@@ -944,7 +1224,9 @@ class PaymentReportState extends State<PaymentReportPage> {
                             ),
                             flex: flexRight),
                       ]),
-                ((item.payment.paymentType != paymentBankTransfer.value) && (item.payment.paymentType != paymentBankTransferOtherAmount.value))
+                ((item.payment.paymentType != paymentBankTransfer.value) &&
+                        (item.payment.paymentType !=
+                            paymentBankTransferOtherAmount.value))
                     ? Container()
                     : Row(children: <Widget>[
                         const Expanded(
@@ -960,12 +1242,18 @@ class PaymentReportState extends State<PaymentReportPage> {
                         const SizedBox(width: spacer, height: 10.0),
                         Expanded(
                             child: Text(
-                              (item?.payment?.confirmedDate == null) ? '<not confirmed>' : item.extensions.confByName,
-                              style: (item?.payment?.confirmedDate == null) ? bodyStyleRed : bodyStyle,
+                              (item?.payment?.confirmedDate == null)
+                                  ? '<not confirmed>'
+                                  : item.extensions.confByName,
+                              style: (item?.payment?.confirmedDate == null)
+                                  ? bodyStyleRed
+                                  : bodyStyle,
                             ),
                             flex: flexRight),
                       ]),
-                ((item.payment.paymentType != paymentBankTransfer.value) && (item.payment.paymentType != paymentBankTransferOtherAmount.value))
+                ((item.payment.paymentType != paymentBankTransfer.value) &&
+                        (item.payment.paymentType !=
+                            paymentBankTransferOtherAmount.value))
                     ? Container()
                     : Row(children: <Widget>[
                         const Expanded(
@@ -981,39 +1269,61 @@ class PaymentReportState extends State<PaymentReportPage> {
                         const SizedBox(width: spacer, height: 10.0),
                         Expanded(
                             child: Text(
-                              (item?.payment?.confirmedDate == null) ? '<not confirmed>' : DateFormat('MMM dd, yyyy kk:mm').format(item.payment.paidDate),
-                              style: (item?.payment?.confirmedDate == null) ? bodyStyleRed : bodyStyle,
+                              (item?.payment?.confirmedDate == null)
+                                  ? '<not confirmed>'
+                                  : DateFormat('MMM dd, yyyy kk:mm')
+                                      .format(item.payment.paidDate),
+                              style: (item?.payment?.confirmedDate == null)
+                                  ? bodyStyleRed
+                                  : bodyStyle,
                             ),
                             flex: flexRight),
                       ]),
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Center(
-                    child: (((item.payment.paymentType != paymentBankTransfer.value) && (item.payment.paymentType != paymentBankTransferOtherAmount.value)) ||
+                    child: (((item.payment.paymentType !=
+                                    paymentBankTransfer.value) &&
+                                (item.payment.paymentType !=
+                                    paymentBankTransferOtherAmount.value)) ||
                             (item.payment.confirmedBy != null) ||
                             (widget.eventAggregate.kennel.bankBic == null))
                         ? Container()
                         : RaisedButton(
                             onPressed: () {
-                              final String remittanceInfo = item.payment.paymentReference + '-${item.extensions.paidByName}';
-                              BankTransferQr.showBankTransferQrCode(context, widget.eventAggregate, item.extensions.isMember != 0,
-                                  packMemberNameForDisplay: item.extensions.paidByName, remitString: remittanceInfo, remitAmount: item.payment.creditAmount);
+                              final String remittanceInfo =
+                                  item.payment.paymentReference +
+                                      '-${item.extensions.paidByName}';
+                              BankTransferQr.showBankTransferQrCode(
+                                  context,
+                                  widget.eventAggregate,
+                                  item.extensions.isMember != 0,
+                                  packMemberNameForDisplay:
+                                      item.extensions.paidByName,
+                                  remitString: remittanceInfo,
+                                  remitAmount: item.payment.creditAmount);
                             },
-                            child: Text('Show Payment QR Code', style: buttonTextStyle),
+                            child: Text('Show Payment QR Code',
+                                style: buttonTextStyle),
                           ),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Center(
-                    child: (((item.payment.paymentType != paymentBankTransfer.value) && (item.payment.paymentType != paymentBankTransferOtherAmount.value)) ||
+                    child: (((item.payment.paymentType !=
+                                    paymentBankTransfer.value) &&
+                                (item.payment.paymentType !=
+                                    paymentBankTransferOtherAmount.value)) ||
                             (item.payment.confirmedBy != null))
                         ? Container()
                         : RaisedButton(
                             onPressed: () {
-                              Navigator.of(context, rootNavigator: true).pop('confirm');
+                              Navigator.of(context, rootNavigator: true)
+                                  .pop('confirm');
                             },
-                            child: Text('Confirm Bank Transfer', style: buttonTextStyle),
+                            child: Text('Confirm Bank Transfer',
+                                style: buttonTextStyle),
                           ),
                   ),
                 )

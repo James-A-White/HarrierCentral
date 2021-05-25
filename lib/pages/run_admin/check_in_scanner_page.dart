@@ -44,7 +44,12 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                         'Use this scanner to scan Hasher barcodes at the start of the run so you know who is at the Hash and at the end of the run so you can ensure that no one is lost on trail.',
                         textAlign: TextAlign.justify,
                         maxLines: 4,
-                        style: TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 0.8),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'AvenirNextDemiBold',
+                            fontStyle: FontStyle.normal,
+                            fontSize: 16.0,
+                            height: 0.8),
                       ),
                     ),
                     Positioned(
@@ -82,7 +87,8 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                       //width:150,
                       //height:150,
                       child: Container(
-                        padding: EdgeInsets.all(10 * (G0<DeviceInfo>().deviceMaxScaleFactor * 1.5)),
+                        padding: EdgeInsets.all(
+                            10 * (G0<DeviceInfo>().deviceMaxScaleFactor * 1.5)),
                         child: Stack(
                           alignment: AlignmentDirectional.center,
                           children: <Widget>[
@@ -145,7 +151,12 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                             //'this is a test of how 3 lines will fit Ill need a lot more text than that to make it work',
                             textAlign: TextAlign.center,
                             maxLines: 3,
-                            style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 26.0, height: 0.9),
+                            style: const TextStyle(
+                                fontFamily: 'AvenirNextDemiBold',
+                                fontStyle: FontStyle.normal,
+                                color: Colors.yellow,
+                                fontSize: 26.0,
+                                height: 0.9),
                           ),
                         ),
                       ),
@@ -296,11 +307,14 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
 
     //await stopScanning();
 
-    final Map<String, String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_user);
+    final Map<String, String> result =
+        Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_user);
 
     if (result['validScan'] == 'false') {
       setState(() {
-        onScreenMessage = result['validHcQr'] == 'true' ? 'This QR code is not valid here' : 'QR code not recignized';
+        onScreenMessage = result['validHcQr'] == 'true'
+            ? 'This QR code is not valid here'
+            : 'QR code not recignized';
       });
     } else {
       final String prefix = result['prefix'];
@@ -313,9 +327,12 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
         setState(() {
           onScreenMessage = 'Processing QR Scan';
         });
-        final int attendenceState = isScanningAtRunStart ? attendenceAtHash.value : attendenceOnIn.value;
+        final int attendenceState = isScanningAtRunStart
+            ? attendenceAtHash.value
+            : attendenceOnIn.value;
 
-        CommonQueries.getUserIdFromUqr(prefix + content).then((String hasherId) {
+        CommonQueries.getUserIdFromUqr(prefix + content)
+            .then((String hasherId) {
           G0<TableModel>()
               .hasherEventMapService
               .joinEvent(
@@ -333,8 +350,12 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
           ) {
             setState(() {
               if ((adHocData != null) && (adHocData.isNotEmpty)) {
-                final num amount = adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
-                IveCoreUtilities.showInSnackBar(context, _scaffoldKey, adHocData[0]['userMessage'], durationInSeconds: 10);
+                final num amount = adHocData[0]['isMember'] == 1
+                    ? widget.eventAggregate.extensions.memberPrice
+                    : widget.eventAggregate.extensions.nonMemberPrice;
+                IveCoreUtilities.showInSnackBar(
+                    context, _scaffoldKey, adHocData[0]['userMessage'],
+                    durationInSeconds: 10);
                 //
                 if ((adHocData[0]['isPaid'] != 0) || (amount <= 0)) {
                   //scanUserBarcode();
@@ -344,7 +365,8 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                 } else {
                   final PaymentPopup pp = PaymentPopup(
                     amount: amount,
-                    creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
+                    creditAllowed:
+                        1, // TODO(James): fix this in the DB so that Kennnels can disable credit
                     creditRemaining: 0,
                     currencySymbol: widget.eventAggregate.extensions.curSym,
                     hemId: adHocData[0]['hasherEventMapId'],
@@ -354,12 +376,13 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                     // },
                   );
 
-                  final Future<PaymentPopupResult> dlg = showDialog<PaymentPopupResult>(
-                      context: context,
-                      barrierDismissible: false, // user must tap button!
-                      builder: (BuildContext context) {
-                        return pp;
-                      });
+                  final Future<PaymentPopupResult> dlg =
+                      showDialog<PaymentPopupResult>(
+                          context: context,
+                          barrierDismissible: false, // user must tap button!
+                          builder: (BuildContext context) {
+                            return pp;
+                          });
 
                   dlg.then(
                     (PaymentPopupResult popupResult) {
@@ -368,7 +391,10 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                           onScreenMessage = 'Please wait, processing payment';
                         });
 
-                        payForEvent(adHocData[0]['hasherEventMapId'], popupResult.transactionType, popupResult.transactionValue);
+                        payForEvent(
+                            adHocData[0]['hasherEventMapId'],
+                            popupResult.transactionType,
+                            popupResult.transactionValue);
                       }
                     },
                   );
@@ -433,20 +459,30 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
 
   void payForEvent(String hemId, int paymentType, num amount) {
     final PaymentsService paySrv = PaymentsService();
-    final Future<List<dynamic>> retVal =
-        paySrv.payForEvent(widget.eventAggregate.event.eventId, GUID_EMPTY, hemId, paymentType, amount, attendenceAtHash.value, payForRunOnly, AppDomainType.event);
+    final Future<List<dynamic>> retVal = paySrv.payForEvent(
+        widget.eventAggregate.event.eventId,
+        GUID_EMPTY,
+        hemId,
+        paymentType,
+        amount,
+        attendenceAtHash.value,
+        payForRunOnly,
+        AppDomainType.event);
     retVal.then(
       (List<dynamic> paymentResult) {
         if ((paymentResult != null) && (paymentResult.isNotEmpty)) {
           final int paymentType = paymentResult[0]['paymentType'];
-          final String amountPaid =
-              IveCoreUtilities.getFormattedMoney(paymentResult[0]['creditAmount'], widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
+          final String amountPaid = IveCoreUtilities.getFormattedMoney(
+              paymentResult[0]['creditAmount'],
+              widget.eventAggregate.extensions.digAfterDec,
+              widget.eventAggregate.extensions.curSym);
 
           onScreenMessage = paymentResult[0]['hasherWhoPaid'];
 
           if (paymentResult[0]['attendenceState'] == attendenceAtHash.value) {
             onScreenMessage += ' is checked in and';
-          } else if (paymentResult[0]['attendenceState'] == attendenceOnIn.value) {
+          } else if (paymentResult[0]['attendenceState'] ==
+              attendenceOnIn.value) {
             onScreenMessage += ' is On Inn and';
           }
 
@@ -558,7 +594,11 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                 Text(
                   'Harrier Central admins can use this page to scan in Hashers both at the beginning of runs (to record who is at the run) and the end of runs (to make sure everone is back safely).\r\n\r\nThis screen also makes it possible to record who has paid and who has not.',
                   textAlign: TextAlign.justify,
-                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                  style: TextStyle(
+                      fontFamily: 'AvenirNextRegular',
+                      fontStyle: FontStyle.normal,
+                      fontSize: 16.0,
+                      height: 1.0),
                 )
               ],
             ),

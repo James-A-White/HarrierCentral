@@ -1,7 +1,11 @@
 import 'package:harrier_central/imports.dart';
 
 class PaymentReportListItem extends StatelessWidget {
-  const PaymentReportListItem({@required this.paymentReportItem, @required this.currencySymbol, @required this.digitsAfterDecimal, @required this.onTap});
+  const PaymentReportListItem(
+      {@required this.paymentReportItem,
+      @required this.currencySymbol,
+      @required this.digitsAfterDecimal,
+      @required this.onTap});
 
   final PaymentAggregate paymentReportItem;
   final String currencySymbol;
@@ -10,7 +14,10 @@ class PaymentReportListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String amountPaid = IveCoreUtilities.getFormattedMoney(paymentReportItem.payment.creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
+    final String amountPaid = IveCoreUtilities.getFormattedMoney(
+        paymentReportItem.payment.creditAmount ?? 0,
+        digitsAfterDecimal,
+        currencySymbol);
 
     return InkWell(
       onTap: onTap,
@@ -28,10 +35,15 @@ class PaymentReportListItem extends StatelessWidget {
                   top: paymentReportItem.extensions.isLoading ? 2.5 : 7.0,
                   child: paymentReportItem.extensions.isLoading
                       ? Icon(delayIcon, color: Colors.blue[800], size: 37.0)
-                      : Image.asset('images/icons/payment_type_${paymentReportItem.payment.paymentType ?? paymentNotPaid.value}.png',
+                      : Image.asset(
+                          'images/icons/payment_type_${paymentReportItem.payment.paymentType ?? paymentNotPaid.value}.png',
                           height: 30.0,
                           width: 30.0,
-                          color: (paymentReportItem.payment.paymentType ?? paymentNotPaid.value) <= paymentNotPaid.value ? Colors.red : Colors.green[700]),
+                          color: (paymentReportItem.payment.paymentType ??
+                                      paymentNotPaid.value) <=
+                                  paymentNotPaid.value
+                              ? Colors.red
+                              : Colors.green[700]),
                 ),
                 Positioned(
                   left: 10.0,
@@ -40,7 +52,9 @@ class PaymentReportListItem extends StatelessWidget {
                     '${paymentReportItem.extensions.paidByName}',
                     //'xxxx xxxx xxx xxx xxxx xxxx xxxx xxxx',
                     style: TextStyle(
-                        fontFamily: (paymentReportItem.extensions.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium',
+                        fontFamily: (paymentReportItem.extensions.isMember != 0)
+                            ? 'AvenirNextCondensedDemiBold'
+                            : 'AvenirNextCondensedMedium',
                         fontStyle: FontStyle.normal,
                         fontSize: 22.0,
                         height: 1.0),
@@ -53,8 +67,11 @@ class PaymentReportListItem extends StatelessWidget {
                   child: Text(
                     '$amountPaid',
                     style: TextStyle(
-                        color: (((paymentReportItem.payment.paymentType == paymentBankTransfer.value) ||
-                                    (paymentReportItem.payment.paymentType == paymentBankTransferOtherAmount.value)) &&
+                        color: (((paymentReportItem.payment.paymentType ==
+                                        paymentBankTransfer.value) ||
+                                    (paymentReportItem.payment.paymentType ==
+                                        paymentBankTransferOtherAmount
+                                            .value)) &&
                                 (paymentReportItem.payment.confirmedBy == null))
                             ? Colors.red
                             : Colors.black,
@@ -96,9 +113,15 @@ class PaymentTotalsCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String total = (creditAmount ?? 0) <= 0 ? '' : IveCoreUtilities.getFormattedMoney(creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
+    final String total = (creditAmount ?? 0) <= 0
+        ? ''
+        : IveCoreUtilities.getFormattedMoney(
+            creditAmount ?? 0, digitsAfterDecimal, currencySymbol);
 
-    const TextStyle textStyle = TextStyle(color: Colors.black, fontSize: 24.0, fontFamily: 'AvenirNextCondensedDemiBold');
+    const TextStyle textStyle = TextStyle(
+        color: Colors.black,
+        fontSize: 24.0,
+        fontFamily: 'AvenirNextCondensedDemiBold');
     return Container(
       width: 40,
       child: Column(
@@ -113,7 +136,11 @@ class PaymentTotalsCell extends StatelessWidget {
           IconButton(
             padding: const EdgeInsets.all(0),
             onPressed: onTap,
-            icon: Image.asset('images/icons/payment_type_${paymentRecordType.value}.png', height: 35.0, width: 35.0, color: color),
+            icon: Image.asset(
+                'images/icons/payment_type_${paymentRecordType.value}.png',
+                height: 35.0,
+                width: 35.0,
+                color: color),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 1.0),

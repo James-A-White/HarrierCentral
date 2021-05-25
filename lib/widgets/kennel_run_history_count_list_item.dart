@@ -1,7 +1,8 @@
 import 'package:harrier_central/imports.dart';
 
 class KennelRunHistoryCountListItem extends StatelessWidget {
-  const KennelRunHistoryCountListItem({@required this.kennelInfo, @required this.refreshCounters});
+  const KennelRunHistoryCountListItem(
+      {@required this.kennelInfo, @required this.refreshCounters});
 
   final HistoryListResults kennelInfo;
   final Function refreshCounters;
@@ -38,7 +39,8 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(left: 20.0),
-                child: (kennelInfo.kennelLogo == null || kennelInfo.kennelLogo.length < 5)
+                child: (kennelInfo.kennelLogo == null ||
+                        kennelInfo.kennelLogo.length < 5)
                     ? Container(height: 80, width: 80)
                     : KennelLogo(
                         kennelLogoUrl: kennelInfo.kennelLogo,
@@ -58,7 +60,11 @@ class KennelRunHistoryCountListItem extends StatelessWidget {
                         width: 20,
                       ),
                       Text(
-                        '  =  ' + (kennelInfo.historicalCountIsEstimate != 0 ? '~' : '') + '${kennelInfo.totalRunsThisKennel.toString()}',
+                        '  =  ' +
+                            (kennelInfo.historicalCountIsEstimate != 0
+                                ? '~'
+                                : '') +
+                            '${kennelInfo.totalRunsThisKennel.toString()}',
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         style: numberStyle.copyWith(height: 0.6),

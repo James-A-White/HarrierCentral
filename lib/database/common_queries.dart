@@ -27,15 +27,22 @@ class CommonQueries {
           
           ''';
 
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
+      final List<Map<String, dynamic>> results =
+          await G0<Database>().rawQuery(sql);
 
       if (results.isNotEmpty) {
         for (int i = 0; i < results.length; i++) {
-          if ((results[i]['deltaHours'] <= ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT) && (results[i]['deltaHours'] >= -ALLOW_CHECKIN_SCAN_HOURS_AFTER_EVENT)) {
+          if ((results[i]['deltaHours'] <=
+                  ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT) &&
+              (results[i]['deltaHours'] >=
+                  -ALLOW_CHECKIN_SCAN_HOURS_AFTER_EVENT)) {
             result = results[i]['eventId'];
             break;
-          } else if (results[i]['deltaHours'] > ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT) {
-            result = (results[i]['deltaHours'] - ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT).toString();
+          } else if (results[i]['deltaHours'] >
+              ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT) {
+            result = (results[i]['deltaHours'] -
+                    ALLOW_CHECKIN_SCAN_HOURS_BEFORE_EVENT)
+                .toString();
             break;
           }
         }
@@ -73,7 +80,8 @@ class CommonQueries {
           
           ''';
 
-      final List<Map<String, dynamic>> queryResults = await G0<Database>().rawQuery(sql);
+      final List<Map<String, dynamic>> queryResults =
+          await G0<Database>().rawQuery(sql);
 
       final Geolocator locator = Geolocator();
 
@@ -81,8 +89,11 @@ class CommonQueries {
 
       if (queryResults.isNotEmpty) {
         for (int i = 0; i < queryResults.length; i++) {
-          final num dist =
-              await locator.distanceBetween(G0<DeviceInfo>().deviceLat + 0.0, G0<DeviceInfo>().deviceLon + 0.0, queryResults[i]['lat'] + 0.0, queryResults[i]['lon'] + 0.0);
+          final num dist = await locator.distanceBetween(
+              G0<DeviceInfo>().deviceLat + 0.0,
+              G0<DeviceInfo>().deviceLon + 0.0,
+              queryResults[i]['lat'] + 0.0,
+              queryResults[i]['lon'] + 0.0);
           if (closestRun < dist) {
             continue;
           }
@@ -101,8 +112,11 @@ class CommonQueries {
           // when events have been uploaded directly to the DB using the HcWeb application.
           // For partial URLs we need to append the root URL. The Root URL is stored in the
           // Server settings table and copied into the string prefs on app startup.
-          if ((result.eventImage != null) && (result.eventImage.isNotEmpty) && (!result.eventImage.startsWith('http'))) {
-            final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+          if ((result.eventImage != null) &&
+              (result.eventImage.isNotEmpty) &&
+              (!result.eventImage.startsWith('http'))) {
+            final String s = getStringPref(StringPrefsEnum.imageRootUrl) ??
+                BASE_HCWEB_UPLOAD_URL;
             if ((s != null) && (s.isNotEmpty)) {
               result.eventImage = s + result.eventImage;
             }
@@ -127,7 +141,8 @@ class CommonQueries {
           
           ''';
 
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
+      final List<Map<String, dynamic>> results =
+          await G0<Database>().rawQuery(sql);
 
       if (results.isNotEmpty) {
         result = results[0]['hasherId'];

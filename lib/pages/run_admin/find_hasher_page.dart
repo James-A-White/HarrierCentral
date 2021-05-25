@@ -32,12 +32,19 @@ class FindHasherPageState extends State<FindHasherPage> {
 
     final HashersService svc = HashersService();
     svc
-        .selectAllFromLocalDb(G0<Database>(), G0<TableModel>().hashersTableHelper, G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user))
+        .selectAllFromLocalDb(
+            G0<Database>(),
+            G0<TableModel>().hashersTableHelper,
+            G0<TableModel>()
+                .hashersTableHelper
+                .getTableName(AppDomainType.user))
         .then((List<BaseModel> list) {
       hasherList = list.cast<HashersModel>();
       setState(() {
         if (hasherList != null) {
-          hasherList.sort((dynamic a, dynamic b) => (a.dispName ?? '').toLowerCase().compareTo((b.dispName ?? '').toLowerCase()));
+          hasherList.sort((dynamic a, dynamic b) => (a.dispName ?? '')
+              .toLowerCase()
+              .compareTo((b.dispName ?? '').toLowerCase()));
           filteredList = hasherList;
         } else {
           filteredList = null;
@@ -55,7 +62,13 @@ class FindHasherPageState extends State<FindHasherPage> {
           filteredList = hasherList;
         } else {
           filteredList = hasherList
-              .where((dynamic user) => ((user.firstName ?? '') + ' ' + (user.lastName ?? '') + ' ' + (user.dispName ?? '')).toLowerCase().contains(filterText.toLowerCase()))
+              .where((dynamic user) => ((user.firstName ?? '') +
+                      ' ' +
+                      (user.lastName ?? '') +
+                      ' ' +
+                      (user.dispName ?? ''))
+                  .toLowerCase()
+                  .contains(filterText.toLowerCase()))
               .toList();
         }
       }
@@ -98,7 +111,9 @@ class FindHasherPageState extends State<FindHasherPage> {
           searchBar(),
           Expanded(
             child: (_isLoading == true)
-                ? Center(child: Container(child: HcCircularProgressIndicator(key: UniqueKey())))
+                ? Center(
+                    child: Container(
+                        child: HcCircularProgressIndicator(key: UniqueKey())))
                 : HasherListView(
                     hasherList: filteredList,
                     pageType: widget.pageType,
@@ -143,7 +158,10 @@ class FindHasherPageState extends State<FindHasherPage> {
               focusNode: searchFocusNode,
               controller: searchController,
               keyboardType: TextInputType.text,
-              style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+              style: const TextStyle(
+                  fontFamily: 'WorkSansSemiBold',
+                  fontSize: 16.0,
+                  color: Colors.black),
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 icon: Icon(
@@ -151,7 +169,8 @@ class FindHasherPageState extends State<FindHasherPage> {
                   color: Colors.black,
                 ),
                 hintText: 'Hash or mortal name',
-                hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                hintStyle:
+                    TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
               ),
             ),
           ),
@@ -194,7 +213,8 @@ class HasherListView extends StatelessWidget {
   final String kennelId;
   final String eventId;
 
-  Future<int> promptForHasherType(BuildContext context, HashersModel newHasher) {
+  Future<int> promptForHasherType(
+      BuildContext context, HashersModel newHasher) {
     return showDialog<int>(
         context: context,
         barrierDismissible: false, // user must tap button!
@@ -208,7 +228,11 @@ class HasherListView extends StatelessWidget {
                   Text(
                     'Do you want to add ${newHasher.dispName} to your run?',
                     textAlign: TextAlign.justify,
-                    style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                    style: const TextStyle(
+                        fontFamily: 'AvenirNextRegular',
+                        fontStyle: FontStyle.normal,
+                        fontSize: 16.0,
+                        height: 1.0),
                   )
                 ],
               ),
@@ -268,14 +292,20 @@ class HasherListView extends StatelessWidget {
       highlightColor: Colors.red,
       onTap: () {
         if (pageType == FindHasherPageType.addHasherToRun) {
-          return promptForHasherType(context, hasherList[index]).then((int doAddHasher) {
+          return promptForHasherType(context, hasherList[index])
+              .then((int doAddHasher) {
             if (doAddHasher != -1) {
-              final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index], 'virginVisitorType': doAddHasher};
+              final Map<String, dynamic> result = <String, dynamic>{
+                'hasher': hasherList[index],
+                'virginVisitorType': doAddHasher
+              };
               Navigator.of(context).pop(result);
             }
           });
         } else if (pageType == FindHasherPageType.addMember) {
-          final Map<String, dynamic> result = <String, dynamic>{'hasher': hasherList[index]};
+          final Map<String, dynamic> result = <String, dynamic>{
+            'hasher': hasherList[index]
+          };
           Navigator.of(context).pop(result);
         }
         return null;
@@ -287,19 +317,21 @@ class HasherListView extends StatelessWidget {
             hasherList[index].photo.startsWith('http')
                 ? CachedNetworkImage(
                     imageUrl: hasherList[index].photo,
-                    placeholder: (BuildContext context, String url) => Container(
-                        child: Center(
-                          child: Container(
-                            height: 20,
-                            width: 20,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 3.0,
+                    placeholder: (BuildContext context, String url) =>
+                        Container(
+                            child: Center(
+                              child: Container(
+                                height: 20,
+                                width: 20,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 3.0,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        height: 70.0,
-                        width: 70.0),
-                    errorWidget: (BuildContext context, String url, Object error) {
+                            height: 70.0,
+                            width: 70.0),
+                    errorWidget:
+                        (BuildContext context, String url, Object error) {
                       return Container(
                           height: 70.0,
                           width: 70.0,
@@ -307,9 +339,13 @@ class HasherListView extends StatelessWidget {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                              Text('No Image', style: mediumTextRed.copyWith(fontSize: 13, color: Colors.grey)),
+                              Text('No Image',
+                                  style: mediumTextRed.copyWith(
+                                      fontSize: 13, color: Colors.grey)),
                               const Icon(Icons.error, color: Colors.grey),
-                              Text('Available', style: mediumTextRed.copyWith(fontSize: 13, color: Colors.grey))
+                              Text('Available',
+                                  style: mediumTextRed.copyWith(
+                                      fontSize: 13, color: Colors.grey))
                             ],
                           ));
                     },
@@ -323,7 +359,13 @@ class HasherListView extends StatelessWidget {
                         width: 70.0,
                         height: 70.0,
                         fit: BoxFit.fill,
-                        image: AssetImage(('images/avatars/' + hasherList[index].photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
+                        image: AssetImage(('images/avatars/' +
+                                hasherList[index]
+                                    .photo
+                                    .toLowerCase()
+                                    .replaceFirst('bundle://', '') +
+                                '.jpg')
+                            .toLowerCase()),
                       )
                     : const Image(
                         width: 70.0,
@@ -335,14 +377,22 @@ class HasherListView extends StatelessWidget {
             Positioned(
               left: 77.0,
               top: 19.0,
-              child: Text(hasherList[index].dispName, style: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 25.0, height: 1.0)),
+              child: Text(hasherList[index].dispName,
+                  style: const TextStyle(
+                      fontFamily: 'AvenirNextCondensedMedium',
+                      fontStyle: FontStyle.normal,
+                      fontSize: 25.0,
+                      height: 1.0)),
             ),
             // this widget is here to grow the contents of the cell to a size that fills nearly the whole cell
             // in order to give plenty of room for the tap gesture.
             Positioned(
               left: 75,
               top: 0,
-              child: Container(width: MediaQuery.of(context).size.width - 80, height: 65, color: Colors.transparent),
+              child: Container(
+                  width: MediaQuery.of(context).size.width - 80,
+                  height: 65,
+                  color: Colors.transparent),
             )
             // Payment icons
           ],
@@ -358,9 +408,13 @@ class HasherListView extends StatelessWidget {
           context,
           MaterialPageRoute<HashersModel>(
             builder: (BuildContext context) => HasherProfilePage(
-              dataContext: pageType == FindHasherPageType.addHasherToRun ? EnumDataContext.event : EnumDataContext.kennel,
+              dataContext: pageType == FindHasherPageType.addHasherToRun
+                  ? EnumDataContext.event
+                  : EnumDataContext.kennel,
               pageType: EnumMyProfilePageType.newHasherProfile,
-              eventId: pageType == FindHasherPageType.addHasherToRun ? eventId : GUID_EMPTY,
+              eventId: pageType == FindHasherPageType.addHasherToRun
+                  ? eventId
+                  : GUID_EMPTY,
               kennelId: kennelId,
               uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
               hashNameFromSearch: capitalizeFirstLetter(searchController.text),
@@ -371,12 +425,17 @@ class HasherListView extends StatelessWidget {
             if (pageType == FindHasherPageType.addHasherToRun) {
               promptForHasherType(context, newHasher).then((int doAddHasher) {
                 if (doAddHasher != -1) {
-                  final Map<String, dynamic> result = <String, dynamic>{'hasher': newHasher, 'virginVisitorType': doAddHasher};
+                  final Map<String, dynamic> result = <String, dynamic>{
+                    'hasher': newHasher,
+                    'virginVisitorType': doAddHasher
+                  };
                   Navigator.of(context).pop(result);
                 }
               });
             } else if (pageType == FindHasherPageType.addMember) {
-              final Map<String, dynamic> result = <String, dynamic>{'hasher': newHasher};
+              final Map<String, dynamic> result = <String, dynamic>{
+                'hasher': newHasher
+              };
               Navigator.of(context).pop(result);
             }
           }
@@ -388,7 +447,8 @@ class HasherListView extends StatelessWidget {
         margin: const EdgeInsets.only(left: 10),
         child: Row(
           children: <Widget>[
-            Icon(SimpleLineIcons.question, size: 35.0, color: Theme.of(context).accentColor),
+            Icon(SimpleLineIcons.question,
+                size: 35.0, color: Theme.of(context).accentColor),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(left: 14.0, right: 10.0),
@@ -412,7 +472,8 @@ class HasherListView extends StatelessWidget {
     );
   }
 
-  String capitalizeFirstLetter(String s) => (s?.isNotEmpty ?? false) ? '${s[0].toUpperCase()}${s.substring(1)}' : s;
+  String capitalizeFirstLetter(String s) =>
+      (s?.isNotEmpty ?? false) ? '${s[0].toUpperCase()}${s.substring(1)}' : s;
 
   @override
   Widget build(BuildContext context) {
@@ -443,9 +504,11 @@ class HasherListView extends StatelessWidget {
               color: Colors.black45,
             ),
         physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: (hasherList?.length ?? 0) + (searchController.text.isNotEmpty ? 1 : 0),
+        itemCount: (hasherList?.length ?? 0) +
+            (searchController.text.isNotEmpty ? 1 : 0),
         itemBuilder: (BuildContext context, int index) {
-          if ((index == (hasherList?.length ?? 0)) && (searchController.text.isNotEmpty)) {
+          if ((index == (hasherList?.length ?? 0)) &&
+              (searchController.text.isNotEmpty)) {
             return getAddHasherBlock(context);
           } else {
             return ((hasherList == null) || (hasherList.isEmpty))
@@ -455,7 +518,8 @@ class HasherListView extends StatelessWidget {
                     height: 70.0,
                     child: Padding(
                       padding: const EdgeInsets.all(5.0),
-                      child: Center(child: HcCircularProgressIndicator(key: UniqueKey())),
+                      child: Center(
+                          child: HcCircularProgressIndicator(key: UniqueKey())),
                     ),
                   )
                 : Dismissible(
@@ -463,7 +527,10 @@ class HasherListView extends StatelessWidget {
                     confirmDismiss: (DismissDirection direction) {
                       final Map<String, dynamic> result = <String, dynamic>{
                         'hasher': hasherList[index],
-                        'virginVisitorType': direction == DismissDirection.startToEnd ? enumHasher.value : enumKnownVisitor.value
+                        'virginVisitorType':
+                            direction == DismissDirection.startToEnd
+                                ? enumHasher.value
+                                : enumKnownVisitor.value
                       };
                       Navigator.of(context).pop(result);
                       return Future<bool>.value(false);
@@ -482,29 +549,42 @@ class HasherListView extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.only(left: 15.0),
                             child: Text(leftToRightTitle,
-                                style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                style: const TextStyle(
+                                    fontFamily: 'AvenirNextDemiBold',
+                                    fontStyle: FontStyle.normal,
+                                    color: Colors.white,
+                                    fontSize: 17.0,
+                                    height: 1.0)),
                           ),
                         ],
                       ),
                     ),
                     secondaryBackground: Container(
                         color: Colors.purple,
-                        child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(right: 15.0),
-                            child: Icon(
-                              rightToLeftIcon,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 15.0),
-                            child: Text(rightToLeftTitle,
-                                style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                          )
-                        ])),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.only(right: 15.0),
+                                child: Icon(
+                                  rightToLeftIcon,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 15.0),
+                                child: Text(rightToLeftTitle,
+                                    style: const TextStyle(
+                                        fontFamily: 'AvenirNextDemiBold',
+                                        fontStyle: FontStyle.normal,
+                                        color: Colors.white,
+                                        fontSize: 17.0,
+                                        height: 1.0)),
+                              )
+                            ])),
                     onDismissed: (DismissDirection direction) {
-                      print(direction.toString() + ' NOTE: We should never reach this point');
+                      print(direction.toString() +
+                          ' NOTE: We should never reach this point');
                     },
                     child: listItem(context, index),
                   );

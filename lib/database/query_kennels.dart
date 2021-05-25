@@ -88,14 +88,16 @@ class QueryKennels {
           as searchText
           ''';
 
-  static List<KennelListAggregate> doFilter(String searchText, List<KennelListAggregate> allKennels) {
+  static List<KennelListAggregate> doFilter(
+      String searchText, List<KennelListAggregate> allKennels) {
     List<KennelListAggregate> filteredKennels = <KennelListAggregate>[];
     if (allKennels != null) {
       filteredKennels.addAll(allKennels);
 
       // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
       if ((searchText != null) && (searchText.isNotEmpty)) {
-        final List<String> searchItems = searchText.trim().toLowerCase().split(',');
+        final List<String> searchItems =
+            searchText.trim().toLowerCase().split(',');
         for (String st in searchItems) {
           if (st.trim().isEmpty) {
             continue;
@@ -127,15 +129,21 @@ class QueryKennels {
     return filteredKennels;
   }
 
-  static Future<List<Map<String, dynamic>>> queryKennels(EnumKennelQueryType queryType, EnumKennelQueryContext queryContext, {String hasherId, String kennelId}) async {
+  static Future<List<Map<String, dynamic>>> queryKennels(
+      EnumKennelQueryType queryType, EnumKennelQueryContext queryContext,
+      {String hasherId, String kennelId}) async {
     String hkmTable;
 
     switch (queryContext) {
       case EnumKennelQueryContext.user:
-        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user);
+        hkmTable = G0<TableModel>()
+            .hasherKennelMapTableHelper
+            .getTableName(AppDomainType.user);
         break;
       case EnumKennelQueryContext.kennelAdmin:
-        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
+        hkmTable = G0<TableModel>()
+            .hasherKennelMapTableHelper
+            .getTableName(AppDomainType.kennel);
         break;
     }
 
