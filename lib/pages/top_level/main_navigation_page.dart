@@ -9,8 +9,7 @@ class MainNavigationPage extends StatefulWidget {
   _MainNavigationPageState createState() => _MainNavigationPageState();
 }
 
-final GlobalKey<RunLocationsPageState> runLocationsPageKey =
-    GlobalKey<RunLocationsPageState>();
+final GlobalKey<RunLocationsPageState> runLocationsPageKey = GlobalKey<RunLocationsPageState>();
 
 class _MainNavigationPageState extends State<MainNavigationPage> {
   //MainNavigationScopedModel homePageModel = MainNavigationScopedModel();
@@ -18,12 +17,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   List<Widget> tabs = <Widget>[];
   List<String> tabTitles = <String>[];
 
-  List<List<String>> tutorials = <List<String>>[
-    tutorialUpcomingRuns,
-    tutorialKennelsView,
-    tutorialRunLocations,
-    tutorialRunCounts
-  ];
+  List<List<String>> tutorials = <List<String>>[tutorialUpcomingRuns, tutorialKennelsView, tutorialRunLocations, tutorialRunCounts];
 
   static List<String> tutorialRunLocations = <String>[
     'images/tutorial/run_locations_help_1.jpg',
@@ -76,6 +70,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   //final UserQrCodePage userQrCodePage = const UserQrCodePage();
   RunLocationsPage runLocationsPage;
 
+  Future<bool> _dbReady;
+
   @override
   void initState() {
     tabTitles.add('Upcoming Runs');
@@ -98,80 +94,69 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     // the first time this is run, the database will be created. On subsequent
     // runs, the database will simply be opened.
 
-    Tables.migrationList.sort((MigrationsModel a, MigrationsModel b) =>
-        a.dbVersion.compareTo(b.dbVersion));
+    Tables.migrationList.sort((MigrationsModel a, MigrationsModel b) => a.dbVersion.compareTo(b.dbVersion));
 
     // make sure the DB_VERSION is equal to the maximum migration in the list
     assert(DB_VERSION == Tables.migrationList.last.dbVersion);
 
     // DANGER - need to look into definition of ClientApp
-    setupDatabase(informUser, 'PRO_APP').then((void dummy) {
-      G0.isReady<Database>().then((void dummy) {
-        final NotificationSupport notifications = NotificationSupport();
-        notifications.configureNotifications(true);
-        // G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false, informUser: informUser).then((bool result) {
-        //   final String resultStr = result ? 'successfully' : 'unsuccessfully';
-        //   print('Master data synchronized $resultStr');
+    _dbReady = setupDatabase(informUser, 'PRO_APP').then((bool dummy) {
+      final NotificationSupport notifications = NotificationSupport();
+      notifications.configureNotifications(true);
+      // G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false, informUser: informUser).then((bool result) {
+      //   final String resultStr = result ? 'successfully' : 'unsuccessfully';
+      //   print('Master data synchronized $resultStr');
 
-        //   setIntPref(IntPrefsEnum.dbCreated, 1);
-        //   setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
+      //   setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 
-        // create pages after database is loaded
-        futureRunsListPage = FutureRunsListPage();
-        kennelsListPage = const KennelsListPage();
-        historyListPage = const HistoryListPage();
-        //final UserQrCodePage userQrCodePage = const UserQrCodePage();
-        runLocationsPage = RunLocationsPage(key: runLocationsPageKey);
+      // create pages after database is loaded
+      futureRunsListPage = FutureRunsListPage();
+      kennelsListPage = const KennelsListPage();
+      historyListPage = const HistoryListPage();
+      //final UserQrCodePage userQrCodePage = const UserQrCodePage();
+      runLocationsPage = RunLocationsPage(key: runLocationsPageKey);
 
-        setState(() {});
+      setState(() {});
 
-        checkLocationPermissions().then((bool hasLoc) {
-          if (hasLoc) {
-            CommonQueries.areWeAtRunStart()
-                .then((AreWeAtRunResult result) async {
-              if ((result.eventId != EMPTY_RESULT) &&
-                  (result.distanceInMeters <=
-                      GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN)) {
-                final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
-                  title: 'Check-in to Run',
-                  eventImage: result.eventImage,
-                  eventName: result.eventName,
-                  kennelLogo: result.kennelLogo,
-                  okButtonTitle: 'Yes',
-                  cancelButtonTitle: 'No',
-                  kennelShortName: result.kennelShortName,
-                  eventNumber: result.eventNumber,
-                );
+      checkLocationPermissions().then((bool hasLoc) {
+        if (hasLoc) {
+          CommonQueries.areWeAtRunStart().then((AreWeAtRunResult result) async {
+            if ((result.eventId != EMPTY_RESULT) && (result.distanceInMeters <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN)) {
+              final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
+                title: 'Check-in to Run',
+                eventImage: result.eventImage,
+                eventName: result.eventName,
+                kennelLogo: result.kennelLogo,
+                okButtonTitle: 'Yes',
+                cancelButtonTitle: 'No',
+                kennelShortName: result.kennelShortName,
+                eventNumber: result.eventNumber,
+              );
 
-                final EnumYesNo<int> retVal = await showDialog<EnumYesNo<int>>(
-                    context: context,
-                    barrierDismissible: false, // user must tap button!
-                    builder: (BuildContext context) {
-                      return popup;
-                    });
-
-                final String userId = getStringPref(StringPrefsEnum.userId);
-
-                if (retVal == enumYesNo_Yes) {
-                  G0<TableModel>()
-                      .hasherEventMapService
-                      .joinEvent(
-                          result.eventId, userId, null, AppDomainType.user,
-                          rsvpState: rsvpYes.value,
-                          attendenceState: attendenceAtHash.value)
-                      .then((
-                    List<dynamic> svcResult,
-                  ) {
-                    futureRunsListPageKey.currentState
-                        .forceRefreshFromTableExternal();
+              final EnumYesNo<int> retVal = await showDialog<EnumYesNo<int>>(
+                  context: context,
+                  barrierDismissible: false, // user must tap button!
+                  builder: (BuildContext context) {
+                    return popup;
                   });
-                }
+
+              final String userId = getStringPref(StringPrefsEnum.userId);
+
+              if (retVal == enumYesNo_Yes) {
+                G0<TableModel>()
+                    .hasherEventMapService
+                    .joinEvent(result.eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value)
+                    .then((
+                  List<dynamic> svcResult,
+                ) {
+                  futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
+                });
               }
-            });
-          }
-        });
-        //});
+            }
+          });
+        }
       });
+      return true;
     });
   }
 
@@ -191,14 +176,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     //   }
     // }
 
-    perms.PermissionStatus locationPermission = await permissions
-        .checkPermissionStatus(level: perms.LocationPermissionLevel.location);
+    perms.PermissionStatus locationPermission = await permissions.checkPermissionStatus(level: perms.LocationPermissionLevel.location);
     if (locationPermission != perms.PermissionStatus.granted) {
-      locationPermission = await permissions.checkPermissionStatus(
-          level: perms.LocationPermissionLevel.locationWhenInUse);
+      locationPermission = await permissions.checkPermissionStatus(level: perms.LocationPermissionLevel.locationWhenInUse);
       if (locationPermission != perms.PermissionStatus.granted) {
-        locationPermission = await permissions.checkPermissionStatus(
-            level: perms.LocationPermissionLevel.locationAlways);
+        locationPermission = await permissions.checkPermissionStatus(level: perms.LocationPermissionLevel.locationAlways);
         if (locationPermission != perms.PermissionStatus.granted) {
           hasLocPermission = false;
         }
@@ -249,8 +231,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   @override
   Widget build(BuildContext context) {
-    final int dbCreated = getIntPref(IntPrefsEnum.dbCreated) ?? 0;
-
     return Stack(
       children: <Widget>[
         // Container(
@@ -279,24 +259,19 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                       setState(() {
                         // do this extra setState to ensure the FAB is displayed properly
                       });
-                      Future<void>.delayed(const Duration(milliseconds: 250))
-                          .then((void dummy) {
+                      Future<void>.delayed(const Duration(milliseconds: 250)).then((void dummy) {
                         fabFlipped = isFlipped;
                         setState(() {});
                       });
                     }),
               ],
             ),
-            floatingActionButton: (runLocationsPageKey?.currentState == null) ||
-                    (fabFlipped == true)
-                ? null
-                : runLocationsPageKey.currentState.getFab(),
+            floatingActionButton: (runLocationsPageKey?.currentState == null) || (fabFlipped == true) ? null : runLocationsPageKey.currentState.getFab(),
             body: Container(
               decoration: const BoxDecoration(color: Colors.white),
               child: FutureBuilder<void>(
-                  future: G0.allReady(),
-                  builder:
-                      (BuildContext context, AsyncSnapshot<void> snapshot) {
+                  future: _dbReady,
+                  builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
                     if (snapshot.hasData) {
                       return FlippableBox(
                         key: UniqueKey(),
@@ -304,8 +279,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                         back: Container(
                           child: Swiper(
                             pagination: SwiperCustomPagination(
-                              builder: (BuildContext context,
-                                  SwiperPluginConfig config) {
+                              builder: (BuildContext context, SwiperPluginConfig config) {
                                 return Column(
                                   mainAxisSize: MainAxisSize.max,
                                   children: <Widget>[
@@ -315,8 +289,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                                         Expanded(
                                           child: Align(
                                             alignment: Alignment.bottomCenter,
-                                            child:
-                                                const DotSwiperPaginationBuilder(
+                                            child: const DotSwiperPaginationBuilder(
                                               color: Colors.grey,
                                               activeColor: Colors.blue,
                                               size: 10.0,
@@ -332,15 +305,12 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                               },
                             ),
                             itemCount: tutorials[currentPage].length,
-                            control: const SwiperControl(
-                                color: Colors.red, disableColor: Colors.blue),
+                            control: const SwiperControl(color: Colors.red, disableColor: Colors.blue),
                             itemBuilder: (BuildContext context, int index) {
                               // this configuration of LayoutBuilder is used to center images that do not
                               // overflow the height of the available render area, but align images
                               // to the top of the render space if they will overflow the available space.
-                              return LayoutBuilder(builder:
-                                  (BuildContext context,
-                                      BoxConstraints constraints) {
+                              return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
                                 return Stack(
                                   overflow: Overflow.clip,
                                   fit: StackFit.passthrough,
@@ -353,12 +323,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                                       child: Column(
                                         children: <Widget>[
                                           ConstrainedBox(
-                                            constraints: BoxConstraints(
-                                                minHeight: constraints
-                                                            .maxHeight >
-                                                        60
-                                                    ? constraints.maxHeight - 60
-                                                    : constraints.maxHeight),
+                                            constraints: BoxConstraints(minHeight: constraints.maxHeight > 60 ? constraints.maxHeight - 60 : constraints.maxHeight),
                                             child: Image.asset(
                                               tutorials[currentPage][index],
                                               fit: BoxFit.fitWidth,
@@ -367,12 +332,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                                         ],
                                       ),
                                     ),
-                                    Positioned(
-                                        bottom: 0.0,
-                                        left: 0.0,
-                                        right: 0.0,
-                                        child: Container(
-                                            height: 60.0, color: Colors.white))
+                                    Positioned(bottom: 0.0, left: 0.0, right: 0.0, child: Container(height: 60.0, color: Colors.white))
                                   ],
                                 );
                               });
@@ -441,8 +401,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                     appBarText = tabTitles[position];
                     currentPage = position;
                     setState(() {});
-                    Future<void>.delayed(const Duration(milliseconds: 100))
-                        .then((void dummy) {
+                    Future<void>.delayed(const Duration(milliseconds: 100)).then((void dummy) {
                       setState(() {});
                     });
                   },
@@ -455,8 +414,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus ==
-              EnumConnectionStatus.not_connected,
+          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
         ),

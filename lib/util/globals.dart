@@ -43,8 +43,8 @@ void _initTables() {
 
 bool _createIndexes = false;
 
-Future<void> setupDatabase(
-    Function informUser, String clientAppIdentifier) async {
+Future<bool> setupDatabase(Function informUser, String clientAppIdentifier) async {
+  G0<AppModel>().dbStatus = EdbStatus.opening;
   G0.registerSingletonAsync<Database>(() async {
     _initTables();
     return DBProvider.openOrInitDb(
@@ -58,26 +58,28 @@ Future<void> setupDatabase(
     );
   });
 
-  G0.isReady<Database>().then((void dummy) async {
-    await G0<TableModel>().syncUserDataService.updateFromBackend(
-        SyncUserDataService.flagsAllData, false,
-        informUser: informUser);
-    if (_createIndexes) {
-      await Tables.createIndexes(
-          G0<Database>(), DB_VERSION, informUser, clientAppIdentifier);
-      await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
-      await setBoolPref(BoolPrefsEnum.dbCreated, true);
-    }
-  });
+  await G0.isReady<Database>();
+
+  await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false, informUser: informUser);
+  if (_createIndexes) {
+    await Tables.createIndexes(G0<Database>(), DB_VERSION, informUser, clientAppIdentifier);
+    await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
+  }
+  G0<AppModel>().dbStatus = EdbStatus.opened;
+  return true;
 }
 
-Future<void> _openDb(
-    dynamic db, Function informUser, String clientAppIdentifier) async {}
+Future<void> _openDb(dynamic db, Function informUser, String clientAppIdentifier) async {}
 
-Future<void> _createTables(dynamic db, int version, Function informUser,
-    String clientAppIdentifier) async {
+Future<void> _createTables(dynamic db, int version, Function informUser, String clientAppIdentifier) async {
   await Tables.createTables(db, version, informUser);
   _createIndexes = true;
+}
+
+enum EdbStatus {
+  uninitialized,
+  opening,
+  opened,
 }
 
 class AppModel {
@@ -85,6 +87,7 @@ class AppModel {
   EnumConnectionStatus connectionStatus = EnumConnectionStatus.not_connected;
   StreamSubscription<Position> geoLocationStream;
   DateTime appStartTime;
+  EdbStatus dbStatus = EdbStatus.uninitialized;
 
   bool hasLocationPermissions = false;
 
@@ -193,8 +196,7 @@ class DeviceInfo {
       deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
       deviceName = '<unknown>';
       systemName = androidInfo.host;
-      systemVersion =
-          '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch}';
+      systemVersion = '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch}';
       manufacturer = androidInfo.brand;
       isPhysicalDevice = androidInfo.isPhysicalDevice;
     } else if (Platform.isIOS) {
