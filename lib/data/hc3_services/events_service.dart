@@ -43,8 +43,7 @@ class EventModel implements BaseModel {
       this.removed,
       this.updatedAt});
 
-  factory EventModel.fromJson(Map<String, dynamic> json) =>
-      _$EventModelFromJson(json);
+  factory EventModel.fromJson(Map<String, dynamic> json) => _$EventModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$EventModelToJson(this);
 
@@ -147,8 +146,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
   final String colTags3 = 'tags3';
 
   @override
-  Future<dynamic> createTable(
-      Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -198,12 +196,9 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
   }
 
   @override
-  Future<void> createIndexes(
-      Database db, int version, dynamic appDomainType) async {
-    await db.execute(
-        'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
-    await db.execute(
-        'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
+  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
   }
 
   // @override
@@ -214,18 +209,14 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final Map<String, dynamic> outputMap =
-        _$EventModelToJson(EventModel.fromJson(inputMap));
+    final Map<String, dynamic> outputMap = _$EventModelToJson(EventModel.fromJson(inputMap));
 
     // NOTE: Event images can either be full URLs or they can be partial URLs in the case
     // when events have been uploaded directly to the DB using the HcWeb application.
     // For partial URLs we need to append the root URL. The Root URL is stored in the
     // Server settings table and copied into the string prefs on app startup.
-    if ((outputMap['eventImage'] != null) &&
-        (outputMap['eventImage'].isNotEmpty) &&
-        (!outputMap['eventImage'].startsWith('http'))) {
-      final String s =
-          getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+    if ((outputMap['eventImage'] != null) && (outputMap['eventImage'].isNotEmpty) && (!outputMap['eventImage'].startsWith('http'))) {
+      final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
       if ((s != null) && (s.isNotEmpty)) {
         outputMap['eventImage'] = s + outputMap['eventImage'];
       }
@@ -242,11 +233,8 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
     // when events have been uploaded directly to the DB using the HcWeb application.
     // For partial URLs we need to append the root URL. The Root URL is stored in the
     // Server settings table and copied into the string prefs on app startup.
-    if ((item.eventImage != null) &&
-        (item.eventImage.isNotEmpty) &&
-        (!item.eventImage.startsWith('http'))) {
-      final String s =
-          getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
+    if ((item.eventImage != null) && (item.eventImage.isNotEmpty) && (!item.eventImage.startsWith('http'))) {
+      final String s = getStringPref(StringPrefsEnum.imageRootUrl) ?? BASE_HCWEB_UPLOAD_URL;
       if ((s != null) && (s.isNotEmpty)) {
         item.eventImage = s + item.eventImage;
       }
@@ -257,8 +245,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
 }
 
 class EventsService extends BaseService {
-  Future<void> updateEventDetails(String eventId,
-      {bool isVisible, bool isCountedRun, int absoluteEventNumber}) async {
+  Future<void> updateEventDetails(String eventId, {bool isVisible, bool isCountedRun, int absoluteEventNumber}) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return;
       // TODO(James): fix this so we can return a bool
@@ -267,8 +254,7 @@ class EventsService extends BaseService {
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final String accessToken =
-        IveCoreUtilities.generateToken(userId, 'addEditEvent');
+    final String accessToken = IveCoreUtilities.generateToken(userId, 'addEditEvent');
 
     final num _eventsLastUpdated = await getLastUpdatedTime(
       G0<Database>(),
@@ -276,9 +262,7 @@ class EventsService extends BaseService {
       G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user),
       G0<TableModel>().eventsTableHelper.colUpdatedAtValue,
     );
-    final DateTime eventUpdatedAfter = _eventsLastUpdated == null
-        ? DateTime(2000, 1, 1)
-        : DateTime.fromMillisecondsSinceEpoch(_eventsLastUpdated + 1000);
+    final DateTime eventUpdatedAfter = _eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_eventsLastUpdated + 1000);
 
     final Map<String, String> bodyMap = <String, String>{
       'userId': userId,
@@ -291,62 +275,45 @@ class EventsService extends BaseService {
     }
 
     if (isCountedRun != null) {
-      bodyMap
-          .addAll(<String, String>{'isCountedRun': isCountedRun ? '1' : '0'});
+      bodyMap.addAll(<String, String>{'isCountedRun': isCountedRun ? '1' : '0'});
     }
 
     if (absoluteEventNumber != null) {
-      bodyMap.addAll(<String, String>{
-        'absoluteEventNumber': absoluteEventNumber.toString()
-      });
+      bodyMap.addAll(<String, String>{'absoluteEventNumber': absoluteEventNumber.toString()});
     }
 
     final String body = jsonEncode(bodyMap);
 
-    final Response response = await post(BASE_API_URL + 'hc3_add_edit_event',
-            headers: <String, String>{'content-type': 'application/json'},
-            body: body
+    final Response response = await post(BASE_API_URL + 'hc3_add_edit_event', headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
         .catchError(
       (dynamic error) {
-        return false;
+        return Future<Response>.value(null);
       },
     );
 
-    await G0<TableModel>()
-        .syncUserDataService
-        .updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
 
     return;
   }
 
-  Future<Map<String, String>> sendRunDetailsByEmail(
-      {String eventId, String emailBody = ''}) async {
+  Future<Map<String, String>> sendRunDetailsByEmail({String eventId, String emailBody = ''}) async {
     final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken = IveCoreUtilities.generateToken(
-        userId, 'rptApi_emailRunDetails',
-        paramString: eventId);
+    final String accessToken = IveCoreUtilities.generateToken(userId, 'rptApi_emailRunDetails', paramString: eventId);
 
-    final String body = jsonEncode(<String, String>{
-      'userId': userId,
-      'accessToken': accessToken,
-      'eventId': eventId,
-      'emailBody': emailBody
-    });
+    final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'eventId': eventId, 'emailBody': emailBody});
 
     print(body);
 
-    final Response response = await post(EMAIL_RUN_DETAILS_TO_PACK_API_URL,
-            headers: <String, String>{'content-type': 'application/json'},
-            body: body
+    final Response response = await post(EMAIL_RUN_DETAILS_TO_PACK_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
         .catchError(
       (dynamic error) {
-        return <String, String>{'result': 'error', 'email': ''};
+        return Future<Response>.value(null);
       },
     );
 

@@ -29,8 +29,7 @@ class HasherKennelMapModel implements BaseModel {
       this.removed,
       this.updatedAt});
 
-  factory HasherKennelMapModel.fromJson(Map<String, dynamic> json) =>
-      _$HasherKennelMapModelFromJson(json);
+  factory HasherKennelMapModel.fromJson(Map<String, dynamic> json) => _$HasherKennelMapModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$HasherKennelMapModelToJson(this);
 
@@ -119,8 +118,7 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
   final String colMismanagementRoles = 'mismanagementRoles';
 
   @override
-  Future<dynamic> createTable(
-      Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
     await db.execute('''
           CREATE TABLE ${getTableName(appDomainType)} (
             $colId INTEGER PRIMARY KEY,
@@ -155,12 +153,9 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
   }
 
   @override
-  Future<void> createIndexes(
-      Database db, int version, dynamic appDomainType) async {
-    await db.execute(
-        'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
-    await db.execute(
-        'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
+  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
   }
 
   // @override
@@ -184,14 +179,8 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
 class HasherKennelMapService {
   //=================  Domain specific functions ================
 
-  Future<List<dynamic>> updateHasherKennelStatus(
-      String kennelId, AppDomainType appDomainType,
-      {int monthsToAddToMembership,
-      String targetUserId,
-      int notificationState = -1,
-      int emailAlertState = -1,
-      int followingState = -1,
-      int isHomeKennel = -1}) async {
+  Future<List<dynamic>> updateHasherKennelStatus(String kennelId, AppDomainType appDomainType,
+      {int monthsToAddToMembership, String targetUserId, int notificationState = -1, int emailAlertState = -1, int followingState = -1, int isHomeKennel = -1}) async {
     List<dynamic> adHocData;
 
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
@@ -205,28 +194,21 @@ class HasherKennelMapService {
     }
 
     final String userId = getStringPref(StringPrefsEnum.userId);
-    final String accessToken =
-        IveCoreUtilities.generateToken(userId.toUpperCase(), 'joinKennel');
+    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'joinKennel');
 
-    final num _hasherKennelMapLastUpdated =
-        await G0<TableModel>().baseService.getLastUpdatedTime(
-              G0<Database>(),
-              G0<TableModel>().hasherKennelMapTableHelper,
-              G0<TableModel>()
-                  .hasherKennelMapTableHelper
-                  .getTableName(appDomainType),
-              G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
-            );
-    final num _kennelsLastUpdated =
-        await G0<TableModel>().baseService.getLastUpdatedTime(
-              G0<Database>(),
-              G0<TableModel>().kennelsTableHelper,
-              G0<TableModel>().kennelsTableHelper.getTableName(appDomainType),
-              G0<TableModel>().kennelsTableHelper.colUpdatedAtValue,
-            );
-    final num _hashersLastUpdated = await G0<TableModel>()
-        .hashersService
-        .getLastUpdatedTime(
+    final num _hasherKennelMapLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().hasherKennelMapTableHelper,
+          G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomainType),
+          G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+        );
+    final num _kennelsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+          G0<Database>(),
+          G0<TableModel>().kennelsTableHelper,
+          G0<TableModel>().kennelsTableHelper.getTableName(appDomainType),
+          G0<TableModel>().kennelsTableHelper.colUpdatedAtValue,
+        );
+    final num _hashersLastUpdated = await G0<TableModel>().hashersService.getLastUpdatedTime(
           G0<Database>(),
           G0<TableModel>().hashersTableHelper,
           G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user),
@@ -234,16 +216,9 @@ class HasherKennelMapService {
         );
 
     final DateTime hasherKennelMapUpdatedAfter =
-        _hasherKennelMapLastUpdated == null
-            ? DateTime(2000, 1, 1)
-            : DateTime.fromMillisecondsSinceEpoch(
-                _hasherKennelMapLastUpdated + 1000);
-    final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null
-        ? DateTime(2000, 1, 1)
-        : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
-    final DateTime hashersUpdatedAfter = _hashersLastUpdated == null
-        ? DateTime(2000, 1, 1)
-        : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
+        _hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
+    final DateTime kennelsUpdatedAfter = _kennelsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
+    final DateTime hashersUpdatedAfter = _hashersLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hashersLastUpdated + 1000);
 
     monthsToAddToMembership ??= 0;
 
@@ -257,33 +232,23 @@ class HasherKennelMapService {
       'notificationState': notificationState,
       'emailAlertState': emailAlertState,
       'monthsToAddToMembership': monthsToAddToMembership,
-      'hasherKennelMapUpdatedAfter':
-          hasherKennelMapUpdatedAfter.toString().substring(0, 19),
+      'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString().substring(0, 19),
       'kennelsUpdatedAfter': kennelsUpdatedAfter.toString().substring(0, 19),
       'hashersUpdatedAfter': hashersUpdatedAfter.toString().substring(0, 19)
     });
 
-    final Response response = await post(BASE_API_URL + 'hc3_join_kennel',
-            headers: <String, String>{'content-type': 'application/json'},
-            body: body)
-        .catchError(
+    final Response response = await post(BASE_API_URL + 'hc3_join_kennel', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
       (dynamic error) {
-        return false;
+        return Future<Response>.value(null);
       },
     );
 
     if (appDomainType == AppDomainType.event) {
-      adHocData = await G0<TableModel>()
-          .syncEventAdminService
-          .updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else if (appDomainType == AppDomainType.kennel) {
-      adHocData = await G0<TableModel>()
-          .syncKennelAdminService
-          .updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      adHocData = await G0<TableModel>().syncKennelAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else if (appDomainType == AppDomainType.user) {
-      adHocData = await G0<TableModel>()
-          .syncUserDataService
-          .updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      adHocData = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     } else {
       assert(false);
     }

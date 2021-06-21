@@ -10,21 +10,13 @@ class GetResetCodeService {
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final String accessToken =
-        IveCoreUtilities.generateToken(userId, 'getResetCode');
+    final String accessToken = IveCoreUtilities.generateToken(userId, 'getResetCode');
 
-    final String body = jsonEncode(<String, String>{
-      'userId': userId,
-      'accessToken': accessToken,
-      'supportCode': supportCode
-    });
+    final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'supportCode': supportCode});
 
-    final Response response = await post(BASE_API_URL + 'hc3_get_reset_code',
-            headers: <String, String>{'content-type': 'application/json'},
-            body: body)
-        .catchError(
+    final Response response = await post(BASE_API_URL + 'hc3_get_reset_code', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
       (dynamic error) {
-        return false;
+        return Future<Response>.value(null);
       },
     );
 
