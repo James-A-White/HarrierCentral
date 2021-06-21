@@ -252,7 +252,7 @@
 //                         Padding(
 //                           padding: const EdgeInsets.only(top: 25),
 //                           child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-//                             RaisedButton(
+//                             ElevatedButton(
 //                               padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 42.0),
 //                               onPressed: () {
 //                                 setState(() {
@@ -335,7 +335,7 @@
 //               ),
 //           Positioned(
 //             bottom: 0,
-//             child: RaisedButton(
+//             child: ElevatedButton(
 //                 highlightColor: Colors.transparent,
 //                 splashColor: LoginColors.loginGradientEnd,
 //                 //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
@@ -442,7 +442,7 @@
 //           userDetailsUi,
 //           Padding(
 //             padding: const EdgeInsets.only(top: 18.0),
-//             child: RaisedButton(
+//             child: ElevatedButton(
 //                 highlightColor: Colors.transparent,
 //                 splashColor: LoginColors.loginGradientEnd,
 //                 child: const Padding(

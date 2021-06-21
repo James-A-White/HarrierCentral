@@ -9,8 +9,7 @@ class UserQrCodePage extends StatefulWidget {
   _UserQrCodePageState createState() => _UserQrCodePageState();
 }
 
-class _UserQrCodePageState extends State<UserQrCodePage>
-    with SingleTickerProviderStateMixin {
+class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProviderStateMixin {
   List<Tab> tabs = <Tab>[];
 
   String barcode = '';
@@ -59,21 +58,12 @@ class _UserQrCodePageState extends State<UserQrCodePage>
                 child: Padding(
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
                   child: TabBar(
-                    labelStyle: const TextStyle(
-                        fontFamily: 'AvenirNextCondensedMedium',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 18.0,
-                        height: 1.0),
-                    unselectedLabelStyle: const TextStyle(
-                        fontFamily: 'AvenirNextCondensedMedium',
-                        fontStyle: FontStyle.normal,
-                        fontSize: 18.0,
-                        height: 1.0),
+                    labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                    unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
                     isScrollable: false,
                     unselectedLabelColor: Colors.black,
                     labelColor: Colors.white,
-                    labelPadding:
-                        const EdgeInsets.only(top: 5, left: 20, right: 20),
+                    labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
                     indicatorSize: TabBarIndicatorSize.tab,
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
@@ -139,7 +129,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
   //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
   //         children: <Widget>[
   //           Expanded(
-  //             child: FlatButton(
+  //             child: TextButton(
   //               splashColor: Colors.transparent,
   //               highlightColor: Colors.transparent,
   //               onPressed: _onSwitchToQrScanner,
@@ -153,7 +143,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
   //             ),
   //           ),
   //           Expanded(
-  //             child: FlatButton(
+  //             child: TextButton(
   //               splashColor: Colors.transparent,
   //               highlightColor: Colors.transparent,
   //               onPressed: _onSwitchToQrCode,
@@ -191,7 +181,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
   //           ),
   //         ),
   //         actions: <Widget>[
-  //           FlatButton(
+  //           TextButton(
   //             child: const Text('OK, Got it!'),
   //             onPressed: () {
   //               Navigator.of(context).pop(true);
@@ -222,14 +212,7 @@ class _UserQrCodePageState extends State<UserQrCodePage>
 }
 
 class TabIndicationPainter extends CustomPainter {
-  TabIndicationPainter(
-      {this.context,
-      this.dxTarget = 125.0,
-      this.dxEntry = 25.0,
-      this.radius = 21.0,
-      this.dy = 25.0,
-      this.pageController})
-      : super(repaint: pageController) {
+  TabIndicationPainter({this.context, this.dxTarget = 125.0, this.dxEntry = 25.0, this.radius = 21.0, this.dy = 25.0, this.pageController}) : super(repaint: pageController) {
     painter = Paint()
       ..color = Theme.of(context).accentColor
       ..style = PaintingStyle.fill;
@@ -247,8 +230,7 @@ class TabIndicationPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final ScrollPosition pos = pageController.position;
-    final num fullExtent =
-        pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
+    final num fullExtent = pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
 
     final num pageOffset = pos.extentBefore / fullExtent;
 
@@ -257,11 +239,9 @@ class TabIndicationPainter extends CustomPainter {
     final Offset target = Offset(left2right ? dxTarget : dxEntry, dy);
 
     final Path path = Path();
-    path.addArc(
-        Rect.fromCircle(center: entry, radius: radius), 0.5 * pi, 1 * pi);
+    path.addArc(Rect.fromCircle(center: entry, radius: radius), 0.5 * pi, 1 * pi);
     path.addRect(Rect.fromLTRB(entry.dx, dy - radius, target.dx, dy + radius));
-    path.addArc(
-        Rect.fromCircle(center: target, radius: radius), 1.5 * pi, 1 * pi);
+    path.addArc(Rect.fromCircle(center: target, radius: radius), 1.5 * pi, 1 * pi);
 
     canvas.translate(size.width * pageOffset, 0.0);
     canvas.drawShadow(path, const Color(0xFFfbab66), 3.0, true);
@@ -279,8 +259,7 @@ class QrCodeTab extends StatefulWidget {
   _QrCodeTabState createState() => _QrCodeTabState();
 }
 
-class _QrCodeTabState extends State<QrCodeTab>
-    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -297,17 +276,13 @@ class _QrCodeTabState extends State<QrCodeTab>
                 Text(
                   'This QR code allows other Hashers to quickly scan you using their Harrier Central apps.\r\n\r\nAny Hasher can scan this code to easily add you as their friend.\r\n\r\nHares and mis-management can use this code to scan you in at the beginning and end of runs in order to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.',
                   textAlign: TextAlign.justify,
-                  style: TextStyle(
-                      fontFamily: 'AvenirNextRegular',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 16.0,
-                      height: 1.0),
+                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                 )
               ],
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: const Text('OK, Got it!'),
               onPressed: () {
                 Navigator.of(context).pop(true);
@@ -327,8 +302,7 @@ class _QrCodeTabState extends State<QrCodeTab>
     final String userName = getStringPref(StringPrefsEnum.displayName);
     final String userQrCode = getStringPref(StringPrefsEnum.qrCode);
 
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
+    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
       print('Height = ${constraints.maxHeight}');
       print('Width = ${constraints.maxWidth}');
       return Center(
@@ -341,8 +315,7 @@ class _QrCodeTabState extends State<QrCodeTab>
               height: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 90,
             ),
             Container(
-              padding: const EdgeInsets.only(
-                  top: 0, bottom: 30, right: 25, left: 25),
+              padding: const EdgeInsets.only(top: 0, bottom: 30, right: 25, left: 25),
               child: Text(
                 'Use this code to check in at the beginning and end of runs. Your friends can also scan this code to add you to their friend list. ',
                 textAlign: TextAlign.justify,
@@ -362,11 +335,7 @@ class _QrCodeTabState extends State<QrCodeTab>
               textAlign: TextAlign.center,
               maxLines: 1,
               style: TextStyle(
-                  fontFamily: 'AvenirNextDemiBold',
-                  fontStyle: FontStyle.normal,
-                  color: Colors.white,
-                  fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-                  height: 1.0),
+                  fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
             ),
 
             // Positioned(
@@ -380,8 +349,7 @@ class _QrCodeTabState extends State<QrCodeTab>
             // ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(
-                    top: 20, bottom: 10, left: 30, right: 30),
+                padding: const EdgeInsets.only(top: 20, bottom: 10, left: 30, right: 30),
                 child: Stack(alignment: AlignmentDirectional.center,
                     //height: min(constraints.maxHeight, constraints.maxWidth) * 0.65,
                     children: <Widget>[
@@ -399,8 +367,7 @@ class _QrCodeTabState extends State<QrCodeTab>
 
             Padding(
               padding: const EdgeInsets.only(left: 0.0, right: 0.0),
-              child: FlatButton(
-                textColor: Colors.white,
+              child: TextButton(
                 child: const Text('Learn more about this feature'),
                 onPressed: () {
                   _displayInstructions(context);
@@ -421,8 +388,7 @@ class QrScannerTab extends StatefulWidget {
   _QrScannerTabState createState() => _QrScannerTabState();
 }
 
-class _QrScannerTabState extends State<QrScannerTab>
-    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   String onScreenMessage = 'Waiting for Scan';
 
   //QRReaderController controller;
@@ -479,19 +445,14 @@ class _QrScannerTabState extends State<QrScannerTab>
 
     if (result['validScan'] == 'false') {
       setState(() {
-        onScreenMessage = result['validHcQr'] == 'true'
-            ? 'This QR code is not valid here'
-            : 'QR code not recignized';
+        onScreenMessage = result['validHcQr'] == 'true' ? 'This QR code is not valid here' : 'QR code not recignized';
       });
     } else {
       final String prefix = result['prefix'];
       final String content = result['content'];
 
-      if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) ||
-          (prefix == QR_PREFIX_SPECIFIC_RUN_END)) {
-        final int attendenceState = prefix == QR_PREFIX_SPECIFIC_RUN_START
-            ? attendenceAtHash.value
-            : attendenceOnIn.value;
+      if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) || (prefix == QR_PREFIX_SPECIFIC_RUN_END)) {
+        final int attendenceState = prefix == QR_PREFIX_SPECIFIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
 
         final String userId = getStringPref(StringPrefsEnum.userId);
 
@@ -520,50 +481,38 @@ class _QrScannerTabState extends State<QrScannerTab>
         });
       }
 
-      if ((prefix == QR_PREFIX_KENNEL_GENERIC_RUN_END) ||
-          (prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START)) {
-        final int attendenceState = prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START
-            ? attendenceAtHash.value
-            : attendenceOnIn.value;
+      if ((prefix == QR_PREFIX_KENNEL_GENERIC_RUN_END) || (prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START)) {
+        final int attendenceState = prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START ? attendenceAtHash.value : attendenceOnIn.value;
 
-        final String eventId =
-            await CommonQueries.getClosestEventInTime(content);
+        final String eventId = await CommonQueries.getClosestEventInTime(content);
         if (num.tryParse(eventId) != null) {
           final num hoursUntilNextEvent = num.tryParse(eventId);
           setState(() {
             if (hoursUntilNextEvent > 24) {
-              onScreenMessage =
-                  'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent / 24)} days';
+              onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent / 24)} days';
             } else {
               if (hoursUntilNextEvent >= 2) {
-                onScreenMessage =
-                    'The next event does not open for check-in for another ${NumberFormat('##').format(hoursUntilNextEvent)} hours';
+                onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('##').format(hoursUntilNextEvent)} hours';
               } else {
-                onScreenMessage =
-                    'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent * 60)} minute' +
-                                NumberFormat('###')
-                                    .format(hoursUntilNextEvent * 60) !=
-                            '1'
-                        ? 's'
-                        : '';
+                onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent * 60)} minute' +
+                            NumberFormat('###').format(hoursUntilNextEvent * 60) !=
+                        '1'
+                    ? 's'
+                    : '';
               }
             }
           });
         } else {
           if (eventId == EMPTY_RESULT) {
             setState(() {
-              onScreenMessage =
-                  'There is no event for this Kennel at this time';
+              onScreenMessage = 'There is no event for this Kennel at this time';
             });
           } else {
             final String userId = getStringPref(StringPrefsEnum.userId);
 
             G0<TableModel>()
                 .hasherEventMapService
-                .joinEvent(eventId, userId, null, AppDomainType.user,
-                    rsvpState: rsvpYes.value,
-                    attendenceState: attendenceState,
-                    isHare: isHareNo.value)
+                .joinEvent(eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceState, isHare: isHareNo.value)
                 .then((
               List<dynamic> adHocData,
             ) {
@@ -656,17 +605,13 @@ class _QrScannerTabState extends State<QrScannerTab>
                 Text(
                   'You can use your QR scanner to add friends to your Harrier Central friend list simply by scanning their personal QR code.\r\n\r\nYou can also use your scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out.',
                   textAlign: TextAlign.justify,
-                  style: TextStyle(
-                      fontFamily: 'AvenirNextRegular',
-                      fontStyle: FontStyle.normal,
-                      fontSize: 16.0,
-                      height: 1.0),
+                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                 )
               ],
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: const Text('OK, Got it!'),
               onPressed: () {
                 Navigator.of(context).pop(true);
@@ -696,20 +641,15 @@ class _QrScannerTabState extends State<QrScannerTab>
             'Use this scanner to either scan in at the beginning or end of runs or to scan the QR codes of other Hashers who you want to add to your friend list.',
             textAlign: TextAlign.justify,
             maxLines: 4,
-            style: TextStyle(
-                color: Colors.white,
-                fontFamily: 'AvenirNextDemiBold',
-                fontStyle: FontStyle.normal,
-                fontSize: 16.0 * G0<DeviceInfo>().deviceMaxScaleFactor,
-                height: 1.0),
+            style:
+                TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceMaxScaleFactor, height: 1.0),
           ),
         ),
 
         //_cameraPreviewWidget(),
         Expanded(
           child: Container(
-            padding: EdgeInsets.all(
-                10 * (G0<DeviceInfo>().deviceMaxScaleFactor * 1.5)),
+            padding: EdgeInsets.all(10 * (G0<DeviceInfo>().deviceMaxScaleFactor * 1.5)),
             child: Stack(
               alignment: AlignmentDirectional.center,
               children: <Widget>[
@@ -737,20 +677,14 @@ class _QrScannerTabState extends State<QrScannerTab>
           width: 280.0,
           child: Connection.styleForConnected(
             G0<AppModel>().connectionStatus,
-            RaisedButton(
+            ElevatedButton(
                 child: const Text(
                   'Start scanning',
                   //controller == null ? 'Start Scanning' : 'Stop Scanning',
-                  style: TextStyle(
-                      fontFamily: 'AvenirNextDemiBold',
-                      color: Colors.white,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 22.0,
-                      height: 1.0),
+                  style: TextStyle(fontFamily: 'AvenirNextDemiBold', color: Colors.white, fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
                 ),
                 onPressed: () {
-                  if (Connection.checkForConnection(
-                      context, G0<AppModel>().connectionStatus)) {
+                  if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
                     //scanUserBarcode();
                   }
                 }),
@@ -769,18 +703,12 @@ class _QrScannerTabState extends State<QrScannerTab>
               //'this is a test of how 3 lines will fit Ill need a lot more text than that to make it work',
               textAlign: TextAlign.center,
               maxLines: 3,
-              style: const TextStyle(
-                  fontFamily: 'AvenirNextDemiBold',
-                  fontStyle: FontStyle.normal,
-                  color: Colors.yellow,
-                  fontSize: 26.0,
-                  height: 0.9),
+              style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 26.0, height: 0.9),
             ),
           ),
         ),
 
-        FlatButton(
-          textColor: Colors.white,
+        TextButton(
           child: const Text('Learn more about this feature'),
           onPressed: () {
             _displayInstructions(context);

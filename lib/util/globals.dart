@@ -247,7 +247,7 @@ class DeviceInfo {
 //   StreamSubscription<Position> geoLocationStream;
 //   DateTime appStartTime;
 
-//   // TODO(DevTeam): Make sure this is eventually called
+// TODO(DevTeam): Make sure this is eventually called
 //   void dispose() {
 //     geoLocationStream.cancel();
 //   }

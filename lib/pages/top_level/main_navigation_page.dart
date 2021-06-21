@@ -312,7 +312,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                               // to the top of the render space if they will overflow the available space.
                               return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
                                 return Stack(
-                                  overflow: Overflow.clip,
+                                  clipBehavior: Clip.hardEdge,
                                   fit: StackFit.passthrough,
                                   alignment: AlignmentDirectional.topCenter,
                                   children: <Widget>[

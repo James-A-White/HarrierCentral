@@ -23,10 +23,7 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
         focusNode: myFocusNodeFirstName,
         controller: getResetCodeTextController,
         keyboardType: TextInputType.text,
-        style: const TextStyle(
-            fontFamily: 'WorkSansSemiBold',
-            fontSize: 16.0,
-            color: Colors.black),
+        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
         decoration: const InputDecoration(
           border: InputBorder.none,
           icon: Icon(
@@ -44,7 +41,7 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
         //     width: 60.0,
         //     child:
 
-        // FlatButton(
+        // TextButton(
         //   color: Colors.red,
         //   child: const Text('Cancel'),
         //   textColor: Colors.white,
@@ -59,18 +56,16 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
         //   width: 60.0,
         //child:
 
-        FlatButton(
-            color: Colors.blue,
+        TextButton(
+            style: TextButton.styleFrom(backgroundColor: Colors.blue),
             child: const Text('Reset'),
-            textColor: Colors.white,
             onPressed: () {
               clearPrefs();
             }),
 
-        FlatButton(
-            color: Colors.blue,
+        TextButton(
+            style: TextButton.styleFrom(backgroundColor: Colors.blue),
             child: const Text('Done'),
-            textColor: Colors.white,
             onPressed: () {
               Navigator.of(context).pop();
             }),
@@ -79,16 +74,12 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
         //   width: 60.0,
         //child:
 
-        FlatButton(
-            color: Colors.blue,
+        TextButton(
+            style: TextButton.styleFrom(backgroundColor: Colors.blue),
             child: const Text('Get code'),
-            textColor: Colors.white,
             onPressed: () {
               final GetResetCodeService svc = GetResetCodeService();
-              svc
-                  .getResetCode(QR_PREFIX_USER_SECRET_CODE +
-                      getResetCodeTextController.text)
-                  .then((SingleResultModel result) {
+              svc.getResetCode(QR_PREFIX_USER_SECRET_CODE + getResetCodeTextController.text).then((SingleResultModel result) {
                 setState(() {
                   getResetCodeTextController.text = result.result;
                 });
@@ -100,41 +91,28 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
               // });
             }),
 
-        ((!getResetCodeTextController.text
-                    .startsWith(QR_PREFIX_USER_RESET_CODE)) ||
-                (getResetCodeTextController.text.length != 9))
+        ((!getResetCodeTextController.text.startsWith(QR_PREFIX_USER_RESET_CODE)) || (getResetCodeTextController.text.length != 9))
             ? Container()
-            : FlatButton(
-                color: Colors.blue,
+            : TextButton(
+                style: TextButton.styleFrom(backgroundColor: Colors.blue),
                 child: const Text('Reset device'),
-                textColor: Colors.white,
                 onPressed: () async {
-                  if (getResetCodeTextController.text.toUpperCase() ==
-                      QR_PREFIX_USER_RESET_CODE + 'CLEAR') {
+                  if (getResetCodeTextController.text.toUpperCase() == QR_PREFIX_USER_RESET_CODE + 'CLEAR') {
                     clearPrefs();
                     await DBProvider.deleteDb(DB_NAME);
 
-                    IveCoreUtilities.showAlert(
-                        context,
-                        'App Cleared Successful',
-                        'Your app has been successfully cleared. Please close and restart the app to start the installation process again.',
-                        'OK');
+                    IveCoreUtilities.showAlert(context, 'App Cleared Successful',
+                        'Your app has been successfully cleared. Please close and restart the app to start the installation process again.', 'OK');
                   } else {
                     final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                    final Future<Map<String, String>> apiCall =
-                        srv.authorizeDevice(context,
-                            getResetCodeTextController.text.toUpperCase());
+                    final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, getResetCodeTextController.text.toUpperCase());
                     apiCall.then((Map<String, String> result) {
                       if (result != null) {
                         setState(() {
-                          getResetCodeTextController.text =
-                              getStringPref(StringPrefsEnum.displayName);
+                          getResetCodeTextController.text = getStringPref(StringPrefsEnum.displayName);
 
-                          IveCoreUtilities.showAlert(
-                              context,
-                              'App Reset Successful',
-                              'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',
-                              'OK');
+                          IveCoreUtilities.showAlert(context, 'App Reset Successful',
+                              'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
                         });
                       }
                     });

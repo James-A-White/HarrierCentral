@@ -21,14 +21,12 @@ class ConfirmAutoCheckinPopup extends StatefulWidget {
   final num eventNumber;
 
   @override
-  _ConfirmAutoCheckinPopupState createState() =>
-      _ConfirmAutoCheckinPopupState();
+  _ConfirmAutoCheckinPopupState createState() => _ConfirmAutoCheckinPopupState();
 }
 
 class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
   final FocusNode myFocusNodeFirstName = FocusNode();
-  TextEditingController followKennelAmountTextController =
-      TextEditingController();
+  TextEditingController followKennelAmountTextController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +36,7 @@ class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
       content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
         CachedNetworkImage(
           height: 120.0,
-          imageUrl:
-              widget.eventImage != null ? widget.eventImage : widget.kennelLogo,
+          imageUrl: widget.eventImage != null ? widget.eventImage : widget.kennelLogo,
           // errorWidget:
           //     (BuildContext context, String url, Exception error) =>
           //         const  Icon(Icons.error),
@@ -59,18 +56,16 @@ class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
-              FlatButton(
-                color: Colors.red,
+              TextButton(
+                style: TextButton.styleFrom(backgroundColor: Colors.red),
                 child: Text(widget.cancelButtonTitle),
-                textColor: Colors.white,
                 onPressed: () {
                   Navigator.of(context).pop(enumYesNo_Cancel);
                 },
               ),
-              FlatButton(
-                color: Colors.green[700],
+              TextButton(
+                style: TextButton.styleFrom(backgroundColor: Colors.green.shade700),
                 child: Text(widget.okButtonTitle),
-                textColor: Colors.white,
                 onPressed: () {
                   Navigator.of(context).pop(enumYesNo_Yes);
                 },
@@ -91,7 +86,7 @@ class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
       //   //     width: 60.0,
       //   //     child:
 
-      //   FlatButton(
+      //   TextButton(
       //     color: Colors.red,
       //     child: const Text('Cancel'),
       //     textColor: Colors.white,
@@ -150,7 +145,7 @@ class _ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
   //     buttons.add(const SizedBox(height: 10.0));
   //   }
   //   buttons.add(
-  //     FlatButton(
+  //     TextButton(
   //       color: Colors.red,
   //       child: Text(widget.cancelButtonTitle),
   //       textColor: Colors.white,

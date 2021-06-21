@@ -67,7 +67,7 @@
 //         ),
 //       ]),
 //       actions: <Widget>[
-//         FlatButton(
+//         TextButton(
 //           color: Colors.red,
 //           child: const Text('Cancel'),
 //           textColor: Colors.white,
@@ -76,7 +76,7 @@
 //           },
 //         ),
 
-//         FlatButton(
+//         TextButton(
 //             color: Colors.blue,
 //             child: const Text('Add Visitor'),
 //             textColor: Colors.white,
@@ -89,7 +89,7 @@
 //               });
 //             }),
 
-//         FlatButton(
+//         TextButton(
 //             color: Colors.blue,
 //             child: const Text('Add Virgin'),
 //             textColor: Colors.white,

@@ -146,7 +146,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: const Text('OK, Got it!'),
               onPressed: () {
                 Navigator.of(context).pop(true);

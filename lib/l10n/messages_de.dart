@@ -13,8 +13,7 @@ final MessageLookup messages = MessageLookup();
 final String _keepAnalysisHappy = Intl.defaultLocale;
 
 // ignore: non_constant_identifier_names
-typedef MessageIfAbsent = dynamic Function(
-    String message_str, List<String> args);
+typedef MessageIfAbsent = dynamic Function(String messageStr, List<String> args);
 
 class MessageLookup extends MessageLookupByLibrary {
   @override

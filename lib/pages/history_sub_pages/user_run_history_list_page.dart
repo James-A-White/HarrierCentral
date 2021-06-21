@@ -24,14 +24,12 @@ import 'package:harrier_central/imports.dart';
 // import 'package:harrier_central/util/secure_prefs.dart';
 
 class UserRunHistoryListPage extends StatefulWidget {
-  const UserRunHistoryListPage({Key key, @required this.kennelInfo})
-      : super(key: key);
+  const UserRunHistoryListPage({Key key, @required this.kennelInfo}) : super(key: key);
 
   final HistoryListResults kennelInfo;
 
   @override
-  UserRunHistoryPageState createState() =>
-      UserRunHistoryPageState(kennelId: kennelInfo.kennelId);
+  UserRunHistoryPageState createState() => UserRunHistoryPageState(kennelId: kennelInfo.kennelId);
 }
 
 class UserRunHistoryResults {
@@ -65,8 +63,7 @@ class UserRunHistoryResults {
       eventName: map['eventName'],
       eventId: map['eventId'],
       eventNumber: map['eventNumber'],
-      eventStartDatetime:
-          DateTime.parse(map['eventStartDatetime'].toString().substring(0, 19)),
+      eventStartDatetime: DateTime.parse(map['eventStartDatetime'].toString().substring(0, 19)),
       canEditRunAttendence: map['canEditRunAttendence'],
       hemId: map['hemId'],
       attendenceState: map['attendenceState'],
@@ -113,12 +110,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
     runCountsList = <UserRunHistoryResults>[];
     try {
-      final List<Map<String, dynamic>> results =
-          await G0<Database>().rawQuery(query);
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
 
       for (int i = 0; i < results.length; i++) {
-        final UserRunHistoryResults hlrItem =
-            UserRunHistoryResults.fromMap(results[i]);
+        final UserRunHistoryResults hlrItem = UserRunHistoryResults.fromMap(results[i]);
         hlrItem.totalHaringThisKennel = -1;
         hlrItem.totalRunsThisKennel = -1;
         hlrItem.isLoading = false;
@@ -142,9 +137,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width),
+        Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
         Positioned(
           top: 0,
           left: 0,
@@ -175,7 +168,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
               overlayColor: Colors.black,
               overlayOpacity: 0.5,
               onOpen: () {
-                _scaffoldKey.currentState.hideCurrentSnackBar();
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
               },
               onClose: () => print('DIAL CLOSED'),
               tooltip: 'Speed Dial',
@@ -193,14 +186,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                   onTap: () {
                     G0<TableModel>()
                         .hasherEventMapService
-                        .sendRunCountReportByEmail(
-                            kennelId: kennelId,
-                            kennelName: widget.kennelInfo.kennelName)
+                        .sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelInfo.kennelName)
                         .then((Map<String, String> result) {
-                      _scaffoldKey.currentState?.hideCurrentSnackBar();
-                      if (result['result']
-                          .toLowerCase()
-                          .startsWith('success')) {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      if (result['result'].toLowerCase().startsWith('success')) {
                         IveCoreUtilities.showAlert(
                             context,
                             'E-mail successfully sent',
@@ -208,9 +197,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                             'OK');
                       }
                     });
-                    IveCoreUtilities.showInSnackBar(context, _scaffoldKey,
-                        'Run count report being processed...',
-                        durationInSeconds: 10);
+                    IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
                   },
                 ),
                 SpeedDialChild(
@@ -221,14 +208,10 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                   onTap: () {
                     G0<TableModel>()
                         .hasherEventMapService
-                        .sendRunCountReportByEmail(
-                            kennelId: GUID_EMPTY,
-                            kennelName: 'All of your Hash Kennels')
+                        .sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels')
                         .then((Map<String, String> result) {
-                      _scaffoldKey.currentState?.hideCurrentSnackBar();
-                      if (result['result']
-                          .toLowerCase()
-                          .startsWith('success')) {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      if (result['result'].toLowerCase().startsWith('success')) {
                         IveCoreUtilities.showAlert(
                             context,
                             'E-mail successfully sent',
@@ -236,21 +219,16 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                             'OK');
                       }
                     });
-                    IveCoreUtilities.showInSnackBar(context, _scaffoldKey,
-                        'Run count report being processed...',
-                        durationInSeconds: 10);
+                    IveCoreUtilities.showInSnackBar(context, _scaffoldKey, 'Run count report being processed...', durationInSeconds: 10);
                   },
                 ),
               ],
             ),
-            body: _isLoading
-                ? _buildCircularProgressIndicator()
-                : _buildListView(),
+            body: _isLoading ? _buildCircularProgressIndicator() : _buildListView(),
           ),
         ),
         OfflineModeRibbon(
-          showRibbon: G0<AppModel>().connectionStatus ==
-              EnumConnectionStatus.not_connected,
+          showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
           ribbonImage: 'images/icons/offline_mode.png',
         ),
@@ -271,11 +249,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
 
     final bool result = await G0<TableModel>()
         .syncUserDataService
-        .updateFromBackend(
-            SyncUserDataService.flagHasherEventMapTable |
-                SyncUserDataService.flagNarrowEventsTable |
-                SyncUserDataService.flagKennelsTable,
-            true);
+        .updateFromBackend(SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('User data synchronized $resultStr');
     refreshRunHistoryFromTable(true);
@@ -373,25 +347,13 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   //   //model.notifyListeners();
   // }
 
-  static const TextStyle headingStyle = TextStyle(
-      fontFamily: 'AvenirNextCondensedDemiBold',
-      fontStyle: FontStyle.normal,
-      fontSize: 22.0,
-      height: 1.0);
+  static const TextStyle headingStyle = TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0);
 
-  static TextStyle numberStyle = TextStyle(
-      color: Colors.black87,
-      fontFamily: 'AvenirNextDemiBold',
-      fontStyle: FontStyle.normal,
-      fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-      height: 1.0);
+  static TextStyle numberStyle =
+      TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0);
 
-  static TextStyle boldTitleStyle = TextStyle(
-      color: Colors.black87,
-      fontFamily: 'AvenirNextBold',
-      fontStyle: FontStyle.normal,
-      fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-      height: 1.0);
+  static TextStyle boldTitleStyle =
+      TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0);
 
   int myRunCount = 0;
   int myHaringCount = 0;
@@ -407,10 +369,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
       if (runCountsList[i].attendenceState >= 20) {
         runCount++;
       }
-      runCountsList[i].totalHaringThisKennel =
-          haringCount + widget.kennelInfo.historicalHaringCount;
-      runCountsList[i].totalRunsThisKennel =
-          runCount + widget.kennelInfo.historicalPackRunCount;
+      runCountsList[i].totalHaringThisKennel = haringCount + widget.kennelInfo.historicalHaringCount;
+      runCountsList[i].totalRunsThisKennel = runCount + widget.kennelInfo.historicalPackRunCount;
     }
 
     myRunCount = runCount;
@@ -444,8 +404,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                       ],
                     ),
                     //color:Color.fromARGB(30, 0, 0, 0),
-                    padding: const EdgeInsets.only(
-                        left: 5, top: 5, right: 0, bottom: 5),
+                    padding: const EdgeInsets.only(left: 5, top: 5, right: 0, bottom: 5),
 
                     child: Row(children: <Widget>[
                       Container(
@@ -454,8 +413,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                         child: KennelLogo(
                           kennelLogoUrl: widget.kennelInfo.kennelLogo,
                           kennelShortName: widget.kennelInfo.kennelShortName,
-                          logoHeight:
-                              60.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                          logoHeight: 60.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
                           leftPadding: 5.0,
                         ),
                       ),
@@ -543,8 +501,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: runCountsList.length,
                       padding: const EdgeInsets.only(top: 5),
-                      separatorBuilder: (BuildContext context, int index) =>
-                          const Divider(
+                      separatorBuilder: (BuildContext context, int index) => const Divider(
                         height: 1.0,
                         color: Colors.black45,
                       ),
@@ -565,70 +522,53 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   // here, we're going from an attendence state of
                                   // not at the Hash to being at the Hash,
                                   // so assume that the person was not a hare
-                                  if (item.attendenceState <
-                                      attendenceAtHash.value) {
+                                  if (item.attendenceState < attendenceAtHash.value) {
                                     item.isLoading = true;
-                                    final Future<List<dynamic>> retVal =
-                                        G0<TableModel>()
-                                            .hasherEventMapService
-                                            .joinEvent(
-                                              item.eventId,
-                                              userId,
-                                              item.hemId,
-                                              AppDomainType.user,
-                                              rsvpState: rsvpYes.value,
-                                              attendenceState:
-                                                  attendenceAtHash.value,
-                                              isHare: isHareNo.value,
-                                            );
+                                    final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
+                                          item.eventId,
+                                          userId,
+                                          item.hemId,
+                                          AppDomainType.user,
+                                          rsvpState: rsvpYes.value,
+                                          attendenceState: attendenceAtHash.value,
+                                          isHare: isHareNo.value,
+                                        );
 
                                     retVal.then((List<dynamic> adHocData) {
-                                      refreshRunHistoryFromTable(true)
-                                          .then((void dummy) {});
+                                      refreshRunHistoryFromTable(true).then((void dummy) {});
                                     });
                                   } else {
                                     item.isLoading = true;
-                                    final Future<List<dynamic>> retVal =
-                                        G0<TableModel>()
-                                            .hasherEventMapService
-                                            .joinEvent(
-                                              item.eventId,
-                                              userId,
-                                              item.hemId,
-                                              AppDomainType.user,
-                                              rsvpState: rsvpYes.value,
-                                              attendenceState:
-                                                  attendenceAtHash.value,
-                                              isHare: item.isHare == 1
-                                                  ? isHareNo.value
-                                                  : isHareYes.value,
-                                            );
+                                    final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
+                                          item.eventId,
+                                          userId,
+                                          item.hemId,
+                                          AppDomainType.user,
+                                          rsvpState: rsvpYes.value,
+                                          attendenceState: attendenceAtHash.value,
+                                          isHare: item.isHare == 1 ? isHareNo.value : isHareYes.value,
+                                        );
 
                                     retVal.then((List<dynamic> adHocData) {
-                                      refreshRunHistoryFromTable(true)
-                                          .then((void dummy) {});
+                                      refreshRunHistoryFromTable(true).then((void dummy) {});
                                     });
                                   }
                                 } else {
                                   // swipe from left to right to
                                   // indicate that the hasher did
                                   // not participate in this event
-                                  final Future<List<dynamic>> retVal =
-                                      G0<TableModel>()
-                                          .hasherEventMapService
-                                          .joinEvent(
-                                            item.eventId,
-                                            userId,
-                                            item.hemId,
-                                            AppDomainType.user,
-                                            rsvpState: rsvpNo.value,
-                                            attendenceState: attendenceNo.value,
-                                            isHare: isHareNo.value,
-                                          );
+                                  final Future<List<dynamic>> retVal = G0<TableModel>().hasherEventMapService.joinEvent(
+                                        item.eventId,
+                                        userId,
+                                        item.hemId,
+                                        AppDomainType.user,
+                                        rsvpState: rsvpNo.value,
+                                        attendenceState: attendenceNo.value,
+                                        isHare: isHareNo.value,
+                                      );
 
                                   retVal.then((List<dynamic> adHocData) {
-                                    refreshRunHistoryFromTable(true)
-                                        .then((void dummy) {});
+                                    refreshRunHistoryFromTable(true).then((void dummy) {});
                                   });
                                 }
                               });
@@ -641,20 +581,14 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   child: Row(children: const <Widget>[
                                     Padding(
                                       padding: EdgeInsets.only(left: 10.0),
-                                      child: Icon(FontAwesome.lock,
-                                          color: Colors.white, size: 35.0),
+                                      child: Icon(FontAwesome.lock, color: Colors.white, size: 35.0),
                                     ),
                                     Padding(
                                       padding: EdgeInsets.only(left: 15.0),
                                       child: Text(
                                           // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'Run locked',
-                                          style: TextStyle(
-                                              fontFamily: 'AvenirNextDemiBold',
-                                              fontStyle: FontStyle.normal,
-                                              color: Colors.white,
-                                              fontSize: 17.0,
-                                              height: 1.0)),
+                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                     )
                                   ]))
                               : Container(
@@ -662,8 +596,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   child: Row(children: const <Widget>[
                                     Padding(
                                       padding: EdgeInsets.only(left: 10.0),
-                                      child: Icon(FontAwesome.times_circle,
-                                          color: Colors.white, size: 35.0),
+                                      child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
                                     ),
                                     Padding(
                                       padding: EdgeInsets.only(left: 15.0),
@@ -671,73 +604,43 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                           // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
                                           'I was not\r\nat the Hash',
                                           maxLines: 2,
-                                          style: TextStyle(
-                                              fontFamily: 'AvenirNextDemiBold',
-                                              fontStyle: FontStyle.normal,
-                                              color: Colors.white,
-                                              fontSize: 17.0,
-                                              height: 1.0)),
+                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                     )
                                   ])),
                           secondaryBackground: item.canEditRunAttendence == 0
                               ? Container(
                                   color: Colors.grey,
-                                  child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: const <Widget>[
-                                        Padding(
-                                          padding: EdgeInsets.only(right: 15.0),
-                                          child: Icon(FontAwesome.lock,
-                                              color: Colors.white, size: 35.0),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.only(right: 15.0),
-                                          child: Text(
-                                              //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                              'Run locked',
-                                              style: TextStyle(
-                                                  fontFamily:
-                                                      'AvenirNextDemiBold',
-                                                  fontStyle: FontStyle.normal,
-                                                  color: Colors.white,
-                                                  fontSize: 17.0,
-                                                  height: 1.0)),
-                                        )
-                                      ]))
-                              : (item.attendenceState <
-                                          attendenceAtHash.value) ||
-                                      ((item.attendenceState >=
-                                              attendenceAtHash.value) &&
-                                          (item.isHare == isHareYes.value))
+                                  child: Row(mainAxisAlignment: MainAxisAlignment.end, children: const <Widget>[
+                                    Padding(
+                                      padding: EdgeInsets.only(right: 15.0),
+                                      child: Icon(FontAwesome.lock, color: Colors.white, size: 35.0),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(right: 15.0),
+                                      child: Text(
+                                          //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                          'Run locked',
+                                          style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                    )
+                                  ]))
+                              : (item.attendenceState < attendenceAtHash.value) || ((item.attendenceState >= attendenceAtHash.value) && (item.isHare == isHareYes.value))
                                   ? Container(
                                       color: Colors.green,
                                       child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
+                                        mainAxisAlignment: MainAxisAlignment.end,
                                         children: const <Widget>[
                                           Padding(
-                                            padding:
-                                                EdgeInsets.only(right: 15.0),
-                                            child: Icon(
-                                                FontAwesome.check_circle,
-                                                color: Colors.white,
-                                                size: 35.0),
+                                            padding: EdgeInsets.only(right: 15.0),
+                                            child: Icon(FontAwesome.check_circle, color: Colors.white, size: 35.0),
                                           ),
                                           Padding(
-                                            padding:
-                                                EdgeInsets.only(right: 15.0),
+                                            padding: EdgeInsets.only(right: 15.0),
                                             child: Text(
                                                 //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                                 'I was at\r\nthe Hash',
                                                 maxLines: 2,
                                                 textAlign: TextAlign.right,
-                                                style: TextStyle(
-                                                    fontFamily:
-                                                        'AvenirNextDemiBold',
-                                                    fontStyle: FontStyle.normal,
-                                                    color: Colors.white,
-                                                    fontSize: 17.0,
-                                                    height: 1.0)),
+                                                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                           )
                                         ],
                                       ),
@@ -745,42 +648,27 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                                   : Container(
                                       color: Colors.purple,
                                       child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
+                                        mainAxisAlignment: MainAxisAlignment.end,
                                         children: const <Widget>[
                                           Padding(
-                                            padding:
-                                                EdgeInsets.only(right: 15.0),
+                                            padding: EdgeInsets.only(right: 15.0),
                                             child: Padding(
-                                              padding: EdgeInsets.only(
-                                                  left: 2.5, right: 2.5),
-                                              child: ImageIcon(
-                                                  AssetImage(
-                                                      'images/icons/hare_icon.png'),
-                                                  color: Colors.white,
-                                                  size: 30.0),
+                                              padding: EdgeInsets.only(left: 2.5, right: 2.5),
+                                              child: ImageIcon(AssetImage('images/icons/hare_icon.png'), color: Colors.white, size: 30.0),
                                             ),
                                           ),
                                           Padding(
-                                            padding:
-                                                EdgeInsets.only(right: 15.0),
+                                            padding: EdgeInsets.only(right: 15.0),
                                             child: Text(
                                                 //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
                                                 'I was a Hare',
-                                                style: TextStyle(
-                                                    fontFamily:
-                                                        'AvenirNextDemiBold',
-                                                    fontStyle: FontStyle.normal,
-                                                    color: Colors.white,
-                                                    fontSize: 17.0,
-                                                    height: 1.0)),
+                                                style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
                                           )
                                         ],
                                       ),
                                     ),
                           onDismissed: (DismissDirection direction) {
-                            print(direction.toString() +
-                                ' NOTE: We should never reach this point');
+                            print(direction.toString() + ' NOTE: We should never reach this point');
                           },
                           child: UserEventListItem(
                             item: item,

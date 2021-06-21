@@ -32,16 +32,29 @@ void main() {
         home: AppEntryPage(),
         routes: routes,
         theme: ThemeData(
-            primaryColor: Colors.grey[700],
-            primaryColorDark: Colors.grey[900],
-            primaryColorLight: Colors.grey[400],
-            accentColor: Colors.red[900],
-            bottomAppBarColor: Colors.grey[700],
+            primaryColor: Colors.grey.shade700,
+            primaryColorDark: Colors.grey.shade900,
+            primaryColorLight: Colors.grey.shade400,
+            accentColor: Colors.red.shade900,
+            bottomAppBarColor: Colors.grey.shade700,
             highlightColor: Colors.yellow,
-            selectedRowColor: Colors.red[50],
-            buttonColor: Colors.red[900],
+            selectedRowColor: Colors.red.shade50,
+            buttonColor: Colors.red.shade900,
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                  primary: Colors.red.shade900,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                  textStyle: const TextStyle(color: Colors.white),
+                  shadowColor: Colors.transparent,
+                  elevation: 0),
+            ),
+            textButtonTheme: TextButtonThemeData(
+                style: TextButton.styleFrom(
+              backgroundColor: Colors.red.shade900,
+              textStyle: const TextStyle(color: Colors.white),
+            )),
             iconTheme: const IconThemeData(color: Colors.white, size: 30.0),
-            scaffoldBackgroundColor: Colors.brown[50])),
+            scaffoldBackgroundColor: Colors.brown.shade50)),
   );
 }
 

@@ -465,7 +465,7 @@
 //                                                         ),
 
 //                                                         Connection.styleForConnected(G0<AppModel>().connectionStatus,
-//                                                           RaisedButton(
+//                                                           ElevatedButton(
 //                                                             onPressed: () {
 
 //                                                               // if (Connection.checkForConnection(context,G0<AppModel>().connectionStatus)) {
@@ -610,7 +610,7 @@
 //             child: Container(
 //                 padding: const EdgeInsets.fromLTRB(220, 10, 10, 10),
 //                 child: Connection.styleForConnected(G0<AppModel>().connectionStatus,
-//                   RaisedButton(
+//                   ElevatedButton(
 //                     color: _isDirty ? Theme.of(context).accentColor : Colors.grey,
 //                     onPressed: () {
 //                       if (Connection.checkForConnection(context,G0<AppModel>().connectionStatus) && _isDirty) {

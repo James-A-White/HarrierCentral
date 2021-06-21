@@ -18,18 +18,13 @@ class DrawerMenuState extends State<DrawerMenu> {
   static const int opacity = 160;
   static const Color textColor = Color.fromARGB(opacity, 255, 255, 255);
 
-  TextStyle style = const TextStyle(
-      fontFamily: 'AvenirNext',
-      fontStyle: FontStyle.normal,
-      color: textColor,
-      fontSize: 24.0,
-      height: 1.0);
+  TextStyle style = const TextStyle(fontFamily: 'AvenirNext', fontStyle: FontStyle.normal, color: textColor, fontSize: 24.0, height: 1.0);
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
       //elevation: 120,
-      child: Stack(overflow: Overflow.clip, children: <Widget>[
+      child: Stack(clipBehavior: Clip.hardEdge, children: <Widget>[
         Positioned(
           top: 0,
           left: 0,
@@ -44,10 +39,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                   //     image: const AssetImage("images/other/drawer_image.jpg"),
                   //   ),
                   // ),
-                  child: Image.asset('images/other/drawer_image.jpg',
-                      fit: BoxFit.fill,
-                      height: MediaQuery.of(context).size.height,
-                      width: MediaQuery.of(context).size.width),
+                  child: Image.asset('images/other/drawer_image.jpg', fit: BoxFit.fill, height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
                 ),
               ],
             ),
@@ -93,10 +85,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                           dataContext: EnumDataContext.user,
                           pageType: EnumMyProfilePageType.myProfile,
                           hasherId: userId,
-                          uiElementsToDisplay:
-                              HasherProfilePage.flagUiElement_distancePref |
-                                  HasherProfilePage
-                                      .flagUiElement_autoDisplayRunsDistance,
+                          uiElementsToDisplay: HasherProfilePage.flagUiElement_distancePref | HasherProfilePage.flagUiElement_autoDisplayRunsDistance,
                         );
                       },
                     ),
@@ -128,8 +117,7 @@ class DrawerMenuState extends State<DrawerMenu> {
               //   },
               // ),
               ListTile(
-                leading:
-                    const Icon(FontAwesome.question_circle, color: textColor),
+                leading: const Icon(FontAwesome.question_circle, color: textColor),
                 title: Text('FAQs', style: style),
                 onTap: () {
                   Navigator.pop(context);
@@ -194,8 +182,7 @@ class DrawerMenuState extends State<DrawerMenu> {
               ),
 
               ListTile(
-                leading: const Icon(MaterialCommunityIcons.shield_lock,
-                    color: textColor),
+                leading: const Icon(MaterialCommunityIcons.shield_lock, color: textColor),
                 title: Text('Privacy Policy', style: style),
                 onTap: () {
                   Navigator.pop(context);
@@ -212,8 +199,7 @@ class DrawerMenuState extends State<DrawerMenu> {
               ),
 
               ListTile(
-                leading: const Icon(MaterialCommunityIcons.cloud_download,
-                    color: textColor),
+                leading: const Icon(MaterialCommunityIcons.cloud_download, color: textColor),
                 title: Text('App Download Links', style: style),
                 onTap: () {
                   Navigator.pop(context);

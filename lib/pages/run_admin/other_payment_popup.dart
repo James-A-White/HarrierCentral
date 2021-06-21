@@ -9,8 +9,7 @@ class OtherPaymentPopup extends StatefulWidget {
 
 class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
   final FocusNode myFocusNodeFirstName = FocusNode();
-  TextEditingController otherPaymentAmountTextController =
-      TextEditingController();
+  TextEditingController otherPaymentAmountTextController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +20,7 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
         focusNode: myFocusNodeFirstName,
         controller: otherPaymentAmountTextController,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        style: const TextStyle(
-            fontFamily: 'WorkSansSemiBold',
-            fontSize: 16.0,
-            color: Colors.black),
+        style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
         decoration: const InputDecoration(
           border: InputBorder.none,
           icon: Icon(
@@ -42,13 +38,11 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
         //     width: 60.0,
         //     child:
 
-        FlatButton(
-          color: Colors.red,
+        TextButton(
+          style: TextButton.styleFrom(backgroundColor: Colors.red),
           child: const Text('Cancel'),
-          textColor: Colors.white,
           onPressed: () {
-            Navigator.of(context)
-                .pop(<String, String>{'type': 'cancel', 'amount': ''});
+            Navigator.of(context).pop(<String, String>{'type': 'cancel', 'amount': ''});
           },
         ),
         //   ),
@@ -57,30 +51,22 @@ class _OtherPaymentPopupState extends State<OtherPaymentPopup> {
         //   width: 60.0,
         //child:
 
-        FlatButton(
-            color: Colors.blue,
+        TextButton(
+            style: TextButton.styleFrom(backgroundColor: Colors.blue),
             child: const Text('Cash'),
-            textColor: Colors.white,
             onPressed: () {
-              Navigator.of(context).pop(<String, String>{
-                'type': paymentCashOtherAmount.value.toString(),
-                'amount': otherPaymentAmountTextController.text
-              });
+              Navigator.of(context).pop(<String, String>{'type': paymentCashOtherAmount.value.toString(), 'amount': otherPaymentAmountTextController.text});
             }),
         // ),
         // Container(
         //   width: 60.0,
         //child:
 
-        FlatButton(
-            color: Colors.blue,
+        TextButton(
+            style: TextButton.styleFrom(backgroundColor: Colors.blue),
             child: const Text('Bank transfer'),
-            textColor: Colors.white,
             onPressed: () {
-              Navigator.of(context).pop(<String, String>{
-                'type': paymentBankTransferOtherAmount.value.toString(),
-                'amount': otherPaymentAmountTextController.text
-              });
+              Navigator.of(context).pop(<String, String>{'type': paymentBankTransferOtherAmount.value.toString(), 'amount': otherPaymentAmountTextController.text});
             }),
         // ),
       ],
