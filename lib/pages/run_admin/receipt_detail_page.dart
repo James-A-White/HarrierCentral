@@ -194,13 +194,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
   Future<File> onImageButtonPressed() async {
     final PickedFile image = await ImagePicker().getImage(source: ImageSource.camera);
-    return ImageCropper.cropImage(
-        sourcePath: image.path,
-        aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
-        maxHeight: 300,
-        maxWidth: 300,
-        compressFormat: ImageCompressFormat.jpg,
-        compressQuality: 50);
+    return ImageCropper.cropImage(sourcePath: image.path, compressFormat: ImageCompressFormat.jpg, compressQuality: 70);
   }
 
   @override

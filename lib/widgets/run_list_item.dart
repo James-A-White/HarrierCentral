@@ -193,7 +193,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                   Expanded(
                     flex: 100,
                     child: TextButton(
-                      style: TextButton.styleFrom(padding: const EdgeInsets.only(top: 10.0, left: 4.0, right: 0.0, bottom: 10.0)),
+                      style: TextButton.styleFrom(padding: const EdgeInsets.only(top: 10.0, left: 4.0, right: 0.0, bottom: 10.0), backgroundColor: Colors.white),
                       // splashColor: Theme.of(context).accentColor,
                       // highlightColor: Theme.of(context).accentColor,
                       onPressed: () {

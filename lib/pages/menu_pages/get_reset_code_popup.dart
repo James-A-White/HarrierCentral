@@ -58,7 +58,9 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
 
         TextButton(
             style: TextButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text('Reset'),
+            child: const Text(
+              'Reset',
+            ),
             onPressed: () {
               clearPrefs();
             }),

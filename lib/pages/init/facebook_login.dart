@@ -253,7 +253,7 @@ class _LoginPageState extends State<FbLoginPage> {
         Padding(
           padding: const EdgeInsets.only(top: 15.0),
           child: TextButton(
-            child: const Text('Get Started!'),
+            child: const Text('Get started!', style: TextStyle(color: Colors.white)),
             onPressed: () async {
               if (_formKey.currentState.validate()) {
                 // If the form is valid, display a snackbar. In the real world,

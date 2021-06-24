@@ -68,7 +68,7 @@ class KennelsListPageState extends State<KennelsListPage> {
           Container(
             width: 40,
             child: TextButton(
-              style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700)),
+              style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
               child: const Text('X'),
               onPressed: () {
                 searchController.text = '';
@@ -172,11 +172,11 @@ class KennelsListPageState extends State<KennelsListPage> {
               decoration: Backgrounds.defaultHcBackground(),
               padding: const EdgeInsets.only(top: 0.0),
               child: ((G0<TableModel>().globalKennelMainPageList == null) || (G0<TableModel>().globalKennelMainPageList.isEmpty))
-                  ? Center(child: Text('No Kennels available.', style: headingStyle))
+                  ? Center(child: Text('Loading Kennels.', style: headingStyle))
                   : NestedScrollView(
                       controller: scrollController,
                       headerSliverBuilder: (BuildContext context, bool innerBoxScrolled) => <Widget>[
-                        //!innerBoxScrolled ? Container() :
+                        
                         SliverAppBar(
                           floating: false,
                           pinned: false,

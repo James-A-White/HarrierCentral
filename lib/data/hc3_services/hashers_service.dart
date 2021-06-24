@@ -379,6 +379,27 @@ class HashersService extends BaseService {
       await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
     }
 
+    // Get long life FB token... looks like this is not required as the FB token already has a long life.
+
+    // final String body2 = jsonEncode(<String, String>{
+    //   'userId': userId,
+    //   'facebookAccessToken': facebookAccessToken,
+    // });
+
+    // final Response response2 = await post(PROCESS_FACEBOOK_TOKEN_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body2
+    //         // Send authorization headers to your backend
+    //         //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+    //         )
+    //     .catchError(
+    //   (dynamic error) {
+    //     return Future<Response>.value(null);
+    //   },
+    // );
+
+    if (!newUserForThisDevice) {
+      await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    }
+
     return response.body;
   }
 }

@@ -49,10 +49,16 @@ void main() {
                   elevation: 0),
             ),
             textButtonTheme: TextButtonThemeData(
-                style: TextButton.styleFrom(
-              backgroundColor: Colors.red.shade900,
-              textStyle: const TextStyle(color: Colors.white),
-            )),
+              //     style: TextButton.styleFrom(
+              //   backgroundColor: Colors.red.shade900,
+              //   primary
+              //   textStyle: const TextStyle(color: Colors.white),
+              // )
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.red.shade900),
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+              ),
+            ),
             iconTheme: const IconThemeData(color: Colors.white, size: 30.0),
             scaffoldBackgroundColor: Colors.brown.shade50)),
   );

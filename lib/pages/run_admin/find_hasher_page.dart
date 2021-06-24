@@ -159,7 +159,7 @@ class FindHasherPageState extends State<FindHasherPage> {
             width: 40,
             child: TextButton(
               //color: Colors.red,
-              style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700)),
+              style: TextButton.styleFrom(textStyle: TextStyle(color: Colors.grey.shade700), backgroundColor: Colors.white),
               child: const Text('X'),
 
               onPressed: () {
