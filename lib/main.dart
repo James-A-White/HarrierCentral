@@ -2,6 +2,8 @@ import 'package:harrier_central/imports.dart';
 
 //import 'package:flutter/scheduler.dart' show timeDilation;
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   //debugPaintSizeEnabled=true;
@@ -17,6 +19,7 @@ void main() {
   runApp(
     MaterialApp(
         debugShowCheckedModeBanner: false,
+        navigatorKey: navigatorKey,
         localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
           AppLocalizationsDelegate(),
           GlobalMaterialLocalizations.delegate,

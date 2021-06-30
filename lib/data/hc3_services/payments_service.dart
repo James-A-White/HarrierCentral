@@ -170,7 +170,7 @@ class PaymentsService {
   Future<List<dynamic>> payForEvent(String eventId, String hasherId, String hasherEventMapId, int paymentType, num paymentAmount, int minimumAttendenceValue,
       EnumPayForExtras<int> doPayForExtras, AppDomainType appDomainType,
       {num surcharge, String paymentProvider}) async {
-    List<dynamic> results;
+    List<dynamic> results = <dynamic>[];
 
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return results;
@@ -247,20 +247,24 @@ class PaymentsService {
       'appDomainType': appDomainStr
     });
 
-    final Response response = await post(BASE_API_URL + 'hc3_process_payment', headers: <String, String>{'content-type': 'application/json'}, body: body
-            // Send authorization headers to your backend
-            //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-            )
-        .catchError(
-      (dynamic error) {
-        return null;
-      },
-    );
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_process_payment', body);
 
-    if (appDomainType == AppDomainType.event) {
-      results = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
-    } else {
-      results = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    // final Response response = await post(BASE_API_URL + 'hc3_process_payment', headers: <String, String>{'content-type': 'application/json'}, body: body
+    //         // Send authorization headers to your backend
+    //         //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+    //         )
+    //     .catchError(
+    //   (dynamic error) {
+    //     return null;
+    //   },
+    // );
+
+    if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+      if (appDomainType == AppDomainType.event) {
+        results = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+      } else {
+        results = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+      }
     }
     return results;
   }

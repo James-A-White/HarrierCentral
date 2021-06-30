@@ -164,19 +164,22 @@ class SyncUserDataService {
         'paymentsUpdatedAfter': (tablesToSync & flagPaymentsTable) == 0 ? 'ignore' : paymentsUpdatedAfter.toString().substring(0, 19),
       });
 
-      final Response response = await post(BASE_API_URL + 'hc3_sync_user_data', headers: <String, String>{'content-type': 'application/json'}, body: body
-              // Send authorization headers to your backend
-              //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-              )
-          .catchError(
-        (dynamic error) {
-          return Future<Response>.value(null);
-        },
-      );
+      final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_user_data', body);
 
-      await updateSqlTablesWithResultsFromBackendApiCall(response.body, informUser: informUser);
-      //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
-      await setDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate, DateTime.now());
+      // final Response response = await post(BASE_API_URL + 'hc3_sync_user_data', headers: <String, String>{'content-type': 'application/json'}, body: body
+      //         // Send authorization headers to your backend
+      //         //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+      //         )
+      //     .catchError(
+      //   (dynamic error) {
+      //     return Future<Response>.value(null);
+      //   },
+      // );
+      if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+        await updateSqlTablesWithResultsFromBackendApiCall(responseBody, informUser: informUser);
+        //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
+        await setDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate, DateTime.now());
+      }
     }
     return true;
   }

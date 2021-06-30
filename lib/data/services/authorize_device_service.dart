@@ -1,9 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
 class AuthorizeDeviceService {
-  Future<Map<String, String>> authorizeDevice(
-      BuildContext context, String scanText,
-      {num includeInGlobalHashDirectory = -1}) async {
+  Future<Map<String, String>> authorizeDevice(BuildContext context, String scanText, {num includeInGlobalHashDirectory = -1}) async {
     String deviceId = 'unknown';
 
     final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
@@ -16,15 +14,12 @@ class AuthorizeDeviceService {
       deviceId = iosInfo.identifierForVendor.toUpperCase();
     }
 
-    final String accessToken =
-        IveCoreUtilities.generateToken(GUID_EMPTY, 'authorizeDevice');
+    final String accessToken = IveCoreUtilities.generateToken(GUID_EMPTY, 'authorizeDevice');
 
-    final String hcVersion =
-        getStringPref(StringPrefsEnum.harrierCentralVersion);
+    final String hcVersion = getStringPref(StringPrefsEnum.harrierCentralVersion);
     if ((hcVersion ?? '').isEmpty) {
       final PackageInfo p = await PackageInfo.fromPlatform();
-      final String hcVersion =
-          'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
+      final String hcVersion = 'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
 
       await setStringPref(StringPrefsEnum.harrierCentralVersion, hcVersion);
     }
@@ -41,21 +36,17 @@ class AuthorizeDeviceService {
     Map<String, String> resultMap = <String, String>{};
 
     try {
-      final String responseBody = await ServiceCommon.sendRequest(
-          context, 'hc3_authorize_device', body);
-      if (responseBody == ERROR_KEY) {
-        return <String, String>{
-          'result': 'failed',
-          'message': 'Error calling authorize device'
-        };
-      } else {
+      final String responseBody = await ServiceCommon.sendHttpPost('hc3_authorize_device', body);
+
+      // if ((responseBody == ERROR_KEY_OK_BTN_PRESSED) || (responseBody == ERROR_KEY_CANCEL_BTN_PRESSED)) {
+      //   return <String, String>{'result': 'failed', 'message': 'Error calling authorize device'};
+      // } else
+
+      if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
         final List<dynamic> result = json.decode(responseBody);
 
         if ((result == null) || (result.isEmpty) || (result[0].isEmpty)) {
-          resultMap = <String, String>{
-            'result': 'failed',
-            'message': 'Could not download profile. Check your QR code'
-          };
+          resultMap = <String, String>{'result': 'failed', 'message': 'Could not download profile. Check your QR code'};
         } else {
           // Do not clear prefs, because then we clear the prefs that were set by authorize login upon app launch
           //await clearAllPrefs();
@@ -69,21 +60,16 @@ class AuthorizeDeviceService {
           setStringPref(StringPrefsEnum.qrCode, result[0]['qrCode']);
           setStringPref(StringPrefsEnum.supportCode, result[0]['supportCode']);
           setStringPref(StringPrefsEnum.resetCode, result[0]['resetCode']);
-          setStringPref(
-              StringPrefsEnum.qrSecretCode, result[0]['qrSecretCode']);
+          setStringPref(StringPrefsEnum.qrSecretCode, result[0]['qrSecretCode']);
           setStringPref(StringPrefsEnum.userId, result[0]['hasherId']);
 
-          resultMap = <String, String>{
-            'result': 'success',
-            'message': 'Successfully loaded profile'
-          };
+          resultMap = <String, String>{'result': 'success', 'message': 'Successfully loaded profile'};
         }
+      } else {
+        return <String, String>{'result': 'failed', 'message': 'Error calling authorize device'};
       }
     } catch (e) {
-      resultMap = <String, String>{
-        'result': 'failed',
-        'message': 'Error reading server data. Check your QR code'
-      };
+      resultMap = <String, String>{'result': 'failed', 'message': 'Error reading server data. Check your QR code'};
     }
 
     return resultMap;

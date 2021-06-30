@@ -46,13 +46,20 @@ const String EMAIL_RUN_DETAILS_TO_PACK_API_URL = 'https://hcazurefunctions7.azur
 const String EMAIL_PAYMENT_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendPaymentReport';
 const String EMAIL_RUN_REPORT_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendRunCountsReport';
 const String EMAIL_KENNEL_RUN_STATS_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/SendKennelRunStatsReport';
-const String PROCESS_FACEBOOK_TOKEN_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/ProcessFbToken';
+const String EMAIL_INVITE_CODE_API_URL = 'https://hcazurefunctions7.azurewebsites.net/api/EmailInviteCode';
 
 const String GOOGLE_API_KEY = 'AIzaSyAiJXV8P99FwXq2FtYby7To80e9SBTrV2c';
 
 const String NOTIFICATION_PREFIX_EVENT_UPDATE = 'evtUpdate_';
 
-const String ERROR_KEY = 'HC_ERROR';
+const String ERROR_PREFIX = 'HC_ERROR_';
+const String ERROR_KEY_OK_BTN_PRESSED = ERROR_PREFIX + 'OK';
+const String ERROR_KEY_CANCEL_BTN_PRESSED = ERROR_PREFIX + 'CANCEL';
+const String ERROR_HANDLED = ERROR_PREFIX + 'HANDLED';
+const String ERROR_NOT_HANDLED = ERROR_PREFIX + 'NOT_HANDLED';
+const String ERROR_NO_CONNECTION = ERROR_PREFIX + 'NO_CONNECTION';
+const String ERROR_UNKNOWN_HTTP_ERROR = ERROR_PREFIX + 'HTTP_ERROR';
+const String ERROR_UNKNOWN_REMOTE_DB_ERROR = ERROR_PREFIX + 'REMOTE_DB_ERROR';
 
 const String GUID_EMPTY = '00000000-0000-0000-0000-000000000000';
 const String GUID_8 = '88888888-8888-8888-8888-888888888888';

@@ -14,19 +14,23 @@ class GetResetCodeService {
 
     final String body = jsonEncode(<String, String>{'userId': userId, 'accessToken': accessToken, 'supportCode': supportCode});
 
-    final Response response = await post(BASE_API_URL + 'hc3_get_reset_code', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
-      (dynamic error) {
-        return Future<Response>.value(null);
-      },
-    );
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_get_reset_code', body);
+
+    // final Response response = await post(BASE_API_URL + 'hc3_get_reset_code', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
+    //   (dynamic error) {
+    //     return Future<Response>.value(null);
+    //   },
+    // );
 
     SingleResultModel result;
 
-    json.decode(response.body).forEach(
-      (dynamic item) {
-        result = SingleResultModel(result: item['result']);
-      },
-    );
+    if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+      json.decode(responseBody).forEach(
+        (dynamic item) {
+          result = SingleResultModel(result: item['result']);
+        },
+      );
+    }
 
     return result;
   }

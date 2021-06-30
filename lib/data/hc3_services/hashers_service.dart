@@ -229,7 +229,59 @@ class HashersService extends BaseService {
       'followKennelOnAddNewUser': followKennelOnAddNewUser == null ? null : followKennelOnAddNewUser.toString()
     });
 
-    final Response response = await post(BASE_API_URL + 'hc3_add_edit_user', headers: <String, String>{'content-type': 'application/json'}, body: body
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_user', body, errorCallback: (DbErrorModel dbError) async {
+      bool okButtonPressed = false;
+      if (dbError.errorType == DB_ERROR_EMAIL_ALREADY_EXISTS) {
+        okButtonPressed = await IveCoreUtilities.showAlert(navigatorKey.currentContext, dbError.errorTitle,
+            'This email address already exists in our server. Would you like an invite code sent to your email that you can use to install the app?', 'Send code',
+            showCancelButton: true);
+
+        if (okButtonPressed) {
+          final String userMessage = await _sendInviteCodeByEmail(email);
+          await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Check your email', userMessage, 'OK');
+        }
+      }
+      return okButtonPressed;
+    });
+
+    // final Response response = await post(BASE_API_URL + 'hc3_add_edit_user', headers: <String, String>{'content-type': 'application/json'}, body: body
+    //         // Send authorization headers to your backend
+    //         //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+    //         )
+    //     .catchError(
+    //   (dynamic error) {
+    //     return Future<Response>.value(null);
+    //   },
+    // );
+
+    if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+      if (!newUserForThisDevice) {
+        if (((eventId == null) || (eventId == GUID_EMPTY)) && ((kennelId == null) || (kennelId == GUID_EMPTY))) {
+          // we don't have either an eventId or a kennelId so all we need to do is update
+          // the Hasher table
+          await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+        } else if ((eventId != null) && (eventId != GUID_EMPTY)) {
+          // if we have an eventId we are definitely editing an event irrespective of whether or not
+          // there is also a kennelId
+          await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+        } else if ((kennelId != null) && (kennelId != GUID_EMPTY)) {
+          // if we get here, we have a kennelId but no eventId, which means we are editing kennel members
+          await G0<TableModel>().syncKennelAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+        } else {
+          // TODO(James): handle this error, we should never arrive at this point in the code
+        }
+      }
+    }
+
+    return responseBody;
+  }
+
+  Future<String> _sendInviteCodeByEmail(String email) async {
+    final String body = jsonEncode(<String, String>{
+      'email': email,
+    });
+
+    final Response response = await post(EMAIL_INVITE_CODE_API_URL, headers: <String, String>{'content-type': 'application/json'}, body: body
             // Send authorization headers to your backend
             //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
             )
@@ -239,24 +291,16 @@ class HashersService extends BaseService {
       },
     );
 
-    if (!newUserForThisDevice) {
-      if (((eventId == null) || (eventId == GUID_EMPTY)) && ((kennelId == null) || (kennelId == GUID_EMPTY))) {
-        // we don't have either an eventId or a kennelId so all we need to do is update
-        // the Hasher table
-        await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
-      } else if ((eventId != null) && (eventId != GUID_EMPTY)) {
-        // if we have an eventId we are definitely editing an event irrespective of whether or not
-        // there is also a kennelId
-        await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
-      } else if ((kennelId != null) && (kennelId != GUID_EMPTY)) {
-        // if we get here, we have a kennelId but no eventId, which means we are editing kennel members
-        await G0<TableModel>().syncKennelAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
-      } else {
-        // TODO(James): handle this error, we should never arrive at this point in the code
-      }
-    }
+    String returnValue = ERROR_UNKNOWN_HTTP_ERROR;
 
-    return response.body;
+    if (response == null) {
+      returnValue = ERROR_UNKNOWN_HTTP_ERROR;
+    } else if ((response.statusCode < 200) || (response.statusCode >= 300)) {
+      returnValue = ERROR_UNKNOWN_HTTP_ERROR;
+    } else {
+      returnValue = response.body;
+    }
+    return returnValue;
   }
 
   Future<String> changeProfilePicture({String targetUserId, String photo}) async {
@@ -296,17 +340,19 @@ class HashersService extends BaseService {
       'followKennelOnAddNewUser': null
     });
 
-    final Response response = await post(BASE_API_URL + 'hc3_add_edit_user', headers: <String, String>{'content-type': 'application/json'}, body: body
-            // Send authorization headers to your backend
-            //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-            )
-        .catchError(
-      (dynamic error) {
-        return Future<Response>.value(null);
-      },
-    );
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_user', body);
 
-    return response.body;
+    // final Response response = await post(BASE_API_URL + 'hc3_add_edit_user', headers: <String, String>{'content-type': 'application/json'}, body: body
+    //         // Send authorization headers to your backend
+    //         //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+    //         )
+    //     .catchError(
+    //   (dynamic error) {
+    //     return Future<Response>.value(null);
+    //   },
+    // );
+
+    return responseBody;
   }
 
   Future<String> processFacebookLogin(
@@ -365,18 +411,12 @@ class HashersService extends BaseService {
       'hcVersion': hcVersion,
     });
 
-    final Response response = await post(BASE_API_URL + 'hc3_process_facebook_login', headers: <String, String>{'content-type': 'application/json'}, body: body
-            // Send authorization headers to your backend
-            //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-            )
-        .catchError(
-      (dynamic error) {
-        return Future<Response>.value(null);
-      },
-    );
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_process_facebook_login', body);
 
-    if (!newUserForThisDevice) {
-      await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+      if (!newUserForThisDevice) {
+        await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+      }
     }
 
     // Get long life FB token... looks like this is not required as the FB token already has a long life.
@@ -397,9 +437,9 @@ class HashersService extends BaseService {
     // );
 
     if (!newUserForThisDevice) {
-      await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+      await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
     }
 
-    return response.body;
+    return responseBody;
   }
 }

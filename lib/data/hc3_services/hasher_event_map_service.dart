@@ -239,20 +239,24 @@ class HasherEventMapService {
       'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString()
     });
 
-    final Response response = await post(BASE_API_URL + 'hc3_join_event', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
-      (dynamic error) {
-        return Future<Response>.value(null);
-      },
-    );
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_join_event', body);
 
-    List<dynamic> adHocData;
+    // final Response response = await post(BASE_API_URL + 'hc3_join_event', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
+    //   (dynamic error) {
+    //     return Future<Response>.value(null);
+    //   },
+    // );
 
-    if (appDomainType == AppDomainType.event) {
-      adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
-    } else if (appDomainType == AppDomainType.user) {
-      adHocData = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
-    } else {
-      assert(false);
+    List<dynamic> adHocData = <dynamic>[];
+
+    if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+      if (appDomainType == AppDomainType.event) {
+        adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+      } else if (appDomainType == AppDomainType.user) {
+        adHocData = await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+      } else {
+        assert(false);
+      }
     }
 
     return adHocData;
@@ -306,14 +310,19 @@ class HasherEventMapService {
       'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString()
     });
 
-    final Response response = await post(BASE_API_URL + 'hc3_join_event_as_visitor', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
-      (dynamic error) {
-        return Future<Response>.value(null);
-      },
-    );
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_join_event_as_visitor', body);
 
-    final List<dynamic> adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(response.body);
+    // final Response response = await post(BASE_API_URL + 'hc3_join_event_as_visitor', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
+    //   (dynamic error) {
+    //     return Future<Response>.value(null);
+    //   },
+    // );
 
+    List<dynamic> adHocData = <dynamic>[];
+
+    if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+      adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+    }
     return adHocData;
   }
 }

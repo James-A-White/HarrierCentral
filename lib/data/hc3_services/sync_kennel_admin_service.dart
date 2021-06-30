@@ -104,17 +104,20 @@ class SyncKennelAdminService {
         'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
       });
 
-      final Response response = await post(BASE_API_URL + 'hc3_sync_kennel_admin_data', headers: <String, String>{'content-type': 'application/json'}, body: body
-              // Send authorization headers to your backend
-              //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-              )
-          .catchError(
-        (dynamic error) {
-          return Future<Response>.value(null);
-        },
-      );
+      final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_kennel_admin_data', body);
 
-      await updateSqlTablesWithResultsFromBackendApiCall(response.body, informUser: informUser);
+      // final Response response = await post(BASE_API_URL + 'hc3_sync_kennel_admin_data', headers: <String, String>{'content-type': 'application/json'}, body: body
+      //         // Send authorization headers to your backend
+      //         //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+      //         )
+      //     .catchError(
+      //   (dynamic error) {
+      //     return Future<Response>.value(null);
+      //   },
+      // );
+      if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+        await updateSqlTablesWithResultsFromBackendApiCall(responseBody, informUser: informUser);
+      }
     }
     return true;
   }

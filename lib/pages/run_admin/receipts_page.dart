@@ -135,7 +135,7 @@ class ReceiptsListState extends State<ReceiptsList> {
 
     setState(() {
       final ReceiptsService srv = ReceiptsService();
-      srv.uploadReceipt(context, item).then((String result) {
+      srv.uploadReceipt(item).then((String result) {
         G0<TableModel>()
             .baseService
             .bulkUpdateDatabase(
@@ -175,7 +175,7 @@ class ReceiptsListState extends State<ReceiptsList> {
 
     setState(() {
       final ReceiptsService srv = ReceiptsService();
-      srv.uploadReceipt(context, item).then((String result) {
+      srv.uploadReceipt(item).then((String result) {
         G0<TableModel>()
             .baseService
             .bulkUpdateDatabase(
