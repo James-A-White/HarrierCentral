@@ -35,7 +35,23 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
       final String userId = getStringPref(StringPrefsEnum.userId);
 
       final ApproveLoginService svc = ApproveLoginService();
-      final ApproveLoginModel loginResult = await svc.approveLogin(context);
+
+      final DateTime lastFbUpdate = getDatePref(DatePrefsEnum.lastFbTokenUpdate) ?? DateTime(2020);
+      final Duration fbTokenUpdateDelta = DateTime.now().difference(lastFbUpdate);
+      String facebookAccessToken;
+
+      if (fbTokenUpdateDelta.inDays > 30) {
+        final String facebookId = getStringPref(StringPrefsEnum.facebookId);
+
+        if (((facebookId != null) && (facebookId.isNotEmpty)) || ((facebookAccessToken != null) && (facebookAccessToken.isNotEmpty))) {
+          final AccessToken accessToken = await FacebookAuth.instance.login();
+          facebookAccessToken = accessToken.token;
+          await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
+          await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
+        }
+      }
+
+      final ApproveLoginModel loginResult = await svc.approveLogin(context, facebookAccessToken);
 
       if (loginResult != null) {
         await setStringPref(StringPrefsEnum.iosDownloadLink, loginResult.iosDownloadLink);

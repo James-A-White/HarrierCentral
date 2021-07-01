@@ -41,7 +41,10 @@ enum IntPrefsEnum {
   mapShowKennels
 }
 
-enum DatePrefsEnum { lastSuccessfulUserDataSyncAsDate }
+enum DatePrefsEnum {
+  lastSuccessfulUserDataSyncAsDate,
+  lastFbTokenUpdate,
+}
 
 enum EnumDataContext { user, event, kennel }
 

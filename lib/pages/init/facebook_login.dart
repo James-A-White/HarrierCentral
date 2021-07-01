@@ -80,10 +80,13 @@ class _LoginPageState extends State<FbLoginPage> {
     try {
       // by default the login method has the next permissions ['email','public_profile']
       final AccessToken accessToken = await FacebookAuth.instance.login();
-      print(accessToken.toJson());
+
       // get the user data
       final Map<String, dynamic> userData = await FacebookAuth.instance.getUserData(fields: 'name,picture.width(300),email,birthday,gender,link,first_name,last_name');
-      print(userData);
+
+      await setStringPref(StringPrefsEnum.facebookId, accessToken.userId);
+      await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
+      await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
 
       onLoginStatusChanged(true, profData: userData, accessToken: accessToken.token);
     } on FacebookAuthException catch (e) {

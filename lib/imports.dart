@@ -112,6 +112,7 @@ export 'package:harrier_central/util/styles.dart';
 export 'package:harrier_central/util/utilities.dart';
 export 'package:harrier_central/widgets/bubble_tab_indicator.dart';
 export 'package:harrier_central/widgets/confirm_auto_checkin_popup.dart';
+export 'package:harrier_central/widgets/email_popup.dart';
 export 'package:harrier_central/widgets/filter_cell.dart';
 export 'package:harrier_central/widgets/filter_event_list_item.dart';
 export 'package:harrier_central/widgets/kennel_list_item.dart';

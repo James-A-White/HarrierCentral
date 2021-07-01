@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/widgets/email_popup.dart';
 
 class UseInviteCodePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
@@ -65,6 +66,8 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
   bool isLoading = false;
 
   bool includeInGlobalHashDirectory = true;
+
+  String emailAddress = '';
 
   @override
   void initState() {
@@ -190,6 +193,32 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                       ],
                     ),
                     const SizedBox(height: 8, width: 10),
+                    TextButton(
+                        child: const Text('Email me a new invite code'),
+                        style: TextButton.styleFrom(backgroundColor: Colors.transparent, primary: Colors.red.shade800),
+                        onPressed: () async {
+                          final EmailPopup emailPopup = EmailPopup(
+                            initialEmailAddress: emailAddress,
+                          );
+
+                          final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
+                              context: context,
+                              barrierDismissible: false, // user must tap button!
+                              builder: (BuildContext context) {
+                                return emailPopup;
+                              });
+
+                          dlg.then((Map<String, String> x) async {
+                            final String email = x['email'];
+                            final String type = x['type'];
+
+                            if (type != 'cancel') {
+                              emailAddress = email;
+                              final String userMessage = await HashersService.sendInviteCodeByEmail(email);
+                              await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Instructions', userMessage, 'OK');
+                            }
+                          });
+                        }),
                   ],
                 ),
               ),

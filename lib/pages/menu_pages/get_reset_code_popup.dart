@@ -14,7 +14,7 @@ class _GetResetCodePopupState extends State<GetResetCodePopup> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Get Reset Code'),
+      title: const Text('Get Invite Code'),
       content: TextField(
         onChanged: (String x) {
           setState(() {});

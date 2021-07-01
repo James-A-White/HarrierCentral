@@ -26,7 +26,7 @@ class SupportPageState extends State<SupportPage> {
     super.initState();
     resetCodeTextController = TextEditingController();
     resetCodeDecoration = InputDecoration(
-      labelText: 'Reset Code',
+      labelText: 'Invite Code',
       fillColor: Colors.red,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(25.0),
@@ -45,7 +45,7 @@ class SupportPageState extends State<SupportPage> {
     return Center(
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
         Text(
-          'Applying Reset Code',
+          'Applying Invite Code',
           style: headingStyle,
           textAlign: TextAlign.center,
         ),
@@ -163,7 +163,7 @@ class SupportPageState extends State<SupportPage> {
                               bottomMargin: 30.0,
                             ),
                             Text(
-                              'Reset Code:',
+                              'Invite Code:',
                               style: headingStyle,
                               textAlign: TextAlign.center,
                             ),

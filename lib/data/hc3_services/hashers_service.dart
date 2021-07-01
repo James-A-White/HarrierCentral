@@ -240,7 +240,7 @@ class HashersService extends BaseService {
             showCancelButton: true);
 
         if (okButtonPressed) {
-          final String userMessage = await _sendInviteCodeByEmail(email);
+          final String userMessage = await sendInviteCodeByEmail(email);
           await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Check your email', userMessage, 'OK');
         }
       }
@@ -273,7 +273,7 @@ class HashersService extends BaseService {
     return responseBody;
   }
 
-  Future<String> _sendInviteCodeByEmail(String email) async {
+  static Future<String> sendInviteCodeByEmail(String email) async {
     final String body = jsonEncode(<String, String>{
       'email': email,
     });

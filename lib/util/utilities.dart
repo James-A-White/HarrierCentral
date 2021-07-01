@@ -18,17 +18,12 @@ class Utilities {
 
   static int logCounter = 0;
 
-  static Map<String, String> validateScan(
-      String scanText, int allowedScanTypes) {
+  static Map<String, String> validateScan(String scanText, int allowedScanTypes) {
     Map<String, String> result;
 
     final int colonOffset = scanText.indexOf(':');
     if (colonOffset != 3) {
-      result = <String, String>{
-        'validScan': false.toString(),
-        'prefix': '',
-        'content': ''
-      };
+      result = <String, String>{'validScan': false.toString(), 'prefix': '', 'content': ''};
     } else {
       final String prefix = scanText.substring(0, colonOffset + 1);
       final String content = scanText.substring(4);
@@ -65,12 +60,7 @@ class Utilities {
 
       final bool scanAllowed = (scanType & allowedScanTypes) != 0;
 
-      result = <String, String>{
-        'validScan': scanAllowed.toString(),
-        'prefix': prefix,
-        'content': content,
-        'validHcQr': validHcQr.toString()
-      };
+      result = <String, String>{'validScan': scanAllowed.toString(), 'prefix': prefix, 'content': content, 'validHcQr': validHcQr.toString()};
     }
 
     return result;
@@ -82,41 +72,27 @@ class Utilities {
 
     final Geolocator geolocator = Geolocator();
 
-    IveCoreUtilities.logTiming(
-        'Geostatus query start', G0<AppModel>().appStartTime);
-    final GeolocationStatus status = await Geolocator()
-        .checkGeolocationPermissionStatus(
-            locationPermission: GeolocationPermission.location);
+    IveCoreUtilities.logTiming('Geostatus query start', G0<AppModel>().appStartTime);
+    final GeolocationStatus status = await Geolocator().checkGeolocationPermissionStatus(locationPermission: GeolocationPermission.location);
 
-    IveCoreUtilities.logTiming(
-        'Geolocation query start', G0<AppModel>().appStartTime);
+    IveCoreUtilities.logTiming('Geolocation query start', G0<AppModel>().appStartTime);
     if (status == GeolocationStatus.granted) {
-      const LocationOptions locationOptions =
-          LocationOptions(accuracy: LocationAccuracy.high, distanceFilter: 50);
-      G0<AppModel>().geoLocationStream = geolocator
-          .getPositionStream(locationOptions)
-          .listen((Position position) {
+      const LocationOptions locationOptions = LocationOptions(accuracy: LocationAccuracy.high, distanceFilter: 50);
+      G0<AppModel>().geoLocationStream = geolocator.getPositionStream(locationOptions).listen((Position position) {
         if (position != null) {
           G0<DeviceInfo>().deviceLat = position.latitude;
           G0<DeviceInfo>().deviceLon = position.longitude;
         }
-        print('>>>>>>>>>>> geoloc update' +
-            (position == null
-                ? 'Unknown'
-                : position.latitude.toString() +
-                    ', ' +
-                    position.longitude.toString()));
+        print('>>>>>>>>>>> geoloc update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
       });
 
-      final Position position = await Geolocator()
-          .getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
+      final Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
       G0<DeviceInfo>().deviceLat = position.latitude;
       G0<DeviceInfo>().deviceLon = position.longitude;
     }
   }
 
-  static String getDistance(num meters, BuildContext context,
-      {bool isMetric = true}) {
+  static String getDistance(num meters, BuildContext context, {bool isMetric = true}) {
     if (!G0<AppModel>().hasLocationPermissions) {
       return '';
     }
