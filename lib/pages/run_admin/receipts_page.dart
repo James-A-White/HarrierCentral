@@ -135,18 +135,23 @@ class ReceiptsListState extends State<ReceiptsList> {
 
     setState(() {
       final ReceiptsService srv = ReceiptsService();
-      srv.uploadReceipt(item).then((String result) {
-        G0<TableModel>()
-            .baseService
-            .bulkUpdateDatabase(
-              G0<TableModel>().receiptsTableHelper,
-              G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
-              result,
-              G0<Database>(),
-            )
-            .then((int notUsed) {
-          refreshFromTable();
-        });
+      srv.uploadReceipt(item).then((String responseBody) {
+        if (!responseBody.startsWith(ERROR_PREFIX)) {
+          G0<TableModel>()
+              .baseService
+              .bulkUpdateDatabase(
+                G0<TableModel>().receiptsTableHelper,
+                G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
+                responseBody,
+                G0<Database>(),
+              )
+              .then((int notUsed) {
+            refreshFromTable();
+          });
+        } else {
+          IveCoreUtilities.showAlert(context, 'Error uploading receipt',
+              'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
+        }
       });
     });
   }
@@ -175,18 +180,23 @@ class ReceiptsListState extends State<ReceiptsList> {
 
     setState(() {
       final ReceiptsService srv = ReceiptsService();
-      srv.uploadReceipt(item).then((String result) {
-        G0<TableModel>()
-            .baseService
-            .bulkUpdateDatabase(
-              G0<TableModel>().receiptsTableHelper,
-              G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
-              result,
-              G0<Database>(),
-            )
-            .then((int notUsed) {
-          refreshFromTable();
-        });
+      srv.uploadReceipt(item).then((String responseBody) {
+        if (!responseBody.startsWith(ERROR_PREFIX)) {
+          G0<TableModel>()
+              .baseService
+              .bulkUpdateDatabase(
+                G0<TableModel>().receiptsTableHelper,
+                G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
+                responseBody,
+                G0<Database>(),
+              )
+              .then((int notUsed) {
+            refreshFromTable();
+          });
+        } else {
+          IveCoreUtilities.showAlert(context, 'Error uploading receipt',
+              'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
+        }
       });
     });
   }

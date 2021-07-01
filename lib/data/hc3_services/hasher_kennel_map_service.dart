@@ -239,12 +239,7 @@ class HasherKennelMapService {
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_join_kennel', body);
 
-    // final Response response = await post(BASE_API_URL + 'hc3_join_kennel', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
-    //   (dynamic error) {
-    //     return Future<Response>.value(null);
-    //   },
-    // );
-    if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
       if ((responseBody != null) && (responseBody.isNotEmpty)) {
         if (appDomainType == AppDomainType.event) {
           adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);

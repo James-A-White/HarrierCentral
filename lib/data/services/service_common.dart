@@ -12,7 +12,7 @@ class ServiceCommon {
       },
     );
 
-    String returnValue = '';
+    String returnValue = ERROR_UNKNOWN_HTTP_ERROR;
 
     if (response == null) {
       returnValue = ERROR_UNKNOWN_HTTP_ERROR;

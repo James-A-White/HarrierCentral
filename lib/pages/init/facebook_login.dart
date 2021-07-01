@@ -273,20 +273,28 @@ class _LoginPageState extends State<FbLoginPage> {
                     facebookAccessToken: facebookAccessToken,
                     includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
 
-                final dynamic result = json.decode(responseBody);
+                if (!responseBody.startsWith(ERROR_PREFIX)) {
+                  final dynamic result = json.decode(responseBody);
 
-                setStringPref(StringPrefsEnum.profilePhotoUrl, result[0]['photo']);
-                setStringPref(StringPrefsEnum.displayName, result[0]['displayName']);
-                setStringPref(StringPrefsEnum.email, result[0]['email']);
-                setStringPref(StringPrefsEnum.facebookId, result[0]['facebookId']);
-                setStringPref(StringPrefsEnum.firstName, result[0]['firstName']);
-                setStringPref(StringPrefsEnum.hashName, result[0]['hashName']);
-                setStringPref(StringPrefsEnum.lastName, result[0]['lastName']);
-                setStringPref(StringPrefsEnum.qrCode, result[0]['qrCode']);
-                setStringPref(StringPrefsEnum.supportCode, result[0]['supportCode']);
-                setStringPref(StringPrefsEnum.resetCode, result[0]['resetCode']);
-                setStringPref(StringPrefsEnum.qrSecretCode, result[0]['qrSecretCode']);
-                setStringPref(StringPrefsEnum.userId, result[0]['hasherId']);
+                  setStringPref(StringPrefsEnum.profilePhotoUrl, result[0]['photo']);
+                  setStringPref(StringPrefsEnum.displayName, result[0]['displayName']);
+                  setStringPref(StringPrefsEnum.email, result[0]['email']);
+                  setStringPref(StringPrefsEnum.facebookId, result[0]['facebookId']);
+                  setStringPref(StringPrefsEnum.firstName, result[0]['firstName']);
+                  setStringPref(StringPrefsEnum.hashName, result[0]['hashName']);
+                  setStringPref(StringPrefsEnum.lastName, result[0]['lastName']);
+                  setStringPref(StringPrefsEnum.qrCode, result[0]['qrCode']);
+                  setStringPref(StringPrefsEnum.supportCode, result[0]['supportCode']);
+                  setStringPref(StringPrefsEnum.resetCode, result[0]['resetCode']);
+                  setStringPref(StringPrefsEnum.qrSecretCode, result[0]['qrSecretCode']);
+                  setStringPref(StringPrefsEnum.userId, result[0]['hasherId']);
+                } else {
+                  IveCoreUtilities.showAlert(
+                      context,
+                      'Account not created',
+                      'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!',
+                      'OK');
+                }
 
                 Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
               }

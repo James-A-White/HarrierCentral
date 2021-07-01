@@ -329,32 +329,37 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             preferences: _distancePreference + _autoRunPreference,
             followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0);
 
-        apiCall.then((String jsonResponse) async {
-          final dynamic jsonResult = json.decode(jsonResponse);
-          final HashersModel h = HashersModel.fromJson(jsonResult[0][0]);
-          setState(() {
-            if (widget.pageType == EnumMyProfilePageType.myProfile) {
-              setStringPref(StringPrefsEnum.profilePhotoUrl, h.photo);
-              setStringPref(StringPrefsEnum.displayName, h.dispName);
-              // don't set the e-mail with the result from the
-              // api call. Use the local value in hasher.email instead
-              //setStringPref(StringPrefsEnum.email, hasher.email);
-              setStringPref(StringPrefsEnum.firstName, h.firstName);
-              setStringPref(StringPrefsEnum.hashName, h.hashName);
-              setStringPref(StringPrefsEnum.lastName, h.lastName);
-              setIntPref(IntPrefsEnum.hasherPreferences, h.preferences);
-            }
+        apiCall.then((String responseBody) async {
+          if (!responseBody.startsWith(ERROR_PREFIX)) {
+            final dynamic jsonResult = json.decode(responseBody);
+            final HashersModel h = HashersModel.fromJson(jsonResult[0][0]);
+            setState(() {
+              if (widget.pageType == EnumMyProfilePageType.myProfile) {
+                setStringPref(StringPrefsEnum.profilePhotoUrl, h.photo);
+                setStringPref(StringPrefsEnum.displayName, h.dispName);
+                // don't set the e-mail with the result from the
+                // api call. Use the local value in hasher.email instead
+                //setStringPref(StringPrefsEnum.email, hasher.email);
+                setStringPref(StringPrefsEnum.firstName, h.firstName);
+                setStringPref(StringPrefsEnum.hashName, h.hashName);
+                setStringPref(StringPrefsEnum.lastName, h.lastName);
+                setIntPref(IntPrefsEnum.hasherPreferences, h.preferences);
+              }
 
-            refreshUserDataFromTable(true);
-            _isLoading = false;
-            checkDirty();
+              refreshUserDataFromTable(true);
+              _isLoading = false;
+              checkDirty();
 
-            if (widget.pageType != EnumMyProfilePageType.myProfile) {
-              Navigator.of(context).pop(h);
-            } else {
-              IveCoreUtilities.showAlert(context, 'Profile Updated', 'Your profile was updated successfully.', 'OK');
-            }
-          });
+              if (widget.pageType != EnumMyProfilePageType.myProfile) {
+                Navigator.of(context).pop(h);
+              } else {
+                IveCoreUtilities.showAlert(context, 'Profile Updated', 'Your profile was updated successfully.', 'OK');
+              }
+            });
+          } else {
+            IveCoreUtilities.showAlert(
+                context, 'Profile Not Updated', 'There was a problem updating your profile. Please ensure you are connected to the Internet and try again later.', 'OK');
+          }
         });
       });
     } else {

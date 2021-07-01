@@ -241,15 +241,9 @@ class HasherEventMapService {
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_join_event', body);
 
-    // final Response response = await post(BASE_API_URL + 'hc3_join_event', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
-    //   (dynamic error) {
-    //     return Future<Response>.value(null);
-    //   },
-    // );
-
     List<dynamic> adHocData = <dynamic>[];
 
-    if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (appDomainType == AppDomainType.event) {
         adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
       } else if (appDomainType == AppDomainType.user) {
@@ -312,15 +306,9 @@ class HasherEventMapService {
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_join_event_as_visitor', body);
 
-    // final Response response = await post(BASE_API_URL + 'hc3_join_event_as_visitor', headers: <String, String>{'content-type': 'application/json'}, body: body).catchError(
-    //   (dynamic error) {
-    //     return Future<Response>.value(null);
-    //   },
-    // );
-
     List<dynamic> adHocData = <dynamic>[];
 
-    if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
       adHocData = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
     }
     return adHocData;

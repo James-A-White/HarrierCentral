@@ -38,11 +38,7 @@ class AuthorizeDeviceService {
     try {
       final String responseBody = await ServiceCommon.sendHttpPost('hc3_authorize_device', body);
 
-      // if ((responseBody == ERROR_KEY_OK_BTN_PRESSED) || (responseBody == ERROR_KEY_CANCEL_BTN_PRESSED)) {
-      //   return <String, String>{'result': 'failed', 'message': 'Error calling authorize device'};
-      // } else
-
-      if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+      if (!responseBody.startsWith(ERROR_PREFIX)) {
         final List<dynamic> result = json.decode(responseBody);
 
         if ((result == null) || (result.isEmpty) || (result[0].isEmpty)) {

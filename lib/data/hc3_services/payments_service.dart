@@ -249,17 +249,7 @@ class PaymentsService {
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_process_payment', body);
 
-    // final Response response = await post(BASE_API_URL + 'hc3_process_payment', headers: <String, String>{'content-type': 'application/json'}, body: body
-    //         // Send authorization headers to your backend
-    //         //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-    //         )
-    //     .catchError(
-    //   (dynamic error) {
-    //     return null;
-    //   },
-    // );
-
-    if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (appDomainType == AppDomainType.event) {
         results = await G0<TableModel>().syncEventAdminService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
       } else {

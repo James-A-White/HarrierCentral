@@ -406,17 +406,20 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
       // final Future<dynamic> apiCall =
       //     srv.addEditUser(targetUserId: userId, firstName: '', lastName: '', email: '', hashName: '', photo: profileImageUrl, eventId: GUID_EMPTY, kennelId: GUID_EMPTY, historicalPackRunCount: '', historicalHaringCount: '', historicalCountIsEstimate: false, followKennelOnAddNewUser: 0);
 
-      final Future<dynamic> apiCall = srv.changeProfilePicture(targetUserId: userId, photo: profileImageUrl);
+      final String responseBody = await srv.changeProfilePicture(targetUserId: userId, photo: profileImageUrl);
 
-      apiCall.then((void dummy) async {
-        setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
+      if (!responseBody.startsWith(ERROR_PREFIX)) {
+        await setStringPref(StringPrefsEnum.profilePhotoUrl, profileImageUrl);
+      } else {
+        await IveCoreUtilities.showAlert(context, 'Profile photo not updated.',
+            'There was a problem updating your profile picture. Please ensure you have a good network connection and try again.\r\n\r\nSorry for the inconvenience!', 'OK');
+      }
 
-        Navigator.pushReplacement<dynamic, dynamic>(
-            context,
-            MaterialPageRoute<dynamic>(
-              builder: (BuildContext context) => const MainNavigationPage(),
-            ));
-      });
+      Navigator.pushReplacement<dynamic, dynamic>(
+          context,
+          MaterialPageRoute<dynamic>(
+            builder: (BuildContext context) => const MainNavigationPage(),
+          ));
     }
   }
 

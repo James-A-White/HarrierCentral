@@ -229,9 +229,12 @@ class HashersService extends BaseService {
       'followKennelOnAddNewUser': followKennelOnAddNewUser == null ? null : followKennelOnAddNewUser.toString()
     });
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_user', body, errorCallback: (DbErrorModel dbError) async {
+    bool dbErrorIsDuplicateEmail = false;
+
+    String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_user', body, errorCallback: (DbErrorModel dbError) async {
       bool okButtonPressed = false;
       if (dbError.errorType == DB_ERROR_EMAIL_ALREADY_EXISTS) {
+        dbErrorIsDuplicateEmail = true;
         okButtonPressed = await IveCoreUtilities.showAlert(navigatorKey.currentContext, dbError.errorTitle,
             'This email address already exists in our server. Would you like an invite code sent to your email that you can use to install the app?', 'Send code',
             showCancelButton: true);
@@ -244,17 +247,11 @@ class HashersService extends BaseService {
       return okButtonPressed;
     });
 
-    // final Response response = await post(BASE_API_URL + 'hc3_add_edit_user', headers: <String, String>{'content-type': 'application/json'}, body: body
-    //         // Send authorization headers to your backend
-    //         //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-    //         )
-    //     .catchError(
-    //   (dynamic error) {
-    //     return Future<Response>.value(null);
-    //   },
-    // );
+    if (dbErrorIsDuplicateEmail && (responseBody == ERROR_HANDLED)) {
+      responseBody = ERROR_INVITE_CODE_SENT;
+    }
 
-    if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (!newUserForThisDevice) {
         if (((eventId == null) || (eventId == GUID_EMPTY)) && ((kennelId == null) || (kennelId == GUID_EMPTY))) {
           // we don't have either an eventId or a kennelId so all we need to do is update
@@ -342,16 +339,6 @@ class HashersService extends BaseService {
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_user', body);
 
-    // final Response response = await post(BASE_API_URL + 'hc3_add_edit_user', headers: <String, String>{'content-type': 'application/json'}, body: body
-    //         // Send authorization headers to your backend
-    //         //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-    //         )
-    //     .catchError(
-    //   (dynamic error) {
-    //     return Future<Response>.value(null);
-    //   },
-    // );
-
     return responseBody;
   }
 
@@ -413,7 +400,7 @@ class HashersService extends BaseService {
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_process_facebook_login', body);
 
-    if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (!newUserForThisDevice) {
         await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
       }

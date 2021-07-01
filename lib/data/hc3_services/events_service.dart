@@ -286,17 +286,7 @@ class EventsService extends BaseService {
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_add_edit_event', body);
 
-    // final Response response = await post(BASE_API_URL + 'hc3_add_edit_event', headers: <String, String>{'content-type': 'application/json'}, body: body
-    //         // Send authorization headers to your backend
-    //         //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-    //         )
-    //     .catchError(
-    //   (dynamic error) {
-    //     return Future<Response>.value(null);
-    //   },
-    // );
-
-    if ((responseBody != null) && (responseBody.isNotEmpty) && (!responseBody.startsWith(ERROR_PREFIX))) {
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
       await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
     }
 
