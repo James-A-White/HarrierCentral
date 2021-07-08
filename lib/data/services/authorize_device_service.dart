@@ -46,18 +46,20 @@ class AuthorizeDeviceService {
         } else {
           // Do not clear prefs, because then we clear the prefs that were set by authorize login upon app launch
           //await clearAllPrefs();
-          setStringPref(StringPrefsEnum.profilePhotoUrl, result[0]['photo']);
-          setStringPref(StringPrefsEnum.displayName, result[0]['displayName']);
-          setStringPref(StringPrefsEnum.email, result[0]['email']);
-          setStringPref(StringPrefsEnum.facebookId, result[0]['facebookId']);
-          setStringPref(StringPrefsEnum.firstName, result[0]['firstName']);
-          setStringPref(StringPrefsEnum.hashName, result[0]['hashName']);
-          setStringPref(StringPrefsEnum.lastName, result[0]['lastName']);
-          setStringPref(StringPrefsEnum.qrCode, result[0]['qrCode']);
-          setStringPref(StringPrefsEnum.supportCode, result[0]['supportCode']);
-          setStringPref(StringPrefsEnum.resetCode, result[0]['resetCode']);
-          setStringPref(StringPrefsEnum.qrSecretCode, result[0]['qrSecretCode']);
-          setStringPref(StringPrefsEnum.userId, result[0]['hasherId']);
+          await setStringPref(StringPrefsEnum.profilePhotoUrl, result[0]['photo']);
+          await setStringPref(StringPrefsEnum.displayName, result[0]['displayName']);
+          await setStringPref(StringPrefsEnum.email, result[0]['email']);
+          await setStringPref(StringPrefsEnum.facebookId, result[0]['facebookId']);
+          await setStringPref(StringPrefsEnum.firstName, result[0]['firstName']);
+          await setStringPref(StringPrefsEnum.hashName, result[0]['hashName']);
+          await setStringPref(StringPrefsEnum.lastName, result[0]['lastName']);
+          await setStringPref(StringPrefsEnum.qrCode, result[0]['qrCode']);
+          await setStringPref(StringPrefsEnum.supportCode, result[0]['supportCode']);
+          await setStringPref(StringPrefsEnum.resetCode, result[0]['resetCode']);
+          await setStringPref(StringPrefsEnum.qrSecretCode, result[0]['qrSecretCode']);
+          await setStringPref(StringPrefsEnum.userId, result[0]['hasherId']);
+          final int preferences = result[0]['preferences'] ?? 0;
+          await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
 
           resultMap = <String, String>{'result': 'success', 'message': 'Successfully loaded profile'};
         }

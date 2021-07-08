@@ -1,12 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
 class KennelsListItem extends StatefulWidget {
-  const KennelsListItem(
-      {Key key,
-      @required this.kennelItem,
-      @required this.kennelSelected,
-      @required this.kennelFollowingUpdated})
-      : super(key: key);
+  const KennelsListItem({Key key, @required this.kennelItem, @required this.kennelSelected, @required this.kennelFollowingUpdated}) : super(key: key);
 
   final KennelListAggregate kennelItem;
   final Function kennelSelected;
@@ -58,18 +53,14 @@ class KennelListItemState extends State<KennelsListItem> {
                     icon: Connection.styleForConnected(
                         G0<AppModel>().connectionStatus,
                         Icon(
-                            widget.kennelItem.extensions.followingRequested !=
-                                    -1
+                            widget.kennelItem.extensions.followingRequested != -1
                                 ? delayIcon
                                 : widget.kennelItem.hkm.following == 1
                                     ? const Icon(FontAwesome.check_circle).icon
                                     : widget.kennelItem.hkm.following == 2
-                                        ? const Icon(FontAwesome.times_circle)
-                                            .icon
+                                        ? const Icon(FontAwesome.times_circle).icon
                                         : const Icon(FontAwesome.star).icon,
-                            color: widget.kennelItem.extensions
-                                        .followingRequested !=
-                                    -1
+                            color: widget.kennelItem.extensions.followingRequested != -1
                                 ? Colors.blue
                                 : widget.kennelItem.hkm.following == 1
                                     ? Colors.green
@@ -81,32 +72,19 @@ class KennelListItemState extends State<KennelsListItem> {
                     alignment: Alignment.topCenter,
                     splashColor: Colors.greenAccent,
                     onPressed: () {
-                      if (Connection.checkForConnection(
-                          context, G0<AppModel>().connectionStatus,
-                          message:
-                              'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
-                        final HasherKennelMapService srv =
-                            HasherKennelMapService();
-                        int followingRequested =
-                            widget.kennelItem.hkm.following + 1;
+                      if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
+                          message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
+                        final HasherKennelMapService srv = HasherKennelMapService();
+                        int followingRequested = widget.kennelItem.hkm.following + 1;
                         if (followingRequested > 2) {
                           followingRequested = 0;
                         }
-                        widget.kennelItem.extensions.followingRequested =
-                            followingRequested;
+                        widget.kennelItem.extensions.followingRequested = followingRequested;
                         setState(() {});
-                        srv
-                            .updateHasherKennelStatus(
-                                widget.kennelItem.kennel.kennelId,
-                                AppDomainType.user,
-                                followingState: followingRequested)
-                            .then((List<dynamic> queryResults) {
+                        srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, AppDomainType.user, followingState: followingRequested).then((List<dynamic> queryResults) {
                           setState(() {
-                            widget.kennelFollowingUpdated(
-                                queryResults[0]['following'],
-                                queryResults[0]['kennelNotificationPreference'],
-                                queryResults[0]['kennelEmailAlertPreference'],
-                                queryResults[0]['isHomeKennel']);
+                            widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],
+                                queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
                           });
                         });
                       }
@@ -118,11 +96,9 @@ class KennelListItemState extends State<KennelsListItem> {
               widget.kennelItem.extensions.isHomeKennel == 0
                   ? Container()
                   : Container(
-                      child:
-                          widget.kennelItem.extensions.followingRequested != -1
-                              ? Icon(delayIcon, size: 35, color: Colors.blue)
-                              : Icon(FontAwesome.home,
-                                  size: 35, color: Colors.red[900]),
+                      child: widget.kennelItem.extensions.followingRequested != -1
+                          ? Icon(delayIcon, size: 35, color: Colors.blue)
+                          : Icon(FontAwesome.home, size: 35, color: Colors.red[900]),
                       alignment: Alignment.topLeft,
                       padding: const EdgeInsets.only(right: 5.0, bottom: 2.0),
                     ),
@@ -145,16 +121,11 @@ class KennelListItemState extends State<KennelsListItem> {
                   },
                   child: Container(
                     width: MediaQuery.of(context).size.width - 70,
-                    padding: const EdgeInsets.only(
-                        left: 5.0, bottom: 2.0, right: 5.0),
+                    padding: const EdgeInsets.only(left: 5.0, bottom: 2.0, right: 5.0),
                     child: AutoSizeText(
                       '${widget.kennelItem.kennel.kennelName}',
                       //'An extremely long kennel name for testing purposes',
-                      style: const TextStyle(
-                          fontFamily: 'AvenirNextCondensedDemiBold',
-                          fontStyle: FontStyle.normal,
-                          fontSize: 22.0,
-                          height: 1.0),
+                      style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 1.0),
                       textAlign: TextAlign.left,
                       maxLines: 1,
                       minFontSize: 18,
@@ -175,13 +146,9 @@ class KennelListItemState extends State<KennelsListItem> {
                           width: 24.0,
                           height: 24.0,
                           fit: BoxFit.fill,
-                          image: widget.kennelItem.hkm
-                                      .kennelEmailAlertPreference ==
-                                  1
-                              ? const AssetImage(
-                                  'images/icons/envelope_gold_50px.png')
-                              : const AssetImage(
-                                  'images/icons/envelope_silver_strike_out_50px.png'),
+                          image: widget.kennelItem.hkm.kennelEmailAlertPreference == 1
+                              ? const AssetImage('images/icons/envelope_gold_50px.png')
+                              : const AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
                         ),
                 ),
               ),
@@ -191,21 +158,16 @@ class KennelListItemState extends State<KennelsListItem> {
                   onTap: () {
                     showNotificationPopup(context);
                   },
-                  child:
-                      widget.kennelItem.extensions.notificationsRequested != -1
-                          ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
-                          : Image(
-                              width: 24.0,
-                              height: 24.0,
-                              fit: BoxFit.fill,
-                              image: widget.kennelItem.hkm
-                                          .kennelNotificationPreference ==
-                                      1
-                                  ? const AssetImage(
-                                      'images/icons/bell_gold_50px.png')
-                                  : const AssetImage(
-                                      'images/icons/bell_silver_strike_out_50px.png'),
-                            ),
+                  child: widget.kennelItem.extensions.notificationsRequested != -1
+                      ? Icon(delayIcon, color: Colors.blue[800], size: 24.0)
+                      : Image(
+                          width: 24.0,
+                          height: 24.0,
+                          fit: BoxFit.fill,
+                          image: widget.kennelItem.hkm.kennelNotificationPreference == 1
+                              ? const AssetImage('images/icons/bell_gold_50px.png')
+                              : const AssetImage('images/icons/bell_silver_strike_out_50px.png'),
+                        ),
                 ),
               ),
             ],
@@ -255,20 +217,12 @@ class KennelListItemState extends State<KennelsListItem> {
                           Container(width: 10.0, height: 10.0),
                           Text(
                             '${widget.kennelItem.extensions.location}',
-                            style: const TextStyle(
-                                fontFamily: 'AvenirNextRegular',
-                                fontStyle: FontStyle.normal,
-                                fontSize: 16.0,
-                                height: 1.0),
+                            style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                           ),
                           G0<AppModel>().hasLocationPermissions
                               ? Text(
                                   '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel, context, isMetric: widget.kennelItem.extensions.distancePreference == 0)} from here',
-                                  style: const TextStyle(
-                                      fontFamily: 'AvenirNextRegular',
-                                      fontStyle: FontStyle.normal,
-                                      fontSize: 16.0,
-                                      height: 1.0),
+                                  style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                                 )
                               : Container(),
                         ],
@@ -276,49 +230,32 @@ class KennelListItemState extends State<KennelsListItem> {
                     ),
                   ),
                   IconButton(
-                    icon: Connection.styleForConnected(
-                        G0<AppModel>().connectionStatus,
-                        const Icon(MaterialCommunityIcons.dots_vertical)),
+                    icon: Connection.styleForConnected(G0<AppModel>().connectionStatus, const Icon(MaterialCommunityIcons.dots_vertical)),
                     iconSize: Theme.of(context).iconTheme.size,
                     color: Colors.black54,
                     splashColor: Theme.of(context).highlightColor,
                     onPressed: () {
-                      if (Connection.checkForConnection(
-                          context, G0<AppModel>().connectionStatus,
-                          message:
-                              'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
-                        final List<Map<String, dynamic>> buttons =
-                            <Map<String, dynamic>>[
+                      if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
+                          message: 'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.')) {
+                        final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
                           <String, dynamic>{
                             'title': 'Always show runs',
                             'icon': <Widget>[
-                              Container(
-                                  height: 30,
-                                  width: 30,
-                                  decoration: const BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle)),
-                              const Icon(FontAwesome.check_circle,
-                                  color: Colors.green)
+                              Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                              const Icon(FontAwesome.check_circle, color: Colors.green)
                             ],
                             'returnValue': followTypeFollow
                           },
                           <String, dynamic>{
                             'title': 'Never show runs',
                             'icon': <Widget>[
-                              Container(
-                                  height: 30,
-                                  width: 30,
-                                  decoration: const BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle)),
-                              const Icon(FontAwesome.times_circle,
-                                  color: Colors.red)
+                              Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                              const Icon(FontAwesome.times_circle, color: Colors.red)
                             ],
                             'returnValue': followTypeIgnore
                           },
                           <String, dynamic>{
-                            'title': 'Show when nearby',
+                            'title': 'Show runs within ' + getDistanceString(),
                             'icon': <Widget>[
                               const Icon(
                                 FontAwesome.star,
@@ -331,28 +268,16 @@ class KennelListItemState extends State<KennelsListItem> {
                               ? <String, dynamic>{
                                   'title': 'Set home kennel',
                                   'icon': <Widget>[
-                                    Container(
-                                        height: 30,
-                                        width: 30,
-                                        decoration: const BoxDecoration(
-                                            color: Colors.green,
-                                            shape: BoxShape.circle)),
-                                    const Icon(FontAwesome.home,
-                                        color: Colors.white, size: 23)
+                                    Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
+                                    const Icon(FontAwesome.home, color: Colors.white, size: 23)
                                   ],
                                   'returnValue': followTypeToggleHomeKennel
                                 }
                               : <String, dynamic>{
                                   'title': 'Clear home kennel',
                                   'icon': <Widget>[
-                                    Container(
-                                        height: 30,
-                                        width: 30,
-                                        decoration: const BoxDecoration(
-                                            color: Colors.red,
-                                            shape: BoxShape.circle)),
-                                    const Icon(FontAwesome.home,
-                                        color: Colors.white, size: 23)
+                                    Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
+                                    const Icon(FontAwesome.home, color: Colors.white, size: 23)
                                   ],
                                   'returnValue': followTypeToggleHomeKennel
                                 },
@@ -360,8 +285,7 @@ class KennelListItemState extends State<KennelsListItem> {
 
                         final MultipleChoicePopup popup = MultipleChoicePopup(
                           key: UniqueKey(),
-                          title:
-                              'Follow ${widget.kennelItem.kennel.kennelName}',
+                          title: 'Follow ${widget.kennelItem.kennel.kennelName}',
                           buttons: buttons,
                           cancelButtonTitle: 'Cancel',
                           cancelButtonReturnValue: followTypeCancel,
@@ -374,34 +298,20 @@ class KennelListItemState extends State<KennelsListItem> {
                               return popup;
                             }).then((dynamic retVal) {
                           if (retVal.value != -1) {
-                            final HasherKennelMapService srv =
-                                HasherKennelMapService();
-                            widget.kennelItem.extensions.followingRequested =
-                                retVal.value;
+                            final HasherKennelMapService srv = HasherKennelMapService();
+                            widget.kennelItem.extensions.followingRequested = retVal.value;
                             setState(() {});
                             int isHomeKennel = -1;
                             if (retVal == followTypeToggleHomeKennel) {
-                              isHomeKennel =
-                                  widget.kennelItem.extensions.isHomeKennel == 0
-                                      ? 1
-                                      : 0;
+                              isHomeKennel = widget.kennelItem.extensions.isHomeKennel == 0 ? 1 : 0;
                             }
 
                             srv
-                                .updateHasherKennelStatus(
-                                    widget.kennelItem.kennel.kennelId,
-                                    AppDomainType.user,
-                                    followingState: retVal.value,
-                                    isHomeKennel: isHomeKennel)
+                                .updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, AppDomainType.user, followingState: retVal.value, isHomeKennel: isHomeKennel)
                                 .then((List<dynamic> queryResults) {
                               setState(() {
-                                widget.kennelFollowingUpdated(
-                                    queryResults[0]['following'],
-                                    queryResults[0]
-                                        ['kennelNotificationPreference'],
-                                    queryResults[0]
-                                        ['kennelEmailAlertPreference'],
-                                    queryResults[0]['isHomeKennel']);
+                                widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],
+                                    queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
                               });
                             });
                           }
@@ -421,11 +331,7 @@ class KennelListItemState extends State<KennelsListItem> {
       <String, dynamic>{
         'title': 'Notifications On',
         'icon': <Widget>[
-          Container(
-              height: 30,
-              width: 30,
-              decoration: const BoxDecoration(
-                  color: Colors.white, shape: BoxShape.circle)),
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
             left: 3,
             top: 1.5,
@@ -442,11 +348,7 @@ class KennelListItemState extends State<KennelsListItem> {
       <String, dynamic>{
         'title': 'Notifications Off',
         'icon': <Widget>[
-          Container(
-              height: 30,
-              width: 30,
-              decoration: const BoxDecoration(
-                  color: Colors.white, shape: BoxShape.circle)),
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
             left: 3,
             top: 1.5,
@@ -483,29 +385,18 @@ class KennelListItemState extends State<KennelsListItem> {
         }).then((dynamic retVal) {
       if ((retVal == notificationsOn) || (retVal == notificationsOff)) {
         {
-          if (Connection.checkForConnection(
-              context, G0<AppModel>().connectionStatus,
-              message:
-                  'Setting Kennel notifications is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
+          if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
+              message: 'Setting Kennel notifications is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
             final HasherKennelMapService srv = HasherKennelMapService();
             final int notificationStatus = retVal.value;
-            widget.kennelItem.extensions.notificationsRequested =
-                notificationStatus;
+            widget.kennelItem.extensions.notificationsRequested = notificationStatus;
             setState(() {});
-            srv
-                .updateHasherKennelStatus(
-                    widget.kennelItem.kennel.kennelId, AppDomainType.user,
-                    notificationState: notificationStatus)
-                .then((List<dynamic> queryResults) {
+            srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, AppDomainType.user, notificationState: notificationStatus).then((List<dynamic> queryResults) {
               setState(() {
                 widget.kennelFollowingUpdated(
-                    queryResults[0]['following'],
-                    queryResults[0]['kennelNotificationPreference'],
-                    queryResults[0]['kennelEmailAlertPreference'],
-                    queryResults[0]['isHomeKennel']);
+                    queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
                 final NotificationSupport notifications = NotificationSupport();
-                notifications.setNotificationState(
-                    kennelId: widget.kennelItem.kennel.kennelId);
+                notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
               });
             });
           }
@@ -514,16 +405,57 @@ class KennelListItemState extends State<KennelsListItem> {
     });
   }
 
+  String getDistanceString() {
+    final int preferences = getIntPref(IntPrefsEnum.hasherPreferences);
+    final int distMeasuredIn = preferences & hasherPref_distanceMeasuredIn;
+    final int distPref = (preferences & hasherPref_distanceForAutoDisplay) ~/ 4;
+
+    String unitsOfMeasure = 'mi';
+
+    if (distMeasuredIn == 2) {
+      unitsOfMeasure = 'km';
+    } else if (distPref == 3) {
+      unitsOfMeasure = 'mi';
+    }
+
+    String distance = '50';
+
+    switch (distPref) {
+      case 0:
+        distance = '0';
+        break;
+      case 1:
+        distance = '10';
+        break;
+      case 2:
+        distance = '25';
+        break;
+      case 3:
+        distance = '50';
+        break;
+      case 4:
+        distance = '75';
+        break;
+      case 5:
+        distance = '100';
+        break;
+      case 6:
+        distance = '150';
+        break;
+      case 7:
+        distance = '200';
+        break;
+    }
+
+    return distance + ' ' + unitsOfMeasure;
+  }
+
   void showEmailPopup(BuildContext context) {
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
         'title': 'Turn email alerts on',
         'icon': <Widget>[
-          Container(
-              height: 30,
-              width: 30,
-              decoration: const BoxDecoration(
-                  color: Colors.white, shape: BoxShape.circle)),
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
             left: 3,
             top: 1.5,
@@ -540,11 +472,7 @@ class KennelListItemState extends State<KennelsListItem> {
       <String, dynamic>{
         'title': 'Turn email alerts off',
         'icon': <Widget>[
-          Container(
-              height: 30,
-              width: 30,
-              decoration: const BoxDecoration(
-                  color: Colors.white, shape: BoxShape.circle)),
+          Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
           const Positioned(
             left: 3,
             top: 1.5,
@@ -552,8 +480,7 @@ class KennelListItemState extends State<KennelsListItem> {
               width: 25.0,
               height: 25.0,
               fit: BoxFit.fill,
-              image: AssetImage(
-                  'images/icons/envelope_silver_strike_out_50px.png'),
+              image: AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
             ),
           )
         ],
@@ -581,25 +508,16 @@ class KennelListItemState extends State<KennelsListItem> {
           return popup;
         }).then((dynamic retVal) {
       if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff)) {
-        if (Connection.checkForConnection(
-            context, G0<AppModel>().connectionStatus,
-            message:
-                'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
+        if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
+            message: 'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
           final HasherKennelMapService srv = HasherKennelMapService();
           final int emailAlertStatus = retVal.value;
           widget.kennelItem.extensions.emailAlertRequested = emailAlertStatus;
           setState(() {});
-          srv
-              .updateHasherKennelStatus(
-                  widget.kennelItem.kennel.kennelId, AppDomainType.user,
-                  emailAlertState: emailAlertStatus)
-              .then((List<dynamic> queryResults) {
+          srv.updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, AppDomainType.user, emailAlertState: emailAlertStatus).then((List<dynamic> queryResults) {
             setState(() {
               widget.kennelFollowingUpdated(
-                  queryResults[0]['following'],
-                  queryResults[0]['kennelNotificationPreference'],
-                  queryResults[0]['kennelEmailAlertPreference'],
-                  queryResults[0]['isHomeKennel']);
+                  queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'], queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
               // final NotificationSupport notifications = NotificationSupport();
               // notifications.setNotificationState(kennelId: widget.kennelItem.kennel.kennelId);
             });

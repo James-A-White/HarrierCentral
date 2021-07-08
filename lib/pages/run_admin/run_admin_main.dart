@@ -286,12 +286,17 @@ class RunDetailPageState extends State<RunDetailPage> {
           child: Container(
             width: 110,
             height: 110,
+            foregroundDecoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              backgroundBlendMode: BlendMode.saturation,
+            ),
             child: ElevatedButton(
               // shape: RoundedRectangleBorder(
               //     borderRadius: BorderRadius.circular(10.0)),
               // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                primary: Colors.grey,
               ),
               child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
                 Padding(
@@ -308,14 +313,14 @@ class RunDetailPageState extends State<RunDetailPage> {
                 ),
               ]),
               onPressed: () {
-                Navigator.push<dynamic>(
-                  context,
-                  MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) => PaymentReportPage(
-                      eventAggregate: eventAggregate,
-                    ),
-                  ),
-                );
+                // Navigator.push<dynamic>(
+                //   context,
+                //   MaterialPageRoute<dynamic>(
+                //     builder: (BuildContext context) => PaymentReportPage(
+                //       eventAggregate: eventAggregate,
+                //     ),
+                //   ),
+                // );
               },
             ),
           ),
@@ -325,12 +330,17 @@ class RunDetailPageState extends State<RunDetailPage> {
           child: Container(
             width: 110,
             height: 110,
+            foregroundDecoration: BoxDecoration(
+              color: Colors.grey,
+              backgroundBlendMode: BlendMode.saturation,
+            ),
             child: ElevatedButton(
               // shape: RoundedRectangleBorder(
               //     borderRadius: BorderRadius.circular(10.0)),
               // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                primary: Colors.grey,
               ),
               child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
                 Padding(
@@ -347,14 +357,14 @@ class RunDetailPageState extends State<RunDetailPage> {
                 ),
               ]),
               onPressed: () {
-                Navigator.push<dynamic>(
-                  context,
-                  MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) => ReceiptsList(
-                      eventAggregate: eventAggregate,
-                    ),
-                  ),
-                );
+                // Navigator.push<dynamic>(
+                //   context,
+                //   MaterialPageRoute<dynamic>(
+                //     builder: (BuildContext context) => ReceiptsList(
+                //       eventAggregate: eventAggregate,
+                //     ),
+                //   ),
+                // );
               },
             ),
           ),
@@ -370,12 +380,17 @@ class RunDetailPageState extends State<RunDetailPage> {
           child: Container(
             width: 110,
             height: 110,
+            // foregroundDecoration: BoxDecoration(
+            //   color: Colors.grey,
+            //   backgroundBlendMode: BlendMode.saturation,
+            // ),
             child: ElevatedButton(
               // shape: RoundedRectangleBorder(
               //     borderRadius: BorderRadius.circular(10.0)),
               // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                //primary: Colors.grey,
               ),
               child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
                 Padding(

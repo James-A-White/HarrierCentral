@@ -486,11 +486,11 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                   case EnumMemberPopupActions.addSixMonths:
                                     modifyMembership(snapshot.data[index], 6);
                                     break;
-                                  case EnumMemberPopupActions.subtractOneMonth:
-                                    modifyMembership(snapshot.data[index], -1);
+                                  case EnumMemberPopupActions.addOneYear:
+                                    modifyMembership(snapshot.data[index], 12);
                                     break;
-                                  case EnumMemberPopupActions.subtractSixMonths:
-                                    modifyMembership(snapshot.data[index], -6);
+                                  case EnumMemberPopupActions.permanentMembership:
+                                    modifyMembership(snapshot.data[index], 9999);
                                     break;
                                   case EnumMemberPopupActions.cancelMembership:
                                     modifyMembership(snapshot.data[index], -9999);

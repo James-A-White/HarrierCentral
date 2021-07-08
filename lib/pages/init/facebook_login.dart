@@ -292,6 +292,8 @@ class _LoginPageState extends State<FbLoginPage> {
                     setStringPref(StringPrefsEnum.resetCode, result[0]['resetCode']);
                     setStringPref(StringPrefsEnum.qrSecretCode, result[0]['qrSecretCode']);
                     setStringPref(StringPrefsEnum.userId, result[0]['hasherId']);
+                    final int preferences = int.tryParse(result[0]['preferences']) ?? 0;
+                    await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
                   } else {
                     IveCoreUtilities.showAlert(
                         context,
