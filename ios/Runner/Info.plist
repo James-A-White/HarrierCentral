@@ -67,10 +67,10 @@
 	<key>NSContactsUsageDescription</key>
 	<string>This app does not currently access your contacts. Please contact us at connect@harriercentral.com if you see this message.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>This app needs access to location when open to help you find the closest Hash runs and help you navigate to run starts.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>This app needs access to location when in the background to track your location in case you get lost while running on a Hash trail.</string>
+	<string>This app needs access to location to help you find the closest Hash runs and help you navigate to run starts.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs access to location to help you find the closest Hash runs and help you navigate to run starts.</string>
+	<key>NSLocationUsageDescription</key>
 	<string>This app needs access to location to help you find the closest Hash runs and help you navigate to run starts.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>This app does not currently use motion detection. Please contact us at connect@harriercentral.com if you see this message.</string>
@@ -80,7 +80,7 @@
 	<string>This app does not currently use speech recognition. Please contact us at connect@harriercentral.com if you see this message.</string>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>fetch</string>
+		<string>location</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>

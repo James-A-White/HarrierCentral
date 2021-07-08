@@ -22,23 +22,25 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
           child: Scaffold(
-            appBar: AppBar(
-              centerTitle: true,
-              backgroundColor: themeAppBarBackground,
-              title: const Text(
-                'Use Invite Code',
-                style: TextStyle(
-                  color: Colors.white,
+              appBar: AppBar(
+                centerTitle: true,
+                backgroundColor: themeAppBarBackground,
+                title: const Text(
+                  'Use Invite Code',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
                 ),
               ),
-            ),
-            body: Container(
-              decoration: Backgrounds.defaultHcBackground(),
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
-              child: const UseInviteCodePageContent(),
-            ),
-          ),
+              body: SingleChildScrollView(
+                child: Container(
+                  decoration: Backgrounds.defaultHcBackground(),
+                  height: MediaQuery.of(context).size.height,
+                  width: MediaQuery.of(context).size.width,
+                  child: const UseInviteCodePageContent(),
+                ),
+              ),
+              resizeToAvoidBottomInset: false),
         ),
         OfflineModeRibbon(
           showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,

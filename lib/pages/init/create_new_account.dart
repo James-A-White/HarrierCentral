@@ -178,88 +178,92 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                 ),
               ),
               const SizedBox(height: 35, width: 10),
-              TextButton(
-                child: const Text('Get Started!'),
-                onPressed: () async {
-                  if (userDetailsUi.validateForm()) {
-                    // If the form is valid, display a snackbar. In the real world,
-                    // you'd often call a server or save the information in a database.
-                    isLoading = true;
+              if (!isLoading) ...<Widget>[
+                TextButton(
+                  child: const Text('Get Started!'),
+                  onPressed: () async {
+                    if (userDetailsUi.validateForm()) {
+                      // If the form is valid, display a snackbar. In the real world,
+                      // you'd often call a server or save the information in a database.
+                      setState(() {
+                        isLoading = true;
+                      });
 
-                    setStringPref(StringPrefsEnum.firstName, userDetailsUi.firstName);
-                    setStringPref(StringPrefsEnum.lastName, userDetailsUi.lastName);
-                    setStringPref(StringPrefsEnum.email, userDetailsUi.email);
-                    setStringPref(StringPrefsEnum.hashName, userDetailsUi.hashName);
+                      setStringPref(StringPrefsEnum.firstName, userDetailsUi.firstName);
+                      setStringPref(StringPrefsEnum.lastName, userDetailsUi.lastName);
+                      setStringPref(StringPrefsEnum.email, userDetailsUi.email);
+                      setStringPref(StringPrefsEnum.hashName, userDetailsUi.hashName);
 
-                    final HashersService srv = HashersService();
+                      final HashersService srv = HashersService();
 
-                    final String profilePhotoUrl = 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
+                      final String profilePhotoUrl = 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
-                    final String responseBody = await srv.addEditUser(
-                        targetUserId: GUID_EMPTY,
-                        firstName: userDetailsUi.firstName,
-                        lastName: userDetailsUi.lastName,
-                        email: userDetailsUi.email,
-                        hashName: userDetailsUi.hashName,
-                        photo: profilePhotoUrl,
-                        includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
+                      final String responseBody = await srv.addEditUser(
+                          targetUserId: GUID_EMPTY,
+                          firstName: userDetailsUi.firstName,
+                          lastName: userDetailsUi.lastName,
+                          email: userDetailsUi.email,
+                          hashName: userDetailsUi.hashName,
+                          photo: profilePhotoUrl,
+                          includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
 
-                    bool isSuccessfulLoad = false;
+                      bool isSuccessfulLoad = false;
 
-                    if (responseBody == ERROR_INVITE_CODE_SENT) {
-                      isSuccessfulLoad = true;
-                      Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()));
-                    } else if (!responseBody.startsWith(ERROR_PREFIX)) {
-                      final List<dynamic> jsonResultSets = json.decode(responseBody);
-                      if (jsonResultSets.isNotEmpty) {
-                        final List<dynamic> subSet = jsonResultSets[0];
-                        if (subSet.isNotEmpty) {
-                          final Map<String, dynamic> result = subSet[0];
-                          if (result.isNotEmpty) {
-                            setStringPref(StringPrefsEnum.profilePhotoUrl, result['photo']);
-                            setStringPref(StringPrefsEnum.displayName, result['displayName']);
-                            //setStringPref(StringPrefsEnum.email, result['email']);
-                            setStringPref(StringPrefsEnum.facebookId, result['facebookId']);
-                            setStringPref(StringPrefsEnum.firstName, result['firstName']);
-                            setStringPref(StringPrefsEnum.hashName, result['hashName']);
-                            setStringPref(StringPrefsEnum.lastName, result['lastName']);
-                            setStringPref(StringPrefsEnum.qrCode, result['qrCode']);
-                            setStringPref(StringPrefsEnum.supportCode, result['supportCode']);
-                            setStringPref(StringPrefsEnum.resetCode, result['resetCode']);
-                            setStringPref(StringPrefsEnum.qrSecretCode, result['qrSecretCode']);
-                            setStringPref(StringPrefsEnum.userId, result['hasherId']);
+                      if (responseBody == ERROR_INVITE_CODE_SENT) {
+                        isSuccessfulLoad = true;
+                        Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const UseInviteCodePage()));
+                      } else if (!responseBody.startsWith(ERROR_PREFIX)) {
+                        final List<dynamic> jsonResultSets = json.decode(responseBody);
+                        if (jsonResultSets.isNotEmpty) {
+                          final List<dynamic> subSet = jsonResultSets[0];
+                          if (subSet.isNotEmpty) {
+                            final Map<String, dynamic> result = subSet[0];
+                            if (result.isNotEmpty) {
+                              setStringPref(StringPrefsEnum.profilePhotoUrl, result['photo']);
+                              setStringPref(StringPrefsEnum.displayName, result['displayName']);
+                              //setStringPref(StringPrefsEnum.email, result['email']);
+                              setStringPref(StringPrefsEnum.facebookId, result['facebookId']);
+                              setStringPref(StringPrefsEnum.firstName, result['firstName']);
+                              setStringPref(StringPrefsEnum.hashName, result['hashName']);
+                              setStringPref(StringPrefsEnum.lastName, result['lastName']);
+                              setStringPref(StringPrefsEnum.qrCode, result['qrCode']);
+                              setStringPref(StringPrefsEnum.supportCode, result['supportCode']);
+                              setStringPref(StringPrefsEnum.resetCode, result['resetCode']);
+                              setStringPref(StringPrefsEnum.qrSecretCode, result['qrSecretCode']);
+                              setStringPref(StringPrefsEnum.userId, result['hasherId']);
 
-                            isSuccessfulLoad = true;
+                              isSuccessfulLoad = true;
 
-                            //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
-                            final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode);
-                            //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
+                              //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
+                              final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode);
+                              //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
-                            Navigator.pushReplacement<dynamic, dynamic>(
-                                context,
-                                MaterialPageRoute<dynamic>(
-                                  builder: (BuildContext context) => ChooseProfileImage(
-                                    isForThisDevice: true,
-                                    fileNamePrefix: fileNamePrefix,
-                                    currentProfileImage: null,
-                                    popToCaller: false,
-                                  ),
-                                ));
+                              Navigator.pushReplacement<dynamic, dynamic>(
+                                  context,
+                                  MaterialPageRoute<dynamic>(
+                                    builder: (BuildContext context) => ChooseProfileImage(
+                                      isForThisDevice: true,
+                                      fileNamePrefix: fileNamePrefix,
+                                      currentProfileImage: null,
+                                      popToCaller: false,
+                                    ),
+                                  ));
+                            }
                           }
                         }
                       }
-                    }
 
-                    if (!isSuccessfulLoad) {
-                      IveCoreUtilities.showAlert(
-                          context,
-                          'Account not created',
-                          'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!',
-                          'OK');
+                      if (!isSuccessfulLoad) {
+                        IveCoreUtilities.showAlert(
+                            context,
+                            'Account not created',
+                            'There was a problem creating your account. Please delete the app and try again later or contact us at connect@harriercentral.com.\r\n\r\nSorry for the inconvenience!',
+                            'OK');
+                      }
                     }
-                  }
-                },
-              ),
+                  },
+                ),
+              ],
               const SizedBox(height: 50, width: 10),
             ],
           ),

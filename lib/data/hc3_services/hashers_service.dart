@@ -226,7 +226,9 @@ class HashersService extends BaseService {
       'historicalPackRunCount': historicalPackRunCount,
       'historicalHaringCount': historicalHaringCount,
       'historicalCountIsEstimate': (historicalCountIsEstimate ?? false) ? '1' : '0',
-      'followKennelOnAddNewUser': followKennelOnAddNewUser == null ? null : followKennelOnAddNewUser.toString()
+      'followKennelOnAddNewUser': followKennelOnAddNewUser == null ? null : followKennelOnAddNewUser.toString(),
+      'latitude': G0<DeviceInfo>().deviceLat.toString(),
+      'longitude': G0<DeviceInfo>().deviceLon.toString()
     });
 
     bool dbErrorIsDuplicateEmail = false;
@@ -396,6 +398,8 @@ class HashersService extends BaseService {
       'facebookAccessToken': facebookAccessToken,
       'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString(),
       'hcVersion': hcVersion,
+      'latitude': G0<DeviceInfo>().deviceLat.toString(),
+      'longitude': G0<DeviceInfo>().deviceLon.toString()
     });
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_process_facebook_login', body);
