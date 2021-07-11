@@ -232,6 +232,22 @@ class DrawerMenuState extends State<DrawerMenu> {
                   );
                 },
               ),
+              ListTile(
+                leading: const Icon(Icons.integration_instructions, color: textColor),
+                title: Text('Data integrations', style: style),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      settings: const RouteSettings(),
+                      builder: (BuildContext context) {
+                        return const IntegrationPage();
+                      },
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),

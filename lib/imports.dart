@@ -80,6 +80,7 @@ export 'package:harrier_central/pages/menu_pages/faq_page.dart';
 export 'package:harrier_central/pages/menu_pages/get_reset_code_popup.dart';
 export 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 export 'package:harrier_central/pages/menu_pages/imprint_page.dart';
+export 'package:harrier_central/pages/menu_pages/integration_page.dart';
 export 'package:harrier_central/pages/menu_pages/legal_page.dart';
 export 'package:harrier_central/pages/menu_pages/privacy_policy_page.dart';
 export 'package:harrier_central/pages/menu_pages/support_page.dart';

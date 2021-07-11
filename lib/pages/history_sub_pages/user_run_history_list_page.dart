@@ -90,21 +90,45 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
   }
 
   Future<void> refreshRunHistoryFromTable(bool forceRefresh) async {
+    // This query looks at two places for historical runs. First it looks at all
+    // of the current runs for a kennel that are cached on the phone and joins to HEM.
+    // But for runs that are old and no longer cached on the phone, it looks at the
+    // HEM record only in the second half of the UNION statement.
     final String query = ''' 
-        SELECT 
-          e.eventId,
-          e.eventName,
-          e.eventNumber,
-          e.eventStartDatetime,
-          e.canEditRunAttendence,
-          hem.hemId,
-          coalesce(hem.attendenceState,0) as attendenceState,
-          coalesce(hem.isHare,0) as isHare
+          SELECT
+          e.${G0<TableModel>().eventsTableHelper.colEventId} as eventId,
+          e.${G0<TableModel>().eventsTableHelper.colEventName} as eventName,
+          e.${G0<TableModel>().eventsTableHelper.colEventNumber} as eventNumber,
+          e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} as eventStartDatetime,
+          e.${G0<TableModel>().eventsTableHelper.colCanEditRunAttendence} as canEditRunAttendence,
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} as hemId,
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare
           FROM narrowEvents e
-          LEFT OUTER JOIN hasherEventMap hem on hem.eventId = e.eventId AND hem.userId = "$userId"
-          WHERE e.isCountedRun = 1 AND e.isVisible = 1 AND e.kennelId = "${widget.kennelInfo.kennelId}" 
-          AND e.eventStartDatetime <= DateTime('now')
-          ORDER BY e.eventStartDatetime desc
+          LEFT OUTER JOIN hasherEventMap hem on hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = e.${G0<TableModel>().eventsTableHelper.colEventId} 
+          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId}  = "$userId"
+          WHERE e.${G0<TableModel>().eventsTableHelper.colIsCountedRun} = 1 
+          AND e.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1 
+          AND e.${G0<TableModel>().eventsTableHelper.colKennelId} = "${widget.kennelInfo.kennelId}" 
+          AND e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} <= DateTime('now')
+        UNION
+          SELECT 
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} as eventId,
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colEventName} as eventName,
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colEventNumber} as eventNumber,
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} as eventStartDatetime,
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colCanEditRunAttendence} as canEditRunAttendence,
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} as hemId,
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
+          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare
+          FROM hasherEventMap hem
+          WHERE 
+          hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} NOT IN (SELECT eventId FROM NarrowEvents)
+          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId"
+          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1 
+          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId} = "${widget.kennelInfo.kennelId}" 
+          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} <= DateTime('now')
+          ORDER BY eventStartDatetime desc
           
           ''';
 

@@ -65,35 +65,32 @@ class HistoryListPageState extends State<HistoryListPage> {
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String query = '''  
-          SELECT count(case when hem.attendenceState >= 20 then 1 else null end) + coalesce(hkm.historicalPackRunCount,0) as totalRunsThisKennel,
-          count(case when hem.isHare = 1 then 1 else null end) + coalesce(hkm.historicalHaringCount,0) as totalHaringThisKennel,
-          k.kennelShortName,
-          k.kennelName,
-          k.kennelId,
-          k.kennelLogo,
-          coalesce(hkm.historicalPackRunCount,0) as historicalPackRunCount,
-          coalesce(hkm.historicalHaringCount,0) as historicalHaringCount,
-          coalesce(hkm.historicalCountIsEstimate,0) as historicalCountIsEstimate
+          SELECT count(case when hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState} >= 20 then 1 else null end) + coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalPackRunCount},0) as totalRunsThisKennel,
+          count(case when hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare} = 1 then 1 else null end) + coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},0) as totalHaringThisKennel,
+          k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},
+          k.${G0<TableModel>().kennelsTableHelper.colKennelName},
+          k.${G0<TableModel>().kennelsTableHelper.colKennelId},
+          k.${G0<TableModel>().kennelsTableHelper.colKennelLogo},
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalPackRunCount},0) as historicalPackRunCount,
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},0) as historicalHaringCount,
+          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},0) as historicalCountIsEstimate
           FROM hasherEventMap hem
-          INNER JOIN narrowEvents e on hem.eventId = e.eventId
-          INNER JOIN kennels k on k.kennelId = e.kennelId
-          LEFT OUTER JOIN hasherKennelMap hkm on hkm.userId = "$userId"  and hkm.kennelId = k.kennelId
-          WHERE hem.userId = "$userId" AND e.isCountedRun = 1 AND e.isVisible = 1
-          GROUP BY k.kennelId, k.kennelLogo,k.kennelShortName,k.kennelName
+          INNER JOIN kennels k on k.${G0<TableModel>().kennelsTableHelper.colKennelId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId}
+          LEFT OUTER JOIN hasherKennelMap hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$userId"  and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
+          WHERE hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId" AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1
+          GROUP BY k.${G0<TableModel>().kennelsTableHelper.colKennelId}, k.${G0<TableModel>().kennelsTableHelper.colKennelLogo},k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},k.${G0<TableModel>().kennelsTableHelper.colKennelName}
           ORDER BY totalRunsThisKennel desc
           ''';
 
     runCountsList = <HistoryListResults>[];
     try {
-      final List<Map<String, dynamic>> results =
-          await G0<Database>().rawQuery(query);
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
 
       _totalHaring = 0;
       _totalRuns = 0;
 
       for (int i = 0; i < results.length; i++) {
-        final HistoryListResults hlrItem =
-            HistoryListResults.fromMap(results[i]);
+        final HistoryListResults hlrItem = HistoryListResults.fromMap(results[i]);
         _totalHaring += hlrItem.totalHaringThisKennel;
         _totalRuns += hlrItem.totalRunsThisKennel;
         runCountsList.add(hlrItem);
@@ -111,9 +108,7 @@ class HistoryListPageState extends State<HistoryListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body:
-            _isLoading ? _buildCircularProgressIndicator() : _buildListView());
+    return Scaffold(body: _isLoading ? _buildCircularProgressIndicator() : _buildListView());
   }
 
   Widget _buildCircularProgressIndicator() {
@@ -129,21 +124,13 @@ class HistoryListPageState extends State<HistoryListPage> {
 
     final bool result = await G0<TableModel>()
         .syncUserDataService
-        .updateFromBackend(
-            SyncUserDataService.flagHasherEventMapTable |
-                SyncUserDataService.flagNarrowEventsTable |
-                SyncUserDataService.flagKennelsTable,
-            true);
+        .updateFromBackend(SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable, true);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Hasher data synchronized $resultStr');
     refreshRunHistoryFromTable(true);
   }
 
-  TextStyle headingStyle = const TextStyle(
-      fontFamily: 'AvenirNextCondensedDemiBold',
-      fontStyle: FontStyle.normal,
-      fontSize: 22.0,
-      height: 0.6);
+  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 22.0, height: 0.6);
 
   Widget _buildListView() {
     final String _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
@@ -210,49 +197,27 @@ class HistoryListPageState extends State<HistoryListPage> {
                 width: MediaQuery.of(context).size.width,
                 child: Row(
                   children: <Widget>[
-                    ProfilePhoto(
-                        leftPadding: 20.0,
-                        photoHeight: 80.0,
-                        profilePhotoUrl: _photo),
+                    ProfilePhoto(leftPadding: 20.0, photoHeight: 80.0, profilePhotoUrl: _photo),
                     const SizedBox(width: 20),
                     (runCountsList == null || runCountsList.isEmpty)
                         ? Container()
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                                const Text(
-                                  'My total run counts',
-                                  style: TextStyle(
-                                      color: Colors.black87,
-                                      fontFamily: 'AvenirNextBold',
-                                      fontStyle: FontStyle.normal,
-                                      fontSize: 18.0,
-                                      height: 1.2),
-                                  textAlign: TextAlign.center,
-                                ),
-                                Text(
-                                  'Total runs: ' + _totalRuns.toString(),
-                                  style: const TextStyle(
-                                      color: Colors.black87,
-                                      fontFamily: 'AvenirNextDemiBold',
-                                      fontStyle: FontStyle.normal,
-                                      fontSize: 18.0,
-                                      height: 1.2),
-                                  textAlign: TextAlign.left,
-                                ),
-                                Text(
-                                  'Total times hared: ' +
-                                      _totalHaring.toString(),
-                                  style: const TextStyle(
-                                      color: Colors.black87,
-                                      fontFamily: 'AvenirNextDemiBold',
-                                      fontStyle: FontStyle.normal,
-                                      fontSize: 18.0,
-                                      height: 1.2),
-                                  textAlign: TextAlign.left,
-                                ),
-                              ])
+                        : Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                            const Text(
+                              'My total run counts',
+                              style: TextStyle(color: Colors.black87, fontFamily: 'AvenirNextBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
+                              textAlign: TextAlign.center,
+                            ),
+                            Text(
+                              'Total runs: ' + _totalRuns.toString(),
+                              style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
+                              textAlign: TextAlign.left,
+                            ),
+                            Text(
+                              'Total times hared: ' + _totalHaring.toString(),
+                              style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.2),
+                              textAlign: TextAlign.left,
+                            ),
+                          ])
                   ],
                 ))),
       ],

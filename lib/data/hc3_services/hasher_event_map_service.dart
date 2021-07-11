@@ -22,6 +22,14 @@ class HasherEventMapModel implements BaseModel {
       this.email,
       this.phoneNumber,
       this.removed,
+      // these fields are cached from the event itself. This enables us to keep run count information without
+      // having to have the actual run cached on the phone
+      this.hemEventName,
+      this.hemEventNumber,
+      this.hemEventStartDatetime,
+      this.hemEventIsCountedAndVisible,
+      this.hemCanEditRunAttendence,
+      this.hemEventKennelId,
       this.updatedAt});
 
   factory HasherEventMapModel.fromJson(Map<String, dynamic> json) => _$HasherEventMapModelFromJson(json);
@@ -44,6 +52,15 @@ class HasherEventMapModel implements BaseModel {
   final String displayName;
   final String email;
   final String phoneNumber;
+
+  // these fields are cached from the event itself. This enables us to keep run count information without
+  // having to have the actual run cached on the phone
+  final String hemEventName;
+  final int hemEventNumber;
+  final DateTime hemEventStartDatetime;
+  final num hemCanEditRunAttendence;
+  final String hemEventKennelId;
+  final int hemEventIsCountedAndVisible;
 
   final int removed;
   final DateTime updatedAt;
@@ -90,6 +107,13 @@ class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
   final String colEmail = 'email';
   final String colPhoneNumber = 'phoneNumber';
 
+  final String colEventName = 'hemEventName';
+  final String colEventNumber = 'hemEventNumber';
+  final String colEventStartDatetime = 'hemEventStartDatetime';
+  final String colCanEditRunAttendence = 'hemCanEditRunAttendence';
+  final String colEventKennelId = 'hemEventKennelId';
+  final String colEventIsCountedAndVisible = 'hemEventIsCountedAndVisible';
+
   @override
   Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
     await db.execute('''
@@ -112,6 +136,13 @@ class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
             $colDisplayName TEXT,
             $colEmail TEXT,
             $colPhoneNumber TEXT,
+
+            $colEventName TEXT,
+            $colEventNumber INT,
+            $colEventStartDatetime TEXT,
+            $colCanEditRunAttendence NUM,
+            $colEventKennelId TEXT,
+            $colEventIsCountedAndVisible INT,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
