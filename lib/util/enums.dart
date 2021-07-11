@@ -38,7 +38,8 @@ enum IntPrefsEnum {
   hasLocationPermissions,
   mapCenterOption,
   mapShowSearchBar,
-  mapShowKennels
+  mapShowKennels,
+  isBetaTester,
 }
 
 enum DatePrefsEnum {

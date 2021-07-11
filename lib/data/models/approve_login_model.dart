@@ -11,7 +11,8 @@ class ApproveLoginModel {
       this.messageDisplayType,
       this.iosDownloadLink,
       this.androidDownloadLink,
-      this.imageRootUrl});
+      this.imageRootUrl,
+      this.isBetaTester});
 
   String apiVersion;
   int approvalCode;
@@ -23,6 +24,7 @@ class ApproveLoginModel {
   String iosDownloadLink;
   String androidDownloadLink;
   String imageRootUrl;
+  int isBetaTester;
 
   static ApproveLoginModel itemFromJson(String jsonResult) {
     final List<ApproveLoginModel> items = <ApproveLoginModel>[];
@@ -32,18 +34,19 @@ class ApproveLoginModel {
     json.decode(jsonResult).forEach(
       (dynamic jsonItem) {
         item = ApproveLoginModel(
-            // isRsvped: jsonItem['isRsvped'],
-            apiVersion: jsonItem['apiVersion'],
-            approvalCode: jsonItem['approvalCode'],
-            serverStatusCode: jsonItem['serverStatusCode'],
-            loginMessage: jsonItem['loginMessage'],
-            loginMessageTitle: jsonItem['loginMessageTitle'],
-            messageEndDate: DateTime.parse(
-                jsonItem['serverStatusEndDate'] ?? '2000-01-01 19:00:00'),
-            messageDisplayType: jsonItem['messageDisplayType'],
-            iosDownloadLink: jsonItem['iosDownloadLink'],
-            androidDownloadLink: jsonItem['androidDownloadLink'],
-            imageRootUrl: jsonItem['imageRootUrl']);
+          // isRsvped: jsonItem['isRsvped'],
+          apiVersion: jsonItem['apiVersion'],
+          approvalCode: jsonItem['approvalCode'],
+          serverStatusCode: jsonItem['serverStatusCode'],
+          loginMessage: jsonItem['loginMessage'],
+          loginMessageTitle: jsonItem['loginMessageTitle'],
+          messageEndDate: DateTime.parse(jsonItem['serverStatusEndDate'] ?? '2000-01-01 19:00:00'),
+          messageDisplayType: jsonItem['messageDisplayType'],
+          iosDownloadLink: jsonItem['iosDownloadLink'],
+          androidDownloadLink: jsonItem['androidDownloadLink'],
+          imageRootUrl: jsonItem['imageRootUrl'],
+          isBetaTester: jsonItem['isBetaTester'],
+        );
 
         items.add(item);
       },

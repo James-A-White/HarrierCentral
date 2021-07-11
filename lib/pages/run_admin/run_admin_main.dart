@@ -53,6 +53,7 @@ class RunDetailPage extends StatefulWidget {
 
 class RunDetailPageState extends State<RunDetailPage> {
   bool _isLoading = true;
+  int _isBetaTester = 0;
 
   RunDetailAggregate eventAggregate;
 
@@ -65,6 +66,8 @@ class RunDetailPageState extends State<RunDetailPage> {
         print('Event admin data synchronized $resultStr');
       });
     });
+
+    _isBetaTester = getIntPref(IntPrefsEnum.isBetaTester);
 
     super.initState();
   }
@@ -286,17 +289,16 @@ class RunDetailPageState extends State<RunDetailPage> {
           child: Container(
             width: 110,
             height: 110,
-            foregroundDecoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              backgroundBlendMode: BlendMode.saturation,
-            ),
+            foregroundDecoration: _isBetaTester == 1
+                ? null
+                : BoxDecoration(
+                    color: Colors.grey.shade100,
+                    backgroundBlendMode: BlendMode.saturation,
+                  ),
             child: ElevatedButton(
-              // shape: RoundedRectangleBorder(
-              //     borderRadius: BorderRadius.circular(10.0)),
-              // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                primary: Colors.grey,
+                primary: _isBetaTester == 1 ? null : Colors.grey,
               ),
               child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
                 Padding(
@@ -313,14 +315,16 @@ class RunDetailPageState extends State<RunDetailPage> {
                 ),
               ]),
               onPressed: () {
-                // Navigator.push<dynamic>(
-                //   context,
-                //   MaterialPageRoute<dynamic>(
-                //     builder: (BuildContext context) => PaymentReportPage(
-                //       eventAggregate: eventAggregate,
-                //     ),
-                //   ),
-                // );
+                if (_isBetaTester == 1) {
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      builder: (BuildContext context) => PaymentReportPage(
+                        eventAggregate: eventAggregate,
+                      ),
+                    ),
+                  );
+                }
               },
             ),
           ),
@@ -330,17 +334,16 @@ class RunDetailPageState extends State<RunDetailPage> {
           child: Container(
             width: 110,
             height: 110,
-            foregroundDecoration: BoxDecoration(
-              color: Colors.grey,
-              backgroundBlendMode: BlendMode.saturation,
-            ),
+            foregroundDecoration: _isBetaTester == 1
+                ? null
+                : const BoxDecoration(
+                    color: Colors.grey,
+                    backgroundBlendMode: BlendMode.saturation,
+                  ),
             child: ElevatedButton(
-              // shape: RoundedRectangleBorder(
-              //     borderRadius: BorderRadius.circular(10.0)),
-              // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                primary: Colors.grey,
+                primary: _isBetaTester == 1 ? null : Colors.grey,
               ),
               child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
                 Padding(
@@ -357,14 +360,16 @@ class RunDetailPageState extends State<RunDetailPage> {
                 ),
               ]),
               onPressed: () {
-                // Navigator.push<dynamic>(
-                //   context,
-                //   MaterialPageRoute<dynamic>(
-                //     builder: (BuildContext context) => ReceiptsList(
-                //       eventAggregate: eventAggregate,
-                //     ),
-                //   ),
-                // );
+                if (_isBetaTester == 1) {
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      builder: (BuildContext context) => ReceiptsList(
+                        eventAggregate: eventAggregate,
+                      ),
+                    ),
+                  );
+                }
               },
             ),
           ),
