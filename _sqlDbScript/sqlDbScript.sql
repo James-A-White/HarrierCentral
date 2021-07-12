@@ -1,9 +1,1567 @@
-/****** Object:  Database [HarrierCentralWebDb]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'HarrierCentralWebDb')
-BEGIN
+/****** Object:  Index [IX_KennelSpatialIndex]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_KennelSpatialIndex] ON [HC].[Kennel]
+GO
+/****** Object:  Index [IX_City_SpatialLocation]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_City_SpatialLocation] ON [HC].[City]
+GO
+EXEC sys.sp_dropextendedproperty @name=N'microsoft_database_tools_support' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'sysdiagrams'
+GO
+/****** Object:  Trigger [tgUpdate]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC3W].[tgUpdate]
+GO
+/****** Object:  Trigger [tgUpdateSaHasher]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC3W].[tgUpdateSaHasher]
+GO
+/****** Object:  Trigger [tgUpdateAdHasherList]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC3W].[tgUpdateAdHasherList]
+GO
+/****** Object:  Trigger [tgUpdateAdHasher]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC3W].[tgUpdateAdHasher]
+GO
+/****** Object:  Trigger [tgInsertVwAdEventList]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC3W].[tgInsertVwAdEventList]
+GO
+/****** Object:  Trigger [tgUpdateAdEvent]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC3W].[tgUpdateAdEvent]
+GO
+/****** Object:  Trigger [tgInsertVwAdEmailTemplateList]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC3W].[tgInsertVwAdEmailTemplateList]
+GO
+/****** Object:  Trigger [tgDeleteAdEmailTemplateList]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC3W].[tgDeleteAdEmailTemplateList]
+GO
+/****** Object:  Trigger [trgUpdateModifiedOnDateForRegion]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgUpdateModifiedOnDateForRegion]
+GO
+/****** Object:  Trigger [TR_Meetings_InsertUpdateDelete]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[TR_Meetings_InsertUpdateDelete]
+GO
+/****** Object:  Trigger [trgLocateLogin]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgLocateLogin]
+GO
+/****** Object:  Trigger [trgUpdateModifiedOnDateForKennels]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgUpdateModifiedOnDateForKennels]
+GO
+/****** Object:  Trigger [trgUpdateKennelGeolocation]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgUpdateKennelGeolocation]
+GO
+/****** Object:  Trigger [trgConfigureFacebookToken]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgConfigureFacebookToken]
+GO
+/****** Object:  Trigger [GenerateExtApiKey]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[GenerateExtApiKey]
+GO
+/****** Object:  Trigger [trgUpdateModifiedOnDateForHasherKennelMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgUpdateModifiedOnDateForHasherKennelMap]
+GO
+/****** Object:  Trigger [trgUpdateModifiedOnDateForHasherEventMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgUpdateModifiedOnDateForHasherEventMap]
+GO
+/****** Object:  Trigger [trgUpdateModifiedOnDateForNames]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgUpdateModifiedOnDateForNames]
+GO
+/****** Object:  Trigger [trgLinkToDboUsers]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgLinkToDboUsers]
+GO
+/****** Object:  Trigger [trgInsertHkmRecordForHomeHash]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgInsertHkmRecordForHomeHash]
+GO
+/****** Object:  Trigger [trgGenerateQrCode]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgGenerateQrCode]
+GO
+/****** Object:  Trigger [trgCalculateHasherGeolocation]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgCalculateHasherGeolocation]
+GO
+/****** Object:  Trigger [trgUpdateModifiedOnDateForEvent]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgUpdateModifiedOnDateForEvent]
+GO
+/****** Object:  Trigger [trgUpdateHemDates]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgUpdateHemDates]
+GO
+/****** Object:  Trigger [trgRecalculateRunCounts]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgRecalculateRunCounts]
+GO
+/****** Object:  Trigger [trgUpdateModifiedOnDateForCountry]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgUpdateModifiedOnDateForCountry]
+GO
+/****** Object:  Trigger [trgUpdateModifiedOnDateForCity]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgUpdateModifiedOnDateForCity]
+GO
+/****** Object:  Trigger [trgUpdateGeolocation]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[trgUpdateGeolocation]
+GO
+/****** Object:  Trigger [TR_BusinessUnits_InsertUpdateDelete]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [HC].[TR_BusinessUnits_InsertUpdateDelete]
+GO
+/****** Object:  Trigger [TR_HasherFriendMap_InsertUpdateDelete]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [Hashers].[TR_HasherFriendMap_InsertUpdateDelete]
+GO
+/****** Object:  Trigger [TR_HasherEventMap_InsertUpdateDelete]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [Hashers].[TR_HasherEventMap_InsertUpdateDelete]
+GO
+/****** Object:  Trigger [trgLinkToHcHasher]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [dbo].[trgLinkToHcHasher]
+GO
+/****** Object:  Trigger [trgAddRoles]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP TRIGGER [dbo].[trgAddRoles]
+GO
+/****** Object:  StoredProcedure [WORDZ].[sp_ExportWordzToJson]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [WORDZ].[sp_ExportWordzToJson]
+GO
+/****** Object:  StoredProcedure [HC3W].[not_used_getUsersForAdmin]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3W].[not_used_getUsersForAdmin]
+GO
+/****** Object:  StoredProcedure [HC3W].[not_used_getEvents]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3W].[not_used_getEvents]
+GO
+/****** Object:  StoredProcedure [HC3W].[importKennel]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3W].[importKennel]
+GO
+/****** Object:  StoredProcedure [HC3].[utilApi_mergeUsers]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[utilApi_mergeUsers]
+GO
+/****** Object:  StoredProcedure [HC3].[syncUserData]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[syncUserData]
+GO
+/****** Object:  StoredProcedure [HC3].[syncKennelAdminData]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[syncKennelAdminData]
+GO
+/****** Object:  StoredProcedure [HC3].[syncEventAdminData]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[syncEventAdminData]
+GO
+/****** Object:  StoredProcedure [HC3].[rptKennelRunStats]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[rptKennelRunStats]
+GO
+/****** Object:  StoredProcedure [HC3].[rptApi_sendScheduledEmails]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[rptApi_sendScheduledEmails]
+GO
+/****** Object:  StoredProcedure [HC3].[rptApi_emailRunDetails]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[rptApi_emailRunDetails]
+GO
+/****** Object:  StoredProcedure [HC3].[processPayment]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[processPayment]
+GO
+/****** Object:  StoredProcedure [HC3].[processFacebookLogin]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[processFacebookLogin]
+GO
+/****** Object:  StoredProcedure [HC3].[nonApi_updateHasherCreditBalance]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[nonApi_updateHasherCreditBalance]
+GO
+/****** Object:  StoredProcedure [HC3].[nonApi_testRunCounts]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[nonApi_testRunCounts]
+GO
+/****** Object:  StoredProcedure [HC3].[nonApi_fixRunCountsInHkm]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[nonApi_fixRunCountsInHkm]
+GO
+/****** Object:  StoredProcedure [HC3].[logEmailsSent]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[logEmailsSent]
+GO
+/****** Object:  StoredProcedure [HC3].[joinKennel]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[joinKennel]
+GO
+/****** Object:  StoredProcedure [HC3].[joinEventAsVisitor]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[joinEventAsVisitor]
+GO
+/****** Object:  StoredProcedure [HC3].[joinEvent]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[joinEvent]
+GO
+/****** Object:  StoredProcedure [HC3].[getRuns]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[getRuns]
+GO
+/****** Object:  StoredProcedure [HC3].[getResetCode]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[getResetCode]
+GO
+/****** Object:  StoredProcedure [HC3].[getPaymentReport]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[getPaymentReport]
+GO
+/****** Object:  StoredProcedure [HC3].[getMyKennelRunTotals]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[getMyKennelRunTotals]
+GO
+/****** Object:  StoredProcedure [HC3].[extApi_getKennelPayments]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[extApi_getKennelPayments]
+GO
+/****** Object:  StoredProcedure [HC3].[extApi_getKennelMembers]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[extApi_getKennelMembers]
+GO
+/****** Object:  StoredProcedure [HC3].[extApi_getKennelEmailList]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[extApi_getKennelEmailList]
+GO
+/****** Object:  StoredProcedure [HC3].[authorizeDevice]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[authorizeDevice]
+GO
+/****** Object:  StoredProcedure [HC3].[approveLogin]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[approveLogin]
+GO
+/****** Object:  StoredProcedure [HC3].[admin_dataIntegrityCheck]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[admin_dataIntegrityCheck]
+GO
+/****** Object:  StoredProcedure [HC3].[addEditUser]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[addEditUser]
+GO
+/****** Object:  StoredProcedure [HC3].[addEditReceipt]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[addEditReceipt]
+GO
+/****** Object:  StoredProcedure [HC3].[addEditEvent]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC3].[addEditEvent]
+GO
+/****** Object:  StoredProcedure [HC2].[getRuns]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC2].[getRuns]
+GO
+/****** Object:  StoredProcedure [HC2].[getPaymentReport]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC2].[getPaymentReport]
+GO
+/****** Object:  StoredProcedure [HC2].[getMyKennelRunTotals]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC2].[getMyKennelRunTotals]
+GO
+/****** Object:  StoredProcedure [HC].[nonApi_updateRunNumbers]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC].[nonApi_updateRunNumbers]
+GO
+/****** Object:  StoredProcedure [HC].[nonApi_updateEventFromExternalIntegration]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC].[nonApi_updateEventFromExternalIntegration]
+GO
+/****** Object:  StoredProcedure [HC].[nonApi_rptKennelRunStats]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC].[nonApi_rptKennelRunStats]
+GO
+/****** Object:  StoredProcedure [HC].[nonApi_logError]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC].[nonApi_logError]
+GO
+/****** Object:  StoredProcedure [HC].[nonApi_getUserInviteCode]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC].[nonApi_getUserInviteCode]
+GO
+/****** Object:  StoredProcedure [HC].[nonApi_fbAppEvent]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC].[nonApi_fbAppEvent]
+GO
+/****** Object:  StoredProcedure [HC].[nonApi_adjustHasherRunCounts]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [HC].[nonApi_adjustHasherRunCounts]
+GO
+/****** Object:  StoredProcedure [EXT].[ProcessKennelImports]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [EXT].[ProcessKennelImports]
+GO
+/****** Object:  StoredProcedure [DEV].[RecompileHc2AndHc3]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [DEV].[RecompileHc2AndHc3]
+GO
+/****** Object:  StoredProcedure [DEV].[DeleteUser]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [DEV].[DeleteUser]
+GO
+/****** Object:  StoredProcedure [DEV].[deleteTestUsers]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [DEV].[deleteTestUsers]
+GO
+/****** Object:  StoredProcedure [DEV].[DeleteKennel]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [DEV].[DeleteKennel]
+GO
+/****** Object:  StoredProcedure [DEV].[CleanDb]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [DEV].[CleanDb]
+GO
+/****** Object:  StoredProcedure [DEV].[backupTables]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [DEV].[backupTables]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_upgraddiagrams]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [dbo].[sp_upgraddiagrams]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_renamediagram]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [dbo].[sp_renamediagram]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_helpdiagrams]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [dbo].[sp_helpdiagrams]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_helpdiagramdefinition]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [dbo].[sp_helpdiagramdefinition]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_dropdiagram]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [dbo].[sp_dropdiagram]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_creatediagram]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [dbo].[sp_creatediagram]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_alterdiagram]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP PROCEDURE [dbo].[sp_alterdiagram]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [CK_Event_IsVisible]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [CK_Event_IsPromotedEvent]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [CK_Event_IsCountedRun]
+GO
+ALTER TABLE [Transactions].[HaberdasherySale] DROP CONSTRAINT [FK_HaberdasherySale_Hasher]
+GO
+ALTER TABLE [Transactions].[HaberdasherySale] DROP CONSTRAINT [FK_HaberdasherySale_Haberdashery]
+GO
+ALTER TABLE [Transactions].[EventRegistration] DROP CONSTRAINT [FK_EventRegistration_Hasher]
+GO
+ALTER TABLE [Kennels].[Mismanagement] DROP CONSTRAINT [FK_Mismanagement_MismanagementEnum]
+GO
+ALTER TABLE [Kennels].[Mismanagement] DROP CONSTRAINT [FK_Mismanagement_Hasher]
+GO
+ALTER TABLE [HC].[Region] DROP CONSTRAINT [FK_Region_Country]
+GO
+ALTER TABLE [HC].[Receipt] DROP CONSTRAINT [FK_Receipt_Hasher1]
+GO
+ALTER TABLE [HC].[Receipt] DROP CONSTRAINT [FK_Receipt_Hasher]
+GO
+ALTER TABLE [HC].[Receipt] DROP CONSTRAINT [FK_Receipt_Event]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [FK_Payment_Kennel]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [FK_Payment_HasherEventMap]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [FK_Payment_Hasher3]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [FK_Payment_Hasher2]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [FK_Payment_Hasher1]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [FK_Payment_Hasher]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [FK_Payment_Event]
+GO
+ALTER TABLE [HC].[LaunchAndLogin] DROP CONSTRAINT [FK_LaunchAndLogin_Hasher]
+GO
+ALTER TABLE [HC].[KennelCredit] DROP CONSTRAINT [FK_KennelCredit_Kennel]
+GO
+ALTER TABLE [HC].[KennelCredit] DROP CONSTRAINT [FK_KennelCredit_Hasher]
+GO
+ALTER TABLE [HC].[KennelAuthorization] DROP CONSTRAINT [FK_KennelAuthorization_Kennel]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [FK_Kennel_Region]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [FK_Kennel_KennelStatusEnum]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [FK_Kennel_Country]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [FK_Kennel_City]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [FK_HasherKennelMap_Kennel]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [FK_HasherKennelMap_Hasher]
+GO
+ALTER TABLE [HC].[HasherFriendMap] DROP CONSTRAINT [FK_HasherFriendMap_Hasher1]
+GO
+ALTER TABLE [HC].[HasherFriendMap] DROP CONSTRAINT [FK_HasherFriendMap_Hasher]
+GO
+ALTER TABLE [HC].[HasherEventMap] DROP CONSTRAINT [FK_HasherEventMap_RunCounts]
+GO
+ALTER TABLE [HC].[HasherEventMap] DROP CONSTRAINT [FK_HasherEventMap_Hasher]
+GO
+ALTER TABLE [HC].[HasherEventMap] DROP CONSTRAINT [FK_HasherEventMap_Event]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [FK_Event_Kennel]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [FK_Event_EventGeographicScope]
+GO
+ALTER TABLE [HC].[EmailTemplate] DROP CONSTRAINT [FK_EmailTemplate_Kennel]
+GO
+ALTER TABLE [HC].[EmailTemplate] DROP CONSTRAINT [FK_EmailTemplate_Event]
+GO
+ALTER TABLE [HC].[EmailLog] DROP CONSTRAINT [FK_EmailLog_Event]
+GO
+ALTER TABLE [HC].[EmailLog] DROP CONSTRAINT [FK_EmailLog_EmailTemplate]
+GO
+ALTER TABLE [HC].[City] DROP CONSTRAINT [FK_City_Timezone]
+GO
+ALTER TABLE [HC].[City] DROP CONSTRAINT [FK_City_Region]
+GO
+ALTER TABLE [dbo].[UserRoles] DROP CONSTRAINT [FK_UserRoles_UserId]
+GO
+ALTER TABLE [dbo].[UserRoles] DROP CONSTRAINT [FK_UserRoles_RoleId]
+GO
+ALTER TABLE [dbo].[UserPermissions] DROP CONSTRAINT [FK_UserPermissions_UserId]
+GO
+ALTER TABLE [dbo].[RolePermissions] DROP CONSTRAINT [FK_RolePermissions_RoleId]
+GO
+ALTER TABLE [dbo].[Meetings] DROP CONSTRAINT [FK_Meetings_TypeId]
+GO
+ALTER TABLE [dbo].[Meetings] DROP CONSTRAINT [FK_Meetings_Reporter]
+GO
+ALTER TABLE [dbo].[Meetings] DROP CONSTRAINT [FK_Meetings_Organizer]
+GO
+ALTER TABLE [dbo].[Meetings] DROP CONSTRAINT [FK_Meetings_LocationId]
+GO
+ALTER TABLE [dbo].[MeetingDecisions] DROP CONSTRAINT [FK_MeetDecisions_RequestedBy]
+GO
+ALTER TABLE [dbo].[MeetingDecisions] DROP CONSTRAINT [FK_MeetDecisions_MeetingId]
+GO
+ALTER TABLE [dbo].[MeetingDecisions] DROP CONSTRAINT [FK_MeetDecisions_AgendaType]
+GO
+ALTER TABLE [dbo].[MeetingDecisions] DROP CONSTRAINT [FK_MeetDecisions_AgendaId]
+GO
+ALTER TABLE [dbo].[MeetingDecisionRelevant] DROP CONSTRAINT [FK_DecisionRel_DecisionId]
+GO
+ALTER TABLE [dbo].[MeetingDecisionRelevant] DROP CONSTRAINT [FK_DecisionRel_ContactId]
+GO
+ALTER TABLE [dbo].[MeetingAttendees] DROP CONSTRAINT [FK_MeetAttendees_MeetingId]
+GO
+ALTER TABLE [dbo].[MeetingAttendees] DROP CONSTRAINT [FK_MeetAttendees_ContactId]
+GO
+ALTER TABLE [dbo].[MeetingAgendas] DROP CONSTRAINT [FK_MeetAgendas_RequestedBy]
+GO
+ALTER TABLE [dbo].[MeetingAgendas] DROP CONSTRAINT [FK_MeetAgendas_MeetingId]
+GO
+ALTER TABLE [dbo].[MeetingAgendas] DROP CONSTRAINT [FK_MeetAgendas_AgendaTypeId]
+GO
+ALTER TABLE [dbo].[MeetingAgendaRelevant] DROP CONSTRAINT [FK_AgendaRel_ContactId]
+GO
+ALTER TABLE [dbo].[MeetingAgendaRelevant] DROP CONSTRAINT [FK_AgendaRel_AgendaId]
+GO
+ALTER TABLE [dbo].[Contacts] DROP CONSTRAINT [FK_Contacts_UserId]
+GO
+ALTER TABLE [UNUSED].[Song] DROP CONSTRAINT [DF_Song_Rank]
+GO
+ALTER TABLE [UNUSED].[Song] DROP CONSTRAINT [DF_Song_AutoAddToKennel]
+GO
+ALTER TABLE [UNUSED].[Song] DROP CONSTRAINT [DF_Song_Rating]
+GO
+ALTER TABLE [UNUSED].[Song] DROP CONSTRAINT [DF_Song_id]
+GO
+ALTER TABLE [UNUSED].[KennelSongMap] DROP CONSTRAINT [DF_KennelSongMap_Following]
+GO
+ALTER TABLE [UNUSED].[KennelSongMap] DROP CONSTRAINT [DF_KennelSongMap_Id]
+GO
+ALTER TABLE [UNUSED].[Haberdashery] DROP CONSTRAINT [DF_Haberdashery_ShowOnHomePage]
+GO
+ALTER TABLE [UNUSED].[Haberdashery] DROP CONSTRAINT [DF_Haberdashery_Archive]
+GO
+ALTER TABLE [UNUSED].[Haberdashery] DROP CONSTRAINT [DF_Haberdashery_InStock]
+GO
+ALTER TABLE [UNUSED].[Haberdashery] DROP CONSTRAINT [DF_Haberdashery_Price]
+GO
+ALTER TABLE [UNUSED].[Haberdashery] DROP CONSTRAINT [DF_Haberdashery_id]
+GO
+ALTER TABLE [UNUSED].[FeaturedSong] DROP CONSTRAINT [DF_FeaturedSong_id]
+GO
+ALTER TABLE [UNUSED].[FeaturedKennel] DROP CONSTRAINT [DF_FeaturedKennel_id]
+GO
+ALTER TABLE [UNUSED].[FeaturedEvent] DROP CONSTRAINT [DF_FeaturedEvent_id]
+GO
+ALTER TABLE [Transactions].[EventRegistration] DROP CONSTRAINT [DF_EventRegistration_DateRegistered]
+GO
+ALTER TABLE [Kennels].[Mismanagement] DROP CONSTRAINT [DF_Mismanagement_MismanagementId]
+GO
+ALTER TABLE [HC].[WebAppLogin] DROP CONSTRAINT [DF_WebAppLogin_LoginSuccessful]
+GO
+ALTER TABLE [HC].[WebAppLogin] DROP CONSTRAINT [DF_WebAppLogin_id]
+GO
+ALTER TABLE [HC].[ServerStatus] DROP CONSTRAINT [DF_ServerStatus_ImageRootUrl]
+GO
+ALTER TABLE [HC].[ServerStatus] DROP CONSTRAINT [DF_ServerStatus_AndroidDownloadLink]
+GO
+ALTER TABLE [HC].[ServerStatus] DROP CONSTRAINT [DF_ServerStatus_IosDownloadLink]
+GO
+ALTER TABLE [HC].[ServerStatus] DROP CONSTRAINT [DF_ServerStatus_CreatedDate]
+GO
+ALTER TABLE [HC].[ServerStatus] DROP CONSTRAINT [DF_ServerStatus_id]
+GO
+ALTER TABLE [HC].[RunCounts] DROP CONSTRAINT [DF_RunCounts_updatedAt]
+GO
+ALTER TABLE [HC].[Region] DROP CONSTRAINT [DF_Region_updatedAt]
+GO
+ALTER TABLE [HC].[Region] DROP CONSTRAINT [DF_Region_Removed]
+GO
+ALTER TABLE [HC].[Region] DROP CONSTRAINT [DF_Region_id]
+GO
+ALTER TABLE [HC].[Receipt] DROP CONSTRAINT [DF_Receipt_updatedAt]
+GO
+ALTER TABLE [HC].[Receipt] DROP CONSTRAINT [DF_Receipt_removed]
+GO
+ALTER TABLE [HC].[Receipt] DROP CONSTRAINT [DF_Receipt_DateUploaded]
+GO
+ALTER TABLE [HC].[Receipt] DROP CONSTRAINT [DF_Receipt_CostCategory]
+GO
+ALTER TABLE [HC].[Receipt] DROP CONSTRAINT [DF_Receipt_id]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [DF_Payment_updatedAt]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [DF_Payment_removed]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [DF_Payment_DoPayForExtras]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [DF_Payment_CreditAvailable]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [DF_Payment_ProductType]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [DF_Payment_PaidDate]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [DF_Payment_Surcharge]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [DF_Payment_DebitAmount]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [DF_Payment_CreditAmount]
+GO
+ALTER TABLE [HC].[Payment] DROP CONSTRAINT [DF_Payment_id]
+GO
+ALTER TABLE [HC].[Meetings] DROP CONSTRAINT [DF__Meetings__delete__6F16424E]
+GO
+ALTER TABLE [HC].[Meetings] DROP CONSTRAINT [DF__Meetings__update__6E221E15]
+GO
+ALTER TABLE [HC].[Meetings] DROP CONSTRAINT [DF__Meetings__create__6D2DF9DC]
+GO
+ALTER TABLE [HC].[LoginNotifications] DROP CONSTRAINT [DF_ServerMaintenanceWindow_CreatedDate]
+GO
+ALTER TABLE [HC].[LoginNotifications] DROP CONSTRAINT [DF_ServerMaintenanceWindow_id]
+GO
+ALTER TABLE [HC].[LaunchAndLogin] DROP CONSTRAINT [DF_LaunchAndLogin_HcVersion]
+GO
+ALTER TABLE [HC].[LaunchAndLogin] DROP CONSTRAINT [DF_LaunchAndLogin_DateAndTime]
+GO
+ALTER TABLE [HC].[LaunchAndLogin] DROP CONSTRAINT [DF_LaunchAndLogin_id]
+GO
+ALTER TABLE [HC].[KennelCredit] DROP CONSTRAINT [DF_KennelCredit_removed]
+GO
+ALTER TABLE [HC].[KennelCredit] DROP CONSTRAINT [DF_KennelCredit_id]
+GO
+ALTER TABLE [HC].[KennelAuthorization] DROP CONSTRAINT [DF_KennelAuthorization_StartDate]
+GO
+ALTER TABLE [HC].[KennelAuthorization] DROP CONSTRAINT [DF_KennelAuthorization_HareRaisingManagement]
+GO
+ALTER TABLE [HC].[KennelAuthorization] DROP CONSTRAINT [DF_KennelAuthorization_AuthorizationAmount]
+GO
+ALTER TABLE [HC].[KennelAuthorization] DROP CONSTRAINT [DF_KennelAuthorization_CustomLogo]
+GO
+ALTER TABLE [HC].[KennelAuthorization] DROP CONSTRAINT [DF_KennelAuthorization_PromoteEvents]
+GO
+ALTER TABLE [HC].[KennelAuthorization] DROP CONSTRAINT [DF_KennelAuthorization_CheckInAndOut]
+GO
+ALTER TABLE [HC].[KennelAuthorization] DROP CONSTRAINT [DF_KennelAuthorization_PushNotifications]
+GO
+ALTER TABLE [HC].[KennelAuthorization] DROP CONSTRAINT [DF_KennelAuthorization_AllowCredit]
+GO
+ALTER TABLE [HC].[KennelAuthorization] DROP CONSTRAINT [DF_KennelAuthorization_WebsiteIntegration]
+GO
+ALTER TABLE [HC].[KennelAuthorization] DROP CONSTRAINT [DF_KennelAuthorization_CustomSongbook]
+GO
+ALTER TABLE [HC].[KennelAuthorization] DROP CONSTRAINT [DF_KennelAuthorization_Haberdashery]
+GO
+ALTER TABLE [HC].[KennelAuthorization] DROP CONSTRAINT [DF_KennelAuthorization_TrackPayments]
+GO
+ALTER TABLE [HC].[KennelAuthorization] DROP CONSTRAINT [DF_KennelAuthorization_AutoFacebookEventImport]
+GO
+ALTER TABLE [HC].[KennelAuthorization] DROP CONSTRAINT [DF_KennelAuthorization_id]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF__Kennel__deleted__3572E547]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF__Kennel__updatedA__347EC10E]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF__Kennel__createdA__338A9CD5]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_removed]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_MembershipDurationInMonths]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_AllowNegativeCredit]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_AllowSelfPayment]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_DefaultRunStartTime]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_DefaultEventPriceForNonMembers]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_KennelMismanagementTeam]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_KennelPinColor]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_KennelLogo]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_CanEditRunAttendence]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_PublishToGoogleCalendar]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_ImportOnlyTaggedEvents]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_AutoImportFacebookEvents]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_KennelFacebookImportDaysInFuture]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_KennelFacebookImportDaysInPast]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_IntegrationType]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_KennelStatus]
+GO
+ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_id]
+GO
+ALTER TABLE [HC].[HasherOwnEvent] DROP CONSTRAINT [DF_HasherOwnEvent_updatedAt]
+GO
+ALTER TABLE [HC].[HasherOwnEvent] DROP CONSTRAINT [DF_HasherOwnEvent_lastModified]
+GO
+ALTER TABLE [HC].[HasherOwnEvent] DROP CONSTRAINT [DF_HasherOwnEvent_deleted]
+GO
+ALTER TABLE [HC].[HasherOwnEvent] DROP CONSTRAINT [DF_HasherOwnEvent_removed]
+GO
+ALTER TABLE [HC].[HasherOwnEvent] DROP CONSTRAINT [DF_HasherOwnEvent_id]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_updatedAt]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_removed]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_CanEditRunAttendence]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_MemberSince]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_CurrentHaringCount]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_CurrentPackRunCount]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_HistoricalCountIsEstimate]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_HistoricalHaringCount]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_HistoricalRunCount]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_AppAccessFlags]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_UserRoleFlags]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_HcWebPermissionFlags]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_IsMismanagement]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_MismanagementRoles]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_KennelEmailPreferences]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_KennelNotificationPreference]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_IsHomeKennel]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_IsInPack]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_State]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_Following]
+GO
+ALTER TABLE [HC].[HasherKennelMap] DROP CONSTRAINT [DF_HasherKennelMap_HasherId]
+GO
+ALTER TABLE [HC].[HasherFriendMap] DROP CONSTRAINT [DF_HasherFriendMap_State]
+GO
+ALTER TABLE [HC].[HasherFriendMap] DROP CONSTRAINT [DF_HasherFriendMap_FriendNotificationPreference]
+GO
+ALTER TABLE [HC].[HasherFriendMap] DROP CONSTRAINT [DF_HasherFriendMap_Id]
+GO
+ALTER TABLE [HC].[HasherEventMap] DROP CONSTRAINT [DF_HasherEventMap_updatedAt]
+GO
+ALTER TABLE [HC].[HasherEventMap] DROP CONSTRAINT [DF_HasherEventMap_removed]
+GO
+ALTER TABLE [HC].[HasherEventMap] DROP CONSTRAINT [DF_HasherEventMap_IsVirgin]
+GO
+ALTER TABLE [HC].[HasherEventMap] DROP CONSTRAINT [DF__HasherEve__IsHar__6E565CE8]
+GO
+ALTER TABLE [HC].[HasherEventMap] DROP CONSTRAINT [DF_HasherEventMap_AttendenceState]
+GO
+ALTER TABLE [HC].[HasherEventMap] DROP CONSTRAINT [DF_HasherEventMap_RsvpState]
+GO
+ALTER TABLE [HC].[HasherEventMap] DROP CONSTRAINT [DF_HasherEventMap_HasherEventMapId]
+GO
+ALTER TABLE [HC].[Hasher] DROP CONSTRAINT [DF_Hasher_IsBetaTester]
+GO
+ALTER TABLE [HC].[Hasher] DROP CONSTRAINT [DF__Hasher__deleted__2CA8951C]
+GO
+ALTER TABLE [HC].[Hasher] DROP CONSTRAINT [DF__Hasher__updatedA__2BB470E3]
+GO
+ALTER TABLE [HC].[Hasher] DROP CONSTRAINT [DF__Hasher__createdA__2AC04CAA]
+GO
+ALTER TABLE [HC].[Hasher] DROP CONSTRAINT [DF_Hasher_Removed]
+GO
+ALTER TABLE [HC].[Hasher] DROP CONSTRAINT [DF_Hasher_IncludeInGlobalHashDirectory]
+GO
+ALTER TABLE [HC].[Hasher] DROP CONSTRAINT [DF_Hasher_Preferences]
+GO
+ALTER TABLE [HC].[Hasher] DROP CONSTRAINT [DF_Hasher_NameDisplayPreference]
+GO
+ALTER TABLE [HC].[Hasher] DROP CONSTRAINT [DF_Hasher_HomeLongitude]
+GO
+ALTER TABLE [HC].[Hasher] DROP CONSTRAINT [DF_Hasher_HomeLatitude]
+GO
+ALTER TABLE [HC].[Hasher] DROP CONSTRAINT [DF_Hasher_QR_secret_code]
+GO
+ALTER TABLE [HC].[Hasher] DROP CONSTRAINT [DF_Hasher_QR_code]
+GO
+ALTER TABLE [HC].[Hasher] DROP CONSTRAINT [DF_Hasher_ResetCode]
+GO
+ALTER TABLE [HC].[Hasher] DROP CONSTRAINT [DF_Hasher_SupportCode]
+GO
+ALTER TABLE [HC].[Hasher] DROP CONSTRAINT [DF_Hasher_HasherId]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF__Event__updatedAt__4242D080]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF__Event__createdAt__414EAC47]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_lastModified]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF__Event__deleted__22CA2527]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_removed]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_EventSource]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_UpdateDataFromFacebook]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_UseFbLatLon]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_UseFbLocation]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_UseFbData]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_CanEditRunAttendence]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_HC_Event_MinimumRequired]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_UserCountIncrement]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_UnconfirmedBankXferCount]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_DoTrackHashCash]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_RunCount]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_EventNumber]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_Tags3]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_Tags2]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_Tags1]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_HC_Event_IsThemeRun]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_EventGeographicScope]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_IsPromotedRun]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_IsCountedRun]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_IsVisible]
+GO
+ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_HC_Event_EventId]
+GO
+ALTER TABLE [HC].[ErrorLog] DROP CONSTRAINT [DF_ErrorLog_deleted__2CA8951C]
+GO
+ALTER TABLE [HC].[ErrorLog] DROP CONSTRAINT [DF_ErrorLog_updatedA__2BB470E3]
+GO
+ALTER TABLE [HC].[ErrorLog] DROP CONSTRAINT [DF_ErrorLog_createdA__2AC04CAA]
+GO
+ALTER TABLE [HC].[ErrorLog] DROP CONSTRAINT [DF_ErrorLog_HcVersion]
+GO
+ALTER TABLE [HC].[ErrorLog] DROP CONSTRAINT [DF_ErrorLog_HasherId]
+GO
+ALTER TABLE [HC].[EmailTemplate] DROP CONSTRAINT [DF_EmailTemplate_SendWhenHareAssigned]
+GO
+ALTER TABLE [HC].[EmailTemplate] DROP CONSTRAINT [DF_EmailTemplate_SenderName]
+GO
+ALTER TABLE [HC].[EmailTemplate] DROP CONSTRAINT [DF_EmailTemplate_ReplyToEmailAddress]
+GO
+ALTER TABLE [HC].[EmailTemplate] DROP CONSTRAINT [DF_EmailTemplate_SendToVisitors]
+GO
+ALTER TABLE [HC].[EmailTemplate] DROP CONSTRAINT [DF_EmailTemplate_SendToFollowers]
+GO
+ALTER TABLE [HC].[EmailTemplate] DROP CONSTRAINT [DF_EmailTemplate_SendToMismanagement]
+GO
+ALTER TABLE [HC].[EmailTemplate] DROP CONSTRAINT [DF_Table_1_SendToMembersOnly]
+GO
+ALTER TABLE [HC].[EmailTemplate] DROP CONSTRAINT [DF_EmailTemplate_SendToAll]
+GO
+ALTER TABLE [HC].[EmailTemplate] DROP CONSTRAINT [DF_EmailTemplate_DaysBeforeRun]
+GO
+ALTER TABLE [HC].[EmailTemplate] DROP CONSTRAINT [DF_EmailTemplate_HoursBeforeRun]
+GO
+ALTER TABLE [HC].[EmailTemplate] DROP CONSTRAINT [DF_EmailTemplate_EmailTypeFlag]
+GO
+ALTER TABLE [HC].[EmailTemplate] DROP CONSTRAINT [DF_EmailTemplate_Description]
+GO
+ALTER TABLE [HC].[EmailTemplate] DROP CONSTRAINT [DF_EmailTemplate_id]
+GO
+ALTER TABLE [HC].[EmailLog] DROP CONSTRAINT [DF_EmailLog_NumberSent]
+GO
+ALTER TABLE [HC].[EmailLog] DROP CONSTRAINT [DF_EmailLog_id]
+GO
+ALTER TABLE [HC].[Country] DROP CONSTRAINT [DF_Country_updatedAt]
+GO
+ALTER TABLE [HC].[Country] DROP CONSTRAINT [DF_Country_Removed]
+GO
+ALTER TABLE [HC].[Country] DROP CONSTRAINT [DF_Country_DistancePreference]
+GO
+ALTER TABLE [HC].[Country] DROP CONSTRAINT [DF_Country_DigitsAfterDecimal]
+GO
+ALTER TABLE [HC].[Country] DROP CONSTRAINT [DF_Country_CurrencySymbol]
+GO
+ALTER TABLE [HC].[Country] DROP CONSTRAINT [DF_Country_ShowRegion]
+GO
+ALTER TABLE [HC].[Country] DROP CONSTRAINT [DF_Country_PrimaryCultureCode]
+GO
+ALTER TABLE [HC].[Country] DROP CONSTRAINT [DF_Country_CountryId]
+GO
+ALTER TABLE [HC].[City] DROP CONSTRAINT [DF_City_updatedAt]
+GO
+ALTER TABLE [HC].[City] DROP CONSTRAINT [DF_City_Removed]
+GO
+ALTER TABLE [HC].[City] DROP CONSTRAINT [DF_City_UseCityFullName]
+GO
+ALTER TABLE [HC].[City] DROP CONSTRAINT [DF_City_id]
+GO
+ALTER TABLE [HC].[BusinessUnits] DROP CONSTRAINT [DF__BusinessU__delet__5DEBB64C]
+GO
+ALTER TABLE [HC].[BusinessUnits] DROP CONSTRAINT [DF__BusinessU__updat__5CF79213]
+GO
+ALTER TABLE [HC].[BusinessUnits] DROP CONSTRAINT [DF__BusinessU__creat__5C036DDA]
+GO
+ALTER TABLE [Hashers].[HasherFriendMap] DROP CONSTRAINT [DF__HasherFri__delet__695D68F8]
+GO
+ALTER TABLE [Hashers].[HasherFriendMap] DROP CONSTRAINT [DF__HasherFri__updat__686944BF]
+GO
+ALTER TABLE [Hashers].[HasherFriendMap] DROP CONSTRAINT [DF__HasherFri__creat__67752086]
+GO
+ALTER TABLE [Hashers].[HasherEventMap] DROP CONSTRAINT [DF__HasherEve__delet__63A48FA2]
+GO
+ALTER TABLE [Hashers].[HasherEventMap] DROP CONSTRAINT [DF__HasherEve__updat__62B06B69]
+GO
+ALTER TABLE [Hashers].[HasherEventMap] DROP CONSTRAINT [DF__HasherEve__creat__61BC4730]
+GO
+ALTER TABLE [EXT].[Zapier_GCal] DROP CONSTRAINT [DF_Zapier_zapierId]
+GO
+ALTER TABLE [EXT].[Zapier_FbEvent] DROP CONSTRAINT [DF_Zapier_FbEvent_zapierFbEventId]
+GO
+ALTER TABLE [EXT].[OfficeForms_KennelImport] DROP CONSTRAINT [DF_OfficeForms_KennelImport_SubmittedOn]
+GO
+ALTER TABLE [EXT].[OfficeForms_KennelImport] DROP CONSTRAINT [DF_OfficeForms_KennelImport_WhenStartRunningPostCovid]
+GO
+ALTER TABLE [EXT].[OfficeForms_KennelImport] DROP CONSTRAINT [DF_OfficeForms_KennelImport_NumberOfHashersPerRun]
+GO
+ALTER TABLE [EXT].[OfficeForms_KennelImport] DROP CONSTRAINT [DF_OfficeForms_KennelImport_NumberOfRunsPerMonth]
+GO
+ALTER TABLE [EXT].[OfficeForms_KennelImport] DROP CONSTRAINT [DF_OfficeForms_KennelImport_IsRunningPostCovid]
+GO
+ALTER TABLE [EXT].[OfficeForms_KennelImport] DROP CONSTRAINT [DF_OfficeForms_KennelImport_MapPinColor]
+GO
+ALTER TABLE [EXT].[OfficeForms_KennelImport] DROP CONSTRAINT [DF_KennelImport_KennelId2]
+GO
+ALTER TABLE [EXT].[FbAppEvent] DROP CONSTRAINT [DF_FbAppEvent_updatedAt]
+GO
+ALTER TABLE [EXT].[FbAppEvent] DROP CONSTRAINT [DF_FbAppEvent_FbAppEventId]
+GO
+ALTER TABLE [dbo].[world_cities_table] DROP CONSTRAINT [DF__world_cit__provi__1DB06A4F]
+GO
+ALTER TABLE [dbo].[world_cities_table] DROP CONSTRAINT [DF__world_citi__iso3__1CBC4616]
+GO
+ALTER TABLE [dbo].[world_cities_table] DROP CONSTRAINT [DF__world_citi__iso2__1BC821DD]
+GO
+ALTER TABLE [dbo].[world_cities_table] DROP CONSTRAINT [DF__world_cit__count__1AD3FDA4]
+GO
+ALTER TABLE [dbo].[world_cities_table] DROP CONSTRAINT [DF__world_citie__pop__19DFD96B]
+GO
+ALTER TABLE [dbo].[world_cities_table] DROP CONSTRAINT [DF__world_citie__lng__18EBB532]
+GO
+ALTER TABLE [dbo].[world_cities_table] DROP CONSTRAINT [DF__world_citie__lat__17F790F9]
+GO
+ALTER TABLE [dbo].[world_cities_table] DROP CONSTRAINT [DF__world_cit__city___17036CC0]
+GO
+ALTER TABLE [dbo].[world_cities_table] DROP CONSTRAINT [DF__world_citi__city__160F4887]
+GO
+ALTER TABLE [dbo].[Users] DROP CONSTRAINT [DF_Users_IsActive]
+GO
+ALTER TABLE [dbo].[UserPermissions] DROP CONSTRAINT [DF_UserPermissions_Grant]
+GO
+ALTER TABLE [dbo].[Meetings] DROP CONSTRAINT [DF__Meetings__update__0697FACD]
+GO
+ALTER TABLE [dbo].[Meetings] DROP CONSTRAINT [DF__Meetings__create__05A3D694]
+GO
+ALTER TABLE [dbo].[Meetings] DROP CONSTRAINT [DF__Meetings__delete__7A3223E8]
+GO
+ALTER TABLE [dbo].[Exceptions] DROP CONSTRAINT [DF_Exceptions_DuplicateCount]
+GO
+ALTER TABLE [dbo].[Exceptions] DROP CONSTRAINT [DF_Exceptions_IsProtected]
+GO
+ALTER TABLE [dbo].[BusinessUnits] DROP CONSTRAINT [DF__BusinessU__updat__02C769E9]
+GO
+ALTER TABLE [dbo].[BusinessUnits] DROP CONSTRAINT [DF__BusinessU__creat__01D345B0]
+GO
+ALTER TABLE [dbo].[BusinessUnits] DROP CONSTRAINT [DF__BusinessU__delet__793DFFAF]
+GO
+ALTER TABLE [dbo].[BusinessUnits] DROP CONSTRAINT [DF_BusinessUnits_id]
+GO
+/****** Object:  Index [IX_KennelSongMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_KennelSongMap] ON [UNUSED].[KennelSongMap]
+GO
+/****** Object:  Index [IX_RegionUpdated]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_RegionUpdated] ON [HC].[Region]
+GO
+/****** Object:  Index [IX_PaymentReference]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_PaymentReference] ON [HC].[Payment]
+GO
+/****** Object:  Index [IX_HasherKennelMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_HasherKennelMap] ON [HC].[HasherKennelMap]
+GO
+/****** Object:  Index [IX_HasherFriendMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_HasherFriendMap] ON [HC].[HasherFriendMap]
+GO
+/****** Object:  Index [IX_HasherEventMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_HasherEventMap] ON [HC].[HasherEventMap]
+GO
+/****** Object:  Index [IX_HasherUniqueEmail]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_HasherUniqueEmail] ON [HC].[Hasher]
+GO
+/****** Object:  Index [IX_EventByKennelIsCountedStartDateAbsEvtNum]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_EventByKennelIsCountedStartDateAbsEvtNum] ON [HC].[Event]
+GO
+/****** Object:  Index [IX_Event_KidIsCountedDeleted2]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_Event_KidIsCountedDeleted2] ON [HC].[Event]
+GO
+/****** Object:  Index [i1]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [i1] ON [HC].[ErrorLog]
+GO
+/****** Object:  Index [IX_CountryUpdated]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_CountryUpdated] ON [HC].[Country]
+GO
+/****** Object:  Index [IX_CityUpdated]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_CityUpdated] ON [HC].[City]
+GO
+/****** Object:  Index [IX_UserUniqueEmail]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_UserUniqueEmail] ON [dbo].[Users]
+GO
+/****** Object:  Index [UQ_UserRoles_UserId_RoleId]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [UQ_UserRoles_UserId_RoleId] ON [dbo].[UserRoles]
+GO
+/****** Object:  Index [IX_UserRoles_RoleId_UserId]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_UserRoles_RoleId_UserId] ON [dbo].[UserRoles]
+GO
+/****** Object:  Index [IX_UserPref_UID_PrefType_Name]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_UserPref_UID_PrefType_Name] ON [dbo].[UserPreferences]
+GO
+/****** Object:  Index [UQ_UserPerm_UserId_PermKey]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [UQ_UserPerm_UserId_PermKey] ON [dbo].[UserPermissions]
+GO
+/****** Object:  Index [UQ_RolePerm_RoleId_PermKey]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [UQ_RolePerm_RoleId_PermKey] ON [dbo].[RolePermissions]
+GO
+/****** Object:  Index [IX_Exceptions_Hash_App_Cre_Del]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_Exceptions_Hash_App_Cre_Del] ON [dbo].[Exceptions]
+GO
+/****** Object:  Index [IX_Exceptions_GUID_App_Del_Cre]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_Exceptions_GUID_App_Del_Cre] ON [dbo].[Exceptions]
+GO
+/****** Object:  Index [IX_Exceptions_App_Del_Cre]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_Exceptions_App_Del_Cre] ON [dbo].[Exceptions]
+GO
+/****** Object:  Table [WORDZ].[WordzAudio]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[WORDZ].[WordzAudio]') AND type in (N'U'))
+DROP TABLE [WORDZ].[WordzAudio]
+GO
+/****** Object:  Table [WORDZ].[Wordz]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[WORDZ].[Wordz]') AND type in (N'U'))
+DROP TABLE [WORDZ].[Wordz]
+GO
+/****** Object:  Table [WORDZ].[WordFreq]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[WORDZ].[WordFreq]') AND type in (N'U'))
+DROP TABLE [WORDZ].[WordFreq]
+GO
+/****** Object:  Table [UNUSED].[Song]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[Song]') AND type in (N'U'))
+DROP TABLE [UNUSED].[Song]
+GO
+/****** Object:  Table [UNUSED].[KennelSongMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[KennelSongMap]') AND type in (N'U'))
+DROP TABLE [UNUSED].[KennelSongMap]
+GO
+/****** Object:  Table [UNUSED].[Haberdashery]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[Haberdashery]') AND type in (N'U'))
+DROP TABLE [UNUSED].[Haberdashery]
+GO
+/****** Object:  Table [UNUSED].[FeaturedSong]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[FeaturedSong]') AND type in (N'U'))
+DROP TABLE [UNUSED].[FeaturedSong]
+GO
+/****** Object:  Table [UNUSED].[FeaturedKennel]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[FeaturedKennel]') AND type in (N'U'))
+DROP TABLE [UNUSED].[FeaturedKennel]
+GO
+/****** Object:  Table [UNUSED].[FeaturedEvent]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[FeaturedEvent]') AND type in (N'U'))
+DROP TABLE [UNUSED].[FeaturedEvent]
+GO
+/****** Object:  Table [Transactions].[HaberdasherySale]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Transactions].[HaberdasherySale]') AND type in (N'U'))
+DROP TABLE [Transactions].[HaberdasherySale]
+GO
+/****** Object:  Table [Transactions].[EventRegistration]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Transactions].[EventRegistration]') AND type in (N'U'))
+DROP TABLE [Transactions].[EventRegistration]
+GO
+/****** Object:  Table [Kennels].[Mismanagement]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Kennels].[Mismanagement]') AND type in (N'U'))
+DROP TABLE [Kennels].[Mismanagement]
+GO
+/****** Object:  Table [Kennels].[Haberdashery]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Kennels].[Haberdashery]') AND type in (N'U'))
+DROP TABLE [Kennels].[Haberdashery]
+GO
+/****** Object:  Table [HC_BACKUP].[WebAppLogin]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[WebAppLogin]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[WebAppLogin]
+GO
+/****** Object:  Table [HC_BACKUP].[ServerStatus]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[ServerStatus]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[ServerStatus]
+GO
+/****** Object:  Table [HC_BACKUP].[RunCounts]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[RunCounts]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[RunCounts]
+GO
+/****** Object:  Table [HC_BACKUP].[Region]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Region]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[Region]
+GO
+/****** Object:  Table [HC_BACKUP].[Recepit]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Recepit]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[Recepit]
+GO
+/****** Object:  Table [HC_BACKUP].[Payment]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Payment]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[Payment]
+GO
+/****** Object:  Table [HC_BACKUP].[LoginNotifications]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[LoginNotifications]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[LoginNotifications]
+GO
+/****** Object:  Table [HC_BACKUP].[LaunchAndLogin]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[LaunchAndLogin]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[LaunchAndLogin]
+GO
+/****** Object:  Table [HC_BACKUP].[KennelCredit]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[KennelCredit]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[KennelCredit]
+GO
+/****** Object:  Table [HC_BACKUP].[KennelAuthorization]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[KennelAuthorization]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[KennelAuthorization]
+GO
+/****** Object:  Table [HC_BACKUP].[Kennel]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Kennel]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[Kennel]
+GO
+/****** Object:  Table [HC_BACKUP].[HasherOwnEvent]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[HasherOwnEvent]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[HasherOwnEvent]
+GO
+/****** Object:  Table [HC_BACKUP].[HasherKennelMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[HasherKennelMap]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[HasherKennelMap]
+GO
+/****** Object:  Table [HC_BACKUP].[HasherFriendMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[HasherFriendMap]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[HasherFriendMap]
+GO
+/****** Object:  Table [HC_BACKUP].[HasherEventMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[HasherEventMap]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[HasherEventMap]
+GO
+/****** Object:  Table [HC_BACKUP].[Hasher]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Hasher]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[Hasher]
+GO
+/****** Object:  Table [HC_BACKUP].[Event]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Event]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[Event]
+GO
+/****** Object:  Table [HC_BACKUP].[EmailTemplate]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[EmailTemplate]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[EmailTemplate]
+GO
+/****** Object:  Table [HC_BACKUP].[EmailLog]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[EmailLog]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[EmailLog]
+GO
+/****** Object:  Table [HC_BACKUP].[Country]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Country]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[Country]
+GO
+/****** Object:  Table [HC_BACKUP].[City]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[City]') AND type in (N'U'))
+DROP TABLE [HC_BACKUP].[City]
+GO
+/****** Object:  Table [HC].[WebAppLogin]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[WebAppLogin]') AND type in (N'U'))
+DROP TABLE [HC].[WebAppLogin]
+GO
+/****** Object:  Table [HC].[ServerStatus]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[ServerStatus]') AND type in (N'U'))
+DROP TABLE [HC].[ServerStatus]
+GO
+/****** Object:  Table [HC].[Meetings]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Meetings]') AND type in (N'U'))
+DROP TABLE [HC].[Meetings]
+GO
+/****** Object:  Table [HC].[LoginNotifications]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[LoginNotifications]') AND type in (N'U'))
+DROP TABLE [HC].[LoginNotifications]
+GO
+/****** Object:  Table [HC].[KennelCredit]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[KennelCredit]') AND type in (N'U'))
+DROP TABLE [HC].[KennelCredit]
+GO
+/****** Object:  Table [HC].[KennelAuthorization]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[KennelAuthorization]') AND type in (N'U'))
+DROP TABLE [HC].[KennelAuthorization]
+GO
+/****** Object:  Table [HC].[HasherOwnEvent]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[HasherOwnEvent]') AND type in (N'U'))
+DROP TABLE [HC].[HasherOwnEvent]
+GO
+/****** Object:  Table [HC].[HasherFriendMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[HasherFriendMap]') AND type in (N'U'))
+DROP TABLE [HC].[HasherFriendMap]
+GO
+/****** Object:  Table [HC].[ErrorLog]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[ErrorLog]') AND type in (N'U'))
+DROP TABLE [HC].[ErrorLog]
+GO
+/****** Object:  Table [HC].[BusinessUnits]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[BusinessUnits]') AND type in (N'U'))
+DROP TABLE [HC].[BusinessUnits]
+GO
+/****** Object:  Table [Hashers].[HasherFriendMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Hashers].[HasherFriendMap]') AND type in (N'U'))
+DROP TABLE [Hashers].[HasherFriendMap]
+GO
+/****** Object:  Table [Hashers].[HasherEventMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Hashers].[HasherEventMap]') AND type in (N'U'))
+DROP TABLE [Hashers].[HasherEventMap]
+GO
+/****** Object:  Table [EXT].[Zapier_GCal]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[Zapier_GCal]') AND type in (N'U'))
+DROP TABLE [EXT].[Zapier_GCal]
+GO
+/****** Object:  Table [EXT].[Zapier_FbEvent]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[Zapier_FbEvent]') AND type in (N'U'))
+DROP TABLE [EXT].[Zapier_FbEvent]
+GO
+/****** Object:  Table [EXT].[OfficeForms_KennelImport]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[OfficeForms_KennelImport]') AND type in (N'U'))
+DROP TABLE [EXT].[OfficeForms_KennelImport]
+GO
+/****** Object:  Table [EXT].[FbAppEvent]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[FbAppEvent]') AND type in (N'U'))
+DROP TABLE [EXT].[FbAppEvent]
+GO
+/****** Object:  Index [IX_Timezone]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [IX_Timezone] ON [DomainValues].[Timezone] WITH ( ONLINE = OFF )
+GO
+/****** Object:  Table [DomainValues].[Timezone]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[Timezone]') AND type in (N'U'))
+DROP TABLE [DomainValues].[Timezone]
+GO
+/****** Object:  Table [DomainValues].[MismanagementEnum]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[MismanagementEnum]') AND type in (N'U'))
+DROP TABLE [DomainValues].[MismanagementEnum]
+GO
+/****** Object:  Table [DomainValues].[KennelStatusEnum]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[KennelStatusEnum]') AND type in (N'U'))
+DROP TABLE [DomainValues].[KennelStatusEnum]
+GO
+/****** Object:  Table [DomainValues].[EventThemeType]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[EventThemeType]') AND type in (N'U'))
+DROP TABLE [DomainValues].[EventThemeType]
+GO
+/****** Object:  Table [DomainValues].[EventRegistrationType]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[EventRegistrationType]') AND type in (N'U'))
+DROP TABLE [DomainValues].[EventRegistrationType]
+GO
+/****** Object:  Table [DomainValues].[EventGeographicScope]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[EventGeographicScope]') AND type in (N'U'))
+DROP TABLE [DomainValues].[EventGeographicScope]
+GO
+/****** Object:  Table [DomainValues].[CurrencyCodes]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[CurrencyCodes]') AND type in (N'U'))
+DROP TABLE [DomainValues].[CurrencyCodes]
+GO
+/****** Object:  Table [DEV].[WindowsTimezoneMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[WindowsTimezoneMap]') AND type in (N'U'))
+DROP TABLE [DEV].[WindowsTimezoneMap]
+GO
+/****** Object:  Table [DEV].[timezone]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[timezone]') AND type in (N'U'))
+DROP TABLE [DEV].[timezone]
+GO
+/****** Object:  Table [DEV].[ImportHashers]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[ImportHashers]') AND type in (N'U'))
+DROP TABLE [DEV].[ImportHashers]
+GO
+/****** Object:  Table [DEV].[EnumPaymentTypes]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[EnumPaymentTypes]') AND type in (N'U'))
+DROP TABLE [DEV].[EnumPaymentTypes]
+GO
+/****** Object:  Table [dbo].[Year2020]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Year2020]') AND type in (N'U'))
+DROP TABLE [dbo].[Year2020]
+GO
+/****** Object:  Table [dbo].[world_cities_table]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[world_cities_table]') AND type in (N'U'))
+DROP TABLE [dbo].[world_cities_table]
+GO
+/****** Object:  Index [UC_Version]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP INDEX [UC_Version] ON [dbo].[VersionInfo] WITH ( ONLINE = OFF )
+GO
+/****** Object:  Table [dbo].[VersionInfo]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[VersionInfo]') AND type in (N'U'))
+DROP TABLE [dbo].[VersionInfo]
+GO
+/****** Object:  Table [dbo].[Users]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Users]') AND type in (N'U'))
+DROP TABLE [dbo].[Users]
+GO
+/****** Object:  Table [dbo].[UserRoles]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UserRoles]') AND type in (N'U'))
+DROP TABLE [dbo].[UserRoles]
+GO
+/****** Object:  Table [dbo].[UserPreferences]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UserPreferences]') AND type in (N'U'))
+DROP TABLE [dbo].[UserPreferences]
+GO
+/****** Object:  Table [dbo].[UserPermissions]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UserPermissions]') AND type in (N'U'))
+DROP TABLE [dbo].[UserPermissions]
+GO
+/****** Object:  Table [dbo].[tempImport]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[tempImport]') AND type in (N'U'))
+DROP TABLE [dbo].[tempImport]
+GO
+/****** Object:  Table [dbo].[sysdiagrams]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[sysdiagrams]') AND type in (N'U'))
+DROP TABLE [dbo].[sysdiagrams]
+GO
+/****** Object:  Table [dbo].[SourceData]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[SourceData]') AND type in (N'U'))
+DROP TABLE [dbo].[SourceData]
+GO
+/****** Object:  Table [dbo].[Roles]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Roles]') AND type in (N'U'))
+DROP TABLE [dbo].[Roles]
+GO
+/****** Object:  Table [dbo].[RolePermissions]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[RolePermissions]') AND type in (N'U'))
+DROP TABLE [dbo].[RolePermissions]
+GO
+/****** Object:  Table [dbo].[MeetingTypes]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingTypes]') AND type in (N'U'))
+DROP TABLE [dbo].[MeetingTypes]
+GO
+/****** Object:  Table [dbo].[Meetings]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Meetings]') AND type in (N'U'))
+DROP TABLE [dbo].[Meetings]
+GO
+/****** Object:  Table [dbo].[MeetingLocations]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingLocations]') AND type in (N'U'))
+DROP TABLE [dbo].[MeetingLocations]
+GO
+/****** Object:  Table [dbo].[MeetingDecisions]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingDecisions]') AND type in (N'U'))
+DROP TABLE [dbo].[MeetingDecisions]
+GO
+/****** Object:  Table [dbo].[MeetingDecisionRelevant]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingDecisionRelevant]') AND type in (N'U'))
+DROP TABLE [dbo].[MeetingDecisionRelevant]
+GO
+/****** Object:  Table [dbo].[MeetingAttendees]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingAttendees]') AND type in (N'U'))
+DROP TABLE [dbo].[MeetingAttendees]
+GO
+/****** Object:  Table [dbo].[MeetingAgendaTypes]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingAgendaTypes]') AND type in (N'U'))
+DROP TABLE [dbo].[MeetingAgendaTypes]
+GO
+/****** Object:  Table [dbo].[MeetingAgendas]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingAgendas]') AND type in (N'U'))
+DROP TABLE [dbo].[MeetingAgendas]
+GO
+/****** Object:  Table [dbo].[MeetingAgendaRelevant]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingAgendaRelevant]') AND type in (N'U'))
+DROP TABLE [dbo].[MeetingAgendaRelevant]
+GO
+/****** Object:  Table [dbo].[Languages]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Languages]') AND type in (N'U'))
+DROP TABLE [dbo].[Languages]
+GO
+/****** Object:  Table [dbo].[Exceptions]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Exceptions]') AND type in (N'U'))
+DROP TABLE [dbo].[Exceptions]
+GO
+/****** Object:  Table [dbo].[currency]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[currency]') AND type in (N'U'))
+DROP TABLE [dbo].[currency]
+GO
+/****** Object:  Table [dbo].[Contacts]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Contacts]') AND type in (N'U'))
+DROP TABLE [dbo].[Contacts]
+GO
+/****** Object:  Table [dbo].[BusinessUnits]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[BusinessUnits]') AND type in (N'U'))
+DROP TABLE [dbo].[BusinessUnits]
+GO
+/****** Object:  View [dbo].[vw_deleteFixWordz]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteFixWordz]
+GO
+/****** Object:  View [dbo].[vw_deleteFixDutchWordz]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteFixDutchWordz]
+GO
+/****** Object:  View [dbo].[vw_deleteFixCaps]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteFixCaps]
+GO
+/****** Object:  UserDefinedFunction [HC].[DelimitedSplit8K]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP FUNCTION [HC].[DelimitedSplit8K]
+GO
+/****** Object:  View [HC3W].[vwAdEmailTemplateList]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC3W].[vwAdEmailTemplateList]
+GO
+/****** Object:  View [HC3W].[vwAdDuplicates]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC3W].[vwAdDuplicates]
+GO
+/****** Object:  Table [HC].[LaunchAndLogin]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[LaunchAndLogin]') AND type in (N'U'))
+DROP TABLE [HC].[LaunchAndLogin]
+GO
+/****** Object:  View [dbo].[vw_deleteTempKennelList]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteTempKennelList]
+GO
+/****** Object:  View [HC].[vwEventCommonFields]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC].[vwEventCommonFields]
+GO
+/****** Object:  View [dbo].[vw_deleteSlippery2]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteSlippery2]
+GO
+/****** Object:  View [dbo].[vw_deleteSlippery]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteSlippery]
+GO
+/****** Object:  View [dbo].[vw_deleteOpeeRuns]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteOpeeRuns]
+GO
+/****** Object:  View [HC3W].[vwSaHasherPermissions]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC3W].[vwSaHasherPermissions]
+GO
+/****** Object:  View [dbo].[vw_insertHkmRecords]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_insertHkmRecords]
+GO
+/****** Object:  View [dbo].[vw_insertHashers]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_insertHashers]
+GO
+/****** Object:  View [dbo].[vw_deleteEditPayments]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteEditPayments]
+GO
+/****** Object:  View [dbo].[vw_deleteEditNetherlands]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteEditNetherlands]
+GO
+/****** Object:  View [dbo].[vw_deleteEditFILTHhash]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteEditFILTHhash]
+GO
+/****** Object:  View [HC].[deleteTempCities]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC].[deleteTempCities]
+GO
+/****** Object:  View [dbo].[vw_dev_kennelMembership]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_dev_kennelMembership]
+GO
+/****** Object:  View [HC3W].[vwAdHasher]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC3W].[vwAdHasher]
+GO
+/****** Object:  View [HC3W].[vwAdHashCashReport]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC3W].[vwAdHashCashReport]
+GO
+/****** Object:  View [dbo].[vw_deleteEditFacebookKennels]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteEditFacebookKennels]
+GO
+/****** Object:  View [HC3W].[vwAdProfitLossReport]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC3W].[vwAdProfitLossReport]
+GO
+/****** Object:  Table [HC].[Receipt]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Receipt]') AND type in (N'U'))
+DROP TABLE [HC].[Receipt]
+GO
+/****** Object:  View [HC3].[vwMmByKennel]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC3].[vwMmByKennel]
+GO
+/****** Object:  Table [DomainValues].[MisManagementRoles]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[MisManagementRoles]') AND type in (N'U'))
+DROP TABLE [DomainValues].[MisManagementRoles]
+GO
+/****** Object:  View [dbo].[vw_deleteTheWhites]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteTheWhites]
+GO
+/****** Object:  View [HC3W].[vwAdEvent]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC3W].[vwAdEvent]
+GO
+/****** Object:  View [HC3W].[vwAdHasherList]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC3W].[vwAdHasherList]
+GO
+/****** Object:  View [dbo].[vw_deleteDnhRuns]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteDnhRuns]
+GO
+/****** Object:  View [HC3W].[vwAdRunAttendence]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC3W].[vwAdRunAttendence]
+GO
+/****** Object:  Table [HC].[RunCounts]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[RunCounts]') AND type in (N'U'))
+DROP TABLE [HC].[RunCounts]
+GO
+/****** Object:  Table [HC].[Payment]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Payment]') AND type in (N'U'))
+DROP TABLE [HC].[Payment]
+GO
+/****** Object:  View [HC3W].[vwAdEventList]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC3W].[vwAdEventList]
+GO
+/****** Object:  View [dbo].[vw_deleteMe_importEvents]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteMe_importEvents]
+GO
+/****** Object:  View [dbo].[vw_deleteMe_facebookIds]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteMe_facebookIds]
+GO
+/****** Object:  View [dbo].[vw_deleteImportHemRecords]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteImportHemRecords]
+GO
+/****** Object:  Table [HC].[HasherEventMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[HasherEventMap]') AND type in (N'U'))
+DROP TABLE [HC].[HasherEventMap]
+GO
+/****** Object:  View [HC3W].[vwAdKennelList]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC3W].[vwAdKennelList]
+GO
+/****** Object:  Table [HC].[City]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[City]') AND type in (N'U'))
+DROP TABLE [HC].[City]
+GO
+/****** Object:  Table [HC].[Region]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Region]') AND type in (N'U'))
+DROP TABLE [HC].[Region]
+GO
+/****** Object:  View [dbo].[vw_deleteAddHashers]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteAddHashers]
+GO
+/****** Object:  View [dbo].[vw_deleteFilthRuns]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteFilthRuns]
+GO
+/****** Object:  View [HC].[vwEventAdjusted]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC].[vwEventAdjusted]
+GO
+/****** Object:  View [dbo].[vwEventAdjusted]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vwEventAdjusted]
+GO
+/****** Object:  View [HC3W].[vwAdKennel]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC3W].[vwAdKennel]
+GO
+/****** Object:  View [dbo].[vw_deleteHcPhotos]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteHcPhotos]
+GO
+/****** Object:  View [HC3W].[vwSaHasher]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC3W].[vwSaHasher]
+GO
+/****** Object:  View [dbo].[vw_deleteCurrencyTest]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [dbo].[vw_deleteCurrencyTest]
+GO
+/****** Object:  Table [HC].[Country]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Country]') AND type in (N'U'))
+DROP TABLE [HC].[Country]
+GO
+/****** Object:  View [HC3W].[vwAdEmailLogList]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP VIEW [HC3W].[vwAdEmailLogList]
+GO
+/****** Object:  Table [HC].[Kennel]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Kennel]') AND type in (N'U'))
+DROP TABLE [HC].[Kennel]
+GO
+/****** Object:  Table [HC].[EmailTemplate]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[EmailTemplate]') AND type in (N'U'))
+DROP TABLE [HC].[EmailTemplate]
+GO
+/****** Object:  Table [HC].[Event]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Event]') AND type in (N'U'))
+DROP TABLE [HC].[Event]
+GO
+/****** Object:  Table [HC].[Hasher]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Hasher]') AND type in (N'U'))
+DROP TABLE [HC].[Hasher]
+GO
+/****** Object:  Table [HC].[HasherKennelMap]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[HasherKennelMap]') AND type in (N'U'))
+DROP TABLE [HC].[HasherKennelMap]
+GO
+/****** Object:  Table [HC].[EmailLog]    Script Date: 7/12/2021 11:29:43 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[EmailLog]') AND type in (N'U'))
+DROP TABLE [HC].[EmailLog]
+GO
+/****** Object:  UserDefinedFunction [HC].[NUMBER_TO_STR_BASE]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP FUNCTION [HC].[NUMBER_TO_STR_BASE]
+GO
+/****** Object:  UserDefinedFunction [HC].[InlineMax]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP FUNCTION [HC].[InlineMax]
+GO
+/****** Object:  UserDefinedFunction [HC].[GENERATE_SIX_RANDOM_CHARACTERS]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP FUNCTION [HC].[GENERATE_SIX_RANDOM_CHARACTERS]
+GO
+/****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN_V2]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP FUNCTION [HC].[CREATE_ACCESS_TOKEN_V2]
+GO
+/****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP FUNCTION [HC].[CREATE_ACCESS_TOKEN]
+GO
+/****** Object:  UserDefinedFunction [HC].[CHECK_ACCESS_TOKEN]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP FUNCTION [HC].[CHECK_ACCESS_TOKEN]
+GO
+/****** Object:  UserDefinedFunction [dbo].[fn_diagramobjects]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP FUNCTION [dbo].[fn_diagramobjects]
+GO
+/****** Object:  Schema [WORDZ]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [WORDZ]
+GO
+/****** Object:  Schema [UNUSED]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [UNUSED]
+GO
+/****** Object:  Schema [Transactions]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [Transactions]
+GO
+/****** Object:  Schema [Kennels]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [Kennels]
+GO
+/****** Object:  Schema [HC3W]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [HC3W]
+GO
+/****** Object:  Schema [HC3]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [HC3]
+GO
+/****** Object:  Schema [HC2]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [HC2]
+GO
+/****** Object:  Schema [HC_BACKUP]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [HC_BACKUP]
+GO
+/****** Object:  Schema [HC]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [HC]
+GO
+/****** Object:  Schema [Hashers]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [Hashers]
+GO
+/****** Object:  Schema [Geography]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [Geography]
+GO
+/****** Object:  Schema [EXT]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [EXT]
+GO
+/****** Object:  Schema [Events]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [Events]
+GO
+/****** Object:  Schema [DomainValues]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [DomainValues]
+GO
+/****** Object:  Schema [DEV]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [DEV]
+GO
+/****** Object:  Schema [Admin]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP SCHEMA [Admin]
+GO
+/****** Object:  User [officeFormsUser]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP USER [officeFormsUser]
+GO
+/****** Object:  User [zapieruser]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP USER [zapieruser]
+GO
+/****** Object:  Database [HarrierCentralWebDb]    Script Date: 7/12/2021 11:29:43 PM ******/
+DROP DATABASE [HarrierCentralWebDb]
+GO
+/****** Object:  Database [HarrierCentralWebDb]    Script Date: 7/12/2021 11:29:43 PM ******/
 CREATE DATABASE [HarrierCentralWebDb]  (EDITION = 'Basic', SERVICE_OBJECTIVE = 'Basic', MAXSIZE = 2 GB) WITH CATALOG_COLLATION = SQL_Latin1_General_CP1_CI_AS;
-
-END
 GO
 ALTER DATABASE [HarrierCentralWebDb] SET COMPATIBILITY_LEVEL = 120
 GO
@@ -47,87 +1605,69 @@ ALTER DATABASE [HarrierCentralWebDb] SET QUERY_STORE = ON
 GO
 ALTER DATABASE [HarrierCentralWebDb] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLEANUP_POLICY = (STALE_QUERY_THRESHOLD_DAYS = 7), DATA_FLUSH_INTERVAL_SECONDS = 900, INTERVAL_LENGTH_MINUTES = 60, MAX_STORAGE_SIZE_MB = 10, QUERY_CAPTURE_MODE = AUTO, SIZE_BASED_CLEANUP_MODE = AUTO, MAX_PLANS_PER_QUERY = 200, WAIT_STATS_CAPTURE_MODE = ON)
 GO
-/****** Object:  User [zapieruser]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  User [zapieruser]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE USER [zapieruser] FOR LOGIN [zapierlogin] WITH DEFAULT_SCHEMA=[EXT]
 GO
-/****** Object:  User [officeFormsUser]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  User [officeFormsUser]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE USER [officeFormsUser] FOR LOGIN [officeFormsLogin] WITH DEFAULT_SCHEMA=[EXT]
 GO
-/****** Object:  Schema [Admin]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'Admin')
-EXEC sys.sp_executesql N'CREATE SCHEMA [Admin]'
+/****** Object:  Schema [Admin]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [Admin]
 GO
-/****** Object:  Schema [DEV]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'DEV')
-EXEC sys.sp_executesql N'CREATE SCHEMA [DEV]'
+/****** Object:  Schema [DEV]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [DEV]
 GO
-/****** Object:  Schema [DomainValues]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'DomainValues')
-EXEC sys.sp_executesql N'CREATE SCHEMA [DomainValues]'
+/****** Object:  Schema [DomainValues]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [DomainValues]
 GO
-/****** Object:  Schema [Events]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'Events')
-EXEC sys.sp_executesql N'CREATE SCHEMA [Events]'
+/****** Object:  Schema [Events]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [Events]
 GO
-/****** Object:  Schema [EXT]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'EXT')
-EXEC sys.sp_executesql N'CREATE SCHEMA [EXT]'
+/****** Object:  Schema [EXT]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [EXT]
 GO
-/****** Object:  Schema [Geography]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'Geography')
-EXEC sys.sp_executesql N'CREATE SCHEMA [Geography]'
+/****** Object:  Schema [Geography]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [Geography]
 GO
-/****** Object:  Schema [Hashers]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'Hashers')
-EXEC sys.sp_executesql N'CREATE SCHEMA [Hashers]'
+/****** Object:  Schema [Hashers]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [Hashers]
 GO
-/****** Object:  Schema [HC]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'HC')
-EXEC sys.sp_executesql N'CREATE SCHEMA [HC]'
+/****** Object:  Schema [HC]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [HC]
 GO
-/****** Object:  Schema [HC_BACKUP]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'HC_BACKUP')
-EXEC sys.sp_executesql N'CREATE SCHEMA [HC_BACKUP]'
+/****** Object:  Schema [HC_BACKUP]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [HC_BACKUP]
 GO
-/****** Object:  Schema [HC2]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'HC2')
-EXEC sys.sp_executesql N'CREATE SCHEMA [HC2]'
+/****** Object:  Schema [HC2]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [HC2]
 GO
-/****** Object:  Schema [HC3]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'HC3')
-EXEC sys.sp_executesql N'CREATE SCHEMA [HC3]'
+/****** Object:  Schema [HC3]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [HC3]
 GO
-/****** Object:  Schema [HC3W]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'HC3W')
-EXEC sys.sp_executesql N'CREATE SCHEMA [HC3W]'
+/****** Object:  Schema [HC3W]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [HC3W]
 GO
-/****** Object:  Schema [Kennels]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'Kennels')
-EXEC sys.sp_executesql N'CREATE SCHEMA [Kennels]'
+/****** Object:  Schema [Kennels]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [Kennels]
 GO
-/****** Object:  Schema [Transactions]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'Transactions')
-EXEC sys.sp_executesql N'CREATE SCHEMA [Transactions]'
+/****** Object:  Schema [Transactions]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [Transactions]
 GO
-/****** Object:  Schema [UNUSED]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'UNUSED')
-EXEC sys.sp_executesql N'CREATE SCHEMA [UNUSED]'
+/****** Object:  Schema [UNUSED]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [UNUSED]
 GO
-/****** Object:  Schema [WORDZ]    Script Date: 7/2/2021 4:18:13 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'WORDZ')
-EXEC sys.sp_executesql N'CREATE SCHEMA [WORDZ]'
+/****** Object:  Schema [WORDZ]    Script Date: 7/12/2021 11:29:44 PM ******/
+CREATE SCHEMA [WORDZ]
 GO
-/****** Object:  UserDefinedFunction [dbo].[fn_diagramobjects]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  UserDefinedFunction [dbo].[fn_diagramobjects]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[fn_diagramobjects]') AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
-BEGIN
-execute dbo.sp_executesql @statement = N'
+
 	CREATE FUNCTION [dbo].[fn_diagramobjects]() 
 	RETURNS int
-	WITH EXECUTE AS N''dbo''
+	WITH EXECUTE AS N'dbo'
 	AS
 	BEGIN
 		declare @id_upgraddiagrams		int
@@ -142,14 +1682,14 @@ execute dbo.sp_executesql @statement = N'
 
 		select @InstalledObjects = 0
 
-		select 	@id_upgraddiagrams = object_id(N''dbo.sp_upgraddiagrams''),
-			@id_sysdiagrams = object_id(N''dbo.sysdiagrams''),
-			@id_helpdiagrams = object_id(N''dbo.sp_helpdiagrams''),
-			@id_helpdiagramdefinition = object_id(N''dbo.sp_helpdiagramdefinition''),
-			@id_creatediagram = object_id(N''dbo.sp_creatediagram''),
-			@id_renamediagram = object_id(N''dbo.sp_renamediagram''),
-			@id_alterdiagram = object_id(N''dbo.sp_alterdiagram''), 
-			@id_dropdiagram = object_id(N''dbo.sp_dropdiagram'')
+		select 	@id_upgraddiagrams = object_id(N'dbo.sp_upgraddiagrams'),
+			@id_sysdiagrams = object_id(N'dbo.sysdiagrams'),
+			@id_helpdiagrams = object_id(N'dbo.sp_helpdiagrams'),
+			@id_helpdiagramdefinition = object_id(N'dbo.sp_helpdiagramdefinition'),
+			@id_creatediagram = object_id(N'dbo.sp_creatediagram'),
+			@id_renamediagram = object_id(N'dbo.sp_renamediagram'),
+			@id_alterdiagram = object_id(N'dbo.sp_alterdiagram'), 
+			@id_dropdiagram = object_id(N'dbo.sp_dropdiagram')
 
 		if @id_upgraddiagrams is not null
 			select @InstalledObjects = @InstalledObjects + 1
@@ -170,24 +1710,21 @@ execute dbo.sp_executesql @statement = N'
 		
 		return @InstalledObjects 
 	END
-	' 
-END
+	
 GO
-/****** Object:  UserDefinedFunction [HC].[CHECK_ACCESS_TOKEN]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  UserDefinedFunction [HC].[CHECK_ACCESS_TOKEN]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[CHECK_ACCESS_TOKEN]') AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
-BEGIN
-execute dbo.sp_executesql @statement = N'
+
 CREATE FUNCTION [HC].[CHECK_ACCESS_TOKEN] (@userId uniqueidentifier, @procName nvarchar(100), @accessToken nvarchar(1000), @paramString nvarchar(500))
 RETURNS int
 WITH EXECUTE AS CALLER
 AS
 BEGIN  
  -- Check three tokens... the one generated for this point in time and the previous and next codes.   
- -- This allows the clock on the user''s phone to be off by a small bit of time and yet still   
+ -- This allows the clock on the user's phone to be off by a small bit of time and yet still   
  -- produce a good access code. It also covers the case where an access code takes time to travel   
  -- through the network to reach the server and may be expired by the time it arrives. This also   
  -- helps cover cases where the division and rounding to INT on the server produces a different  
@@ -195,7 +1732,7 @@ BEGIN
  DECLARE @generatedToken nvarchar(2000)  
  DECLARE @try30 int = 0
  
- RETURN 1 -- Uncomment this line to disable access token checks  
+ --RETURN 1 -- Uncomment this line to disable access token checks  
  IF ((@accessToken is null) OR (datalength(@accessToken) < 50))   
  BEGIN  
   -- fail if Access token is null or does not have the correct amount of characters  
@@ -253,17 +1790,13 @@ BEGIN
   
  RETURN 1  
 END  
-' 
-END
 GO
-/****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[CREATE_ACCESS_TOKEN]') AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
-BEGIN
-execute dbo.sp_executesql @statement = N'
+
 CREATE FUNCTION [HC].[CREATE_ACCESS_TOKEN] (@userId uniqueidentifier, @procName varchar(500),@offset int,@paramString nvarchar(500), @timeWindow int)
 RETURNS varchar(MAX)
 WITH EXECUTE AS CALLER
@@ -271,27 +1804,23 @@ AS
 BEGIN
 	declare @bin as varbinary(max)
 
-	if @paramString IS NOT NULL SET @paramString = upper(''#''+@paramString)
+	if @paramString IS NOT NULL SET @paramString = upper('#'+@paramString)
 
-	--return upper(cast(@userId as nvarchar(50))) + ''#''+@procName+''#'' + cast((cast(datediff(second,''25 Jul 1993 15:00'',GETUTCDATE()) / 5760 as int)+@offset) as nvarchar(50))
+	--return upper(cast(@userId as nvarchar(50))) + '#'+@procName+'#' + cast((cast(datediff(second,'25 Jul 1993 15:00',GETUTCDATE()) / 5760 as int)+@offset) as nvarchar(50))
 	DECLARE @str as varchar(2000)
-	SET @str = upper(cast(@userId as varchar(50))) + ''#''+@procName+''#'' + cast((cast(datediff(second,''25 Jul 1993 15:00'',GETUTCDATE()) / @timeWindow as int)+@offset) as varchar(50)) + coalesce(@paramString,'''')
-	SET @bin = HASHBYTES(''SHA2_256'',@str)
-	return cast('''' as xml).value(''xs:hexBinary(sql:variable("@bin"))'', ''varchar(max)'')
+	SET @str = upper(cast(@userId as varchar(50))) + '#'+@procName+'#' + cast((cast(datediff(second,'25 Jul 1993 15:00',GETUTCDATE()) / @timeWindow as int)+@offset) as varchar(50)) + coalesce(@paramString,'')
+	SET @bin = HASHBYTES('SHA2_256',@str)
+	return cast('' as xml).value('xs:hexBinary(sql:variable("@bin"))', 'varchar(max)')
 END
 
 
-' 
-END
 GO
-/****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN_V2]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN_V2]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[CREATE_ACCESS_TOKEN_V2]') AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
-BEGIN
-execute dbo.sp_executesql @statement = N'
+
 CREATE FUNCTION [HC].[CREATE_ACCESS_TOKEN_V2] (@userId uniqueidentifier, @procName varchar(500),@offset int,@paramString nvarchar(500), @timeWindow int)
 RETURNS varchar(MAX)
 WITH EXECUTE AS CALLER
@@ -299,78 +1828,67 @@ AS
 BEGIN
 	declare @bin as varbinary(max)
 
-	if @paramString IS NOT NULL SET @paramString = upper(''#''+@paramString)
+	if @paramString IS NOT NULL SET @paramString = upper('#'+@paramString)
 
-	--return upper(cast(@userId as nvarchar(50))) + ''#''+@procName+''#'' + cast((cast(datediff(second,''25 Jul 1993 15:00'',GETUTCDATE()) / 5760 as int)+@offset) as nvarchar(50))
+	--return upper(cast(@userId as nvarchar(50))) + '#'+@procName+'#' + cast((cast(datediff(second,'25 Jul 1993 15:00',GETUTCDATE()) / 5760 as int)+@offset) as nvarchar(50))
 	DECLARE @str as varchar(2000)
-	--SET @str = upper(cast(@userId as varchar(50))) + ''#''+@procName+''#'' + cast((cast(datediff(second,''25 Jul 1993 15:00'',GETUTCDATE()) / @timeWindow as int)+@offset) as varchar(50)) + coalesce(@paramString,'''')
-	SET @str = upper(cast(@userId as varchar(50)) + ''#''+@procName+''#'' + cast((cast(datediff(second,''25 Jul 1993 15:00'',GETUTCDATE()) / @timeWindow as int)+@offset) as varchar(50)) + coalesce(@paramString,''''))
-	SET @bin = HASHBYTES(''SHA2_256'',@str)
-	return cast('''' as xml).value(''xs:hexBinary(sql:variable("@bin"))'', ''varchar(max)'')
+	--SET @str = upper(cast(@userId as varchar(50))) + '#'+@procName+'#' + cast((cast(datediff(second,'25 Jul 1993 15:00',GETUTCDATE()) / @timeWindow as int)+@offset) as varchar(50)) + coalesce(@paramString,'')
+	SET @str = upper(cast(@userId as varchar(50)) + '#'+@procName+'#' + cast((cast(datediff(second,'25 Jul 1993 15:00',GETUTCDATE()) / @timeWindow as int)+@offset) as varchar(50)) + coalesce(@paramString,''))
+	SET @bin = HASHBYTES('SHA2_256',@str)
+	return cast('' as xml).value('xs:hexBinary(sql:variable("@bin"))', 'varchar(max)')
 END
 
 
-' 
-END
 GO
-/****** Object:  UserDefinedFunction [HC].[GENERATE_SIX_RANDOM_CHARACTERS]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  UserDefinedFunction [HC].[GENERATE_SIX_RANDOM_CHARACTERS]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[GENERATE_SIX_RANDOM_CHARACTERS]') AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
-BEGIN
-execute dbo.sp_executesql @statement = N'
+
 CREATE FUNCTION [HC].[GENERATE_SIX_RANDOM_CHARACTERS] (@number int,@prefix nvarchar(120),@includeNumbers char(1))
 RETURNS nvarchar(50)
 WITH EXECUTE AS CALLER
 AS
 BEGIN
 	 DECLARE @base int = 36
-	 IF (UPPER(@includeNumbers) = ''N'') SET @base = 26
+	 IF (UPPER(@includeNumbers) = 'N') SET @base = 26
 
-	 -- SELECT HC.GENERATE_SIX_RANDOM_CHARACTERS(CAST( RAND() * 2147483647 as int),''USC:'',''Y'')
+	 -- SELECT HC.GENERATE_SIX_RANDOM_CHARACTERS(CAST( RAND() * 2147483647 as int),'USC:','Y')
 	
      DECLARE @dividend int = @number
         ,@remainder int = 0 
-        ,@numberString varchar(MAX) = CASE WHEN @number = 0 THEN ''0'' ELSE '''' END ;
+        ,@numberString varchar(MAX) = CASE WHEN @number = 0 THEN '0' ELSE '' END ;
       WHILE (@dividend > 0 OR @remainder > 0)
          BEGIN
             SET @remainder = @dividend % @base ; --The reminder by the division number in base
             SET @dividend = @dividend / @base ; -- The integer part of the division, becomes the new divident for the next loop
             IF(@dividend > 0 OR @remainder > 0)--check that not correspond the last loop when quotient and reminder is 0
-                SET @numberString =  CHAR( (CASE WHEN @remainder <= 25 THEN ASCII(''A'') ELSE ASCII(''0'')-26 END) + @remainder ) + @numberString;
+                SET @numberString =  CHAR( (CASE WHEN @remainder <= 25 THEN ASCII('A') ELSE ASCII('0')-26 END) + @remainder ) + @numberString;
      END;
-     RETURN(@prefix+RIGHT(''AAAAAA'' + @numberString,6));
-END
-' 
+     RETURN(@prefix+RIGHT('AAAAAA' + @numberString,6));
 END
 GO
-/****** Object:  UserDefinedFunction [HC].[InlineMax]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  UserDefinedFunction [HC].[InlineMax]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[InlineMax]') AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
-BEGIN
-execute dbo.sp_executesql @statement = N'create function [HC].[InlineMax](@val1 int, @val2 int)
+create function [HC].[InlineMax](@val1 int, @val2 int)
 returns int
 as
 begin
   if @val1 > @val2
     return @val1
   return isnull(@val2,@val1)
-end' 
-END
+end
 GO
-/****** Object:  UserDefinedFunction [HC].[NUMBER_TO_STR_BASE]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  UserDefinedFunction [HC].[NUMBER_TO_STR_BASE]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[NUMBER_TO_STR_BASE]') AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
-BEGIN
-execute dbo.sp_executesql @statement = N'
+
 CREATE FUNCTION [HC].[NUMBER_TO_STR_BASE] (@base int,@number int)
 RETURNS varchar(MAX)
 WITH EXECUTE AS CALLER
@@ -378,27 +1896,23 @@ AS
 BEGIN
      DECLARE @dividend int = @number
         ,@remainder int = 0 
-        ,@numberString varchar(MAX) = CASE WHEN @number = 0 THEN ''0'' ELSE '''' END ;
+        ,@numberString varchar(MAX) = CASE WHEN @number = 0 THEN '0' ELSE '' END ;
      SET @base = CASE WHEN @base <= 36 THEN @base ELSE 36 END;--The max base is 36, includes the range of [0-9A-Z]
      WHILE (@dividend > 0 OR @remainder > 0)
          BEGIN
             SET @remainder = @dividend % @base ; --The reminder by the division number in base
             SET @dividend = @dividend / @base ; -- The integer part of the division, becomes the new divident for the next loop
             IF(@dividend > 0 OR @remainder > 0)--check that not correspond the last loop when quotient and reminder is 0
-                SET @numberString =  CHAR( (CASE WHEN @remainder <= 25 THEN ASCII(''A'') ELSE ASCII(''0'')-26 END) + @remainder ) + @numberString;
+                SET @numberString =  CHAR( (CASE WHEN @remainder <= 25 THEN ASCII('A') ELSE ASCII('0')-26 END) + @remainder ) + @numberString;
      END;
      RETURN(@numberString);
 END
-' 
-END
 GO
-/****** Object:  Table [HC].[EmailLog]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [HC].[EmailLog]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[EmailLog]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[EmailLog](
 	[id] [uniqueidentifier] NOT NULL,
 	[EmailTemplaterId] [uniqueidentifier] NOT NULL,
@@ -411,64 +1925,12 @@ CREATE TABLE [HC].[EmailLog](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[Hasher]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [HC].[HasherKennelMap]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Hasher]') AND type in (N'U'))
-BEGIN
-CREATE TABLE [HC].[Hasher](
-	[id] [uniqueidentifier] NOT NULL,
-	[HomeKennelId] [uniqueidentifier] NULL,
-	[MotherKennelId] [uniqueidentifier] NULL,
-	[SupportCode] [nvarchar](50) NOT NULL,
-	[ResetCode] [nvarchar](50) NOT NULL,
-	[QR_code] [nvarchar](50) NOT NULL,
-	[QR_secret_code] [uniqueidentifier] NOT NULL,
-	[DisplayName] [nvarchar](250) NOT NULL,
-	[HashName] [nvarchar](250) NULL,
-	[FirstName] [nvarchar](250) NULL,
-	[LastName] [nvarchar](250) NULL,
-	[Email] [nvarchar](250) NOT NULL,
-	[Photo] [nvarchar](250) NULL,
-	[Gender] [nvarchar](50) NULL,
-	[FacebookId] [nvarchar](250) NULL,
-	[FacebookAccessToken] [nvarchar](250) NULL,
-	[FacebookAccessTokenLastUpdated] [datetimeoffset](7) NULL,
-	[Locale] [nvarchar](50) NULL,
-	[Description] [nvarchar](4000) NULL,
-	[HomeLatitude] [decimal](12, 9) NULL,
-	[HomeLongitude] [decimal](13, 9) NULL,
-	[HomeGeolocation] [geography] NULL,
-	[NameDisplayPreference] [smallint] NOT NULL,
-	[Preferences] [int] NOT NULL,
-	[HcWebUserId] [int] NULL,
-	[IncludeInGlobalHashDirectory] [smallint] NOT NULL,
-	[Removed] [smallint] NULL,
-	[version] [timestamp] NOT NULL,
-	[createdAt] [datetimeoffset](7) NOT NULL,
-	[updatedAt] [datetimeoffset](7) NOT NULL,
-	[deleted] [bit] NOT NULL,
-	[SingleSignOnId] [nvarchar](250) NULL,
-	[SingleSignOnType] [nvarchar](50) NULL,
-	[ResetCodeLastUpdated] [datetimeoffset](7) NULL,
- CONSTRAINT [PK_Hasher] PRIMARY KEY CLUSTERED 
-(
-	[id] ASC
-)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
-GO
-/****** Object:  Table [HC].[HasherKennelMap]    Script Date: 7/2/2021 4:18:13 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[HasherKennelMap]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[HasherKennelMap](
 	[id] [uniqueidentifier] NOT NULL,
 	[UserId] [uniqueidentifier] NOT NULL,
@@ -500,15 +1962,59 @@ CREATE TABLE [HC].[HasherKennelMap](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[Event]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [HC].[Hasher]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Event]') AND type in (N'U'))
-BEGIN
+CREATE TABLE [HC].[Hasher](
+	[id] [uniqueidentifier] NOT NULL,
+	[HomeKennelId] [uniqueidentifier] NULL,
+	[MotherKennelId] [uniqueidentifier] NULL,
+	[SupportCode] [nvarchar](50) NOT NULL,
+	[ResetCode] [nvarchar](50) NOT NULL,
+	[QR_code] [nvarchar](50) NOT NULL,
+	[QR_secret_code] [uniqueidentifier] NOT NULL,
+	[DisplayName] [nvarchar](250) NOT NULL,
+	[HashName] [nvarchar](250) NULL,
+	[FirstName] [nvarchar](250) NULL,
+	[LastName] [nvarchar](250) NULL,
+	[Email] [nvarchar](250) NOT NULL,
+	[Photo] [nvarchar](250) NULL,
+	[Gender] [nvarchar](50) NULL,
+	[FacebookId] [nvarchar](250) NULL,
+	[FacebookAccessToken] [nvarchar](1000) NULL,
+	[FacebookAccessTokenLastUpdated] [datetimeoffset](7) NULL,
+	[Locale] [nvarchar](50) NULL,
+	[Description] [nvarchar](4000) NULL,
+	[HomeLatitude] [decimal](12, 9) NULL,
+	[HomeLongitude] [decimal](13, 9) NULL,
+	[HomeGeolocation] [geography] NULL,
+	[NameDisplayPreference] [smallint] NOT NULL,
+	[Preferences] [int] NOT NULL,
+	[HcWebUserId] [int] NULL,
+	[IncludeInGlobalHashDirectory] [smallint] NOT NULL,
+	[Removed] [smallint] NULL,
+	[version] [timestamp] NOT NULL,
+	[createdAt] [datetimeoffset](7) NOT NULL,
+	[updatedAt] [datetimeoffset](7) NOT NULL,
+	[deleted] [bit] NOT NULL,
+	[SingleSignOnId] [nvarchar](250) NULL,
+	[SingleSignOnType] [nvarchar](50) NULL,
+	[ResetCodeLastUpdated] [datetimeoffset](7) NULL,
+	[IsBetaTester] [smallint] NOT NULL,
+ CONSTRAINT [PK_Hasher] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [HC].[Event]    Script Date: 7/12/2021 11:29:44 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 CREATE TABLE [HC].[Event](
 	[id] [uniqueidentifier] NOT NULL,
 	[EventStartDatetime] [datetimeoffset](7) NULL,
@@ -595,15 +2101,12 @@ CREATE TABLE [HC].[Event](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[EmailTemplate]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [HC].[EmailTemplate]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[EmailTemplate]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[EmailTemplate](
 	[id] [uniqueidentifier] NOT NULL,
 	[KennelId] [uniqueidentifier] NOT NULL,
@@ -627,15 +2130,12 @@ CREATE TABLE [HC].[EmailTemplate](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[Kennel]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [HC].[Kennel]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Kennel]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[Kennel](
 	[id] [uniqueidentifier] NOT NULL,
 	[KennelStatus] [smallint] NOT NULL,
@@ -712,15 +2212,13 @@ CREATE TABLE [HC].[Kennel](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  View [HC3W].[vwAdEmailLogList]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC3W].[vwAdEmailLogList]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC3W].[vwAdEmailLogList]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 
@@ -742,15 +2240,12 @@ INNER JOIN HC.EmailTemplate em on em.KennelId = k.id
 INNER JOIN HC.Event e on e.KennelId = k.id
 INNER JOIN HC.EmailLog elog on elog.EventId = e.id
 WHERE ((hkm.HcWebPermissionFlags & 0x0001) = 0x0001 AND h.HcWebUserId IS NOT NULL) OR (h.HcWebUserId < 10)
-' 
 GO
-/****** Object:  Table [HC].[Country]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [HC].[Country]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Country]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[Country](
 	[id] [uniqueidentifier] NOT NULL,
 	[CountryCode] [nvarchar](5) NOT NULL,
@@ -773,24 +2268,22 @@ CREATE TABLE [HC].[Country](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  View [dbo].[vw_deleteCurrencyTest]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteCurrencyTest]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteCurrencyTest]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_deleteCurrencyTest] as
-select c.CountryName, c.CurrencySymbol, c.DigitsAfterDecimal,c.id from HC.Country c' 
+create view [dbo].[vw_deleteCurrencyTest] as
+select c.CountryName, c.CurrencySymbol, c.DigitsAfterDecimal,c.id from HC.Country c
 GO
-/****** Object:  View [HC3W].[vwSaHasher]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC3W].[vwSaHasher]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC3W].[vwSaHasher]'))
-EXEC dbo.sp_executesql @statement = N'
+
+
 CREATE VIEW [HC3W].[vwSaHasher] AS
 
 SELECT [id]
@@ -816,30 +2309,28 @@ SELECT [id]
       ,[NameDisplayPreference]
       ,[HcWebUserId]
       ,[Removed]
+	  ,[IsBetaTester]
       ,[version]
       ,[createdAt]
       ,[updatedAt]
       ,[deleted]
   FROM [HC].[Hasher] WHERE Removed = 0
-' 
 GO
-/****** Object:  View [dbo].[vw_deleteHcPhotos]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteHcPhotos]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteHcPhotos]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_deleteHcPhotos] as
+create view [dbo].[vw_deleteHcPhotos] as
 select Photo,id,DisplayName from HC.Hasher
-where createdAt > dateadd(day,-20,getdate())' 
+where createdAt > dateadd(day,-20,getdate())
 GO
-/****** Object:  View [HC3W].[vwAdKennel]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC3W].[vwAdKennel]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC3W].[vwAdKennel]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 
@@ -924,15 +2415,13 @@ SELECT
 	  ,[CanEditRunAttendence]
 
 FROM HC.Kennel
-' 
 GO
-/****** Object:  View [dbo].[vwEventAdjusted]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vwEventAdjusted]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vwEventAdjusted]'))
-EXEC dbo.sp_executesql @statement = N'
+
 CREATE VIEW [dbo].[vwEventAdjusted] 
 
 AS
@@ -950,8 +2439,8 @@ SELECT evt.[id]
       ,evt.[EventNumber]
       ,evt.[EventNumberIncrement]
       ,evt.[DoTrackHashCash]
-	  ,CASE WHEN evt.DoTrackHashCash = 0 THEN ''-'' ELSE COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(coalesce(evt.[EventPriceForMembers],k.DefaultEventPriceForMembers),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') END as EventPriceForMembers
-      ,CASE WHEN evt.DoTrackHashCash = 0 THEN ''-'' ELSE COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(coalesce(evt.[EventPriceForNonMembers],k.DefaultEventPriceForNonMembers),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') END as EventPriceForNonMembers
+	  ,CASE WHEN evt.DoTrackHashCash = 0 THEN '-' ELSE COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(coalesce(evt.[EventPriceForMembers],k.DefaultEventPriceForMembers),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') END as EventPriceForMembers
+      ,CASE WHEN evt.DoTrackHashCash = 0 THEN '-' ELSE COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(coalesce(evt.[EventPriceForNonMembers],k.DefaultEventPriceForNonMembers),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') END as EventPriceForNonMembers
       ,evt.[EventPriceForExtras]
       ,evt.[ExtrasDescription]
       ,evt.[EventCurrencyType]
@@ -1000,15 +2489,13 @@ SELECT evt.[id]
   FROM [HC].[Event] evt
   INNER JOIN HC.Kennel k on evt.KennelId = k.id
   INNER JOIN HC.Country co on co.id = k.CountryId
-' 
 GO
-/****** Object:  View [HC].[vwEventAdjusted]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC].[vwEventAdjusted]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC].[vwEventAdjusted]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 CREATE VIEW [HC].[vwEventAdjusted] 
 
@@ -1027,8 +2514,8 @@ SELECT evt.[id]
       ,evt.[EventNumber]
       ,evt.[EventNumberIncrement]
       ,evt.[DoTrackHashCash]
-	  ,CASE WHEN evt.DoTrackHashCash = 0 THEN ''-'' ELSE COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(coalesce(evt.[EventPriceForMembers],k.DefaultEventPriceForMembers),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') END as EventPriceForMembers
-      ,CASE WHEN evt.DoTrackHashCash = 0 THEN ''-'' ELSE COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(coalesce(evt.[EventPriceForNonMembers],k.DefaultEventPriceForNonMembers),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') END as EventPriceForNonMembers
+	  ,CASE WHEN evt.DoTrackHashCash = 0 THEN '-' ELSE COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(coalesce(evt.[EventPriceForMembers],k.DefaultEventPriceForMembers),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') END as EventPriceForMembers
+      ,CASE WHEN evt.DoTrackHashCash = 0 THEN '-' ELSE COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(coalesce(evt.[EventPriceForNonMembers],k.DefaultEventPriceForNonMembers),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') END as EventPriceForNonMembers
       ,evt.[EventPriceForExtras]
       ,evt.[ExtrasDescription]
       ,evt.[EventCurrencyType]
@@ -1077,36 +2564,30 @@ SELECT evt.[id]
   FROM [HC].[Event] evt
   INNER JOIN HC.Kennel k on evt.KennelId = k.id
   INNER JOIN HC.Country co on co.id = k.CountryId
-' 
 GO
-/****** Object:  View [dbo].[vw_deleteFilthRuns]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteFilthRuns]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteFilthRuns]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_deleteFilthRuns] AS
-select * from HC.event  where KennelId = ''5029DE3A-D231-47AA-BE72-ECE9BCCD55D1''' 
+create view [dbo].[vw_deleteFilthRuns] AS
+select * from HC.event  where KennelId = '5029DE3A-D231-47AA-BE72-ECE9BCCD55D1'
 GO
-/****** Object:  View [dbo].[vw_deleteAddHashers]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteAddHashers]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteAddHashers]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 CREATE view [dbo].[vw_deleteAddHashers] as
 select FirstName,LastName,HashName,Email from HC.Hasher 
-' 
 GO
-/****** Object:  Table [HC].[Region]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [HC].[Region]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Region]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[Region](
 	[id] [uniqueidentifier] NOT NULL,
 	[RegionName] [nvarchar](100) NOT NULL,
@@ -1119,15 +2600,12 @@ CREATE TABLE [HC].[Region](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[City]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [HC].[City]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[City]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[City](
 	[id] [uniqueidentifier] NOT NULL,
 	[CityName] [nvarchar](100) NOT NULL,
@@ -1148,15 +2626,13 @@ CREATE TABLE [HC].[City](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  View [HC3W].[vwAdKennelList]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC3W].[vwAdKennelList]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC3W].[vwAdKennelList]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 
@@ -1219,15 +2695,12 @@ INNER JOIN HC.City c on c.id = k.CityId
 INNER JOIN HC.Region r on c.RegionId = r.id
 INNER JOIN HC.Country co on r.CountryId = co.id
 WHERE ((hkm.MismanagementRoleFlags & 0x0001) != 0 AND h.HcWebUserId IS NOT NULL) OR (h.HcWebUserId < 10)
-' 
 GO
-/****** Object:  Table [HC].[HasherEventMap]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [HC].[HasherEventMap]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[HasherEventMap]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[HasherEventMap](
 	[id] [uniqueidentifier] NOT NULL,
 	[EventId] [uniqueidentifier] NULL,
@@ -1256,43 +2729,38 @@ CREATE TABLE [HC].[HasherEventMap](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  View [dbo].[vw_deleteImportHemRecords]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteImportHemRecords]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteImportHemRecords]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_deleteImportHemRecords] as 
-select top 10 EventId,UserId,UserStartEvent,Rsvp,RsvpState,AttendenceState,IsHare,VirginVisitorType from HC.HasherEventMap' 
+create view [dbo].[vw_deleteImportHemRecords] as 
+select top 10 EventId,UserId,UserStartEvent,Rsvp,RsvpState,AttendenceState,IsHare,VirginVisitorType from HC.HasherEventMap
 GO
-/****** Object:  View [dbo].[vw_deleteMe_facebookIds]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteMe_facebookIds]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteMe_facebookIds]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_deleteMe_facebookIds]
+create view [dbo].[vw_deleteMe_facebookIds]
 as
-select top 20 * from HC.Kennel where KennelFacebookId is not null' 
+select top 20 * from HC.Kennel where KennelFacebookId is not null
 GO
-/****** Object:  View [dbo].[vw_deleteMe_importEvents]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteMe_importEvents]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteMe_importEvents]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_deleteMe_importEvents] as
-select top 1 id,EventStartDatetime,KennelId,EventName,EventDescription from HC.Event' 
+create view [dbo].[vw_deleteMe_importEvents] as
+select top 1 id,EventStartDatetime,KennelId,EventName,EventDescription from HC.Event
 GO
-/****** Object:  View [HC3W].[vwAdEventList]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC3W].[vwAdEventList]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC3W].[vwAdEventList]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 CREATE VIEW [HC3W].[vwAdEventList]
@@ -1310,13 +2778,13 @@ SELECT
 
 	e.[KennelId],
 	e.[id] as eventId,
-	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN cast(e.[EventNumber] as NVARCHAR(10)) ELSE '''' end as EventNumberStr,
+	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN cast(e.[EventNumber] as NVARCHAR(10)) ELSE '' end as EventNumberStr,
 	e.[DoTrackHashCash],
 	e.[IsCountedRun],
 	e.[IsVisible],
 	e.[UpdateDataFromFacebook],
 	DATEDIFF(month,CASE WHEN (e.UseFbRunDetails = 1 AND e.FbEventStartDatetime IS NOT NULL) THEN convert(datetime,e.FbEventStartDatetime) ELSE convert(datetime,e.EventStartDatetime) END,getdate()) as MonthsSinceRun,
-	FORMAT(CASE WHEN (e.UseFbRunDetails = 1 AND e.FbEventStartDatetime IS NOT NULL) THEN convert(datetime,e.FbEventStartDatetime) ELSE convert(datetime,e.EventStartDatetime) END,''ddd, dd MMM yyyy'') as EventStartDateTimeString,
+	FORMAT(CASE WHEN (e.UseFbRunDetails = 1 AND e.FbEventStartDatetime IS NOT NULL) THEN convert(datetime,e.FbEventStartDatetime) ELSE convert(datetime,e.EventStartDatetime) END,'ddd, dd MMM yyyy') as EventStartDateTimeString,
 	e.[Hares],
 	(SELECT COUNT(*) FROM HC.HasherEventMap hem WHERE hem.EventId = e.id AND hem.RsvpState >= 3) as RsvpedForRun,
 	(SELECT COUNT(*) FROM HC.HasherEventMap hem WHERE hem.EventId = e.id AND hem.AttendenceState >= 20) as AttendedRun
@@ -1339,15 +2807,12 @@ FROM HC.Event e
 INNER JOIN HC.HasherKennelMap hkm ON hkm.KennelId = e.KennelId
 INNER JOIN HC.Hasher h ON hkm.UserId = h.id
 WHERE ((hkm.MismanagementRoleFlags & 0x0001) != 0 AND h.HcWebUserId IS NOT NULL) OR (h.HcWebUserId < 10)
-' 
 GO
-/****** Object:  Table [HC].[Payment]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [HC].[Payment]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Payment]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[Payment](
 	[id] [uniqueidentifier] NOT NULL,
 	[KennelId] [uniqueidentifier] NOT NULL,
@@ -1377,15 +2842,12 @@ CREATE TABLE [HC].[Payment](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[RunCounts]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [HC].[RunCounts]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[RunCounts]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[RunCounts](
 	[id] [int] IDENTITY(1,1) NOT NULL,
 	[TotalPackRunsThisKennel] [int] NOT NULL,
@@ -1398,15 +2860,13 @@ CREATE TABLE [HC].[RunCounts](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  View [HC3W].[vwAdRunAttendence]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC3W].[vwAdRunAttendence]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC3W].[vwAdRunAttendence]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 
@@ -1420,39 +2880,39 @@ SELECT
 	e.[KennelId],
 	e.[id] as eventId,
 	e.IsCountedRun,
-	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN cast(e.[EventNumber] as NVARCHAR(10)) ELSE '''' end as EventNumberStr,
+	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN cast(e.[EventNumber] as NVARCHAR(10)) ELSE '' end as EventNumberStr,
 	hem.UserId,
 	CAST (e.[EventStartDatetime] as DateTime) as EventStartDateTime,
 	DATEDIFF(month,e.EventStartDatetime,getdate()) as MonthsSinceRun,
 	CASE WHEN hem.VirginVisitorType = 0 then h2.DisplayName ELSE hem.DisplayName END as DisplayName,
 	hem.IsHare,
-	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN CAST(rc.TotalPackRunsThisKennel + rc.TotalHaringThisKennel as nvarchar(10)) ELSE '''' END as TotalPackRunsThisKennel,
-	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN CAST(rc.TotalPackRunsAllKennels + rc.TotalHaringAllKennels as nvarchar(10)) ELSE '''' END as TotalPackRunsAllKennels,
-	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN CAST(rc.TotalHaringThisKennel as nvarchar(10)) ELSE '''' END as TotalHaringThisKennel,
-	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN CAST(rc.TotalHaringAllKennels as nvarchar(10)) ELSE '''' END as TotalHaringAllKennels,
+	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN CAST(rc.TotalPackRunsThisKennel + rc.TotalHaringThisKennel as nvarchar(10)) ELSE '' END as TotalPackRunsThisKennel,
+	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN CAST(rc.TotalPackRunsAllKennels + rc.TotalHaringAllKennels as nvarchar(10)) ELSE '' END as TotalPackRunsAllKennels,
+	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN CAST(rc.TotalHaringThisKennel as nvarchar(10)) ELSE '' END as TotalHaringThisKennel,
+	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN CAST(rc.TotalHaringAllKennels as nvarchar(10)) ELSE '' END as TotalHaringAllKennels,
 	hem.VirginVisitorType,
 	CASE 
-		WHEN hem.VirginVisitorType = 0 THEN ''Local''
-		WHEN hem.VirginVisitorType = 1 THEN ''Virgin''
-		WHEN hem.VirginVisitorType = 2 THEN ''Visitor''
-		ELSE ''Unknown''
+		WHEN hem.VirginVisitorType = 0 THEN 'Local'
+		WHEN hem.VirginVisitorType = 1 THEN 'Virgin'
+		WHEN hem.VirginVisitorType = 2 THEN 'Visitor'
+		ELSE 'Unknown'
 	END as VirginVisitorTypeStr,
 	hem.Email,
 	hem.PhoneNumber,
-	CASE WHEN e.DoTrackHashCash = 0 THEN ''-'' ELSE COALESCE(CASE 
-		WHEN pay.PaymentType IS NULL THEN ''None*''
-		WHEN pay.PaymentType = 1 THEN ''None''
-		WHEN pay.PaymentType = 2 THEN ''Free''
-		WHEN pay.PaymentType = 3 THEN ''Cash''
-		WHEN pay.PaymentType = 4 THEN ''Bank''
-		WHEN pay.PaymentType = 5 THEN ''Cash +''
-		WHEN pay.PaymentType = 6 THEN ''Credit''
-		WHEN pay.PaymentType = 7 THEN ''Bank +''
-	ELSE ''Unknown'' END,''Unknown'') END as PaymentStr,
+	CASE WHEN e.DoTrackHashCash = 0 THEN '-' ELSE COALESCE(CASE 
+		WHEN pay.PaymentType IS NULL THEN 'None*'
+		WHEN pay.PaymentType = 1 THEN 'None'
+		WHEN pay.PaymentType = 2 THEN 'Free'
+		WHEN pay.PaymentType = 3 THEN 'Cash'
+		WHEN pay.PaymentType = 4 THEN 'Bank'
+		WHEN pay.PaymentType = 5 THEN 'Cash +'
+		WHEN pay.PaymentType = 6 THEN 'Credit'
+		WHEN pay.PaymentType = 7 THEN 'Bank +'
+	ELSE 'Unknown' END,'Unknown') END as PaymentStr,
 	COALESCE(pay.PaymentType,0) as PaymentType,
-	CASE WHEN e.DoTrackHashCash = 0 THEN ''-'' ELSE COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(CASE WHEN COALESCE(hkm2.MembershipExpirationDate,''1/1/2000'') < e.EventStartDateTime THEN COALESCE(pay.DebitAmount,e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers) ELSE COALESCE(pay.DebitAmount,e.EventPriceForMembers,k.DefaultEventPriceForMembers) END ,20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') END as Owed,
-	CASE WHEN e.DoTrackHashCash = 0 THEN ''-'' ELSE COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(pay.CreditAmount,20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') END as Paid,
-	CASE WHEN e.DoTrackHashCash = 0 THEN ''-'' ELSE COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(pay.CreditAvailable,20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') END as CreditAvailable
+	CASE WHEN e.DoTrackHashCash = 0 THEN '-' ELSE COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(CASE WHEN COALESCE(hkm2.MembershipExpirationDate,'1/1/2000') < e.EventStartDateTime THEN COALESCE(pay.DebitAmount,e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers) ELSE COALESCE(pay.DebitAmount,e.EventPriceForMembers,k.DefaultEventPriceForMembers) END ,20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') END as Owed,
+	CASE WHEN e.DoTrackHashCash = 0 THEN '-' ELSE COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(pay.CreditAmount,20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') END as Paid,
+	CASE WHEN e.DoTrackHashCash = 0 THEN '-' ELSE COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(pay.CreditAvailable,20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') END as CreditAvailable
 	
 FROM HC.Event e
 -- NOTE: These inner joins are all about determining the kennels accessible by the one making the query and not the hashers being returned from the query
@@ -1471,26 +2931,23 @@ AND hem.VirginVisitorType <= 2
 AND h.HcWebUserId IS NOT NULL
 AND hem.AttendenceState >= 20
 AND e.IsVisible = 1
-' 
 GO
-/****** Object:  View [dbo].[vw_deleteDnhRuns]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteDnhRuns]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteDnhRuns]'))
-EXEC dbo.sp_executesql @statement = N'CREATE View [dbo].[vw_deleteDnhRuns] 
+CREATE View [dbo].[vw_deleteDnhRuns] 
 AS
 
-select * from HC.Event where EventName like ''%DNH-19%''' 
+select * from HC.Event where EventName like '%DNH-19%'
 GO
-/****** Object:  View [HC3W].[vwAdHasherList]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC3W].[vwAdHasherList]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC3W].[vwAdHasherList]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 
@@ -1524,7 +2981,7 @@ SELECT
 	  ,h2.FirstName
 	  ,h2.LastName
 	  ,h2.HashName
-	  ,case when (h.HcWebUserId < 10) then h2.Email else SUBSTRING(h2.Email,1,1) + replicate(''*'',charindex(''@'',h2.Email,1)-2) + ''@'' + SUBSTRING(SUBSTRING(h2.Email,charindex(''@'',h2.Email,1)+1,1000) ,1,1) + replicate(''*'',charindex(''.'',SUBSTRING(h2.Email,charindex(''@'',h2.Email,1)+2,1000) ,1)-1) + SUBSTRING(SUBSTRING(h2.Email,charindex(''@'',h2.Email,1)+1,1000),CHARINDEX(''.'',SUBSTRING(h2.Email,charindex(''@'',h2.Email,1)+1,1000),1),1000) end as Email
+	  ,case when (h.HcWebUserId < 10) then h2.Email else SUBSTRING(h2.Email,1,1) + replicate('*',charindex('@',h2.Email,1)-2) + '@' + SUBSTRING(SUBSTRING(h2.Email,charindex('@',h2.Email,1)+1,1000) ,1,1) + replicate('*',charindex('.',SUBSTRING(h2.Email,charindex('@',h2.Email,1)+2,1000) ,1)-1) + SUBSTRING(SUBSTRING(h2.Email,charindex('@',h2.Email,1)+1,1000),CHARINDEX('.',SUBSTRING(h2.Email,charindex('@',h2.Email,1)+1,1000),1),1000) end as Email
       ,hkm2.Following
 	  ,hkm2.IsKennelFollowing
 	  ,hkm2.MismanagementRoles
@@ -1548,15 +3005,13 @@ SELECT
   WHERE (((hkm.HcWebPermissionFlags & 0x0001) = 0x0001 AND h.HcWebUserId IS NOT NULL) OR (h.HcWebUserId < 10))
   AND hkm2.KennelId = hkm.KennelId AND hkm2.Following = 1 --AND h2.Removed = 0
   --order by k2.KennelShortName, h2.DisplayName, h.HcWebUserId
-' 
 GO
-/****** Object:  View [HC3W].[vwAdEvent]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC3W].[vwAdEvent]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC3W].[vwAdEvent]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 CREATE VIEW [HC3W].[vwAdEvent]
@@ -1641,24 +3096,20 @@ SELECT [id]
       ,[createdAt]
       ,[updatedAt]
   FROM [HC].[Event]
-' 
 GO
-/****** Object:  View [dbo].[vw_deleteTheWhites]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteTheWhites]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteTheWhites]'))
-EXEC dbo.sp_executesql @statement = N'CREATE VIEW [dbo].[vw_deleteTheWhites] AS
-select * from HC.Hasher where LastName = ''White''' 
+CREATE VIEW [dbo].[vw_deleteTheWhites] AS
+select * from HC.Hasher where LastName = 'White'
 GO
-/****** Object:  Table [DomainValues].[MisManagementRoles]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [DomainValues].[MisManagementRoles]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[MisManagementRoles]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [DomainValues].[MisManagementRoles](
 	[id] [int] IDENTITY(1,1) NOT NULL,
 	[RoleName] [nvarchar](50) NOT NULL,
@@ -1671,37 +3122,32 @@ CREATE TABLE [DomainValues].[MisManagementRoles](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  View [HC3].[vwMmByKennel]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC3].[vwMmByKennel]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC3].[vwMmByKennel]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 CREATE VIEW [HC3].[vwMmByKennel]
 
 AS
 
 SELECT 
-hkm.KennelId as KennelId,STRING_AGG(mr.RoleName + CHAR(9) +REPLACE(h.DisplayName,''"'',''\"'') ,CHAR(13)) WITHIN GROUP (ORDER BY mr.id) as MmRoles
+hkm.KennelId as KennelId,STRING_AGG(mr.RoleName + CHAR(9) +REPLACE(h.DisplayName,'"','\"') ,CHAR(13)) WITHIN GROUP (ORDER BY mr.id) as MmRoles
 FROM HC.HasherKennelMap hkm
 INNER JOIN HC.Hasher h on hkm.UserId = h.id,
 DomainValues.MismanagementRoles mr 
 WHERE (hkm.MismanagementRoles & mr.BitFlags) != 0 AND mr.id != 1
 GROUP BY hkm.KennelId
 
-' 
 GO
-/****** Object:  Table [HC].[Receipt]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [HC].[Receipt]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Receipt]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[Receipt](
 	[id] [uniqueidentifier] NOT NULL,
 	[EventId] [uniqueidentifier] NOT NULL,
@@ -1723,15 +3169,13 @@ CREATE TABLE [HC].[Receipt](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  View [HC3W].[vwAdProfitLossReport]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC3W].[vwAdProfitLossReport]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC3W].[vwAdProfitLossReport]'))
-EXEC dbo.sp_executesql @statement = N'
+
 CREATE VIEW [HC3W].[vwAdProfitLossReport] AS
 
 select 
@@ -1739,20 +3183,20 @@ select
 	e.id, 
 	e.EventName,
 	e.EventStartDatetime,
-	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN cast(e.[EventNumber] as NVARCHAR(10)) ELSE '''' end as EventNumberStr,
+	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN cast(e.[EventNumber] as NVARCHAR(10)) ELSE '' end as EventNumberStr,
 	k.id as KennelId,
 	DATEDIFF(month,e.EventStartDatetime,getdate()) as MonthsSinceRun,
 
-	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(coalesce(pay.credit,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') as collected,
-	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(coalesce(pay.debit,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') as owed,
-	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(coalesce(receipt.receipts,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') as receipts,
-	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(coalesce(receipt.reimbursements,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') as reimbursements,
-	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(coalesce(debit-receipts,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') as profitLoss,
-	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(coalesce(debit-reimbursements,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') as actualProfitLoss,
-	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(coalesce(owed,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') as notPaid,
-	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(coalesce(excessPayment,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') as excessPayment,
-	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(coalesce(cashOnHand,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') as cashOnHand,
-	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(coalesce(bankTransfers,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') as bankTransfers
+	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(coalesce(pay.credit,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') as collected,
+	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(coalesce(pay.debit,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') as owed,
+	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(coalesce(receipt.receipts,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') as receipts,
+	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(coalesce(receipt.reimbursements,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') as reimbursements,
+	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(coalesce(debit-receipts,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') as profitLoss,
+	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(coalesce(debit-reimbursements,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') as actualProfitLoss,
+	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(coalesce(owed,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') as notPaid,
+	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(coalesce(excessPayment,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') as excessPayment,
+	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(coalesce(cashOnHand,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') as cashOnHand,
+	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(coalesce(bankTransfers,0),20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') as bankTransfers
 
 	from HC.Event e
 	INNER JOIN HC.Kennel k on k.id = e.KennelId
@@ -1773,24 +3217,21 @@ select
 	AND e.DoTrackHashCash = 1
 
 
-' 
 GO
-/****** Object:  View [dbo].[vw_deleteEditFacebookKennels]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteEditFacebookKennels]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteEditFacebookKennels]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_deleteEditFacebookKennels] as 
-select * from HC.Kennel where KennelFacebookId is not null' 
+create view [dbo].[vw_deleteEditFacebookKennels] as 
+select * from HC.Kennel where KennelFacebookId is not null
 GO
-/****** Object:  View [HC3W].[vwAdHashCashReport]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC3W].[vwAdHashCashReport]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC3W].[vwAdHashCashReport]'))
-EXEC dbo.sp_executesql @statement = N'
+
 CREATE VIEW [HC3W].[vwAdHashCashReport] AS 
 
 SELECT 
@@ -1800,7 +3241,7 @@ SELECT
 	e.[KennelId],
 	e.[id] as eventId,
 	e.IsCountedRun,
-	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN cast(e.[EventNumber] as NVARCHAR(10)) ELSE '''' end as EventNumberStr,
+	CASE WHEN (e.IsCountedRun = 1 AND e.IsVisible = 1) THEN cast(e.[EventNumber] as NVARCHAR(10)) ELSE '' end as EventNumberStr,
 	hem.UserId,
 	CAST (e.[EventStartDatetime] as DateTime) as EventStartDatetime,
 	DATEDIFF(month,e.EventStartDatetime,getdate()) as MonthsSinceRun,
@@ -1808,30 +3249,30 @@ SELECT
 	hem.IsHare,
 	hem.VirginVisitorType,
 	CASE 
-		WHEN hem.VirginVisitorType = 0 THEN ''Local''
-		WHEN hem.VirginVisitorType = 1 THEN ''Virgin''
-		WHEN hem.VirginVisitorType = 2 THEN ''Visitor''
-		ELSE ''Unknown''
+		WHEN hem.VirginVisitorType = 0 THEN 'Local'
+		WHEN hem.VirginVisitorType = 1 THEN 'Virgin'
+		WHEN hem.VirginVisitorType = 2 THEN 'Visitor'
+		ELSE 'Unknown'
 	END as VirginVisitorTypeStr,
 	COALESCE(CASE 
-		WHEN pay.PaymentType IS NULL THEN ''None*''
-		WHEN pay.PaymentType = 1 THEN ''None''
-		WHEN pay.PaymentType = 2 THEN ''Free''
-		WHEN pay.PaymentType = 3 THEN ''Cash''
-		WHEN pay.PaymentType = 4 THEN ''Bank''
-		WHEN pay.PaymentType = 5 THEN ''Cash +''
-		WHEN pay.PaymentType = 6 THEN ''Credit''
-		WHEN pay.PaymentType = 7 THEN ''Bank +''
-	ELSE ''Unknown'' END,''Unknown'') as PaymentStr,
+		WHEN pay.PaymentType IS NULL THEN 'None*'
+		WHEN pay.PaymentType = 1 THEN 'None'
+		WHEN pay.PaymentType = 2 THEN 'Free'
+		WHEN pay.PaymentType = 3 THEN 'Cash'
+		WHEN pay.PaymentType = 4 THEN 'Bank'
+		WHEN pay.PaymentType = 5 THEN 'Cash +'
+		WHEN pay.PaymentType = 6 THEN 'Credit'
+		WHEN pay.PaymentType = 7 THEN 'Bank +'
+	ELSE 'Unknown' END,'Unknown') as PaymentStr,
 	COALESCE(pay.PaymentType,0) as PaymentType,
-	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(CASE WHEN COALESCE(hkm2.MembershipExpirationDate,''1/1/2000'') < e.EventStartDateTime THEN COALESCE(pay.DebitAmount,e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers) ELSE COALESCE(pay.DebitAmount,e.EventPriceForMembers,k.DefaultEventPriceForMembers) END ,20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') as Owed,
-	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(pay.CreditAmount,20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') as Paid,
-	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,''$^''),''^'',TRIM(STR(pay.CreditAvailable,20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'''') as CreditAvailable,
+	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(CASE WHEN COALESCE(hkm2.MembershipExpirationDate,'1/1/2000') < e.EventStartDateTime THEN COALESCE(pay.DebitAmount,e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers) ELSE COALESCE(pay.DebitAmount,e.EventPriceForMembers,k.DefaultEventPriceForMembers) END ,20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') as Owed,
+	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(pay.CreditAmount,20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') as Paid,
+	COALESCE(REPLACE(coalesce(k.CurrencySymbol,co.CurrencySymbol,'$^'),'^',TRIM(STR(pay.CreditAvailable,20,coalesce(k.DigitsAfterDecimal,co.DigitsAfterDecimal,2))) ),'') as CreditAvailable,
 	CAST (pay.PaidDate as DateTime) as PaidDate,
-	coalesce(h3.DisplayName,'''') as PaidTo,
-	coalesce(pay.PaymentReference,''<none>'') as paymentReference,
+	coalesce(h3.DisplayName,'') as PaidTo,
+	coalesce(pay.PaymentReference,'<none>') as paymentReference,
 	pay.ProductType,
-	coalesce(h4.DisplayName,'''') as ConfirmedBy,
+	coalesce(h4.DisplayName,'') as ConfirmedBy,
 	CAST (pay.ConfirmedDate as DateTime) as ConfirmedDate
 FROM HC.Event e
 -- NOTE: These inner joins are all about determining the kennels accessible by the one making the query and not the hashers being returned from the query
@@ -1852,15 +3293,13 @@ AND hem.VirginVisitorType <= 3
 AND hem.AttendenceState >= 20
 AND e.IsVisible = 1
 AND e.DoTrackHashCash = 1
-' 
 GO
-/****** Object:  View [HC3W].[vwAdHasher]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC3W].[vwAdHasher]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC3W].[vwAdHasher]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 
@@ -1886,14 +3325,14 @@ SELECT
       ,h2.[HomeKennelId] as homeKennelId
       ,h2.[MotherKennelId] as motherKennelId
       ,h2.[SupportCode] as supportCode
-      ,REPLACE(h2.[ResetCode],''URC:'','''') as inviteCode
-      ,REPLACE(h2.[QR_code],''UQR:'','''') as qrCode
+      ,REPLACE(h2.[ResetCode],'URC:','') as inviteCode
+      ,REPLACE(h2.[QR_code],'UQR:','') as qrCode
       ,h2.[QR_secret_code] as qrSecretCode
       ,h2.[DisplayName] as displayName
       ,h2.[HashName] as hashName
       ,h2.[FirstName] as firstName
       ,h2.[LastName] as lastName
-      ,case when (h.HcWebUserId < 10) then h2.Email else SUBSTRING(h2.Email,1,1) + replicate(''*'',charindex(''@'',h2.Email,1)-2) + ''@'' + SUBSTRING(SUBSTRING(h2.Email,charindex(''@'',h2.Email,1)+1,1000) ,1,1) + replicate(''*'',charindex(''.'',SUBSTRING(h2.Email,charindex(''@'',h2.Email,1)+2,1000) ,1)-1) + SUBSTRING(SUBSTRING(h2.Email,charindex(''@'',h2.Email,1)+1,1000),CHARINDEX(''.'',SUBSTRING(h2.Email,charindex(''@'',h2.Email,1)+1,1000),1),1000) end as Email
+      ,case when (h.HcWebUserId < 10) then h2.Email else SUBSTRING(h2.Email,1,1) + replicate('*',charindex('@',h2.Email,1)-2) + '@' + SUBSTRING(SUBSTRING(h2.Email,charindex('@',h2.Email,1)+1,1000) ,1,1) + replicate('*',charindex('.',SUBSTRING(h2.Email,charindex('@',h2.Email,1)+2,1000) ,1)-1) + SUBSTRING(SUBSTRING(h2.Email,charindex('@',h2.Email,1)+1,1000),CHARINDEX('.',SUBSTRING(h2.Email,charindex('@',h2.Email,1)+1,1000),1),1000) end as Email
       ,h2.[Photo] as photo
       ,h2.[Gender] as gender
       ,h2.[FacebookId] as facebookId
@@ -1947,15 +3386,13 @@ SELECT
   WHERE (((hkm.HcWebPermissionFlags & 0x0001) = 0x0001 AND h.HcWebUserId IS NOT NULL) OR (h.HcWebUserId < 10))
   AND hkm2.KennelId = hkm.KennelId AND hkm2.Following = 1
   --order by k2.KennelShortName, h2.DisplayName, h.HcWebUserId
-' 
 GO
-/****** Object:  View [dbo].[vw_dev_kennelMembership]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_dev_kennelMembership]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_dev_kennelMembership]'))
-EXEC dbo.sp_executesql @statement = N'
+
 CREATE view [dbo].[vw_dev_kennelMembership]
 
 as
@@ -1971,53 +3408,47 @@ from HC.HasherKennelMap hkm
 inner join HC.Hasher h on hkm.UserId = h.id
 inner join HC.Kennel k on hkm.KennelId = k.id
 order by h.HashName,k.KennelName
-' 
 GO
-/****** Object:  View [HC].[deleteTempCities]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC].[deleteTempCities]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC].[deleteTempCities]'))
-EXEC dbo.sp_executesql @statement = N'create view 
+create view 
 
 [HC].[deleteTempCities]
 
 AS 
 
-select * from HC.City where Latitude between 52 and 53 and Longitude  between 4 and  5' 
+select * from HC.City where Latitude between 52 and 53 and Longitude  between 4 and  5
 GO
-/****** Object:  View [dbo].[vw_deleteEditFILTHhash]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteEditFILTHhash]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteEditFILTHhash]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_deleteEditFILTHhash] as select * from HC.Kennel where KennelName like ''%FILTH%''' 
+create view [dbo].[vw_deleteEditFILTHhash] as select * from HC.Kennel where KennelName like '%FILTH%'
 GO
-/****** Object:  View [dbo].[vw_deleteEditNetherlands]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteEditNetherlands]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteEditNetherlands]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_deleteEditNetherlands] as select * from HC.Country h where h.CountryName like ''%nether%''' 
+create view [dbo].[vw_deleteEditNetherlands] as select * from HC.Country h where h.CountryName like '%nether%'
 GO
-/****** Object:  View [dbo].[vw_deleteEditPayments]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteEditPayments]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteEditPayments]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_deleteEditPayments] as select * from HC.Payment' 
+create view [dbo].[vw_deleteEditPayments] as select * from HC.Payment
 GO
-/****** Object:  View [dbo].[vw_insertHashers]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_insertHashers]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_insertHashers]'))
-EXEC dbo.sp_executesql @statement = N'
+
 CREATE VIEW [dbo].[vw_insertHashers] AS 
 SELECT 
       [DisplayName]
@@ -2026,24 +3457,21 @@ SELECT
       ,[LastName]
       ,[Email]
   FROM [HC].[Hasher]
-' 
 GO
-/****** Object:  View [dbo].[vw_insertHkmRecords]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_insertHkmRecords]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_insertHkmRecords]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_insertHkmRecords] as 
-select userId, kennelId from HC.HasherKennelMap' 
+create view [dbo].[vw_insertHkmRecords] as 
+select userId, kennelId from HC.HasherKennelMap
 GO
-/****** Object:  View [HC3W].[vwSaHasherPermissions]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC3W].[vwSaHasherPermissions]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC3W].[vwSaHasherPermissions]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 
@@ -2068,45 +3496,40 @@ inner join HC.Kennel k on hkm.KennelId = k.id
 WHERE ((hkm.Following = 1) OR (h.HcWebUserId < 10))
 
 
-' 
 GO
-/****** Object:  View [dbo].[vw_deleteOpeeRuns]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteOpeeRuns]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteOpeeRuns]'))
-EXEC dbo.sp_executesql @statement = N'create view
+create view
 [dbo].[vw_deleteOpeeRuns] as 
-select * from HC.HasherEventMap where userId = ''0CDBB109-215E-4B5F-A405-F6C9FBCB18EC''' 
+select * from HC.HasherEventMap where userId = '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC'
 GO
-/****** Object:  View [dbo].[vw_deleteSlippery]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteSlippery]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteSlippery]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_deleteSlippery] AS
-select * from HC.Hasher h where h.DisplayName like ''%Slippery Edg%''' 
+create view [dbo].[vw_deleteSlippery] AS
+select * from HC.Hasher h where h.DisplayName like '%Slippery Edg%'
 GO
-/****** Object:  View [dbo].[vw_deleteSlippery2]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteSlippery2]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteSlippery2]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_deleteSlippery2] AS
+create view [dbo].[vw_deleteSlippery2] AS
 select hkm.* from HC.Hasher h 
 INNER JOIN HC.HasherKennelMap hkm on hkm.UserId = h.id
-where h.DisplayName like ''%Slippery Edg%''' 
+where h.DisplayName like '%Slippery Edg%'
 GO
-/****** Object:  View [HC].[vwEventCommonFields]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC].[vwEventCommonFields]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC].[vwEventCommonFields]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 
@@ -2129,7 +3552,7 @@ AS
 			  ,e.[EventFacebookId]
 			  ,e.[EventName]
 			  ,e.[EventNumber]
-			  ,case WHEN e.IsCountedRun = 1 THEN ''Run #''+cast(e.EventNumber as nvarchar(25)) ELSE ''n/a'' END as EventNumberStr
+			  ,case WHEN e.IsCountedRun = 1 THEN 'Run #'+cast(e.EventNumber as nvarchar(25)) ELSE 'n/a' END as EventNumberStr
 			  ,e.[EventDescription]
 			  ,coalesce(e.[EventImage],k.kennelLogo) as EventImage
 			  ,e.[EventStartDatetime]
@@ -2139,18 +3562,18 @@ AS
 			  ,e.[MinimumParticipantsRequired]
 			  ,e.[MaximumParticipantsAllowed]
 			  ,left(datename(dw,e.[EventStartDatetime]),3) as WeekDayName
-			  ,right(''00'' + convert(nvarchar(2),datepart(day,e.[EventStartDatetime])),2) as DayNumber
-			  ,left(datename(month,e.[EventStartDatetime]),3) + CASE WHEN format(getdate(),''yy'') <> format(e.[EventStartDatetime],''yy'') THEN '' '''''' + format(e.[EventStartDatetime],''yy'') ELSE '''' END as MonthNameShort
-			  ,REPLACE(FORMAT(cast(e.[EventStartDatetime] as datetime),''h:mm tt''),'':00'','''') as EventTimeFormatted
+			  ,right('00' + convert(nvarchar(2),datepart(day,e.[EventStartDatetime])),2) as DayNumber
+			  ,left(datename(month,e.[EventStartDatetime]),3) + CASE WHEN format(getdate(),'yy') <> format(e.[EventStartDatetime],'yy') THEN ' ''' + format(e.[EventStartDatetime],'yy') ELSE '' END as MonthNameShort
+			  ,REPLACE(FORMAT(cast(e.[EventStartDatetime] as datetime),'h:mm tt'),':00','') as EventTimeFormatted
 			  ,e.LocationStreet
 			  ,e.LocationPostCode
 			  ,e.[LocationOneLineDesc]
-			  ,coalesce(e.LocationCity,c.CityName,''<no city>'') as LocationCity
+			  ,coalesce(e.LocationCity,c.CityName,'<no city>') as LocationCity
 			  ,e.[Latitude] as PinLatitude
 			  ,e.[Longitude] as PinLongitude
-			  ,coalesce(e.EventCurrencyType,k.DefaultEventCurrencyType,''en-us'') as CurrencyType
-			  ,REPLACE(FORMAT(coalesce(e.EventPriceForMembers,k.DefaultEventPriceForMembers,e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,0),''C'',coalesce(e.EventCurrencyType,k.DefaultEventCurrencyType,''en-us'')),'','',''.'') as PriceForMembers
-			  ,REPLACE(FORMAT(coalesce(e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,e.EventPriceForMembers,k.DefaultEventPriceForMembers,0),''C'',coalesce(e.EventCurrencyType,k.DefaultEventCurrencyType,''en-us'')),'','',''.'') as PriceForNonMembers
+			  ,coalesce(e.EventCurrencyType,k.DefaultEventCurrencyType,'en-us') as CurrencyType
+			  ,REPLACE(FORMAT(coalesce(e.EventPriceForMembers,k.DefaultEventPriceForMembers,e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,0),'C',coalesce(e.EventCurrencyType,k.DefaultEventCurrencyType,'en-us')),',','.') as PriceForMembers
+			  ,REPLACE(FORMAT(coalesce(e.EventPriceForNonMembers,k.DefaultEventPriceForNonMembers,e.EventPriceForMembers,k.DefaultEventPriceForMembers,0),'C',coalesce(e.EventCurrencyType,k.DefaultEventCurrencyType,'en-us')),',','.') as PriceForNonMembers
 			  ,coalesce(e.[Latitude],k.[Latitude],c.[Latitude]) as Latitude
 			  ,coalesce(e.[Longitude],k.[Longitude],c.[Longitude]) as Longitude
 			  ,(select count(hemYes.id) from HC.HasherEventMap hemYes where hemYes.EventId = e.id and hemYes.RsvpState = 3) as WillAttendCount
@@ -2163,23 +3586,19 @@ AS
 		inner join HC.Kennel k on e.KennelId = k.id
 		inner join HC.City c on c.id = k.CityId
 		
-' 
 GO
-/****** Object:  View [dbo].[vw_deleteTempKennelList]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteTempKennelList]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteTempKennelList]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_deleteTempKennelList] as select * from HC.Kennel where kennelLogo like ''http%''' 
+create view [dbo].[vw_deleteTempKennelList] as select * from HC.Kennel where kennelLogo like 'http%'
 GO
-/****** Object:  Table [HC].[LaunchAndLogin]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [HC].[LaunchAndLogin]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[LaunchAndLogin]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[LaunchAndLogin](
 	[id] [uniqueidentifier] NOT NULL,
 	[LoginDate] [datetimeoffset](7) NOT NULL,
@@ -2196,15 +3615,13 @@ CREATE TABLE [HC].[LaunchAndLogin](
 	[Longitude] [decimal](19, 15) NULL,
 	[CityId] [uniqueidentifier] NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  View [HC3W].[vwAdDuplicates]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC3W].[vwAdDuplicates]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC3W].[vwAdDuplicates]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 
@@ -2221,7 +3638,7 @@ a.id as aId,
 a.DisplayName as aDisplayName,
 a.FirstName as aFirstName,
 a.LastName as aLastName,
-coalesce(kA.KennelName,''<no home kennel>'') as aHomeKennel,
+coalesce(kA.KennelName,'<no home kennel>') as aHomeKennel,
 userA.lastRunDate as aLastRunDate,
 userA.totalRuns as aTotalRuns,
 userA.kennelsFollowed as aKennelsFollowed,
@@ -2232,7 +3649,7 @@ b.id as bId,
 b.DisplayName as bDisplayName,
 b.FirstName as bFirstName,
 b.LastName as bLastName,
-coalesce(kB.KennelName,''<no home kennel>'') as bHomeKennel,
+coalesce(kB.KennelName,'<no home kennel>') as bHomeKennel,
 userB.lastRunDate as bLastRunDate,
 userB.totalRuns as bTotalRuns,
 userB.kennelsFollowed as bKennelsFollowed,
@@ -2258,15 +3675,13 @@ AND h.HcWebUserId is not null
 AND a.id != b.id
 AND a.SupportCode > b.SupportCode
 AND a.Removed = 0 AND b.Removed = 0
-' 
 GO
-/****** Object:  View [HC3W].[vwAdEmailTemplateList]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [HC3W].[vwAdEmailTemplateList]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[HC3W].[vwAdEmailTemplateList]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 
@@ -2299,16 +3714,13 @@ INNER JOIN HC.HasherKennelMap hkm ON hkm.KennelId = k.id
 INNER JOIN HC.Hasher h ON hkm.UserId = h.id
 INNER JOIN HC.EmailTemplate em on em.KennelId = k.id
 WHERE ((hkm.HcWebPermissionFlags & 0x0001) = 0x0001 AND h.HcWebUserId IS NOT NULL) OR (h.HcWebUserId < 10)
-' 
 GO
-/****** Object:  UserDefinedFunction [HC].[DelimitedSplit8K]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  UserDefinedFunction [HC].[DelimitedSplit8K]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DelimitedSplit8K]') AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
-BEGIN
-execute dbo.sp_executesql @statement = N'CREATE FUNCTION [HC].[DelimitedSplit8K]
+CREATE FUNCTION [HC].[DelimitedSplit8K]
 --===== Define I/O parameters
         (@pString VARCHAR(8000), @pDelimiter CHAR(1))
 --WARNING!!! DO NOT USE MAX DATA-TYPES HERE!  IT WILL KILL PERFORMANCE!
@@ -2340,49 +3752,42 @@ cteLen(N1,L1) AS(--==== Return start and length (for use in substring)
  SELECT ItemNumber = ROW_NUMBER() OVER(ORDER BY l.N1),
         Item       = SUBSTRING(@pString, l.N1, l.L1)
    FROM cteLen l
-;' 
-END
+;
 GO
-/****** Object:  View [dbo].[vw_deleteFixCaps]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteFixCaps]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteFixCaps]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_deleteFixCaps] as 
+create view [dbo].[vw_deleteFixCaps] as 
 select id,DutchOriginal,Dutch from Wordz where ASCII(left(DutchOriginal, 1)) 
-between ASCII(''A'') and ASCII(''Z'') and Dutch is not null' 
+between ASCII('A') and ASCII('Z') and Dutch is not null
 GO
-/****** Object:  View [dbo].[vw_deleteFixDutchWordz]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteFixDutchWordz]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteFixDutchWordz]'))
-EXEC dbo.sp_executesql @statement = N'create view [dbo].[vw_deleteFixDutchWordz]
+create view [dbo].[vw_deleteFixDutchWordz]
 as
-select id,Dutch,DutchOut from Wordz where Dutch like ''%,%'' and DutchOut is null' 
+select id,Dutch,DutchOut from Wordz where Dutch like '%,%' and DutchOut is null
 GO
-/****** Object:  View [dbo].[vw_deleteFixWordz]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  View [dbo].[vw_deleteFixWordz]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[vw_deleteFixWordz]'))
-EXEC dbo.sp_executesql @statement = N'
+
 CREATE view [dbo].[vw_deleteFixWordz] as 
-select top 200 id, EnglishOut from Wordz where English like ''%,%''
+select top 200 id, EnglishOut from Wordz where English like '%,%'
 
 
-' 
 GO
-/****** Object:  Table [dbo].[BusinessUnits]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [dbo].[BusinessUnits]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[BusinessUnits]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[BusinessUnits](
 	[id] [uniqueidentifier] NOT NULL,
 	[Name] [nvarchar](100) NOT NULL,
@@ -2396,15 +3801,12 @@ CREATE TABLE [dbo].[BusinessUnits](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Contacts]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [dbo].[Contacts]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Contacts]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[Contacts](
 	[ContactId] [int] IDENTITY(1,1) NOT NULL,
 	[Title] [nvarchar](30) NULL,
@@ -2418,29 +3820,23 @@ CREATE TABLE [dbo].[Contacts](
 	[ContactId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[currency]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [dbo].[currency]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[currency]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[currency](
 	[name] [nvarchar](100) NULL,
 	[code] [nvarchar](100) NULL,
 	[symbol] [nvarchar](100) NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Exceptions]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [dbo].[Exceptions]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Exceptions]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[Exceptions](
 	[Id] [bigint] IDENTITY(1,1) NOT NULL,
 	[GUID] [uniqueidentifier] NOT NULL,
@@ -2467,15 +3863,12 @@ CREATE TABLE [dbo].[Exceptions](
 	[Id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Languages]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [dbo].[Languages]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Languages]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[Languages](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[LanguageId] [nvarchar](10) NOT NULL,
@@ -2485,15 +3878,12 @@ CREATE TABLE [dbo].[Languages](
 	[Id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[MeetingAgendaRelevant]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [dbo].[MeetingAgendaRelevant]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingAgendaRelevant]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[MeetingAgendaRelevant](
 	[AgendaRelevantId] [int] IDENTITY(1,1) NOT NULL,
 	[AgendaId] [int] NOT NULL,
@@ -2503,15 +3893,12 @@ CREATE TABLE [dbo].[MeetingAgendaRelevant](
 	[AgendaRelevantId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[MeetingAgendas]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [dbo].[MeetingAgendas]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingAgendas]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[MeetingAgendas](
 	[AgendaId] [int] IDENTITY(1,1) NOT NULL,
 	[MeetingId] [int] NOT NULL,
@@ -2527,15 +3914,12 @@ CREATE TABLE [dbo].[MeetingAgendas](
 	[AgendaId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[MeetingAgendaTypes]    Script Date: 7/2/2021 4:18:13 AM ******/
+/****** Object:  Table [dbo].[MeetingAgendaTypes]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingAgendaTypes]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[MeetingAgendaTypes](
 	[AgendaTypeId] [int] IDENTITY(1,1) NOT NULL,
 	[Name] [nvarchar](100) NOT NULL,
@@ -2544,15 +3928,12 @@ CREATE TABLE [dbo].[MeetingAgendaTypes](
 	[AgendaTypeId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[MeetingAttendees]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[MeetingAttendees]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingAttendees]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[MeetingAttendees](
 	[AttendeeId] [int] IDENTITY(1,1) NOT NULL,
 	[MeetingId] [int] NOT NULL,
@@ -2564,15 +3945,12 @@ CREATE TABLE [dbo].[MeetingAttendees](
 	[AttendeeId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[MeetingDecisionRelevant]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[MeetingDecisionRelevant]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingDecisionRelevant]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[MeetingDecisionRelevant](
 	[DecisionRelevantId] [int] IDENTITY(1,1) NOT NULL,
 	[DecisionId] [int] NOT NULL,
@@ -2582,15 +3960,12 @@ CREATE TABLE [dbo].[MeetingDecisionRelevant](
 	[DecisionRelevantId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[MeetingDecisions]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[MeetingDecisions]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingDecisions]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[MeetingDecisions](
 	[DecisionId] [int] IDENTITY(1,1) NOT NULL,
 	[MeetingId] [int] NOT NULL,
@@ -2607,15 +3982,12 @@ CREATE TABLE [dbo].[MeetingDecisions](
 	[DecisionId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[MeetingLocations]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[MeetingLocations]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingLocations]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[MeetingLocations](
 	[LocationId] [int] IDENTITY(1,1) NOT NULL,
 	[Name] [nvarchar](100) NOT NULL,
@@ -2627,15 +3999,12 @@ CREATE TABLE [dbo].[MeetingLocations](
 	[LocationId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Meetings]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[Meetings]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Meetings]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[Meetings](
 	[MeetingId] [int] IDENTITY(1,1) NOT NULL,
 	[MeetingName] [nvarchar](100) NOT NULL,
@@ -2661,15 +4030,12 @@ CREATE TABLE [dbo].[Meetings](
 	[MeetingId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[MeetingTypes]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[MeetingTypes]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingTypes]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[MeetingTypes](
 	[MeetingTypeId] [int] IDENTITY(1,1) NOT NULL,
 	[Name] [nvarchar](100) NOT NULL,
@@ -2678,15 +4044,12 @@ CREATE TABLE [dbo].[MeetingTypes](
 	[MeetingTypeId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[RolePermissions]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[RolePermissions]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[RolePermissions]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[RolePermissions](
 	[RolePermissionId] [bigint] IDENTITY(1,1) NOT NULL,
 	[RoleId] [int] NOT NULL,
@@ -2696,15 +4059,12 @@ CREATE TABLE [dbo].[RolePermissions](
 	[RolePermissionId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Roles]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[Roles]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Roles]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[Roles](
 	[RoleId] [int] IDENTITY(1,1) NOT NULL,
 	[RoleName] [nvarchar](100) NOT NULL,
@@ -2713,15 +4073,12 @@ CREATE TABLE [dbo].[Roles](
 	[RoleId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[SourceData]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[SourceData]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[SourceData]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[SourceData](
 	[type] [nvarchar](25) NULL,
 	[event_id] [nvarchar](250) NULL,
@@ -2752,15 +4109,12 @@ CREATE TABLE [dbo].[SourceData](
 	[noreply_count] [nvarchar](25) NULL,
 	[is_draft] [nvarchar](25) NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[sysdiagrams]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[sysdiagrams]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[sysdiagrams]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[sysdiagrams](
 	[name] [sysname] NOT NULL,
 	[principal_id] [int] NOT NULL,
@@ -2777,28 +4131,22 @@ PRIMARY KEY CLUSTERED
 	[name] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[tempImport]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[tempImport]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[tempImport]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[tempImport](
 	[userId] [uniqueidentifier] NOT NULL,
 	[eventId] [uniqueidentifier] NOT NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[UserPermissions]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[UserPermissions]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UserPermissions]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[UserPermissions](
 	[UserPermissionId] [bigint] IDENTITY(1,1) NOT NULL,
 	[UserId] [int] NOT NULL,
@@ -2809,15 +4157,12 @@ CREATE TABLE [dbo].[UserPermissions](
 	[UserPermissionId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[UserPreferences]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[UserPreferences]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UserPreferences]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[UserPreferences](
 	[UserPreferenceId] [int] IDENTITY(1,1) NOT NULL,
 	[UserId] [int] NOT NULL,
@@ -2829,15 +4174,12 @@ CREATE TABLE [dbo].[UserPreferences](
 	[UserPreferenceId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[UserRoles]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[UserRoles]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UserRoles]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[UserRoles](
 	[UserRoleId] [bigint] IDENTITY(1,1) NOT NULL,
 	[UserId] [int] NOT NULL,
@@ -2847,15 +4189,12 @@ CREATE TABLE [dbo].[UserRoles](
 	[UserRoleId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Users]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[Users]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Users]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[Users](
 	[UserId] [int] IDENTITY(1,1) NOT NULL,
 	[Username] [nvarchar](100) NOT NULL,
@@ -2871,7 +4210,7 @@ CREATE TABLE [dbo].[Users](
 	[IsActive] [smallint] NOT NULL,
 	[LastDirectoryUpdate] [datetime] NULL,
 	[UserImage] [nvarchar](100) NULL,
-	[AuthToken] [nvarchar](2000) NULL,
+	[AuthToken] [nvarchar](1000) NULL,
 	[AuthTokenType] [nvarchar](10) NULL,
 	[AuthTokenLastUpdated] [datetime] NULL,
 	[FirstName] [nvarchar](100) NULL,
@@ -2883,36 +4222,29 @@ CREATE TABLE [dbo].[Users](
 	[UserId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[VersionInfo]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[VersionInfo]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[VersionInfo]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[VersionInfo](
 	[Version] [bigint] NOT NULL,
 	[AppliedOn] [datetime] NULL,
 	[Description] [nvarchar](1024) NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Index [UC_Version]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[VersionInfo]') AND name = N'UC_Version')
+/****** Object:  Index [UC_Version]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE UNIQUE CLUSTERED INDEX [UC_Version] ON [dbo].[VersionInfo]
 (
 	[Version] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[world_cities_table]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[world_cities_table]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[world_cities_table]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[world_cities_table](
 	[city] [nvarchar](33) NULL,
 	[city_ascii] [nvarchar](39) NULL,
@@ -2924,15 +4256,12 @@ CREATE TABLE [dbo].[world_cities_table](
 	[iso3] [nvarchar](3) NULL,
 	[province] [nvarchar](43) NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Year2020]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [dbo].[Year2020]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Year2020]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [dbo].[Year2020](
 	[Type] [nvarchar](255) NULL,
 	[ID] [nvarchar](255) NULL,
@@ -2948,28 +4277,22 @@ CREATE TABLE [dbo].[Year2020](
 	[Containing Task's ID] [nvarchar](255) NULL,
 	[StartPlus10] [datetime] NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [DEV].[EnumPaymentTypes]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [DEV].[EnumPaymentTypes]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[EnumPaymentTypes]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [DEV].[EnumPaymentTypes](
 	[paymentTypeId] [int] NOT NULL,
 	[name] [nvarchar](50) NOT NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [DEV].[ImportHashers]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [DEV].[ImportHashers]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[ImportHashers]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [DEV].[ImportHashers](
 	[idx] [int] IDENTITY(1,1) NOT NULL,
 	[HashName] [nvarchar](250) NOT NULL,
@@ -2980,15 +4303,12 @@ CREATE TABLE [DEV].[ImportHashers](
 	[idx] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [DEV].[timezone]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [DEV].[timezone]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[timezone]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [DEV].[timezone](
 	[city] [nvarchar](500) NOT NULL,
 	[city_ascii] [nvarchar](500) NOT NULL,
@@ -3001,29 +4321,23 @@ CREATE TABLE [DEV].[timezone](
 	[province] [nvarchar](500) NOT NULL,
 	[timezone] [nvarchar](500) NOT NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [DEV].[WindowsTimezoneMap]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [DEV].[WindowsTimezoneMap]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[WindowsTimezoneMap]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [DEV].[WindowsTimezoneMap](
 	[WindowsTimezone] [nvarchar](150) NULL,
 	[Region] [nvarchar](50) NULL,
 	[Timezones] [nvarchar](3500) NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [DomainValues].[CurrencyCodes]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [DomainValues].[CurrencyCodes]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[CurrencyCodes]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [DomainValues].[CurrencyCodes](
 	[id] [int] IDENTITY(1,1) NOT NULL,
 	[Nation] [nvarchar](500) NOT NULL,
@@ -3033,15 +4347,12 @@ CREATE TABLE [DomainValues].[CurrencyCodes](
 	[DigitsAfterDecimal] [int] NOT NULL,
 	[CultureCode] [nvarchar](50) NOT NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [DomainValues].[EventGeographicScope]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [DomainValues].[EventGeographicScope]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[EventGeographicScope]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [DomainValues].[EventGeographicScope](
 	[EventEnumId] [smallint] NOT NULL,
 	[EventEnumName] [nvarchar](250) NOT NULL,
@@ -3050,15 +4361,12 @@ CREATE TABLE [DomainValues].[EventGeographicScope](
 	[EventEnumId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [DomainValues].[EventRegistrationType]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [DomainValues].[EventRegistrationType]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[EventRegistrationType]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [DomainValues].[EventRegistrationType](
 	[EventRegistrationEnumId] [smallint] IDENTITY(1,1) NOT NULL,
 	[EventRegistrationEnumName] [nvarchar](250) NOT NULL,
@@ -3067,15 +4375,12 @@ CREATE TABLE [DomainValues].[EventRegistrationType](
 	[EventRegistrationEnumId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [DomainValues].[EventThemeType]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [DomainValues].[EventThemeType]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[EventThemeType]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [DomainValues].[EventThemeType](
 	[EventEnumId] [bigint] NOT NULL,
 	[EventEnumName] [nvarchar](250) NOT NULL,
@@ -3084,15 +4389,12 @@ CREATE TABLE [DomainValues].[EventThemeType](
 	[EventEnumId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [DomainValues].[KennelStatusEnum]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [DomainValues].[KennelStatusEnum]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[KennelStatusEnum]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [DomainValues].[KennelStatusEnum](
 	[KennelStatusEnumId] [smallint] NOT NULL,
 	[KennelStatusEnumName] [nvarchar](250) NOT NULL,
@@ -3101,15 +4403,12 @@ CREATE TABLE [DomainValues].[KennelStatusEnum](
 	[KennelStatusEnumId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [DomainValues].[MismanagementEnum]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [DomainValues].[MismanagementEnum]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[MismanagementEnum]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [DomainValues].[MismanagementEnum](
 	[MismanagementEnumId] [smallint] IDENTITY(1,1) NOT NULL,
 	[Title] [nvarchar](250) NOT NULL,
@@ -3119,15 +4418,12 @@ CREATE TABLE [DomainValues].[MismanagementEnum](
 	[MismanagementEnumId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [DomainValues].[Timezone]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [DomainValues].[Timezone]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[Timezone]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [DomainValues].[Timezone](
 	[id] [int] IDENTITY(10,10) NOT NULL,
 	[FullTimezone] [nvarchar](303) NOT NULL,
@@ -3138,24 +4434,20 @@ CREATE TABLE [DomainValues].[Timezone](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Timezone]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[DomainValues].[Timezone]') AND name = N'IX_Timezone')
+/****** Object:  Index [IX_Timezone]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE CLUSTERED INDEX [IX_Timezone] ON [DomainValues].[Timezone]
 (
 	[FullTimezone] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Table [EXT].[FbAppEvent]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [EXT].[FbAppEvent]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[FbAppEvent]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [EXT].[FbAppEvent](
 	[FbAppEventId] [uniqueidentifier] NOT NULL,
 	[UserId] [nvarchar](100) NULL,
@@ -3179,15 +4471,12 @@ CREATE TABLE [EXT].[FbAppEvent](
 	[FbAppEventId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [EXT].[OfficeForms_KennelImport]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [EXT].[OfficeForms_KennelImport]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[OfficeForms_KennelImport]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [EXT].[OfficeForms_KennelImport](
 	[id] [int] IDENTITY(1,1) NOT NULL,
 	[KennelImportId] [uniqueidentifier] NULL,
@@ -3226,15 +4515,12 @@ CREATE TABLE [EXT].[OfficeForms_KennelImport](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [EXT].[Zapier_FbEvent]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [EXT].[Zapier_FbEvent]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[Zapier_FbEvent]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [EXT].[Zapier_FbEvent](
 	[zapierFbEventId] [uniqueidentifier] NULL,
 	[id] [nvarchar](50) NULL,
@@ -3258,15 +4544,12 @@ CREATE TABLE [EXT].[Zapier_FbEvent](
 	[place_id] [nvarchar](50) NULL,
 	[updatedTime] [datetimeoffset](7) NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [EXT].[Zapier_GCal]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [EXT].[Zapier_GCal]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[Zapier_GCal]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [EXT].[Zapier_GCal](
 	[zapierGcalId] [uniqueidentifier] NULL,
 	[id] [nvarchar](50) NULL,
@@ -3284,15 +4567,12 @@ CREATE TABLE [EXT].[Zapier_GCal](
 	[end_datetime] [datetimeoffset](7) NULL,
 	[iCalUID] [nvarchar](250) NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [Hashers].[HasherEventMap]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [Hashers].[HasherEventMap]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Hashers].[HasherEventMap]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [Hashers].[HasherEventMap](
 	[id] [nvarchar](255) NOT NULL,
 	[version] [timestamp] NOT NULL,
@@ -3304,15 +4584,12 @@ PRIMARY KEY CLUSTERED
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [Hashers].[HasherFriendMap]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [Hashers].[HasherFriendMap]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Hashers].[HasherFriendMap]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [Hashers].[HasherFriendMap](
 	[id] [nvarchar](255) NOT NULL,
 	[version] [timestamp] NOT NULL,
@@ -3324,15 +4601,12 @@ PRIMARY KEY CLUSTERED
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[BusinessUnits]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC].[BusinessUnits]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[BusinessUnits]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[BusinessUnits](
 	[id] [nvarchar](255) NOT NULL,
 	[version] [timestamp] NOT NULL,
@@ -3344,16 +4618,14 @@ PRIMARY KEY CLUSTERED
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[ErrorLog]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC].[ErrorLog]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[ErrorLog]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[ErrorLog](
+	[serial] [int] IDENTITY(1,1) NOT NULL,
 	[id] [uniqueidentifier] NOT NULL,
 	[HcVersion] [nvarchar](250) NOT NULL,
 	[ErrorName] [nvarchar](250) NULL,
@@ -3365,24 +4637,23 @@ CREATE TABLE [HC].[ErrorLog](
 	[deviceId] [nvarchar](250) NULL,
 	[string_1] [nvarchar](1000) NULL,
 	[string_2] [nvarchar](1000) NULL,
+	[string_3] [nvarchar](1000) NULL,
+	[string_4] [nvarchar](1000) NULL,
 	[errorCode] [int] NULL,
 	[createdAt] [datetimeoffset](7) NOT NULL,
 	[updatedAt] [datetimeoffset](7) NOT NULL,
 	[deleted] [bit] NOT NULL,
  CONSTRAINT [PK_ErrorLog] PRIMARY KEY CLUSTERED 
 (
-	[id] ASC
+	[serial] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[HasherFriendMap]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC].[HasherFriendMap]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[HasherFriendMap]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[HasherFriendMap](
 	[id] [uniqueidentifier] NOT NULL,
 	[UserId] [uniqueidentifier] NOT NULL,
@@ -3395,15 +4666,12 @@ CREATE TABLE [HC].[HasherFriendMap](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[HasherOwnEvent]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC].[HasherOwnEvent]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[HasherOwnEvent]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[HasherOwnEvent](
 	[id] [uniqueidentifier] NOT NULL,
 	[UserId] [uniqueidentifier] NOT NULL,
@@ -3425,15 +4693,12 @@ CREATE TABLE [HC].[HasherOwnEvent](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[KennelAuthorization]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC].[KennelAuthorization]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[KennelAuthorization]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[KennelAuthorization](
 	[id] [uniqueidentifier] NOT NULL,
 	[KennelId] [uniqueidentifier] NOT NULL,
@@ -3457,15 +4722,12 @@ CREATE TABLE [HC].[KennelAuthorization](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[KennelCredit]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC].[KennelCredit]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[KennelCredit]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[KennelCredit](
 	[id] [uniqueidentifier] NOT NULL,
 	[userId] [uniqueidentifier] NOT NULL,
@@ -3479,15 +4741,12 @@ CREATE TABLE [HC].[KennelCredit](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[LoginNotifications]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC].[LoginNotifications]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[LoginNotifications]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[LoginNotifications](
 	[id] [uniqueidentifier] NOT NULL,
 	[ServerStatusCode] [smallint] NOT NULL,
@@ -3503,15 +4762,12 @@ CREATE TABLE [HC].[LoginNotifications](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[Meetings]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC].[Meetings]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Meetings]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[Meetings](
 	[id] [nvarchar](255) NOT NULL,
 	[version] [timestamp] NOT NULL,
@@ -3523,15 +4779,12 @@ PRIMARY KEY CLUSTERED
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[ServerStatus]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC].[ServerStatus]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[ServerStatus]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[ServerStatus](
 	[id] [uniqueidentifier] NOT NULL,
 	[ApiVersion] [nvarchar](25) NOT NULL,
@@ -3544,15 +4797,12 @@ CREATE TABLE [HC].[ServerStatus](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC].[WebAppLogin]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC].[WebAppLogin]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[WebAppLogin]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC].[WebAppLogin](
 	[id] [uniqueidentifier] NOT NULL,
 	[Username] [nvarchar](100) NOT NULL,
@@ -3571,15 +4821,12 @@ CREATE TABLE [HC].[WebAppLogin](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[City]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[City]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[City]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[City](
 	[id] [uniqueidentifier] NOT NULL,
 	[CityName] [nvarchar](100) NOT NULL,
@@ -3596,15 +4843,12 @@ CREATE TABLE [HC_BACKUP].[City](
 	[Removed] [smallint] NOT NULL,
 	[updatedAt] [datetimeoffset](7) NOT NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[Country]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[Country]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Country]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[Country](
 	[id] [uniqueidentifier] NOT NULL,
 	[CountryCode] [nvarchar](5) NOT NULL,
@@ -3623,15 +4867,12 @@ CREATE TABLE [HC_BACKUP].[Country](
 	[Removed] [smallint] NOT NULL,
 	[updatedAt] [datetimeoffset](7) NOT NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[EmailLog]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[EmailLog]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[EmailLog]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[EmailLog](
 	[id] [uniqueidentifier] NOT NULL,
 	[EmailTemplaterId] [uniqueidentifier] NOT NULL,
@@ -3640,15 +4881,12 @@ CREATE TABLE [HC_BACKUP].[EmailLog](
 	[NumberSent] [int] NOT NULL,
 	[ServerReply] [nvarchar](2500) NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[EmailTemplate]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[EmailTemplate]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[EmailTemplate]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[EmailTemplate](
 	[id] [uniqueidentifier] NOT NULL,
 	[KennelId] [uniqueidentifier] NOT NULL,
@@ -3668,15 +4906,12 @@ CREATE TABLE [HC_BACKUP].[EmailTemplate](
 	[SenderName] [nvarchar](250) NOT NULL,
 	[SendWhenHareAssigned] [smallint] NOT NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[Event]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[Event]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Event]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[Event](
 	[id] [uniqueidentifier] NOT NULL,
 	[EventStartDatetime] [datetimeoffset](7) NULL,
@@ -3752,15 +4987,12 @@ CREATE TABLE [HC_BACKUP].[Event](
 	[createdAt] [datetimeoffset](7) NOT NULL,
 	[updatedAt] [datetimeoffset](7) NOT NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[Hasher]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[Hasher]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Hasher]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[Hasher](
 	[id] [uniqueidentifier] NOT NULL,
 	[HomeKennelId] [uniqueidentifier] NULL,
@@ -3794,15 +5026,12 @@ CREATE TABLE [HC_BACKUP].[Hasher](
 	[updatedAt] [datetimeoffset](7) NOT NULL,
 	[deleted] [bit] NOT NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[HasherEventMap]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[HasherEventMap]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[HasherEventMap]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[HasherEventMap](
 	[id] [uniqueidentifier] NOT NULL,
 	[EventId] [uniqueidentifier] NULL,
@@ -3827,15 +5056,12 @@ CREATE TABLE [HC_BACKUP].[HasherEventMap](
 	[removed] [smallint] NOT NULL,
 	[updatedAt] [datetimeoffset](7) NOT NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[HasherFriendMap]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[HasherFriendMap]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[HasherFriendMap]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[HasherFriendMap](
 	[id] [uniqueidentifier] NOT NULL,
 	[UserId] [uniqueidentifier] NOT NULL,
@@ -3844,15 +5070,12 @@ CREATE TABLE [HC_BACKUP].[HasherFriendMap](
 	[Ignore] [smallint] NOT NULL,
 	[FriendSince] [datetimeoffset](7) NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[HasherKennelMap]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[HasherKennelMap]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[HasherKennelMap]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[HasherKennelMap](
 	[id] [uniqueidentifier] NOT NULL,
 	[UserId] [uniqueidentifier] NOT NULL,
@@ -3880,15 +5103,12 @@ CREATE TABLE [HC_BACKUP].[HasherKennelMap](
 	[removed] [smallint] NOT NULL,
 	[updatedAt] [datetimeoffset](7) NOT NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[HasherOwnEvent]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[HasherOwnEvent]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[HasherOwnEvent]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[HasherOwnEvent](
 	[id] [uniqueidentifier] NOT NULL,
 	[UserId] [uniqueidentifier] NOT NULL,
@@ -3917,15 +5137,12 @@ CREATE TABLE [HC_BACKUP].[HasherOwnEvent](
 	[createdAt] [datetimeoffset](7) NOT NULL,
 	[updatedAt] [datetimeoffset](7) NOT NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[Kennel]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[Kennel]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Kennel]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[Kennel](
 	[id] [uniqueidentifier] NOT NULL,
 	[KennelStatus] [smallint] NOT NULL,
@@ -3978,15 +5195,12 @@ CREATE TABLE [HC_BACKUP].[Kennel](
 	[updatedAt] [datetimeoffset](7) NOT NULL,
 	[deleted] [bit] NOT NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[KennelAuthorization]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[KennelAuthorization]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[KennelAuthorization]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[KennelAuthorization](
 	[id] [uniqueidentifier] NOT NULL,
 	[KennelId] [uniqueidentifier] NOT NULL,
@@ -4006,15 +5220,12 @@ CREATE TABLE [HC_BACKUP].[KennelAuthorization](
 	[EndDate] [datetimeoffset](7) NULL,
 	[Notes] [nvarchar](1000) NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[KennelCredit]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[KennelCredit]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[KennelCredit]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[KennelCredit](
 	[id] [uniqueidentifier] NOT NULL,
 	[userId] [uniqueidentifier] NOT NULL,
@@ -4024,15 +5235,12 @@ CREATE TABLE [HC_BACKUP].[KennelCredit](
 	[updatedAt] [datetimeoffset](7) NOT NULL,
 	[removed] [smallint] NOT NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[LaunchAndLogin]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[LaunchAndLogin]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[LaunchAndLogin]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[LaunchAndLogin](
 	[id] [uniqueidentifier] NOT NULL,
 	[LoginDate] [datetimeoffset](7) NOT NULL,
@@ -4049,15 +5257,12 @@ CREATE TABLE [HC_BACKUP].[LaunchAndLogin](
 	[Longitude] [decimal](19, 15) NULL,
 	[CityId] [uniqueidentifier] NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[LoginNotifications]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[LoginNotifications]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[LoginNotifications]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[LoginNotifications](
 	[id] [uniqueidentifier] NOT NULL,
 	[ServerStatusCode] [smallint] NOT NULL,
@@ -4069,15 +5274,12 @@ CREATE TABLE [HC_BACKUP].[LoginNotifications](
 	[MessageImageUrl] [nvarchar](500) NULL,
 	[CreatedDate] [datetimeoffset](7) NOT NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[Payment]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[Payment]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Payment]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[Payment](
 	[id] [uniqueidentifier] NOT NULL,
 	[KennelId] [uniqueidentifier] NOT NULL,
@@ -4101,15 +5303,12 @@ CREATE TABLE [HC_BACKUP].[Payment](
 	[removed] [smallint] NOT NULL,
 	[updatedAt] [datetimeoffset](7) NOT NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[Recepit]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[Recepit]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Recepit]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[Recepit](
 	[id] [uniqueidentifier] NOT NULL,
 	[EventId] [uniqueidentifier] NOT NULL,
@@ -4127,15 +5326,12 @@ CREATE TABLE [HC_BACKUP].[Recepit](
 	[removed] [smallint] NOT NULL,
 	[updatedAt] [datetimeoffset](7) NOT NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[Region]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[Region]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Region]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[Region](
 	[id] [uniqueidentifier] NOT NULL,
 	[RegionName] [nvarchar](100) NOT NULL,
@@ -4144,15 +5340,12 @@ CREATE TABLE [HC_BACKUP].[Region](
 	[Removed] [smallint] NOT NULL,
 	[updatedAt] [datetimeoffset](7) NOT NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[RunCounts]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[RunCounts]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[RunCounts]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[RunCounts](
 	[id] [int] IDENTITY(1,1) NOT NULL,
 	[TotalPackRunsThisKennel] [int] NOT NULL,
@@ -4161,15 +5354,12 @@ CREATE TABLE [HC_BACKUP].[RunCounts](
 	[TotalHaringAllKennels] [int] NOT NULL,
 	[updatedAt] [datetimeoffset](7) NOT NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[ServerStatus]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[ServerStatus]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[ServerStatus]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[ServerStatus](
 	[id] [uniqueidentifier] NOT NULL,
 	[ApiVersion] [nvarchar](25) NOT NULL,
@@ -4178,15 +5368,12 @@ CREATE TABLE [HC_BACKUP].[ServerStatus](
 	[AndroidDownloadLink] [nvarchar](250) NOT NULL,
 	[ImageRootUrl] [nvarchar](250) NOT NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [HC_BACKUP].[WebAppLogin]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [HC_BACKUP].[WebAppLogin]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[WebAppLogin]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [HC_BACKUP].[WebAppLogin](
 	[id] [uniqueidentifier] NOT NULL,
 	[Username] [nvarchar](100) NOT NULL,
@@ -4201,15 +5388,12 @@ CREATE TABLE [HC_BACKUP].[WebAppLogin](
 	[Type] [nvarchar](50) NULL,
 	[Version] [nvarchar](20) NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [Kennels].[Haberdashery]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [Kennels].[Haberdashery]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Kennels].[Haberdashery]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [Kennels].[Haberdashery](
 	[HaberdasheryId] [uniqueidentifier] NOT NULL,
 	[KennelId] [uniqueidentifier] NOT NULL,
@@ -4224,15 +5408,12 @@ CREATE TABLE [Kennels].[Haberdashery](
 	[HaberdasheryId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [Kennels].[Mismanagement]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [Kennels].[Mismanagement]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Kennels].[Mismanagement]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [Kennels].[Mismanagement](
 	[MismanagementId] [uniqueidentifier] NOT NULL,
 	[HasherId] [uniqueidentifier] NOT NULL,
@@ -4245,15 +5426,12 @@ CREATE TABLE [Kennels].[Mismanagement](
 	[MismanagementId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [Transactions].[EventRegistration]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [Transactions].[EventRegistration]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Transactions].[EventRegistration]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [Transactions].[EventRegistration](
 	[EventRegistrationId] [uniqueidentifier] NOT NULL,
 	[EventId] [uniqueidentifier] NOT NULL,
@@ -4266,15 +5444,12 @@ CREATE TABLE [Transactions].[EventRegistration](
 	[EventRegistrationId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [Transactions].[HaberdasherySale]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [Transactions].[HaberdasherySale]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Transactions].[HaberdasherySale]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [Transactions].[HaberdasherySale](
 	[HaberdasherySaleId] [uniqueidentifier] NOT NULL,
 	[HaberdasheryId] [uniqueidentifier] NOT NULL,
@@ -4285,15 +5460,12 @@ CREATE TABLE [Transactions].[HaberdasherySale](
 	[HaberdasherySaleId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [UNUSED].[FeaturedEvent]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [UNUSED].[FeaturedEvent]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[FeaturedEvent]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [UNUSED].[FeaturedEvent](
 	[id] [uniqueidentifier] NOT NULL,
 	[EventId] [uniqueidentifier] NOT NULL,
@@ -4303,15 +5475,12 @@ CREATE TABLE [UNUSED].[FeaturedEvent](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [UNUSED].[FeaturedKennel]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [UNUSED].[FeaturedKennel]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[FeaturedKennel]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [UNUSED].[FeaturedKennel](
 	[id] [uniqueidentifier] NOT NULL,
 	[KennelId] [uniqueidentifier] NOT NULL,
@@ -4321,15 +5490,12 @@ CREATE TABLE [UNUSED].[FeaturedKennel](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [UNUSED].[FeaturedSong]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [UNUSED].[FeaturedSong]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[FeaturedSong]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [UNUSED].[FeaturedSong](
 	[id] [uniqueidentifier] NOT NULL,
 	[SongId] [uniqueidentifier] NOT NULL,
@@ -4339,15 +5505,12 @@ CREATE TABLE [UNUSED].[FeaturedSong](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [UNUSED].[Haberdashery]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [UNUSED].[Haberdashery]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[Haberdashery]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [UNUSED].[Haberdashery](
 	[id] [uniqueidentifier] NOT NULL,
 	[KennelId] [uniqueidentifier] NULL,
@@ -4366,15 +5529,12 @@ CREATE TABLE [UNUSED].[Haberdashery](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [UNUSED].[KennelSongMap]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [UNUSED].[KennelSongMap]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[KennelSongMap]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [UNUSED].[KennelSongMap](
 	[id] [uniqueidentifier] NOT NULL,
 	[KennelId] [uniqueidentifier] NOT NULL,
@@ -4385,15 +5545,12 @@ CREATE TABLE [UNUSED].[KennelSongMap](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [UNUSED].[Song]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [UNUSED].[Song]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[Song]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [UNUSED].[Song](
 	[id] [uniqueidentifier] NOT NULL,
 	[SongName] [nvarchar](120) NOT NULL,
@@ -4415,15 +5572,12 @@ CREATE TABLE [UNUSED].[Song](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [WORDZ].[WordFreq]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [WORDZ].[WordFreq]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[WORDZ].[WordFreq]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [WORDZ].[WordFreq](
 	[id] [int] IDENTITY(1,1) NOT NULL,
 	[Word] [nvarchar](255) NULL,
@@ -4435,15 +5589,12 @@ CREATE TABLE [WORDZ].[WordFreq](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [WORDZ].[Wordz]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [WORDZ].[Wordz]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[WORDZ].[Wordz]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [WORDZ].[Wordz](
 	[id] [int] IDENTITY(1,1) NOT NULL,
 	[EnglishOriginal] [nvarchar](255) NULL,
@@ -4461,25 +5612,20 @@ CREATE TABLE [WORDZ].[Wordz](
 	[id] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [WORDZ].[WordzAudio]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Table [WORDZ].[WordzAudio]    Script Date: 7/12/2021 11:29:44 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[WORDZ].[WordzAudio]') AND type in (N'U'))
-BEGIN
 CREATE TABLE [WORDZ].[WordzAudio](
 	[fileName] [nvarchar](255) NULL,
 	[DutchBase] [nvarchar](255) NULL
 ) ON [PRIMARY]
-END
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Exceptions_App_Del_Cre]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Exceptions]') AND name = N'IX_Exceptions_App_Del_Cre')
+/****** Object:  Index [IX_Exceptions_App_Del_Cre]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE NONCLUSTERED INDEX [IX_Exceptions_App_Del_Cre] ON [dbo].[Exceptions]
 (
 	[ApplicationName] ASC,
@@ -4489,8 +5635,7 @@ CREATE NONCLUSTERED INDEX [IX_Exceptions_App_Del_Cre] ON [dbo].[Exceptions]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Exceptions_GUID_App_Del_Cre]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Exceptions]') AND name = N'IX_Exceptions_GUID_App_Del_Cre')
+/****** Object:  Index [IX_Exceptions_GUID_App_Del_Cre]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE NONCLUSTERED INDEX [IX_Exceptions_GUID_App_Del_Cre] ON [dbo].[Exceptions]
 (
 	[GUID] ASC,
@@ -4501,8 +5646,7 @@ CREATE NONCLUSTERED INDEX [IX_Exceptions_GUID_App_Del_Cre] ON [dbo].[Exceptions]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Exceptions_Hash_App_Cre_Del]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Exceptions]') AND name = N'IX_Exceptions_Hash_App_Cre_Del')
+/****** Object:  Index [IX_Exceptions_Hash_App_Cre_Del]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE NONCLUSTERED INDEX [IX_Exceptions_Hash_App_Cre_Del] ON [dbo].[Exceptions]
 (
 	[ErrorHash] ASC,
@@ -4513,8 +5657,7 @@ CREATE NONCLUSTERED INDEX [IX_Exceptions_Hash_App_Cre_Del] ON [dbo].[Exceptions]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UQ_RolePerm_RoleId_PermKey]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[RolePermissions]') AND name = N'UQ_RolePerm_RoleId_PermKey')
+/****** Object:  Index [UQ_RolePerm_RoleId_PermKey]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UQ_RolePerm_RoleId_PermKey] ON [dbo].[RolePermissions]
 (
 	[RoleId] ASC,
@@ -4523,8 +5666,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [UQ_RolePerm_RoleId_PermKey] ON [dbo].[RolePerm
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UQ_UserPerm_UserId_PermKey]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[UserPermissions]') AND name = N'UQ_UserPerm_UserId_PermKey')
+/****** Object:  Index [UQ_UserPerm_UserId_PermKey]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UQ_UserPerm_UserId_PermKey] ON [dbo].[UserPermissions]
 (
 	[UserId] ASC,
@@ -4533,8 +5675,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [UQ_UserPerm_UserId_PermKey] ON [dbo].[UserPerm
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_UserPref_UID_PrefType_Name]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[UserPreferences]') AND name = N'IX_UserPref_UID_PrefType_Name')
+/****** Object:  Index [IX_UserPref_UID_PrefType_Name]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_UserPref_UID_PrefType_Name] ON [dbo].[UserPreferences]
 (
 	[UserId] ASC,
@@ -4542,16 +5683,14 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_UserPref_UID_PrefType_Name] ON [dbo].[UserP
 	[Name] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_UserRoles_RoleId_UserId]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[UserRoles]') AND name = N'IX_UserRoles_RoleId_UserId')
+/****** Object:  Index [IX_UserRoles_RoleId_UserId]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE NONCLUSTERED INDEX [IX_UserRoles_RoleId_UserId] ON [dbo].[UserRoles]
 (
 	[RoleId] ASC,
 	[UserId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UQ_UserRoles_UserId_RoleId]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[UserRoles]') AND name = N'UQ_UserRoles_UserId_RoleId')
+/****** Object:  Index [UQ_UserRoles_UserId_RoleId]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UQ_UserRoles_UserId_RoleId] ON [dbo].[UserRoles]
 (
 	[UserId] ASC,
@@ -4560,36 +5699,31 @@ CREATE UNIQUE NONCLUSTERED INDEX [UQ_UserRoles_UserId_RoleId] ON [dbo].[UserRole
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_UserUniqueEmail]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Users]') AND name = N'IX_UserUniqueEmail')
+/****** Object:  Index [IX_UserUniqueEmail]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_UserUniqueEmail] ON [dbo].[Users]
 (
 	[Email] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_CityUpdated]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[HC].[City]') AND name = N'IX_CityUpdated')
+/****** Object:  Index [IX_CityUpdated]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE NONCLUSTERED INDEX [IX_CityUpdated] ON [HC].[City]
 (
 	[updatedAt] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_CountryUpdated]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[HC].[Country]') AND name = N'IX_CountryUpdated')
+/****** Object:  Index [IX_CountryUpdated]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE NONCLUSTERED INDEX [IX_CountryUpdated] ON [HC].[Country]
 (
 	[updatedAt] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [i1]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[HC].[ErrorLog]') AND name = N'i1')
+/****** Object:  Index [i1]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE NONCLUSTERED INDEX [i1] ON [HC].[ErrorLog]
 (
 	[updatedAt] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Event_KidIsCountedDeleted2]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[HC].[Event]') AND name = N'IX_Event_KidIsCountedDeleted2')
+/****** Object:  Index [IX_Event_KidIsCountedDeleted2]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE NONCLUSTERED INDEX [IX_Event_KidIsCountedDeleted2] ON [HC].[Event]
 (
 	[KennelId] ASC,
@@ -4598,8 +5732,7 @@ CREATE NONCLUSTERED INDEX [IX_Event_KidIsCountedDeleted2] ON [HC].[Event]
 )
 INCLUDE([AbsoluteEventNumber]) WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_EventByKennelIsCountedStartDateAbsEvtNum]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[HC].[Event]') AND name = N'IX_EventByKennelIsCountedStartDateAbsEvtNum')
+/****** Object:  Index [IX_EventByKennelIsCountedStartDateAbsEvtNum]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE NONCLUSTERED INDEX [IX_EventByKennelIsCountedStartDateAbsEvtNum] ON [HC].[Event]
 (
 	[KennelId] ASC,
@@ -4610,8 +5743,7 @@ CREATE NONCLUSTERED INDEX [IX_EventByKennelIsCountedStartDateAbsEvtNum] ON [HC].
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_HasherUniqueEmail]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[HC].[Hasher]') AND name = N'IX_HasherUniqueEmail')
+/****** Object:  Index [IX_HasherUniqueEmail]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_HasherUniqueEmail] ON [HC].[Hasher]
 (
 	[Email] ASC
@@ -4619,8 +5751,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_HasherUniqueEmail] ON [HC].[Hasher]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_HasherEventMap]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[HC].[HasherEventMap]') AND name = N'IX_HasherEventMap')
+/****** Object:  Index [IX_HasherEventMap]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE NONCLUSTERED INDEX [IX_HasherEventMap] ON [HC].[HasherEventMap]
 (
 	[EventId] ASC,
@@ -4628,16 +5759,14 @@ CREATE NONCLUSTERED INDEX [IX_HasherEventMap] ON [HC].[HasherEventMap]
 	[DisplayName] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_HasherFriendMap]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[HC].[HasherFriendMap]') AND name = N'IX_HasherFriendMap')
+/****** Object:  Index [IX_HasherFriendMap]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_HasherFriendMap] ON [HC].[HasherFriendMap]
 (
 	[UserId] ASC,
 	[Friend_UserId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_HasherKennelMap]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[HC].[HasherKennelMap]') AND name = N'IX_HasherKennelMap')
+/****** Object:  Index [IX_HasherKennelMap]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_HasherKennelMap] ON [HC].[HasherKennelMap]
 (
 	[KennelId] ASC,
@@ -4646,1662 +5775,823 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_HasherKennelMap] ON [HC].[HasherKennelMap]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_PaymentReference]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[HC].[Payment]') AND name = N'IX_PaymentReference')
+/****** Object:  Index [IX_PaymentReference]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_PaymentReference] ON [HC].[Payment]
 (
 	[PaymentReference] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_RegionUpdated]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[HC].[Region]') AND name = N'IX_RegionUpdated')
+/****** Object:  Index [IX_RegionUpdated]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE NONCLUSTERED INDEX [IX_RegionUpdated] ON [HC].[Region]
 (
 	[updatedAt] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_KennelSongMap]    Script Date: 7/2/2021 4:18:14 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[UNUSED].[KennelSongMap]') AND name = N'IX_KennelSongMap')
+/****** Object:  Index [IX_KennelSongMap]    Script Date: 7/12/2021 11:29:44 PM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_KennelSongMap] ON [UNUSED].[KennelSongMap]
 (
 	[KennelId] ASC,
 	[SongId] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF_BusinessUnits_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[BusinessUnits] ADD  CONSTRAINT [DF_BusinessUnits_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__BusinessU__delet__793DFFAF]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[BusinessUnits] ADD  CONSTRAINT [DF__BusinessU__delet__793DFFAF]  DEFAULT ((0)) FOR [deleted]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__BusinessU__creat__01D345B0]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[BusinessUnits] ADD  CONSTRAINT [DF__BusinessU__creat__01D345B0]  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [createdAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__BusinessU__updat__02C769E9]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[BusinessUnits] ADD  CONSTRAINT [DF__BusinessU__updat__02C769E9]  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF_Exceptions_IsProtected]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[Exceptions] ADD  CONSTRAINT [DF_Exceptions_IsProtected]  DEFAULT ((1)) FOR [IsProtected]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF_Exceptions_DuplicateCount]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[Exceptions] ADD  CONSTRAINT [DF_Exceptions_DuplicateCount]  DEFAULT ((1)) FOR [DuplicateCount]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__Meetings__delete__7A3223E8]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[Meetings] ADD  DEFAULT ((0)) FOR [deleted]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__Meetings__create__05A3D694]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[Meetings] ADD  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [createdAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__Meetings__update__0697FACD]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[Meetings] ADD  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF_UserPermissions_Grant]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[UserPermissions] ADD  CONSTRAINT [DF_UserPermissions_Grant]  DEFAULT ((1)) FOR [Granted]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF_Users_IsActive]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[Users] ADD  CONSTRAINT [DF_Users_IsActive]  DEFAULT ((1)) FOR [IsActive]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__world_citi__city__160F4887]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[world_cities_table] ADD  DEFAULT (NULL) FOR [city]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__world_cit__city___17036CC0]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[world_cities_table] ADD  DEFAULT (NULL) FOR [city_ascii]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__world_citie__lat__17F790F9]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[world_cities_table] ADD  DEFAULT (NULL) FOR [lat]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__world_citie__lng__18EBB532]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[world_cities_table] ADD  DEFAULT (NULL) FOR [lng]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__world_citie__pop__19DFD96B]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[world_cities_table] ADD  DEFAULT (NULL) FOR [pop]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__world_cit__count__1AD3FDA4]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[world_cities_table] ADD  DEFAULT (NULL) FOR [country]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__world_citi__iso2__1BC821DD]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[world_cities_table] ADD  DEFAULT (NULL) FOR [iso2]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__world_citi__iso3__1CBC4616]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[world_cities_table] ADD  DEFAULT (NULL) FOR [iso3]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DF__world_cit__provi__1DB06A4F]') AND type = 'D')
-BEGIN
 ALTER TABLE [dbo].[world_cities_table] ADD  DEFAULT (NULL) FOR [province]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[DF_FbAppEvent_FbAppEventId]') AND type = 'D')
-BEGIN
 ALTER TABLE [EXT].[FbAppEvent] ADD  CONSTRAINT [DF_FbAppEvent_FbAppEventId]  DEFAULT (newid()) FOR [FbAppEventId]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[DF_FbAppEvent_updatedAt]') AND type = 'D')
-BEGIN
 ALTER TABLE [EXT].[FbAppEvent] ADD  CONSTRAINT [DF_FbAppEvent_updatedAt]  DEFAULT (getdate()) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[DF_KennelImport_KennelId2]') AND type = 'D')
-BEGIN
 ALTER TABLE [EXT].[OfficeForms_KennelImport] ADD  CONSTRAINT [DF_KennelImport_KennelId2]  DEFAULT (newid()) FOR [KennelImportId]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[DF_OfficeForms_KennelImport_MapPinColor]') AND type = 'D')
-BEGIN
 ALTER TABLE [EXT].[OfficeForms_KennelImport] ADD  CONSTRAINT [DF_OfficeForms_KennelImport_MapPinColor]  DEFAULT (N'Blue') FOR [KennelPinColor]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[DF_OfficeForms_KennelImport_IsRunningPostCovid]') AND type = 'D')
-BEGIN
 ALTER TABLE [EXT].[OfficeForms_KennelImport] ADD  CONSTRAINT [DF_OfficeForms_KennelImport_IsRunningPostCovid]  DEFAULT (N'Unknown') FOR [IsRunningPostCovid]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[DF_OfficeForms_KennelImport_NumberOfRunsPerMonth]') AND type = 'D')
-BEGIN
 ALTER TABLE [EXT].[OfficeForms_KennelImport] ADD  CONSTRAINT [DF_OfficeForms_KennelImport_NumberOfRunsPerMonth]  DEFAULT (N'Unknown') FOR [NumberOfRunsPerMonth]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[DF_OfficeForms_KennelImport_NumberOfHashersPerRun]') AND type = 'D')
-BEGIN
 ALTER TABLE [EXT].[OfficeForms_KennelImport] ADD  CONSTRAINT [DF_OfficeForms_KennelImport_NumberOfHashersPerRun]  DEFAULT (N'Unknown') FOR [NumberOfHashersPerRun]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[DF_OfficeForms_KennelImport_WhenStartRunningPostCovid]') AND type = 'D')
-BEGIN
 ALTER TABLE [EXT].[OfficeForms_KennelImport] ADD  CONSTRAINT [DF_OfficeForms_KennelImport_WhenStartRunningPostCovid]  DEFAULT (N'Unknown') FOR [WhenStartRunningPostCovid]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[DF_OfficeForms_KennelImport_SubmittedOn]') AND type = 'D')
-BEGIN
 ALTER TABLE [EXT].[OfficeForms_KennelImport] ADD  CONSTRAINT [DF_OfficeForms_KennelImport_SubmittedOn]  DEFAULT (getdate()) FOR [SubmittedOn]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[DF_Zapier_FbEvent_zapierFbEventId]') AND type = 'D')
-BEGIN
 ALTER TABLE [EXT].[Zapier_FbEvent] ADD  CONSTRAINT [DF_Zapier_FbEvent_zapierFbEventId]  DEFAULT (newid()) FOR [zapierFbEventId]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[DF_Zapier_zapierId]') AND type = 'D')
-BEGIN
 ALTER TABLE [EXT].[Zapier_GCal] ADD  CONSTRAINT [DF_Zapier_zapierId]  DEFAULT (newid()) FOR [zapierGcalId]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Hashers].[DF__HasherEve__creat__61BC4730]') AND type = 'D')
-BEGIN
 ALTER TABLE [Hashers].[HasherEventMap] ADD  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [createdAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Hashers].[DF__HasherEve__updat__62B06B69]') AND type = 'D')
-BEGIN
 ALTER TABLE [Hashers].[HasherEventMap] ADD  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Hashers].[DF__HasherEve__delet__63A48FA2]') AND type = 'D')
-BEGIN
 ALTER TABLE [Hashers].[HasherEventMap] ADD  DEFAULT ((0)) FOR [deleted]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Hashers].[DF__HasherFri__creat__67752086]') AND type = 'D')
-BEGIN
 ALTER TABLE [Hashers].[HasherFriendMap] ADD  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [createdAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Hashers].[DF__HasherFri__updat__686944BF]') AND type = 'D')
-BEGIN
 ALTER TABLE [Hashers].[HasherFriendMap] ADD  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Hashers].[DF__HasherFri__delet__695D68F8]') AND type = 'D')
-BEGIN
 ALTER TABLE [Hashers].[HasherFriendMap] ADD  DEFAULT ((0)) FOR [deleted]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__BusinessU__creat__5C036DDA]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[BusinessUnits] ADD  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [createdAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__BusinessU__updat__5CF79213]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[BusinessUnits] ADD  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__BusinessU__delet__5DEBB64C]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[BusinessUnits] ADD  DEFAULT ((0)) FOR [deleted]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_City_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[City] ADD  CONSTRAINT [DF_City_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_City_UseCityFullName]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[City] ADD  CONSTRAINT [DF_City_UseCityFullName]  DEFAULT ((0)) FOR [ShowRegion]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_City_Removed]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[City] ADD  CONSTRAINT [DF_City_Removed]  DEFAULT ((0)) FOR [Removed]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_City_updatedAt]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[City] ADD  CONSTRAINT [DF_City_updatedAt]  DEFAULT (getdate()) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Country_CountryId]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Country] ADD  CONSTRAINT [DF_Country_CountryId]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Country_PrimaryCultureCode]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Country] ADD  CONSTRAINT [DF_Country_PrimaryCultureCode]  DEFAULT (N'en-US') FOR [PrimaryCultureCode]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Country_ShowRegion]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Country] ADD  CONSTRAINT [DF_Country_ShowRegion]  DEFAULT ((0)) FOR [ShowRegion]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Country_CurrencySymbol]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Country] ADD  CONSTRAINT [DF_Country_CurrencySymbol]  DEFAULT (' ') FOR [CurrencySymbol]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Country_DigitsAfterDecimal]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Country] ADD  CONSTRAINT [DF_Country_DigitsAfterDecimal]  DEFAULT ((2)) FOR [DigitsAfterDecimal]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Country_DistancePreference]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Country] ADD  CONSTRAINT [DF_Country_DistancePreference]  DEFAULT ((0)) FOR [DistancePreference]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Country_Removed]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Country] ADD  CONSTRAINT [DF_Country_Removed]  DEFAULT ((0)) FOR [Removed]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Country_updatedAt]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Country] ADD  CONSTRAINT [DF_Country_updatedAt]  DEFAULT (getdate()) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_EmailLog_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[EmailLog] ADD  CONSTRAINT [DF_EmailLog_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_EmailLog_NumberSent]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[EmailLog] ADD  CONSTRAINT [DF_EmailLog_NumberSent]  DEFAULT ((0)) FOR [NumberSent]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_EmailTemplate_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[EmailTemplate] ADD  CONSTRAINT [DF_EmailTemplate_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_EmailTemplate_Description]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[EmailTemplate] ADD  CONSTRAINT [DF_EmailTemplate_Description]  DEFAULT ('Email template') FOR [Description]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_EmailTemplate_EmailTypeFlag]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[EmailTemplate] ADD  CONSTRAINT [DF_EmailTemplate_EmailTypeFlag]  DEFAULT ((1)) FOR [EmailTypeFlag]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_EmailTemplate_HoursBeforeRun]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[EmailTemplate] ADD  CONSTRAINT [DF_EmailTemplate_HoursBeforeRun]  DEFAULT ((12)) FOR [HoursBeforeRun]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_EmailTemplate_DaysBeforeRun]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[EmailTemplate] ADD  CONSTRAINT [DF_EmailTemplate_DaysBeforeRun]  DEFAULT ((3)) FOR [DaysBeforeRun]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_EmailTemplate_SendToAll]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[EmailTemplate] ADD  CONSTRAINT [DF_EmailTemplate_SendToAll]  DEFAULT ((1)) FOR [SendToAll]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Table_1_SendToMembersOnly]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[EmailTemplate] ADD  CONSTRAINT [DF_Table_1_SendToMembersOnly]  DEFAULT ((0)) FOR [SendToMembers]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_EmailTemplate_SendToMismanagement]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[EmailTemplate] ADD  CONSTRAINT [DF_EmailTemplate_SendToMismanagement]  DEFAULT ((0)) FOR [SendToMismanagement]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_EmailTemplate_SendToFollowers]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[EmailTemplate] ADD  CONSTRAINT [DF_EmailTemplate_SendToFollowers]  DEFAULT ((0)) FOR [SendToFollowers]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_EmailTemplate_SendToVisitors]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[EmailTemplate] ADD  CONSTRAINT [DF_EmailTemplate_SendToVisitors]  DEFAULT ((0)) FOR [SendToVisitors]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_EmailTemplate_ReplyToEmailAddress]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[EmailTemplate] ADD  CONSTRAINT [DF_EmailTemplate_ReplyToEmailAddress]  DEFAULT ('noreply@harriercentral.com') FOR [ReplyToEmailAddress]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_EmailTemplate_SenderName]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[EmailTemplate] ADD  CONSTRAINT [DF_EmailTemplate_SenderName]  DEFAULT ('') FOR [SenderName]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_EmailTemplate_SendWhenHareAssigned]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[EmailTemplate] ADD  CONSTRAINT [DF_EmailTemplate_SendWhenHareAssigned]  DEFAULT ((0)) FOR [SendWhenHareAssigned]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_ErrorLog_HasherId]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[ErrorLog] ADD  CONSTRAINT [DF_ErrorLog_HasherId]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_ErrorLog_HcVersion]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[ErrorLog] ADD  CONSTRAINT [DF_ErrorLog_HcVersion]  DEFAULT (N'pre 0.6.4') FOR [HcVersion]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_ErrorLog_createdA__2AC04CAA]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[ErrorLog] ADD  CONSTRAINT [DF_ErrorLog_createdA__2AC04CAA]  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [createdAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_ErrorLog_updatedA__2BB470E3]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[ErrorLog] ADD  CONSTRAINT [DF_ErrorLog_updatedA__2BB470E3]  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_ErrorLog_deleted__2CA8951C]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[ErrorLog] ADD  CONSTRAINT [DF_ErrorLog_deleted__2CA8951C]  DEFAULT ((0)) FOR [deleted]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HC_Event_EventId]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_HC_Event_EventId]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_IsVisible]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_IsVisible]  DEFAULT ((1)) FOR [IsVisible]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_IsCountedRun]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_IsCountedRun]  DEFAULT ((1)) FOR [IsCountedRun]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_IsPromotedRun]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_IsPromotedRun]  DEFAULT ((0)) FOR [IsPromotedEvent]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_EventGeographicScope]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_EventGeographicScope]  DEFAULT ((0)) FOR [EventGeographicScope]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HC_Event_IsThemeRun]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_HC_Event_IsThemeRun]  DEFAULT ((0)) FOR [ThemeRunType]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_Tags1]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_Tags1]  DEFAULT ((0)) FOR [Tags1]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_Tags2]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_Tags2]  DEFAULT ((0)) FOR [Tags2]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_Tags3]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_Tags3]  DEFAULT ((0)) FOR [Tags3]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_EventNumber]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_EventNumber]  DEFAULT ((0)) FOR [EventNumber]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_RunCount]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_RunCount]  DEFAULT ((1)) FOR [EventNumberIncrement]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_DoTrackHashCash]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_DoTrackHashCash]  DEFAULT ((0)) FOR [DoTrackHashCash]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_UnconfirmedBankXferCount]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_UnconfirmedBankXferCount]  DEFAULT ((0)) FOR [UnconfirmedBankXferCount]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_UserCountIncrement]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_UserCountIncrement]  DEFAULT ((1)) FOR [UserEventCounterIncrement]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HC_Event_MinimumRequired]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_HC_Event_MinimumRequired]  DEFAULT ((1)) FOR [MinimumParticipantsRequired]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_CanEditRunAttendence]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_CanEditRunAttendence]  DEFAULT ((1)) FOR [CanEditRunAttendence]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_UseFbData]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_UseFbData]  DEFAULT ((0)) FOR [UseFbRunDetails]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_UseFbLocation]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_UseFbLocation]  DEFAULT ((0)) FOR [UseFbLocation]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_UseFbLatLon]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_UseFbLatLon]  DEFAULT ((0)) FOR [UseFbLatLon]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_UpdateDataFromFacebook]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_UpdateDataFromFacebook]  DEFAULT ((0)) FOR [UpdateDataFromFacebook]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_EventSource]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_EventSource]  DEFAULT (N'Unknown') FOR [EventSource]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_removed]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_removed]  DEFAULT ((0)) FOR [removed]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__Event__deleted__22CA2527]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF__Event__deleted__22CA2527]  DEFAULT ((0)) FOR [deleted]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Event_lastModified]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_lastModified]  DEFAULT (getdate()) FOR [lastModified]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__Event__createdAt__414EAC47]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF__Event__createdAt__414EAC47]  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [createdAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__Event__updatedAt__4242D080]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF__Event__updatedAt__4242D080]  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Hasher_HasherId]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Hasher] ADD  CONSTRAINT [DF_Hasher_HasherId]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Hasher_SupportCode]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Hasher] ADD  CONSTRAINT [DF_Hasher_SupportCode]  DEFAULT (N'#####') FOR [SupportCode]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Hasher_ResetCode]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Hasher] ADD  CONSTRAINT [DF_Hasher_ResetCode]  DEFAULT (N'######') FOR [ResetCode]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Hasher_QR_code]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Hasher] ADD  CONSTRAINT [DF_Hasher_QR_code]  DEFAULT (N'######') FOR [QR_code]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Hasher_QR_secret_code]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Hasher] ADD  CONSTRAINT [DF_Hasher_QR_secret_code]  DEFAULT (newid()) FOR [QR_secret_code]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Hasher_HomeLatitude]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Hasher] ADD  CONSTRAINT [DF_Hasher_HomeLatitude]  DEFAULT ((51.5033)) FOR [HomeLatitude]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Hasher_HomeLongitude]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Hasher] ADD  CONSTRAINT [DF_Hasher_HomeLongitude]  DEFAULT ((0.1195)) FOR [HomeLongitude]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Hasher_NameDisplayPreference]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Hasher] ADD  CONSTRAINT [DF_Hasher_NameDisplayPreference]  DEFAULT ((1)) FOR [NameDisplayPreference]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Hasher_Preferences]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Hasher] ADD  CONSTRAINT [DF_Hasher_Preferences]  DEFAULT ((0)) FOR [Preferences]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Hasher_IncludeInGlobalHashDirectory]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Hasher] ADD  CONSTRAINT [DF_Hasher_IncludeInGlobalHashDirectory]  DEFAULT ((0)) FOR [IncludeInGlobalHashDirectory]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Hasher_Removed]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Hasher] ADD  CONSTRAINT [DF_Hasher_Removed]  DEFAULT ((0)) FOR [Removed]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__Hasher__createdA__2AC04CAA]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Hasher] ADD  CONSTRAINT [DF__Hasher__createdA__2AC04CAA]  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [createdAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__Hasher__updatedA__2BB470E3]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Hasher] ADD  CONSTRAINT [DF__Hasher__updatedA__2BB470E3]  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__Hasher__deleted__2CA8951C]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Hasher] ADD  CONSTRAINT [DF__Hasher__deleted__2CA8951C]  DEFAULT ((0)) FOR [deleted]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherEventMap_HasherEventMapId]') AND type = 'D')
-BEGIN
+ALTER TABLE [HC].[Hasher] ADD  CONSTRAINT [DF_Hasher_IsBetaTester]  DEFAULT ((0)) FOR [IsBetaTester]
+GO
 ALTER TABLE [HC].[HasherEventMap] ADD  CONSTRAINT [DF_HasherEventMap_HasherEventMapId]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherEventMap_RsvpState]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherEventMap] ADD  CONSTRAINT [DF_HasherEventMap_RsvpState]  DEFAULT ((0)) FOR [RsvpState]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherEventMap_AttendenceState]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherEventMap] ADD  CONSTRAINT [DF_HasherEventMap_AttendenceState]  DEFAULT ((0)) FOR [AttendenceState]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__HasherEve__IsHar__6E565CE8]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherEventMap] ADD  CONSTRAINT [DF__HasherEve__IsHar__6E565CE8]  DEFAULT ((0)) FOR [IsHare]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherEventMap_IsVirgin]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherEventMap] ADD  CONSTRAINT [DF_HasherEventMap_IsVirgin]  DEFAULT ((0)) FOR [VirginVisitorType]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherEventMap_removed]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherEventMap] ADD  CONSTRAINT [DF_HasherEventMap_removed]  DEFAULT ((0)) FOR [removed]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherEventMap_updatedAt]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherEventMap] ADD  CONSTRAINT [DF_HasherEventMap_updatedAt]  DEFAULT (getdate()) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherFriendMap_Id]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherFriendMap] ADD  CONSTRAINT [DF_HasherFriendMap_Id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherFriendMap_FriendNotificationPreference]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherFriendMap] ADD  CONSTRAINT [DF_HasherFriendMap_FriendNotificationPreference]  DEFAULT ((0)) FOR [FriendNotificationPreference]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherFriendMap_State]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherFriendMap] ADD  CONSTRAINT [DF_HasherFriendMap_State]  DEFAULT ((0)) FOR [Ignore]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_HasherId]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_HasherId]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_Following]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_Following]  DEFAULT ((1)) FOR [Following]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_State]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_State]  DEFAULT ((0)) FOR [IsMember]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_IsInPack]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_IsInPack]  DEFAULT ((0)) FOR [IsKennelFollowing]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_IsHomeKennel]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_IsHomeKennel]  DEFAULT ((0)) FOR [IsHomeKennel]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_KennelNotificationPreference]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_KennelNotificationPreference]  DEFAULT ((0)) FOR [KennelNotificationPreference]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_KennelEmailPreferences]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_KennelEmailPreferences]  DEFAULT ((0)) FOR [KennelEmailAlertPreference]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_MismanagementRoles]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_MismanagementRoles]  DEFAULT ((0)) FOR [MismanagementRoles]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_IsMismanagement]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_IsMismanagement]  DEFAULT ((0)) FOR [MismanagementRoleFlags]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_HcWebPermissionFlags]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_HcWebPermissionFlags]  DEFAULT ((0)) FOR [HcWebPermissionFlags]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_UserRoleFlags]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_UserRoleFlags]  DEFAULT ((0)) FOR [UserRoleFlags]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_AppAccessFlags]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_AppAccessFlags]  DEFAULT ((0)) FOR [AppAccessFlags]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_HistoricalRunCount]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_HistoricalRunCount]  DEFAULT ((0)) FOR [HistoricalPackRunCount]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_HistoricalHaringCount]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_HistoricalHaringCount]  DEFAULT ((0)) FOR [HistoricalHaringCount]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_HistoricalCountIsEstimate]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_HistoricalCountIsEstimate]  DEFAULT ((0)) FOR [HistoricalCountIsEstimate]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_CurrentPackRunCount]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_CurrentPackRunCount]  DEFAULT ((0)) FOR [CurrentPackRunCount]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_CurrentHaringCount]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_CurrentHaringCount]  DEFAULT ((0)) FOR [CurrentHaringCount]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_MemberSince]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_MemberSince]  DEFAULT (getdate()) FOR [MemberSince]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_CanEditRunAttendence]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_CanEditRunAttendence]  DEFAULT ((1)) FOR [CanEditRunAttendence]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_removed]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_removed]  DEFAULT ((0)) FOR [removed]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherKennelMap_updatedAt]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherKennelMap] ADD  CONSTRAINT [DF_HasherKennelMap_updatedAt]  DEFAULT (getdate()) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherOwnEvent_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherOwnEvent] ADD  CONSTRAINT [DF_HasherOwnEvent_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherOwnEvent_removed]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherOwnEvent] ADD  CONSTRAINT [DF_HasherOwnEvent_removed]  DEFAULT ((0)) FOR [removed]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherOwnEvent_deleted]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherOwnEvent] ADD  CONSTRAINT [DF_HasherOwnEvent_deleted]  DEFAULT ((0)) FOR [deleted]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherOwnEvent_lastModified]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherOwnEvent] ADD  CONSTRAINT [DF_HasherOwnEvent_lastModified]  DEFAULT (getdate()) FOR [lastModified]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_HasherOwnEvent_updatedAt]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[HasherOwnEvent] ADD  CONSTRAINT [DF_HasherOwnEvent_updatedAt]  DEFAULT (getdate()) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_KennelStatus]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_KennelStatus]  DEFAULT ((1)) FOR [KennelStatus]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_IntegrationType]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_IntegrationType]  DEFAULT (N'None') FOR [IntegrationType]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_KennelFacebookImportDaysInPast]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_KennelFacebookImportDaysInPast]  DEFAULT ((4)) FOR [IntegrationImportDaysInPast]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_KennelFacebookImportDaysInFuture]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_KennelFacebookImportDaysInFuture]  DEFAULT ((90)) FOR [IntegrationImportDaysInFuture]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_AutoImportFacebookEvents]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_AutoImportFacebookEvents]  DEFAULT ((0)) FOR [IntegrationAutoImportEvents]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_ImportOnlyTaggedEvents]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_ImportOnlyTaggedEvents]  DEFAULT ((0)) FOR [IntegrationImportOnlyTaggedEvents]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_PublishToGoogleCalendar]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_PublishToGoogleCalendar]  DEFAULT ((0)) FOR [PublishToGoogleCalendar]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_CanEditRunAttendence]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_CanEditRunAttendence]  DEFAULT ((1)) FOR [CanEditRunAttendence]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_KennelLogo]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_KennelLogo]  DEFAULT (N'bundle://defaultKennelLogo') FOR [KennelLogo]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_KennelPinColor]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_KennelPinColor]  DEFAULT ((0)) FOR [KennelPinColor]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_KennelMismanagementTeam]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_KennelMismanagementTeam]  DEFAULT ('<none listed>') FOR [KennelMismanagementTeam]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_DefaultEventPriceForNonMembers]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_DefaultEventPriceForNonMembers]  DEFAULT ((0)) FOR [DefaultEventPriceForNonMembers]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_DefaultRunStartTime]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_DefaultRunStartTime]  DEFAULT ('12:00:00.0000000') FOR [DefaultRunStartTime]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_AllowSelfPayment]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_AllowSelfPayment]  DEFAULT ((1)) FOR [AllowSelfPayment]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_AllowNegativeCredit]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_AllowNegativeCredit]  DEFAULT ((0)) FOR [AllowNegativeCredit]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_MembershipDurationInMonths]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_MembershipDurationInMonths]  DEFAULT ((12)) FOR [MembershipDurationInMonths]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Kennel_removed]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_removed]  DEFAULT ((0)) FOR [removed]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__Kennel__createdA__338A9CD5]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF__Kennel__createdA__338A9CD5]  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [createdAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__Kennel__updatedA__347EC10E]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF__Kennel__updatedA__347EC10E]  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__Kennel__deleted__3572E547]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF__Kennel__deleted__3572E547]  DEFAULT ((0)) FOR [deleted]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelAuthorization_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelAuthorization] ADD  CONSTRAINT [DF_KennelAuthorization_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelAuthorization_AutoFacebookEventImport]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelAuthorization] ADD  CONSTRAINT [DF_KennelAuthorization_AutoFacebookEventImport]  DEFAULT ((0)) FOR [Auth_FacebookIntegration]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelAuthorization_TrackPayments]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelAuthorization] ADD  CONSTRAINT [DF_KennelAuthorization_TrackPayments]  DEFAULT ((0)) FOR [Auth_TrackPayments]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelAuthorization_Haberdashery]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelAuthorization] ADD  CONSTRAINT [DF_KennelAuthorization_Haberdashery]  DEFAULT ((0)) FOR [Auth_Haberdashery]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelAuthorization_CustomSongbook]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelAuthorization] ADD  CONSTRAINT [DF_KennelAuthorization_CustomSongbook]  DEFAULT ((0)) FOR [Auth_CustomSongbook]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelAuthorization_WebsiteIntegration]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelAuthorization] ADD  CONSTRAINT [DF_KennelAuthorization_WebsiteIntegration]  DEFAULT ((0)) FOR [Auth_WebsiteIntegration]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelAuthorization_AllowCredit]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelAuthorization] ADD  CONSTRAINT [DF_KennelAuthorization_AllowCredit]  DEFAULT ((0)) FOR [Auth_AllowCredit]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelAuthorization_PushNotifications]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelAuthorization] ADD  CONSTRAINT [DF_KennelAuthorization_PushNotifications]  DEFAULT ((0)) FOR [Auth_PushNotifications]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelAuthorization_CheckInAndOut]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelAuthorization] ADD  CONSTRAINT [DF_KennelAuthorization_CheckInAndOut]  DEFAULT ((0)) FOR [Auth_CheckInAndOut]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelAuthorization_PromoteEvents]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelAuthorization] ADD  CONSTRAINT [DF_KennelAuthorization_PromoteEvents]  DEFAULT ((0)) FOR [Auth_PromoteEvents]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelAuthorization_CustomLogo]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelAuthorization] ADD  CONSTRAINT [DF_KennelAuthorization_CustomLogo]  DEFAULT ((0)) FOR [Auth_CustomLogo]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelAuthorization_AuthorizationAmount]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelAuthorization] ADD  CONSTRAINT [DF_KennelAuthorization_AuthorizationAmount]  DEFAULT ((10)) FOR [Auth_MembersAllowed]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelAuthorization_HareRaisingManagement]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelAuthorization] ADD  CONSTRAINT [DF_KennelAuthorization_HareRaisingManagement]  DEFAULT ((0)) FOR [Auth_HareRaisingManagement]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelAuthorization_StartDate]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelAuthorization] ADD  CONSTRAINT [DF_KennelAuthorization_StartDate]  DEFAULT (getdate()) FOR [StartDate]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelCredit_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelCredit] ADD  CONSTRAINT [DF_KennelCredit_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_KennelCredit_removed]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[KennelCredit] ADD  CONSTRAINT [DF_KennelCredit_removed]  DEFAULT ((0)) FOR [removed]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_LaunchAndLogin_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[LaunchAndLogin] ADD  CONSTRAINT [DF_LaunchAndLogin_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_LaunchAndLogin_DateAndTime]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[LaunchAndLogin] ADD  CONSTRAINT [DF_LaunchAndLogin_DateAndTime]  DEFAULT (getdate()) FOR [LoginDate]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_LaunchAndLogin_HcVersion]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[LaunchAndLogin] ADD  CONSTRAINT [DF_LaunchAndLogin_HcVersion]  DEFAULT (N'pre 0.6.4') FOR [HcVersion]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_ServerMaintenanceWindow_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[LoginNotifications] ADD  CONSTRAINT [DF_ServerMaintenanceWindow_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_ServerMaintenanceWindow_CreatedDate]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[LoginNotifications] ADD  CONSTRAINT [DF_ServerMaintenanceWindow_CreatedDate]  DEFAULT (getdate()) FOR [CreatedDate]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__Meetings__create__6D2DF9DC]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Meetings] ADD  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [createdAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__Meetings__update__6E221E15]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Meetings] ADD  DEFAULT (CONVERT([datetimeoffset](7),sysutcdatetime(),(0))) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF__Meetings__delete__6F16424E]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Meetings] ADD  DEFAULT ((0)) FOR [deleted]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Payment_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Payment] ADD  CONSTRAINT [DF_Payment_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Payment_CreditAmount]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Payment] ADD  CONSTRAINT [DF_Payment_CreditAmount]  DEFAULT ((0)) FOR [CreditAmount]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Payment_DebitAmount]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Payment] ADD  CONSTRAINT [DF_Payment_DebitAmount]  DEFAULT ((0)) FOR [DebitAmount]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Payment_Surcharge]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Payment] ADD  CONSTRAINT [DF_Payment_Surcharge]  DEFAULT ((0)) FOR [Surcharge]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Payment_PaidDate]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Payment] ADD  CONSTRAINT [DF_Payment_PaidDate]  DEFAULT (getdate()) FOR [PaidDate]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Payment_ProductType]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Payment] ADD  CONSTRAINT [DF_Payment_ProductType]  DEFAULT ((1)) FOR [ProductType]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Payment_CreditAvailable]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Payment] ADD  CONSTRAINT [DF_Payment_CreditAvailable]  DEFAULT ((0)) FOR [CreditAvailable]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Payment_DoPayForExtras]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Payment] ADD  CONSTRAINT [DF_Payment_DoPayForExtras]  DEFAULT ((0)) FOR [DoPayForExtras]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Payment_removed]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Payment] ADD  CONSTRAINT [DF_Payment_removed]  DEFAULT ((0)) FOR [removed]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Payment_updatedAt]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Payment] ADD  CONSTRAINT [DF_Payment_updatedAt]  DEFAULT (getdate()) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Receipt_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Receipt] ADD  CONSTRAINT [DF_Receipt_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Receipt_CostCategory]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Receipt] ADD  CONSTRAINT [DF_Receipt_CostCategory]  DEFAULT ((0)) FOR [CostCategory]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Receipt_DateUploaded]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Receipt] ADD  CONSTRAINT [DF_Receipt_DateUploaded]  DEFAULT (getdate()) FOR [DateUploaded]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Receipt_removed]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Receipt] ADD  CONSTRAINT [DF_Receipt_removed]  DEFAULT ((0)) FOR [removed]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Receipt_updatedAt]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Receipt] ADD  CONSTRAINT [DF_Receipt_updatedAt]  DEFAULT (getdate()) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Region_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Region] ADD  CONSTRAINT [DF_Region_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Region_Removed]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Region] ADD  CONSTRAINT [DF_Region_Removed]  DEFAULT ((0)) FOR [Removed]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_Region_updatedAt]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[Region] ADD  CONSTRAINT [DF_Region_updatedAt]  DEFAULT (getdate()) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_RunCounts_updatedAt]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[RunCounts] ADD  CONSTRAINT [DF_RunCounts_updatedAt]  DEFAULT (getdate()) FOR [updatedAt]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_ServerStatus_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[ServerStatus] ADD  CONSTRAINT [DF_ServerStatus_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_ServerStatus_CreatedDate]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[ServerStatus] ADD  CONSTRAINT [DF_ServerStatus_CreatedDate]  DEFAULT (getdate()) FOR [CreatedDate]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_ServerStatus_IosDownloadLink]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[ServerStatus] ADD  CONSTRAINT [DF_ServerStatus_IosDownloadLink]  DEFAULT ('') FOR [IosDownloadLink]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_ServerStatus_AndroidDownloadLink]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[ServerStatus] ADD  CONSTRAINT [DF_ServerStatus_AndroidDownloadLink]  DEFAULT ('') FOR [AndroidDownloadLink]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_ServerStatus_ImageRootUrl]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[ServerStatus] ADD  CONSTRAINT [DF_ServerStatus_ImageRootUrl]  DEFAULT ('') FOR [ImageRootUrl]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_WebAppLogin_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[WebAppLogin] ADD  CONSTRAINT [DF_WebAppLogin_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[DF_WebAppLogin_LoginSuccessful]') AND type = 'D')
-BEGIN
 ALTER TABLE [HC].[WebAppLogin] ADD  CONSTRAINT [DF_WebAppLogin_LoginSuccessful]  DEFAULT ((0)) FOR [LoginSuccessful]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Kennels].[DF_Mismanagement_MismanagementId]') AND type = 'D')
-BEGIN
 ALTER TABLE [Kennels].[Mismanagement] ADD  CONSTRAINT [DF_Mismanagement_MismanagementId]  DEFAULT (newid()) FOR [MismanagementId]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Transactions].[DF_EventRegistration_DateRegistered]') AND type = 'D')
-BEGIN
 ALTER TABLE [Transactions].[EventRegistration] ADD  CONSTRAINT [DF_EventRegistration_DateRegistered]  DEFAULT (getdate()) FOR [DateRegistered]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[DF_FeaturedEvent_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [UNUSED].[FeaturedEvent] ADD  CONSTRAINT [DF_FeaturedEvent_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[DF_FeaturedKennel_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [UNUSED].[FeaturedKennel] ADD  CONSTRAINT [DF_FeaturedKennel_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[DF_FeaturedSong_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [UNUSED].[FeaturedSong] ADD  CONSTRAINT [DF_FeaturedSong_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[DF_Haberdashery_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [UNUSED].[Haberdashery] ADD  CONSTRAINT [DF_Haberdashery_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[DF_Haberdashery_Price]') AND type = 'D')
-BEGIN
 ALTER TABLE [UNUSED].[Haberdashery] ADD  CONSTRAINT [DF_Haberdashery_Price]  DEFAULT ((0)) FOR [Price]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[DF_Haberdashery_InStock]') AND type = 'D')
-BEGIN
 ALTER TABLE [UNUSED].[Haberdashery] ADD  CONSTRAINT [DF_Haberdashery_InStock]  DEFAULT ((1)) FOR [InStock]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[DF_Haberdashery_Archive]') AND type = 'D')
-BEGIN
 ALTER TABLE [UNUSED].[Haberdashery] ADD  CONSTRAINT [DF_Haberdashery_Archive]  DEFAULT ((0)) FOR [Archive]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[DF_Haberdashery_ShowOnHomePage]') AND type = 'D')
-BEGIN
 ALTER TABLE [UNUSED].[Haberdashery] ADD  CONSTRAINT [DF_Haberdashery_ShowOnHomePage]  DEFAULT ((0)) FOR [ShowOnHomePage]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[DF_KennelSongMap_Id]') AND type = 'D')
-BEGIN
 ALTER TABLE [UNUSED].[KennelSongMap] ADD  CONSTRAINT [DF_KennelSongMap_Id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[DF_KennelSongMap_Following]') AND type = 'D')
-BEGIN
 ALTER TABLE [UNUSED].[KennelSongMap] ADD  CONSTRAINT [DF_KennelSongMap_Following]  DEFAULT ((1)) FOR [Following]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[DF_Song_id]') AND type = 'D')
-BEGIN
 ALTER TABLE [UNUSED].[Song] ADD  CONSTRAINT [DF_Song_id]  DEFAULT (newid()) FOR [id]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[DF_Song_Rating]') AND type = 'D')
-BEGIN
 ALTER TABLE [UNUSED].[Song] ADD  CONSTRAINT [DF_Song_Rating]  DEFAULT ((1)) FOR [BawdyRating]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[DF_Song_AutoAddToKennel]') AND type = 'D')
-BEGIN
 ALTER TABLE [UNUSED].[Song] ADD  CONSTRAINT [DF_Song_AutoAddToKennel]  DEFAULT ((0)) FOR [AutoAddToKennel]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[DF_Song_Rank]') AND type = 'D')
-BEGIN
 ALTER TABLE [UNUSED].[Song] ADD  CONSTRAINT [DF_Song_Rank]  DEFAULT ((0)) FOR [Rank]
-END
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_Contacts_UserId]') AND parent_object_id = OBJECT_ID(N'[dbo].[Contacts]'))
 ALTER TABLE [dbo].[Contacts]  WITH CHECK ADD  CONSTRAINT [FK_Contacts_UserId] FOREIGN KEY([UserId])
 REFERENCES [dbo].[Users] ([UserId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_Contacts_UserId]') AND parent_object_id = OBJECT_ID(N'[dbo].[Contacts]'))
 ALTER TABLE [dbo].[Contacts] CHECK CONSTRAINT [FK_Contacts_UserId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_AgendaRel_AgendaId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingAgendaRelevant]'))
 ALTER TABLE [dbo].[MeetingAgendaRelevant]  WITH CHECK ADD  CONSTRAINT [FK_AgendaRel_AgendaId] FOREIGN KEY([AgendaId])
 REFERENCES [dbo].[MeetingAgendas] ([AgendaId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_AgendaRel_AgendaId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingAgendaRelevant]'))
 ALTER TABLE [dbo].[MeetingAgendaRelevant] CHECK CONSTRAINT [FK_AgendaRel_AgendaId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_AgendaRel_ContactId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingAgendaRelevant]'))
 ALTER TABLE [dbo].[MeetingAgendaRelevant]  WITH CHECK ADD  CONSTRAINT [FK_AgendaRel_ContactId] FOREIGN KEY([ContactId])
 REFERENCES [dbo].[Contacts] ([ContactId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_AgendaRel_ContactId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingAgendaRelevant]'))
 ALTER TABLE [dbo].[MeetingAgendaRelevant] CHECK CONSTRAINT [FK_AgendaRel_ContactId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetAgendas_AgendaTypeId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingAgendas]'))
 ALTER TABLE [dbo].[MeetingAgendas]  WITH CHECK ADD  CONSTRAINT [FK_MeetAgendas_AgendaTypeId] FOREIGN KEY([AgendaTypeId])
 REFERENCES [dbo].[MeetingAgendaTypes] ([AgendaTypeId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetAgendas_AgendaTypeId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingAgendas]'))
 ALTER TABLE [dbo].[MeetingAgendas] CHECK CONSTRAINT [FK_MeetAgendas_AgendaTypeId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetAgendas_MeetingId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingAgendas]'))
 ALTER TABLE [dbo].[MeetingAgendas]  WITH CHECK ADD  CONSTRAINT [FK_MeetAgendas_MeetingId] FOREIGN KEY([MeetingId])
 REFERENCES [dbo].[Meetings] ([MeetingId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetAgendas_MeetingId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingAgendas]'))
 ALTER TABLE [dbo].[MeetingAgendas] CHECK CONSTRAINT [FK_MeetAgendas_MeetingId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetAgendas_RequestedBy]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingAgendas]'))
 ALTER TABLE [dbo].[MeetingAgendas]  WITH CHECK ADD  CONSTRAINT [FK_MeetAgendas_RequestedBy] FOREIGN KEY([RequestedByContactId])
 REFERENCES [dbo].[Contacts] ([ContactId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetAgendas_RequestedBy]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingAgendas]'))
 ALTER TABLE [dbo].[MeetingAgendas] CHECK CONSTRAINT [FK_MeetAgendas_RequestedBy]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetAttendees_ContactId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingAttendees]'))
 ALTER TABLE [dbo].[MeetingAttendees]  WITH CHECK ADD  CONSTRAINT [FK_MeetAttendees_ContactId] FOREIGN KEY([ContactId])
 REFERENCES [dbo].[Contacts] ([ContactId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetAttendees_ContactId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingAttendees]'))
 ALTER TABLE [dbo].[MeetingAttendees] CHECK CONSTRAINT [FK_MeetAttendees_ContactId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetAttendees_MeetingId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingAttendees]'))
 ALTER TABLE [dbo].[MeetingAttendees]  WITH CHECK ADD  CONSTRAINT [FK_MeetAttendees_MeetingId] FOREIGN KEY([MeetingId])
 REFERENCES [dbo].[Meetings] ([MeetingId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetAttendees_MeetingId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingAttendees]'))
 ALTER TABLE [dbo].[MeetingAttendees] CHECK CONSTRAINT [FK_MeetAttendees_MeetingId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_DecisionRel_ContactId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingDecisionRelevant]'))
 ALTER TABLE [dbo].[MeetingDecisionRelevant]  WITH CHECK ADD  CONSTRAINT [FK_DecisionRel_ContactId] FOREIGN KEY([ContactId])
 REFERENCES [dbo].[Contacts] ([ContactId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_DecisionRel_ContactId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingDecisionRelevant]'))
 ALTER TABLE [dbo].[MeetingDecisionRelevant] CHECK CONSTRAINT [FK_DecisionRel_ContactId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_DecisionRel_DecisionId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingDecisionRelevant]'))
 ALTER TABLE [dbo].[MeetingDecisionRelevant]  WITH CHECK ADD  CONSTRAINT [FK_DecisionRel_DecisionId] FOREIGN KEY([DecisionId])
 REFERENCES [dbo].[MeetingDecisions] ([DecisionId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_DecisionRel_DecisionId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingDecisionRelevant]'))
 ALTER TABLE [dbo].[MeetingDecisionRelevant] CHECK CONSTRAINT [FK_DecisionRel_DecisionId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetDecisions_AgendaId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingDecisions]'))
 ALTER TABLE [dbo].[MeetingDecisions]  WITH CHECK ADD  CONSTRAINT [FK_MeetDecisions_AgendaId] FOREIGN KEY([AgendaId])
 REFERENCES [dbo].[MeetingAgendas] ([AgendaId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetDecisions_AgendaId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingDecisions]'))
 ALTER TABLE [dbo].[MeetingDecisions] CHECK CONSTRAINT [FK_MeetDecisions_AgendaId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetDecisions_AgendaType]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingDecisions]'))
 ALTER TABLE [dbo].[MeetingDecisions]  WITH CHECK ADD  CONSTRAINT [FK_MeetDecisions_AgendaType] FOREIGN KEY([DecisionNumber])
 REFERENCES [dbo].[MeetingAgendaTypes] ([AgendaTypeId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetDecisions_AgendaType]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingDecisions]'))
 ALTER TABLE [dbo].[MeetingDecisions] CHECK CONSTRAINT [FK_MeetDecisions_AgendaType]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetDecisions_MeetingId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingDecisions]'))
 ALTER TABLE [dbo].[MeetingDecisions]  WITH CHECK ADD  CONSTRAINT [FK_MeetDecisions_MeetingId] FOREIGN KEY([MeetingId])
 REFERENCES [dbo].[Meetings] ([MeetingId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetDecisions_MeetingId]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingDecisions]'))
 ALTER TABLE [dbo].[MeetingDecisions] CHECK CONSTRAINT [FK_MeetDecisions_MeetingId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetDecisions_RequestedBy]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingDecisions]'))
 ALTER TABLE [dbo].[MeetingDecisions]  WITH CHECK ADD  CONSTRAINT [FK_MeetDecisions_RequestedBy] FOREIGN KEY([ResponsibleContactId])
 REFERENCES [dbo].[Contacts] ([ContactId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_MeetDecisions_RequestedBy]') AND parent_object_id = OBJECT_ID(N'[dbo].[MeetingDecisions]'))
 ALTER TABLE [dbo].[MeetingDecisions] CHECK CONSTRAINT [FK_MeetDecisions_RequestedBy]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_Meetings_LocationId]') AND parent_object_id = OBJECT_ID(N'[dbo].[Meetings]'))
 ALTER TABLE [dbo].[Meetings]  WITH CHECK ADD  CONSTRAINT [FK_Meetings_LocationId] FOREIGN KEY([LocationId])
 REFERENCES [dbo].[MeetingLocations] ([LocationId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_Meetings_LocationId]') AND parent_object_id = OBJECT_ID(N'[dbo].[Meetings]'))
 ALTER TABLE [dbo].[Meetings] CHECK CONSTRAINT [FK_Meetings_LocationId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_Meetings_Organizer]') AND parent_object_id = OBJECT_ID(N'[dbo].[Meetings]'))
 ALTER TABLE [dbo].[Meetings]  WITH CHECK ADD  CONSTRAINT [FK_Meetings_Organizer] FOREIGN KEY([OrganizerContactId])
 REFERENCES [dbo].[Contacts] ([ContactId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_Meetings_Organizer]') AND parent_object_id = OBJECT_ID(N'[dbo].[Meetings]'))
 ALTER TABLE [dbo].[Meetings] CHECK CONSTRAINT [FK_Meetings_Organizer]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_Meetings_Reporter]') AND parent_object_id = OBJECT_ID(N'[dbo].[Meetings]'))
 ALTER TABLE [dbo].[Meetings]  WITH CHECK ADD  CONSTRAINT [FK_Meetings_Reporter] FOREIGN KEY([ReporterContactId])
 REFERENCES [dbo].[Contacts] ([ContactId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_Meetings_Reporter]') AND parent_object_id = OBJECT_ID(N'[dbo].[Meetings]'))
 ALTER TABLE [dbo].[Meetings] CHECK CONSTRAINT [FK_Meetings_Reporter]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_Meetings_TypeId]') AND parent_object_id = OBJECT_ID(N'[dbo].[Meetings]'))
 ALTER TABLE [dbo].[Meetings]  WITH CHECK ADD  CONSTRAINT [FK_Meetings_TypeId] FOREIGN KEY([MeetingTypeId])
 REFERENCES [dbo].[MeetingTypes] ([MeetingTypeId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_Meetings_TypeId]') AND parent_object_id = OBJECT_ID(N'[dbo].[Meetings]'))
 ALTER TABLE [dbo].[Meetings] CHECK CONSTRAINT [FK_Meetings_TypeId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_RolePermissions_RoleId]') AND parent_object_id = OBJECT_ID(N'[dbo].[RolePermissions]'))
 ALTER TABLE [dbo].[RolePermissions]  WITH CHECK ADD  CONSTRAINT [FK_RolePermissions_RoleId] FOREIGN KEY([RoleId])
 REFERENCES [dbo].[Roles] ([RoleId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_RolePermissions_RoleId]') AND parent_object_id = OBJECT_ID(N'[dbo].[RolePermissions]'))
 ALTER TABLE [dbo].[RolePermissions] CHECK CONSTRAINT [FK_RolePermissions_RoleId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_UserPermissions_UserId]') AND parent_object_id = OBJECT_ID(N'[dbo].[UserPermissions]'))
 ALTER TABLE [dbo].[UserPermissions]  WITH CHECK ADD  CONSTRAINT [FK_UserPermissions_UserId] FOREIGN KEY([UserId])
 REFERENCES [dbo].[Users] ([UserId])
 ON DELETE CASCADE
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_UserPermissions_UserId]') AND parent_object_id = OBJECT_ID(N'[dbo].[UserPermissions]'))
 ALTER TABLE [dbo].[UserPermissions] CHECK CONSTRAINT [FK_UserPermissions_UserId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_UserRoles_RoleId]') AND parent_object_id = OBJECT_ID(N'[dbo].[UserRoles]'))
 ALTER TABLE [dbo].[UserRoles]  WITH CHECK ADD  CONSTRAINT [FK_UserRoles_RoleId] FOREIGN KEY([RoleId])
 REFERENCES [dbo].[Roles] ([RoleId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_UserRoles_RoleId]') AND parent_object_id = OBJECT_ID(N'[dbo].[UserRoles]'))
 ALTER TABLE [dbo].[UserRoles] CHECK CONSTRAINT [FK_UserRoles_RoleId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_UserRoles_UserId]') AND parent_object_id = OBJECT_ID(N'[dbo].[UserRoles]'))
 ALTER TABLE [dbo].[UserRoles]  WITH CHECK ADD  CONSTRAINT [FK_UserRoles_UserId] FOREIGN KEY([UserId])
 REFERENCES [dbo].[Users] ([UserId])
 ON DELETE CASCADE
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_UserRoles_UserId]') AND parent_object_id = OBJECT_ID(N'[dbo].[UserRoles]'))
 ALTER TABLE [dbo].[UserRoles] CHECK CONSTRAINT [FK_UserRoles_UserId]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_City_Region]') AND parent_object_id = OBJECT_ID(N'[HC].[City]'))
 ALTER TABLE [HC].[City]  WITH CHECK ADD  CONSTRAINT [FK_City_Region] FOREIGN KEY([RegionId])
 REFERENCES [HC].[Region] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_City_Region]') AND parent_object_id = OBJECT_ID(N'[HC].[City]'))
 ALTER TABLE [HC].[City] CHECK CONSTRAINT [FK_City_Region]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_City_Timezone]') AND parent_object_id = OBJECT_ID(N'[HC].[City]'))
 ALTER TABLE [HC].[City]  WITH CHECK ADD  CONSTRAINT [FK_City_Timezone] FOREIGN KEY([TimezoneId])
 REFERENCES [DomainValues].[Timezone] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_City_Timezone]') AND parent_object_id = OBJECT_ID(N'[HC].[City]'))
 ALTER TABLE [HC].[City] CHECK CONSTRAINT [FK_City_Timezone]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_EmailLog_EmailTemplate]') AND parent_object_id = OBJECT_ID(N'[HC].[EmailLog]'))
 ALTER TABLE [HC].[EmailLog]  WITH CHECK ADD  CONSTRAINT [FK_EmailLog_EmailTemplate] FOREIGN KEY([EmailTemplaterId])
 REFERENCES [HC].[EmailTemplate] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_EmailLog_EmailTemplate]') AND parent_object_id = OBJECT_ID(N'[HC].[EmailLog]'))
 ALTER TABLE [HC].[EmailLog] CHECK CONSTRAINT [FK_EmailLog_EmailTemplate]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_EmailLog_Event]') AND parent_object_id = OBJECT_ID(N'[HC].[EmailLog]'))
 ALTER TABLE [HC].[EmailLog]  WITH CHECK ADD  CONSTRAINT [FK_EmailLog_Event] FOREIGN KEY([EventId])
 REFERENCES [HC].[Event] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_EmailLog_Event]') AND parent_object_id = OBJECT_ID(N'[HC].[EmailLog]'))
 ALTER TABLE [HC].[EmailLog] CHECK CONSTRAINT [FK_EmailLog_Event]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_EmailTemplate_Event]') AND parent_object_id = OBJECT_ID(N'[HC].[EmailTemplate]'))
 ALTER TABLE [HC].[EmailTemplate]  WITH CHECK ADD  CONSTRAINT [FK_EmailTemplate_Event] FOREIGN KEY([EventId])
 REFERENCES [HC].[Event] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_EmailTemplate_Event]') AND parent_object_id = OBJECT_ID(N'[HC].[EmailTemplate]'))
 ALTER TABLE [HC].[EmailTemplate] CHECK CONSTRAINT [FK_EmailTemplate_Event]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_EmailTemplate_Kennel]') AND parent_object_id = OBJECT_ID(N'[HC].[EmailTemplate]'))
 ALTER TABLE [HC].[EmailTemplate]  WITH CHECK ADD  CONSTRAINT [FK_EmailTemplate_Kennel] FOREIGN KEY([KennelId])
 REFERENCES [HC].[Kennel] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_EmailTemplate_Kennel]') AND parent_object_id = OBJECT_ID(N'[HC].[EmailTemplate]'))
 ALTER TABLE [HC].[EmailTemplate] CHECK CONSTRAINT [FK_EmailTemplate_Kennel]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Event_EventGeographicScope]') AND parent_object_id = OBJECT_ID(N'[HC].[Event]'))
 ALTER TABLE [HC].[Event]  WITH CHECK ADD  CONSTRAINT [FK_Event_EventGeographicScope] FOREIGN KEY([EventGeographicScope])
 REFERENCES [DomainValues].[EventGeographicScope] ([EventEnumId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Event_EventGeographicScope]') AND parent_object_id = OBJECT_ID(N'[HC].[Event]'))
 ALTER TABLE [HC].[Event] CHECK CONSTRAINT [FK_Event_EventGeographicScope]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Event_Kennel]') AND parent_object_id = OBJECT_ID(N'[HC].[Event]'))
 ALTER TABLE [HC].[Event]  WITH CHECK ADD  CONSTRAINT [FK_Event_Kennel] FOREIGN KEY([KennelId])
 REFERENCES [HC].[Kennel] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Event_Kennel]') AND parent_object_id = OBJECT_ID(N'[HC].[Event]'))
 ALTER TABLE [HC].[Event] CHECK CONSTRAINT [FK_Event_Kennel]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_HasherEventMap_Event]') AND parent_object_id = OBJECT_ID(N'[HC].[HasherEventMap]'))
 ALTER TABLE [HC].[HasherEventMap]  WITH CHECK ADD  CONSTRAINT [FK_HasherEventMap_Event] FOREIGN KEY([EventId])
 REFERENCES [HC].[Event] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_HasherEventMap_Event]') AND parent_object_id = OBJECT_ID(N'[HC].[HasherEventMap]'))
 ALTER TABLE [HC].[HasherEventMap] CHECK CONSTRAINT [FK_HasherEventMap_Event]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_HasherEventMap_Hasher]') AND parent_object_id = OBJECT_ID(N'[HC].[HasherEventMap]'))
 ALTER TABLE [HC].[HasherEventMap]  WITH CHECK ADD  CONSTRAINT [FK_HasherEventMap_Hasher] FOREIGN KEY([UserId])
 REFERENCES [HC].[Hasher] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_HasherEventMap_Hasher]') AND parent_object_id = OBJECT_ID(N'[HC].[HasherEventMap]'))
 ALTER TABLE [HC].[HasherEventMap] CHECK CONSTRAINT [FK_HasherEventMap_Hasher]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_HasherEventMap_RunCounts]') AND parent_object_id = OBJECT_ID(N'[HC].[HasherEventMap]'))
 ALTER TABLE [HC].[HasherEventMap]  WITH CHECK ADD  CONSTRAINT [FK_HasherEventMap_RunCounts] FOREIGN KEY([RunCountId])
 REFERENCES [HC].[RunCounts] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_HasherEventMap_RunCounts]') AND parent_object_id = OBJECT_ID(N'[HC].[HasherEventMap]'))
 ALTER TABLE [HC].[HasherEventMap] CHECK CONSTRAINT [FK_HasherEventMap_RunCounts]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_HasherFriendMap_Hasher]') AND parent_object_id = OBJECT_ID(N'[HC].[HasherFriendMap]'))
 ALTER TABLE [HC].[HasherFriendMap]  WITH CHECK ADD  CONSTRAINT [FK_HasherFriendMap_Hasher] FOREIGN KEY([UserId])
 REFERENCES [HC].[Hasher] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_HasherFriendMap_Hasher]') AND parent_object_id = OBJECT_ID(N'[HC].[HasherFriendMap]'))
 ALTER TABLE [HC].[HasherFriendMap] CHECK CONSTRAINT [FK_HasherFriendMap_Hasher]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_HasherFriendMap_Hasher1]') AND parent_object_id = OBJECT_ID(N'[HC].[HasherFriendMap]'))
 ALTER TABLE [HC].[HasherFriendMap]  WITH CHECK ADD  CONSTRAINT [FK_HasherFriendMap_Hasher1] FOREIGN KEY([Friend_UserId])
 REFERENCES [HC].[Hasher] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_HasherFriendMap_Hasher1]') AND parent_object_id = OBJECT_ID(N'[HC].[HasherFriendMap]'))
 ALTER TABLE [HC].[HasherFriendMap] CHECK CONSTRAINT [FK_HasherFriendMap_Hasher1]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_HasherKennelMap_Hasher]') AND parent_object_id = OBJECT_ID(N'[HC].[HasherKennelMap]'))
 ALTER TABLE [HC].[HasherKennelMap]  WITH CHECK ADD  CONSTRAINT [FK_HasherKennelMap_Hasher] FOREIGN KEY([UserId])
 REFERENCES [HC].[Hasher] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_HasherKennelMap_Hasher]') AND parent_object_id = OBJECT_ID(N'[HC].[HasherKennelMap]'))
 ALTER TABLE [HC].[HasherKennelMap] CHECK CONSTRAINT [FK_HasherKennelMap_Hasher]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_HasherKennelMap_Kennel]') AND parent_object_id = OBJECT_ID(N'[HC].[HasherKennelMap]'))
 ALTER TABLE [HC].[HasherKennelMap]  WITH CHECK ADD  CONSTRAINT [FK_HasherKennelMap_Kennel] FOREIGN KEY([KennelId])
 REFERENCES [HC].[Kennel] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_HasherKennelMap_Kennel]') AND parent_object_id = OBJECT_ID(N'[HC].[HasherKennelMap]'))
 ALTER TABLE [HC].[HasherKennelMap] CHECK CONSTRAINT [FK_HasherKennelMap_Kennel]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Kennel_City]') AND parent_object_id = OBJECT_ID(N'[HC].[Kennel]'))
 ALTER TABLE [HC].[Kennel]  WITH CHECK ADD  CONSTRAINT [FK_Kennel_City] FOREIGN KEY([CityId])
 REFERENCES [HC].[City] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Kennel_City]') AND parent_object_id = OBJECT_ID(N'[HC].[Kennel]'))
 ALTER TABLE [HC].[Kennel] CHECK CONSTRAINT [FK_Kennel_City]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Kennel_Country]') AND parent_object_id = OBJECT_ID(N'[HC].[Kennel]'))
 ALTER TABLE [HC].[Kennel]  WITH CHECK ADD  CONSTRAINT [FK_Kennel_Country] FOREIGN KEY([CountryId])
 REFERENCES [HC].[Country] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Kennel_Country]') AND parent_object_id = OBJECT_ID(N'[HC].[Kennel]'))
 ALTER TABLE [HC].[Kennel] CHECK CONSTRAINT [FK_Kennel_Country]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Kennel_KennelStatusEnum]') AND parent_object_id = OBJECT_ID(N'[HC].[Kennel]'))
 ALTER TABLE [HC].[Kennel]  WITH CHECK ADD  CONSTRAINT [FK_Kennel_KennelStatusEnum] FOREIGN KEY([KennelStatus])
 REFERENCES [DomainValues].[KennelStatusEnum] ([KennelStatusEnumId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Kennel_KennelStatusEnum]') AND parent_object_id = OBJECT_ID(N'[HC].[Kennel]'))
 ALTER TABLE [HC].[Kennel] CHECK CONSTRAINT [FK_Kennel_KennelStatusEnum]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Kennel_Region]') AND parent_object_id = OBJECT_ID(N'[HC].[Kennel]'))
 ALTER TABLE [HC].[Kennel]  WITH CHECK ADD  CONSTRAINT [FK_Kennel_Region] FOREIGN KEY([ProvinceStateId])
 REFERENCES [HC].[Region] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Kennel_Region]') AND parent_object_id = OBJECT_ID(N'[HC].[Kennel]'))
 ALTER TABLE [HC].[Kennel] CHECK CONSTRAINT [FK_Kennel_Region]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_KennelAuthorization_Kennel]') AND parent_object_id = OBJECT_ID(N'[HC].[KennelAuthorization]'))
 ALTER TABLE [HC].[KennelAuthorization]  WITH CHECK ADD  CONSTRAINT [FK_KennelAuthorization_Kennel] FOREIGN KEY([KennelId])
 REFERENCES [HC].[Kennel] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_KennelAuthorization_Kennel]') AND parent_object_id = OBJECT_ID(N'[HC].[KennelAuthorization]'))
 ALTER TABLE [HC].[KennelAuthorization] CHECK CONSTRAINT [FK_KennelAuthorization_Kennel]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_KennelCredit_Hasher]') AND parent_object_id = OBJECT_ID(N'[HC].[KennelCredit]'))
 ALTER TABLE [HC].[KennelCredit]  WITH CHECK ADD  CONSTRAINT [FK_KennelCredit_Hasher] FOREIGN KEY([userId])
 REFERENCES [HC].[Hasher] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_KennelCredit_Hasher]') AND parent_object_id = OBJECT_ID(N'[HC].[KennelCredit]'))
 ALTER TABLE [HC].[KennelCredit] CHECK CONSTRAINT [FK_KennelCredit_Hasher]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_KennelCredit_Kennel]') AND parent_object_id = OBJECT_ID(N'[HC].[KennelCredit]'))
 ALTER TABLE [HC].[KennelCredit]  WITH CHECK ADD  CONSTRAINT [FK_KennelCredit_Kennel] FOREIGN KEY([kennelId])
 REFERENCES [HC].[Kennel] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_KennelCredit_Kennel]') AND parent_object_id = OBJECT_ID(N'[HC].[KennelCredit]'))
 ALTER TABLE [HC].[KennelCredit] CHECK CONSTRAINT [FK_KennelCredit_Kennel]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_LaunchAndLogin_Hasher]') AND parent_object_id = OBJECT_ID(N'[HC].[LaunchAndLogin]'))
 ALTER TABLE [HC].[LaunchAndLogin]  WITH NOCHECK ADD  CONSTRAINT [FK_LaunchAndLogin_Hasher] FOREIGN KEY([UserId])
 REFERENCES [HC].[Hasher] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_LaunchAndLogin_Hasher]') AND parent_object_id = OBJECT_ID(N'[HC].[LaunchAndLogin]'))
 ALTER TABLE [HC].[LaunchAndLogin] NOCHECK CONSTRAINT [FK_LaunchAndLogin_Hasher]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Payment_Event]') AND parent_object_id = OBJECT_ID(N'[HC].[Payment]'))
 ALTER TABLE [HC].[Payment]  WITH CHECK ADD  CONSTRAINT [FK_Payment_Event] FOREIGN KEY([EventId])
 REFERENCES [HC].[Event] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Payment_Event]') AND parent_object_id = OBJECT_ID(N'[HC].[Payment]'))
 ALTER TABLE [HC].[Payment] CHECK CONSTRAINT [FK_Payment_Event]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Payment_Hasher]') AND parent_object_id = OBJECT_ID(N'[HC].[Payment]'))
 ALTER TABLE [HC].[Payment]  WITH CHECK ADD  CONSTRAINT [FK_Payment_Hasher] FOREIGN KEY([UserId])
 REFERENCES [HC].[Hasher] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Payment_Hasher]') AND parent_object_id = OBJECT_ID(N'[HC].[Payment]'))
 ALTER TABLE [HC].[Payment] CHECK CONSTRAINT [FK_Payment_Hasher]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Payment_Hasher1]') AND parent_object_id = OBJECT_ID(N'[HC].[Payment]'))
 ALTER TABLE [HC].[Payment]  WITH CHECK ADD  CONSTRAINT [FK_Payment_Hasher1] FOREIGN KEY([PaymentProcessedBy_userId])
 REFERENCES [HC].[Hasher] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Payment_Hasher1]') AND parent_object_id = OBJECT_ID(N'[HC].[Payment]'))
 ALTER TABLE [HC].[Payment] CHECK CONSTRAINT [FK_Payment_Hasher1]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Payment_Hasher2]') AND parent_object_id = OBJECT_ID(N'[HC].[Payment]'))
 ALTER TABLE [HC].[Payment]  WITH CHECK ADD  CONSTRAINT [FK_Payment_Hasher2] FOREIGN KEY([CancelledBy_UserId])
 REFERENCES [HC].[Hasher] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Payment_Hasher2]') AND parent_object_id = OBJECT_ID(N'[HC].[Payment]'))
 ALTER TABLE [HC].[Payment] CHECK CONSTRAINT [FK_Payment_Hasher2]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Payment_Hasher3]') AND parent_object_id = OBJECT_ID(N'[HC].[Payment]'))
 ALTER TABLE [HC].[Payment]  WITH CHECK ADD  CONSTRAINT [FK_Payment_Hasher3] FOREIGN KEY([ConfirmedBy_UserId])
 REFERENCES [HC].[Hasher] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Payment_Hasher3]') AND parent_object_id = OBJECT_ID(N'[HC].[Payment]'))
 ALTER TABLE [HC].[Payment] CHECK CONSTRAINT [FK_Payment_Hasher3]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Payment_HasherEventMap]') AND parent_object_id = OBJECT_ID(N'[HC].[Payment]'))
 ALTER TABLE [HC].[Payment]  WITH CHECK ADD  CONSTRAINT [FK_Payment_HasherEventMap] FOREIGN KEY([HasherEventMapId])
 REFERENCES [HC].[HasherEventMap] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Payment_HasherEventMap]') AND parent_object_id = OBJECT_ID(N'[HC].[Payment]'))
 ALTER TABLE [HC].[Payment] CHECK CONSTRAINT [FK_Payment_HasherEventMap]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Payment_Kennel]') AND parent_object_id = OBJECT_ID(N'[HC].[Payment]'))
 ALTER TABLE [HC].[Payment]  WITH CHECK ADD  CONSTRAINT [FK_Payment_Kennel] FOREIGN KEY([KennelId])
 REFERENCES [HC].[Kennel] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Payment_Kennel]') AND parent_object_id = OBJECT_ID(N'[HC].[Payment]'))
 ALTER TABLE [HC].[Payment] CHECK CONSTRAINT [FK_Payment_Kennel]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Receipt_Event]') AND parent_object_id = OBJECT_ID(N'[HC].[Receipt]'))
 ALTER TABLE [HC].[Receipt]  WITH CHECK ADD  CONSTRAINT [FK_Receipt_Event] FOREIGN KEY([EventId])
 REFERENCES [HC].[Event] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Receipt_Event]') AND parent_object_id = OBJECT_ID(N'[HC].[Receipt]'))
 ALTER TABLE [HC].[Receipt] CHECK CONSTRAINT [FK_Receipt_Event]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Receipt_Hasher]') AND parent_object_id = OBJECT_ID(N'[HC].[Receipt]'))
 ALTER TABLE [HC].[Receipt]  WITH CHECK ADD  CONSTRAINT [FK_Receipt_Hasher] FOREIGN KEY([UserId])
 REFERENCES [HC].[Hasher] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Receipt_Hasher]') AND parent_object_id = OBJECT_ID(N'[HC].[Receipt]'))
 ALTER TABLE [HC].[Receipt] CHECK CONSTRAINT [FK_Receipt_Hasher]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Receipt_Hasher1]') AND parent_object_id = OBJECT_ID(N'[HC].[Receipt]'))
 ALTER TABLE [HC].[Receipt]  WITH CHECK ADD  CONSTRAINT [FK_Receipt_Hasher1] FOREIGN KEY([ReimbursedBy])
 REFERENCES [HC].[Hasher] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Receipt_Hasher1]') AND parent_object_id = OBJECT_ID(N'[HC].[Receipt]'))
 ALTER TABLE [HC].[Receipt] CHECK CONSTRAINT [FK_Receipt_Hasher1]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Region_Country]') AND parent_object_id = OBJECT_ID(N'[HC].[Region]'))
 ALTER TABLE [HC].[Region]  WITH CHECK ADD  CONSTRAINT [FK_Region_Country] FOREIGN KEY([CountryId])
 REFERENCES [HC].[Country] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[HC].[FK_Region_Country]') AND parent_object_id = OBJECT_ID(N'[HC].[Region]'))
 ALTER TABLE [HC].[Region] CHECK CONSTRAINT [FK_Region_Country]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[Kennels].[FK_Mismanagement_Hasher]') AND parent_object_id = OBJECT_ID(N'[Kennels].[Mismanagement]'))
 ALTER TABLE [Kennels].[Mismanagement]  WITH CHECK ADD  CONSTRAINT [FK_Mismanagement_Hasher] FOREIGN KEY([HasherId])
 REFERENCES [HC].[Hasher] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[Kennels].[FK_Mismanagement_Hasher]') AND parent_object_id = OBJECT_ID(N'[Kennels].[Mismanagement]'))
 ALTER TABLE [Kennels].[Mismanagement] CHECK CONSTRAINT [FK_Mismanagement_Hasher]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[Kennels].[FK_Mismanagement_MismanagementEnum]') AND parent_object_id = OBJECT_ID(N'[Kennels].[Mismanagement]'))
 ALTER TABLE [Kennels].[Mismanagement]  WITH CHECK ADD  CONSTRAINT [FK_Mismanagement_MismanagementEnum] FOREIGN KEY([MismanagementEnumId])
 REFERENCES [DomainValues].[MismanagementEnum] ([MismanagementEnumId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[Kennels].[FK_Mismanagement_MismanagementEnum]') AND parent_object_id = OBJECT_ID(N'[Kennels].[Mismanagement]'))
 ALTER TABLE [Kennels].[Mismanagement] CHECK CONSTRAINT [FK_Mismanagement_MismanagementEnum]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[Transactions].[FK_EventRegistration_Hasher]') AND parent_object_id = OBJECT_ID(N'[Transactions].[EventRegistration]'))
 ALTER TABLE [Transactions].[EventRegistration]  WITH CHECK ADD  CONSTRAINT [FK_EventRegistration_Hasher] FOREIGN KEY([HasherId])
 REFERENCES [HC].[Hasher] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[Transactions].[FK_EventRegistration_Hasher]') AND parent_object_id = OBJECT_ID(N'[Transactions].[EventRegistration]'))
 ALTER TABLE [Transactions].[EventRegistration] CHECK CONSTRAINT [FK_EventRegistration_Hasher]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[Transactions].[FK_HaberdasherySale_Haberdashery]') AND parent_object_id = OBJECT_ID(N'[Transactions].[HaberdasherySale]'))
 ALTER TABLE [Transactions].[HaberdasherySale]  WITH CHECK ADD  CONSTRAINT [FK_HaberdasherySale_Haberdashery] FOREIGN KEY([HaberdasheryId])
 REFERENCES [Kennels].[Haberdashery] ([HaberdasheryId])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[Transactions].[FK_HaberdasherySale_Haberdashery]') AND parent_object_id = OBJECT_ID(N'[Transactions].[HaberdasherySale]'))
 ALTER TABLE [Transactions].[HaberdasherySale] CHECK CONSTRAINT [FK_HaberdasherySale_Haberdashery]
 GO
-IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[Transactions].[FK_HaberdasherySale_Hasher]') AND parent_object_id = OBJECT_ID(N'[Transactions].[HaberdasherySale]'))
 ALTER TABLE [Transactions].[HaberdasherySale]  WITH CHECK ADD  CONSTRAINT [FK_HaberdasherySale_Hasher] FOREIGN KEY([HasherId])
 REFERENCES [HC].[Hasher] ([id])
 GO
-IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[Transactions].[FK_HaberdasherySale_Hasher]') AND parent_object_id = OBJECT_ID(N'[Transactions].[HaberdasherySale]'))
 ALTER TABLE [Transactions].[HaberdasherySale] CHECK CONSTRAINT [FK_HaberdasherySale_Hasher]
 GO
-IF NOT EXISTS (SELECT * FROM sys.check_constraints WHERE object_id = OBJECT_ID(N'[HC].[CK_Event_IsCountedRun]') AND parent_object_id = OBJECT_ID(N'[HC].[Event]'))
 ALTER TABLE [HC].[Event]  WITH CHECK ADD  CONSTRAINT [CK_Event_IsCountedRun] CHECK  (([IsCountedRun]>=(0) AND [IsCountedRun]<=(1)))
 GO
-IF  EXISTS (SELECT * FROM sys.check_constraints WHERE object_id = OBJECT_ID(N'[HC].[CK_Event_IsCountedRun]') AND parent_object_id = OBJECT_ID(N'[HC].[Event]'))
 ALTER TABLE [HC].[Event] CHECK CONSTRAINT [CK_Event_IsCountedRun]
 GO
-IF NOT EXISTS (SELECT * FROM sys.check_constraints WHERE object_id = OBJECT_ID(N'[HC].[CK_Event_IsPromotedEvent]') AND parent_object_id = OBJECT_ID(N'[HC].[Event]'))
 ALTER TABLE [HC].[Event]  WITH CHECK ADD  CONSTRAINT [CK_Event_IsPromotedEvent] CHECK  (([IsPromotedEvent]>=(0) AND [IsPromotedEvent]<=(1)))
 GO
-IF  EXISTS (SELECT * FROM sys.check_constraints WHERE object_id = OBJECT_ID(N'[HC].[CK_Event_IsPromotedEvent]') AND parent_object_id = OBJECT_ID(N'[HC].[Event]'))
 ALTER TABLE [HC].[Event] CHECK CONSTRAINT [CK_Event_IsPromotedEvent]
 GO
-IF NOT EXISTS (SELECT * FROM sys.check_constraints WHERE object_id = OBJECT_ID(N'[HC].[CK_Event_IsVisible]') AND parent_object_id = OBJECT_ID(N'[HC].[Event]'))
 ALTER TABLE [HC].[Event]  WITH CHECK ADD  CONSTRAINT [CK_Event_IsVisible] CHECK  (([IsVisible]>=(0) AND [IsVisible]<=(1)))
 GO
-IF  EXISTS (SELECT * FROM sys.check_constraints WHERE object_id = OBJECT_ID(N'[HC].[CK_Event_IsVisible]') AND parent_object_id = OBJECT_ID(N'[HC].[Event]'))
 ALTER TABLE [HC].[Event] CHECK CONSTRAINT [CK_Event_IsVisible]
 GO
-/****** Object:  StoredProcedure [dbo].[sp_alterdiagram]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_alterdiagram]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[sp_alterdiagram]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [dbo].[sp_alterdiagram] AS' 
-END
-GO
 
-	ALTER PROCEDURE [dbo].[sp_alterdiagram]
+	CREATE PROCEDURE [dbo].[sp_alterdiagram]
 	(
 		@diagramname 	sysname,
 		@owner_id	int	= null,
@@ -6366,18 +6656,13 @@ GO
 	END
 	
 GO
-/****** Object:  StoredProcedure [dbo].[sp_creatediagram]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_creatediagram]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[sp_creatediagram]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [dbo].[sp_creatediagram] AS' 
-END
-GO
 
-	ALTER PROCEDURE [dbo].[sp_creatediagram]
+	CREATE PROCEDURE [dbo].[sp_creatediagram]
 	(
 		@diagramname 	sysname,
 		@owner_id		int	= null, 	
@@ -6435,18 +6720,13 @@ GO
 	END
 	
 GO
-/****** Object:  StoredProcedure [dbo].[sp_dropdiagram]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_dropdiagram]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[sp_dropdiagram]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [dbo].[sp_dropdiagram] AS' 
-END
-GO
 
-	ALTER PROCEDURE [dbo].[sp_dropdiagram]
+	CREATE PROCEDURE [dbo].[sp_dropdiagram]
 	(
 		@diagramname 	sysname,
 		@owner_id	int	= null
@@ -6487,18 +6767,13 @@ GO
 	END
 	
 GO
-/****** Object:  StoredProcedure [dbo].[sp_helpdiagramdefinition]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_helpdiagramdefinition]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[sp_helpdiagramdefinition]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [dbo].[sp_helpdiagramdefinition] AS' 
-END
-GO
 
-	ALTER PROCEDURE [dbo].[sp_helpdiagramdefinition]
+	CREATE PROCEDURE [dbo].[sp_helpdiagramdefinition]
 	(
 		@diagramname 	sysname,
 		@owner_id	int	= null 		
@@ -6538,18 +6813,13 @@ GO
 	END
 	
 GO
-/****** Object:  StoredProcedure [dbo].[sp_helpdiagrams]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_helpdiagrams]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[sp_helpdiagrams]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [dbo].[sp_helpdiagrams] AS' 
-END
-GO
 
-	ALTER PROCEDURE [dbo].[sp_helpdiagrams]
+	CREATE PROCEDURE [dbo].[sp_helpdiagrams]
 	(
 		@diagramname sysname = NULL,
 		@owner_id int = NULL
@@ -6580,18 +6850,13 @@ GO
 	END
 	
 GO
-/****** Object:  StoredProcedure [dbo].[sp_renamediagram]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_renamediagram]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[sp_renamediagram]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [dbo].[sp_renamediagram] AS' 
-END
-GO
 
-	ALTER PROCEDURE [dbo].[sp_renamediagram]
+	CREATE PROCEDURE [dbo].[sp_renamediagram]
 	(
 		@diagramname 		sysname,
 		@owner_id		int	= null,
@@ -6653,18 +6918,13 @@ GO
 	END
 	
 GO
-/****** Object:  StoredProcedure [dbo].[sp_upgraddiagrams]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_upgraddiagrams]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[sp_upgraddiagrams]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [dbo].[sp_upgraddiagrams] AS' 
-END
-GO
 
-	ALTER PROCEDURE [dbo].[sp_upgraddiagrams]
+	CREATE PROCEDURE [dbo].[sp_upgraddiagrams]
 	AS
 	BEGIN
 		IF OBJECT_ID(N'dbo.sysdiagrams') IS NOT NULL
@@ -6724,17 +6984,12 @@ GO
 	END
 	
 GO
-/****** Object:  StoredProcedure [DEV].[backupTables]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [DEV].[backupTables]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[backupTables]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [DEV].[backupTables] AS' 
-END
-GO
-ALTER PROCEDURE [DEV].[backupTables] AS
+CREATE PROCEDURE [DEV].[backupTables] AS
 
 drop table HC_BACKUP.City
 drop table HC_BACKUP.Country
@@ -6781,17 +7036,12 @@ select * into HC_BACKUP.RunCounts FROM HC.RunCounts
 select * into HC_BACKUP.ServerStatus FROM HC.ServerStatus
 select * into HC_BACKUP.WebAppLogin FROM HC.WebAppLogin
 GO
-/****** Object:  StoredProcedure [DEV].[CleanDb]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [DEV].[CleanDb]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[CleanDb]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [DEV].[CleanDb] AS' 
-END
-GO
-ALTER PROC [DEV].[CleanDb] AS
+CREATE PROC [DEV].[CleanDb] AS
 
 delete from HC.HasherEventMap where EventId not in (select id from HC.Event)
 delete from HC.HasherEventMap where UserId not in (select id from HC.Hasher)
@@ -6800,26 +7050,22 @@ delete from HC.HasherKennelMap where KennelId not in (select id from HC.Kennel)
 delete from HC.Payment where HasherEventMapId not in (select id from HC.HasherEventMap)
 delete from HC.RunCounts where id not in (select RunCountId from HC.HasherEventMap)
 GO
-/****** Object:  StoredProcedure [DEV].[DeleteKennel]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [DEV].[DeleteKennel]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[DeleteKennel]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [DEV].[DeleteKennel] AS' 
-END
-GO
 --select * from HC.Kennel where KennelName like '%test%'
 
-ALTER PROC [DEV].[DeleteKennel]
+CREATE PROC [DEV].[DeleteKennel]
 
 	@kennelId uniqueidentifier
 
 AS
 
--- select * from HC.Kennel order by updatedAt desc
--- EXEC DEV.DeleteKennel @kennelId = '9A7C3145-1ABE-4983-BC5B-08553DADAD58'
+
+-- select * from HC.Kennel where KennelName like '%test%' order by updatedAt desc
+-- EXEC DEV.DeleteKennel @kennelId = '725AF231-2A94-4C0D-BA4A-AF36A36E9401'
 
 select h.HashName, h.FirstName, h.LastName, hkm.* from HC.HasherKennelMap hkm
 inner join HC.Hasher h on hkm.UserId = h.id
@@ -6861,17 +7107,12 @@ WHERE KennelId = @kennelId
 
 
 GO
-/****** Object:  StoredProcedure [DEV].[deleteTestUsers]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [DEV].[deleteTestUsers]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[deleteTestUsers]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [DEV].[deleteTestUsers] AS' 
-END
-GO
-ALTER procedure [DEV].[deleteTestUsers]
+create procedure [DEV].[deleteTestUsers]
 
 AS
 
@@ -6887,17 +7128,12 @@ delete from HC.Hasher where id in (select id from #temp)
 
 drop table #temp
 GO
-/****** Object:  StoredProcedure [DEV].[DeleteUser]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [DEV].[DeleteUser]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[DeleteUser]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [DEV].[DeleteUser] AS' 
-END
-GO
-ALTER PROC [DEV].[DeleteUser]
+CREATE PROC [DEV].[DeleteUser]
 
 @email nvarchar(250)
 
@@ -6913,17 +7149,12 @@ delete from HC.HasherKennelMap  where UserId  = @id
 delete from HC.Hasher where email = @email
 delete from dbo.Users where email = @email
 GO
-/****** Object:  StoredProcedure [DEV].[RecompileHc2AndHc3]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [DEV].[RecompileHc2AndHc3]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[RecompileHc2AndHc3]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [DEV].[RecompileHc2AndHc3] AS' 
-END
-GO
-ALTER PROCEDURE [DEV].[RecompileHc2AndHc3]
+CREATE PROCEDURE [DEV].[RecompileHc2AndHc3]
 
 AS
 
@@ -6937,18 +7168,13 @@ EXEC (@sql);
 
 
 GO
-/****** Object:  StoredProcedure [EXT].[ProcessKennelImports]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [EXT].[ProcessKennelImports]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[ProcessKennelImports]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [EXT].[ProcessKennelImports] AS' 
-END
-GO
 
-ALTER PROC [EXT].[ProcessKennelImports]
+CREATE PROC [EXT].[ProcessKennelImports]
 
 AS
 
@@ -7008,17 +7234,12 @@ BEGIN
 
 END
 GO
-/****** Object:  StoredProcedure [HC].[nonApi_adjustHasherRunCounts]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC].[nonApi_adjustHasherRunCounts]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[nonApi_adjustHasherRunCounts]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC].[nonApi_adjustHasherRunCounts] AS' 
-END
-GO
-ALTER PROCEDURE [HC].[nonApi_adjustHasherRunCounts]
+CREATE PROCEDURE [HC].[nonApi_adjustHasherRunCounts]
 
 @limitByUser smallint = null,
 @userId uniqueidentifier = null,
@@ -7152,18 +7373,13 @@ drop table #temp
 END
 
 GO
-/****** Object:  StoredProcedure [HC].[nonApi_fbAppEvent]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC].[nonApi_fbAppEvent]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[nonApi_fbAppEvent]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC].[nonApi_fbAppEvent] AS' 
-END
-GO
 
-ALTER PROCEDURE [HC].[nonApi_fbAppEvent]
+CREATE PROCEDURE [HC].[nonApi_fbAppEvent]
 
 @FbUserJson nvarchar(4000), -- this is JSON that was returned from a subsequent Graph API call after the Webhook was received
 @FbGroupInfoJson nvarchar(4000), -- this is JSON that was returned from a subsequent Graph API call after the Webhook was received
@@ -7265,18 +7481,13 @@ BEGIN
 
 END
 GO
-/****** Object:  StoredProcedure [HC].[nonApi_getUserInviteCode]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC].[nonApi_getUserInviteCode]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[nonApi_getUserInviteCode]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC].[nonApi_getUserInviteCode] AS' 
-END
-GO
 
-ALTER PROCEDURE [HC].[nonApi_getUserInviteCode]
+CREATE PROCEDURE [HC].[nonApi_getUserInviteCode]
 
 @email nvarchar(250)-- this si the raw ID that was provided by the original Webhook call
 
@@ -7319,17 +7530,12 @@ BEGIN
 
 END
 GO
-/****** Object:  StoredProcedure [HC].[nonApi_logError]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC].[nonApi_logError]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[nonApi_logError]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC].[nonApi_logError] AS' 
-END
-GO
-ALTER PROCEDURE [HC].[nonApi_logError]
+CREATE PROCEDURE [HC].[nonApi_logError]
 
 
 --$"EXEC HC.nonApi_logError @ErrorType='{errorType}',@Message='{message}'";
@@ -7339,7 +7545,12 @@ ALTER PROCEDURE [HC].[nonApi_logError]
 @errorType nvarchar(250) = '<unknown>',
 @message nvarchar(2500) = '<unknown>',
 @location nvarchar(250) = '<unknown>',
-@inputText nvarchar(1000) = '<unknown>'
+@inputText nvarchar(1000) = '<unknown>',
+@errorCode int = null,
+@string_2 nvarchar(1000) = '',
+@string_3 nvarchar(1000) = '',
+@string_4 nvarchar(1000) = ''
+
 
 AS
 
@@ -7357,8 +7568,10 @@ INSERT INTO [HC].[ErrorLog]
      --      ,[eventId]
      --      ,[deviceId]
           ,[string_1]
-     --      ,[string_2]
-     --      ,[errorCode]
+          ,[string_2]
+		  ,[string_3]
+		  ,[string_4]
+          ,[errorCode]
      --      ,[createdAt]
      --      ,[updatedAt]
      --      ,[deleted]
@@ -7376,8 +7589,10 @@ INSERT INTO [HC].[ErrorLog]
      --      ,<eventId, uniqueidentifier,>
      --      ,<deviceId, nvarchar(250),>
             ,@inputText
-     --      ,<string_2, nvarchar(1000),>
-     --      ,<errorCode, int,>
+            ,@string_2
+			,@string_3
+			,@string_4
+            ,@errorCode
      --      ,<createdAt, datetimeoffset(7),>
      --      ,<updatedAt, datetimeoffset(7),>
      --      ,<deleted, bit,>
@@ -7396,17 +7611,12 @@ SET NOCOUNT ON
 
 END
 GO
-/****** Object:  StoredProcedure [HC].[nonApi_rptKennelRunStats]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC].[nonApi_rptKennelRunStats]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[nonApi_rptKennelRunStats]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC].[nonApi_rptKennelRunStats] AS' 
-END
-GO
-ALTER Procedure [HC].[nonApi_rptKennelRunStats]
+CREATE Procedure [HC].[nonApi_rptKennelRunStats]
 
 @KennelId uniqueidentifier
 
@@ -7526,18 +7736,13 @@ EXEC sp_executesql @stmt = @stmt
 DROP TABLE #temp
 
 GO
-/****** Object:  StoredProcedure [HC].[nonApi_updateEventFromExternalIntegration]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC].[nonApi_updateEventFromExternalIntegration]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[nonApi_updateEventFromExternalIntegration]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC].[nonApi_updateEventFromExternalIntegration] AS' 
-END
-GO
 
-ALTER PROCEDURE [HC].[nonApi_updateEventFromExternalIntegration]
+CREATE PROCEDURE [HC].[nonApi_updateEventFromExternalIntegration]
 
 @Source nvarchar(50),
 @ExternalEventId nvarchar(250),
@@ -7781,17 +7986,12 @@ END
 
 END
 GO
-/****** Object:  StoredProcedure [HC].[nonApi_updateRunNumbers]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC].[nonApi_updateRunNumbers]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[nonApi_updateRunNumbers]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC].[nonApi_updateRunNumbers] AS' 
-END
-GO
-ALTER PROCEDURE [HC].[nonApi_updateRunNumbers]
+CREATE PROCEDURE [HC].[nonApi_updateRunNumbers]
 
 -- NOTE: This procedure is never called directly by the public API, so we do not need to process tokens here.
 
@@ -7878,17 +8078,88 @@ SET NOCOUNT ON
 
 END
 GO
-/****** Object:  StoredProcedure [HC2].[getPaymentReport]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC2].[getMyKennelRunTotals]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC2].[getPaymentReport]') AND type in (N'P', N'PC'))
+CREATE PROCEDURE [HC2].[getMyKennelRunTotals]
+
+ @userId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
+ @accessToken nvarchar(1000) = 'none',
+ @kennelId uniqueidentifier = '00000000-0000-0000-0000-000000000000'
+
+AS
+
 BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC2].[getPaymentReport] AS' 
+
+	SET NOCOUNT ON
+
+	if @userId = '00000000-0000-0000-0000-000000000000' SET @userId = NULL
+	if @kennelId = '00000000-0000-0000-0000-000000000000' SET @kennelId = NULL
+
+	IF @userId IS NULL
+	BEGIN
+		select 
+		2 as ErrorType 
+		,'No user ID provided' as ErrorTitle
+		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
+		RETURN
+	END
+
+	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
+	BEGIN
+		select 
+		1 as ErrorType 
+		,'Unauthorized Access Token' as ErrorTitle
+		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
+
+		RETURN
+	END;
+
+	--
+	--DECLARE @userId uniqueidentifier = '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC'
+	--DECLARE @kennelId uniqueidentifier;
+
+	WITH cte AS (
+	SELECT 
+		evt.KennelId, 
+		k.KennelLogo, 
+		k.KennelName,
+		count(CASE WHEN hem.AttendenceState >= 20 THEN 1 ELSE NULL END) as totalRunsThisKennel, 
+		count(CASE WHEN hem.AttendenceState >= 20 THEN 1 ELSE NULL END) - count(CASE WHEN hem.IsHare != 0 THEN 1 ELSE NULL END) as totalPackRunsThisKennel,
+		count(CASE WHEN hem.IsHare != 0 THEN 1 ELSE NULL END) as totalHaringThisKennel,
+		coalesce(hkm.[Following],0) as [following],
+		k.kennelShortName
+	FROM HC.HasherEventMap hem
+	INNER JOIN HC.Event evt on hem.EventId = evt.id
+	INNER JOIN HC.Kennel k on evt.KennelId = k.id
+	LEFT OUTER JOIN HC.HasherKennelMap hkm on hkm.UserId = @userId AND hkm.KennelId = k.id
+	WHERE hem.UserId = @userId AND (@kennelId IS NULL OR k.id = @kennelId)
+	GROUP BY evt.KennelId,k.KennelLogo,k.KennelName,k.KennelShortName,coalesce(hkm.[Following],0)) 
+	SELECT * from cte where totalRunsThisKennel > 0 ORDER BY totalRunsThisKennel desc
+
+
+	                        -- string kennelIdStr = rowsTotals.GetValue(0).ToString().Trim();
+                            --string kennelLogo = rowsTotals.GetValue(1).ToString().Trim();
+                            --string kennelName = rowsTotals.GetValue(2).ToString().Trim();
+                            --string totalTotalRunsThisKennel = rowsTotals.GetValue(3).ToString().Trim();
+                            --string totalTotalPackRunsThisKennel = rowsTotals.GetValue(4).ToString().Trim();
+                            --string totalTotalHaringThisKennel = rowsTotals.GetValue(5).ToString().Trim();
+                            --string following = rowsTotals.GetValue(6).ToString().Trim();
+                            --string kennelShortName = rowsTotals.GetValue(7).ToString().Trim();
+
 END
+	
+
+  
 GO
-ALTER PROCEDURE [HC2].[getPaymentReport]
+/****** Object:  StoredProcedure [HC2].[getPaymentReport]    Script Date: 7/12/2021 11:29:45 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [HC2].[getPaymentReport]
 
  @userId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
  @accessToken nvarchar(1000) = 'none',
@@ -8094,18 +8365,96 @@ END
 
   
 GO
-/****** Object:  StoredProcedure [HC3].[addEditEvent]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC2].[getRuns]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[addEditEvent]') AND type in (N'P', N'PC'))
+CREATE PROCEDURE [HC2].[getRuns]
+
+ @userId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
+ @accessToken nvarchar(1000) = 'none',
+ @kennelId uniqueidentifier = '00000000-0000-0000-0000-000000000000'
+
+AS
+
+--HC2.getRuns @userId = '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC', @accessToken = '{accessToken_getMyRuns}',@kennelId = '5029DE3A-D231-47AA-BE72-ECE9BCCD55D1',@following = -1,@filterByUser = 1,@includeHidden=0,@includeFuture=0
+
 BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[addEditEvent] AS' 
+
+	SET NOCOUNT ON
+
+	if @userId = '00000000-0000-0000-0000-000000000000' SET @userId = NULL
+	if @kennelId = '00000000-0000-0000-0000-000000000000' SET @kennelId = NULL
+
+	IF @userId IS NULL
+	BEGIN
+		select 
+		2 as ErrorType 
+		,'No user ID provided' as ErrorTitle
+		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
+		RETURN
+	END
+
+	IF @kennelId IS NULL
+	BEGIN
+		select 
+		3 as ErrorType 
+		,'No kennel ID provided' as ErrorTitle
+		,'The API was called without a valid kennelId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
+		RETURN
+	END
+
+	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
+	BEGIN
+		select 
+		1 as ErrorType 
+		,'Unauthorized Access Token' as ErrorTitle
+		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
+
+		RETURN
+	END;
+
+	--DECLARE @userId uniqueidentifier = '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC'
+	--DECLARE @kennelId uniqueidentifier = '5029DE3A-D231-47AA-BE72-ECE9BCCD55D1'
+
+	SELECT 
+	   e.id as eventId
+       ,e.eventStartDatetime as eventStartDatetime
+       ,e.eventEndDatetime as eventEndDatetime
+       ,e.eventName as eventName
+       ,e.EventNumber as eventNumber
+       ,e.LocationOneLineDesc as locationOneLineDesc
+       ,e.userEventCounterIncrement as userEventCounterIncrement
+       ,e.EventFacebookId as eventFacebookId
+       ,e.IsVisible as isVisible
+       ,e.IsCountedRun as isCountedRun
+       ,e.AbsoluteEventNumber as absoluteEventNumber
+       ,hem.isHare as isHare
+       ,coalesce(rc.TotalPackRunsThisKennel,0) + coalesce(rc.TotalHaringThisKennel,0) as totalRunsThisKennel
+       ,coalesce(rc.totalPackRunsAllKennels,0) + coalesce(rc.totalHaringAllKennels,0) as totalRunsAllKennels
+       ,coalesce(rc.TotalHaringThisKennel,0) as totalHaringThisKennel
+       ,hem.userStartEvent as userStartEvent
+       ,coalesce(hem.RsvpState, 0) as rsvpState
+       ,coalesce(hem.AttendenceState, 0) as attendenceState
+       FROM HC.Event e
+	   INNER JOIN HC.HasherEventMap hem on hem.eventId = e.id AND hem.userId = @userId
+	   LEFT OUTER JOIN HC.RunCounts rc on rc.id = hem.RunCountId
+	   WHERE e.KennelId = @kennelId and coalesce(hem.AttendenceState, 0) >= 20
+	   AND e.eventStartDatetime < getdate() 
+
 END
+	
+
+  
+GO
+/****** Object:  StoredProcedure [HC3].[addEditEvent]    Script Date: 7/12/2021 11:29:45 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER PROCEDURE [HC3].[addEditEvent]
+CREATE PROCEDURE [HC3].[addEditEvent]
 
  @userId uniqueidentifier,
  @accessToken nvarchar(1000),
@@ -8438,20 +8787,15 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[addEditReceipt]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[addEditReceipt]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[addEditReceipt]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[addEditReceipt] AS' 
-END
-GO
 
 
 
-ALTER PROCEDURE [HC3].[addEditReceipt]
+CREATE PROCEDURE [HC3].[addEditReceipt]
 
  @userId uniqueidentifier,
  @accessToken nvarchar(1000),
@@ -8638,18 +8982,13 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[addEditUser]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[addEditUser]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[addEditUser]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[addEditUser] AS' 
-END
-GO
 
-ALTER PROCEDURE [HC3].[addEditUser]
+CREATE PROCEDURE [HC3].[addEditUser]
 
  @userId uniqueidentifier,
  @accessToken nvarchar(1000),
@@ -8670,7 +9009,9 @@ ALTER PROCEDURE [HC3].[addEditUser]
  @historicalPackRunCount int = null,
  @historicalHaringCount int = null,
  @historicalCountIsEstimate int = null,
- @followKennelOnAddNewUser int = null
+ @followKennelOnAddNewUser int = null,
+ @latitude decimal(18,15) = 0,
+ @longitude decimal(19,15) = 0
 
 AS
 
@@ -8681,6 +9022,20 @@ SET NOCOUNT ON
 -- NOTES: This proc edits an existing user... either the user who called it or an admin who is editing another user's record
 
 	DECLARE @errorId uniqueidentifier
+
+	DECLARE @useUsaMiles smallint = 0
+
+	-- rough check to see if user is in continental US
+	IF ((@latitude between 24.7433195 AND 49.3457868) AND (@longitude between -124.7844079 AND -66.9513812)) SET @useUsaMiles = 1
+
+	-- rough check to see if user is in Alaska (East part)
+	IF ((@latitude between 51.214183 AND 71.365162) AND (@longitude between -180 AND -179.148909)) SET @useUsaMiles = 1
+
+	-- rough check to see if user is in Alaska (West part)
+	IF ((@latitude between 51.214183 AND 71.365162) AND (@longitude between 179.77847 AND 180)) SET @useUsaMiles = 1
+
+	-- rough check to see if user is in Hawaii 
+	IF ((@latitude between 18.910361 AND 28.402123) AND (@longitude between -178.334698 AND -154.806773)) SET @useUsaMiles = 1
 
 	IF (@userId IS NULL)
 	BEGIN
@@ -8782,6 +9137,8 @@ SET NOCOUNT ON
 			   ,[NameDisplayPreference]
 			   ,[IncludeInGlobalHashDirectory]
 			   ,[Preferences]
+			   ,[HomeLatitude]
+			   ,[HomeLongitude]
 			   ,[updatedAt])
 		 VALUES
 			   (@targetUserId,
@@ -8801,7 +9158,9 @@ SET NOCOUNT ON
 					2
 				END,
 				COALESCE(@includeInGlobalHashDirectory,0),
-				COALESCE(@preferences,0),
+				COALESCE(@preferences,14 + @useUsaMiles),
+				@latitude,
+				@longitude,
 				getdate())
 
 
@@ -8858,54 +9217,55 @@ SET NOCOUNT ON
 				  )
 
 		END
-		ELSE
-		BEGIN
+		
+
+		
 			-- for new users, set them up to follow a kennel so some runs will show
-			DECLARE @amsKennelId uniqueidentifier
+			-- DECLARE @amsKennelId uniqueidentifier
 			DECLARE @filthKennelId uniqueidentifier
 
-			SELECT TOP 1 @amsKennelId = id from HC.Kennel where KennelName like '%Amsterdam%'
-			SELECT TOP 1 @filthKennelId = id from HC.Kennel where KennelName like '%FILTH%'
+			--SELECT TOP 1 @amsKennelId = id from HC.Kennel where KennelName like '%Amsterdam%'
+			SELECT TOP 1 @filthKennelId = k.id from HC.Kennel k inner join HC.City c on k.CityId = c.id where KennelName like '%FILTH%' and c.CityName like '%Leiden%'
 
-			IF (@amsKennelId is not null)
-			BEGIN
-			   INSERT INTO [HC].[HasherKennelMap]
-			   (
-			   [UserId]
-			   ,[KennelId]
-			   ,[Following]
-			   ,[IsMember]
-			   ,[IsHomeKennel]
-			   ,[MismanagementRoleFlags]
-			   ,[UserRoleFlags]
-			   ,[AppAccessFlags]
-			   ,[HistoricalPackRunCount]
-			   ,[HistoricalHaringCount]
-			   ,[HistoricalCountIsEstimate]
-			   ,[CurrentPackRunCount]
-			   ,[CurrentHaringCount]
-			   ,[MemberSince]
-			   ,[removed]
-			   ,[updatedAt])
-				 VALUES (
-					   @targetUserId,
-					   @amsKennelId,
-					   1, -- following (show up in the member list by setting following to 1)
-					   0, -- IsMember (we want them to show up in the member list, but we don't want them to actually be a member yet because they might not have paid membership fees)
-					   0, -- IsHomeKennel
-					   0, -- MismanagementRoleFlags
-					   0, -- UserRoleFlags
-					   0, -- AppAccessFlags
-					   0, -- HistoricalRunCount
-					   0, -- HistoricalHaringCount
-					   0, -- historicalCountIsEstimate
-					   0, -- CurrentPackRunCount
-					   0, -- CurrentHaringCount
-					   getdate(), -- member since
-					   0, -- removed
-					   getdate() -- updated At
-					  )
-			END
+			--IF (@amsKennelId is not null)
+			--BEGIN
+			--   INSERT INTO [HC].[HasherKennelMap]
+			--   (
+			--   [UserId]
+			--   ,[KennelId]
+			--   ,[Following]
+			--   ,[IsMember]
+			--   ,[IsHomeKennel]
+			--   ,[MismanagementRoleFlags]
+			--   ,[UserRoleFlags]
+			--   ,[AppAccessFlags]
+			--   ,[HistoricalPackRunCount]
+			--   ,[HistoricalHaringCount]
+			--   ,[HistoricalCountIsEstimate]
+			--   ,[CurrentPackRunCount]
+			--   ,[CurrentHaringCount]
+			--   ,[MemberSince]
+			--   ,[removed]
+			--   ,[updatedAt])
+			--	 VALUES (
+			--		   @targetUserId,
+			--		   @amsKennelId,
+			--		   1, -- following (show up in the member list by setting following to 1)
+			--		   0, -- IsMember (we want them to show up in the member list, but we don't want them to actually be a member yet because they might not have paid membership fees)
+			--		   0, -- IsHomeKennel
+			--		   0, -- MismanagementRoleFlags
+			--		   0, -- UserRoleFlags
+			--		   0, -- AppAccessFlags
+			--		   0, -- HistoricalRunCount
+			--		   0, -- HistoricalHaringCount
+			--		   0, -- historicalCountIsEstimate
+			--		   0, -- CurrentPackRunCount
+			--		   0, -- CurrentHaringCount
+			--		   getdate(), -- member since
+			--		   0, -- removed
+			--		   getdate() -- updated At
+			--		  )
+			--END
 
 			IF (@filthKennelId is not null)
 			BEGIN
@@ -8947,7 +9307,7 @@ SET NOCOUNT ON
 					  )
 			END
 
-		END
+		
 	END
 	ELSE
 		BEGIN
@@ -9077,18 +9437,13 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[admin_dataIntegrityCheck]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[admin_dataIntegrityCheck]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[admin_dataIntegrityCheck]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[admin_dataIntegrityCheck] AS' 
-END
-GO
 
-ALTER PROCEDURE [HC3].[admin_dataIntegrityCheck]
+CREATE PROCEDURE [HC3].[admin_dataIntegrityCheck]
 
 AS
 
@@ -9103,19 +9458,14 @@ WHERE (hem.AttendenceState < 20 OR e.IsVisible = 0 OR e.DoTrackHashCash = 0) AND
 order by k.KennelShortName, e.EventStartDatetime, PaidDate desc
 
 GO
-/****** Object:  StoredProcedure [HC3].[approveLogin]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[approveLogin]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[approveLogin]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[approveLogin] AS' 
-END
-GO
 
 
-ALTER PROCEDURE [HC3].[approveLogin]
+CREATE PROCEDURE [HC3].[approveLogin]
 
 @userId uniqueidentifier,
 @accessToken nvarchar(1000),
@@ -9178,11 +9528,15 @@ BEGIN
 	END
 
 	DECLARE @userName nvarchar(250),
-			@email nvarchar(250)
+			@email nvarchar(250),
+			@isBetaTester smallint,
+			@homeKennelId nvarchar(100)
 
 	SELECT @userName = coalesce(h.displayName, h.firstName + ' ' + h.lastName, '<no name>'),
 		   @email = h.Email,
-		   @fbToken = coalesce(@fbToken,h.FacebookAccessToken)
+		   @fbToken = coalesce(@fbToken,h.FacebookAccessToken),
+		   @isBetaTester = h.IsBetaTester,
+		   @homeKennelId = h.HomeKennelId
 	FROM HC.Hasher h WHERE h.id = @userId
 
 	UPDATE HC.Hasher set FacebookAccessToken = @fbToken, FacebookAccessTokenLastUpdated = getdate() FROM HC.Hasher where id = @userId and FacebookAccessToken != @fbToken
@@ -9276,22 +9630,20 @@ BEGIN
 		,svr.IosDownloadLink as iosDownloadLink
 		,svr.AndroidDownloadLink as androidDownloadLink
 		,svr.ImageRootUrl as imageRootUrl
+		,@isBetaTester as isBetaTester
+		,@email as email
+		,@homeKennelId as homeKennelId
 	FROM HC.ServerStatus svr
 	ORDER BY svr.CreatedDate desc
 
 END
 GO
-/****** Object:  StoredProcedure [HC3].[authorizeDevice]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[authorizeDevice]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[authorizeDevice]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[authorizeDevice] AS' 
-END
-GO
-ALTER PROCEDURE [HC3].[authorizeDevice]
+CREATE PROCEDURE [HC3].[authorizeDevice]
 
  @userId nvarchar(50),
  @accessToken nvarchar(1000),
@@ -9353,7 +9705,9 @@ BEGIN
 				h.SupportCode as supportCode,
 				h.QR_secret_code as qrSecretCode,
 				h.ResetCode as resetCode,
-				h.IncludeInGlobalHashDirectory as includeInGlobalHashDirectory
+				h.IncludeInGlobalHashDirectory as includeInGlobalHashDirectory,
+				h.Preferences as preferences,
+				h.IsBetaTester as isBetaTester
 			FROM HC.Hasher h where h.id = @userId
 		END
 	ELSE
@@ -9377,17 +9731,12 @@ END
 END
 
 GO
-/****** Object:  StoredProcedure [HC3].[extApi_getKennelEmailList]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[extApi_getKennelEmailList]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[extApi_getKennelEmailList]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[extApi_getKennelEmailList] AS' 
-END
-GO
-ALTER PROCEDURE [HC3].[extApi_getKennelEmailList]
+CREATE PROCEDURE [HC3].[extApi_getKennelEmailList]
 
 @kennelExtApiKey nvarchar(250)
 
@@ -9408,17 +9757,12 @@ order by h.HashName
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[extApi_getKennelMembers]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[extApi_getKennelMembers]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[extApi_getKennelMembers]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[extApi_getKennelMembers] AS' 
-END
-GO
-ALTER PROCEDURE [HC3].[extApi_getKennelMembers]
+CREATE PROCEDURE [HC3].[extApi_getKennelMembers]
 
 @kennelExtApiKey nvarchar(250)
 
@@ -9458,17 +9802,12 @@ order by h.HashName
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[extApi_getKennelPayments]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[extApi_getKennelPayments]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[extApi_getKennelPayments]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[extApi_getKennelPayments] AS' 
-END
-GO
-ALTER PROCEDURE [HC3].[extApi_getKennelPayments]
+CREATE PROCEDURE [HC3].[extApi_getKennelPayments]
 
 @kennelExtApiKey nvarchar(250)
 
@@ -9530,17 +9869,119 @@ order by e.EventStartDatetime desc, paidBy.DisplayName asc
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[getPaymentReport]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[getMyKennelRunTotals]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[getPaymentReport]') AND type in (N'P', N'PC'))
+CREATE PROCEDURE [HC3].[getMyKennelRunTotals]
+
+ @userId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
+ @accessToken nvarchar(1000) = 'none',
+ @kennelId uniqueidentifier = '00000000-0000-0000-0000-000000000000'
+
+AS
+
 BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[getPaymentReport] AS' 
+
+	--EXEC HC3.getMyKennelRunTotals @userId = '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC'
+
+	SET NOCOUNT ON
+
+	if @userId = '00000000-0000-0000-0000-000000000000' SET @userId = NULL
+	if @kennelId = '00000000-0000-0000-0000-000000000000' SET @kennelId = NULL
+
+	IF @userId IS NULL
+	BEGIN
+		select 
+		2 as ErrorType 
+		,'No user ID provided' as ErrorTitle
+		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
+		RETURN
+	END
+
+	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
+	BEGIN
+		select 
+		1 as ErrorType 
+		,'Unauthorized Access Token' as ErrorTitle
+		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
+
+		RETURN
+	END;
+
+	--
+	--DECLARE @userId uniqueidentifier = '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC'
+	--DECLARE @kennelId uniqueidentifier;
+
+	WITH cte AS (
+	SELECT 
+		ROW_NUMBER() OVER (ORDER BY count(CASE WHEN hem.AttendenceState >= 20 THEN 1 ELSE NULL END) DESC) as rowNum,
+		evt.KennelId, 
+		k.KennelLogo, 
+		k.KennelName,
+		count(CASE WHEN hem.AttendenceState >= 20 THEN 1 ELSE NULL END) as totalRunsThisKennel, 
+		count(CASE WHEN hem.AttendenceState >= 20 THEN 1 ELSE NULL END) - count(CASE WHEN hem.IsHare != 0 THEN 1 ELSE NULL END) as totalPackRunsThisKennel,
+		count(CASE WHEN hem.IsHare != 0 THEN 1 ELSE NULL END) as totalHaringThisKennel,
+		coalesce(hkm.[Following],0) as [following],
+		k.kennelShortName
+	FROM HC.HasherEventMap hem
+	INNER JOIN HC.Event evt on hem.EventId = evt.id
+	INNER JOIN HC.Kennel k on evt.KennelId = k.id
+	LEFT OUTER JOIN HC.HasherKennelMap hkm on hkm.UserId = @userId AND hkm.KennelId = k.id
+	WHERE hem.UserId = @userId AND (@kennelId IS NULL OR k.id = @kennelId) AND evt.IsCountedRun = 1 AND evt.IsVisible = 1
+	GROUP BY evt.KennelId,k.KennelLogo,k.KennelName,k.KennelShortName,coalesce(hkm.[Following],0)) 
+	SELECT * into #temp from cte where totalRunsThisKennel > 0 ORDER BY totalRunsThisKennel desc
+
+	INSERT #temp (
+				rowNum,
+				KennelId,
+				KennelLogo,
+				KennelName,
+				totalRunsThisKennel,
+				totalPackRunsThisKennel,
+				totalHaringThisKennel,
+				following,
+				KennelShortName
+			)
+	SELECT	0,
+			cast('00000000-0000-0000-0000-000000000000' as uniqueidentifier),
+			'<no logo>',
+			'GRAND TOTAL ALL KENNELS',
+			sum(totalRunsThisKennel),
+			sum(totalPackRunsThisKennel),
+			sum(totalHaringThisKennel),
+			0,
+			'TOTALS'
+			FROM #temp
+
+	SELECT 
+		KennelId,
+		KennelLogo,
+		KennelName,
+		totalRunsThisKennel,
+		totalPackRunsThisKennel,
+		totalHaringThisKennel,
+		following,
+		KennelShortName
+	from #temp order by rowNum
+	
+	DROP TABLE #temp
+
+	
+
+
 END
+	
+
+  
 GO
-ALTER PROCEDURE [HC3].[getPaymentReport]
+/****** Object:  StoredProcedure [HC3].[getPaymentReport]    Script Date: 7/12/2021 11:29:45 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [HC3].[getPaymentReport]
 
  @userId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
  @accessToken nvarchar(1000) = 'none',
@@ -9746,21 +10187,16 @@ END
 
   
 GO
-/****** Object:  StoredProcedure [HC3].[getResetCode]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[getResetCode]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[getResetCode]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[getResetCode] AS' 
-END
-GO
 
 
 
 
-ALTER PROCEDURE [HC3].[getResetCode]
+CREATE PROCEDURE [HC3].[getResetCode]
 
  @userId uniqueidentifier,
  @accessToken nvarchar(1000),
@@ -9807,19 +10243,99 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[joinEvent]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[getRuns]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[joinEvent]') AND type in (N'P', N'PC'))
+CREATE PROCEDURE [HC3].[getRuns]
+
+ @userId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
+ @accessToken nvarchar(1000) = 'none',
+ @kennelId uniqueidentifier = '00000000-0000-0000-0000-000000000000'
+
+AS
+
+--HC3.getRuns @userId = '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC', @accessToken = '{accessToken_getMyRuns}',@kennelId = '5029DE3A-D231-47AA-BE72-ECE9BCCD55D1'
+
 BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[joinEvent] AS' 
+
+	SET NOCOUNT ON
+
+	if @userId = '00000000-0000-0000-0000-000000000000' SET @userId = NULL
+	if @kennelId = '00000000-0000-0000-0000-000000000000' SET @kennelId = NULL
+
+	IF @userId IS NULL
+	BEGIN
+		select 
+		2 as ErrorType 
+		,'No user ID provided' as ErrorTitle
+		,'The API was called without a valid userId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
+		RETURN
+	END
+
+	IF @kennelId IS NULL
+	BEGIN
+		select 
+		3 as ErrorType 
+		,'No kennel ID provided' as ErrorTitle
+		,'The API was called without a valid kennelId. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
+		RETURN
+	END
+
+	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),NULL) = 0 
+	BEGIN
+		select 
+		1 as ErrorType 
+		,'Unauthorized Access Token' as ErrorTitle
+		,'An invalid Access Token was received. Please go to www.harriercentral.com for support. (Function = ' + OBJECT_NAME(@@PROCID) + ')' as ErrorDescription
+
+		RETURN
+	END;
+
+	--DECLARE @userId uniqueidentifier = '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC'
+	--DECLARE @kennelId uniqueidentifier = '5029DE3A-D231-47AA-BE72-ECE9BCCD55D1'
+
+	SELECT 
+	   e.id as eventId  --0
+       ,CASE WHEN (e.UseFbRunDetails = 1) THEN convert(datetime2,e.FbEventStartDatetime) ELSE convert(datetime2,e.EventStartDatetime) END AS eventStartDatetime -- 1 This is a bit of a hack, force conversion into local time prior to sending over the wire. TODO: Eventually send over the event UTC and a separate time offset --1
+       ,e.eventEndDatetime as eventEndDatetime --2
+	   ,CASE WHEN (e.UseFbRunDetails = 1) THEN e.FbEventName ELSE e.EventName END AS eventName --3
+	   ,e.EventNumber as eventNumber --4
+	   ,coalesce(CASE WHEN (e.UseFbLocation = 1) THEN e.FbLocationOneLineDesc ELSE e.LocationOneLineDesc END,e.LocationOneLineDesc,e.FbLocationOneLineDesc,'<unknown location>') AS locationOneLineDesc --5
+       ,e.userEventCounterIncrement as userEventCounterIncrement --6
+       ,e.EventFacebookId as eventFacebookId --7
+       ,e.IsVisible as isVisible --8
+       ,e.IsCountedRun as isCountedRun --9
+       ,e.AbsoluteEventNumber as absoluteEventNumber --10
+       ,hem.isHare as isHare --11
+       ,coalesce(rc.TotalPackRunsThisKennel,0) + coalesce(rc.TotalHaringThisKennel,0) as totalRunsThisKennel --12
+       ,coalesce(rc.totalPackRunsAllKennels,0) + coalesce(rc.totalHaringAllKennels,0) as totalRunsAllKennels --13
+       ,coalesce(rc.TotalHaringThisKennel,0) as totalHaringThisKennel --14
+       ,hem.userStartEvent as userStartEvent --15
+       ,coalesce(hem.RsvpState, 0) as rsvpState --16
+       ,coalesce(hem.AttendenceState, 0) as attendenceState --17
+       FROM HC.Event e
+	   INNER JOIN HC.HasherEventMap hem on hem.eventId = e.id AND hem.userId = @userId
+	   LEFT OUTER JOIN HC.RunCounts rc on rc.id = hem.RunCountId
+	   WHERE e.KennelId = @kennelId and coalesce(hem.AttendenceState, 0) >= 20
+	   AND e.eventStartDatetime < getdate() 
+	   and e.IsVisible = 1 and e.IsCountedRun = 1
+	   ORDER BY CASE WHEN (e.UseFbRunDetails = 1) THEN convert(datetime2,e.FbEventStartDatetime) ELSE convert(datetime2,e.EventStartDatetime) END desc
+
 END
+	
+
+  
+GO
+/****** Object:  StoredProcedure [HC3].[joinEvent]    Script Date: 7/12/2021 11:29:45 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
 GO
 
 
-ALTER PROCEDURE [HC3].[joinEvent]
+CREATE PROCEDURE [HC3].[joinEvent]
 
  @userId uniqueidentifier, -- the one making the call to this SP
  @accessToken nvarchar(1000),
@@ -10230,17 +10746,12 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[joinEventAsVisitor]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[joinEventAsVisitor]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[joinEventAsVisitor]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[joinEventAsVisitor] AS' 
-END
-GO
-ALTER PROCEDURE [HC3].[joinEventAsVisitor]  
+CREATE PROCEDURE [HC3].[joinEventAsVisitor]  
 
 @userId uniqueidentifier,
 @accessToken nvarchar(1000),
@@ -10430,20 +10941,15 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[joinKennel]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[joinKennel]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[joinKennel]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[joinKennel] AS' 
-END
-GO
 
 
 
-ALTER PROCEDURE [HC3].[joinKennel]
+CREATE PROCEDURE [HC3].[joinKennel]
 
  @userId uniqueidentifier,
  @accessToken nvarchar(1000),
@@ -10583,6 +11089,7 @@ BEGIN
 				[KennelEmailAlertPreference] = coalesce(@emailAlertState,[KennelEmailAlertPreference],0),
 				[MembershipExpirationDate] = 
 				CASE 
+					WHEN (@monthsToAddToMembership = 9999) THEN '1/1/2100'
 					WHEN ((@monthsToAddToMembership IS NULL) OR (@monthsToAddToMembership = -9999))
 						THEN
 							CASE WHEN (@monthsToAddToMembership = -9999) THEN NULL ELSE MembershipExpirationDate END
@@ -10664,17 +11171,12 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[logEmailsSent]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[logEmailsSent]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[logEmailsSent]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[logEmailsSent] AS' 
-END
-GO
-ALTER PROCEDURE [HC3].[logEmailsSent]
+CREATE PROCEDURE [HC3].[logEmailsSent]
 
 	@eventId uniqueidentifier,
 	@templateId uniqueidentifier,
@@ -10693,17 +11195,12 @@ INSERT INTO [HC].[EmailLog]
      VALUES
            (@templateId,@eventId,GETDATE(),@emailsSent,@response)
 GO
-/****** Object:  StoredProcedure [HC3].[nonApi_fixRunCountsInHkm]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[nonApi_fixRunCountsInHkm]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[nonApi_fixRunCountsInHkm]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[nonApi_fixRunCountsInHkm] AS' 
-END
-GO
-ALTER PROCEDURE [HC3].[nonApi_fixRunCountsInHkm]
+CREATE PROCEDURE [HC3].[nonApi_fixRunCountsInHkm]
 
 AS
 
@@ -10732,17 +11229,12 @@ where hkm.CurrentPackRunCount != t.packRunCount or hkm.CurrentHaringCount != t.h
 
 drop table #temp
 GO
-/****** Object:  StoredProcedure [HC3].[nonApi_testRunCounts]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[nonApi_testRunCounts]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[nonApi_testRunCounts]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[nonApi_testRunCounts] AS' 
-END
-GO
-ALTER PROCEDURE [HC3].[nonApi_testRunCounts]
+CREATE PROCEDURE [HC3].[nonApi_testRunCounts]
 
 AS
 
@@ -10763,15 +11255,10 @@ where hkm.CurrentPackRunCount != t.packRunCount or hkm.CurrentHaringCount != t.h
 
 drop table #temp
 GO
-/****** Object:  StoredProcedure [HC3].[nonApi_updateHasherCreditBalance]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[nonApi_updateHasherCreditBalance]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[nonApi_updateHasherCreditBalance]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[nonApi_updateHasherCreditBalance] AS' 
-END
 GO
 --select * from HC.Payment p 
 --where p.UserId = '0290C1D1-3396-4CFE-B89F-258A224D6F45'
@@ -10787,7 +11274,7 @@ order by e.EventStartDatetime desc
 */
 
 
-ALTER PROCEDURE [HC3].[nonApi_updateHasherCreditBalance]
+CREATE PROCEDURE [HC3].[nonApi_updateHasherCreditBalance]
 
 @hemId uniqueidentifier = NULL,
 @userId uniqueidentifier = NULL,
@@ -10828,17 +11315,12 @@ drop table #temp
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[processFacebookLogin]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[processFacebookLogin]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[processFacebookLogin]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[processFacebookLogin] AS' 
-END
-GO
-ALTER PROCEDURE [HC3].[processFacebookLogin]
+CREATE PROCEDURE [HC3].[processFacebookLogin]
 
  @userId nvarchar(50),
  @accessToken nvarchar(1000),
@@ -10849,9 +11331,11 @@ ALTER PROCEDURE [HC3].[processFacebookLogin]
  @email nvarchar(120),
  @photo nvarchar(500),
  @facebookId nvarchar(120),
- @facebookAccessToken nvarchar(250),
+ @facebookAccessToken nvarchar(1000),
  @includeInGlobalHashDirectory int = -1,
- @hcVersion nvarchar(100)
+ @hcVersion nvarchar(100),
+ @latitude decimal(18,15) = 0,
+ @longitude decimal(19,15) = 0
 
 AS
 
@@ -10862,6 +11346,22 @@ SET NOCOUNT ON
 	DECLARE @paramString nvarchar(250)
 	SET @paramString = upper(cast(coalesce(@userId,'00000000-0000-0000-0000-000000000000') as nvarchar(50))) 
 
+
+
+	DECLARE @useUsaMiles smallint = 0
+
+	-- rough check to see if user is in continental US
+	IF ((@latitude between 24.7433195 AND 49.3457868) AND (@longitude between -124.7844079 AND -66.9513812)) SET @useUsaMiles = 1
+
+	-- rough check to see if user is in Alaska (East part)
+	IF ((@latitude between 51.214183 AND 71.365162) AND (@longitude between -180 AND -179.148909)) SET @useUsaMiles = 1
+
+	-- rough check to see if user is in Alaska (West part)
+	IF ((@latitude between 51.214183 AND 71.365162) AND (@longitude between 179.77847 AND 180)) SET @useUsaMiles = 1
+
+	-- rough check to see if user is in Hawaii 
+	IF ((@latitude between 18.910361 AND 28.402123) AND (@longitude between -178.334698 AND -154.806773)) SET @useUsaMiles = 1
+
 	IF HC.CHECK_ACCESS_TOKEN(@userId,OBJECT_NAME(@@PROCID),coalesce(@accessToken,'error'),@paramString) = 0 
 	BEGIN
 		select 
@@ -10871,9 +11371,6 @@ SET NOCOUNT ON
 
 		RETURN
 	END
-
-
-
 
 IF (@includeInGlobalHashDirectory = -1) SET @includeInGlobalHashDirectory = NULL
 if (@hashName = '') SET @hashName = null
@@ -10920,6 +11417,9 @@ SET @isNewUser = 1
 			   ,[FacebookId]
 			   ,[FacebookAccessToken]
 			   ,[FacebookAccessTokenLastUpdated]
+			   ,[Preferences]
+			   ,[HomeLatitude]
+			   ,[HomeLongitude]
 			   ,[updatedAt])
 		 VALUES
 			   (@userId,
@@ -10942,14 +11442,61 @@ SET @isNewUser = 1
 				@facebookId,
 				@facebookAccessToken,
 				getdate(),
+				14 + @useUsaMiles,
+				@latitude,
+				@longitude,
 				getdate())
 
 
+	
+	-- for new users, set them up to follow a kennel so some runs will show
+			DECLARE @filthKennelId uniqueidentifier
 
+			SELECT TOP 1 @filthKennelId = k.id from HC.Kennel k inner join HC.City c on k.CityId = c.id where KennelName like '%FILTH%' and c.CityName like '%Leiden%'
+
+			
+
+			IF (@filthKennelId is not null)
+			BEGIN
+			   INSERT INTO [HC].[HasherKennelMap]
+			   (
+			   [UserId]
+			   ,[KennelId]
+			   ,[Following]
+			   ,[IsMember]
+			   ,[IsHomeKennel]
+			   ,[MismanagementRoleFlags]
+			   ,[UserRoleFlags]
+			   ,[AppAccessFlags]
+			   ,[HistoricalPackRunCount]
+			   ,[HistoricalHaringCount]
+			   ,[HistoricalCountIsEstimate]
+			   ,[CurrentPackRunCount]
+			   ,[CurrentHaringCount]
+			   ,[MemberSince]
+			   ,[removed]
+			   ,[updatedAt])
+				 VALUES (
+					   @userId,
+					   @filthKennelId,
+					   1, -- following (show up in the member list by setting following to 1)
+					   0, -- IsMember (we want them to show up in the member list, but we don't want them to actually be a member yet because they might not have paid membership fees)
+					   0, -- IsHomeKennel
+					   0, -- MismanagementRoleFlags
+					   0, -- UserRoleFlags
+					   0, -- AppAccessFlags
+					   0, -- HistoricalRunCount
+					   0, -- HistoricalHaringCount
+					   0, -- historicalCountIsEstimate
+					   0, -- CurrentPackRunCount
+					   0, -- CurrentHaringCount
+					   getdate(), -- member since
+					   0, -- removed
+					   getdate() -- updated At
+					  )
+			END
 
 	END
-
-
 
 
 	SELECT top 1 
@@ -11047,18 +11594,13 @@ SET @isNewUser = 1
 END
 
 GO
-/****** Object:  StoredProcedure [HC3].[processPayment]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[processPayment]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[processPayment]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[processPayment] AS' 
-END
-GO
 
-ALTER PROCEDURE [HC3].[processPayment]
+CREATE PROCEDURE [HC3].[processPayment]
 
 @userId uniqueidentifier,
 @accessToken nvarchar(1000),
@@ -11421,17 +11963,12 @@ SET NOCOUNT ON
 
 END
 GO
-/****** Object:  StoredProcedure [HC3].[rptApi_emailRunDetails]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[rptApi_emailRunDetails]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[rptApi_emailRunDetails]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[rptApi_emailRunDetails] AS' 
-END
-GO
-ALTER PROCEDURE [HC3].[rptApi_emailRunDetails]
+CREATE PROCEDURE [HC3].[rptApi_emailRunDetails]
 
 @userId uniqueidentifier,
 @accessToken nvarchar(1000),
@@ -11553,17 +12090,12 @@ DECLARE @errorId uniqueidentifier
 
 	
 GO
-/****** Object:  StoredProcedure [HC3].[rptApi_sendScheduledEmails]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[rptApi_sendScheduledEmails]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[rptApi_sendScheduledEmails]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[rptApi_sendScheduledEmails] AS' 
-END
-GO
-ALTER PROCEDURE [HC3].[rptApi_sendScheduledEmails]
+CREATE PROCEDURE [HC3].[rptApi_sendScheduledEmails]
 
 AS
 
@@ -11711,18 +12243,13 @@ drop table #temp
 
 	
 GO
-/****** Object:  StoredProcedure [HC3].[rptKennelRunStats]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[rptKennelRunStats]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[rptKennelRunStats]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[rptKennelRunStats] AS' 
-END
-GO
 
-ALTER PROCEDURE [HC3].[rptKennelRunStats]
+CREATE PROCEDURE [HC3].[rptKennelRunStats]
 
  @userId uniqueidentifier,
  @accessToken nvarchar(1000),
@@ -11779,20 +12306,15 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[syncEventAdminData]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[syncEventAdminData]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[syncEventAdminData]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[syncEventAdminData] AS' 
-END
-GO
 
 
 
-ALTER PROCEDURE [HC3].[syncEventAdminData]
+CREATE PROCEDURE [HC3].[syncEventAdminData]
 
  @userId uniqueidentifier,
  @accessToken nvarchar(1000),
@@ -11890,17 +12412,17 @@ SET NOCOUNT ON
 		SET @ua = CAST(@hashersUpdatedAfter as datetimeoffset(7))
 		SELECT 
 			h.id as hasherId,
-			h.HomeKennelId as homeKennelId,
+			--h.HomeKennelId as homeKennelId,
 			coalesce(h.FirstName,'') as firstName,
 			coalesce(h.LastName,'') as lastName,
 			coalesce(h.DisplayName,'') as dispName,
 			coalesce(h.HashName,'') as hashName,
 			coalesce(h.Photo,'') as photo,
 			coalesce(h.NameDisplayPreference,0) as dispPref,
-			coalesce(h.ResetCode,'') as resetCode,
-			coalesce(h.QR_code,'') as qrCode,
+			--coalesce(h.ResetCode,'') as resetCode,
+			--coalesce(h.QR_code,'') as qrCode,
 			coalesce(h.IncludeInGlobalHashDirectory,0) as includeInGlobalHashDirectory,
-			coalesce(h.Preferences,0) as preferences,
+			--coalesce(h.Preferences,0) as preferences,
 			coalesce(h.updatedAt,getdate()) as updatedAt,
 			coalesce(h.Removed,0) as removed
 		FROM HC.Hasher h where updatedAt >= @ua
@@ -11910,27 +12432,33 @@ SET NOCOUNT ON
 	BEGIN
 		SET @ua = CAST(@hasherEventMapUpdatedAfter as datetimeoffset(7))
 		SELECT 
-			 [id] as hemId
-
-			,[UserId] as userId
-			,[EventId] as eventId
-			-- comment out
-			,[HasherOwnEventId] as hasherOwnEventId
-			,[UserStartEvent] as userStartEvent
-			,[UserEndEvent] as userEndEvent
-			,[RsvpState] as rsvpState
-			,[AttendenceState] as attendenceState
-			,[IsHare] as isHare
-			,[EventNotificationPreference] as eventNotificationPreference
-			,[EventEmailAlertPreference] as eventEmailAlertPreference
-			,[EventCountOverride] as eventCountOverride
-			,[VirginVisitorType] as virginVisitorType
-			,[DisplayName] as displayName
-			,[Email] as email
-			,[PhoneNumber] as phoneNumber
-			,[removed] as removed
-			,[updatedAt] as updatedAt
-		FROM HC.HasherEventMap where updatedAt > @ua and EventId = @eventId
+			 hem.[id] as hemId
+			,hem.[UserId] as userId
+			,hem.[EventId] as eventId
+			,hem.[HasherOwnEventId] as hasherOwnEventId
+			,hem.[UserStartEvent] as userStartEvent
+			,hem.[UserEndEvent] as userEndEvent
+			,hem.[RsvpState] as rsvpState
+			,hem.[AttendenceState] as attendenceState
+			,hem.[IsHare] as isHare
+			,hem.[EventNotificationPreference] as eventNotificationPreference
+			,hem.[EventEmailAlertPreference] as eventEmailAlertPreference
+			,hem.[EventCountOverride] as eventCountOverride
+			,hem.[VirginVisitorType] as virginVisitorType
+			,hem.[DisplayName] as displayName
+			,hem.[Email] as email
+			,hem.[PhoneNumber] as phoneNumber
+			,evt.[EventNumber] as hemEventNumber
+			,CASE WHEN (evt.UseFbRunDetails = 1) THEN evt.FbEventName ELSE evt.EventName END AS hemEventName
+			,CASE WHEN (evt.UseFbRunDetails = 1) THEN convert(datetime2,evt.FbEventStartDatetime) ELSE convert(datetime2,evt.EventStartDatetime) END AS hemEventStartDatetime -- This is a bit of a hack, force conversion into local time prior to sending over the wire. TODO: Eventually send over the event UTC and a separate time offset
+			,evt.[CanEditRunAttendence] as hemCanEditRunAttendence
+			,CASE WHEN ((evt.IsCountedRun != 0) AND (evt.IsVisible != 0)) THEN 1 ELSE 0 END AS hemEventIsCountedAndVisible
+			,evt.KennelId as hemEventKennelId
+			,hem.[removed] as removed
+			,hem.[updatedAt] as updatedAt
+		FROM HC.HasherEventMap hem
+		INNER JOIN HC.Event evt on evt.id = hem.EventId
+		where hem.updatedAt > @ua and hem.EventId = @eventId
 	END
 
 
@@ -12125,18 +12653,13 @@ SET NOCOUNT ON
 END
 
 GO
-/****** Object:  StoredProcedure [HC3].[syncKennelAdminData]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[syncKennelAdminData]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[syncKennelAdminData]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[syncKennelAdminData] AS' 
-END
-GO
 
-ALTER PROCEDURE [HC3].[syncKennelAdminData]
+CREATE PROCEDURE [HC3].[syncKennelAdminData]
 
  @userId uniqueidentifier,
  @accessToken nvarchar(1000),
@@ -12331,17 +12854,17 @@ SET NOCOUNT ON
 		SET @ua = CAST(@hashersUpdatedAfter as datetimeoffset(7))
 		SELECT 
 			h.id as hasherId,
-			h.HomeKennelId as homeKennelId,
+			--h.HomeKennelId as homeKennelId,
 			coalesce(h.FirstName,'') as firstName,
 			coalesce(h.LastName,'') as lastName,
 			coalesce(h.DisplayName,'') as dispName,
 			coalesce(h.HashName,'') as hashName,
 			coalesce(h.Photo,'') as photo,
 			coalesce(h.NameDisplayPreference,0) as dispPref,
-			coalesce(h.ResetCode,'') as resetCode,
-			coalesce(h.QR_code,'') as qrCode,
+			--coalesce(h.ResetCode,'') as resetCode,
+			--coalesce(h.QR_code,'') as qrCode,
 			coalesce(h.IncludeInGlobalHashDirectory,0) as includeInGlobalHashDirectory,
-			coalesce(h.Preferences,0) as preferences,
+			--coalesce(h.Preferences,0) as preferences,
 			coalesce(h.updatedAt,getdate()) as updatedAt,
 			coalesce(h.Removed,0) as removed
 		FROM HC.Hasher h where updatedAt >= @ua
@@ -12350,18 +12873,13 @@ SET NOCOUNT ON
 END
 
 GO
-/****** Object:  StoredProcedure [HC3].[syncUserData]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[syncUserData]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[syncUserData]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[syncUserData] AS' 
-END
-GO
 
-ALTER PROCEDURE [HC3].[syncUserData]
+CREATE PROCEDURE [HC3].[syncUserData]
 
  @userId uniqueidentifier,
  @accessToken nvarchar(1000),
@@ -12447,17 +12965,17 @@ SET NOCOUNT ON
 		SET @ua = CAST(@hashersUpdatedAfter as datetimeoffset(7))
 		SELECT 
 			h.id as hasherId,
-			h.HomeKennelId as homeKennelId,
+			--h.HomeKennelId as homeKennelId,
 			coalesce(h.FirstName,'') as firstName,
 			coalesce(h.LastName,'') as lastName,
 			coalesce(h.DisplayName,'') as dispName,
 			coalesce(h.HashName,'') as hashName,
 			coalesce(h.Photo,'') as photo,
 			coalesce(h.NameDisplayPreference,0) as dispPref,
-			coalesce(h.ResetCode,'') as resetCode,
-			coalesce(h.QR_code,'') as qrCode,
+			--coalesce(h.ResetCode,'') as resetCode,
+			--coalesce(h.QR_code,'') as qrCode,
 			coalesce(h.IncludeInGlobalHashDirectory,0) as includeInGlobalHashDirectory,
-			coalesce(h.Preferences,0) as preferences,
+			--coalesce(h.Preferences,0) as preferences,
 			coalesce(h.updatedAt,getdate()) as updatedAt,
 			coalesce(h.Removed,0) as removed
 		FROM HC.Hasher h where updatedAt >= @ua
@@ -12633,27 +13151,35 @@ SET NOCOUNT ON
 	BEGIN
 		SET @ua = CAST(@hasherEventMapUpdatedAfter as datetimeoffset(7))
 		SELECT 
-			 [id] as hemId
+			 hem.[id] as hemId
 
-			,[UserId] as userId
-			,[EventId] as eventId
+			,hem.[UserId] as userId
+			,hem.[EventId] as eventId
 			-- comment out
-			,[HasherOwnEventId] as hasherOwnEventId
-			,[UserStartEvent] as userStartEvent
-			,[UserEndEvent] as userEndEvent
-			,[RsvpState] as rsvpState
-			,[AttendenceState] as attendenceState
-			,[IsHare] as isHare
-			,[EventNotificationPreference] as eventNotificationPreference
-			,[EventEmailAlertPreference] as eventEmailAlertPreference
-			,[EventCountOverride] as eventCountOverride
-			,[VirginVisitorType] as virginVisitorType
-			,[DisplayName] as displayName
-			,[Email] as email
-			,[PhoneNumber] as phoneNumber
-			,[removed] as removed
-			,[updatedAt] as updatedAt
-		FROM HC.HasherEventMap where updatedAt > @ua and UserId = @userId
+			,hem.[HasherOwnEventId] as hasherOwnEventId
+			,hem.[UserStartEvent] as userStartEvent
+			,hem.[UserEndEvent] as userEndEvent
+			,hem.[RsvpState] as rsvpState
+			,hem.[AttendenceState] as attendenceState
+			,hem.[IsHare] as isHare
+			,hem.[EventNotificationPreference] as eventNotificationPreference
+			,hem.[EventEmailAlertPreference] as eventEmailAlertPreference
+			,hem.[EventCountOverride] as eventCountOverride
+			,hem.[VirginVisitorType] as virginVisitorType
+			,hem.[DisplayName] as displayName
+			,hem.[Email] as email
+			,hem.[PhoneNumber] as phoneNumber
+			,evt.[EventNumber] as hemEventNumber
+			,CASE WHEN (evt.UseFbRunDetails = 1) THEN evt.FbEventName ELSE evt.EventName END AS hemEventName
+			,CASE WHEN (evt.UseFbRunDetails = 1) THEN convert(datetime2,evt.FbEventStartDatetime) ELSE convert(datetime2,evt.EventStartDatetime) END AS hemEventStartDatetime -- This is a bit of a hack, force conversion into local time prior to sending over the wire. TODO: Eventually send over the event UTC and a separate time offset
+			,evt.[CanEditRunAttendence] as hemCanEditRunAttendence
+			,CASE WHEN ((evt.IsCountedRun != 0) AND (evt.IsVisible != 0)) THEN 1 ELSE 0 END AS hemEventIsCountedAndVisible
+			,evt.KennelId as hemEventKennelId
+			,hem.[removed] as removed
+			,hem.[updatedAt] as updatedAt
+		FROM HC.HasherEventMap hem 
+		INNER JOIN HC.Event evt on hem.EventId = evt.id
+		where hem.updatedAt > @ua and hem.UserId = @userId
 	END
 
 
@@ -12713,7 +13239,9 @@ SET NOCOUNT ON
 			,evt.[updatedAt] as updatedAt
 
 		FROM HC.Event evt inner join HC.Kennel ken on evt.KennelId = ken.id
-		where evt.updatedAt > @ua
+		where evt.updatedAt > @ua and 
+		-- only send events from the last year
+		CASE WHEN (evt.UseFbRunDetails = 1) THEN convert(datetime2,evt.FbEventStartDatetime) ELSE convert(datetime2,evt.EventStartDatetime) END > dateadd(day,-365,getdate())
 	END
 
 	--if (LOWER(@hasherOwnEventUpdatedAfter) != 'ignore')
@@ -12745,40 +13273,38 @@ SET NOCOUNT ON
 	--	FROM HC.[HasherOwnEvent] where updatedAt > @ua and UserId = @userId
 	--END
 
+	--if (LOWER(@paymentsUpdatedAfter) != 'ignore')
+	--BEGIN
+	--	SET @ua = CAST(@paymentsUpdatedAfter as datetimeoffset(7))
+	--	SELECT 
+	--		 [id] as paymentId
+	--		,[KennelId] as kennelId
+	--		,[UserId] as paidBy
+	--		,[HasherEventMapId] as hemId
+	--		,[EventId] as eventId
+	--		,[PaymentProcessedBy_userId] as paidTo
+	--		,[CreditAmount] as creditAmount
+	--		,[DebitAmount] as debitAmount
+	--		,[PaidDate] as paidDate
+	--		,[PaymentType] as paymentType
+	--		,[ProductType] as productType
+	--		,[CancelledDate] as cancelledDate
+	--		,[CancelledBy_UserId] as cancelledBy
+	--		,[ConfirmedDate] as confirmedDate
+	--		,[ConfirmedBy_UserId] as confirmedBy
+	--		,[PaymentReference] as paymentReference
+	--		,[Notes] as notes
+	--		,[DoPayForExtras] as doPayForExtras
+	--		,[Surcharge] as surcharge
+	--		,[PaymentProvider] as paymentProvider
 
+	--		,[removed] as removed
+	--		,[updatedAt] as updatedAt
 
-	if (LOWER(@paymentsUpdatedAfter) != 'ignore')
-	BEGIN
-		SET @ua = CAST(@paymentsUpdatedAfter as datetimeoffset(7))
-		SELECT 
-			 [id] as paymentId
-			,[KennelId] as kennelId
-			,[UserId] as paidBy
-			,[HasherEventMapId] as hemId
-			,[EventId] as eventId
-			,[PaymentProcessedBy_userId] as paidTo
-			,[CreditAmount] as creditAmount
-			,[DebitAmount] as debitAmount
-			,[PaidDate] as paidDate
-			,[PaymentType] as paymentType
-			,[ProductType] as productType
-			,[CancelledDate] as cancelledDate
-			,[CancelledBy_UserId] as cancelledBy
-			,[ConfirmedDate] as confirmedDate
-			,[ConfirmedBy_UserId] as confirmedBy
-			,[PaymentReference] as paymentReference
-			,[Notes] as notes
-			,[DoPayForExtras] as doPayForExtras
-			,[Surcharge] as surcharge
-			,[PaymentProvider] as paymentProvider
-
-			,[removed] as removed
-			,[updatedAt] as updatedAt
-
-		FROM HC.Payment pmt
-		where pmt.updatedAt > @ua
-		AND pmt.UserId = @userId
-	END
+	--	FROM HC.Payment pmt
+	--	where pmt.updatedAt > @ua
+	--	AND pmt.UserId = @userId
+	--END
 
 
 END
@@ -12788,17 +13314,12 @@ END
 
 
 GO
-/****** Object:  StoredProcedure [HC3].[utilApi_mergeUsers]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3].[utilApi_mergeUsers]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3].[utilApi_mergeUsers]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3].[utilApi_mergeUsers] AS' 
-END
-GO
-ALTER PROCEDURE [HC3].[utilApi_mergeUsers]
+CREATE PROCEDURE [HC3].[utilApi_mergeUsers]
 
 	 @keep uniqueidentifier,
 	 @merge uniqueidentifier
@@ -12961,18 +13482,13 @@ END CATCH
 
 
 GO
-/****** Object:  StoredProcedure [HC3W].[importKennel]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3W].[importKennel]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3W].[importKennel]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3W].[importKennel] AS' 
-END
-GO
 
-ALTER PROCEDURE [HC3W].[importKennel]
+CREATE PROCEDURE [HC3W].[importKennel]
 
  @KennelImportId uniqueidentifier
 
@@ -13281,18 +13797,13 @@ BEGIN
 END
   
 GO
-/****** Object:  StoredProcedure [HC3W].[not_used_getEvents]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3W].[not_used_getEvents]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3W].[not_used_getEvents]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3W].[not_used_getEvents] AS' 
-END
-GO
 
-ALTER PROCEDURE [HC3W].[not_used_getEvents]
+CREATE PROCEDURE [HC3W].[not_used_getEvents]
 
  @userName nvarchar(120) = ''
 
@@ -13350,18 +13861,13 @@ BEGIN
 END
   
 GO
-/****** Object:  StoredProcedure [HC3W].[not_used_getUsersForAdmin]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [HC3W].[not_used_getUsersForAdmin]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC3W].[not_used_getUsersForAdmin]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [HC3W].[not_used_getUsersForAdmin] AS' 
-END
-GO
 
-ALTER PROCEDURE [HC3W].[not_used_getUsersForAdmin]
+CREATE PROCEDURE [HC3W].[not_used_getUsersForAdmin]
 
  @userName nvarchar(120) = ''
 
@@ -13399,17 +13905,12 @@ BEGIN
 END
   
 GO
-/****** Object:  StoredProcedure [WORDZ].[sp_ExportWordzToJson]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  StoredProcedure [WORDZ].[sp_ExportWordzToJson]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[WORDZ].[sp_ExportWordzToJson]') AND type in (N'P', N'PC'))
-BEGIN
-EXEC dbo.sp_executesql @statement = N'CREATE PROCEDURE [WORDZ].[sp_ExportWordzToJson] AS' 
-END
-GO
-ALTER PROCEDURE [WORDZ].[sp_ExportWordzToJson]
+CREATE PROCEDURE [WORDZ].[sp_ExportWordzToJson]
 
 AS
 
@@ -13429,13 +13930,12 @@ FOR JSON AUTO;
 
 drop table #temp
 GO
-/****** Object:  Trigger [dbo].[trgAddRoles]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Trigger [dbo].[trgAddRoles]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[dbo].[trgAddRoles]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [dbo].[trgAddRoles]
+CREATE TRIGGER [dbo].[trgAddRoles]
    ON  [dbo].[Users]
    AFTER INSERT
 AS 
@@ -13465,17 +13965,15 @@ BEGIN
 	DEALLOCATE xCrsr
 
 END
-' 
 GO
 ALTER TABLE [dbo].[Users] ENABLE TRIGGER [trgAddRoles]
 GO
-/****** Object:  Trigger [dbo].[trgLinkToHcHasher]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Trigger [dbo].[trgLinkToHcHasher]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[dbo].[trgLinkToHcHasher]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [dbo].[trgLinkToHcHasher]
+CREATE TRIGGER [dbo].[trgLinkToHcHasher]
    ON  [dbo].[Users]
    AFTER INSERT, UPDATE
 AS 
@@ -13488,7 +13986,7 @@ BEGIN
 	DECLARE @Username nvarchar(250),
 			@UserId int, 
 			@Email nvarchar(100),
-			@AuthToken nvarchar(2000),
+			@AuthToken nvarchar(1000),
 			@AuthTokenType nvarchar(50),
 			@AuthTokenLastUpdated datetime,
 			@HasherId uniqueidentifier,
@@ -13554,12 +14052,12 @@ BEGIN
 				   ,[deleted])
 				 VALUES
 						(
-						HC.GENERATE_SIX_RANDOM_CHARACTERS(CAST( RAND() * 2147483647 as int),''USC:'',''N'')
-					   ,HC.GENERATE_SIX_RANDOM_CHARACTERS(CAST( RAND() * 2147483647 as int),''URC:'',''N'')
-					   ,HC.GENERATE_SIX_RANDOM_CHARACTERS(CAST( RAND() * 2147483647 as int),''UQR:'',''Y'')
+						HC.GENERATE_SIX_RANDOM_CHARACTERS(CAST( RAND() * 2147483647 as int),'USC:','N')
+					   ,HC.GENERATE_SIX_RANDOM_CHARACTERS(CAST( RAND() * 2147483647 as int),'URC:','N')
+					   ,HC.GENERATE_SIX_RANDOM_CHARACTERS(CAST( RAND() * 2147483647 as int),'UQR:','Y')
 					   ,newid()
-					   ,coalesce(@FirstName + '' '' + @LastName,''<no name>'')
-					   ,''<no Hash name>''
+					   ,coalesce(@FirstName + ' ' + @LastName,'<no name>')
+					   ,'<no Hash name>'
 					   ,@FirstName
 					   ,@LastName
 					   ,@Email
@@ -13578,7 +14076,7 @@ BEGIN
 		-- NOTE: We need to create a user here if one does not already exist
 		SELECT @HasherId = id FROM HC.Hasher where HcWebUserId = @UserId
 
-		IF @AuthTokenType = ''Facebook''
+		IF @AuthTokenType = 'Facebook'
 		BEGIN
 			-- for all kennels where this user is the admin, refresh the auth token
 			UPDATE HC.Kennel SET KennelFacebookToken = @AuthToken, KennelFacebookTokenLastUpdated = @AuthTokenLastUpdated WHERE KennelFacebookTokenUsername = @Username
@@ -13596,7 +14094,7 @@ BEGIN
 				  ,[GroupCoverPhoto] FROM cte 
 				WHERE UserEmail = @Email 
 				  AND RowNum = 1
-				  AND verb = ''add''
+				  AND verb = 'add'
 				  AND GroupId not in (select KennelFacebookId from HC.Kennel where KennelFacebookId is not null);
 
 			OPEN iCrsr
@@ -13608,7 +14106,7 @@ BEGIN
 				-- insert new kennels one at a time
 				SET @kennelId = newid()
 				DECLARE @iconName nvarchar(10)
-				SELECT @iconName = ''C-''+right(''00'' + cast((cast (rand() * 11.999 as int) * 30) as nvarchar(10)),3)
+				SELECT @iconName = 'C-'+right('00' + cast((cast (rand() * 11.999 as int) * 30) as nvarchar(10)),3)
 
 				INSERT INTO [HC].[Kennel]
 						   (
@@ -13643,23 +14141,23 @@ BEGIN
 						 SELECT 
 						    @kennelId
 						   ,@groupName
-						   ,SUBSTRING(@groupName,1,3) + '' H3''
+						   ,SUBSTRING(@groupName,1,3) + ' H3'
 						   ,@groupDescription
-						   ,''bundle://''+@iconName
+						   ,'bundle://'+@iconName
 						   ,@GroupCoverPhoto
-						   ,'''' -- KennelUrl
+						   ,'' -- KennelUrl
 						   ,CAST(0 as decimal(10,4))
 						   ,CAST(0 as decimal(10,4))
-						   ,''878FDFE9-E2BB-4D46-BB38-82DE60279A4A'' -- <unassigned> city
-						   ,''269C4F82-24C7-411F-967F-3F5E61BBA599'' -- <unassigned> region
-						   ,''FF2B0557-49EA-4EC3-9607-51B07606BE17'' -- <unassigned> country
+						   ,'878FDFE9-E2BB-4D46-BB38-82DE60279A4A' -- <unassigned> city
+						   ,'269C4F82-24C7-411F-967F-3F5E61BBA599' -- <unassigned> region
+						   ,'FF2B0557-49EA-4EC3-9607-51B07606BE17' -- <unassigned> country
 						   ,getdate()
 						   ,@groupId
 						   ,@Email
 						   ,@AuthToken
 						   ,@AuthTokenLastUpdated
 						   ,2
-						   ,''Facebook'' -- integration type
+						   ,'Facebook' -- integration type
 						   ,1 -- autoImportEvents
 						   ,dateadd(minute,30,getdate()) -- force Facebook updates for next 30 minutes
 						   ,cast (rand() * 8.9999 as int) -- KennelPinColor = red
@@ -13744,47 +14242,42 @@ BEGIN
 	DEALLOCATE oCrsr
 
 END
-' 
 GO
 ALTER TABLE [dbo].[Users] ENABLE TRIGGER [trgLinkToHcHasher]
 GO
-/****** Object:  Trigger [Hashers].[TR_HasherEventMap_InsertUpdateDelete]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Trigger [Hashers].[TR_HasherEventMap_InsertUpdateDelete]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[Hashers].[TR_HasherEventMap_InsertUpdateDelete]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [Hashers].[TR_HasherEventMap_InsertUpdateDelete] ON [Hashers].[HasherEventMap] AFTER INSERT, UPDATE, DELETE AS BEGIN SET NOCOUNT ON; IF TRIGGER_NESTLEVEL() > 3 RETURN; UPDATE [Hashers].[HasherEventMap] SET [updatedAt] = CONVERT (DATETIMEOFFSET(7), SYSUTCDATETIME()) FROM INSERTED WHERE INSERTED.id = [Hashers].[HasherEventMap].[id] END' 
+CREATE TRIGGER [Hashers].[TR_HasherEventMap_InsertUpdateDelete] ON [Hashers].[HasherEventMap] AFTER INSERT, UPDATE, DELETE AS BEGIN SET NOCOUNT ON; IF TRIGGER_NESTLEVEL() > 3 RETURN; UPDATE [Hashers].[HasherEventMap] SET [updatedAt] = CONVERT (DATETIMEOFFSET(7), SYSUTCDATETIME()) FROM INSERTED WHERE INSERTED.id = [Hashers].[HasherEventMap].[id] END
 GO
 ALTER TABLE [Hashers].[HasherEventMap] ENABLE TRIGGER [TR_HasherEventMap_InsertUpdateDelete]
 GO
-/****** Object:  Trigger [Hashers].[TR_HasherFriendMap_InsertUpdateDelete]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Trigger [Hashers].[TR_HasherFriendMap_InsertUpdateDelete]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[Hashers].[TR_HasherFriendMap_InsertUpdateDelete]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [Hashers].[TR_HasherFriendMap_InsertUpdateDelete] ON [Hashers].[HasherFriendMap] AFTER INSERT, UPDATE, DELETE AS BEGIN SET NOCOUNT ON; IF TRIGGER_NESTLEVEL() > 3 RETURN; UPDATE [Hashers].[HasherFriendMap] SET [updatedAt] = CONVERT (DATETIMEOFFSET(7), SYSUTCDATETIME()) FROM INSERTED WHERE INSERTED.id = [Hashers].[HasherFriendMap].[id] END' 
+CREATE TRIGGER [Hashers].[TR_HasherFriendMap_InsertUpdateDelete] ON [Hashers].[HasherFriendMap] AFTER INSERT, UPDATE, DELETE AS BEGIN SET NOCOUNT ON; IF TRIGGER_NESTLEVEL() > 3 RETURN; UPDATE [Hashers].[HasherFriendMap] SET [updatedAt] = CONVERT (DATETIMEOFFSET(7), SYSUTCDATETIME()) FROM INSERTED WHERE INSERTED.id = [Hashers].[HasherFriendMap].[id] END
 GO
 ALTER TABLE [Hashers].[HasherFriendMap] ENABLE TRIGGER [TR_HasherFriendMap_InsertUpdateDelete]
 GO
-/****** Object:  Trigger [HC].[TR_BusinessUnits_InsertUpdateDelete]    Script Date: 7/2/2021 4:18:14 AM ******/
+/****** Object:  Trigger [HC].[TR_BusinessUnits_InsertUpdateDelete]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[TR_BusinessUnits_InsertUpdateDelete]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[TR_BusinessUnits_InsertUpdateDelete] ON [HC].[BusinessUnits] AFTER INSERT, UPDATE, DELETE AS BEGIN SET NOCOUNT ON; IF TRIGGER_NESTLEVEL() > 3 RETURN; UPDATE [HC].[BusinessUnits] SET [updatedAt] = CONVERT (DATETIMEOFFSET(7), SYSUTCDATETIME()) FROM INSERTED WHERE INSERTED.id = [HC].[BusinessUnits].[id] END' 
+CREATE TRIGGER [HC].[TR_BusinessUnits_InsertUpdateDelete] ON [HC].[BusinessUnits] AFTER INSERT, UPDATE, DELETE AS BEGIN SET NOCOUNT ON; IF TRIGGER_NESTLEVEL() > 3 RETURN; UPDATE [HC].[BusinessUnits] SET [updatedAt] = CONVERT (DATETIMEOFFSET(7), SYSUTCDATETIME()) FROM INSERTED WHERE INSERTED.id = [HC].[BusinessUnits].[id] END
 GO
 ALTER TABLE [HC].[BusinessUnits] ENABLE TRIGGER [TR_BusinessUnits_InsertUpdateDelete]
 GO
-/****** Object:  Trigger [HC].[trgUpdateGeolocation]    Script Date: 7/2/2021 4:18:15 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateGeolocation]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgUpdateGeolocation]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[trgUpdateGeolocation]
+CREATE TRIGGER [HC].[trgUpdateGeolocation]
    ON  [HC].[City]
    AFTER INSERT, UPDATE
 AS 
@@ -13821,17 +14314,15 @@ SET NOCOUNT ON;
 	END
 
 END
-' 
 GO
 ALTER TABLE [HC].[City] ENABLE TRIGGER [trgUpdateGeolocation]
 GO
-/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForCity]    Script Date: 7/2/2021 4:18:15 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForCity]    Script Date: 7/12/2021 11:29:45 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgUpdateModifiedOnDateForCity]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForCity]
+CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForCity]
    ON  [HC].[City]
    AFTER INSERT, UPDATE
 AS 
@@ -13847,17 +14338,15 @@ BEGIN
 	END
 
 END
-' 
 GO
 ALTER TABLE [HC].[City] ENABLE TRIGGER [trgUpdateModifiedOnDateForCity]
 GO
-/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForCountry]    Script Date: 7/2/2021 4:18:15 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForCountry]    Script Date: 7/12/2021 11:29:46 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgUpdateModifiedOnDateForCountry]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForCountry]
+CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForCountry]
    ON  [HC].[Country]
    AFTER INSERT, UPDATE
 AS 
@@ -13873,17 +14362,15 @@ BEGIN
 	END
 
 END
-' 
 GO
 ALTER TABLE [HC].[Country] ENABLE TRIGGER [trgUpdateModifiedOnDateForCountry]
 GO
-/****** Object:  Trigger [HC].[trgRecalculateRunCounts]    Script Date: 7/2/2021 4:18:15 AM ******/
+/****** Object:  Trigger [HC].[trgRecalculateRunCounts]    Script Date: 7/12/2021 11:29:46 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgRecalculateRunCounts]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[trgRecalculateRunCounts]
+CREATE TRIGGER [HC].[trgRecalculateRunCounts]
    ON  [HC].[Event]
    AFTER INSERT,UPDATE,DELETE
 AS 
@@ -13904,17 +14391,51 @@ BEGIN
 	END
 
 END
-' 
 GO
 ALTER TABLE [HC].[Event] ENABLE TRIGGER [trgRecalculateRunCounts]
 GO
-/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForEvent]    Script Date: 7/2/2021 4:18:15 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateHemDates]    Script Date: 7/12/2021 11:29:46 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgUpdateModifiedOnDateForEvent]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForEvent]
+
+CREATE TRIGGER [HC].[trgUpdateHemDates]
+   ON  [HC].[Event]
+   AFTER UPDATE
+AS 
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+	IF (   UPDATE(IsCountedRun) 
+	    OR UPDATE(AbsoluteEventNumber) 
+		OR UPDATE(EventNumber)
+		OR UPDATE(EventName)
+		OR UPDATE(FbEventName)
+		OR UPDATE(IsVisible)
+		OR UPDATE(UseFbRunDetails)
+		OR UPDATE(EventStartDatetime)
+		OR UPDATE(FbEventStartDatetime)
+		OR UPDATE(CanEditRunAttendence)
+		) --AND NOT UPDATE(updatedAt)
+	BEGIN
+		-- if any of the above are updated, we need to update the HEM tables on the mobile devices
+		-- to remain in sync.
+		UPDATE HC.HasherEventMap set updatedAt = getdate() where EventId in (SELECT EventId from INSERTED)
+	END
+
+END
+GO
+ALTER TABLE [HC].[Event] ENABLE TRIGGER [trgUpdateHemDates]
+GO
+/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForEvent]    Script Date: 7/12/2021 11:29:46 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForEvent]
    ON  [HC].[Event]
    AFTER INSERT, UPDATE
 AS 
@@ -13929,17 +14450,15 @@ BEGIN
 	END
 
 END
-' 
 GO
 ALTER TABLE [HC].[Event] ENABLE TRIGGER [trgUpdateModifiedOnDateForEvent]
 GO
-/****** Object:  Trigger [HC].[trgCalculateHasherGeolocation]    Script Date: 7/2/2021 4:18:15 AM ******/
+/****** Object:  Trigger [HC].[trgCalculateHasherGeolocation]    Script Date: 7/12/2021 11:29:46 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgCalculateHasherGeolocation]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[trgCalculateHasherGeolocation]
+CREATE TRIGGER [HC].[trgCalculateHasherGeolocation]
    ON  [HC].[Hasher]
    AFTER INSERT, UPDATE
 AS 
@@ -13955,17 +14474,15 @@ BEGIN
 	END
 
 END
-' 
 GO
 ALTER TABLE [HC].[Hasher] ENABLE TRIGGER [trgCalculateHasherGeolocation]
 GO
-/****** Object:  Trigger [HC].[trgGenerateQrCode]    Script Date: 7/2/2021 4:18:15 AM ******/
+/****** Object:  Trigger [HC].[trgGenerateQrCode]    Script Date: 7/12/2021 11:29:46 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgGenerateQrCode]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[trgGenerateQrCode]
+CREATE TRIGGER [HC].[trgGenerateQrCode]
    ON  [HC].[Hasher]
    AFTER INSERT, UPDATE
 AS 
@@ -13983,9 +14500,9 @@ BEGIN
 	DECLARE @ResetCode nvarchar(50)
 	DECLARE @SupportCode nvarchar(50)
 
-	IF TRIGGER_NESTLEVEL(OBJECT_ID(''HC.trgGenerateQrCode'')) > 1
+	IF TRIGGER_NESTLEVEL(OBJECT_ID('HC.trgGenerateQrCode')) > 1
 	BEGIN
-		PRINT ''mytrigger exiting because TRIGGER_NESTLEVEL > 1 '';
+		PRINT 'mytrigger exiting because TRIGGER_NESTLEVEL > 1 ';
 		RETURN;
 	END;
 
@@ -14001,66 +14518,66 @@ BEGIN
 	BEGIN
 			
 		-- First check the QR_Code
-		SET @Loop = ''Yes''
+		SET @Loop = 'Yes'
 		SET @EmergencyStop = 0
 
-		IF ((SELECT count(*) from HC.Hasher WHERE QR_code = @InsertedQr and id <> @id) > 0) OR (@InsertedQr not like ''UQR:%'')
+		IF ((SELECT count(*) from HC.Hasher WHERE QR_code = @InsertedQr and id <> @id) > 0) OR (@InsertedQr not like 'UQR:%')
 		BEGIN
 			-- attempt to insert a duplicate QR was detected or the QR being inserted is invalid
 			-- in these cases, create a new QR and insert that instead
-			WHILE (@Loop = ''Yes'')
+			WHILE (@Loop = 'Yes')
 			BEGIN
 				SET @EmergencyStop = @EmergencyStop + 1
-				IF @EmergencyStop > 10 SET @Loop = ''No''
-				SET @QR = ''UQR:''+HC.NUMBER_TO_STR_BASE (36,(RAND() * (2147483647 - 60466177)) + 60466176)
+				IF @EmergencyStop > 10 SET @Loop = 'No'
+				SET @QR = 'UQR:'+HC.NUMBER_TO_STR_BASE (36,(RAND() * (2147483647 - 60466177)) + 60466176)
 				-- if the QR code is unique, go ahead and insert it
 				IF (SELECT count(*) FROM HC.Hasher WHERE QR_code = @QR) = 0
 				BEGIN
-					SET @Loop = ''No''
+					SET @Loop = 'No'
 					UPDATE HC.Hasher set QR_code = @QR WHERE id = @id
 				END
 			END
 		END
 
 		-- Now check the ResetCode
-		SET @Loop = ''Yes''
+		SET @Loop = 'Yes'
 		SET @EmergencyStop = 0
 
-		IF ((SELECT count(*) from HC.Hasher WHERE ResetCode = @ResetCode and id <> @id) > 0) OR (@ResetCode not like ''URC:%'')
+		IF ((SELECT count(*) from HC.Hasher WHERE ResetCode = @ResetCode and id <> @id) > 0) OR (@ResetCode not like 'URC:%')
 		BEGIN
 			-- attempt to insert a duplicate QR was detected or the QR being inserted is invalid
 			-- in these cases, create a new QR and insert that instead
-			WHILE (@Loop = ''Yes'')
+			WHILE (@Loop = 'Yes')
 			BEGIN
 				SET @EmergencyStop = @EmergencyStop + 1
-				IF @EmergencyStop > 10 SET @Loop = ''No''
-				SET @QR = ''URC:''+SUBSTRING(TRIM(HC.NUMBER_TO_STR_BASE (25,(RAND() * (2147483647 - 91466177)) + 91466177)),0,7)
+				IF @EmergencyStop > 10 SET @Loop = 'No'
+				SET @QR = 'URC:'+SUBSTRING(TRIM(HC.NUMBER_TO_STR_BASE (25,(RAND() * (2147483647 - 91466177)) + 91466177)),0,7)
 				-- if the QR code is unique, go ahead and insert it
 				IF (SELECT count(*) FROM HC.Hasher WHERE ResetCode = @QR) = 0
 				BEGIN
-					SET @Loop = ''No''
+					SET @Loop = 'No'
 					UPDATE HC.Hasher set ResetCode = @QR WHERE id = @id
 				END
 			END
 		END
 
 		-- Now check the SupportCode
-		SET @Loop = ''Yes''
+		SET @Loop = 'Yes'
 		SET @EmergencyStop = 0
 
-		IF ((SELECT count(*) from HC.Hasher WHERE SupportCode = @SupportCode and id <> @id) > 0) OR (@SupportCode not like ''USC:%'')
+		IF ((SELECT count(*) from HC.Hasher WHERE SupportCode = @SupportCode and id <> @id) > 0) OR (@SupportCode not like 'USC:%')
 		BEGIN
 			-- attempt to insert a duplicate QR was detected or the QR being inserted is invalid
 			-- in these cases, create a new QR and insert that instead
-			WHILE (@Loop = ''Yes'')
+			WHILE (@Loop = 'Yes')
 			BEGIN
 				SET @EmergencyStop = @EmergencyStop + 1
-				IF @EmergencyStop > 10 SET @Loop = ''No''
-				SET @QR = ''USC:''+SUBSTRING(TRIM(HC.NUMBER_TO_STR_BASE (25,(RAND() * (2147483647 - 91466177)) + 91466177)),0,7)
+				IF @EmergencyStop > 10 SET @Loop = 'No'
+				SET @QR = 'USC:'+SUBSTRING(TRIM(HC.NUMBER_TO_STR_BASE (25,(RAND() * (2147483647 - 91466177)) + 91466177)),0,7)
 				-- if the QR code is unique, go ahead and insert it
 				IF (SELECT count(*) FROM HC.Hasher WHERE SupportCode = @QR) = 0
 				BEGIN
-					SET @Loop = ''No''
+					SET @Loop = 'No'
 					UPDATE HC.Hasher set SupportCode = @QR WHERE id = @id
 				END
 			END
@@ -14084,22 +14601,22 @@ BEGIN
 	--WHILE @@FETCH_STATUS = 0
 	--BEGIN
 			
-	--	SET @Loop = ''Yes''
+	--	SET @Loop = 'Yes'
 	--	SET @EmergencyStop = 0
 
-	--	IF ((SELECT count(*) from HC.Hasher WHERE ResetCode = @ResetCode and id <> @id) > 0) OR (@ResetCode not like ''RC:%'')
+	--	IF ((SELECT count(*) from HC.Hasher WHERE ResetCode = @ResetCode and id <> @id) > 0) OR (@ResetCode not like 'RC:%')
 	--	BEGIN
 	--		-- attempt to insert a duplicate QR was detected or the QR being inserted is invalid
 	--		-- in these cases, create a new QR and insert that instead
-	--		WHILE (@Loop = ''Yes'')
+	--		WHILE (@Loop = 'Yes')
 	--		BEGIN
 	--			SET @EmergencyStop = @EmergencyStop + 1
-	--			IF @EmergencyStop > 10 SET @Loop = ''No''
-	--			SET @QR = ''RC:''+ SUBSTRING(TRIM(HC.NUMBER_TO_STR_BASE (25,(RAND() * (2147483647 - 91466177)) + 91466177)),0,7)
+	--			IF @EmergencyStop > 10 SET @Loop = 'No'
+	--			SET @QR = 'RC:'+ SUBSTRING(TRIM(HC.NUMBER_TO_STR_BASE (25,(RAND() * (2147483647 - 91466177)) + 91466177)),0,7)
 	--			-- if the QR code is unique, go ahead and insert it
 	--			IF (SELECT count(*) FROM HC.Hasher WHERE ResetCode = @QR) = 0
 	--			BEGIN
-	--				SET @Loop = ''No''
+	--				SET @Loop = 'No'
 	--				UPDATE HC.Hasher set ResetCode = @QR WHERE id = @id
 	--			END
 	--		END
@@ -14112,17 +14629,14 @@ BEGIN
 	--DEALLOCATE xCrsr
 
 END
-' 
 GO
 ALTER TABLE [HC].[Hasher] ENABLE TRIGGER [trgGenerateQrCode]
 GO
-/****** Object:  Trigger [HC].[trgInsertHkmRecordForHomeHash]    Script Date: 7/2/2021 4:18:16 AM ******/
+/****** Object:  Trigger [HC].[trgInsertHkmRecordForHomeHash]    Script Date: 7/12/2021 11:29:46 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgInsertHkmRecordForHomeHash]'))
-EXEC dbo.sp_executesql @statement = N'
 CREATE TRIGGER [HC].[trgInsertHkmRecordForHomeHash]
    ON  [HC].[Hasher]
    AFTER INSERT, UPDATE
@@ -14188,17 +14702,15 @@ BEGIN
 		END
 	END
 END
-' 
 GO
-ALTER TABLE [HC].[Hasher] DISABLE TRIGGER [trgInsertHkmRecordForHomeHash]
+ALTER TABLE [HC].[Hasher] ENABLE TRIGGER [trgInsertHkmRecordForHomeHash]
 GO
-/****** Object:  Trigger [HC].[trgLinkToDboUsers]    Script Date: 7/2/2021 4:18:16 AM ******/
+/****** Object:  Trigger [HC].[trgLinkToDboUsers]    Script Date: 7/12/2021 11:29:46 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgLinkToDboUsers]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[trgLinkToDboUsers]
+CREATE TRIGGER [HC].[trgLinkToDboUsers]
    ON  [HC].[Hasher]
    AFTER INSERT, UPDATE
 AS 
@@ -14230,17 +14742,15 @@ BEGIN
 	END
 
 END
-' 
 GO
 ALTER TABLE [HC].[Hasher] ENABLE TRIGGER [trgLinkToDboUsers]
 GO
-/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForNames]    Script Date: 7/2/2021 4:18:16 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForNames]    Script Date: 7/12/2021 11:29:47 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgUpdateModifiedOnDateForNames]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForNames]
+CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForNames]
    ON  [HC].[Hasher]
    AFTER INSERT, UPDATE
 AS 
@@ -14256,17 +14766,15 @@ BEGIN
 	END
 
 END
-' 
 GO
 ALTER TABLE [HC].[Hasher] ENABLE TRIGGER [trgUpdateModifiedOnDateForNames]
 GO
-/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForHasherEventMap]    Script Date: 7/2/2021 4:18:16 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForHasherEventMap]    Script Date: 7/12/2021 11:29:47 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgUpdateModifiedOnDateForHasherEventMap]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForHasherEventMap]
+CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForHasherEventMap]
    ON  [HC].[HasherEventMap]
    AFTER INSERT, UPDATE
 AS 
@@ -14282,17 +14790,15 @@ BEGIN
 	END
 
 END
-' 
 GO
 ALTER TABLE [HC].[HasherEventMap] ENABLE TRIGGER [trgUpdateModifiedOnDateForHasherEventMap]
 GO
-/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForHasherKennelMap]    Script Date: 7/2/2021 4:18:16 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForHasherKennelMap]    Script Date: 7/12/2021 11:29:47 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgUpdateModifiedOnDateForHasherKennelMap]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForHasherKennelMap]
+CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForHasherKennelMap]
    ON  [HC].[HasherKennelMap]
    AFTER INSERT, UPDATE
 AS 
@@ -14308,17 +14814,15 @@ BEGIN
 	END
 
 END
-' 
 GO
 ALTER TABLE [HC].[HasherKennelMap] ENABLE TRIGGER [trgUpdateModifiedOnDateForHasherKennelMap]
 GO
-/****** Object:  Trigger [HC].[GenerateExtApiKey]    Script Date: 7/2/2021 4:18:16 AM ******/
+/****** Object:  Trigger [HC].[GenerateExtApiKey]    Script Date: 7/12/2021 11:29:47 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[GenerateExtApiKey]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[GenerateExtApiKey]
+CREATE TRIGGER [HC].[GenerateExtApiKey]
 ON [HC].[Kennel] AFTER INSERT
 AS
 BEGIN
@@ -14337,7 +14841,7 @@ WHILE @@FETCH_STATUS = 0
 
 	DECLARE	@BinaryData varbinary(max) = crypt_gen_random (150) 
 	DECLARE @randText nvarchar(1000)
-	SELECT @randText = LEFT(REPLACE(REPLACE(cast('''' as xml).value(''xs:base64Binary(sql:variable("@BinaryData"))'', ''varchar(max)''),''+'',''''),''/'',''''),75)
+	SELECT @randText = LEFT(REPLACE(REPLACE(cast('' as xml).value('xs:base64Binary(sql:variable("@BinaryData"))', 'varchar(max)'),'+',''),'/',''),75)
 	  UPDATE   HC.Kennel
 	  SET      ExtApiKey = @randText
 		WHERE id = @id
@@ -14349,17 +14853,91 @@ CLOSE xCrsr
 DEALLOCATE xCrsr
 
 END
-' 
 GO
 ALTER TABLE [HC].[Kennel] ENABLE TRIGGER [GenerateExtApiKey]
 GO
-/****** Object:  Trigger [HC].[trgUpdateKennelGeolocation]    Script Date: 7/2/2021 4:18:16 AM ******/
+/****** Object:  Trigger [HC].[trgConfigureFacebookToken]    Script Date: 7/12/2021 11:29:47 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgUpdateKennelGeolocation]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[trgUpdateKennelGeolocation]
+CREATE TRIGGER [HC].[trgConfigureFacebookToken]
+   ON  [HC].[Kennel]
+   AFTER INSERT,UPDATE
+AS 
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+	IF UPDATE(KennelFacebookTokenUsername)
+	BEGIN
+
+		declare @kennelId uniqueidentifier,
+				@kennelFacebookUsername nvarchar(250),
+				@kennelFacebookToken nvarchar(1000),
+				@kennelFacebookTokenLastUpdated datetimeoffset(7)
+
+
+		declare xCrsr CURSOR FOR
+			select id,KennelFacebookTokenUsername from INSERTED 
+
+		OPEN xCrsr
+
+		FETCH NEXT FROM xCrsr into @kennelId,@kennelFacebookUsername
+
+		WHILE @@Fetch_status = 0
+		BEGIN
+			IF (@kennelFacebookUsername IS NULL)
+				-- If the token username has been removed altogether, set the integration type to "none" and null out the other fields.
+				BEGIN
+					UPDATE HC.Kennel set KennelFacebookToken = null, KennelFacebookTokenLastUpdated = null, IntegrationType = 'None' 
+					FROM HC.Kennel k where k.id = @kennelId
+				END
+			ELSE
+				BEGIN
+					-- the facebook token for a user can be stored either in HC.Hasher (if they logged in to the mobile app)
+					-- or in dbo.Users if they logged in using Facebook using the website. Check HC.Hasher first
+					-- and then dbo.Users to see if there is a valid Facebook token for this user.
+					SELECT @kennelFacebookToken = FacebookAccessToken,@kennelFacebookTokenLastUpdated = FacebookAccessTokenLastUpdated FROM HC.Hasher where Email = @kennelFacebookUsername
+
+					if (@kennelFacebookToken is null)
+					BEGIN
+						SELECT @kennelFacebookToken = AuthToken, @kennelFacebookTokenLastUpdated = AuthTokenLastUpdated FROM dbo.Users where Username = @kennelFacebookUsername and AuthTokenType = 'FACEBOOK'
+					END
+
+					-- if we found a valid auth token, copy it to HC.Kennel
+					IF (@kennelFacebookToken is not null)
+						BEGIN
+							UPDATE HC.Kennel set KennelFacebookToken = @kennelFacebookToken, KennelFacebookTokenLastUpdated = @kennelFacebookTokenLastUpdated 
+							FROM HC.Kennel k where k.id = @kennelId
+						END
+					ELSE
+						-- if the user was not configured with an auth token, null out the fields and set the integration type to 'none'
+						BEGIN
+							UPDATE HC.Kennel set KennelFacebookToken = null, KennelFacebookTokenLastUpdated = null, IntegrationType = 'None' 
+							FROM HC.Kennel k where k.id = @kennelId
+						END
+				END
+			
+
+			FETCH NEXT FROM xCrsr into @kennelId,@kennelFacebookUsername
+		END
+
+		CLOSE xCrsr
+		DEALLOCATE xCrsr
+	END
+
+END
+GO
+ALTER TABLE [HC].[Kennel] ENABLE TRIGGER [trgConfigureFacebookToken]
+GO
+/****** Object:  Trigger [HC].[trgUpdateKennelGeolocation]    Script Date: 7/12/2021 11:29:48 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TRIGGER [HC].[trgUpdateKennelGeolocation]
    ON  [HC].[Kennel]
    AFTER INSERT,UPDATE
 AS 
@@ -14419,17 +14997,15 @@ BEGIN
 	END
 
 END
-' 
 GO
 ALTER TABLE [HC].[Kennel] ENABLE TRIGGER [trgUpdateKennelGeolocation]
 GO
-/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForKennels]    Script Date: 7/2/2021 4:18:16 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForKennels]    Script Date: 7/12/2021 11:29:48 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgUpdateModifiedOnDateForKennels]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForKennels]
+CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForKennels]
    ON  [HC].[Kennel]
    AFTER INSERT, UPDATE
 AS 
@@ -14444,17 +15020,15 @@ BEGIN
 	END
 
 END
-' 
 GO
 ALTER TABLE [HC].[Kennel] ENABLE TRIGGER [trgUpdateModifiedOnDateForKennels]
 GO
-/****** Object:  Trigger [HC].[trgLocateLogin]    Script Date: 7/2/2021 4:18:17 AM ******/
+/****** Object:  Trigger [HC].[trgLocateLogin]    Script Date: 7/12/2021 11:29:48 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgLocateLogin]'))
-EXEC dbo.sp_executesql @statement = N'
+
 CREATE TRIGGER [HC].[trgLocateLogin]
    ON  [HC].[LaunchAndLogin]
    AFTER INSERT,UPDATE
@@ -14499,27 +15073,24 @@ BEGIN
 	END
 
 END
-' 
 GO
 ALTER TABLE [HC].[LaunchAndLogin] ENABLE TRIGGER [trgLocateLogin]
 GO
-/****** Object:  Trigger [HC].[TR_Meetings_InsertUpdateDelete]    Script Date: 7/2/2021 4:18:17 AM ******/
+/****** Object:  Trigger [HC].[TR_Meetings_InsertUpdateDelete]    Script Date: 7/12/2021 11:29:48 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[TR_Meetings_InsertUpdateDelete]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[TR_Meetings_InsertUpdateDelete] ON [HC].[Meetings] AFTER INSERT, UPDATE, DELETE AS BEGIN SET NOCOUNT ON; IF TRIGGER_NESTLEVEL() > 3 RETURN; UPDATE [HC].[Meetings] SET [updatedAt] = CONVERT (DATETIMEOFFSET(7), SYSUTCDATETIME()) FROM INSERTED WHERE INSERTED.id = [HC].[Meetings].[id] END' 
+CREATE TRIGGER [HC].[TR_Meetings_InsertUpdateDelete] ON [HC].[Meetings] AFTER INSERT, UPDATE, DELETE AS BEGIN SET NOCOUNT ON; IF TRIGGER_NESTLEVEL() > 3 RETURN; UPDATE [HC].[Meetings] SET [updatedAt] = CONVERT (DATETIMEOFFSET(7), SYSUTCDATETIME()) FROM INSERTED WHERE INSERTED.id = [HC].[Meetings].[id] END
 GO
 ALTER TABLE [HC].[Meetings] ENABLE TRIGGER [TR_Meetings_InsertUpdateDelete]
 GO
-/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForRegion]    Script Date: 7/2/2021 4:18:17 AM ******/
+/****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForRegion]    Script Date: 7/12/2021 11:29:48 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC].[trgUpdateModifiedOnDateForRegion]'))
-EXEC dbo.sp_executesql @statement = N'CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForRegion]
+CREATE TRIGGER [HC].[trgUpdateModifiedOnDateForRegion]
    ON  [HC].[Region]
    AFTER INSERT, UPDATE
 AS 
@@ -14535,17 +15106,15 @@ BEGIN
 	END
 
 END
-' 
 GO
 ALTER TABLE [HC].[Region] ENABLE TRIGGER [trgUpdateModifiedOnDateForRegion]
 GO
-/****** Object:  Trigger [HC3W].[tgDeleteAdEmailTemplateList]    Script Date: 7/2/2021 4:18:17 AM ******/
+/****** Object:  Trigger [HC3W].[tgDeleteAdEmailTemplateList]    Script Date: 7/12/2021 11:29:48 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC3W].[tgDeleteAdEmailTemplateList]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 CREATE TRIGGER [HC3W].[tgDeleteAdEmailTemplateList] ON [HC3W].[vwAdEmailTemplateList]
 INSTEAD OF DELETE AS
@@ -14571,15 +15140,13 @@ SET NOCOUNT ON
 		 CLOSE xCrsr
 		 DEALLOCATE xCrsr
 END;
-' 
 GO
-/****** Object:  Trigger [HC3W].[tgInsertVwAdEmailTemplateList]    Script Date: 7/2/2021 4:18:19 AM ******/
+/****** Object:  Trigger [HC3W].[tgInsertVwAdEmailTemplateList]    Script Date: 7/12/2021 11:29:48 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC3W].[tgInsertVwAdEmailTemplateList]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 CREATE TRIGGER [HC3W].[tgInsertVwAdEmailTemplateList] ON [HC3W].[vwAdEmailTemplateList]
 INSTEAD OF INSERT AS
@@ -14606,17 +15173,17 @@ BEGIN
 			userId) 
 		VALUES (
 			@errorId,
-			''Attempt to insert email template into unauthorized kennel'',
-			''A user attempted to insert an email template into a kennel they were not authorized to access'',
-			'''',
-			'''',
-			''00000000-0000-0000-0000-000000000000'')
+			'Attempt to insert email template into unauthorized kennel',
+			'A user attempted to insert an email template into a kennel they were not authorized to access',
+			'',
+			'',
+			'00000000-0000-0000-0000-000000000000')
 
 		DECLARE @error nvarchar(200)
 		DECLARE @i int
 		SELECT @i = i.HcWebUserId from inserted i
 
-		SET @error = ''You are not authorized to insert an email template for this Kennel (WebUserId = '' + CAST(coalesce(@i,-1) as NVARCHAR(50)) + '')''
+		SET @error = 'You are not authorized to insert an email template for this Kennel (WebUserId = ' + CAST(coalesce(@i,-1) as NVARCHAR(50)) + ')'
 		
 		RAISERROR (@error, 16, 1);
 	END
@@ -14654,15 +15221,13 @@ BEGIN
 	END
 
 END
-' 
 GO
-/****** Object:  Trigger [HC3W].[tgUpdateAdEvent]    Script Date: 7/2/2021 4:18:19 AM ******/
+/****** Object:  Trigger [HC3W].[tgUpdateAdEvent]    Script Date: 7/12/2021 11:29:48 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC3W].[tgUpdateAdEvent]'))
-EXEC dbo.sp_executesql @statement = N'
+
 CREATE TRIGGER [HC3W].[tgUpdateAdEvent] ON [HC3W].[vwAdEvent]
 INSTEAD OF UPDATE AS
 BEGIN
@@ -14749,15 +15314,13 @@ UPDATE [HC].[Event]
 
 
 END
-' 
 GO
-/****** Object:  Trigger [HC3W].[tgInsertVwAdEventList]    Script Date: 7/2/2021 4:18:19 AM ******/
+/****** Object:  Trigger [HC3W].[tgInsertVwAdEventList]    Script Date: 7/12/2021 11:29:49 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC3W].[tgInsertVwAdEventList]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 CREATE TRIGGER [HC3W].[tgInsertVwAdEventList] ON [HC3W].[vwAdEventList]
@@ -14785,17 +15348,17 @@ BEGIN
 			userId) 
 		VALUES (
 			@errorId,
-			''Attempt to insert event into unauthorized kennel'',
-			''A user attempted to insert an event into a kennel they were not authorized to access'',
-			'''',
-			'''',
-			''00000000-0000-0000-0000-000000000000'')
+			'Attempt to insert event into unauthorized kennel',
+			'A user attempted to insert an event into a kennel they were not authorized to access',
+			'',
+			'',
+			'00000000-0000-0000-0000-000000000000')
 
 		DECLARE @error nvarchar(200)
 		DECLARE @i int
 		SELECT @i = i.HcWebUserId from inserted i
 
-		SET @error = ''You are not authorized to insert a run for this Kennel (WebUserId = '' + CAST(coalesce(@i,-1) as NVARCHAR(50)) + '')''
+		SET @error = 'You are not authorized to insert a run for this Kennel (WebUserId = ' + CAST(coalesce(@i,-1) as NVARCHAR(50)) + ')'
 		
 		RAISERROR (@error, 16, 1);
 	END
@@ -14845,15 +15408,13 @@ BEGIN
 	END
 
 END
-' 
 GO
-/****** Object:  Trigger [HC3W].[tgUpdateAdHasher]    Script Date: 7/2/2021 4:18:19 AM ******/
+/****** Object:  Trigger [HC3W].[tgUpdateAdHasher]    Script Date: 7/12/2021 11:29:49 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC3W].[tgUpdateAdHasher]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 
@@ -14931,27 +15492,25 @@ SET NOCOUNT ON
 		DECLARE @email nvarchar(250)
 		SELECT @email = i.email, @userId = i.userId from inserted i
 
-		if (@email = ''default'')
+		if (@email = 'default')
 		BEGIN
-			UPDATE HC.Hasher SET [email] = REPLACE(h.QR_code,''UQR:'','''') + ''@harriercentral.com''
-			--UPDATE HC.Hasher SET [email] = ''test123@harriercentral.com''
+			UPDATE HC.Hasher SET [email] = REPLACE(h.QR_code,'UQR:','') + '@harriercentral.com'
+			--UPDATE HC.Hasher SET [email] = 'test123@harriercentral.com'
 				FROM HC.Hasher h where h.id = @userId
-		END ELSE if (@email not like ''%*%'')
+		END ELSE if (@email not like '%*%')
 		BEGIN
 			UPDATE HC.Hasher SET [email] = @email
 			FROM HC.Hasher h where h.id = @userId
 		END
 	 END
 END;
-' 
 GO
-/****** Object:  Trigger [HC3W].[tgUpdateAdHasherList]    Script Date: 7/2/2021 4:18:19 AM ******/
+/****** Object:  Trigger [HC3W].[tgUpdateAdHasherList]    Script Date: 7/12/2021 11:29:49 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC3W].[tgUpdateAdHasherList]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 
@@ -15064,7 +15623,7 @@ SET NOCOUNT ON
 
 		 WHILE @@FETCH_STATUS = 0
 		 BEGIN
-			UPDATE HC.Kennel SET KennelMismanagementTeam = coalesce(mm.MmRoles,''''), updatedAt = getdate() FROM HC.Kennel k LEFT OUTER JOIN
+			UPDATE HC.Kennel SET KennelMismanagementTeam = coalesce(mm.MmRoles,''), updatedAt = getdate() FROM HC.Kennel k LEFT OUTER JOIN
 			HC3.vwMmByKennel mm on mm.KennelId = k.id
 			where k.id = @kennelId
 
@@ -15077,15 +15636,13 @@ SET NOCOUNT ON
 	 END
 
 END;
-' 
 GO
-/****** Object:  Trigger [HC3W].[tgUpdateSaHasher]    Script Date: 7/2/2021 4:18:20 AM ******/
+/****** Object:  Trigger [HC3W].[tgUpdateSaHasher]    Script Date: 7/12/2021 11:29:49 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC3W].[tgUpdateSaHasher]'))
-EXEC dbo.sp_executesql @statement = N'
+
 
 
 
@@ -15119,6 +15676,7 @@ BEGIN
       ,[NameDisplayPreference] = i.NameDisplayPreference
       --,[Preferences] = i.pref
       ,[HcWebUserId] = i.HcWebUserId
+	  ,[IsBetaTester] = i.IsBetaTester
       --,[IncludeInGlobalHashDirectory] = i.includ
     FROM HC.Hasher h inner join INSERTED i on h.id = i.id
 
@@ -15162,15 +15720,13 @@ BEGIN
 
 
 END;
-' 
 GO
-/****** Object:  Trigger [HC3W].[tgUpdate]    Script Date: 7/2/2021 4:18:20 AM ******/
+/****** Object:  Trigger [HC3W].[tgUpdate]    Script Date: 7/12/2021 11:29:49 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[HC3W].[tgUpdate]'))
-EXEC dbo.sp_executesql @statement = N'
+
 CREATE TRIGGER [HC3W].[tgUpdate] ON [HC3W].[vwSaHasherPermissions]
 INSTEAD OF UPDATE AS
 BEGIN
@@ -15204,10 +15760,8 @@ SET NOCOUNT ON
 	 END
 
 END;
-' 
 GO
-IF NOT EXISTS (SELECT * FROM sys.fn_listextendedproperty(N'microsoft_database_tools_support' , N'SCHEMA',N'dbo', N'TABLE',N'sysdiagrams', NULL,NULL))
-	EXEC sys.sp_addextendedproperty @name=N'microsoft_database_tools_support', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'sysdiagrams'
+EXEC sys.sp_addextendedproperty @name=N'microsoft_database_tools_support', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'sysdiagrams'
 GO
 SET ARITHABORT ON
 SET CONCAT_NULL_YIELDS_NULL ON
@@ -15217,8 +15771,7 @@ SET ANSI_PADDING ON
 SET ANSI_WARNINGS ON
 SET NUMERIC_ROUNDABORT OFF
 GO
-/****** Object:  Index [IX_City_SpatialLocation]    Script Date: 7/2/2021 4:18:20 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[HC].[City]') AND name = N'IX_City_SpatialLocation')
+/****** Object:  Index [IX_City_SpatialLocation]    Script Date: 7/12/2021 11:29:50 PM ******/
 CREATE SPATIAL INDEX [IX_City_SpatialLocation] ON [HC].[City]
 (
 	[CityGeolocation]
@@ -15234,8 +15787,7 @@ SET ANSI_PADDING ON
 SET ANSI_WARNINGS ON
 SET NUMERIC_ROUNDABORT OFF
 GO
-/****** Object:  Index [IX_KennelSpatialIndex]    Script Date: 7/2/2021 4:18:20 AM ******/
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[HC].[Kennel]') AND name = N'IX_KennelSpatialIndex')
+/****** Object:  Index [IX_KennelSpatialIndex]    Script Date: 7/12/2021 11:29:50 PM ******/
 CREATE SPATIAL INDEX [IX_KennelSpatialIndex] ON [HC].[Kennel]
 (
 	[KennelGeolocation]
