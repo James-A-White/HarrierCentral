@@ -162,13 +162,10 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           hkm.memberSince,
           k.membershipDurationInMonths,
           k.kennelShortName,
-          k.kennelId,
-          hk.kennelName as homeKennelName,
-          hk.kennelId as homeKennelId
+          k.kennelId
           FROM hasherKennelMapForKennelAdmin hkm
           INNER JOIN kennels k on k.kennelId = hkm.kennelId
           INNER JOIN hashers h on h.hasherId = hkm.userId
-          LEFT OUTER JOIN kennels hk on hk.kennelId = h.homeKennelId
           WHERE hkm.membershipExpirationDate >= date('now') OR hkm.following = 1
           ORDER BY $orderBy
           
@@ -706,11 +703,9 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           null as memberSince,
           k.membershipDurationInMonths,
           k.kennelShortName,
-          k.kennelId,
-          hk.kennelName as homeKennelName,
-          hk.kennelId as homeKennelId
+          k.kennelId
           FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h
-          LEFT OUTER JOIN kennels hk on hk.kennelId = h.homeKennelId,
+
           ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
           WHERE h.${G0<TableModel>().hashersTableHelper.colRemoved} = 0 and k.${G0<TableModel>().kennelsTableHelper.remoteDbId} = '${widget.kennel.kennel.kennelId}'
           ORDER BY nameForSort

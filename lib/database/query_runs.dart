@@ -244,8 +244,8 @@ class QueryRuns {
         break;
       case EnumRunQueryContext.kennelAdmin:
         hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
-        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.kennel);
-        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.kennel);
+        //hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.kennel);
+        //paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.kennel);
         break;
       case EnumRunQueryContext.eventAdmin:
         hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event);
@@ -256,7 +256,36 @@ class QueryRuns {
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final String queryBase = ''' 
+    String queryBase = '';
+
+    if (queryContext == EnumRunQueryContext.kennelAdmin) {
+      queryBase = ''' 
+        SELECT  
+          evt.*,
+          k.*,
+          coalesce(hkm.mismanagementRoleFlags,0) as mismanagementRoleFlags,
+          coalesce(hkm.following,0) as following,
+          0 as rsvpState,
+          0 as attendenceState,
+          0 as isPaid,
+          0 as isHare,
+          case when ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime'))) then 1 else 0 end as isMember,
+          coalesce(hkm.kennelNotificationPreference,0) as notificationPreference,
+          coalesce(hkm.kennelEmailAlertPreference,0) as emailAlertPreference,
+          n.digitsAfterDecimal,
+          n.currencySymbol,
+          COALESCE(k.distancePreference,n.distancePreference,0) as distanceUnitsPref,
+          CAST(julianday(evt.eventStartDatetime) + 0.5 AS INT) - CAST(julianday('now','localtime') + 0.5 AS INT) as daysUntilEvent,
+          julianday(evt.eventStartDatetime) + 0.5 as eventJulian,
+          julianday('now','localtime') + 0.5 as nowJulian,
+          $searchField
+          FROM narrowEvents evt
+          INNER JOIN kennels k on k.kennelId = evt.kennelId
+          INNER JOIN countries n on n.countryId = k.countryId
+          LEFT OUTER JOIN $hkmTable hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
+          ''';
+    } else {
+      queryBase = ''' 
       
         SELECT  
           evt.*,
@@ -284,6 +313,7 @@ class QueryRuns {
           LEFT OUTER JOIN $hemTable hem on hem.eventId = evt.eventId and hem.userId = "$userId"
           LEFT OUTER JOIN $paymentsTable pay on pay.${G0<TableModel>().paymentsTableHelper.colHemId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AND pay.${G0<TableModel>().paymentsTableHelper.colCancelledBy} IS NULL
           ''';
+    }
 
     final String whereClauseForTopRunsPage = '''
             WHERE evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-4 hours') and evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1

@@ -7,7 +7,6 @@ class CheckInPackModel {
       this.isMember,
       this.isHare,
       this.isPaid,
-      this.homeKennelName,
       this.nameForDisplay,
       this.nameForSort,
       this.paymentType,
@@ -30,7 +29,6 @@ class CheckInPackModel {
   final int isMember;
   final int isHare;
   final int isPaid;
-  final String homeKennelName;
   final String nameForDisplay;
   final String nameForSort;
   final int paymentType;
@@ -55,7 +53,6 @@ class CheckInPackModel {
         isMember: map['isMember'],
         isHare: map['isHare'],
         isPaid: map['isPaid'],
-        homeKennelName: map['homeKennelName'],
         nameForDisplay: map['nameForDisplay'],
         nameForSort: map['nameForSort'],
         paymentType: map['paymentType'],
@@ -227,7 +224,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           SELECT 
             -- get all of the members of a Kennel and display them
             h.hasherId,
-            k.kennelName as homeKennelName,
             hem.hemId,
             case when (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime')) then 1 else 0 end as isMember,
             coalesce(hem.isHare,0) as isHare,
@@ -247,7 +243,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             hkm.currentHaringCount
           FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm
           INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = hkm.userId
-          LEFT OUTER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k on k.kennelId = h.homeKennelId
           LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem on hem.userId = hkm.userId and hem.eventId = "${widget.eventAggregate.event.eventId}"
           LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
           LEFT OUTER JOIN ${G0<TableModel>().kennelCreditsTableHelper.getTableName(AppDomainType.event)} credits on credits.userId = hkm.userId and credits.kennelId = hkm.kennelId
@@ -271,7 +266,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           SELECT 
             -- now get all virgins & visitors
             null as hasherId,
-            null as homeKennelName,
             coalesce(hem2.hemId,"00000000-0000-0000-0000-000000000000") as hemId,
             0 as isMember,
             hem2.isHare as isHare,
@@ -297,7 +291,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
           SELECT 
             -- now get all Hashers who are in HC and have RSVP'ed but are not members of the kennel
             hem3.userId as hasherId,
-            k3.kennelName as homeKennelName,
             hem3.hemId as hemId,
             0 as isMember,
             hem3.isHare as isHare,
@@ -317,7 +310,6 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
             hkm4.currentHaringCount
             FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem3
             INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h3 on h3.hasherId = hem3.userId
-            LEFT OUTER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k3 on k3.kennelId = h3.homeKennelId
             LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay3 on pay3.hemId = hem3.hemId and pay3.cancelledBy IS NULL
             LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm3 on hkm3.userId = h3.hasherId and hkm3.kennelId = "${widget.eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now','localtime')
             LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm4 on hkm4.userId = h3.hasherId and hkm4.kennelId = "${widget.eventAggregate.event.kennelId}" 
@@ -1210,7 +1202,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
 
             Positioned(
               left: LIST_ITEM_LEFT_MARGIN + 2.0,
-              top: packMember.homeKennelName == null ? 9.0 : 3.0,
+              top: 9.0,
               child: Text(packMember.nameForDisplay,
                   style: TextStyle(
                       fontFamily: (packMember.isMember != 0) ? 'AvenirNextCondensedDemiBold' : 'AvenirNextCondensedMedium',
@@ -1218,15 +1210,15 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
                       fontSize: 25.0,
                       height: 1.0)),
             ),
-            Positioned(
-              left: LIST_ITEM_LEFT_MARGIN + 2.0,
-              top: 32.0,
-              child: Text(
-                packMember.homeKennelName ?? '',
-                style: footnoteMedium,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
+            // Positioned(
+            //   left: LIST_ITEM_LEFT_MARGIN + 2.0,
+            //   top: 32.0,
+            //   child: Text(
+            //     packMember.homeKennelName ?? '',
+            //     style: footnoteMedium,
+            //     overflow: TextOverflow.ellipsis,
+            //   ),
+            // ),
             // this widget is here to grow the contents of the cell to a size that fills nearly the whole cell
             // in order to give plenty of room for the tap gesture.
             Positioned(
