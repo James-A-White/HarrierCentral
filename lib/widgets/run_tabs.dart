@@ -159,7 +159,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
       widget.futureRun.kennel,
       widget.futureRun.extensions.digitsAfterDecimal,
       widget.futureRun.extensions.currencySymbol,
-      widget.futureRun.extensions.distancePreference,
+      widget.futureRun.extensions.distanceUnitsPref,
       widget.futureRun.extensions.distToEvent,
       widget.futureRun.paymentUrl,
       true,

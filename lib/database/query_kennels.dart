@@ -8,8 +8,7 @@ class KennelListQueryExtenstions {
     this.lastRunDate,
     this.digitsAfterDecimal,
     this.currencySymbol,
-    this.isHomeKennel,
-    this.distancePreference,
+    this.distanceUnitsPref,
     this.cityLat,
     this.cityLon,
     this.searchText,
@@ -21,8 +20,7 @@ class KennelListQueryExtenstions {
   final String lastRunDate;
   final int digitsAfterDecimal;
   final String currencySymbol;
-  int isHomeKennel;
-  int distancePreference;
+  final int distanceUnitsPref;
   num cityLat;
   num cityLon;
   final String searchText;
@@ -33,17 +31,17 @@ class KennelListQueryExtenstions {
 
   static KennelListQueryExtenstions fromMap(Map<String, dynamic> map) {
     final KennelListQueryExtenstions item = KennelListQueryExtenstions(
-        location: map['location'],
-        distToKennel: map['distToKennel'],
-        nextRunDate: map['nextRunDate'],
-        lastRunDate: map['lastRunDate'],
-        digitsAfterDecimal: map['digitsAfterDecimal'],
-        currencySymbol: map['currencySymbol'],
-        isHomeKennel: map['isHomeKennel'],
-        distancePreference: map['distancePreference'],
-        cityLat: map['cityLat'],
-        cityLon: map['cityLon'],
-        searchText: map['searchText']);
+      location: map['location'],
+      distToKennel: map['distToKennel'],
+      nextRunDate: map['nextRunDate'],
+      lastRunDate: map['lastRunDate'],
+      digitsAfterDecimal: map['digitsAfterDecimal'],
+      currencySymbol: map['currencySymbol'],
+      distanceUnitsPref: map['distanceUnitsPref'],
+      cityLat: map['cityLat'],
+      cityLon: map['cityLon'],
+      searchText: map['searchText'],
+    );
     return item;
   }
 }
@@ -53,11 +51,13 @@ class KennelListAggregate {
     this.kennel,
     this.hkm,
     this.extensions,
+    this.isHomeKennel,
   });
 
   final KennelsModel kennel;
   final HasherKennelMapModel hkm;
   final KennelListQueryExtenstions extensions;
+  bool isHomeKennel;
 }
 
 enum EnumKennelQueryType { topKennelPage, singleKennel }
@@ -88,16 +88,14 @@ class QueryKennels {
           as searchText
           ''';
 
-  static List<KennelListAggregate> doFilter(
-      String searchText, List<KennelListAggregate> allKennels) {
+  static List<KennelListAggregate> doFilter(String searchText, List<KennelListAggregate> allKennels) {
     List<KennelListAggregate> filteredKennels = <KennelListAggregate>[];
     if (allKennels != null) {
       filteredKennels.addAll(allKennels);
 
       // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
       if ((searchText != null) && (searchText.isNotEmpty)) {
-        final List<String> searchItems =
-            searchText.trim().toLowerCase().split(',');
+        final List<String> searchItems = searchText.trim().toLowerCase().split(',');
         for (String st in searchItems) {
           if (st.trim().isEmpty) {
             continue;
@@ -129,21 +127,15 @@ class QueryKennels {
     return filteredKennels;
   }
 
-  static Future<List<Map<String, dynamic>>> queryKennels(
-      EnumKennelQueryType queryType, EnumKennelQueryContext queryContext,
-      {String hasherId, String kennelId}) async {
+  static Future<List<Map<String, dynamic>>> queryKennels(EnumKennelQueryType queryType, EnumKennelQueryContext queryContext, {String hasherId, String kennelId}) async {
     String hkmTable;
 
     switch (queryContext) {
       case EnumKennelQueryContext.user:
-        hkmTable = G0<TableModel>()
-            .hasherKennelMapTableHelper
-            .getTableName(AppDomainType.user);
+        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user);
         break;
       case EnumKennelQueryContext.kennelAdmin:
-        hkmTable = G0<TableModel>()
-            .hasherKennelMapTableHelper
-            .getTableName(AppDomainType.kennel);
+        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
         break;
     }
 
@@ -161,10 +153,9 @@ class QueryKennels {
           (SELECT max(eventStartDatetime) from narrowEvents e where e.kennelId = k.kennelId and e.eventStartDatetime <= datetime('now','localtime') ) as lastRunDate,
           n.digitsAfterDecimal,
           n.currencySymbol,
+          COALESCE(k.DistancePreference,n.DistancePreference,0) as distanceUnitsPref,
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelLatitude},c.${G0<TableModel>().citiesTableHelper.colLatitude},$DEFAULT_LATITUDE) as cityLat,
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelLongitude},c.${G0<TableModel>().citiesTableHelper.colLongitude},$DEFAULT_LONGITUDE) as cityLon,
-          CASE WHEN ((h.homeKennelId IS NOT NULL) AND (h.homeKennelId = k.kennelId)) then 1 else 0 end as isHomeKennel,
-          CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,n.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference,
           $searchField
           FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
           INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} c on c.cityId = k.cityId

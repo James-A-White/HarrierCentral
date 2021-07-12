@@ -24,9 +24,8 @@ class KennelMembersResults {
       this.membershipDurationInMonths,
       this.isLoading = false,
       this.kennelShortName,
-      this.homeKennelName,
-      this.homeKennelId,
-      this.homeKennelBeingUpdated = false,
+      // this.homeKennelName,
+      // this.homeKennelBeingUpdated = false,
       this.membershipDateBeingUpdated = false});
 
   final String hasherId;
@@ -42,10 +41,9 @@ class KennelMembersResults {
   final int membershipDurationInMonths;
   bool isLoading;
   bool membershipDateBeingUpdated;
-  bool homeKennelBeingUpdated;
+  //bool homeKennelBeingUpdated;
   String kennelShortName;
-  String homeKennelName;
-  String homeKennelId;
+  //String homeKennelName;
 
   static KennelMembersResults fromMap(Map<String, dynamic> map) {
     final KennelMembersResults item = KennelMembersResults(
@@ -55,8 +53,7 @@ class KennelMembersResults {
       photo: map['photo'],
       following: map['following'],
       kennelShortName: map['kennelShortName'],
-      homeKennelName: map['homeKennelName'],
-      homeKennelId: map['homeKennelId'],
+      // homeKennelName: map['homeKennelName'],
       kennelId: map['kennelId'],
       dateOfLastRun: (map['dateOfLastRun'] == null) ? null : DateTime.parse(map['dateOfLastRun'].toString().substring(0, 19)),
       kennelEmailAlertPreference: map['kennelEmailAlertPreference'],
@@ -230,7 +227,6 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
 
   int countIsMember = 0;
   int countIsFollowing = 0;
-  int countIsHomeKennel = 0;
   int countHasRecentRuns = 0;
 
   Future<void> _refreshCounters(bool forceRefresh) async {
@@ -240,7 +236,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           SELECT 
               COUNT(CASE WHEN ${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} > 0 THEN 1 ELSE NULL END) as isFollowing,
               COUNT(CASE WHEN ${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate} > date('now') THEN 1 ELSE NULL END) as isMember,
-              COUNT(CASE WHEN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = ${G0<TableModel>().hashersTableHelper.colHomeKennelId} THEN 1 ELSE NULL END) as isHomeKennel,
+          
               COUNT(CASE WHEN ${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun} >= date('now','-365 day') THEN 1 ELSE NULL END) as hasRecentRuns
               FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm
               INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.${G0<TableModel>().hashersTableHelper.colHasherId} = hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId}
@@ -251,7 +247,6 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
         if (results.isNotEmpty) {
           countIsMember = results[0]['isMember'];
           countIsFollowing = results[0]['isFollowing'];
-          countIsHomeKennel = results[0]['isHomeKennel'];
           countHasRecentRuns = results[0]['hasRecentRuns'];
         }
         if (forceRefresh) {
@@ -495,15 +490,15 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                   case EnumMemberPopupActions.cancelMembership:
                                     modifyMembership(snapshot.data[index], -9999);
                                     break;
-                                  case EnumMemberPopupActions.toggleHomeKennel:
-                                    setAsHomeKennel(snapshot.data[index], 1);
-                                    break;
-                                  case EnumMemberPopupActions.setHomeKennel:
-                                    setAsHomeKennel(snapshot.data[index], 1);
-                                    break;
-                                  case EnumMemberPopupActions.clearHomeKennel:
-                                    setAsHomeKennel(snapshot.data[index], 0);
-                                    break;
+                                  // case EnumMemberPopupActions.toggleHomeKennel:
+                                  //   setAsHomeKennel(snapshot.data[index], 1);
+                                  //   break;
+                                  // case EnumMemberPopupActions.setHomeKennel:
+                                  //   setAsHomeKennel(snapshot.data[index], 1);
+                                  //   break;
+                                  // case EnumMemberPopupActions.clearHomeKennel:
+                                  //   setAsHomeKennel(snapshot.data[index], 0);
+                                  //   break;
                                 }
                               },
                               toggleEmailPreferenceCallback: () {
@@ -654,9 +649,9 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
               ((filterValues[FILTER_IS_FOLLOWING] == 0) ||
                   (filterValues[FILTER_IS_FOLLOWING] == -1 && ((a.following ?? 0) == 0)) ||
                   (filterValues[FILTER_IS_FOLLOWING] == 1 && (a.following ?? 0) == 1)) &&
-              ((filterValues[FILTER_IS_HOME_KENNEL] == 0) ||
-                  (filterValues[FILTER_IS_HOME_KENNEL] == -1 && ((a.homeKennelId == null) || ((a.homeKennelId) != (a.kennelId)))) ||
-                  (filterValues[FILTER_IS_HOME_KENNEL] == 1 && (a.homeKennelId != null) && (a.homeKennelId) == (a.kennelId))) &&
+              // ((filterValues[FILTER_IS_HOME_KENNEL] == 0) ||
+              //     (filterValues[FILTER_IS_HOME_KENNEL] == -1 && ((a.homeKennelId == null) || ((a.homeKennelId) != (a.kennelId)))) ||
+              //     (filterValues[FILTER_IS_HOME_KENNEL] == 1 && (a.homeKennelId != null) && (a.homeKennelId) == (a.kennelId))) &&
               ((filterValues[FILTER_RUNS_IN_LAST_YEAR] == 0) ||
                   (filterValues[FILTER_RUNS_IN_LAST_YEAR] == -1 && ((a.dateOfLastRun ?? DateTime.parse('19900101')).isBefore(DateTime.now().add(const Duration(days: -365)))) ||
                       (filterValues[FILTER_RUNS_IN_LAST_YEAR] == 1 && (a.dateOfLastRun ?? DateTime.parse('19900101')).isAfter(DateTime.now().add(const Duration(days: -365)))))))
@@ -784,19 +779,19 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
             },
             filterValues: filterValues,
           ),
-          CheckinFiltersCell(
-            counter: countIsHomeKennel,
-            label: 'Home',
-            index: 2,
-            useTriState: true,
-            onTap: () {
-              refreshKennelMembersFromTable(true).then((void dummy) {
-                _refreshCounters(true);
-                setState(() {});
-              });
-            },
-            filterValues: filterValues,
-          ),
+          // CheckinFiltersCell(
+          //   counter: countIsHomeKennel,
+          //   label: 'Home',
+          //   index: 2,
+          //   useTriState: true,
+          //   onTap: () {
+          //     refreshKennelMembersFromTable(true).then((void dummy) {
+          //       _refreshCounters(true);
+          //       setState(() {});
+          //     });
+          //   },
+          //   filterValues: filterValues,
+          // ),
           CheckinFiltersCell(
             counter: countHasRecentRuns,
             label: 'Have runs',
@@ -872,20 +867,20 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     });
   }
 
-  void setAsHomeKennel(KennelMembersResults item, int isHomeKennel) {
-    final HasherKennelMapService srv = HasherKennelMapService();
-    widget.kennel.extensions.followingRequested = -1;
-    item.homeKennelBeingUpdated = true;
-    setState(() {});
-    srv
-        .updateHasherKennelStatus(widget.kennel.kennel.kennelId, AppDomainType.kennel,
-            targetUserId: item.hasherId, followingState: followTypeToggleHomeKennel.value, isHomeKennel: isHomeKennel)
-        .then((void dummy) {
-      refreshKennelMembersFromTable(true).then((void dummy) {
-        item.homeKennelBeingUpdated = false;
-        _refreshCounters(true);
-        setState(() {});
-      });
-    });
-  }
+  // void setAsHomeKennel(KennelMembersResults item, int isHomeKennel) {
+  //   final HasherKennelMapService srv = HasherKennelMapService();
+  //   widget.kennel.extensions.followingRequested = -1;
+  //   item.homeKennelBeingUpdated = true;
+  //   setState(() {});
+  //   srv
+  //       .updateHasherKennelStatus(widget.kennel.kennel.kennelId, AppDomainType.kennel,
+  //           targetUserId: item.hasherId, followingState: followTypeToggleHomeKennel.value, isHomeKennel: isHomeKennel)
+  //       .then((void dummy) {
+  //     refreshKennelMembersFromTable(true).then((void dummy) {
+  //       item.homeKennelBeingUpdated = false;
+  //       _refreshCounters(true);
+  //       setState(() {});
+  //     });
+  //   });
+  // }
 }

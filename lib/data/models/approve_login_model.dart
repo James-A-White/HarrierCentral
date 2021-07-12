@@ -12,7 +12,9 @@ class ApproveLoginModel {
       this.iosDownloadLink,
       this.androidDownloadLink,
       this.imageRootUrl,
-      this.isBetaTester});
+      this.isBetaTester,
+      this.email,
+      this.homeKennelId});
 
   String apiVersion;
   int approvalCode;
@@ -25,6 +27,8 @@ class ApproveLoginModel {
   String androidDownloadLink;
   String imageRootUrl;
   int isBetaTester;
+  String email;
+  String homeKennelId;
 
   static ApproveLoginModel itemFromJson(String jsonResult) {
     final List<ApproveLoginModel> items = <ApproveLoginModel>[];
@@ -46,6 +50,8 @@ class ApproveLoginModel {
           androidDownloadLink: jsonItem['androidDownloadLink'],
           imageRootUrl: jsonItem['imageRootUrl'],
           isBetaTester: jsonItem['isBetaTester'],
+          email: jsonItem['email'],
+          homeKennelId: jsonItem['homeKennelId'],
         );
 
         items.add(item);

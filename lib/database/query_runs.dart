@@ -17,9 +17,7 @@ class RunDetailsQueryExtensions {
     this.following,
     this.notificationPreference,
     this.emailAlertPreference,
-    this.distancePreference,
-    this.autoRunDistancePreference,
-    this.userPrefs,
+    this.distanceUnitsPref,
     this.searchText,
   });
 
@@ -36,22 +34,17 @@ class RunDetailsQueryExtensions {
   final int following;
   int notificationPreference;
   int emailAlertPreference;
-  int distancePreference;
-  int autoRunDistancePreference;
-  int userPrefs;
+  int distanceUnitsPref;
+  //int userPrefs;
   String searchText;
 
   static String getSearchDateString(DateTime eventStartDateTime) {
-    final DateFormat df = DateFormat(
-        "' is' y ' is' EEEE ' is' LLLL d y ' is' LLL d y h:mm aaa HH:mm",
-        'en_US');
+    final DateFormat df = DateFormat("' is' y ' is' EEEE ' is' LLLL d y ' is' LLL d y h:mm aaa HH:mm", 'en_US');
     String days = '';
     String weekend = '';
     String thisDay = '';
 
-    final int deltaDays =
-        eventStartDateTime.millisecondsSinceEpoch ~/ (86400 * 1000) -
-            DateTime.now().millisecondsSinceEpoch ~/ (86400 * 1000);
+    final int deltaDays = eventStartDateTime.millisecondsSinceEpoch ~/ (86400 * 1000) - DateTime.now().millisecondsSinceEpoch ~/ (86400 * 1000);
     if (deltaDays < 0) {
       if (deltaDays == 1) {
         days = ' 1 day ago is yesterday ';
@@ -94,21 +87,23 @@ class RunDetailsQueryExtensions {
       }
     }
 
-    if ((eventStartDateTime.weekday == DateTime.sunday) ||
-        (eventStartDateTime.weekday == DateTime.saturday)) {
+    if ((eventStartDateTime.weekday == DateTime.sunday) || (eventStartDateTime.weekday == DateTime.saturday)) {
       weekend = ' is weekend ';
     }
 
-    final String test =
-        ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
+    final String test = ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
     print(test);
 
     return ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
   }
 
-  static RunDetailsQueryExtensions fromMap(
-      Map<String, dynamic> map, DateTime eventStartDateTime) {
+  static RunDetailsQueryExtensions fromMap(Map<String, dynamic> map, DateTime eventStartDateTime) {
     // make dates and tiems searchable
+
+    int _distanceUnitsPref = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn;
+    if (_distanceUnitsPref == 0) {
+      _distanceUnitsPref = null;
+    }
 
     final RunDetailsQueryExtensions item = RunDetailsQueryExtensions(
       daysUntilEvent: map['daysUntilEvent'],
@@ -123,9 +118,7 @@ class RunDetailsQueryExtensions {
       isMember: map['isMember'],
       notificationPreference: map['notificationPreference'],
       emailAlertPreference: map['emailAlertPreference'],
-      distancePreference: map['distancePreference'],
-      autoRunDistancePreference: map['autoRunDistancePreference'],
-      userPrefs: map['userPrefs'],
+      distanceUnitsPref: _distanceUnitsPref ?? map['distanceUnitsPref'],
       searchText: map['searchText'] + getSearchDateString(eventStartDateTime),
     );
     return item;
@@ -198,16 +191,14 @@ class QueryRuns {
   // this.addOption("4", "Continental");
   // this.addOption("5", "Worldwide");
 
-  static List<RunDetailsAggregate> doFilter(
-      String searchText, List<RunDetailsAggregate> allRuns) {
+  static List<RunDetailsAggregate> doFilter(String searchText, List<RunDetailsAggregate> allRuns) {
     List<RunDetailsAggregate> filteredRuns = <RunDetailsAggregate>[];
     if (allRuns != null) {
       filteredRuns.addAll(allRuns);
 
       // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
       if ((searchText != null) && (searchText.isNotEmpty)) {
-        final List<String> searchItems =
-            searchText.trim().toLowerCase().split(',');
+        final List<String> searchItems = searchText.trim().toLowerCase().split(',');
         for (String st in searchItems) {
           if (st.trim().isEmpty) {
             continue;
@@ -239,8 +230,7 @@ class QueryRuns {
     return filteredRuns;
   }
 
-  static Future<List<Map<String, dynamic>>> queryRuns(
-      EnumRunQueryType queryType, EnumRunQueryContext queryContext,
+  static Future<List<Map<String, dynamic>>> queryRuns(EnumRunQueryType queryType, EnumRunQueryContext queryContext,
       {String kennelId, bool searchAllRuns = true, String eventId}) async {
     String hkmTable;
     String hemTable;
@@ -248,37 +238,19 @@ class QueryRuns {
 
     switch (queryContext) {
       case EnumRunQueryContext.user:
-        hkmTable = G0<TableModel>()
-            .hasherKennelMapTableHelper
-            .getTableName(AppDomainType.user);
-        hemTable = G0<TableModel>()
-            .hasherEventMapTableHelper
-            .getTableName(AppDomainType.user);
-        paymentsTable = G0<TableModel>()
-            .paymentsTableHelper
-            .getTableName(AppDomainType.user);
+        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user);
+        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user);
+        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user);
         break;
       case EnumRunQueryContext.kennelAdmin:
-        hkmTable = G0<TableModel>()
-            .hasherKennelMapTableHelper
-            .getTableName(AppDomainType.kennel);
-        hemTable = G0<TableModel>()
-            .hasherEventMapTableHelper
-            .getTableName(AppDomainType.kennel);
-        paymentsTable = G0<TableModel>()
-            .paymentsTableHelper
-            .getTableName(AppDomainType.kennel);
+        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel);
+        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.kennel);
+        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.kennel);
         break;
       case EnumRunQueryContext.eventAdmin:
-        hkmTable = G0<TableModel>()
-            .hasherKennelMapTableHelper
-            .getTableName(AppDomainType.event);
-        hemTable = G0<TableModel>()
-            .hasherEventMapTableHelper
-            .getTableName(AppDomainType.event);
-        paymentsTable = G0<TableModel>()
-            .paymentsTableHelper
-            .getTableName(AppDomainType.event);
+        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event);
+        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event);
+        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event);
         break;
     }
 
@@ -300,18 +272,14 @@ class QueryRuns {
           coalesce(hem.eventEmailAlertPreference,hkm.kennelEmailAlertPreference,0) as emailAlertPreference,
           n.digitsAfterDecimal,
           n.currencySymbol,
+          COALESCE(k.distancePreference,n.distancePreference,0) as distanceUnitsPref,
           CAST(julianday(evt.eventStartDatetime) + 0.5 AS INT) - CAST(julianday('now','localtime') + 0.5 AS INT) as daysUntilEvent,
           julianday(evt.eventStartDatetime) + 0.5 as eventJulian,
           julianday('now','localtime') + 0.5 as nowJulian,
-          CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,n.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference,
-          h.preferences & 0x0000001C as autoRunDistancePreference,
-          h.preferences as userPrefs,
           $searchField
-        
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
           INNER JOIN countries n on n.countryId = k.countryId
-          INNER JOIN hashers h on h.hasherId = "$userId"
           LEFT OUTER JOIN $hkmTable hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
           LEFT OUTER JOIN $hemTable hem on hem.eventId = evt.eventId and hem.userId = "$userId"
           LEFT OUTER JOIN $paymentsTable pay on pay.${G0<TableModel>().paymentsTableHelper.colHemId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AND pay.${G0<TableModel>().paymentsTableHelper.colCancelledBy} IS NULL

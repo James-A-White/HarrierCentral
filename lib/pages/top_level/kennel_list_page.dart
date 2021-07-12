@@ -109,7 +109,12 @@ class KennelsListPageState extends State<KennelsListPage> {
               extensionsItem.notificationsRequested = -1;
               extensionsItem.emailAlertRequested = -1;
 
-              final KennelListAggregate item = KennelListAggregate(kennel: kennelItem, extensions: extensionsItem, hkm: hkmItem);
+              bool isHomeKennel = false;
+              if (kennelItem.kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
+                isHomeKennel = true;
+              }
+
+              final KennelListAggregate item = KennelListAggregate(kennel: kennelItem, extensions: extensionsItem, hkm: hkmItem, isHomeKennel: isHomeKennel);
 
               G0<TableModel>().globalKennelMainPageList.add(item);
               if (i == results.length - 1) {
@@ -130,7 +135,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                             ? 1
                             : 2));
 
-                G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (b.hkm.isHomeKennel).compareTo(a.hkm.isHomeKennel));
+                G0<TableModel>().globalKennelMainPageList.sort((KennelListAggregate a, KennelListAggregate b) => (b.isHomeKennel ? 1 : 0).compareTo(a.isHomeKennel ? 1 : 0));
                 filterResults();
                 setState(() {});
               }
@@ -176,7 +181,6 @@ class KennelsListPageState extends State<KennelsListPage> {
                   : NestedScrollView(
                       controller: scrollController,
                       headerSliverBuilder: (BuildContext context, bool innerBoxScrolled) => <Widget>[
-                        
                         SliverAppBar(
                           floating: false,
                           pinned: false,
@@ -202,14 +206,21 @@ class KennelsListPageState extends State<KennelsListPage> {
                                   filteredList[index].hkm.following = following;
                                   filteredList[index].hkm.kennelNotificationPreference = notificationStatus;
                                   filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
-                                  // if this kennel has been set as the home kennel, clear the home kennel
-                                  // flag on the rest of the kennels
-                                  if (isHomeKennel != 0) {
+
+                                  if (filteredList[index].kennel.kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
+                                    // if this kennel has been set as the home kennel, clear the home kennel
+                                    // flag on the rest of the kennels
+
                                     for (int i = 0; i < filteredList.length; i++) {
-                                      filteredList[i].extensions.isHomeKennel = 0;
+                                      filteredList[i].isHomeKennel = false;
                                     }
+
+                                    filteredList[index].isHomeKennel = true;
+                                  } else {
+                                    filteredList[index].isHomeKennel = false;
                                   }
-                                  filteredList[index].extensions.isHomeKennel = isHomeKennel;
+
+                                  // filteredList[index].extensions.isHomeKennel = isHomeKennel;
                                   setState(() {});
                                 },
                                 kennelSelected: () {
@@ -263,7 +274,7 @@ class KennelsListPageState extends State<KennelsListPage> {
       print(e);
     }
 
-    G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable, false).then((bool result) {
+    G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagKennelsTable | SyncUserDataService.flagHasherKennelMapTable, true).then((bool result) {
       refreshFromTable(true);
       final String resultStr = result ? 'successfully' : 'unsuccessfully';
       print('Kennel user data synchronized $resultStr');

@@ -58,6 +58,8 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
         await setStringPref(StringPrefsEnum.androidDownloadLink, loginResult.androidDownloadLink);
         await setStringPref(StringPrefsEnum.imageRootUrl, loginResult.imageRootUrl);
         await setIntPref(IntPrefsEnum.isBetaTester, loginResult.isBetaTester ?? 0);
+        await setStringPref(StringPrefsEnum.email, loginResult.email);
+        await setStringPref(StringPrefsEnum.homeKennelId, loginResult.homeKennelId ?? '');
       }
 
       if ((loginResult == null) && ((userId == null) || (userId.isEmpty))) {

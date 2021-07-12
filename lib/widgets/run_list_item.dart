@@ -263,7 +263,8 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
                                         ),
                                   (widget.futureRun.extensions.distToEvent >= 0 && G0<AppModel>().hasLocationPermissions)
                                       ? Text(
-                                          Utilities.getDistance(widget.futureRun.extensions.distToEvent, context, isMetric: widget.futureRun.extensions.distancePreference == 0) +
+                                          Utilities.getDistance(widget.futureRun.extensions.distToEvent, context,
+                                                  isMetric: (widget.futureRun.extensions.distanceUnitsPref & 0x01) == 0) +
                                               ' from here',
                                           style: const TextStyle(color: Colors.black87, fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1),
                                           textAlign: TextAlign.left,
@@ -314,7 +315,7 @@ class _RunListItemState extends State<RunListItem> with WidgetsBindingObserver {
             widget.futureRun.kennel,
             widget.futureRun.extensions.digitsAfterDecimal,
             widget.futureRun.extensions.currencySymbol,
-            widget.futureRun.extensions.distancePreference,
+            widget.futureRun.extensions.distanceUnitsPref,
             widget.futureRun.extensions.distToEvent,
             widget.futureRun.paymentUrl,
             widget.futureRun.extensions.rsvpState,

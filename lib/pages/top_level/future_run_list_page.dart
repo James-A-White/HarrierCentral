@@ -64,7 +64,8 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
     G0<TableModel>()
         .syncUserDataService
         .updateFromBackend(
-            SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable | SyncUserDataService.flagPaymentsTable,
+            SyncUserDataService.flagHasherEventMapTable | SyncUserDataService.flagNarrowEventsTable | SyncUserDataService.flagKennelsTable,
+            //| SyncUserDataService.flagPaymentsTable,
             false)
         .then((bool result) {
       refreshFromTable(true);
@@ -197,8 +198,9 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
             print('Julian now = $julianNow, Event julian = $eventJulian, EventName = ${eventItem.eventName}');
 
             num meters = 0;
+            final int userDistPrefs = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
 
-            switch (extensionsItem.autoRunDistancePreference) {
+            switch (userDistPrefs) {
               case hasherPref_0:
                 meters = 0;
                 break;
@@ -228,7 +230,11 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
                 break;
             }
 
-            if ((extensionsItem.distancePreference != 0) || ((extensionsItem.userPrefs & 0x00000002) == 0)) {
+            // if the user has set their preferences to miles or
+            // the user has set their preferences to "auto" and the
+            // distance preference associated with the kennel is miles
+            // then convert our range for runs from meters to miles.
+            if (((userDistPrefs & 0x00000003) == 3) || (((userDistPrefs & 0x00000003) == 0) && (extensionsItem.distanceUnitsPref == 1))) {
               meters = meters * MILES_TO_METERS / 1000;
             }
 

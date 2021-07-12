@@ -25,6 +25,7 @@ enum StringPrefsEnum {
   iosDownloadLink,
   androidDownloadLink,
   imageRootUrl,
+  homeKennelId,
 }
 
 enum NumPrefsEnum { latitude, longitude, homeKennelLat, homeKennelLon }

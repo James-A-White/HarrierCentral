@@ -12,11 +12,19 @@ class KennelsListItem extends StatefulWidget {
 }
 
 class KennelListItemState extends State<KennelsListItem> {
-  // @override
-  // void initState() {
-  //   print('initState called from kennel_list_item @ ${DateTime.now().millisecondsSinceEpoch.toString()} ${widget.kennel['kennelShortName']}');
-  //   super.initState();
-  // }
+  int _distancePreference = 0;
+
+  @override
+  void initState() {
+    _distancePreference = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceMeasuredIn;
+    // kilometers = 2, miles = 3, auto = 0
+    if (_distancePreference == 0) {
+      _distancePreference = widget.kennelItem.extensions.distanceUnitsPref + 2;
+    }
+    super.initState();
+  }
+
+  //final int _autoRunPreference = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +101,7 @@ class KennelListItemState extends State<KennelsListItem> {
                   alignment: Alignment.topCenter,
                 ),
               ),
-              widget.kennelItem.extensions.isHomeKennel == 0
+              !widget.kennelItem.isHomeKennel
                   ? Container()
                   : Container(
                       child: widget.kennelItem.extensions.followingRequested != -1
@@ -221,7 +229,7 @@ class KennelListItemState extends State<KennelsListItem> {
                           ),
                           G0<AppModel>().hasLocationPermissions
                               ? Text(
-                                  '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel, context, isMetric: widget.kennelItem.extensions.distancePreference == 0)} from here',
+                                  '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel, context, isMetric: _distancePreference == 2)} from here',
                                   style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                                 )
                               : Container(),
@@ -264,7 +272,7 @@ class KennelListItemState extends State<KennelsListItem> {
                             ],
                             'returnValue': followTypeAuto
                           },
-                          widget.kennelItem.extensions.isHomeKennel == 0
+                          !widget.kennelItem.isHomeKennel
                               ? <String, dynamic>{
                                   'title': 'Set home kennel',
                                   'icon': <Widget>[
@@ -303,15 +311,17 @@ class KennelListItemState extends State<KennelsListItem> {
                             setState(() {});
                             int isHomeKennel = -1;
                             if (retVal == followTypeToggleHomeKennel) {
-                              isHomeKennel = widget.kennelItem.extensions.isHomeKennel == 0 ? 1 : 0;
+                              isHomeKennel = widget.kennelItem.isHomeKennel ? 0 : 1;
                             }
 
                             srv
                                 .updateHasherKennelStatus(widget.kennelItem.kennel.kennelId, AppDomainType.user, followingState: retVal.value, isHomeKennel: isHomeKennel)
                                 .then((List<dynamic> queryResults) {
                               setState(() {
-                                widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],
-                                    queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+                                setStringPref(StringPrefsEnum.homeKennelId, queryResults[0]['isHomeKennel'] == 1 ? widget.kennelItem.kennel.kennelId ?? '' : '').then((void dummy) {
+                                  widget.kennelFollowingUpdated(queryResults[0]['following'], queryResults[0]['kennelNotificationPreference'],
+                                      queryResults[0]['kennelEmailAlertPreference'], queryResults[0]['isHomeKennel']);
+                                });
                               });
                             });
                           }

@@ -435,11 +435,9 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             k.${G0<TableModel>().kennelsTableHelper.colKennelLogo} as logo,
             k.${G0<TableModel>().kennelsTableHelper.colKennelShortName} as shortName,
             k.${G0<TableModel>().kennelsTableHelper.colKennelLatitude} as lat,
-            k.${G0<TableModel>().kennelsTableHelper.colKennelLongitude} as lon,
-            h.${G0<TableModel>().hashersTableHelper.colHomeKennelId} as homeKennelId
+            k.${G0<TableModel>().kennelsTableHelper.colKennelLongitude} as lon
             FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k 
-            LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on k.${G0<TableModel>().kennelsTableHelper.colKennelId} = h.${G0<TableModel>().hashersTableHelper.colHomeKennelId} AND h.${G0<TableModel>().hashersTableHelper.colHasherId} = "$userId"
-          ''';
+           ''';
 
     if ((widget.kennel?.kennelId != null) && (widget.kennel.kennelId.isNotEmpty)) {
       query = query +
@@ -450,12 +448,13 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     try {
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
       kennelMarkers = <Marker>[];
+      final String homeKennelId = getStringPref(StringPrefsEnum.homeKennelId);
       if ((results != null) && (results.isNotEmpty)) {
         for (int i = 0; i < results.length; i++) {
           final num lat = results[i]['lat'];
           final num lon = results[i]['lon'];
 
-          if (results[i]['homeKennelId'] != null) {
+          if (results[i]['kennelId'] == homeKennelId) {
             homeKennelLat = lat;
             homeKennelLon = lon;
 
@@ -519,6 +518,11 @@ class RunLocationsPageState extends State<RunLocationsPage> {
   }
 
   Widget buildKennelMarker(String kennelLogo, String kennelShortName, String kennelId) {
+    bool isHomeKennel = false;
+    if (kennelId == getStringPref(StringPrefsEnum.homeKennelId))
+    {
+      isHomeKennel = true;
+    }
     return GestureDetector(
       onTap: () async {
         final Geolocator locator = Geolocator();
@@ -539,7 +543,13 @@ class RunLocationsPageState extends State<RunLocationsPage> {
           extensionsItem.notificationsRequested = -1;
           extensionsItem.emailAlertRequested = -1;
 
-          final KennelListAggregate kennel = KennelListAggregate(kennel: kennelItem, extensions: extensionsItem, hkm: hkmItem);
+
+          final KennelListAggregate kennel = KennelListAggregate(
+            kennel: kennelItem,
+            extensions: extensionsItem,
+            hkm: hkmItem,
+            isHomeKennel: isHomeKennel
+          );
 
           Navigator.of(context).push<dynamic>(
             MaterialPageRoute<dynamic>(

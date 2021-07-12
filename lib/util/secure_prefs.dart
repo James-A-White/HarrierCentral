@@ -33,7 +33,7 @@ Future<bool> setNumPref(dynamic key, num value) async {
 
 // INT
 
-num getIntPref(dynamic key) {
+int getIntPref(dynamic key) {
   return _sharedPreferences.getInt(key.toString());
 }
 
@@ -44,8 +44,7 @@ Future<bool> setIntPref(dynamic key, int value) async {
 // DATE
 
 Future<bool> setDatePref(dynamic key, DateTime value) async {
-  return _sharedPreferences.setInt(
-      key.toString(), value.millisecondsSinceEpoch);
+  return _sharedPreferences.setInt(key.toString(), value.millisecondsSinceEpoch);
 }
 
 DateTime getDatePref(dynamic key) {

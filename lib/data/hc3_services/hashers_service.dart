@@ -6,18 +6,18 @@ part 'hashers_service.g.dart';
 class HashersModel implements BaseModel {
   HashersModel({
     this.hasherId,
-    this.homeKennelId,
+    // this.homeKennelId,
     this.firstName,
     this.lastName,
     this.dispName,
     this.hashName,
-    this.email,
+    // this.email,
     this.photo,
     this.dispPref,
-    this.resetCode,
-    this.qrCode,
+    // this.resetCode,
+    // this.qrCode,
     this.includeInGlobalHashDirectory,
-    this.preferences,
+    // this.preferences,
     this.removed,
     this.updatedAt,
   });
@@ -27,18 +27,18 @@ class HashersModel implements BaseModel {
   Map<String, dynamic> toJson() => _$HashersModelToJson(this);
 
   final String hasherId;
-  final String homeKennelId;
+  // final String homeKennelId;
   String firstName;
   String lastName;
   String dispName;
   String hashName;
-  String email;
+  // String email;
   String photo;
   int dispPref;
-  String resetCode;
-  String qrCode;
+  // String resetCode;
+  // String qrCode;
   int includeInGlobalHashDirectory;
-  int preferences;
+  // int preferences;
 
   final int removed;
   final DateTime updatedAt;
@@ -68,7 +68,7 @@ class HashersTableHelper extends BaseTableHelper with BaseFields {
   }
 
   final String colHasherId = 'hasherId';
-  final String colHomeKennelId = 'homeKennelId';
+  //final String colHomeKennelId = 'homeKennelId';
   final String colFirstName = 'firstName';
   final String colLastName = 'lastName';
   final String colDispName = 'dispName';
@@ -89,18 +89,17 @@ class HashersTableHelper extends BaseTableHelper with BaseFields {
             $colId INTEGER PRIMARY KEY,
 
             $colHasherId TEXT NOT NULL,
-            $colHomeKennelId TEXT,
+            
             $colFirstName TEXT,
             $colLastName TEXT,
             $colDispName TEXT,
             $colHashName TEXT,
-            $colEmail TEXT,
+            
             $colPhoto TEXT,
             $colDispPref INT,
-            $colResetCode TEXT,
-            $colQrCode TEXT,
+
             $colIncludeInGlobalHashDirectory INT,
-            $colPreferences INT,
+
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,

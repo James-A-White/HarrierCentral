@@ -9,9 +9,9 @@ enum EnumMemberPopupActions {
   // subtractSixMonths,
   cancelMembership,
   permanentMembership,
-  toggleHomeKennel,
-  setHomeKennel,
-  clearHomeKennel
+  // toggleHomeKennel,
+  // setHomeKennel,
+  // clearHomeKennel
 }
 
 class KennelMemberListItem extends StatelessWidget {
@@ -109,18 +109,18 @@ class KennelMemberListItem extends StatelessWidget {
                           ),
                         ],
                       ),
-                      kennelMember.homeKennelBeingUpdated ?? false
-                          ? const Text(
-                              '<Updating home kennel>',
-                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0, color: Colors.blue),
-                              textAlign: TextAlign.center,
-                            )
-                          : Text(
-                              '${kennelMember.homeKennelName ?? '<no home hash>'}',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
-                              textAlign: TextAlign.left,
-                            ),
+                      // kennelMember.homeKennelBeingUpdated ?? false
+                      //     ? const Text(
+                      //         '<Updating home kennel>',
+                      //         style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0, color: Colors.blue),
+                      //         textAlign: TextAlign.center,
+                      //       )
+                      //     : Text(
+                      //         '${kennelMember.homeKennelName ?? '<no home hash>'}',
+                      //         overflow: TextOverflow.ellipsis,
+                      //         style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
+                      //         textAlign: TextAlign.left,
+                      //       ),
                       kennelMember.dateOfLastRun == null
                           ? Container()
                           : Text(
@@ -277,35 +277,35 @@ class KennelMemberListItem extends StatelessWidget {
                           ],
                           'returnValue': EnumMemberPopupActions.cancelMembership,
                         },
-                        kennelMember.homeKennelName == null
-                            ? <String, dynamic>{
-                                'title': 'Set home kennel',
-                                'icon': <Widget>[
-                                  Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
-                                  const Icon(FontAwesome.home, color: Colors.white, size: 23)
-                                ],
-                                'returnValue': EnumMemberPopupActions.setHomeKennel,
-                              }
-                            : kennelId == kennelMember.homeKennelId
-                                ? <String, dynamic>{
-                                    'title': 'Clear home kennel',
-                                    'icon': <Widget>[
-                                      Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
-                                      const Icon(FontAwesome.home, color: Colors.white, size: 23)
-                                    ],
-                                    'returnValue': EnumMemberPopupActions.clearHomeKennel,
-                                  }
-                                : <String, dynamic>{
-                                    'title': '', // NOTE: Because the title is empty, this button will not be displayed
-                                    'icon': <Widget>[
-                                      Container(
-                                        height: 30,
-                                        width: 30,
-                                        child: Icon(FontAwesome.times_circle, color: Colors.red.shade200),
-                                      ),
-                                    ],
-                                    'returnValue': EnumMemberPopupActions.cancelMembership,
-                                  },
+                        // kennelMember.homeKennelName == null
+                        //     ? <String, dynamic>{
+                        //         'title': 'Set home kennel',
+                        //         'icon': <Widget>[
+                        //           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
+                        //           const Icon(FontAwesome.home, color: Colors.white, size: 23)
+                        //         ],
+                        //         'returnValue': EnumMemberPopupActions.setHomeKennel,
+                        //       }
+                        //     : kennelId == kennelMember.homeKennelId
+                        //         ? <String, dynamic>{
+                        //             'title': 'Clear home kennel',
+                        //             'icon': <Widget>[
+                        //               Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
+                        //               const Icon(FontAwesome.home, color: Colors.white, size: 23)
+                        //             ],
+                        //             'returnValue': EnumMemberPopupActions.clearHomeKennel,
+                        //           }
+                        //         : <String, dynamic>{
+                        //             'title': '', // NOTE: Because the title is empty, this button will not be displayed
+                        //             'icon': <Widget>[
+                        //               Container(
+                        //                 height: 30,
+                        //                 width: 30,
+                        //                 child: Icon(FontAwesome.times_circle, color: Colors.red.shade200),
+                        //               ),
+                        //             ],
+                        //             'returnValue': EnumMemberPopupActions.cancelMembership,
+                        //           },
                       ];
 
                       final MultipleChoicePopup popup = MultipleChoicePopup(

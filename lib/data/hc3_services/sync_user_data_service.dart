@@ -7,22 +7,22 @@ class SyncUserDataService {
   static const int flagCountriesTable = 0x00000008;
   static const int flagKennelsTable = 0x00000010;
   static const int flagNarrowEventsTable = 0x00000020;
-  static const int flagPaymentsTable = 0x00000040;
+  //static const int flagPaymentsTable = 0x00000040;
 
-  static const int flagAllMasterDataWithoutHashers = 0x0000007E;
-  static const int flagAllMasterData = 0x0000007F;
+  static const int flagAllMasterDataWithoutHashers = 0x0000003E;
+  static const int flagAllMasterData = 0x0000003F;
 
   static const int flagHasherKennelMapTable = 0x00010000;
   static const int flagHasherEventMapTable = 0x00020000;
 
-  static const int flagsAllData = 0x0003007f;
+  static const int flagsAllData = 0x0003003f;
 
   num _hashersLastUpdated;
   num _citiesLastUpdated;
   num _regionsLastUpdated;
   num _countriesLastUpdated;
   num _kennelsLastUpdated;
-  num _paymentsLastUpdated;
+  //num _paymentsLastUpdated;
   num _hasherKennelMapLastUpdated;
   num _hasherEventMapLastUpdated;
   num _narrowEventsLastUpdated;
@@ -50,9 +50,9 @@ class SyncUserDataService {
     _kennelsLastUpdated = (flags & flagKennelsTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await getLastUpdatedTime(G0<TableModel>().kennelsTableHelper.colUpdatedAtValue, G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user));
-    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0
-        ? IGNORE_REPLICATION_TIMESTAMP
-        : await getLastUpdatedTime(G0<TableModel>().paymentsTableHelper.colUpdatedAtValue, G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user));
+    // _paymentsLastUpdated = (flags & flagPaymentsTable) == 0
+    //     ? IGNORE_REPLICATION_TIMESTAMP
+    //     : await getLastUpdatedTime(G0<TableModel>().paymentsTableHelper.colUpdatedAtValue, G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user));
     _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await getLastUpdatedTime(
@@ -131,8 +131,8 @@ class SyncUserDataService {
           _countriesLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_countriesLastUpdated + 1000);
       final DateTime kennelsUpdatedAfter =
           _kennelsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_kennelsLastUpdated + 1000);
-      final DateTime paymentsUpdatedAfter =
-          _paymentsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
+      // final DateTime paymentsUpdatedAfter =
+      //     _paymentsLastUpdated == null ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
       final DateTime hasherKennelMapUpdatedAfter = _hasherKennelMapLastUpdated == null
           ? DateTime.fromMillisecondsSinceEpoch(FORCE_ALL_REPLICATION_TIMESTAMP)
           : DateTime.fromMillisecondsSinceEpoch(_hasherKennelMapLastUpdated + 1000);
@@ -161,7 +161,8 @@ class SyncUserDataService {
         'hasherKennelMapUpdatedAfter': (tablesToSync & flagHasherKennelMapTable) == 0 ? 'ignore' : hasherKennelMapUpdatedAfter.toString().substring(0, 19),
         'hasherEventMapUpdatedAfter': (tablesToSync & flagHasherEventMapTable) == 0 ? 'ignore' : hasherEventMapUpdatedAfter.toString().substring(0, 19),
         'narrowEventsUpdatedAfter': (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : narrowEventsUpdatedAfter.toString().substring(0, 19),
-        'paymentsUpdatedAfter': (tablesToSync & flagPaymentsTable) == 0 ? 'ignore' : paymentsUpdatedAfter.toString().substring(0, 19),
+        //'paymentsUpdatedAfter': (tablesToSync & flagPaymentsTable) == 0 ? 'ignore' : paymentsUpdatedAfter.toString().substring(0, 19),
+        'paymentsUpdatedAfter': 'ignore',
       });
 
       final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_user_data', body);
@@ -177,7 +178,7 @@ class SyncUserDataService {
 
   final List<BaseTableHelper> _userTables = <BaseTableHelper>[
     G0<TableModel>().hashersTableHelper,
-    G0<TableModel>().paymentsTableHelper,
+    //G0<TableModel>().paymentsTableHelper,
     G0<TableModel>().citiesTableHelper,
     G0<TableModel>().regionsTableHelper,
     G0<TableModel>().countriesTableHelper,

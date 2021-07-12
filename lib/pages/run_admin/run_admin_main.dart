@@ -87,8 +87,7 @@ class RunDetailPageState extends State<RunDetailPage> {
           coalesce(k.digitsAfterDecimal,c.digitsAfterDecimal,2) as digAfterDec, 
           coalesce(k.currencySymbol,c.currencySymbol,"$dollarSign") as curSym,
           coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as memberPrice,
-          coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as nonMemberPrice,
-          CASE WHEN h.preferences & 0x00000003 = 0 THEN COALESCE(k.distancePreference,c.distancePreference,0) ELSE (h.preferences & 0x00000003) - 2 END as distancePreference
+          coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as nonMemberPrice
           FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} e
           INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k on k.kennelId = e.kennelId
           LEFT OUTER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} c on c.countryId = k.countryId
@@ -128,7 +127,7 @@ class RunDetailPageState extends State<RunDetailPage> {
 
           extensions.paymentUrl = paymentLinkUrl;
           extensions.distToEvent = dist;
-          extensions.distancePreference = results[0]['distancePreference'];
+          //extensions.distancePreference = results[0]['distancePreference'];
 
           eventAggregate = RunDetailAggregate(event: eventItem, extensions: extensions, kennel: kennel);
         }

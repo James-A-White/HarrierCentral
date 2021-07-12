@@ -47,6 +47,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   bool _autoValidate = false;
 
   final String deviceUserId = getStringPref(StringPrefsEnum.userId);
+  String email = getStringPref(StringPrefsEnum.email);
+  int hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences);
 
   // String _firstName = getStringPref(StringPrefsEnum.firstName);
   // String _lastName = getStringPref(StringPrefsEnum.lastName);
@@ -138,13 +140,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         previousRunCountController.text = (hkmData?.historicalPackRunCount ?? 0).toString();
         previousHaringCountController.text = (hkmData?.historicalHaringCount ?? 0).toString();
         historicalCountIsEstimate = (hkmData?.historicalCountIsEstimate ?? 0) == 1;
-        _distancePreference = hasher.preferences & hasherPref_distanceMeasuredIn;
-        _autoRunPreference = hasher.preferences & hasherPref_distanceForAutoDisplay;
 
         // fill in the e-mail for the user of the app.
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          hasher.email = getStringPref(StringPrefsEnum.email);
-          emailController.text = hasher.email;
+          emailController.text = email;
+          _distancePreference = hasherPreferences & hasherPref_distanceMeasuredIn;
+          _autoRunPreference = hasherPreferences & hasherPref_distanceForAutoDisplay;
         }
       }
 
@@ -237,7 +238,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     if (lastNameController.text != hasher?.lastName ?? '') {
       isDirty = true;
     }
-    if ((hasher?.email != null) && ((emailController.text ?? '') != (hasher?.email ?? ''))) {
+    if ((email != null) && ((emailController.text ?? '') != (email ?? ''))) {
       isDirty = true;
     }
     if (hashNameController.text != hasher?.hashName ?? '') {
@@ -257,8 +258,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     }
 
     if (hasher != null) {
-      hasher.preferences ??= 0;
-      if (hasher.preferences != (_distancePreference + _autoRunPreference)) {
+      hasherPreferences ??= 0;
+      if (hasherPreferences != (_distancePreference + _autoRunPreference)) {
         isDirty = true;
       }
     }
@@ -306,9 +307,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
       setState(() {
         // write the value of the email address to local preferences
-        if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          setStringPref(StringPrefsEnum.email, emailController.text);
-        }
 
         _isLoading = true;
 
@@ -331,6 +329,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
         apiCall.then((String responseBody) async {
           if (!responseBody.startsWith(ERROR_PREFIX)) {
+            if (widget.pageType == EnumMyProfilePageType.myProfile) {
+              setStringPref(StringPrefsEnum.email, emailController.text);
+              setIntPref(IntPrefsEnum.hasherPreferences, _distancePreference + _autoRunPreference);
+            }
             final dynamic jsonResult = json.decode(responseBody);
             final HashersModel h = HashersModel.fromJson(jsonResult[0][0]);
             setState(() {
@@ -343,7 +345,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                 setStringPref(StringPrefsEnum.firstName, h.firstName);
                 setStringPref(StringPrefsEnum.hashName, h.hashName);
                 setStringPref(StringPrefsEnum.lastName, h.lastName);
-                setIntPref(IntPrefsEnum.hasherPreferences, h.preferences);
               }
 
               refreshUserDataFromTable(true);
@@ -413,7 +414,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           keyboardType: TextInputType.emailAddress,
           validator: validateEmail,
           onSaved: (String val) {
-            hasher.email = val;
+            email = val;
           },
         ),
         TextFormField(
@@ -998,38 +999,38 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                   child: runCountUi(),
                                                 ),
                                               ),
-                                              FancyDivider(
-                                                key: UniqueKey(),
-                                                innerColor: Colors.white,
-                                                bottomMargin: 20.0,
-                                              ),
-                                              Text(
-                                                'Invite code:',
-                                                style: headingStyle,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                              const SizedBox(
-                                                height: 10,
-                                                width: 10,
-                                              ),
-                                              Text(
-                                                (hasher?.resetCode ?? '').replaceAll(QR_PREFIX_USER_RESET_CODE, ''),
-                                                style: largeText,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                              Container(
-                                                margin: const EdgeInsets.only(top: 20),
-                                                // height: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
-                                                // width: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
-                                                child: QrImage(
-                                                    backgroundColor: Colors.white,
-                                                    padding: const EdgeInsets.all(20.0),
-                                                    data: hasher?.resetCode ?? '',
-                                                    //data: 'testing123',
-                                                    version: 4,
-                                                    //size: 200.0,
-                                                    errorCorrectionLevel: 3),
-                                              ),
+                                              // FancyDivider(
+                                              //   key: UniqueKey(),
+                                              //   innerColor: Colors.white,
+                                              //   bottomMargin: 20.0,
+                                              // ),
+                                              // Text(
+                                              //   'Invite code:',
+                                              //   style: headingStyle,
+                                              //   textAlign: TextAlign.center,
+                                              // ),
+                                              // const SizedBox(
+                                              //   height: 10,
+                                              //   width: 10,
+                                              // ),
+                                              // Text(
+                                              //   (hasher?.resetCode ?? '').replaceAll(QR_PREFIX_USER_RESET_CODE, ''),
+                                              //   style: largeText,
+                                              //   textAlign: TextAlign.center,
+                                              // ),
+                                              // Container(
+                                              //   margin: const EdgeInsets.only(top: 20),
+                                              //   // height: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
+                                              //   // width: (MediaQuery.of(context).size.width * 0.8 < MediaQuery.of(context).size.height * 0.4) ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.height * 0.4,
+                                              //   child: QrImage(
+                                              //       backgroundColor: Colors.white,
+                                              //       padding: const EdgeInsets.all(20.0),
+                                              //       data: hasher?.resetCode ?? '',
+                                              //       //data: 'testing123',
+                                              //       version: 4,
+                                              //       //size: 200.0,
+                                              //       errorCorrectionLevel: 3),
+                                              // ),
                                             ],
                                           ),
                                   ],
