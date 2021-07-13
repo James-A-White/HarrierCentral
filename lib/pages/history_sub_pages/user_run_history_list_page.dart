@@ -203,7 +203,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
               shape: const CircleBorder(),
               children: <SpeedDialChild>[
                 SpeedDialChild(
-                  child: const Icon(MaterialCommunityIcons.email),
+                  child: const Icon(MaterialCommunityIcons.email, color: Colors.white),
                   backgroundColor: Colors.teal[800],
                   label: 'Email run counts\r\n(this kennel)',
                   labelStyle: const TextStyle(fontSize: 18.0),
@@ -225,7 +225,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                   },
                 ),
                 SpeedDialChild(
-                  child: const Icon(MaterialCommunityIcons.email_plus),
+                  child: const Icon(MaterialCommunityIcons.email_plus, color: Colors.white),
                   backgroundColor: Colors.blue[900],
                   label: 'Email run counts\r\n(all kennels)',
                   labelStyle: const TextStyle(fontSize: 18.0),
