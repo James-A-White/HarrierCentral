@@ -226,47 +226,55 @@ class _UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
               ),
             ),
             const SizedBox(height: 35, width: 10),
-            TextButton(
-              child: const Text('Get Started!'),
-              onPressed: () {
-                if (_formKey.currentState.validate()) {
-                  // If the form is valid, display a snackbar. In the real world,
-                  // you'd often call a server or save the information in a database.
-                  isLoading = true;
+            isLoading
+                ? Text(
+                    'Please wait...',
+                    style: localHeadingStyle,
+                    textAlign: TextAlign.center,
+                  )
+                : TextButton(
+                    child: const Text('Get Started!'),
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {
+                        // If the form is valid, display a snackbar. In the real world,
+                        // you'd often call a server or save the information in a database.
+                        setState(() {
+                          isLoading = true;
+                        });
 
-                  final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                  final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + inviteCodeTextController.text.toUpperCase(),
-                      includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
-                  apiCall.then((Map<String, String> result) {
-                    setState(() {
-                      isLoading = false;
-                    });
+                        final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                        final Future<Map<String, String>> apiCall = srv.authorizeDevice(context, QR_PREFIX_USER_RESET_CODE + inviteCodeTextController.text.toUpperCase(),
+                            includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
+                        apiCall.then((Map<String, String> result) {
+                          setState(() {
+                            isLoading = false;
+                          });
 
-                    if (result['result'] != 'failed') {
-                      final String userName = getStringPref(StringPrefsEnum.displayName);
+                          if (result['result'] != 'failed') {
+                            final String userName = getStringPref(StringPrefsEnum.displayName);
 
-                      String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
-                      profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
+                            String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
+                            profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
-                      IveCoreUtilities.showAlert(context, 'Success!', 'The app has been successfully set up for $userName.', 'OK').then((void dummy) {
-                        Navigator.pushReplacement<dynamic, dynamic>(
-                            context,
-                            MaterialPageRoute<dynamic>(
-                              builder: (BuildContext context) => ChooseProfileImage(
-                                isForThisDevice: true,
-                                fileNamePrefix: getStringPref(StringPrefsEnum.supportCode),
-                                currentProfileImage: profilePhotoUrl,
-                                popToCaller: false,
-                              ),
-                            ));
-                      });
-                    } else {
-                      // TODO(James): Do something here if the auth device fails
-                    }
-                  });
-                }
-              },
-            ),
+                            IveCoreUtilities.showAlert(context, 'Success!', 'The app has been successfully set up for $userName.', 'OK').then((void dummy) {
+                              Navigator.pushReplacement<dynamic, dynamic>(
+                                  context,
+                                  MaterialPageRoute<dynamic>(
+                                    builder: (BuildContext context) => ChooseProfileImage(
+                                      isForThisDevice: true,
+                                      fileNamePrefix: getStringPref(StringPrefsEnum.supportCode),
+                                      currentProfileImage: profilePhotoUrl,
+                                      popToCaller: false,
+                                    ),
+                                  ));
+                            });
+                          } else {
+                            // TODO(James): Do something here if the auth device fails
+                          }
+                        });
+                      }
+                    },
+                  ),
             const SizedBox(height: 50, width: 10),
           ],
         ),

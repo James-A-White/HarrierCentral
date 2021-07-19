@@ -192,47 +192,6 @@ class _EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProv
   }
 }
 
-class TabIndicationPainter extends CustomPainter {
-  TabIndicationPainter({this.context, this.dxTarget = 125.0, this.dxEntry = 25.0, this.radius = 21.0, this.dy = 25.0, this.pageController}) : super(repaint: pageController) {
-    painter = Paint()
-      ..color = Theme.of(context).accentColor
-      ..style = PaintingStyle.fill;
-  }
-
-  Paint painter;
-  final num dxTarget;
-  final num dxEntry;
-  final num radius;
-  final num dy;
-  BuildContext context;
-
-  final PageController pageController;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final ScrollPosition pos = pageController.position;
-    final num fullExtent = pos.maxScrollExtent - pos.minScrollExtent + pos.viewportDimension;
-
-    final num pageOffset = pos.extentBefore / fullExtent;
-
-    final bool left2right = dxEntry < dxTarget;
-    final Offset entry = Offset(left2right ? dxEntry : dxTarget, dy);
-    final Offset target = Offset(left2right ? dxTarget : dxEntry, dy);
-
-    final Path path = Path();
-    path.addArc(Rect.fromCircle(center: entry, radius: radius), 0.5 * pi, 1 * pi);
-    path.addRect(Rect.fromLTRB(entry.dx, dy - radius, target.dx, dy + radius));
-    path.addArc(Rect.fromCircle(center: target, radius: radius), 1.5 * pi, 1 * pi);
-
-    canvas.translate(size.width * pageOffset, 0.0);
-    canvas.drawShadow(path, const Color(0xFFfbab66), 3.0, true);
-    canvas.drawPath(path, painter);
-  }
-
-  @override
-  bool shouldRepaint(TabIndicationPainter oldDelegate) => true;
-}
-
 class QrTab extends StatefulWidget {
   const QrTab({Key key, @required this.isRunStart, @required this.qrContent, @required this.title, @required this.qrPrefix, this.eventStartDatetime}) : super(key: key);
 
@@ -256,12 +215,14 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Your QR Code'),
+          title: widget.isRunStart ? const Text('Run Start QR Code') : const Text('Run End QR Code'),
           content: SingleChildScrollView(
             child: ListBody(
-              children: const <Widget>[
+              children: <Widget>[
                 Text(
-                  'This QR code allows other Hashers to quickly scan you using their Harrier Central apps.\r\n\r\nAny Hasher can scan this code to easily add you as their friend.\r\n\r\nHares and mis-management can use this code to scan you in at the beginning and end of runs in order to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.',
+                  widget.isRunStart
+                      ? 'This QR code can be scanned by Hashers to check in when they arrive at the start of a run.\r\n\r\nThis will automatically mark them as at the run, but will not mark them as paid. This is especially useful for Hashes with large packs.'
+                      : 'This QR code can be scanned by Hashers to check in when they finish running the Hash trail.\r\n\r\nThis will automatically mark them as having finished the run.\r\n\r\nThis is especially useful for Hashes where it is important to account that everyone has arrived safely at the end of the run and ensure no one remains on trail.',
                   textAlign: TextAlign.justify,
                   style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                 )

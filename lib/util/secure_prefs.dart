@@ -65,6 +65,14 @@ bool getBoolPref(dynamic key) {
   return _sharedPreferences.getInt(key.toString()) == 1;
 }
 
+Future<bool> removePref(dynamic key) async {
+  bool result = false;
+  if (_sharedPreferences.containsKey(key.toString())) {
+    result = await _sharedPreferences.remove(key.toString());
+  }
+  return result;
+}
+
 // import 'package:harrier_central/imports.dart';
 
 // class SecurePrefs {

@@ -343,15 +343,11 @@ class HashersService extends BaseService {
     return responseBody;
   }
 
-  Future<String> processFacebookLogin(
-      {String firstName,
-      String lastName,
-      String email,
-      String hashName,
-      String photo,
-      String facebookId,
-      String facebookAccessToken,
-      int includeInGlobalHashDirectory = -1}) async {
+  Future<String> processThirdPartyLogin({
+    ThirdPartyLoginData loginData,
+    String hashName,
+    int includeInGlobalHashDirectory = -1,
+  }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return '';
       // TODO(James): fix this so we can return a bool
@@ -382,26 +378,29 @@ class HashersService extends BaseService {
       hashersUpdatedAfter = DateTime(2050, 1, 1);
     }
 
-    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'processFacebookLogin', paramString: userId.toUpperCase());
+    final String accessToken = IveCoreUtilities.generateToken(userId.toUpperCase(), 'processThirdPartyLogin', paramString: userId.toUpperCase());
 
     final String body = jsonEncode(<String, String>{
       'userId': userId,
       'accessToken': accessToken,
       'hashersUpdatedAfter': hashersUpdatedAfter.toString(),
-      'firstName': firstName,
-      'lastName': lastName,
+      'firstName': loginData.firstName,
+      'lastName': loginData.lastName,
       'hashName': hashName,
-      'email': email,
-      'photo': photo,
-      'facebookId': facebookId,
-      'facebookAccessToken': facebookAccessToken,
+      'email': loginData.email,
+      'photo': loginData.photoUrl ?? '',
+      'thirdPartyLoginType': loginData.loginType,
+      'thirdPartyUserId': loginData.id,
+      'thirdPartyAccessToken': loginData.accessToken ?? '',
+      'thirdPartyAuthorizationCode': loginData.authorizationCode ?? '',
+      'thirdPartyAccessTokenExpires': loginData.accessTokenExpires?.toString(),
       'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString(),
       'hcVersion': hcVersion,
       'latitude': G0<DeviceInfo>().deviceLat.toString(),
       'longitude': G0<DeviceInfo>().deviceLon.toString()
     });
 
-    final String responseBody = await ServiceCommon.sendHttpPost('hc3_process_facebook_login', body);
+    final String responseBody = await ServiceCommon.sendHttpPost('hc3_process_third_party_login', body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (!newUserForThisDevice) {

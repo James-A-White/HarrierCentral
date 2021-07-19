@@ -1,7 +1,5 @@
 import 'package:harrier_central/imports.dart';
 
-//import 'package:flutter/scheduler.dart' show timeDilation;
-
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
@@ -17,53 +15,55 @@ void main() {
   ]);
 
   runApp(
-    MaterialApp(
-        debugShowCheckedModeBanner: false,
-        navigatorKey: navigatorKey,
-        localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
-          AppLocalizationsDelegate(),
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-        ],
-        supportedLocales: const <Locale>[
-          Locale('en', 'US'), // English
-          Locale('es', 'ES'), // Spanish
-          Locale('pt', 'PT'), // Portugese
-          Locale('de', 'DE'), // German
-          // ... other locales the app supports
-        ],
-        home: AppEntryPage(),
-        routes: routes,
-        theme: ThemeData(
-            primaryColor: Colors.grey.shade700,
-            primaryColorDark: Colors.grey.shade900,
-            primaryColorLight: Colors.grey.shade400,
-            accentColor: Colors.red.shade900,
-            bottomAppBarColor: Colors.grey.shade700,
-            highlightColor: Colors.yellow,
-            selectedRowColor: Colors.red.shade50,
-            buttonColor: Colors.red.shade900,
-            elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-                  primary: Colors.red.shade900,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-                  textStyle: const TextStyle(color: Colors.white),
-                  shadowColor: Colors.transparent,
-                  elevation: 0),
-            ),
-            textButtonTheme: TextButtonThemeData(
-              //     style: TextButton.styleFrom(
-              //   backgroundColor: Colors.red.shade900,
-              //   primary
-              //   textStyle: const TextStyle(color: Colors.white),
-              // )
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(Colors.red.shade900),
-                foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+    Phoenix(
+      child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          navigatorKey: navigatorKey,
+          localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+            AppLocalizationsDelegate(),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: const <Locale>[
+            Locale('en', 'US'), // English
+            Locale('es', 'ES'), // Spanish
+            Locale('pt', 'PT'), // Portugese
+            Locale('de', 'DE'), // German
+            // ... other locales the app supports
+          ],
+          home: AppEntryPage(),
+          routes: routes,
+          theme: ThemeData(
+              primaryColor: Colors.grey.shade700,
+              primaryColorDark: Colors.grey.shade900,
+              primaryColorLight: Colors.grey.shade400,
+              accentColor: Colors.red.shade900,
+              bottomAppBarColor: Colors.grey.shade700,
+              highlightColor: Colors.yellow,
+              selectedRowColor: Colors.red.shade50,
+              buttonColor: Colors.red.shade900,
+              elevatedButtonTheme: ElevatedButtonThemeData(
+                style: ElevatedButton.styleFrom(
+                    primary: Colors.red.shade900,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                    textStyle: const TextStyle(color: Colors.white),
+                    shadowColor: Colors.transparent,
+                    elevation: 0),
               ),
-            ),
-            iconTheme: const IconThemeData(color: Colors.white, size: 30.0),
-            scaffoldBackgroundColor: Colors.brown.shade50)),
+              textButtonTheme: TextButtonThemeData(
+                //     style: TextButton.styleFrom(
+                //   backgroundColor: Colors.red.shade900,
+                //   primary
+                //   textStyle: const TextStyle(color: Colors.white),
+                // )
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.red.shade900),
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                ),
+              ),
+              iconTheme: const IconThemeData(color: Colors.white, size: 30.0),
+              scaffoldBackgroundColor: Colors.brown.shade50)),
+    ),
   );
 }
 

@@ -85,7 +85,8 @@ class DrawerMenuState extends State<DrawerMenu> {
                           dataContext: EnumDataContext.user,
                           pageType: EnumMyProfilePageType.myProfile,
                           hasherId: userId,
-                          uiElementsToDisplay: HasherProfilePage.flagUiElement_distancePref | HasherProfilePage.flagUiElement_autoDisplayRunsDistance,
+                          uiElementsToDisplay:
+                              HasherProfilePage.flagUiElement_distancePref | HasherProfilePage.flagUiElement_autoDisplayRunsDistance | HasherProfilePage.flagUiElement_logOutButton,
                         );
                       },
                     ),
@@ -232,22 +233,22 @@ class DrawerMenuState extends State<DrawerMenu> {
                   );
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.integration_instructions, color: textColor),
-                title: Text('Data integrations', style: style),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      settings: const RouteSettings(),
-                      builder: (BuildContext context) {
-                        return const IntegrationPage();
-                      },
-                    ),
-                  );
-                },
-              ),
+              // ListTile(
+              //   leading: const Icon(Icons.integration_instructions, color: textColor),
+              //   title: Text('Data integrations', style: style),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     Navigator.push<dynamic>(
+              //       context,
+              //       MaterialPageRoute<dynamic>(
+              //         settings: const RouteSettings(),
+              //         builder: (BuildContext context) {
+              //           return const IntegrationPage();
+              //         },
+              //       ),
+              //     );
+              //   },
+              // ),
             ],
           ),
         ),

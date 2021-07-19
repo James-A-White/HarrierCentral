@@ -33,7 +33,7 @@ const num MILES_TO_METERS = 1609.34449;
 
 const int SPLASH_SCREEN_DISPLAY_TIME = 1;
 
-const LocationAccuracy BASE_APP_LOCATION_ACCURACY = LocationAccuracy.medium;
+const LocationAccuracy BASE_APP_LOCATION_ACCURACY = LocationAccuracy.best;
 
 const String BASE_HCWEB_UPLOAD_URL = 'https://hcweb.azurewebsites.net/upload/';
 

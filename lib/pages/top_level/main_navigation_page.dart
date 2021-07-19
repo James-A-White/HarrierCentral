@@ -100,9 +100,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     assert(DB_VERSION == Tables.migrationList.last.dbVersion);
 
     // DANGER - need to look into definition of ClientApp
-    _dbReady = setupDatabase(informUser, 'PRO_APP').then((bool dummy) {
+    _dbReady = setupDatabase(informUser, 'PRO_APP').then((bool dummy) async {
       final NotificationSupport notifications = NotificationSupport();
-      notifications.configureNotifications(true);
+      await notifications.configureNotifications(true);
       // G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false, informUser: informUser).then((bool result) {
       //   final String resultStr = result ? 'successfully' : 'unsuccessfully';
       //   print('Master data synchronized $resultStr');
@@ -118,44 +118,39 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
       setState(() {});
 
-      checkLocationPermissions().then((bool hasLoc) {
-        if (hasLoc) {
-          CommonQueries.areWeAtRunStart().then((AreWeAtRunResult result) async {
-            if ((result.eventId != EMPTY_RESULT) && (result.distanceInMeters <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN)) {
-              final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
-                title: 'Check-in to Run',
-                eventImage: result.eventImage,
-                eventName: result.eventName,
-                kennelLogo: result.kennelLogo,
-                okButtonTitle: 'Yes',
-                cancelButtonTitle: 'No',
-                kennelShortName: result.kennelShortName,
-                eventNumber: result.eventNumber,
-              );
+      final bool hasLoc = await checkLocationPermissions();
+      if (hasLoc) {
+        final AreWeAtRunResult result = await CommonQueries.areWeAtRunStart();
+        if ((result.eventId != EMPTY_RESULT) && (result.distanceInMeters <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN)) {
+          final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
+            title: 'Check-in to Run',
+            eventImage: result.eventImage,
+            eventName: result.eventName,
+            kennelLogo: result.kennelLogo,
+            okButtonTitle: 'Yes',
+            cancelButtonTitle: 'No',
+            kennelShortName: result.kennelShortName,
+            eventNumber: result.eventNumber,
+          );
 
-              final EnumYesNo<int> retVal = await showDialog<EnumYesNo<int>>(
-                  context: context,
-                  barrierDismissible: false, // user must tap button!
-                  builder: (BuildContext context) {
-                    return popup;
-                  });
+          final EnumYesNo<int> retVal = await showDialog<EnumYesNo<int>>(
+              context: context,
+              barrierDismissible: false, // user must tap button!
+              builder: (BuildContext context) {
+                return popup;
+              });
 
-              final String userId = getStringPref(StringPrefsEnum.userId);
+          final String userId = getStringPref(StringPrefsEnum.userId);
 
-              if (retVal == enumYesNo_Yes) {
-                G0<TableModel>()
-                    .hasherEventMapService
-                    .joinEvent(result.eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value)
-                    .then((
-                  List<dynamic> svcResult,
-                ) {
-                  futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
-                });
-              }
-            }
-          });
+          if (retVal == enumYesNo_Yes) {
+            await G0<TableModel>()
+                .hasherEventMapService
+                .joinEvent(result.eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value);
+            futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
+          }
         }
-      });
+      }
+
       return true;
     });
   }
@@ -210,7 +205,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     switch (pageIndex) {
       case 0:
-        //futureRunsListPage??= const FutureRunsListPage();
         w = futureRunsListPage;
         break;
       case 1:
@@ -233,11 +227,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        // Container(
-        //   height: MediaQuery.of(context).size.height,
-        //   width: MediaQuery.of(context).size.width,
-        //   color:Colors.red
-        // ),
         Positioned(
           top: 0,
           left: 0,
@@ -248,25 +237,28 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             appBar: AppBar(
               backgroundColor: themeAppBarBackground,
               title: Text(appBarText),
+              centerTitle: true,
               actions: <IconButton>[
+                // IconButton(
+                //     icon: const Icon(Icons.qr_code_scanner_sharp),
+                //     onPressed: () {
+                //       Navigator.push<dynamic>(
+                //         context,
+                //         MaterialPageRoute<dynamic>(
+                //           builder: (BuildContext context) => const UserQrCodePage(),
+                //         ),
+                //       );
+                //     }),
                 IconButton(
                     icon: Icon(isFlipped ? Icons.undo : Icons.info_outline),
                     onPressed: () {
-                      isFlipped = !isFlipped;
-                      if (isFlipped == true) {
-                        fabFlipped = true;
-                      }
                       setState(() {
-                        // do this extra setState to ensure the FAB is displayed properly
-                      });
-                      Future<void>.delayed(const Duration(milliseconds: 250)).then((void dummy) {
-                        fabFlipped = isFlipped;
-                        setState(() {});
+                        isFlipped = !isFlipped;
                       });
                     }),
               ],
             ),
-            floatingActionButton: (runLocationsPageKey?.currentState == null) || (fabFlipped == true) ? null : runLocationsPageKey.currentState.getFab(),
+            floatingActionButton: ((runLocationsPageKey?.currentState == null) || isFlipped || (currentPage != 2)) ? null : runLocationsPageKey.currentState.getFab(),
             body: Container(
               decoration: const BoxDecoration(color: Colors.white),
               child: FutureBuilder<void>(
@@ -398,11 +390,17 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                   initialSelection: 0,
                   key: bottomNavigationKey,
                   onTabChangedListener: (int position) {
-                    appBarText = tabTitles[position];
-                    currentPage = position;
-                    setState(() {});
-                    Future<void>.delayed(const Duration(milliseconds: 100)).then((void dummy) {
-                      setState(() {});
+                    setState(() {
+                      appBarText = tabTitles[position];
+                      currentPage = position;
+
+                      // this extra setState is here to ensure that the FAB
+                      // displays properly when the map page is showing
+                      if ((!isFlipped) && (currentPage == 2)) {
+                        Future<void>.delayed(const Duration(milliseconds: 250)).then((void dummy) {
+                          setState(() {});
+                        });
+                      }
                     });
                   },
                 ),

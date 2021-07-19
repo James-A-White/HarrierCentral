@@ -77,18 +77,22 @@ class Utilities {
 
     IveCoreUtilities.logTiming('Geolocation query start', G0<AppModel>().appStartTime);
     if (status == GeolocationStatus.granted) {
-      const LocationOptions locationOptions = LocationOptions(accuracy: LocationAccuracy.high, distanceFilter: 50);
+      const LocationOptions locationOptions = LocationOptions(accuracy: BASE_APP_LOCATION_ACCURACY, distanceFilter: 50);
       G0<AppModel>().geoLocationStream = geolocator.getPositionStream(locationOptions).listen((Position position) {
         if (position != null) {
           G0<DeviceInfo>().deviceLat = position.latitude;
           G0<DeviceInfo>().deviceLon = position.longitude;
         }
-        print('>>>>>>>>>>> geoloc update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
+        print('>>>>>>>>>>> geoloc stream update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
       });
 
-      final Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
+      // start with the lowest possible accuracy to ensure that the
+      // app boots up quickly. As soon as the geoLocationStream resolves an accurate
+      // location, it will correct the lat/long to be more accurate.
+      final Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
       G0<DeviceInfo>().deviceLat = position.latitude;
       G0<DeviceInfo>().deviceLon = position.longitude;
+      print('>>>>>>>>>>> geoloc one-time update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
     }
   }
 

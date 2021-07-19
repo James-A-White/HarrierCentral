@@ -91,8 +91,8 @@ class RunDetailsQueryExtensions {
       weekend = ' is weekend ';
     }
 
-    final String test = ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
-    print(test);
+    //final String test = ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
+    //print(test);
 
     return ' ' + df.format(eventStartDateTime) + ' ' + days + weekend + thisDay;
   }

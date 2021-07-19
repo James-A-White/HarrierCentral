@@ -16,9 +16,6 @@ enum StringPrefsEnum {
   email,
   gender,
   profilePhotoUrl,
-  facebookId,
-  facebookAccessToken,
-  facebookProfilePhoto,
   adminEventId,
   adminKennelId,
   customEmailBody,
@@ -26,6 +23,14 @@ enum StringPrefsEnum {
   androidDownloadLink,
   imageRootUrl,
   homeKennelId,
+  ssoAuthType,
+  facebookId,
+  facebookAccessToken,
+  facebookProfilePhoto,
+  thirdPartyAccessToken,
+  thirdPartyUserId,
+  thirdPartyAuthorizationCode,
+  thirdPartyLoginType,
 }
 
 enum NumPrefsEnum { latitude, longitude, homeKennelLat, homeKennelLon }
@@ -46,6 +51,8 @@ enum IntPrefsEnum {
 enum DatePrefsEnum {
   lastSuccessfulUserDataSyncAsDate,
   lastFbTokenUpdate,
+  thirdPartyTokenLastUpdated,
+  thirdPartyTokenExpires,
 }
 
 enum EnumDataContext { user, event, kennel }

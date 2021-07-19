@@ -22,18 +22,9 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
   void initState() {
     super.initState();
 
-    descriptionStyle = TextStyle(
-        color: Colors.black,
-        fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-        fontFamily: 'AvenirNextRegular');
-    titleStyle = TextStyle(
-        color: Colors.black,
-        fontSize: 32.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-        fontFamily: 'AvenirNextRegular');
-    navStyle = TextStyle(
-        color: themeAppBarBackground,
-        fontSize: 18.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
-        fontFamily: 'AvenirNextDemiBold');
+    descriptionStyle = TextStyle(color: Colors.black, fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
+    titleStyle = TextStyle(color: Colors.black, fontSize: 32.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextRegular');
+    navStyle = TextStyle(color: themeAppBarBackground, fontSize: 18.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fontFamily: 'AvenirNextDemiBold');
 
     slides.add(
       Slide(
@@ -56,8 +47,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         title: 'Smile for the camera!',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description:
-            'Can we access your camera for your profile photo and to scan QR codes?',
+        description: 'Can we access your camera for your profile photo and to scan QR codes?',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_old_camera.png',
         heightImage: 120 * G0<DeviceInfo>().deviceMaxScaleFactor,
@@ -73,8 +63,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         title: 'Keep up to date',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description:
-            'Let us notify you about changes to runs you are following',
+        description: 'Let us notify you about changes to runs you are following',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_notification.png',
         heightImage: 150 * G0<DeviceInfo>().deviceMaxScaleFactor,
@@ -90,8 +79,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
         title: 'Some Last\r\nDetails',
         maxLineTitle: 2,
         styleTitle: titleStyle,
-        description:
-            'Please Provide Just a Tiny Bit of Personal Information...',
+        description: 'Please Provide Just a Tiny Bit of Personal Information...',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_pen.png',
         heightImage: 150 * G0<DeviceInfo>().deviceMaxScaleFactor,
@@ -104,8 +92,7 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
   }
 
   Future<void> onDonePress() async {
-    Navigator.of(context)
-        .pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
+    Navigator.of(context).pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
   }
 
   bool permission1requested = false;
@@ -115,34 +102,61 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
   int activeTab = 0;
 
   void onTabChangeCompleted(num index) {
-    activeTab = index;
+    // NOTE: Checking the tab versus the index is done
+    // to catch cases where the GestureDetector on the
+    // 'Allow' button does not fire properly. This is
+    // a bit of a hack, but should guarantee that
+    // permissions are always requested. The real way to
+    // fix this would be to find out why the GestureDetctor
+    // on the 'Allow' button is not consistently firing.
+    if (activeTab != index) {
+      _requestPermissions();
+      //activeTab = index;
+    }
   }
 
   Widget renderNextBtn() {
     return GestureDetector(
         child: Text('Allow', style: navStyle),
-        onTap: () async {
-          if (activeTab == 0) {
-            if (await Permission.location.request().isGranted) {
-              Utilities.subscribeToGeoLocationStream();
-              goToTab(1);
-            }
-          }
-
-          if (activeTab == 1) {
-            if (await Permission.camera.request().isGranted) {
-              if (await Permission.photos.request().isGranted) {
-                goToTab(2);
-              }
-            }
-          }
-
-          if (activeTab == 2) {
-            final NotificationSupport notifications = NotificationSupport();
-            notifications.configureNotifications(false);
-            goToTab(3);
-          }
+        onTap: () {
+          _requestPermissions();
         });
+  }
+
+  void _requestPermissions() {
+    if (activeTab == 0) {
+      Permission.location.request().isGranted.then((bool allow) {
+        if (allow) {
+          // this is an async call.. go ahead and let it run
+          // asynchronously as it can take time for the geostream
+          // to start becuase we are requesting high accuracy
+          // locations.
+          Utilities.subscribeToGeoLocationStream();
+          activeTab = 1;
+          goToTab(1);
+        } else {
+          activeTab = 1;
+          goToTab(1);
+        }
+      });
+    }
+
+    if (activeTab == 1) {
+      Permission.camera.request().isGranted.then((bool allowCamera) {
+        Permission.photos.request().isGranted.then((bool allowPhotos) {
+          activeTab = 2;
+          goToTab(2);
+        });
+      });
+    }
+
+    if (activeTab == 2) {
+      final NotificationSupport notifications = NotificationSupport();
+      notifications.configureNotifications(false).then((void dummy) {
+        activeTab = 3;
+        goToTab(3);
+      });
+    }
   }
 
   Widget renderDoneBtn() {
@@ -157,17 +171,13 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
 
   Future<void> onSkipPress() async {
     if (activeTab == 0) {
-      IveCoreUtilities.showAlert(
-              context,
-              'Location Preference',
-              'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.',
-              'Allow',
-              showCancelButton: true,
-              cancelButtonText: 'Disallow')
+      IveCoreUtilities.showAlert(context, 'Location Preference',
+              'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.', 'Allow',
+              showCancelButton: true, cancelButtonText: 'Disallow')
           .then((bool allow) async {
         if (allow) {
           if (await Permission.location.request().isGranted) {
-            Utilities.subscribeToGeoLocationStream();
+            await Utilities.subscribeToGeoLocationStream();
             goToTab(1);
           }
         } else {
@@ -177,13 +187,9 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 1) {
-      IveCoreUtilities.showAlert(
-              context,
-              'Camera Preference',
-              'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.',
-              'Allow',
-              showCancelButton: true,
-              cancelButtonText: 'Disallow')
+      IveCoreUtilities.showAlert(context, 'Camera Preference',
+              'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.', 'Allow',
+              showCancelButton: true, cancelButtonText: 'Disallow')
           .then((bool allow) async {
         if (allow) {
           if (await Permission.camera.request().isGranted) {
@@ -198,20 +204,15 @@ class _PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 2) {
-      IveCoreUtilities.showAlert(
-              context,
-              'Notification Preference',
-              'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change',
-              'Allow',
-              showCancelButton: true,
-              cancelButtonText: 'Disallow')
-          .then((bool allow) {
-        if (allow) {
-          final NotificationSupport notifications = NotificationSupport();
-          notifications.configureNotifications(false);
-        }
-        goToTab(3);
-      });
+      final bool allow = await IveCoreUtilities.showAlert(
+          context, 'Notification Preference', 'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change', 'Allow',
+          showCancelButton: true, cancelButtonText: 'Disallow');
+
+      if (allow) {
+        final NotificationSupport notifications = NotificationSupport();
+        await notifications.configureNotifications(false);
+      }
+      goToTab(3);
     }
   }
 
