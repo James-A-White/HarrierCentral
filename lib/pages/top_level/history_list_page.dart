@@ -74,10 +74,21 @@ class HistoryListPageState extends State<HistoryListPage> {
           coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalPackRunCount},0) as historicalPackRunCount,
           coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},0) as historicalHaringCount,
           coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},0) as historicalCountIsEstimate
-          FROM hasherEventMap hem
-          INNER JOIN kennels k on k.${G0<TableModel>().kennelsTableHelper.colKennelId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId}
+          FROM kennels k
+          LEFT OUTER JOIN hasherEventMap hem on 
+            k.${G0<TableModel>().kennelsTableHelper.colKennelId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId}
+            AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId"
+            AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1
           LEFT OUTER JOIN hasherKennelMap hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$userId"  and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
-          WHERE hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId" AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1
+          WHERE 
+            (hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} = 1
+            OR (SELECT count(case when hem2.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState} >= 20 then 1 else null end) 
+              FROM hasherEventMap hem2 
+              WHERE 
+                hem2.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId"
+                AND hem2.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1  
+                AND k.${G0<TableModel>().kennelsTableHelper.colKennelId} = hem2.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId} 
+                ) > 0)
           GROUP BY k.${G0<TableModel>().kennelsTableHelper.colKennelId}, k.${G0<TableModel>().kennelsTableHelper.colKennelLogo},k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},k.${G0<TableModel>().kennelsTableHelper.colKennelName}
           ORDER BY totalRunsThisKennel desc
           ''';
