@@ -199,7 +199,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                               padding: const EdgeInsets.only(left: 10.0, right: 10.0),
                               child: KennelsListItem(
                                 kennelItem: _filteredList[index],
-                                kennelFollowingUpdated: (int following, int notificationStatus, int emailAlertStatus, int isHomeKennel) {
+                                kennelFollowingUpdated: (int following, int notificationStatus, int emailAlertStatus, int isHomeKennel) async {
                                   _filteredList[index].extensions.followingRequested = -1;
                                   _filteredList[index].extensions.notificationsRequested = -1;
                                   _filteredList[index].extensions.emailAlertRequested = -1;
@@ -220,7 +220,22 @@ class KennelsListPageState extends State<KennelsListPage> {
                                     _filteredList[index].isHomeKennel = false;
                                   }
 
-                                  // filteredList[index].extensions.isHomeKennel = isHomeKennel;
+                                  // delete all of the events for a kennel being followed (or unfollowed) before
+                                  // requerying for those events.
+                                  final String sql = '''
+                                    DELETE FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)}
+                                    WHERE ${G0<TableModel>().eventsTableHelper.colKennelId} = '${_filteredList[index].kennel.kennelId}'
+                                    ''';
+
+                                  await G0<Database>().rawQuery(sql);
+
+                                  // when someone follows or unfollows a Kennel we need to re-sync the events to make sure that
+                                  // we have either all of the events for the kennel (if it is being followed) or only the
+                                  // events from the normal time period for unfollowed kennels (currently one year in the past)
+                                  await G0<TableModel>()
+                                      .syncUserDataService
+                                      .updateFromBackend(SyncUserDataService.flagNarrowEventsTable, true, forceReplicateAllRunsForKennel: _filteredList[index].kennel.kennelId);
+
                                   setState(() {});
                                 },
                                 kennelSelected: () {

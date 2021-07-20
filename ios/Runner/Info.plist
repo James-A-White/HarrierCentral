@@ -74,6 +74,8 @@
 	<string>This app needs access to location to help you find the closest Hash runs and help you navigate to run starts.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>This app does not currently use motion detection. Please contact us at connect@harriercentral.com if you see this message.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app needs access to location when in the background to track your location in case you get lost while running on a Hash trail.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app accesses your photo library to allow you to select a profile photo.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

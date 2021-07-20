@@ -70,7 +70,14 @@ class SyncUserDataService {
         : await getLastUpdatedTime(G0<TableModel>().eventsTableHelper.colUpdatedAtValue, G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user));
   }
 
-  Future<bool> updateFromBackend(int tablesToSync, bool forceRefresh, {String clientAppIdentifer, String singleRecordId, Function informUser}) async {
+  Future<bool> updateFromBackend(
+    int tablesToSync,
+    bool forceRefresh, {
+    String clientAppIdentifer,
+    String singleRecordId,
+    Function informUser,
+    String forceReplicateAllRunsForKennel,
+  }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return false;
     }
@@ -163,6 +170,7 @@ class SyncUserDataService {
         'narrowEventsUpdatedAfter': (tablesToSync & flagNarrowEventsTable) == 0 ? 'ignore' : narrowEventsUpdatedAfter.toString().substring(0, 19),
         //'paymentsUpdatedAfter': (tablesToSync & flagPaymentsTable) == 0 ? 'ignore' : paymentsUpdatedAfter.toString().substring(0, 19),
         'paymentsUpdatedAfter': 'ignore',
+        'forceReplicateAllRunsForKennel': forceReplicateAllRunsForKennel ?? 'ignore',
       });
 
       final String responseBody = await ServiceCommon.sendHttpPost('hc3_sync_user_data', body);
