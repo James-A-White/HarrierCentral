@@ -75,23 +75,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Events data synchronized $resultStr');
 
-    _refreshEventFromTables(true).then((void dummy) {
-      _calendarEvents = <DateTime, List<Map<String, dynamic>>>{};
-
-      setState(() {
-        for (int i = 0; i < _allEvents.length; i++) {
-          final Map<String, dynamic> event = _allEvents[i];
-          DateTime eventDate = DateTime.tryParse(event['eventStartDatetime']);
-          if (eventDate != null) {
-            eventDate = DateTime(eventDate.year, eventDate.month, eventDate.day);
-            if (_calendarEvents[eventDate] == null) {
-              _calendarEvents[eventDate] = <Map<String, dynamic>>[];
-            }
-            _calendarEvents[eventDate].add(event);
-          }
-        }
-      });
-    });
+    _refreshEventFromTables(true).then((void dummy) {});
   }
 
   // Widget _buildEventList() {
@@ -150,6 +134,30 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
 
       _allEvents = await G0<Database>().rawQuery(sql);
       setState(() {
+        _calendarEvents.clear();
+        _selectedEvents.clear();
+
+        for (int i = 0; i < _allEvents.length; i++) {
+          final Map<String, dynamic> event = _allEvents[i];
+          DateTime eventDate = DateTime.tryParse(event['eventStartDatetime']);
+          if (eventDate != null) {
+            eventDate = DateTime(eventDate.year, eventDate.month, eventDate.day);
+            if (_calendarEvents[eventDate] == null) {
+              _calendarEvents[eventDate] = <Map<String, dynamic>>[];
+            }
+            _calendarEvents[eventDate].add(event);
+
+            // rebuild the items in _selectedDate so that state changes
+            // are reflected in the UI when someone changes an event's
+            // properties
+            if (_calendarController?.selectedDay != null) {
+              if (eventDate == DateTime(_calendarController.selectedDay.year, _calendarController.selectedDay.month, _calendarController.selectedDay.day)) {
+                _selectedEvents.add(event);
+              }
+            }
+          }
+        }
+
         _isLoading = false;
       });
     } catch (e) {
@@ -410,6 +418,16 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
         child: Column(
           children: <Widget>[
             TableCalendar(
+              headerStyle: HeaderStyle(
+                rightChevronIcon: const Icon(Icons.chevron_right, color: Colors.black),
+                leftChevronIcon: const Icon(Icons.chevron_left, color: Colors.black),
+                centerHeaderTitle: true,
+                formatButtonDecoration: BoxDecoration(
+                  color: Colors.blue.shade600,
+                  borderRadius: BorderRadius.circular(6.0),
+                ),
+                formatButtonTextStyle: const TextStyle().copyWith(color: Colors.white),
+              ),
               calendarController: _calendarController,
               events: _calendarEvents.cast<DateTime, List<dynamic>>(),
               onDaySelected: _onDaySelected,
@@ -428,9 +446,16 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                   return FadeTransition(
                     opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animationController),
                     child: Container(
-                      margin: const EdgeInsets.all(4.0),
-                      padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                      color: Colors.deepOrange[300],
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade100,
+                        border: Border.all(
+                          color: Colors.blue,
+                          width: 1.0,
+                        ),
+                      ),
+                      // margin: const EdgeInsets.all(4.0),
+                      // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                      //color: Colors.deepOrange[300],
                       width: 100,
                       height: 100,
                       child: Text(
@@ -442,9 +467,38 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                 },
                 todayDayBuilder: (BuildContext context, DateTime date, _) {
                   return Container(
-                    margin: const EdgeInsets.all(4.0),
-                    padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                    color: Colors.amber[400],
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade100,
+                      border: Border.all(
+                        color: Colors.black26,
+                        width: 1.0,
+                      ),
+                    ),
+                    width: 100,
+                    height: 100,
+                    child: Text(
+                      '${date.day}',
+                      style: const TextStyle().copyWith(fontSize: 16.0),
+                    ),
+                  );
+                },
+                dayBuilder: (BuildContext context, DateTime date, _) {
+                  return Container(
+                    // margin: const EdgeInsets.all(4.0),
+                    // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                    decoration: BoxDecoration(
+                      color: (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) == 0
+                          ? Colors.white
+                          : (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) > 1
+                              ? Colors.grey.shade300
+                              : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isCountedRun'] == 1
+                                  ? Colors.purple.shade100
+                                  : Colors.grey.shade300,
+                      border: Border.all(
+                        color: Colors.black26,
+                        width: 1.0,
+                      ),
+                    ),
                     width: 100,
                     height: 100,
                     child: Text(
