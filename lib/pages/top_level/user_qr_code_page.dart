@@ -15,7 +15,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
   String barcode = '';
   bool isAdmin = true;
 
-  PageController _pageController;
+  //PageController _pageController;
   TabController _tabController;
 
   final String userId = getStringPref(StringPrefsEnum.userId);
@@ -98,7 +98,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
 
   @override
   void dispose() {
-    _pageController?.dispose();
+    //_pageController?.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -126,7 +126,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
       ),
     );
 
-    _pageController = PageController(initialPage: 0, keepPage: true);
+    //_pageController = PageController(initialPage: 0, keepPage: true);
     _tabController = TabController(vsync: this, length: tabs.length);
   }
 

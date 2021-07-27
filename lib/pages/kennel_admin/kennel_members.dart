@@ -704,8 +704,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           k.membershipDurationInMonths,
           k.kennelShortName,
           k.kennelId
-          FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h
-
+          FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h,
           ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
           WHERE h.${G0<TableModel>().hashersTableHelper.colRemoved} = 0 and k.${G0<TableModel>().kennelsTableHelper.remoteDbId} = '${widget.kennel.kennel.kennelId}'
           ORDER BY nameForSort

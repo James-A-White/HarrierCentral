@@ -158,5 +158,6 @@ export 'package:qr_flutter/qr_flutter.dart';
 export 'package:shared_preferences/shared_preferences.dart';
 export 'package:sign_in_with_apple/sign_in_with_apple.dart';
 export 'package:sqflite/sqflite.dart';
+export 'package:table_calendar/table_calendar.dart';
 export 'package:url_launcher/url_launcher.dart';
 export 'package:video_player/video_player.dart';
