@@ -12,7 +12,7 @@ class FilterEventsPage extends StatefulWidget {
   FilterEventsPageState createState() => FilterEventsPageState();
 }
 
-class FilterEventsPageState extends State<FilterEventsPage> with SingleTickerProviderStateMixin {
+class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderStateMixin {
   FilterEventsPageState();
 
   @override
@@ -20,6 +20,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with SingleTickerPro
     //_pageController?.dispose();
     _tabController.dispose();
     _calendarController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -32,6 +33,12 @@ class FilterEventsPageState extends State<FilterEventsPage> with SingleTickerPro
 
     super.initState();
     _calendarController = CalendarController();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+
+    _animationController.forward();
   }
 
   void _initTabs() {
@@ -45,6 +52,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with SingleTickerPro
 
   TabController _tabController;
   CalendarController _calendarController;
+  AnimationController _animationController;
 
   List<Map<String, dynamic>> _allEvents = <Map<String, dynamic>>[];
   List<Map<String, dynamic>> _selectedEvents = <Map<String, dynamic>>[];
@@ -106,7 +114,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with SingleTickerPro
 
   void _onDaySelected(DateTime day, List<dynamic> events, List<dynamic> holidays) {
     setState(() {
-      _selectedEvents = events;
+      _selectedEvents = events.cast<Map<String, dynamic>>();
     });
   }
 
@@ -405,6 +413,72 @@ class FilterEventsPageState extends State<FilterEventsPage> with SingleTickerPro
               calendarController: _calendarController,
               events: _calendarEvents.cast<DateTime, List<dynamic>>(),
               onDaySelected: _onDaySelected,
+              availableCalendarFormats: const <CalendarFormat, String>{
+                CalendarFormat.month: 'Week',
+                CalendarFormat.week: 'Month',
+              },
+              calendarStyle: CalendarStyle(
+                selectedColor: Colors.deepOrange[400],
+                todayColor: Colors.deepOrange[200],
+                markersColor: Colors.brown[700],
+                outsideDaysVisible: false,
+              ),
+              builders: CalendarBuilders(
+                selectedDayBuilder: (BuildContext context, DateTime date, _) {
+                  return FadeTransition(
+                    opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animationController),
+                    child: Container(
+                      margin: const EdgeInsets.all(4.0),
+                      padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                      color: Colors.deepOrange[300],
+                      width: 100,
+                      height: 100,
+                      child: Text(
+                        '${date.day}',
+                        style: const TextStyle().copyWith(fontSize: 16.0),
+                      ),
+                    ),
+                  );
+                },
+                todayDayBuilder: (BuildContext context, DateTime date, _) {
+                  return Container(
+                    margin: const EdgeInsets.all(4.0),
+                    padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                    color: Colors.amber[400],
+                    width: 100,
+                    height: 100,
+                    child: Text(
+                      '${date.day}',
+                      style: const TextStyle().copyWith(fontSize: 16.0),
+                    ),
+                  );
+                },
+                // markersBuilder: (context, date, events, holidays) {
+                //   final children = <Widget>[];
+
+                //   if (events.isNotEmpty) {
+                //     children.add(
+                //       Positioned(
+                //         right: 1,
+                //         bottom: 1,
+                //         child: _buildEventsMarker(date, events),
+                //       ),
+                //     );
+                //   }
+
+                //   if (holidays.isNotEmpty) {
+                //     children.add(
+                //       Positioned(
+                //         right: -2,
+                //         top: -2,
+                //         child: _buildHolidaysMarker(),
+                //       ),
+                //     );
+                //   }
+
+                //   return children;
+                // },
+              ),
             ),
             Expanded(child: _listView(_selectedEvents)),
           ],
