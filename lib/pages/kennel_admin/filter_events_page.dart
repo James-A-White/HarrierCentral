@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:intl/intl.dart';
 
 enum FilterEventsPageType { past, future }
 
@@ -54,9 +55,11 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
   CalendarController _calendarController;
   AnimationController _animationController;
 
-  List<Map<String, dynamic>> _allEvents = <Map<String, dynamic>>[];
+  List<Map<String, dynamic>> _allEventsSqlResult = <Map<String, dynamic>>[];
+  List<Map<String, dynamic>> _publishedRunCountSqlResult = <Map<String, dynamic>>[];
   List<Map<String, dynamic>> _selectedEvents = <Map<String, dynamic>>[];
-  Map<DateTime, List<Map<String, dynamic>>> _calendarEvents = <DateTime, List<Map<String, dynamic>>>{};
+  final Map<DateTime, List<Map<String, dynamic>>> _calendarEvents = <DateTime, List<Map<String, dynamic>>>{};
+  Future<DateTime> _dateBeingUpdated = Future.value(null);
 
   //PageController _pageController;
 
@@ -109,6 +112,22 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
+    //       (SELECT COUNT(*) FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount//
+
+    try {
+      final String sql = ''' 
+
+          SELECT COUNT(*) as publishedRunCount  
+          FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt 
+          WHERE kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1
+          AND datetime(evt.eventStartDatetime) $dateComparer datetime('now','localtime','$dateOffset')
+          ''';
+
+      _publishedRunCountSqlResult = await G0<Database>().rawQuery(sql);
+    } catch (e) {
+      print(e);
+    }
+
     try {
       final String sql = ''' 
 
@@ -122,8 +141,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
             evt.eventNumber,
             evt.eventStartDatetime,
             hkm.mismanagementRoleFlags,
-            evt.canEditRunAttendence,
-            (SELECT COUNT(*) FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount
+            evt.canEditRunAttendence
           FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt
           INNER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.kennelId = "${widget.kennel.kennel.kennelId}" and hkm.userId = "$userId"
           WHERE evt.kennelId = "${widget.kennel.kennel.kennelId}"
@@ -132,13 +150,13 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
         
           ''';
 
-      _allEvents = await G0<Database>().rawQuery(sql);
+      _allEventsSqlResult = await G0<Database>().rawQuery(sql);
       setState(() {
         _calendarEvents.clear();
         _selectedEvents.clear();
 
-        for (int i = 0; i < _allEvents.length; i++) {
-          final Map<String, dynamic> event = _allEvents[i];
+        for (int i = 0; i < _allEventsSqlResult.length; i++) {
+          final Map<String, dynamic> event = _allEventsSqlResult[i];
           DateTime eventDate = DateTime.tryParse(event['eventStartDatetime']);
           if (eventDate != null) {
             eventDate = DateTime(eventDate.year, eventDate.month, eventDate.day);
@@ -283,8 +301,8 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
 
   Widget _buildListView() {
     int publishedRunCount = 0;
-    if (_allEvents.isNotEmpty) {
-      publishedRunCount = _allEvents[0]['publishedRunCount'];
+    if (_publishedRunCountSqlResult.isNotEmpty) {
+      publishedRunCount = _publishedRunCountSqlResult[0]['publishedRunCount'];
     }
 
     return Container(
@@ -403,7 +421,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
-                  children: <Widget>[_listView(_allEvents), _calendarView()],
+                  children: <Widget>[_listView(_allEventsSqlResult), _calendarView()],
                 ),
               ),
             ],
@@ -446,6 +464,16 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                   ),
                   formatButtonTextStyle: const TextStyle().copyWith(color: Colors.white),
                 ),
+                onDayLongPressed: (DateTime datePressed, List<dynamic> list1, List<dynamic> list2) {
+                  _calendarController.setSelectedDay(datePressed);
+
+                  // only allow the date popup if the conditions allowing for new runs is met
+                  if (datePressed != null &&
+                      datePressed.difference(DateTime.now()).inDays > 0 &&
+                      (_calendarEvents[DateTime(datePressed.year, datePressed.month, datePressed.day)]?.length ?? 0) == 0) {
+                    _showEventPopup(datePressed);
+                  }
+                },
                 calendarController: _calendarController,
                 events: _calendarEvents.cast<DateTime, List<dynamic>>(),
                 onDaySelected: _onDaySelected,
@@ -461,27 +489,47 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                 ),
                 builders: CalendarBuilders(
                   selectedDayBuilder: (BuildContext context, DateTime date, _) {
-                    return FadeTransition(
-                      opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animationController),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade100,
-                          border: Border.all(
-                            color: Colors.blue,
-                            width: 1.0,
-                          ),
-                        ),
-                        // margin: const EdgeInsets.all(4.0),
-                        // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                        //color: Colors.deepOrange[300],
-                        width: 100,
-                        height: 50,
-                        child: Text(
-                          '${date.day}',
-                          style: const TextStyle().copyWith(fontSize: 16.0),
-                        ),
-                      ),
-                    );
+                    return FutureBuilder<DateTime>(
+                        future: _dateBeingUpdated,
+                        builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
+                          return ((snapshot.hasData) && (snapshot.data.year == date.year) && (snapshot.data.month == date.month) && (snapshot.data.day == date.day))
+                              ? Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.shade100,
+                                    border: Border.all(
+                                      color: Colors.blue,
+                                      width: 1.0,
+                                    ),
+                                  ),
+                                  // margin: const EdgeInsets.all(4.0),
+                                  // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                                  //color: Colors.deepOrange[300],
+                                  width: 100,
+                                  height: 50,
+                                  child: Icon(delayIcon, color: Colors.blue),
+                                )
+                              : FadeTransition(
+                                  opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animationController),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.shade100,
+                                      border: Border.all(
+                                        color: Colors.blue,
+                                        width: 1.0,
+                                      ),
+                                    ),
+                                    // margin: const EdgeInsets.all(4.0),
+                                    // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                                    //color: Colors.deepOrange[300],
+                                    width: 100,
+                                    height: 50,
+                                    child: Text(
+                                      '${date.day}',
+                                      style: const TextStyle().copyWith(fontSize: 16.0),
+                                    ),
+                                  ),
+                                );
+                        });
                   },
                   todayDayBuilder: (BuildContext context, DateTime date, _) {
                     return Container(
@@ -501,31 +549,39 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                     );
                   },
                   dayBuilder: (BuildContext context, DateTime date, _) {
-                    return Container(
-                      // margin: const EdgeInsets.all(4.0),
-                      // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                      decoration: BoxDecoration(
-                        color: (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) == 0
-                            ? date.difference(DateTime.now()).inDays > 0
-                                ? Colors.white
-                                : Colors.grey.shade200
-                            : (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) > 1
-                                ? Colors.red.shade100
-                                : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isCountedRun'] == 1
-                                    ? Colors.green.shade100
-                                    : Colors.grey.shade300,
-                        border: Border.all(
-                          color: Colors.black26,
-                          width: 1.0,
-                        ),
-                      ),
-                      width: 100,
-                      height: 50,
-                      child: Text(
-                        '${date.day}',
-                        style: const TextStyle().copyWith(fontSize: 16.0, color: date.difference(DateTime.now()).inDays > 0 ? Colors.black : Colors.grey.shade500),
-                      ),
-                    );
+                    return FutureBuilder<DateTime>(
+                        future: _dateBeingUpdated,
+                        builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
+                          return ((snapshot.hasData) && (snapshot.data.year == date.year) && (snapshot.data.month == date.month) && (snapshot.data.day == date.day))
+                              ? Container(color: Colors.pink)
+                              : Container(
+                                  // margin: const EdgeInsets.all(4.0),
+                                  // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                                  decoration: BoxDecoration(
+                                    color: (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) == 0
+                                        ? date.difference(DateTime.now()).inDays > 0
+                                            ? Colors.white
+                                            : Colors.grey.shade200
+                                        : (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) > 1
+                                            ? Colors.red.shade100
+                                            : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isVisible'] == 0
+                                                ? Colors.grey.shade300
+                                                : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isCountedRun'] == 1
+                                                    ? Colors.green.shade100
+                                                    : Colors.yellow.shade200,
+                                    border: Border.all(
+                                      color: Colors.black26,
+                                      width: 1.0,
+                                    ),
+                                  ),
+                                  width: 100,
+                                  height: 50,
+                                  child: Text(
+                                    '${date.day}',
+                                    style: const TextStyle().copyWith(fontSize: 16.0, color: date.difference(DateTime.now()).inDays > 0 ? Colors.black : Colors.grey.shade500),
+                                  ),
+                                );
+                        });
                   },
                   // markersBuilder: (context, date, events, holidays) {
                   //   final children = <Widget>[];
@@ -589,7 +645,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
               child: Text('Add placeholder event', style: buttonLabelStyleMedium),
               onPressed: () {
                 setState(() {
-                  //_calendarController.setCalendarFormat(CalendarFormat.twoWeeks);
+                  _showEventPopup(_calendarController.selectedDay);
                 });
               },
             ),
@@ -598,6 +654,49 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
         const SizedBox(height: 18.0),
       ],
     );
+  }
+
+  Future<void> _showEventPopup(DateTime eventStartDate) async {
+    final String title = 'Create new event on ' + DateFormat('E, MMM d').format(eventStartDate);
+
+    final CreateNewEventPopup newEventPopup = CreateNewEventPopup(title);
+
+    final Map<String, String> x = await showDialog<Map<String, String>>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return newEventPopup;
+        });
+
+    final String eventName = x['eventName'];
+    final String type = x['type'];
+
+    if (type != 'cancel') {
+      setState(() {
+        _dateBeingUpdated = Future<DateTime>.value(eventStartDate);
+      });
+
+      final EventsService nSvc = EventsService();
+      nSvc
+          .addEditEvent(
+        kennelId: widget.kennel.kennel.kennelId,
+        isVisible: true,
+        isCountedRun: type == eventFilterType_countEvent.value.toString() ? true : false,
+        eventName: eventName,
+        eventStartDatetime: DateTime(
+          eventStartDate.year,
+          eventStartDate.month,
+          eventStartDate.day,
+        ),
+      )
+          .then((void dummy) {
+        _refreshEventFromTables(true).then((void dummy) {
+          setState(() {
+            _dateBeingUpdated = Future<DateTime>.value(null);
+          });
+        });
+      });
+    }
   }
 
   Widget _listView(List<Map<String, dynamic>> listEvents) {
@@ -622,7 +721,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                 // the hasher either attended the run as a pack
                 // member or as a hare
                 final bool isVisible = direction == DismissDirection.endToStart;
-                updateEvent(event, isVisible: isVisible);
+                updateEvent(eventId: event['eventId'], isVisible: isVisible);
               });
             }
             return Future<bool>.value(false);
@@ -671,16 +770,16 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
               final EnumEventFilterType<int> ft = retVal;
               switch (ft) {
                 case eventFilterType_showEvent:
-                  updateEvent(event, isVisible: true);
+                  updateEvent(eventId: event['eventId'], isVisible: true);
                   break;
                 case eventFilterType_hideEvent:
-                  updateEvent(event, isVisible: false);
+                  updateEvent(eventId: event['eventId'], isVisible: false);
                   break;
                 case eventFilterType_countEvent:
-                  updateEvent(event, isCountedRun: true);
+                  updateEvent(eventId: event['eventId'], isCountedRun: true);
                   break;
                 case eventFilterType_doNotCountEvent:
-                  updateEvent(event, isCountedRun: false);
+                  updateEvent(eventId: event['eventId'], isCountedRun: false);
                   break;
                 case eventFilterType_setRunNumber:
                   setRunNumber(event, context);
@@ -705,13 +804,13 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
   }
 
   void setRunNumber(Map<String, dynamic> event, BuildContext context) {
-    final RunNumberPopup otherPaymentPopup = RunNumberPopup(runNumber: event['absoluteEventNumber']);
+    final RunNumberPopup newEventPopup = RunNumberPopup(runNumber: event['absoluteEventNumber']);
 
     final Future<Map<String, String>> dlg = showDialog<Map<String, String>>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
-          return otherPaymentPopup;
+          return newEventPopup;
         });
 
     dlg.then((Map<String, String> x) {
@@ -725,23 +824,24 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
           rn = int.parse(runNumber);
         }
 
-        updateEvent(event, asboluteEventNumber: rn);
+        updateEvent(eventId: event['eventId'], asboluteEventNumber: rn);
       }
     });
   }
 
-  Future<void> updateEvent(Map<String, dynamic> event, {bool isVisible, bool isCountedRun, int asboluteEventNumber}) async {
-    await G0<Database>().transaction<dynamic>((Transaction txn) async {
-      final int guidFlag = isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
-      final String sql =
-          'UPDATE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} SET canEditRunAttendence = "$guidFlag" where eventId = "${event['eventId']}"';
-      final int result = await txn.rawUpdate(sql);
-      print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-      _refreshEventFromTables(true);
-    });
+  Future<void> updateEvent({String eventId, bool isVisible, bool isCountedRun, int asboluteEventNumber, String kennelId}) async {
+    if (eventId != null) {
+      await G0<Database>().transaction<dynamic>((Transaction txn) async {
+        final int flag = isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
+        final String sql = 'UPDATE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} SET canEditRunAttendence = "$flag" where eventId = "$eventId"';
+        final int result = await txn.rawUpdate(sql);
+        print(result.toString() + ' update to events table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+        _refreshEventFromTables(true);
+      });
+    }
 
     final EventsService nSvc = EventsService();
-    nSvc.updateEventDetails(event['eventId'], isVisible: isVisible, isCountedRun: isCountedRun, absoluteEventNumber: asboluteEventNumber).then((void dummy) {
+    nSvc.addEditEvent(eventId: eventId, kennelId: kennelId, isVisible: isVisible, isCountedRun: isCountedRun, absoluteEventNumber: asboluteEventNumber).then((void dummy) {
       _refreshEventFromTables(true).then((void dummy) {
         setState(() {});
       });

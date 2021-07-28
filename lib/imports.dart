@@ -88,6 +88,7 @@ export 'package:harrier_central/pages/menu_pages/support_page.dart';
 export 'package:harrier_central/pages/menu_pages/video_tutorial_page.dart';
 export 'package:harrier_central/pages/run_admin/check_in_pack_page.dart';
 export 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
+export 'package:harrier_central/pages/run_admin/create_new_event_popup.dart';
 export 'package:harrier_central/pages/run_admin/email_editor_page.dart';
 export 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
 export 'package:harrier_central/pages/run_admin/find_hasher_page.dart';

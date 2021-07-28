@@ -245,7 +245,15 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
 }
 
 class EventsService extends BaseService {
-  Future<void> updateEventDetails(String eventId, {bool isVisible, bool isCountedRun, int absoluteEventNumber}) async {
+  Future<void> addEditEvent({
+    String eventId,
+    bool isVisible,
+    bool isCountedRun,
+    int absoluteEventNumber,
+    String kennelId,
+    String eventName,
+    DateTime eventStartDatetime,
+  }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return;
       // TODO(James): fix this so we can return a bool
@@ -264,12 +272,7 @@ class EventsService extends BaseService {
     );
     final DateTime eventUpdatedAfter = _eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_eventsLastUpdated + 1000);
 
-    final Map<String, String> bodyMap = <String, String>{
-      'userId': userId,
-      'accessToken': accessToken,
-      'narrowEventsUpdatedAfter': eventUpdatedAfter.toString(),
-      'eventId': eventId
-    };
+    final Map<String, String> bodyMap = <String, String>{'userId': userId, 'accessToken': accessToken, 'narrowEventsUpdatedAfter': eventUpdatedAfter.toString()};
     if (isVisible != null) {
       bodyMap.addAll(<String, String>{'isVisible': isVisible ? '1' : '0'});
     }
@@ -280,6 +283,22 @@ class EventsService extends BaseService {
 
     if (absoluteEventNumber != null) {
       bodyMap.addAll(<String, String>{'absoluteEventNumber': absoluteEventNumber.toString()});
+    }
+
+    if (eventId != null) {
+      bodyMap.addAll(<String, String>{'eventId': eventId});
+    }
+
+    if (kennelId != null) {
+      bodyMap.addAll(<String, String>{'kennelId': kennelId});
+    }
+
+    if (eventName != null) {
+      bodyMap.addAll(<String, String>{'eventName': eventName});
+    }
+
+    if (eventStartDatetime != null) {
+      bodyMap.addAll(<String, String>{'startDatetime': eventStartDatetime.toString()});
     }
 
     final String body = jsonEncode(bodyMap);
