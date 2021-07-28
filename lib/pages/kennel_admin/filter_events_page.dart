@@ -290,253 +290,314 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
     return Container(
       decoration: Backgrounds.defaultHcBackgroundLight(),
       padding: const EdgeInsets.only(top: 0.0),
-      child: _allEvents.isEmpty
-          ? Center(child: Text('No events found', style: headingStyleBlack))
-          : RefreshIndicator(
-              onRefresh: () => _handleRefresh(),
-              displacement: 130.0,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  Container(
-                    decoration: const BoxDecoration(
-                      // border: new Border.all(width: 1.0, color: Colors.black),
-                      //shape: BoxShape.circle,
-                      color: Colors.white,
-                      boxShadow: <BoxShadow>[
-                        BoxShadow(
-                          color: Color.fromARGB(70, 0, 0, 0),
-                          offset: Offset(0.0, 6.0),
-                          blurRadius: 10.0,
-                        ),
-                      ],
+      child: RefreshIndicator(
+          onRefresh: () => _handleRefresh(),
+          displacement: 130.0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              Container(
+                decoration: const BoxDecoration(
+                  // border: new Border.all(width: 1.0, color: Colors.black),
+                  //shape: BoxShape.circle,
+                  color: Colors.white,
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: Color.fromARGB(70, 0, 0, 0),
+                      offset: Offset(0.0, 6.0),
+                      blurRadius: 10.0,
                     ),
-                    //color:Color.fromARGB(30, 0, 0, 0),
-                    padding: const EdgeInsets.only(left: 5, top: 5, right: 0, bottom: 5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Container(
-                          height: 75,
-                          child: KennelLogo(
-                            kennelLogoUrl: widget.kennel.kennel.kennelLogo,
-                            kennelShortName: widget.kennel.kennel.kennelShortName,
-                            logoHeight: 75.0,
-                            rightPadding: 15.0,
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Container(
-                                child: AutoSizeText(
-                                  '${widget.kennel.kennel.kennelName}',
-                                  //'Super fucking long text thats sure to overflow and more',
-                                  //'999',
-                                  overflow: TextOverflow.ellipsis,
-                                  minFontSize: 18.0,
-                                  maxLines: 1,
-                                  style: numberStyle,
-                                  textAlign: TextAlign.left,
-                                ),
-                                //color: Colors.green,
-                              ),
-                              Container(
-                                child: AutoSizeText(
-                                  'Published run count: ${publishedRunCount.toString()}',
-                                  //'Super fucking long text thats sure to overflow and more',
-                                  //'999',
-                                  overflow: TextOverflow.ellipsis,
-                                  minFontSize: 18.0,
-                                  maxLines: 1,
-                                  style: numberStyle,
-                                  textAlign: TextAlign.left,
-                                ),
-                                //color: Colors.green,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 1.0, right: 1.0),
-                      child: TabBar(
-                        labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                        unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
-                        isScrollable: false,
-                        unselectedLabelColor: Colors.black,
-                        labelColor: Colors.white,
-                        labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        indicator: BubbleTabIndicator(
-                          indicatorHeight: 35.0,
-                          indicatorColor: Theme.of(context).buttonColor,
-                          tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                          indicatorRadius: 20.0,
-                        ),
-                        tabs: tabs,
-                        controller: _tabController,
+                  ],
+                ),
+                //color:Color.fromARGB(30, 0, 0, 0),
+                padding: const EdgeInsets.only(left: 5, top: 5, right: 0, bottom: 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    Container(
+                      height: 75,
+                      child: KennelLogo(
+                        kennelLogoUrl: widget.kennel.kennel.kennelLogo,
+                        kennelShortName: widget.kennel.kennel.kennelShortName,
+                        logoHeight: 75.0,
+                        rightPadding: 15.0,
                       ),
                     ),
-                    height: 55.0,
-                    //padding: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                      // border: new Border.all(width: 1.0, color: Colors.black),
-                      //shape: BoxShape.circle,
-                      color: Colors.yellow.shade100,
-                      boxShadow: const <BoxShadow>[
-                        BoxShadow(
-                          color: Color.fromARGB(70, 0, 0, 0),
-                          offset: Offset(0.0, 6.0),
-                          blurRadius: 10.0,
-                        ),
-                      ],
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Container(
+                            child: AutoSizeText(
+                              '${widget.kennel.kennel.kennelName}',
+                              //'Super fucking long text thats sure to overflow and more',
+                              //'999',
+                              overflow: TextOverflow.ellipsis,
+                              minFontSize: 18.0,
+                              maxLines: 1,
+                              style: numberStyle,
+                              textAlign: TextAlign.left,
+                            ),
+                            //color: Colors.green,
+                          ),
+                          Container(
+                            child: AutoSizeText(
+                              widget.pageType == FilterEventsPageType.past
+                                  ? 'Past run count: ${publishedRunCount.toString()}'
+                                  : 'Future run count: ${publishedRunCount.toString()}',
+                              //'Super fucking long text thats sure to overflow and more',
+                              //'999',
+                              overflow: TextOverflow.ellipsis,
+                              minFontSize: 18.0,
+                              maxLines: 1,
+                              style: numberStyle,
+                              textAlign: TextAlign.left,
+                            ),
+                            //color: Colors.green,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: <Widget>[_listView(_allEvents), _calendarView()],
+                  ],
+                ),
+              ),
+              Container(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 1.0, right: 1.0),
+                  child: TabBar(
+                    labelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                    unselectedLabelStyle: const TextStyle(fontFamily: 'AvenirNextCondensedMedium', fontStyle: FontStyle.normal, fontSize: 18.0, height: 1.0),
+                    isScrollable: false,
+                    unselectedLabelColor: Colors.black,
+                    labelColor: Colors.white,
+                    labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicator: BubbleTabIndicator(
+                      indicatorHeight: 35.0,
+                      indicatorColor: Theme.of(context).buttonColor,
+                      tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                      indicatorRadius: 20.0,
                     ),
+                    tabs: tabs,
+                    controller: _tabController,
                   ),
-                ],
-              )),
+                ),
+                height: 55.0,
+                //padding: const EdgeInsets.only(top: 5),
+                decoration: BoxDecoration(
+                  // border: new Border.all(width: 1.0, color: Colors.black),
+                  //shape: BoxShape.circle,
+                  color: Colors.yellow.shade100,
+                  boxShadow: const <BoxShadow>[
+                    BoxShadow(
+                      color: Color.fromARGB(70, 0, 0, 0),
+                      offset: Offset(0.0, 6.0),
+                      blurRadius: 10.0,
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: <Widget>[_listView(_allEvents), _calendarView()],
+                ),
+              ),
+            ],
+          )),
     );
   }
 
   Widget _calendarView() {
-    return Container(
-        color: Colors.transparent,
-        padding: const EdgeInsets.only(top: 5),
+    return Column(children: <Widget>[
+      //
+      Container(
+        decoration: BoxDecoration(
+          // border: new Border.all(width: 1.0, color: Colors.black),
+          //shape: BoxShape.circle,
+          color: Colors.grey.shade300,
+          boxShadow: const <BoxShadow>[
+            BoxShadow(
+              color: Color.fromARGB(70, 0, 0, 0),
+              offset: Offset(0.0, 6.0),
+              blurRadius: 10.0,
+            ),
+          ],
+        ),
         child: Column(
           children: <Widget>[
-            TableCalendar(
-              headerStyle: HeaderStyle(
-                rightChevronIcon: const Icon(Icons.chevron_right, color: Colors.black),
-                leftChevronIcon: const Icon(Icons.chevron_left, color: Colors.black),
-                centerHeaderTitle: true,
-                formatButtonDecoration: BoxDecoration(
-                  color: Colors.blue.shade600,
-                  borderRadius: BorderRadius.circular(6.0),
+            const Divider(color: Colors.black, height: 1.0),
+            Container(
+              //color: Colors.white,
+              padding: const EdgeInsets.only(bottom: 10.0),
+              child: TableCalendar(
+                rowHeight: 35.0,
+                //startDay: DateTime.now(),
+                headerStyle: HeaderStyle(
+                  rightChevronIcon: const Icon(Icons.chevron_right, color: Colors.black),
+                  leftChevronIcon: const Icon(Icons.chevron_left, color: Colors.black),
+                  centerHeaderTitle: true,
+                  formatButtonDecoration: BoxDecoration(
+                    color: Colors.blue.shade600,
+                    borderRadius: BorderRadius.circular(6.0),
+                  ),
+                  formatButtonTextStyle: const TextStyle().copyWith(color: Colors.white),
                 ),
-                formatButtonTextStyle: const TextStyle().copyWith(color: Colors.white),
-              ),
-              calendarController: _calendarController,
-              events: _calendarEvents.cast<DateTime, List<dynamic>>(),
-              onDaySelected: _onDaySelected,
-              availableCalendarFormats: const <CalendarFormat, String>{
-                CalendarFormat.month: 'Week',
-                CalendarFormat.week: 'Month',
-              },
-              calendarStyle: CalendarStyle(
-                selectedColor: Colors.deepOrange[400],
-                todayColor: Colors.deepOrange[200],
-                markersColor: Colors.brown[700],
-                outsideDaysVisible: false,
-              ),
-              builders: CalendarBuilders(
-                selectedDayBuilder: (BuildContext context, DateTime date, _) {
-                  return FadeTransition(
-                    opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animationController),
-                    child: Container(
+                calendarController: _calendarController,
+                events: _calendarEvents.cast<DateTime, List<dynamic>>(),
+                onDaySelected: _onDaySelected,
+                availableCalendarFormats: const <CalendarFormat, String>{
+                  CalendarFormat.month: 'Week',
+                  CalendarFormat.week: 'Month',
+                },
+                calendarStyle: CalendarStyle(
+                  selectedColor: Colors.deepOrange[400],
+                  todayColor: Colors.deepOrange[200],
+                  markersColor: Colors.brown[700],
+                  outsideDaysVisible: false,
+                ),
+                builders: CalendarBuilders(
+                  selectedDayBuilder: (BuildContext context, DateTime date, _) {
+                    return FadeTransition(
+                      opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animationController),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade100,
+                          border: Border.all(
+                            color: Colors.blue,
+                            width: 1.0,
+                          ),
+                        ),
+                        // margin: const EdgeInsets.all(4.0),
+                        // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                        //color: Colors.deepOrange[300],
+                        width: 100,
+                        height: 50,
+                        child: Text(
+                          '${date.day}',
+                          style: const TextStyle().copyWith(fontSize: 16.0),
+                        ),
+                      ),
+                    );
+                  },
+                  todayDayBuilder: (BuildContext context, DateTime date, _) {
+                    return Container(
                       decoration: BoxDecoration(
-                        color: Colors.blue.shade100,
+                        color: Colors.orange.shade100,
                         border: Border.all(
-                          color: Colors.blue,
+                          color: Colors.black26,
                           width: 1.0,
                         ),
                       ),
-                      // margin: const EdgeInsets.all(4.0),
-                      // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                      //color: Colors.deepOrange[300],
                       width: 100,
-                      height: 100,
+                      height: 50,
                       child: Text(
                         '${date.day}',
                         style: const TextStyle().copyWith(fontSize: 16.0),
                       ),
-                    ),
-                  );
-                },
-                todayDayBuilder: (BuildContext context, DateTime date, _) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade100,
-                      border: Border.all(
-                        color: Colors.black26,
-                        width: 1.0,
+                    );
+                  },
+                  dayBuilder: (BuildContext context, DateTime date, _) {
+                    return Container(
+                      // margin: const EdgeInsets.all(4.0),
+                      // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                      decoration: BoxDecoration(
+                        color: (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) == 0
+                            ? date.difference(DateTime.now()).inDays > 0
+                                ? Colors.white
+                                : Colors.grey.shade200
+                            : (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) > 1
+                                ? Colors.red.shade100
+                                : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isCountedRun'] == 1
+                                    ? Colors.green.shade100
+                                    : Colors.grey.shade300,
+                        border: Border.all(
+                          color: Colors.black26,
+                          width: 1.0,
+                        ),
                       ),
-                    ),
-                    width: 100,
-                    height: 100,
-                    child: Text(
-                      '${date.day}',
-                      style: const TextStyle().copyWith(fontSize: 16.0),
-                    ),
-                  );
-                },
-                dayBuilder: (BuildContext context, DateTime date, _) {
-                  return Container(
-                    // margin: const EdgeInsets.all(4.0),
-                    // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                    decoration: BoxDecoration(
-                      color: (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) == 0
-                          ? Colors.white
-                          : (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) > 1
-                              ? Colors.grey.shade300
-                              : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isCountedRun'] == 1
-                                  ? Colors.purple.shade100
-                                  : Colors.grey.shade300,
-                      border: Border.all(
-                        color: Colors.black26,
-                        width: 1.0,
+                      width: 100,
+                      height: 50,
+                      child: Text(
+                        '${date.day}',
+                        style: const TextStyle().copyWith(fontSize: 16.0, color: date.difference(DateTime.now()).inDays > 0 ? Colors.black : Colors.grey.shade500),
                       ),
-                    ),
-                    width: 100,
-                    height: 100,
-                    child: Text(
-                      '${date.day}',
-                      style: const TextStyle().copyWith(fontSize: 16.0),
-                    ),
-                  );
-                },
-                // markersBuilder: (context, date, events, holidays) {
-                //   final children = <Widget>[];
+                    );
+                  },
+                  // markersBuilder: (context, date, events, holidays) {
+                  //   final children = <Widget>[];
 
-                //   if (events.isNotEmpty) {
-                //     children.add(
-                //       Positioned(
-                //         right: 1,
-                //         bottom: 1,
-                //         child: _buildEventsMarker(date, events),
-                //       ),
-                //     );
-                //   }
+                  //   if (events.isNotEmpty) {
+                  //     children.add(
+                  //       Positioned(
+                  //         right: 1,
+                  //         bottom: 1,
+                  //         child: _buildEventsMarker(date, events),
+                  //       ),
+                  //     );
+                  //   }
 
-                //   if (holidays.isNotEmpty) {
-                //     children.add(
-                //       Positioned(
-                //         right: -2,
-                //         top: -2,
-                //         child: _buildHolidaysMarker(),
-                //       ),
-                //     );
-                //   }
+                  //   if (holidays.isNotEmpty) {
+                  //     children.add(
+                  //       Positioned(
+                  //         right: -2,
+                  //         top: -2,
+                  //         child: _buildHolidaysMarker(),
+                  //       ),
+                  //     );
+                  //   }
 
-                //   return children;
-                // },
+                  //   return children;
+                  // },
+                ),
               ),
             ),
-            Expanded(child: _listView(_selectedEvents)),
+            const SizedBox(height: 5.0),
+            if (_calendarController?.selectedDay != null &&
+                _calendarController.selectedDay.difference(DateTime.now()).inDays > 0 &&
+                (_calendarEvents[DateTime(_calendarController.selectedDay.year, _calendarController.selectedDay.month, _calendarController.selectedDay.day)]?.length ?? 0) ==
+                    0) ...<Widget>[_buildButtons()],
           ],
-        ));
+        ),
+      ),
+      Expanded(child: _listView(_selectedEvents)),
+    ]);
+  }
+
+  Widget _buildButtons() {
+    return Column(
+      children: <Widget>[
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            // ElevatedButton(
+            //   child: Text(
+            //     'Add run',
+            //     style: buttonLabelStyleMedium,
+            //   ),
+            //   onPressed: () {
+            //     setState(() {
+            //       //_calendarController.setCalendarFormat(CalendarFormat.month);
+            //     });
+            //   },
+            // ),
+            ElevatedButton(
+              child: Text('Add placeholder event', style: buttonLabelStyleMedium),
+              onPressed: () {
+                setState(() {
+                  //_calendarController.setCalendarFormat(CalendarFormat.twoWeeks);
+                });
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 18.0),
+      ],
+    );
   }
 
   Widget _listView(List<Map<String, dynamic>> listEvents) {
