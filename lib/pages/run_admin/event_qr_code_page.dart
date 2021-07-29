@@ -224,7 +224,7 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
                       ? 'This QR code can be scanned by Hashers to check in when they arrive at the start of a run.\r\n\r\nThis will automatically mark them as at the run, but will not mark them as paid. This is especially useful for Hashes with large packs.'
                       : 'This QR code can be scanned by Hashers to check in when they finish running the Hash trail.\r\n\r\nThis will automatically mark them as having finished the run.\r\n\r\nThis is especially useful for Hashes where it is important to account that everyone has arrived safely at the end of the run and ensure no one remains on trail.',
                   textAlign: TextAlign.justify,
-                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+                  style: const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
                 )
               ],
             ),

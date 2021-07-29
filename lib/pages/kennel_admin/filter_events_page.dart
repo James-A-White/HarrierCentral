@@ -59,7 +59,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
   List<Map<String, dynamic>> _publishedRunCountSqlResult = <Map<String, dynamic>>[];
   List<Map<String, dynamic>> _selectedEvents = <Map<String, dynamic>>[];
   final Map<DateTime, List<Map<String, dynamic>>> _calendarEvents = <DateTime, List<Map<String, dynamic>>>{};
-  Future<DateTime> _dateBeingUpdated = Future.value(null);
+  Future<DateTime> _dateBeingUpdated = Future<DateTime>.value(null);
 
   //PageController _pageController;
 

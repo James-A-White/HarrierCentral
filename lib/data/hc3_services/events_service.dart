@@ -270,6 +270,12 @@ class EventsService extends BaseService {
     num lat,
     num lon,
     int useFbLatLon,
+    int useFbRunDetails,
+    int useFbLocation,
+    String eventDescription,
+    num eventPriceForMembers,
+    num eventPriceForNonMembers,
+    String locationOneLineDesc,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return;
@@ -328,6 +334,30 @@ class EventsService extends BaseService {
 
     if (useFbLatLon != null) {
       bodyMap.addAll(<String, String>{'useFbLatLon': useFbLatLon.toString()});
+    }
+
+    if (useFbRunDetails != null) {
+      bodyMap.addAll(<String, String>{'useFbRunDetails': useFbRunDetails.toString()});
+    }
+
+    if (useFbLocation != null) {
+      bodyMap.addAll(<String, String>{'useFbLocation': useFbLocation.toString()});
+    }
+
+    if (eventDescription != null) {
+      bodyMap.addAll(<String, String>{'eventDescription': eventDescription});
+    }
+
+    if (locationOneLineDesc != null) {
+      bodyMap.addAll(<String, String>{'locationOneLineDesc': locationOneLineDesc});
+    }
+
+    if (eventPriceForMembers != null) {
+      bodyMap.addAll(<String, String>{'eventPriceForMembers': eventPriceForMembers.toString()});
+    }
+
+    if (eventPriceForNonMembers != null) {
+      bodyMap.addAll(<String, String>{'eventPriceForNonMembers': eventPriceForNonMembers.toString()});
     }
 
     final String body = jsonEncode(bodyMap);

@@ -426,7 +426,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
   }
 
   Future<void> loadKennels() async {
-    final String userId = getStringPref(StringPrefsEnum.userId);
+    //final String userId = getStringPref(StringPrefsEnum.userId);
 
     String query = ''' 
 
