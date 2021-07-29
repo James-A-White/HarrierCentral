@@ -275,6 +275,8 @@ class EventsService extends BaseService {
     String eventDescription,
     num eventPriceForMembers,
     num eventPriceForNonMembers,
+    num eventPriceForExtras,
+    String extrasDescription,
     String locationOneLineDesc,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
@@ -358,6 +360,14 @@ class EventsService extends BaseService {
 
     if (eventPriceForNonMembers != null) {
       bodyMap.addAll(<String, String>{'eventPriceForNonMembers': eventPriceForNonMembers.toString()});
+    }
+
+    if (eventPriceForExtras != null) {
+      bodyMap.addAll(<String, String>{'eventPriceForExtras': eventPriceForExtras.toString()});
+    }
+
+    if (extrasDescription != null) {
+      bodyMap.addAll(<String, String>{'extrasDescription': extrasDescription});
     }
 
     final String body = jsonEncode(bodyMap);
