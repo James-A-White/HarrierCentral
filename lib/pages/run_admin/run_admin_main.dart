@@ -55,15 +55,16 @@ class RunDetailPageState extends State<RunDetailPage> {
   bool _isLoading = true;
   int _isBetaTester = 0;
 
-  RunDetailAggregate eventAggregate;
+  RunDetailAggregate _eventAggregate;
 
   @override
   void initState() {
     G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagsAllData, false, widget.eventId).then((bool result) {
-      refreshFromTables();
-      setState(() {
-        final String resultStr = result ? 'successfully' : 'unsuccessfully';
-        print('Event admin data synchronized $resultStr');
+      refreshFromTables().then((void dummy) {
+        setState(() {
+          final String resultStr = result ? 'successfully' : 'unsuccessfully';
+          print('Event admin data synchronized $resultStr');
+        });
       });
     });
 
@@ -112,27 +113,25 @@ class RunDetailPageState extends State<RunDetailPage> {
         ),
       );
 
-      setState(() {
-        if (results.isNotEmpty) {
-          final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
-          final RunDetailQueryExtensions extensions = RunDetailQueryExtensions.fromMap(results[0]);
-          final KennelsModel kennel = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
-          String paymentLinkUrl = '';
+      if (results.isNotEmpty) {
+        final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
+        final RunDetailQueryExtensions extensions = RunDetailQueryExtensions.fromMap(results[0]);
+        final KennelsModel kennel = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
+        String paymentLinkUrl = '';
 
-          if (((eventItem.eventPaymentUrl ?? '') != '') && (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
-            paymentLinkUrl = eventItem.eventPaymentUrl;
-          } else if (((kennel.kennelPaymentUrl ?? '') != '') && (kennel.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
-            paymentLinkUrl = kennel.kennelPaymentUrl;
-          }
-
-          extensions.paymentUrl = paymentLinkUrl;
-          extensions.distToEvent = dist;
-          //extensions.distancePreference = results[0]['distancePreference'];
-
-          eventAggregate = RunDetailAggregate(event: eventItem, extensions: extensions, kennel: kennel);
+        if (((eventItem.eventPaymentUrl ?? '') != '') && (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
+          paymentLinkUrl = eventItem.eventPaymentUrl;
+        } else if (((kennel.kennelPaymentUrl ?? '') != '') && (kennel.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+          paymentLinkUrl = kennel.kennelPaymentUrl;
         }
-        _isLoading = false;
-      });
+
+        extensions.paymentUrl = paymentLinkUrl;
+        extensions.distToEvent = dist;
+        //extensions.distancePreference = results[0]['distancePreference'];
+
+        _eventAggregate = RunDetailAggregate(event: eventItem, extensions: extensions, kennel: kennel);
+      }
+      _isLoading = false;
     } catch (e) {
       print(e);
     }
@@ -166,7 +165,7 @@ class RunDetailPageState extends State<RunDetailPage> {
                   children: <Widget>[
                     Padding(
                       padding: const EdgeInsets.only(top: 20, bottom: 20),
-                      child: AutoSizeText(eventAggregate.event.eventName, style: titleStyle, textAlign: TextAlign.center, maxLines: 2),
+                      child: AutoSizeText(_eventAggregate.event.eventName, style: titleStyle, textAlign: TextAlign.center, maxLines: 2),
                     ),
                     FancyDivider(
                       key: UniqueKey(),
@@ -181,8 +180,8 @@ class RunDetailPageState extends State<RunDetailPage> {
                       topMargin: 35.0,
                       bottomMargin: 5.0,
                     ),
-                    RunDetails(eventAggregate.event, eventAggregate.kennel, eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym,
-                        eventAggregate.extensions.distancePreference, eventAggregate.extensions.distToEvent, eventAggregate.extensions.paymentUrl, false),
+                    RunDetails(_eventAggregate.event, _eventAggregate.kennel, _eventAggregate.extensions.digAfterDec, _eventAggregate.extensions.curSym,
+                        _eventAggregate.extensions.distancePreference, _eventAggregate.extensions.distToEvent, _eventAggregate.extensions.paymentUrl, false),
                   ],
                 ),
               ),
@@ -231,7 +230,7 @@ class RunDetailPageState extends State<RunDetailPage> {
                   Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => CheckInPackPage(eventAggregate: eventAggregate),
+                      builder: (BuildContext context) => CheckInPackPage(eventAggregate: _eventAggregate),
                     ),
                   );
                 },
@@ -269,7 +268,7 @@ class RunDetailPageState extends State<RunDetailPage> {
                   Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => CheckInScannerPage(eventAggregate: eventAggregate),
+                      builder: (BuildContext context) => CheckInScannerPage(eventAggregate: _eventAggregate),
                     ),
                   );
                 },
@@ -319,7 +318,7 @@ class RunDetailPageState extends State<RunDetailPage> {
                     context,
                     MaterialPageRoute<dynamic>(
                       builder: (BuildContext context) => PaymentReportPage(
-                        eventAggregate: eventAggregate,
+                        eventAggregate: _eventAggregate,
                       ),
                     ),
                   );
@@ -364,7 +363,7 @@ class RunDetailPageState extends State<RunDetailPage> {
                     context,
                     MaterialPageRoute<dynamic>(
                       builder: (BuildContext context) => ReceiptsList(
-                        eventAggregate: eventAggregate,
+                        eventAggregate: _eventAggregate,
                       ),
                     ),
                   );
@@ -376,96 +375,149 @@ class RunDetailPageState extends State<RunDetailPage> {
       ],
     ));
 
-    kiddies.add(Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(top: 15, bottom: 15),
-          child: Container(
-            width: 110,
-            height: 110,
-            // foregroundDecoration: BoxDecoration(
-            //   color: Colors.grey,
-            //   backgroundBlendMode: BlendMode.saturation,
-            // ),
-            child: ElevatedButton(
-              // shape: RoundedRectangleBorder(
-              //     borderRadius: BorderRadius.circular(10.0)),
-              // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                //primary: Colors.grey,
-              ),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(left: 3, top: 5),
-                  child: Image.asset('images/icons/print_qr_icon.png', height: 55.0, width: 55.0),
+    kiddies.add(
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(top: 15, bottom: 15),
+            child: Container(
+              width: 110,
+              height: 110,
+              // foregroundDecoration: BoxDecoration(
+              //   color: Colors.grey,
+              //   backgroundBlendMode: BlendMode.saturation,
+              // ),
+              child: ElevatedButton(
+                // shape: RoundedRectangleBorder(
+                //     borderRadius: BorderRadius.circular(10.0)),
+                // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                  //primary: Colors.grey,
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
-                  child: Text(
-                    'Print QR codes',
-                    style: buttonLabelStyleSmallCompressedLines,
-                    textAlign: TextAlign.center,
+                child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(left: 3, top: 5),
+                    child: Image.asset('images/icons/print_qr_icon.png', height: 55.0, width: 55.0),
                   ),
-                ),
-              ]),
-              onPressed: () {
-                Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => EventQrCodePage(
-                            kennelShortName: eventAggregate.kennel.kennelShortName,
-                            qrContent: eventAggregate.event.eventId,
-                            title: eventAggregate.event.eventName,
-                            runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
-                            runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
-                            eventStartDatetime: eventAggregate.event.eventStartDatetime)));
-              },
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 15, bottom: 15),
-          child: Container(
-            width: 110,
-            height: 110,
-            child: ElevatedButton(
-              // shape: RoundedRectangleBorder(
-              //     borderRadius: BorderRadius.circular(10.0)),
-              // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-              ),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(left: 3, top: 5),
-                  child: Image.asset('images/icons/email_icon.png', height: 55.0, width: 55.0),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
-                  child: Text(
-                    'Email Run Details',
-                    style: buttonLabelStyleSmallCompressedLines,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ]),
-              onPressed: () {
-                Navigator.push<dynamic>(
-                  context,
-                  MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) => EmailEditorPage(
-                      eventId: widget.eventId,
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+                    child: Text(
+                      'Print QR codes',
+                      style: buttonLabelStyleSmallCompressedLines,
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                );
-              },
+                ]),
+                onPressed: () {
+                  Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                          builder: (BuildContext context) => EventQrCodePage(
+                              kennelShortName: _eventAggregate.kennel.kennelShortName,
+                              qrContent: _eventAggregate.event.eventId,
+                              title: _eventAggregate.event.eventName,
+                              runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
+                              runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
+                              eventStartDatetime: _eventAggregate.event.eventStartDatetime)));
+                },
+              ),
             ),
           ),
-        ),
-      ],
-    ));
+          Padding(
+            padding: const EdgeInsets.only(top: 15, bottom: 15),
+            child: Container(
+              width: 110,
+              height: 110,
+              child: ElevatedButton(
+                // shape: RoundedRectangleBorder(
+                //     borderRadius: BorderRadius.circular(10.0)),
+                // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                ),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(left: 3, top: 5),
+                    child: Image.asset('images/icons/email_icon.png', height: 55.0, width: 55.0),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+                    child: Text(
+                      'Email Run Details',
+                      style: buttonLabelStyleSmallCompressedLines,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ]),
+                onPressed: () {
+                  Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      builder: (BuildContext context) => EmailEditorPage(
+                        eventId: widget.eventId,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    kiddies.add(
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(top: 15, bottom: 15),
+            child: Container(
+              width: 110,
+              height: 110,
+              // foregroundDecoration: BoxDecoration(
+              //   color: Colors.grey,
+              //   backgroundBlendMode: BlendMode.saturation,
+              // ),
+              child: ElevatedButton(
+                // shape: RoundedRectangleBorder(
+                //     borderRadius: BorderRadius.circular(10.0)),
+                // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                  //primary: Colors.grey,
+                ),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(left: 3, top: 5),
+                    child: Image.asset('images/icons/print_qr_icon.png', height: 55.0, width: 55.0),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+                    child: Text(
+                      'Edit run details',
+                      style: buttonLabelStyleSmallCompressedLines,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ]),
+                onPressed: () {
+                  Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                          builder: (BuildContext context) => EditRunDetailsPage(_eventAggregate, () async {
+                                await refreshFromTables();
+                                return _eventAggregate;
+                              })));
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
 
     return kiddies;
   }

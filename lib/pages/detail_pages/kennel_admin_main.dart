@@ -490,6 +490,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       center: LatLng(IveCoreUtilities.unInt(widget.kennelAggregateItem.extensions.cityLat),
                                           IveCoreUtilities.unInt(widget.kennelAggregateItem.extensions.cityLon)),
                                       zoom: sliderValue,
+                                      minZoom: 1.0,
+                                      maxZoom: 18.0,
                                     ),
                                     layers: <LayerOptions>[
                                       TileLayerOptions(

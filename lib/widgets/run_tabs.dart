@@ -667,6 +667,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           options: MapOptions(
             center: lat_lng.LatLng(IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLatitude), IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLongitude)),
             zoom: 15.0,
+            minZoom: 1.0,
+            maxZoom: 18.0,
           ),
           layers: <LayerOptions>[
             TileLayerOptions(

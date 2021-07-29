@@ -47,6 +47,9 @@ EventModel _$EventModelFromJson(Map<String, dynamic> json) {
     tags1: json['tags1'] as int,
     tags2: json['tags2'] as int,
     tags3: json['tags3'] as int,
+    useFbLatLon: json['useFbLatLon'] as int,
+    useFbLocation: json['useFbLocation'] as int,
+    useFbRunDetails: json['useFbRunDetails'] as int,
     removed: json['removed'] as int,
     updatedAt: json['updatedAt'] == null
         ? null
@@ -92,6 +95,9 @@ Map<String, dynamic> _$EventModelToJson(EventModel instance) =>
       'tags1': instance.tags1,
       'tags2': instance.tags2,
       'tags3': instance.tags3,
+      'useFbLocation': instance.useFbLocation,
+      'useFbLatLon': instance.useFbLatLon,
+      'useFbRunDetails': instance.useFbRunDetails,
       'removed': instance.removed,
       'updatedAt': instance.updatedAt?.toIso8601String(),
     };

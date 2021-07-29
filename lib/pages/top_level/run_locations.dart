@@ -519,8 +519,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
 
   Widget buildKennelMarker(String kennelLogo, String kennelShortName, String kennelId) {
     bool isHomeKennel = false;
-    if (kennelId == getStringPref(StringPrefsEnum.homeKennelId))
-    {
+    if (kennelId == getStringPref(StringPrefsEnum.homeKennelId)) {
       isHomeKennel = true;
     }
     return GestureDetector(
@@ -543,13 +542,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
           extensionsItem.notificationsRequested = -1;
           extensionsItem.emailAlertRequested = -1;
 
-
-          final KennelListAggregate kennel = KennelListAggregate(
-            kennel: kennelItem,
-            extensions: extensionsItem,
-            hkm: hkmItem,
-            isHomeKennel: isHomeKennel
-          );
+          final KennelListAggregate kennel = KennelListAggregate(kennel: kennelItem, extensions: extensionsItem, hkm: hkmItem, isHomeKennel: isHomeKennel);
 
           Navigator.of(context).push<dynamic>(
             MaterialPageRoute<dynamic>(
@@ -639,6 +632,8 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                             ? LatLng(IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLat), IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLon))
                             : LatLng(IveCoreUtilities.unInt(homeKennelLat), IveCoreUtilities.unInt(homeKennelLon)),
                     zoom: 10.0,
+                    minZoom: 1.0,
+                    maxZoom: 18.0,
                     plugins: <MarkerClusterPlugin>[
                       MarkerClusterPlugin(),
                     ],

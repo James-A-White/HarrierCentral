@@ -40,6 +40,9 @@ class EventModel implements BaseModel {
       this.tags1,
       this.tags2,
       this.tags3,
+      this.useFbLatLon,
+      this.useFbLocation,
+      this.useFbRunDetails,
       this.removed,
       this.updatedAt});
 
@@ -82,6 +85,10 @@ class EventModel implements BaseModel {
   final int tags1;
   final int tags2;
   final int tags3;
+  final int useFbLocation;
+  final int useFbLatLon;
+  final int useFbRunDetails;
+
   final int removed;
   final DateTime updatedAt;
 }
@@ -145,6 +152,10 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
   final String colTags2 = 'tags2';
   final String colTags3 = 'tags3';
 
+  final String colUseFbLocation = 'useFbLocation';
+  final String colUseFbLatLon = 'useFbLatLon';
+  final String colUseFbRunDetails = 'useFbRunDetails';
+
   @override
   Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
@@ -187,6 +198,9 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
             $colTags1 INT,
             $colTags2 INT,
             $colTags3 INT,
+            $colUseFbLatLon INT,
+            $colUseFbLocation INT,
+            $colUseFbRunDetails INT,
 
             $colRemoved NUM,
             $colUpdatedAt TEXT,
@@ -253,6 +267,9 @@ class EventsService extends BaseService {
     String kennelId,
     String eventName,
     DateTime eventStartDatetime,
+    num lat,
+    num lon,
+    int useFbLatLon,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return;
@@ -299,6 +316,18 @@ class EventsService extends BaseService {
 
     if (eventStartDatetime != null) {
       bodyMap.addAll(<String, String>{'startDatetime': eventStartDatetime.toString()});
+    }
+
+    if (lat != null) {
+      bodyMap.addAll(<String, String>{'latitude': lat.toString()});
+    }
+
+    if (lon != null) {
+      bodyMap.addAll(<String, String>{'longitude': lon.toString()});
+    }
+
+    if (useFbLatLon != null) {
+      bodyMap.addAll(<String, String>{'useFbLatLon': useFbLatLon.toString()});
     }
 
     final String body = jsonEncode(bodyMap);
