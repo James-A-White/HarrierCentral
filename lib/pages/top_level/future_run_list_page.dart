@@ -168,7 +168,6 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
   void refreshFromTable(bool forceRefresh) {
     if (forceRefresh || (allRuns == null) || (allRuns.isEmpty)) {
       final Geolocator locator = Geolocator();
-      IveCoreUtilities.logTiming('Geoquery start', G0<AppModel>().appStartTime);
 
       IveCoreUtilities.logTiming('Run query start', G0<AppModel>().appStartTime);
       QueryRuns.queryRuns(EnumRunQueryType.topRunsPage, EnumRunQueryContext.user, searchAllRuns: searchAllRuns).then((List<Map<String, dynamic>> results) {

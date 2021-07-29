@@ -492,7 +492,7 @@ class RunDetailPageState extends State<RunDetailPage> {
                 child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
                   Padding(
                     padding: const EdgeInsets.only(left: 3, top: 5),
-                    child: Image.asset('images/icons/print_qr_icon.png', height: 55.0, width: 55.0),
+                    child: Image.asset('images/icons/edit_run_icon.png', height: 55.0, width: 55.0),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 10, right: 10, top: 10),

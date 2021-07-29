@@ -224,9 +224,9 @@ class _LocationTabState extends State<LocationTab> with AutomaticKeepAliveClient
                   zoom: 14.0,
                   minZoom: 1.0,
                   maxZoom: 18.0,
-                  plugins: <MarkerClusterPlugin>[
-                    MarkerClusterPlugin(),
-                  ],
+                  // plugins: <MarkerClusterPlugin>[
+                  //   MarkerClusterPlugin(),
+                  // ],
                 ),
                 layers: <LayerOptions>[
                   TileLayerOptions(
@@ -237,6 +237,24 @@ class _LocationTabState extends State<LocationTab> with AutomaticKeepAliveClient
                       subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
                   MarkerLayerOptions(
                     markers: <Marker>[
+                      Marker(
+                        height: 50.0,
+                        width: 50.0,
+                        point: LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0),
+                        builder: (BuildContext ctx) => Container(
+                          padding: const EdgeInsets.all(1.0),
+                          height: 50.0,
+                          width: 50.0,
+                          child: IgnorePointer(
+                            ignoring: true,
+                            child: Image.asset(
+                              'images/other/map_current_location.png',
+                              height: 50.0,
+                              width: 50.0,
+                            ),
+                          ),
+                        ),
+                      ),
                       Marker(
                         width: 120.0,
                         height: 120.0,
@@ -252,47 +270,6 @@ class _LocationTabState extends State<LocationTab> with AutomaticKeepAliveClient
                       ),
                     ],
                   )
-                  // MarkerClusterLayerOptions(
-                  //   maxClusterRadius: 60,
-                  //   size: const Size(40, 40),
-                  //   fitBoundsOptions: const FitBoundsOptions(
-                  //     padding: EdgeInsets.all(50),
-                  //   ),
-                  //   markers: runLocationMarkers,
-                  //   polygonOptions: const PolygonOptions(borderColor: Colors.blueAccent, color: Colors.black12, borderStrokeWidth: 3),
-                  //   builder: (BuildContext context, List<Marker> markers) {
-                  //     heroCounter++;
-                  //     return FloatingActionButton(
-                  //       backgroundColor: Colors.blue[800],
-                  //       child: Text(markers.length.toString()),
-                  //       onPressed: null,
-                  //       heroTag: 'btn_$heroCounter',
-                  //     );
-                  //   },
-                  // ),
-
-                  // MarkerClusterLayerOptions(
-                  //   maxClusterRadius: 60,
-                  //   size: const Size(50, 50),
-                  //   fitBoundsOptions: const FitBoundsOptions(
-                  //     padding: EdgeInsets.all(50),
-                  //   ),
-                  //   markers: showKennels == true ? kennelMarkers : <Marker>[],
-                  //   polygonOptions: const PolygonOptions(borderColor: Colors.blueAccent, color: Colors.black12, borderStrokeWidth: 3),
-                  //   builder: (BuildContext context, List<Marker> markers) {
-                  //     heroCounter++;
-                  //     return FloatingActionButton(
-                  //       backgroundColor: Colors.purple[600],
-                  //       child: Text(markers.length.toString()),
-                  //       onPressed: null,
-                  //       heroTag: 'btn_$heroCounter',
-                  //     );
-                  //   },
-                  // ),
-
-                  // MarkerLayerOptions(
-                  //   markers: <Marker>[for (MapMarker item in runLocations) mapMarker(item)],
-                  // )
                 ],
               ),
 
@@ -303,10 +280,10 @@ class _LocationTabState extends State<LocationTab> with AutomaticKeepAliveClient
               Positioned(
                 left: 10.0,
                 right: 10.0,
-                top: 10.0,
+                bottom: 40.0,
                 child: Container(
                   padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
-                  child: Text(_updatedEventAggregate.event.useFbLatLon == 1 ? 'Using Facebook Location' : 'Using Harrier Central Location',
+                  child: Text(_updatedEventAggregate.event.useFbLatLon == 1 ? 'Facebook Location' : 'Harrier Central Location',
                       textAlign: TextAlign.center, style: headingStyle20Black),
                   decoration: BoxDecoration(
                     color: Colors.yellow[100],
@@ -316,9 +293,43 @@ class _LocationTabState extends State<LocationTab> with AutomaticKeepAliveClient
                 ),
               ),
               Positioned(
+                right: 10.0,
+                top: 10.0,
+                child: GestureDetector(
+                  onTap: () {
+                    mapController.move(
+                      LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0),
+                      mapController.zoom,
+                    );
+                  },
+                  child: Container(
+                    height: 50.0,
+                    width: 50.0,
+                    child: Image.asset('images/other/set_map_to_current_location.png'),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 70.0,
+                top: 10.0,
+                child: GestureDetector(
+                  onTap: () {
+                    mapController.move(
+                      LatLng(_updatedEventAggregate.event.narrowEventLatitude + .0, _updatedEventAggregate.event.narrowEventLongitude + .0),
+                      mapController.zoom,
+                    );
+                  },
+                  child: Container(
+                    height: 50.0,
+                    width: 50.0,
+                    child: Image.asset('images/other/set_map_to_event_location.png'),
+                  ),
+                ),
+              ),
+              Positioned(
                 left: 10.0,
                 right: 10.0,
-                bottom: 35.0,
+                bottom: 80.0,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
