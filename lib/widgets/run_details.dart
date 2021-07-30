@@ -239,6 +239,37 @@ class RunDetails extends StatelessWidget {
                     ],
                   ),
                 ),
+                if ((event.locationOneLineDesc ?? '') != '') ...<Widget>[
+                  Container(
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            'Place:',
+                            style: listLabelStyle,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                          ),
+                          flex: flexLeft,
+                        ),
+                        const SizedBox(
+                          height: spaceBetweenRows,
+                          width: spaceBetweenColumns,
+                        ),
+                        Expanded(
+                            child: Text(
+                              event.locationOneLineDesc ?? '',
+                              style: listValueStyle,
+                              textAlign: TextAlign.left,
+
+                              //maxLines: ,
+                              //overflow: TextOverflow.ellipsis,
+                            ),
+                            flex: flexRight),
+                      ],
+                    ),
+                  ),
+                ],
                 ((event.eventGeographicScope ?? 0) == 0)
                     ? Container()
                     : Container(
@@ -437,67 +468,71 @@ class RunDetails extends StatelessWidget {
                         ),
                       )
                     : const SizedBox(height: 0.0, width: 0.0),
-                Container(
-                  //height: spaceBetweenRows,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Expanded(
-                        child: Text(
-                          'Street:',
-                          style: listLabelStyle,
-                          textAlign: TextAlign.right,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        flex: flexLeft,
-                      ),
-                      const SizedBox(
-                        height: spaceBetweenRows,
-                        width: spaceBetweenColumns,
-                      ),
-                      Expanded(
+                if ((event.locationStreet ?? '') != '') ...<Widget>[
+                  Container(
+                    //height: spaceBetweenRows,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Expanded(
                           child: Text(
-                            event.locationStreet ?? '',
-                            style: listValueStyle,
-                            textAlign: TextAlign.left,
+                            'Street:',
+                            style: listLabelStyle,
+                            textAlign: TextAlign.right,
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          flex: flexRight),
-                    ],
-                  ),
-                ),
-                Container(
-                  //height: spaceBetweenRows,
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: Text(
-                          'City:',
-                          style: listLabelStyle,
-                          textAlign: TextAlign.right,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          flex: flexLeft,
                         ),
-                        flex: flexLeft,
-                      ),
-                      const SizedBox(
-                        height: spaceBetweenRows,
-                        width: spaceBetweenColumns,
-                      ),
-                      Expanded(
+                        const SizedBox(
+                          height: spaceBetweenRows,
+                          width: spaceBetweenColumns,
+                        ),
+                        Expanded(
+                            child: Text(
+                              event.locationStreet ?? '',
+                              style: listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            flex: flexRight),
+                      ],
+                    ),
+                  ),
+                ],
+                if ((((event.locationPostCode == null) || (event.locationPostCode.isEmpty)) ? '' : event.locationPostCode + ' ') + (event.locationCity ?? '') != '') ...<Widget>[
+                  Container(
+                    //height: spaceBetweenRows,
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
                           child: Text(
-                            (((event.locationPostCode == null) || (event.locationPostCode.isEmpty)) ? '' : event.locationPostCode + ' ') + (event.locationCity ?? ''),
-                            style: listValueStyle,
-                            textAlign: TextAlign.left,
+                            'City:',
+                            style: listLabelStyle,
+                            textAlign: TextAlign.right,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          flex: flexRight),
-                    ],
+                          flex: flexLeft,
+                        ),
+                        const SizedBox(
+                          height: spaceBetweenRows,
+                          width: spaceBetweenColumns,
+                        ),
+                        Expanded(
+                            child: Text(
+                              (((event.locationPostCode == null) || (event.locationPostCode.isEmpty)) ? '' : event.locationPostCode + ' ') + (event.locationCity ?? ''),
+                              style: listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            flex: flexRight),
+                      ],
+                    ),
                   ),
-                ),
+                ],
                 ((event.locationSubRegion ?? '') == '')
                     ? const SizedBox(height: 0.0, width: 0.0)
                     : Container(
@@ -597,34 +632,6 @@ class RunDetails extends StatelessWidget {
                           ],
                         ),
                       ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Expanded(
-                      child: Text(
-                        'Place:',
-                        style: listLabelStyle,
-                        textAlign: TextAlign.right,
-                        maxLines: 1,
-                      ),
-                      flex: flexLeft,
-                    ),
-                    const SizedBox(
-                      height: spaceBetweenRows,
-                      width: spaceBetweenColumns,
-                    ),
-                    Expanded(
-                        child: Text(
-                          event.locationOneLineDesc ?? '',
-                          style: listValueStyle,
-                          textAlign: TextAlign.left,
-
-                          //maxLines: ,
-                          //overflow: TextOverflow.ellipsis,
-                        ),
-                        flex: flexRight),
-                  ],
-                ),
               ],
             ),
             !showPaymentOptions

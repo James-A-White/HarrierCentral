@@ -151,6 +151,7 @@ export 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 export 'package:ive_flutter_core/widgets/qr_popup.dart';
 export 'package:ive_flutter_core/widgets/zoomable_image_page.dart';
 export 'package:json_annotation/json_annotation.dart';
+export 'package:keyboard_actions/keyboard_actions.dart';
 export 'package:keyboard_avoider/keyboard_avoider.dart';
 export 'package:package_info/package_info.dart';
 export 'package:path_provider/path_provider.dart';
