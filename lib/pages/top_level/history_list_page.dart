@@ -1,7 +1,9 @@
 import 'package:harrier_central/imports.dart';
 
+final GlobalKey<HistoryListPageState> historyListPageKey = GlobalKey<HistoryListPageState>();
+
 class HistoryListPage extends StatefulWidget {
-  const HistoryListPage({Key key}) : super(key: key);
+  HistoryListPage() : super(key: historyListPageKey);
 
   @override
   HistoryListPageState createState() => HistoryListPageState();

@@ -310,16 +310,6 @@ class FutureRunListPageState extends State<FutureRunsListPage> {
               controller: scrollController,
               headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
                 return <Widget>[
-                  // SliverAppBar(
-                  //   expandedHeight: 200.0,
-                  //   floating: false,
-                  //   pinned: false,
-                  //   flexibleSpace: FlexibleSpaceBar(
-                  //       background: Image.network(
-                  //         "https://images.pexels.com/photos/396547/pexels-photo-396547.jpeg?auto=compress&cs=tinysrgb&h=350",
-                  //         fit: BoxFit.cover,
-                  //       )),
-                  // ),
                   SliverList(
                     delegate: SliverChildListDelegate(<Widget>[searchBar()]),
                   ),

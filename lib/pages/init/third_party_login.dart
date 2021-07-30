@@ -76,19 +76,22 @@ class _LoginPageState extends State<ThirdPartyLogin> {
                             ),
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () {
-                            _appleLogin();
-                          },
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 20.0),
-                            child: Image(
-                              height: 60,
-                              fit: BoxFit.fitWidth,
-                              image: AssetImage('images/init/sign_in_with_apple.png'),
+                        // only show Apple login on iOS devices
+                        if (Platform.isIOS) ...<Widget>[
+                          GestureDetector(
+                            onTap: () {
+                              _appleLogin();
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 20.0),
+                              child: Image(
+                                height: 60,
+                                fit: BoxFit.fitWidth,
+                                image: AssetImage('images/init/sign_in_with_apple.png'),
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                         // Padding(
                         //   padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 20.0),
                         //   child: SignInWithAppleButton(

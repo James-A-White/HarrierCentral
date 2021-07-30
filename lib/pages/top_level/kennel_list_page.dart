@@ -1,8 +1,10 @@
 import 'package:harrier_central/imports.dart';
 import 'package:geolocator/geolocator.dart';
 
+final GlobalKey<KennelsListPageState> kennelListPageKey = GlobalKey<KennelsListPageState>();
+
 class KennelsListPage extends StatefulWidget {
-  const KennelsListPage({Key key}) : super(key: key);
+  KennelsListPage() : super(key: kennelListPageKey);
 
   @override
   KennelsListPageState createState() => KennelsListPageState();
@@ -180,15 +182,13 @@ class KennelsListPageState extends State<KennelsListPage> {
                   ? Center(child: Text('Loading Kennels.', style: headingStyle))
                   : NestedScrollView(
                       controller: _scrollController,
-                      headerSliverBuilder: (BuildContext context, bool innerBoxScrolled) => <Widget>[
-                        SliverAppBar(
-                          floating: false,
-                          pinned: false,
-                          snap: false,
-                          elevation: 20,
-                          actions: <Widget>[_searchBar()],
-                        )
-                      ],
+                      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+                        return <Widget>[
+                          SliverList(
+                            delegate: SliverChildListDelegate(<Widget>[_searchBar()]),
+                          ),
+                        ];
+                      },
                       body: RefreshIndicator(
                         onRefresh: _handleRefresh,
                         child: ListView.builder(

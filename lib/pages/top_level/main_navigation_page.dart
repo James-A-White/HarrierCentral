@@ -111,8 +111,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
       // create pages after database is loaded
       futureRunsListPage = FutureRunsListPage();
-      kennelsListPage = const KennelsListPage();
-      historyListPage = const HistoryListPage();
+      kennelsListPage = KennelsListPage();
+      historyListPage = HistoryListPage();
       //final UserQrCodePage userQrCodePage = const UserQrCodePage();
       runLocationsPage = RunLocationsPage(key: runLocationsPageKey);
 
