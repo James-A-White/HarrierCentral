@@ -1,14 +1,15 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=/users/jameswhite/desktop/Development.nosync/flutter"
+export "FLUTTER_ROOT=/Users/jameswhite/Desktop/Development.nosync/flutter"
 export "FLUTTER_APPLICATION_PATH=/Users/jameswhite/Desktop/Development.nosync/Projects/HC/HarrierCentralMobile-Flutter"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
-export "FLUTTER_TARGET=lib/main.dart"
+export "FLUTTER_TARGET=/Users/jameswhite/Desktop/Development.nosync/Projects/HC/HarrierCentralMobile-Flutter/lib/main.dart"
 export "FLUTTER_BUILD_DIR=build"
 export "SYMROOT=${SOURCE_ROOT}/../build/ios"
 export "FLUTTER_BUILD_NAME=0.9.155"
 export "FLUTTER_BUILD_NUMBER=432"
+export "DART_DEFINES=Zmx1dHRlci5pbnNwZWN0b3Iuc3RydWN0dXJlZEVycm9ycz10cnVl,RkxVVFRFUl9XRUJfQVVUT19ERVRFQ1Q9dHJ1ZQ=="
 export "DART_OBFUSCATION=false"
-export "TRACK_WIDGET_CREATION=false"
+export "TRACK_WIDGET_CREATION=true"
 export "TREE_SHAKE_ICONS=false"
 export "PACKAGE_CONFIG=/Users/jameswhite/Desktop/Development.nosync/Projects/HC/HarrierCentralMobile-Flutter/.dart_tool/package_config.json"

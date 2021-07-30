@@ -35,7 +35,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with SingleTick
         ),
       ),
       body: Container(
-        decoration: Backgrounds.defaultHcBackground(),
+        decoration: Backgrounds.defaultHcBackgroundLight(),
         child: Stack(
           alignment: AlignmentDirectional.center,
           children: <Widget>[
@@ -54,6 +54,26 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with SingleTick
             //           height: 1.0),
             //     )),
             Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  //color: Colors.white,
+                  height: 85,
+                  decoration: BoxDecoration(
+                    // border: new Border.all(width: 1.0, color: Colors.black),
+                    //shape: BoxShape.circle,
+                    color: Colors.yellow.shade50,
+                    boxShadow: const <BoxShadow>[
+                      BoxShadow(
+                        color: Color.fromARGB(70, 0, 0, 0),
+                        offset: Offset(0.0, 6.0),
+                        blurRadius: 10.0,
+                      ),
+                    ],
+                  ),
+                )),
+            Positioned(
               top: 20,
               left: 20,
               right: 20,
@@ -64,7 +84,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with SingleTick
                   color: Theme.of(context).primaryColorLight,
                   borderRadius: const BorderRadius.all(Radius.circular(35.0)),
                 ),
-                child: Padding(
+                child: Container(
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
                   child: TabBar(
                     physics: const NeverScrollableScrollPhysics(),
@@ -88,7 +108,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with SingleTick
               ),
             ),
             Positioned(
-                top: 80,
+                top: 86,
                 bottom: 0,
                 child: Container(
                   key: tabKey,
@@ -185,6 +205,8 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
   bool _isVisible = true;
   bool _isCountedRun = true;
   bool _usersCanEditRunAttendence = false;
+  bool _isPromotedEvent = false;
+  int _eventGeographicScope = 1;
 
   @override
   void dispose() {
@@ -209,6 +231,7 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
     _eventPriceForNonMembersController.text = _updatedEventAggregate.event.eventPriceForNonMembers?.toString() ?? '<default>';
     _eventPriceForExtrasController.text = _updatedEventAggregate.event.eventPriceForExtras?.toString() ?? '<none>';
     _extrasDescriptionController.text = _updatedEventAggregate.event.extrasDescription ?? '<none>';
+    _eventGeographicScope = _updatedEventAggregate.event.eventGeographicScope;
   }
 
   KeyboardActionsConfig _buildConfig(BuildContext context) {
@@ -281,7 +304,7 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
         tapOutsideBehavior: TapOutsideBehavior.opaqueDismiss,
         child: Container(
           //elevation: 2.0,
-          decoration: Backgrounds.defaultHcBackgroundLight(),
+          //decoration: Backgrounds.defaultHcBackgroundLight(),
           // shape: RoundedRectangleBorder(
           //   borderRadius: BorderRadius.circular(8.0),
           // ),
@@ -547,6 +570,131 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
                                 return null;
                               },
                             ),
+                            CheckboxFormField(
+                              title: const Text('Promote this run'),
+                              initialValue: _updatedEventAggregate.event.isPromotedEvent == 1,
+                              validator: (bool result) {
+                                _isPromotedEvent = result;
+                                return null;
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                        child: Text(
+                          'Let Hashers around the corner or around the world know about your run if it is interesting to them! By telling us the geographic scope of your run it will help us do a better job promoting it for you!',
+                          style: mediumTextBlack,
+                        ),
+                      ),
+                      Container(
+                        //color: _focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                        margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: Colors.grey.shade500),
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(10),
+                            )),
+                        child: Column(
+                          children: <Widget>[
+                            ListTile(
+                              title: const Text('Local (normal run)'),
+                              leading: Radio<int>(
+                                value: 1,
+                                groupValue: _eventGeographicScope,
+                                onChanged: (int value) {
+                                  setState(() {
+                                    _eventGeographicScope = value;
+                                  });
+                                },
+                              ),
+                            ),
+                            ListTile(
+                              title: const Text('Local (special event)'),
+                              leading: Radio<int>(
+                                value: 2,
+                                groupValue: _eventGeographicScope,
+                                onChanged: (int value) {
+                                  setState(() {
+                                    _eventGeographicScope = value;
+                                  });
+                                },
+                              ),
+                            ),
+                            ListTile(
+                              title: const Text('Regional / State'),
+                              leading: Radio<int>(
+                                value: 3,
+                                groupValue: _eventGeographicScope,
+                                onChanged: (int value) {
+                                  setState(() {
+                                    _eventGeographicScope = value;
+                                  });
+                                },
+                              ),
+                            ),
+                            ListTile(
+                              title: const Text('Nash Hash (national)'),
+                              leading: Radio<int>(
+                                value: 4,
+                                groupValue: _eventGeographicScope,
+                                onChanged: (int value) {
+                                  setState(() {
+                                    _eventGeographicScope = value;
+                                  });
+                                },
+                              ),
+                            ),
+                            ListTile(
+                              title: const Text('Interhash / Continent'),
+                              leading: Radio<int>(
+                                value: 5,
+                                groupValue: _eventGeographicScope,
+                                onChanged: (int value) {
+                                  setState(() {
+                                    _eventGeographicScope = value;
+                                  });
+                                },
+                              ),
+                            ),
+                            ListTile(
+                              title: const Text('World Interhash / Global'),
+                              leading: Radio<int>(
+                                value: 6,
+                                groupValue: _eventGeographicScope,
+                                onChanged: (int value) {
+                                  setState(() {
+                                    _eventGeographicScope = value;
+                                  });
+                                },
+                              ),
+                            ),
+                            ListTile(
+                              title: const Text('Other'),
+                              leading: Radio<int>(
+                                value: 7,
+                                groupValue: _eventGeographicScope,
+                                onChanged: (int value) {
+                                  setState(() {
+                                    _eventGeographicScope = value;
+                                  });
+                                },
+                              ),
+                            ),
+                            ListTile(
+                              title: const Text('Not specified'),
+                              leading: Radio<int>(
+                                value: 0,
+                                groupValue: _eventGeographicScope,
+                                onChanged: (int value) {
+                                  setState(() {
+                                    _eventGeographicScope = value;
+                                  });
+                                },
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -641,6 +789,8 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
           extrasDescription: _extrasDescriptionController.text,
           isCountedRun: _isCountedRun,
           isVisible: _isVisible,
+          isPromotedEvent: _isPromotedEvent,
+          eventGeographicScope: _eventGeographicScope,
           usersCanEditRunAttendence: _usersCanEditRunAttendence,
         )
             .then((void dummy) async {
@@ -1037,7 +1187,7 @@ class _DetailsTabState extends State<DetailsTab> with AutomaticKeepAliveClientMi
         tapOutsideBehavior: TapOutsideBehavior.opaqueDismiss,
         child: Container(
           //elevation: 2.0,
-          decoration: Backgrounds.defaultHcBackgroundLight(),
+          //decoration: Backgrounds.defaultHcBackgroundLight(),
           // shape: RoundedRectangleBorder(
           //   borderRadius: BorderRadius.circular(8.0),
           // ),

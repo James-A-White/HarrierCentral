@@ -162,11 +162,13 @@ class QueryRuns {
             || " " || case when evt.${G0<TableModel>().eventsTableHelper.colEventNumber} IS NOT NULL THEN cast(evt.${G0<TableModel>().eventsTableHelper.colEventNumber} as TEXT) END
             || " " || 
               case 
-              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 1 THEN "is event is local" 
-              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 2 THEN "is event is regional" 
-              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 3 THEN "is event is national is nash hash" 
-              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 4 THEN "is event is continental is interhash" 
-              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 5 THEN "is event is global is world interhash" 
+              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 1 THEN "not event is local" 
+              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 2 THEN "is event is local" 
+              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 3 THEN "is event is regional is state" 
+              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 4 THEN "is event is national is nash hash is nashhash" 
+              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 5 THEN "is event is continental is interhash" 
+              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 6 THEN "is event is global is world interhash" 
+              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 7 THEN "is event is other" 
               else "" 
               end 
             || " " || 

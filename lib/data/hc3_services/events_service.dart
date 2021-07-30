@@ -10,6 +10,7 @@ class EventModel implements BaseModel {
       this.kennelId,
       this.isVisible,
       this.isCountedRun,
+      this.isPromotedEvent,
       this.eventGeographicScope,
       this.eventNumber,
       this.eventName,
@@ -55,6 +56,7 @@ class EventModel implements BaseModel {
   final String kennelId;
   final int isVisible;
   final int isCountedRun;
+  final int isPromotedEvent;
   final int eventGeographicScope;
   final int eventNumber;
   final String eventName;
@@ -121,6 +123,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
   final String colKennelId = 'kennelId';
   final String colIsVisible = 'isVisible';
   final String colIsCountedRun = 'isCountedRun';
+  final String colIsPromotedEvent = 'isPromotedEvent';
   final String colEventGeographicScope = 'eventGeographicScope';
   final String colEventNumber = 'eventNumber';
   final String colEventName = 'eventName';
@@ -168,6 +171,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
             $colKennelId TEXT NOT NULL,
             $colIsVisible INT,
             $colIsCountedRun INT,
+            $colIsPromotedEvent INT,
             $colEventGeographicScope INT,
             $colEventNumber INT,
             $colEventName TEXT,
@@ -263,6 +267,8 @@ class EventsService extends BaseService {
     String eventId,
     bool isVisible,
     bool isCountedRun,
+    bool isPromotedEvent,
+    int eventGeographicScope,
     bool usersCanEditRunAttendence,
     int absoluteEventNumber,
     String kennelId,
@@ -305,6 +311,14 @@ class EventsService extends BaseService {
 
     if (isCountedRun != null) {
       bodyMap.addAll(<String, String>{'isCountedRun': isCountedRun ? '1' : '0'});
+    }
+
+    if (isPromotedEvent != null) {
+      bodyMap.addAll(<String, String>{'isPromotedEvent': isPromotedEvent ? '1' : '0'});
+    }
+
+    if (eventGeographicScope != null) {
+      bodyMap.addAll(<String, String>{'eventGeographicScope': eventGeographicScope.toString()});
     }
 
     if (usersCanEditRunAttendence != null) {
