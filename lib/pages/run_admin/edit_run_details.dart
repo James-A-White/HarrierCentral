@@ -172,19 +172,16 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
   final FocusNode _focusNodeEventPriceForNonMembers = FocusNode();
   final FocusNode _focusNodeEventPriceForExtras = FocusNode();
   final FocusNode _focusNodeExtrasDescription = FocusNode();
-  final FocusNode _focusNodeIsCountedRun = FocusNode();
-  final FocusNode _focusNodeIsVisible = FocusNode();
 
   final TextEditingController _absoluteEventNumberController = TextEditingController();
   final TextEditingController _eventPriceForMembersController = TextEditingController();
   final TextEditingController _eventPriceForNonMembersController = TextEditingController();
   final TextEditingController _eventPriceForExtrasController = TextEditingController();
   final TextEditingController _extrasDescriptionController = TextEditingController();
-  final TextEditingController _isVisibleController = TextEditingController();
-  final TextEditingController _isCountedRunController = TextEditingController();
 
   bool _isVisible = true;
   bool _isCountedRun = true;
+  bool _usersCanEditRunAttendence = false;
 
   @override
   void dispose() {
@@ -193,17 +190,12 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
     _eventPriceForNonMembersController.dispose();
     _eventPriceForExtrasController.dispose();
     _extrasDescriptionController.dispose();
-    _isVisibleController.dispose();
-    _isCountedRunController.dispose();
 
     _focusNodeAbsoluteEventNumber.dispose();
     _focusNodeEventPriceForMembers.dispose();
     _focusNodeEventPriceForNonMembers.dispose();
-
     _focusNodeEventPriceForExtras.dispose();
     _focusNodeExtrasDescription.dispose();
-    _focusNodeIsCountedRun.dispose();
-    _focusNodeIsVisible.dispose();
 
     super.dispose();
   }
@@ -507,6 +499,14 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
                             return null;
                           },
                         ),
+                        CheckboxFormField(
+                          title: const Text('Users can edit run history'),
+                          initialValue: _updatedEventAggregate.event.canEditRunAttendence == 1,
+                          validator: (bool result) {
+                            _usersCanEditRunAttendence = result;
+                            return null;
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -599,6 +599,7 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
           extrasDescription: _extrasDescriptionController.text,
           isCountedRun: _isCountedRun,
           isVisible: _isVisible,
+          usersCanEditRunAttendence: _usersCanEditRunAttendence,
         )
             .then((void dummy) async {
           _updatedEventAggregate = await widget.getUpdatedEventAggregate();

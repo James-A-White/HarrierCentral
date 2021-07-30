@@ -263,6 +263,7 @@ class EventsService extends BaseService {
     String eventId,
     bool isVisible,
     bool isCountedRun,
+    bool usersCanEditRunAttendence,
     int absoluteEventNumber,
     String kennelId,
     String eventName,
@@ -304,6 +305,10 @@ class EventsService extends BaseService {
 
     if (isCountedRun != null) {
       bodyMap.addAll(<String, String>{'isCountedRun': isCountedRun ? '1' : '0'});
+    }
+
+    if (usersCanEditRunAttendence != null) {
+      bodyMap.addAll(<String, String>{'usersCanEditRunAttendence': usersCanEditRunAttendence ? '1' : '0'});
     }
 
     if (absoluteEventNumber != null) {

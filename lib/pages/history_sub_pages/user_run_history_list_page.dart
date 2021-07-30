@@ -694,9 +694,19 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
                           onDismissed: (DismissDirection direction) {
                             print(direction.toString() + ' NOTE: We should never reach this point');
                           },
-                          child: UserEventListItem(
-                            item: item,
-                            kennelShortName: widget.kennelInfo.kennelShortName,
+                          child: GestureDetector(
+                            onTapUp: (TapUpDetails details) {
+                              Navigator.push<dynamic>(
+                                context,
+                                MaterialPageRoute<dynamic>(
+                                  builder: (BuildContext context) => RunDetailPage(eventId: item.eventId),
+                                ),
+                              ); //
+                            },
+                            child: UserEventListItem(
+                              item: item,
+                              kennelShortName: widget.kennelInfo.kennelShortName,
+                            ),
                           ),
                         );
 
