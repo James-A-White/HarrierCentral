@@ -665,7 +665,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
         // Map
         child: FlutterMap(
           options: MapOptions(
-            center: lat_lng.LatLng(IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLatitude), IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLongitude)),
+            center: lat_lng.LatLng(widget.futureRun.event.narrowEventLatitude + .0, widget.futureRun.event.narrowEventLongitude + .0),
             zoom: 15.0,
             minZoom: 1.0,
             maxZoom: 18.0,
@@ -682,7 +682,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                 Marker(
                   width: 120.0,
                   height: 120.0,
-                  point: lat_lng.LatLng(IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLatitude), IveCoreUtilities.unInt(widget.futureRun.event.narrowEventLongitude)),
+                  point: lat_lng.LatLng(widget.futureRun.event.narrowEventLatitude + .0, widget.futureRun.event.narrowEventLongitude + .0),
                   builder: (BuildContext ctx) => GestureDetector(
                     onTap: () => _launchMaps(widget.futureRun.event),
                     child: Container(

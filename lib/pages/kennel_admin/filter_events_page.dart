@@ -146,7 +146,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
           INNER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.kennelId = "${widget.kennel.kennel.kennelId}" and hkm.userId = "$userId"
           WHERE evt.kennelId = "${widget.kennel.kennel.kennelId}"
           AND datetime(evt.eventStartDatetime) $dateComparer datetime('now','localtime','$dateOffset')
-          ORDER BY evt.eventStartDatetime $sortOrder
+          ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} $sortOrder, evt.${G0<TableModel>().eventsTableHelper.colEventNumber} $sortOrder
         
           ''';
 

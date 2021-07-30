@@ -487,8 +487,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     mapController: mapController,
                                     options: MapOptions(
                                       interactive: false,
-                                      center: LatLng(IveCoreUtilities.unInt(widget.kennelAggregateItem.extensions.cityLat),
-                                          IveCoreUtilities.unInt(widget.kennelAggregateItem.extensions.cityLon)),
+                                      center: LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
                                       zoom: sliderValue,
                                       minZoom: 1.0,
                                       maxZoom: 18.0,
@@ -505,8 +504,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           Marker(
                                             width: 240.0,
                                             height: 240.0,
-                                            point: LatLng(IveCoreUtilities.unInt(widget.kennelAggregateItem.extensions.cityLat),
-                                                IveCoreUtilities.unInt(widget.kennelAggregateItem.extensions.cityLon)),
+                                            point: LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0),
                                             builder: (BuildContext ctx) => GestureDetector(
                                               onTap: () => _launchMaps(widget.kennelAggregateItem.extensions.cityLat, widget.kennelAggregateItem.extensions.cityLat),
                                               child: Container(
@@ -545,10 +543,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                     onChanged: (num val) {
                                       // setState(() {
                                       if (mapController != null) {
-                                        mapController.move(
-                                            LatLng(IveCoreUtilities.unInt(widget.kennelAggregateItem.extensions.cityLat),
-                                                IveCoreUtilities.unInt(widget.kennelAggregateItem.extensions.cityLon)),
-                                            val);
+                                        mapController.move(LatLng(widget.kennelAggregateItem.extensions.cityLat + .0, widget.kennelAggregateItem.extensions.cityLon + .0), val);
                                       }
                                       setState(() {
                                         sliderValue = val;

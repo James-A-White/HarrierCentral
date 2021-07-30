@@ -222,8 +222,8 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                 setIntPref(IntPrefsEnum.mapCenterOption, mapCenterOption);
                 mapController.move(
                     ((homeKennelLat != null) && (homeKennelLon != null))
-                        ? LatLng(IveCoreUtilities.unInt(homeKennelLat), IveCoreUtilities.unInt(homeKennelLon))
-                        : LatLng(IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLat), IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLon)),
+                        ? LatLng(homeKennelLat + .0, homeKennelLon + .0)
+                        : LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0),
                     mapController.zoom);
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(
@@ -237,7 +237,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
               } else {
                 mapCenterOption = centerOnCurrentLocation.value;
                 setIntPref(IntPrefsEnum.mapCenterOption, mapCenterOption);
-                mapController.move(LatLng(IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLat), IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLon)), mapController.zoom);
+                mapController.move(LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0), mapController.zoom);
 
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(
@@ -400,7 +400,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     for (int i = 0; i < filteredRuns.length; i++) {
       final RunDetailsAggregate run = filteredRuns[i];
 
-      final LatLng ll = LatLng(IveCoreUtilities.unInt(run.event.narrowEventLatitude), IveCoreUtilities.unInt(run.event.narrowEventLongitude));
+      final LatLng ll = LatLng(run.event.narrowEventLatitude + .0, run.event.narrowEventLongitude + .0);
       final DateTime dt = run.event.eventStartDatetime;
 
       final Marker marker = Marker(
@@ -462,12 +462,12 @@ class RunLocationsPageState extends State<RunLocationsPage> {
             setNumPref(NumPrefsEnum.homeKennelLon, homeKennelLon);
 
             if ((mapCenterOption == centerOnHomeKennel.value) && (homeKennelLat != null) && (homeKennelLon != null)) {
-              mapController.move(LatLng(IveCoreUtilities.unInt(homeKennelLat), IveCoreUtilities.unInt(homeKennelLon)), mapController.zoom);
+              mapController.move(LatLng(homeKennelLat + .0, homeKennelLon + .0), mapController.zoom);
             }
           }
 
           if ((lat != null) && (lon != null) && (lat <= 90.0) && (lat >= -90.0) && (lon <= 180.0) && (lon >= -180.0)) {
-            final LatLng ll = LatLng(IveCoreUtilities.unInt(lat), IveCoreUtilities.unInt(lon));
+            final LatLng ll = LatLng(lat + .0, lon + .0);
             final Marker marker = Marker(
                 width: 120.0,
                 height: 120.0,
@@ -627,10 +627,10 @@ class RunLocationsPageState extends State<RunLocationsPage> {
                   mapController: mapController,
                   options: MapOptions(
                     center: (widget.kennel?.kennelLatitude != null)
-                        ? LatLng(IveCoreUtilities.unInt(widget.kennel.kennelLatitude), IveCoreUtilities.unInt(widget.kennel.kennelLongitude))
+                        ? LatLng(widget.kennel.kennelLatitude + .0, widget.kennel.kennelLongitude + .0)
                         : ((mapCenterOption == centerOnCurrentLocation.value) || (homeKennelLat == null) || (homeKennelLon == null))
-                            ? LatLng(IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLat), IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLon))
-                            : LatLng(IveCoreUtilities.unInt(homeKennelLat), IveCoreUtilities.unInt(homeKennelLon)),
+                            ? LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0)
+                            : LatLng(homeKennelLat + .0, homeKennelLon + .0),
                     zoom: 10.0,
                     minZoom: 1.0,
                     maxZoom: 18.0,

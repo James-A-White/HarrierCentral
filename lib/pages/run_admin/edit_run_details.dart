@@ -877,7 +877,7 @@ class _LocationTabState extends State<LocationTab> with AutomaticKeepAliveClient
               FlutterMap(
                 mapController: mapController,
                 options: MapOptions(
-                  center: LatLng(_updatedEventAggregate.event.narrowEventLatitude, _updatedEventAggregate.event.narrowEventLongitude),
+                  center: LatLng(_updatedEventAggregate.event.narrowEventLatitude + .0, _updatedEventAggregate.event.narrowEventLongitude + .0),
                   zoom: 14.0,
                   minZoom: 1.0,
                   maxZoom: 18.0,

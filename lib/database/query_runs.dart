@@ -326,13 +326,13 @@ class QueryRuns {
                   OR 
                   (coalesce(hem.rsvpState,0) >= 2)
                 )
-            ORDER BY evt.eventStartDatetime
+            ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}, evt.${G0<TableModel>().eventsTableHelper.colEventNumber}
           ''';
 
     final String whereClauseForKennelDetailsPage = '''
             WHERE evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} > datetime('now','localtime','-4 hours') and evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
             AND evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "$kennelId"
-            ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}
+            ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}, evt.${G0<TableModel>().eventsTableHelper.colEventNumber}
             LIMIT 10
           ''';
 
