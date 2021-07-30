@@ -213,7 +213,7 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
     _eventPriceForMembersController.text = _updatedEventAggregate.event.eventPriceForMembers?.toString() ?? '<default>';
     _eventPriceForNonMembersController.text = _updatedEventAggregate.event.eventPriceForNonMembers?.toString() ?? '<default>';
     _eventPriceForExtrasController.text = _updatedEventAggregate.event.eventPriceForExtras?.toString() ?? '<none>';
-    _extrasDescriptionController.text = _updatedEventAggregate.event.extrasDescription;
+    _extrasDescriptionController.text = _updatedEventAggregate.event.extrasDescription ?? '<none>';
   }
 
   @override
@@ -451,12 +451,12 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
                             margin: const EdgeInsets.only(left: 12.5),
                             child: TextFormField(
                               onChanged: (String text) {
-                                // if ((text == null) || (text.isEmpty)) {
-                                //   _eventPriceForExtrasController.text = '<none>';
-                                // } else if ((text.length > 6) && (text.contains('<none>'))) {
-                                //   _eventPriceForExtrasController.text = _eventPriceForExtrasController.text.replaceAll('<none>', '');
-                                //   _eventPriceForExtrasController.selection = TextSelection.fromPosition(TextPosition(offset: _eventPriceForExtrasController.text.length));
-                                // }
+                                if ((text == null) || (text.isEmpty)) {
+                                  _extrasDescriptionController.text = '<none>';
+                                } else if ((text.length > 6) && (text.contains('<none>'))) {
+                                  _extrasDescriptionController.text = _extrasDescriptionController.text.replaceAll('<none>', '');
+                                  _extrasDescriptionController.selection = TextSelection.fromPosition(TextPosition(offset: _extrasDescriptionController.text.length));
+                                }
                               },
                               maxLines: 1,
                               focusNode: _focusNodeExtrasDescription,
@@ -590,12 +590,12 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
         nSvc
             .addEditEvent(
           eventId: widget.eventAggregate.event.eventId,
-          eventPriceForMembers: _eventPriceForMembersController.text == '<default>' ? null : num.tryParse(_eventPriceForMembersController.text),
-          eventPriceForNonMembers: _eventPriceForNonMembersController.text == '<default>' ? null : num.tryParse(_eventPriceForNonMembersController.text),
+          eventPriceForMembers: _eventPriceForMembersController.text == '<default>' ? -2 : num.tryParse(_eventPriceForMembersController.text),
+          eventPriceForNonMembers: _eventPriceForNonMembersController.text == '<default>' ? -2 : num.tryParse(_eventPriceForNonMembersController.text),
           // note for "auto" the value we send to the server is '0' because this will
           // remove any previous absoluteEventNumber that is stored there
           absoluteEventNumber: _absoluteEventNumberController.text == '<auto>' ? 0 : num.tryParse(_absoluteEventNumberController.text),
-          eventPriceForExtras: _eventPriceForExtrasController.text == '<none>' ? null : num.tryParse(_eventPriceForExtrasController.text),
+          eventPriceForExtras: _eventPriceForExtrasController.text == '<none>' ? -2 : num.tryParse(_eventPriceForExtrasController.text),
           extrasDescription: _extrasDescriptionController.text,
           isCountedRun: _isCountedRun,
           isVisible: _isVisible,
