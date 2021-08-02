@@ -74,6 +74,7 @@ export 'package:harrier_central/pages/init/intro_slider.dart';
 export 'package:harrier_central/pages/init/new_account.dart';
 export 'package:harrier_central/pages/init/permissions_slider.dart';
 export 'package:harrier_central/pages/init/use_invite_code_page.dart';
+export 'package:harrier_central/pages/kennel_admin/app_access_page.dart';
 export 'package:harrier_central/pages/kennel_admin/filter_events_page.dart';
 export 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
 export 'package:harrier_central/pages/kennel_admin/run_number_popup.dart';

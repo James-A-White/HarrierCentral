@@ -68,7 +68,7 @@ const String GUID_9 = '99999999-9999-9999-9999-999999999999';
 const String GUID_MAX = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
-const int DB_VERSION = 300;
+const int DB_VERSION = 315;
 
 const int IGNORE_REPLICATION_TIMESTAMP = 628387200000; // 1990-01-01 00:00:00
 const int FORCE_ALL_REPLICATION_TIMESTAMP = 949276800000; // 2000-01-31 00:00:00
@@ -108,13 +108,27 @@ const int authCanManageRuns = 0x00000004;
 const int authCanManageHashCash = 0x00000008;
 const int authCanManageMembers = 0x00000010;
 const int authIsSuperAdmin = 0x40000000;
+const int authAllFlags = 0x0000001f;
 
 class AppAccess {
   AppAccess(
     this.appAccessFlags,
   );
 
-  final int appAccessFlags;
+  int appAccessFlags;
+
+  bool getAppAccess(int aaFlag) {
+    return (appAccessFlags ?? 0) & aaFlag != 0;
+  }
+
+  void setAppAccess(int aaFlag, bool value) {
+    appAccessFlags ??= 0;
+    if (value) {
+      appAccessFlags |= aaFlag;
+    } else {
+      appAccessFlags &= ~aaFlag;
+    }
+  }
 
   bool get isAdmin {
     return appAccessFlags & authIsAdmin != 0;
@@ -167,6 +181,8 @@ const int mmRoleFlagHashBank = 0x00040000;
 const int mmRoleFlagEventMeister = 0x00080000;
 const int mmRoleFlagCommunications = 0x00100000;
 const int mmRoleFlagOther = 0x00200000;
+
+const int mmRoleAllFlags = 0x002fffff;
 
 class Mismanagement {
   Mismanagement(

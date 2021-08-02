@@ -506,7 +506,14 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                     modifyMembership(snapshot.data[index], -9999);
                                     break;
                                   case EnumMemberPopupActions.editKennelAdmin:
-                                    setKennelAdmin(snapshot.data[index], isAdmin: 1);
+                                    Navigator.push<int>(
+                                      context,
+                                      MaterialPageRoute<int>(builder: (BuildContext context) => AppAccessPage(appAccess: snapshot.data[index].appAccessFlags)),
+                                    ).then((int result) {
+                                      if (result != null) {
+                                        setUserProperties(snapshot.data[index], appAccessFlags: result);
+                                      }
+                                    });
                                     break;
                                   case EnumMemberPopupActions.editMismanagementRole:
                                     Navigator.push<int>(
@@ -515,7 +522,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                           builder: (BuildContext context) => MismanagementRolesPage(mismanagementRoles: snapshot.data[index].mismanagementRoles)),
                                     ).then((int result) {
                                       if (result != null) {
-                                        setKennelAdmin(snapshot.data[index], isMismanagement: result);
+                                        setUserProperties(snapshot.data[index], mismanagementRoles: result);
                                       }
                                     });
                                     break;
@@ -892,7 +899,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     });
   }
 
-  void setKennelAdmin(KennelMembersResults item, {int isAdmin = -1, int isMismanagement = -1}) {
+  void setUserProperties(KennelMembersResults item, {int appAccessFlags = -1, int mismanagementRoles = -1}) {
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennelListAggregate.extensions.followingRequested = -1;
     item.memberInfoBeingUpdated = true;
@@ -900,7 +907,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
 
     srv
         .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel,
-            targetUserId: item.hasherId, appAccessFlags: isAdmin, mismanagementRoles: isMismanagement)
+            targetUserId: item.hasherId, appAccessFlags: appAccessFlags, mismanagementRoles: mismanagementRoles)
         .then((void dummy) {
       refreshKennelMembersFromTable(true).then((void dummy) {
         item.memberInfoBeingUpdated = false;

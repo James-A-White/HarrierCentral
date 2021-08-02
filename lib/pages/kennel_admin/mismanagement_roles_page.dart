@@ -113,7 +113,7 @@ class _MismanagementRolesPageState extends State<MismanagementRolesPage> {
                         ),
                         onPressed: () {
                           // if mismanagementFlags = 1 that means this person has no role, so set all to zero, otherwise set the mmRoleIsOnMm flag
-                          Navigator.of(context).pop(mmRoles.mismanagementFlags <= 1 ? 0 : mmRoles.mismanagementFlags | mmRoleIsOnMm);
+                          Navigator.of(context).pop((mmRoles.mismanagementFlags & mmRoleAllFlags) <= 1 ? 0 : mmRoles.mismanagementFlags | mmRoleIsOnMm);
                         },
                         child: Text('Save changes', style: buttonTextStyle),
                       ),
