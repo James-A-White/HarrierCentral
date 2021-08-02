@@ -554,7 +554,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               _isLoading = false;
             });
 
-            if (((widget.eventAggregate.extensions.mismanagementRoleFlags ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) {
+            if (widget.eventAggregate.extensions.appAccess.canManageRuns) {
               if ((adHocData != null) && (adHocData.isNotEmpty)) {
                 final String hem = adHocData[0]['hasherEventMapId'].toString().toLowerCase();
                 scrollIndex = packList.indexWhere((CheckInPackModel k) => k.hemId.toString().toLowerCase() == hem);
@@ -1154,7 +1154,7 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     return GestureDetector(
       onTap: () {
         searchFocusNode.unfocus();
-        if (((widget.eventAggregate.extensions.mismanagementRoleFlags ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0) {
+        if (widget.eventAggregate.extensions.appAccess.canManageRuns) {
           final SnackBar snackBar = buildRsvpAndPaymentSnackbar(context, _scaffoldKey.currentState, packMember);
 
           ScaffoldMessenger.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);

@@ -98,16 +98,109 @@ const int hasherPref_200 = 7 * 4;
 const int mmAuthIsGm = 0x40000000; // TODO(James): Needs implementation
 const int mmAuthCanGrantPermissions = 0x20000000; // TODO(James): Needs implementation
 
-const int mmAuthAccessKennelAdmin = 0x00000001; // TODO(James): Needs implementation
-const int mmAuthAllowCheckInAndOutFlag = 0x00000002;
-const int mmAuthAllowHashCashFlag = 0x00000004;
-const int mmAuthAllowAddNewMemberFlag = 0x00000008;
-const int mmAuthAllowEnableDisableFacebookEvents = 0x00000010; // TODO(James): Needs implementation
-const int mmAuthEditRuns = 0x00000020; // TODO(James): Needs implementation
-const int mmAuthGenerateRunQrCodes = 0x00000040; // TODO(James): Needs implementation
-const int mmAuthManageMembers = 0x00000080; // TODO(James): Needs implementation
-const int mmAuthAllowEditRsvpFlag = 0x00000100;
-const int mmAuthCanEditRunVisibility = 0x00000200; // TODO(James): Needs implementation
+// ======================================
+// APP AUTHORIZATIONS
+// ======================================
+
+const int authIsAdmin = 0x00000001;
+const int authCanManageKennel = 0x00000002;
+const int authCanManageRuns = 0x00000004;
+const int authCanManageHashCash = 0x00000008;
+const int authCanManageMembers = 0x00000010;
+const int authIsSuperAdmin = 0x40000000;
+
+class AppAccess {
+  AppAccess(
+    this.appAccessFlags,
+  );
+
+  final int appAccessFlags;
+
+  bool get isAdmin {
+    return appAccessFlags & authIsAdmin != 0;
+  }
+
+  bool get isSuperAdmin {
+    return appAccessFlags & authIsSuperAdmin != 0;
+  }
+
+  bool get canManageKennel {
+    return appAccessFlags & authCanManageKennel != 0;
+  }
+
+  bool get canManageRuns {
+    return appAccessFlags & authCanManageRuns != 0;
+  }
+
+  bool get canManageHashCash {
+    return appAccessFlags & authCanManageHashCash != 0;
+  }
+
+  bool get canManageMembers {
+    return appAccessFlags & authCanManageHashCash != 0;
+  }
+}
+
+// ======================================
+// Mismanagement
+// ======================================
+
+const int mmRoleIsOnMm = 0x00000001;
+const int mmRoleFlagGm = 0x00000002;
+const int mmRoleFlagVgm = 0x00000004;
+const int mmRoleFlagRa = 0x00000008;
+const int mmRoleFlagBeerMeister = 0x00000010;
+const int mmRoleFlagHashFlash = 0x00000020;
+const int mmRoleFlagOnSec = 0x00000040;
+const int mmRoleFlagSongMeister = 0x00000080;
+const int mmRoleFlagTrailMaster = 0x00000100;
+const int mmRoleFlagHareRaiser = 0x00000200;
+const int mmRoleFlagHashCash = 0x00000400;
+const int mmRoleFlagScribe = 0x00000800;
+const int mmRoleFlagWebMeister = 0x00001000;
+const int mmRoleFlagHashHugs = 0x00002000;
+const int mmRoleFlagHashHo = 0x00004000;
+const int mmRoleFlagHaberdasher = 0x00008000;
+const int mmRoleFlagHashSweep = 0x00010000;
+const int mmRoleFlagHashTrash = 0x00020000;
+const int mmRoleFlagHashBank = 0x00040000;
+const int mmRoleFlagEventMeister = 0x00080000;
+const int mmRoleFlagCommunications = 0x00100000;
+const int mmRoleFlagOther = 0x00200000;
+
+class Mismanagement {
+  Mismanagement(
+    this.mismanagementFlags,
+  );
+
+  int mismanagementFlags;
+
+  bool getMismanagementState(int mmFlag) {
+    return (mismanagementFlags ?? 0) & mmFlag != 0;
+  }
+
+  void setMismanagementState(int mmFlag, bool value) {
+    mismanagementFlags ??= 0;
+    if (value) {
+      mismanagementFlags |= mmFlag;
+    } else {
+      mismanagementFlags &= ~mmFlag;
+    }
+  }
+
+  bool get isOnMismanagement {
+    return (mismanagementFlags ?? 0) & mmRoleIsOnMm != 0;
+  }
+
+  // set isOnMismanagement(bool value) {
+  //   mismanagementFlags ??= 0;
+  //   if (value) {
+  //     mismanagementFlags |= mmRoleIsOnMm;
+  //   } else {
+  //     mismanagementFlags &= ~mmRoleIsOnMm;
+  //   }
+  // }
+}
 
 const int cacheDurationAllHashers = 60 * 86400000; // 60 days cache duration
 

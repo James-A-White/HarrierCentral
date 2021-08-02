@@ -14,9 +14,18 @@ class RunDetailAggregate {
 }
 
 class RunDetailQueryExtensions {
-  RunDetailQueryExtensions({this.mismanagementRoleFlags, this.digAfterDec, this.curSym, this.curCode, this.memberPrice, this.nonMemberPrice});
+  RunDetailQueryExtensions({
+    this.appAccessFlags,
+    this.mismanagementRoles,
+    this.digAfterDec,
+    this.curSym,
+    this.curCode,
+    this.memberPrice,
+    this.nonMemberPrice,
+  });
 
-  final int mismanagementRoleFlags;
+  final int appAccessFlags;
+  final int mismanagementRoles;
   final int digAfterDec;
   final String curSym;
   final String curCode;
@@ -30,13 +39,22 @@ class RunDetailQueryExtensions {
 
   static RunDetailQueryExtensions fromMap(Map<String, dynamic> map) {
     final RunDetailQueryExtensions item = RunDetailQueryExtensions(
-        mismanagementRoleFlags: map['mismanagementRoleFlags'],
+        appAccessFlags: map['appAccessFlags'],
+        mismanagementRoles: map['mismanagementRoles'],
         digAfterDec: map['digAfterDec'],
         curSym: map['curSym'],
         curCode: map['curCode'],
         memberPrice: map['memberPrice'],
         nonMemberPrice: map['nonMemberPrice']);
     return item;
+  }
+
+  Mismanagement get mismanagement {
+    return Mismanagement(mismanagementRoles);
+  }
+
+  AppAccess get appAccess {
+    return AppAccess(appAccessFlags);
   }
 }
 
@@ -83,12 +101,13 @@ class RunDetailPageState extends State<RunDetailPage> {
 
           SELECT e.*,
           k.*,
-          hkm.mismanagementRoleFlags,
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMismanagementRoles},
           coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencyCode},c.${G0<TableModel>().countriesTableHelper.colCurrencyCode},"USD") as curCode,
-          coalesce(k.digitsAfterDecimal,c.digitsAfterDecimal,2) as digAfterDec, 
-          coalesce(k.currencySymbol,c.currencySymbol,"$dollarSign") as curSym,
-          coalesce(e.eventPriceForMembers,k.defaultPriceForMembers,0) as memberPrice,
-          coalesce(e.eventPriceForNonMembers,k.defaultPriceForNonMembers,0) as nonMemberPrice
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},c.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},2) as digAfterDec, 
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},c.${G0<TableModel>().countriesTableHelper.colCurrencySymbol},"$dollarSign") as curSym,
+          coalesce(e.${G0<TableModel>().eventsTableHelper.colEventPriceForMembers},k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForMembers},0) as memberPrice,
+          coalesce(e.${G0<TableModel>().eventsTableHelper.colEventPriceForNonMembers},k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForNonMembers},0) as nonMemberPrice
           FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} e
           INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k on k.kennelId = e.kennelId
           LEFT OUTER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} c on c.countryId = k.countryId

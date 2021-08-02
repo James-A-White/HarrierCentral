@@ -19,7 +19,7 @@ class RunDetailsPage extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           actions: <Widget>[
-            (futureRun.extensions.mismanagementRoleFlags ?? 0) == 0
+            (futureRun.extensions.appAccessFlags ?? 0) == 0
                 ? Container()
                 : IconButton(
                     icon: const Icon(FontAwesome.gear, color: Colors.white),
@@ -27,8 +27,7 @@ class RunDetailsPage extends StatelessWidget {
                       Navigator.push<dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) =>
-                              RunDetailPage(eventId: futureRun.event.eventId),
+                          builder: (BuildContext context) => RunDetailPage(eventId: futureRun.event.eventId),
                         ),
                       ); //_select(choices[0]);
                     },

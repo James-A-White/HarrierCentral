@@ -1,9 +1,10 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/pages/kennel_admin/mismanagement_roles_page.dart';
 
 class KennelMembersList extends StatefulWidget {
-  const KennelMembersList({Key key, @required this.kennel}) : super(key: key);
+  const KennelMembersList({Key key, @required this.kennelListAggregate}) : super(key: key);
 
-  final KennelListAggregate kennel;
+  final KennelListAggregate kennelListAggregate;
 
   @override
   KennelMemberListState createState() => KennelMemberListState();
@@ -24,9 +25,12 @@ class KennelMembersResults {
       this.membershipDurationInMonths,
       this.isLoading = false,
       this.kennelShortName,
+      this.appAccessFlags,
+      this.mismanagementRoles,
+
       // this.homeKennelName,
       // this.homeKennelBeingUpdated = false,
-      this.membershipDateBeingUpdated = false});
+      this.memberInfoBeingUpdated = false});
 
   final String hasherId;
   String dispName;
@@ -39,8 +43,10 @@ class KennelMembersResults {
   final DateTime membershipExpirationDate;
   final DateTime memberSince;
   final int membershipDurationInMonths;
+  int appAccessFlags;
+  int mismanagementRoles;
   bool isLoading;
-  bool membershipDateBeingUpdated;
+  bool memberInfoBeingUpdated;
   //bool homeKennelBeingUpdated;
   String kennelShortName;
   //String homeKennelName;
@@ -53,6 +59,8 @@ class KennelMembersResults {
       photo: map['photo'],
       following: map['following'],
       kennelShortName: map['kennelShortName'],
+      appAccessFlags: map['appAccessFlags'],
+      mismanagementRoles: map['mismanagementRoles'],
       // homeKennelName: map['homeKennelName'],
       kennelId: map['kennelId'],
       dateOfLastRun: (map['dateOfLastRun'] == null) ? null : DateTime.parse(map['dateOfLastRun'].toString().substring(0, 19)),
@@ -62,6 +70,14 @@ class KennelMembersResults {
       membershipDurationInMonths: map['membershipDurationInMonths'],
     );
     return item;
+  }
+
+  Mismanagement get mismanagement {
+    return Mismanagement(mismanagementRoles);
+  }
+
+  AppAccess get appAccess {
+    return AppAccess(appAccessFlags);
   }
 }
 
@@ -109,7 +125,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
       title: Text(
-        '${widget.kennel.kennel.kennelShortName} Members',
+        '${widget.kennelListAggregate.kennel.kennelShortName} Members',
         style: const TextStyle(
           color: Colors.white,
         ),
@@ -135,38 +151,40 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
   }
 
   Future<void> refreshKennelMembersFromTable(bool forceRefresh) async {
-    String orderBy = 'lower(h.dispName)';
+    String orderBy = 'lower(h.${G0<TableModel>().hashersTableHelper.colDispName})';
 
     switch (_sortBy) {
       case EnumSortByType.sortByName:
-        orderBy = 'lower(h.dispName)';
+        orderBy = 'lower(h.${G0<TableModel>().hashersTableHelper.colDispName})';
         break;
       case EnumSortByType.sortByLastRunDate:
-        orderBy = 'hkm.dateOfLastRun desc';
+        orderBy = 'hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun}';
         break;
       case EnumSortByType.sortByMembershipExpirationDate:
-        orderBy = 'hkm.membershipExpirationDate asc';
+        orderBy = 'hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate} asc';
         break;
     }
 
     final String query = ''' 
         SELECT 
-          h.hasherId,
-          h.dispName,
-          lower(h.dispName || " " || h.firstName || " " || h.lastName) as nameForSort,
-          h.photo,
-          hkm.following,
-          hkm.dateOfLastRun,
-          hkm.kennelEmailAlertPreference,
-          hkm.membershipExpirationDate,
-          hkm.memberSince,
-          k.membershipDurationInMonths,
-          k.kennelShortName,
-          k.kennelId
+          h.${G0<TableModel>().hashersTableHelper.colHasherId},
+          h.${G0<TableModel>().hashersTableHelper.colDispName},
+          lower(h.${G0<TableModel>().hashersTableHelper.colDispName} || " " || h.${G0<TableModel>().hashersTableHelper.colFirstName} || " " || h.${G0<TableModel>().hashersTableHelper.colLastName}) as nameForSort,
+          h.${G0<TableModel>().hashersTableHelper.colPhoto},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMemberSince},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMismanagementRoles},
+          k.${G0<TableModel>().kennelsTableHelper.colMembershipDurationInMonths},
+          k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},
+          k.${G0<TableModel>().kennelsTableHelper.colKennelId}
           FROM hasherKennelMapForKennelAdmin hkm
-          INNER JOIN kennels k on k.kennelId = hkm.kennelId
-          INNER JOIN hashers h on h.hasherId = hkm.userId
-          WHERE hkm.membershipExpirationDate >= date('now') OR hkm.following = 1
+          INNER JOIN kennels k on k.${G0<TableModel>().kennelsTableHelper.colKennelId} = hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId}
+          INNER JOIN hashers h on h.hasherId = hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId}
+          WHERE hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate} >= date('now') OR hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} = 1
           ORDER BY $orderBy
           
           ''';
@@ -310,7 +328,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                     builder: (BuildContext context) {
                       return FindHasherPage(
                         FindHasherPageType.addMember,
-                        kennelId: widget.kennel.kennel.kennelId,
+                        kennelId: widget.kennelListAggregate.kennel.kennelId,
                       );
                     },
                   ),
@@ -320,11 +338,11 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                   });
                   if ((result != null) && (result['hasher']?.hasherId != null)) {
                     final HasherKennelMapService srv = HasherKennelMapService();
-                    widget.kennel.extensions.followingRequested = -1;
+                    widget.kennelListAggregate.extensions.followingRequested = -1;
                     setState(() {});
                     srv
-                        .updateHasherKennelStatus(widget.kennel.kennel.kennelId, AppDomainType.kennel,
-                            monthsToAddToMembership: widget.kennel.kennel.membershipDurationInMonths, targetUserId: result['hasher'].hasherId)
+                        .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel,
+                            monthsToAddToMembership: widget.kennelListAggregate.kennel.membershipDurationInMonths, targetUserId: result['hasher'].hasherId)
                         .then((void dummy) {
                       refreshKennelMembersFromTable(true).then((void dummy) {
                         _refreshCounters(true);
@@ -345,9 +363,9 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                     builder: (BuildContext context) => HasherProfilePage(
                       dataContext: EnumDataContext.kennel,
                       pageType: EnumMyProfilePageType.newHasherProfile,
-                      kennelId: widget.kennel.kennel.kennelId,
+                      kennelId: widget.kennelListAggregate.kennel.kennelId,
                       uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
-                      kennelShortName: widget.kennel.kennel.kennelShortName,
+                      kennelShortName: widget.kennelListAggregate.kennel.kennelShortName,
                     ),
                   ),
                 ).then((HashersModel result) {
@@ -468,7 +486,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                             print(direction.toString() + ' NOTE: We should never reach this point');
                           },
                           child: KennelMemberListItem(
-                              kennelId: widget.kennel.kennel.kennelId,
+                              kennelListAggregate: widget.kennelListAggregate,
                               kennelMember: snapshot.data[index],
                               modifyMembershipCallback: (EnumMemberPopupActions retVal) {
                                 switch (retVal) {
@@ -487,9 +505,20 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                   case EnumMemberPopupActions.cancelMembership:
                                     modifyMembership(snapshot.data[index], -9999);
                                     break;
-                                  // case EnumMemberPopupActions.toggleHomeKennel:
-                                  //   setAsHomeKennel(snapshot.data[index], 1);
-                                  //   break;
+                                  case EnumMemberPopupActions.editKennelAdmin:
+                                    setKennelAdmin(snapshot.data[index], isAdmin: 1);
+                                    break;
+                                  case EnumMemberPopupActions.editMismanagementRole:
+                                    Navigator.push<int>(
+                                      context,
+                                      MaterialPageRoute<int>(
+                                          builder: (BuildContext context) => MismanagementRolesPage(mismanagementRoles: snapshot.data[index].mismanagementRoles)),
+                                    ).then((int result) {
+                                      if (result != null) {
+                                        setKennelAdmin(snapshot.data[index], isMismanagement: result);
+                                      }
+                                    });
+                                    break;
                                   // case EnumMemberPopupActions.setHomeKennel:
                                   //   setAsHomeKennel(snapshot.data[index], 1);
                                   //   break;
@@ -507,7 +536,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                                   snapshot.data[index].kennelEmailAlertPreference = -1;
                                   setState(() {});
                                   srv
-                                      .updateHasherKennelStatus(widget.kennel.kennel.kennelId, AppDomainType.kennel,
+                                      .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel,
                                           emailAlertState: emailAlertStatus, targetUserId: snapshot.data[index].hasherId)
                                       .then((
                                     List<dynamic> queryResults,
@@ -706,7 +735,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
           k.kennelId
           FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h,
           ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
-          WHERE h.${G0<TableModel>().hashersTableHelper.colRemoved} = 0 and k.${G0<TableModel>().kennelsTableHelper.remoteDbId} = '${widget.kennel.kennel.kennelId}'
+          WHERE h.${G0<TableModel>().hashersTableHelper.colRemoved} = 0 and k.${G0<TableModel>().kennelsTableHelper.remoteDbId} = '${widget.kennelListAggregate.kennel.kennelId}'
           ORDER BY nameForSort
           
           ''';
@@ -836,7 +865,9 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     });
 
     final bool result = await G0<TableModel>().syncKennelAdminService.updateFromBackend(
-        SyncKennelAdminService.flagKennelTable | SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable, true, widget.kennel.kennel.kennelId);
+        SyncKennelAdminService.flagKennelTable | SyncKennelAdminService.flagHashersTable | SyncKennelAdminService.flagHasherKennelMapTable,
+        true,
+        widget.kennelListAggregate.kennel.kennelId);
     final String resultStr = result ? 'successfully' : 'unsuccessfully';
     print('Kennel member data synchronized $resultStr');
     refreshKennelMembersFromTable(true).then((void dummy) {
@@ -847,14 +878,32 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
 
   void modifyMembership(KennelMembersResults item, int monthsToAddToMembership) {
     final HasherKennelMapService srv = HasherKennelMapService();
-    widget.kennel.extensions.followingRequested = -1;
-    item.membershipDateBeingUpdated = true;
+    widget.kennelListAggregate.extensions.followingRequested = -1;
+    item.memberInfoBeingUpdated = true;
     setState(() {});
     srv
-        .updateHasherKennelStatus(widget.kennel.kennel.kennelId, AppDomainType.kennel, monthsToAddToMembership: monthsToAddToMembership, targetUserId: item.hasherId)
+        .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel, monthsToAddToMembership: monthsToAddToMembership, targetUserId: item.hasherId)
         .then((void dummy) {
       refreshKennelMembersFromTable(true).then((void dummy) {
-        item.membershipDateBeingUpdated = false;
+        item.memberInfoBeingUpdated = false;
+        _refreshCounters(true);
+        setState(() {});
+      });
+    });
+  }
+
+  void setKennelAdmin(KennelMembersResults item, {int isAdmin = -1, int isMismanagement = -1}) {
+    final HasherKennelMapService srv = HasherKennelMapService();
+    widget.kennelListAggregate.extensions.followingRequested = -1;
+    item.memberInfoBeingUpdated = true;
+    setState(() {});
+
+    srv
+        .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel,
+            targetUserId: item.hasherId, appAccessFlags: isAdmin, mismanagementRoles: isMismanagement)
+        .then((void dummy) {
+      refreshKennelMembersFromTable(true).then((void dummy) {
+        item.memberInfoBeingUpdated = false;
         _refreshCounters(true);
         setState(() {});
       });

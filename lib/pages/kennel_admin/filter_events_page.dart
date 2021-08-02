@@ -140,7 +140,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
             evt.eventName,
             evt.eventNumber,
             evt.eventStartDatetime,
-            hkm.mismanagementRoleFlags,
+            hkm.appAccessFlags,
             evt.canEditRunAttendence
           FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt
           INNER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.kennelId = "${widget.kennel.kennel.kennelId}" and hkm.userId = "$userId"
@@ -715,7 +715,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
         return Dismissible(
           key: Key(event['eventId']),
           confirmDismiss: (DismissDirection direction) {
-            if ((event['mismanagementRoleFlags'] & mmAuthCanEditRunVisibility) != 0) {
+            if ((event['appAccessFlags'] & authCanManageRuns) != 0) {
               setState(() {
                 // swipe from right to left to indicate that
                 // the hasher either attended the run as a pack
@@ -727,7 +727,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
             return Future<bool>.value(false);
           },
           background: Container(
-              color: ((event['mismanagementRoleFlags'] & mmAuthCanEditRunVisibility) == 0) ? Colors.grey[350] : Colors.red,
+              color: ((event['appAccessFlags'] & authCanManageRuns) == 0) ? Colors.grey[350] : Colors.red,
               child: Row(children: const <Widget>[
                 Padding(
                   padding: EdgeInsets.only(left: 10.0),
@@ -742,7 +742,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                 )
               ])),
           secondaryBackground: Container(
-            color: ((event['mismanagementRoleFlags'] & mmAuthCanEditRunVisibility) == 0) ? Colors.grey[350] : Colors.green,
+            color: ((event['appAccessFlags'] & authCanManageRuns) == 0) ? Colors.grey[350] : Colors.green,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: const <Widget>[

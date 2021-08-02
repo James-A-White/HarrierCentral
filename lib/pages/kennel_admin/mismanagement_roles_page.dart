@@ -1,0 +1,154 @@
+import 'package:harrier_central/imports.dart';
+
+class MismanagementRolesPage extends StatefulWidget {
+  const MismanagementRolesPage({@required this.mismanagementRoles});
+
+  final int mismanagementRoles;
+
+  @override
+  _MismanagementRolesPageState createState() => _MismanagementRolesPageState();
+}
+
+class _MismanagementRolesPageState extends State<MismanagementRolesPage> {
+  Mismanagement mmRoles;
+
+  @override
+  void initState() {
+    mmRoles = Mismanagement(widget.mismanagementRoles);
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: themeAppBarBackground,
+          title: const Text(
+            'Set mismanagement roles',
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+        ),
+        body: mmRoles == null
+            ? Container()
+            : SingleChildScrollView(
+                child: Container(
+                  padding: const EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0, bottom: 70.0),
+                  decoration: Backgrounds.defaultHcBackgroundLight(),
+                  child: Column(
+                    children: <Widget>[
+                      // getOption('Is on mismanagement', mmRoles.getMismanagementState(mmRoleIsOnMm), (bool value) {
+                      //   mmRoles.setMismanagementState(mmRoleIsOnMm, value);
+                      // }),
+                      getOption('General manager (GM)', mmRoles.getMismanagementState(mmRoleFlagGm), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagGm, value);
+                      }),
+                      getOption('Vice GM', mmRoles.getMismanagementState(mmRoleFlagVgm), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagVgm, value);
+                      }),
+                      getOption('Religious Advisor', mmRoles.getMismanagementState(mmRoleFlagRa), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagRa, value);
+                      }),
+                      getOption('Beer Meister', mmRoles.getMismanagementState(mmRoleFlagBeerMeister), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagBeerMeister, value);
+                      }),
+                      getOption('Hare Raiser', mmRoles.getMismanagementState(mmRoleFlagHareRaiser), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagHareRaiser, value);
+                      }),
+                      getOption('Hash Cash', mmRoles.getMismanagementState(mmRoleFlagHashCash), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagHashCash, value);
+                      }),
+                      getOption('Hash Flash', mmRoles.getMismanagementState(mmRoleFlagHashFlash), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagHashFlash, value);
+                      }),
+                      getOption('On Sec (Secretary)', mmRoles.getMismanagementState(mmRoleFlagOnSec), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagOnSec, value);
+                      }),
+                      getOption('Song Meister', mmRoles.getMismanagementState(mmRoleFlagSongMeister), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagSongMeister, value);
+                      }),
+                      getOption('Trail Master', mmRoles.getMismanagementState(mmRoleFlagTrailMaster), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagTrailMaster, value);
+                      }),
+
+                      getOption('Chief Scribe', mmRoles.getMismanagementState(mmRoleFlagScribe), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagScribe, value);
+                      }),
+                      getOption('Web Meister', mmRoles.getMismanagementState(mmRoleFlagWebMeister), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagWebMeister, value);
+                      }),
+                      getOption('Hash Hugs (female)', mmRoles.getMismanagementState(mmRoleFlagHashHo), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagHashHo, value);
+                      }),
+                      getOption('Hash Hugs (male)', mmRoles.getMismanagementState(mmRoleFlagHashHugs), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagHashHugs, value);
+                      }),
+                      getOption('Haberdasher', mmRoles.getMismanagementState(mmRoleFlagHaberdasher), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagHaberdasher, value);
+                      }),
+                      getOption('Hash Sweep', mmRoles.getMismanagementState(mmRoleFlagHashSweep), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagHashSweep, value);
+                      }),
+                      getOption('Hash Trash (newsletter)', mmRoles.getMismanagementState(mmRoleFlagHashTrash), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagHashTrash, value);
+                      }),
+                      getOption('Hash Bank', mmRoles.getMismanagementState(mmRoleFlagHashBank), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagHashBank, value);
+                      }),
+                      getOption('Event Meister', mmRoles.getMismanagementState(mmRoleFlagEventMeister), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagEventMeister, value);
+                      }),
+                      getOption('Hash Communications', mmRoles.getMismanagementState(mmRoleFlagCommunications), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagCommunications, value);
+                      }),
+                      getOption('<Other not listed>', mmRoles.getMismanagementState(mmRoleFlagOther), (bool value) {
+                        mmRoles.setMismanagementState(mmRoleFlagOther, value);
+                      }),
+
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          primary: Theme.of(context).accentColor,
+                        ),
+                        onPressed: () {
+                          // if mismanagementFlags = 1 that means this person has no role, so set all to zero, otherwise set the mmRoleIsOnMm flag
+                          Navigator.of(context).pop(mmRoles.mismanagementFlags <= 1 ? 0 : mmRoles.mismanagementFlags | mmRoleIsOnMm);
+                        },
+                        child: Text('Save changes', style: buttonTextStyle),
+                      ),
+                    ],
+                  ),
+                ),
+              ));
+  }
+
+  Widget getOption(String title, bool value, Function toggleState) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: <Widget>[
+          Container(
+            margin: const EdgeInsets.only(right: 10),
+            height: 25,
+            width: 25,
+            color: Colors.yellow[100],
+            child: Checkbox(
+              value: value,
+              onChanged: (bool value) {
+                setState(() {
+                  toggleState(value);
+                });
+              },
+            ),
+          ),
+          Text(
+            title,
+            style: headingStyle20Black,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}

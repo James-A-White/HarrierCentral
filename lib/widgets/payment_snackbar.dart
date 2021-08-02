@@ -30,7 +30,7 @@ class PaymentSnackBar extends SnackBar {
             minFontSize: 12.0,
             style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 35.0, height: 1.0),
           ),
-          !(((eventAggregate.extensions.mismanagementRoleFlags ?? 0) & mmAuthAllowEditRsvpFlag) != 0)
+          !eventAggregate.extensions.appAccess.canManageRuns
               ? Container()
               : Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,13 +196,13 @@ class PaymentSnackBar extends SnackBar {
                     ),
                   ],
                 ),
-          !(((eventAggregate.extensions.mismanagementRoleFlags ?? 0) & mmAuthAllowEditRsvpFlag) != 0)
+          !eventAggregate.extensions.appAccess.canManageRuns
               ? Container()
               : Padding(
                   padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
                   child: Container(color: Colors.white, height: 3.0),
                 ),
-          !(((eventAggregate.extensions.mismanagementRoleFlags ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0)
+          !eventAggregate.extensions.appAccess.canManageRuns
               ? Container()
               : Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -330,13 +330,13 @@ class PaymentSnackBar extends SnackBar {
                     ),
                   ],
                 ),
-          !(((eventAggregate.extensions.mismanagementRoleFlags ?? 0) & mmAuthAllowCheckInAndOutFlag) != 0)
+          !eventAggregate.extensions.appAccess.canManageRuns
               ? Container()
               : Padding(
                   padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
                   child: Container(color: Colors.white, height: 3.0),
                 ),
-          !(((eventAggregate.extensions.mismanagementRoleFlags ?? 0) & mmAuthAllowHashCashFlag) != 0)
+          !eventAggregate.extensions.appAccess.canManageHashCash
               ? Container()
               : Column(
                   children: <Widget>[

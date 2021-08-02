@@ -13,7 +13,8 @@ class HasherKennelMapModel implements BaseModel {
       this.isHomeKennel,
       this.kennelNotificationPreference,
       this.kennelEmailAlertPreference,
-      this.mismanagementRoleFlags,
+      this.authorizedDeviceList,
+      this.authorizedDeviceCount,
       this.userRoleFlags,
       this.appAccessFlags,
       this.currentPackRunCount,
@@ -41,7 +42,8 @@ class HasherKennelMapModel implements BaseModel {
   final int isHomeKennel;
   int kennelNotificationPreference;
   int kennelEmailAlertPreference;
-  final int mismanagementRoleFlags;
+  final String authorizedDeviceList;
+  final int authorizedDeviceCount;
   final int userRoleFlags;
   final int appAccessFlags;
   final int currentPackRunCount;
@@ -57,6 +59,14 @@ class HasherKennelMapModel implements BaseModel {
 
   final DateTime updatedAt;
   final int removed;
+
+  Mismanagement get mismanagement {
+    return Mismanagement(mismanagementRoles);
+  }
+
+  AppAccess get appAccess {
+    return AppAccess(appAccessFlags);
+  }
 }
 
 class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
@@ -103,7 +113,8 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
   final String colIsHomeKennel = 'isHomeKennel';
   final String colKennelNotificationPreference = 'kennelNotificationPreference';
   final String colKennelEmailAlertPreference = 'kennelEmailAlertPreference';
-  final String colMismanagementRoleFlags = 'mismanagementRoleFlags';
+  final String colAuthorizedDeviceList = 'authorizedDeviceList';
+  final String colAuthorizedDeviceCount = 'authorizedDeviceCount';
   final String colUserRoleFlags = 'userRoleFlags';
   final String colAppAccessFlags = 'appAccessFlags';
   final String colCurrentPackRunCount = 'currentPackRunCount';
@@ -131,7 +142,8 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
             $colIsHomeKennel INT,
             $colKennelNotificationPreference INT,
             $colKennelEmailAlertPreference INT,
-            $colMismanagementRoleFlags INT,
+            $colAuthorizedDeviceList TEXT,
+            $colAuthorizedDeviceCount INT,
             $colUserRoleFlags INT,
             $colAppAccessFlags INT,
             $colCurrentPackRunCount INT,
@@ -180,7 +192,14 @@ class HasherKennelMapService {
   //=================  Domain specific functions ================
 
   Future<List<dynamic>> updateHasherKennelStatus(String kennelId, AppDomainType appDomainType,
-      {int monthsToAddToMembership, String targetUserId, int notificationState = -1, int emailAlertState = -1, int followingState = -1, int isHomeKennel = -1}) async {
+      {int monthsToAddToMembership,
+      String targetUserId,
+      int notificationState = -1,
+      int emailAlertState = -1,
+      int followingState = -1,
+      int isHomeKennel = -1,
+      int appAccessFlags = -1,
+      int mismanagementRoles = -1}) async {
     List<dynamic> adHocData = <dynamic>[];
 
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
@@ -232,6 +251,8 @@ class HasherKennelMapService {
       'notificationState': notificationState,
       'emailAlertState': emailAlertState,
       'monthsToAddToMembership': monthsToAddToMembership,
+      'appAccessFlags': appAccessFlags,
+      'mismanagementRoles': mismanagementRoles,
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString().substring(0, 19),
       'kennelsUpdatedAfter': kennelsUpdatedAfter.toString().substring(0, 19),
       'hashersUpdatedAfter': hashersUpdatedAfter.toString().substring(0, 19)

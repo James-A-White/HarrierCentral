@@ -38,7 +38,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     });
 
     sliderValue = 5.0;
-    isAdmin = (widget.kennelAggregateItem.hkm.mismanagementRoleFlags & mmAuthAccessKennelAdmin) != 0;
+    isAdmin = widget.kennelAggregateItem.hkm.appAccess.isAdmin;
     super.initState();
   }
 
@@ -262,7 +262,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                               ]),
                                               onPressed: () {
                                                 if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                                                  kennelMembersList = KennelMembersList(kennel: widget.kennelAggregateItem);
+                                                  kennelMembersList = KennelMembersList(kennelListAggregate: widget.kennelAggregateItem);
                                                   Navigator.push<dynamic>(
                                                     context,
                                                     MaterialPageRoute<dynamic>(

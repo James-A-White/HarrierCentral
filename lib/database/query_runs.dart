@@ -6,7 +6,7 @@ class RunDetailsQueryExtensions {
   RunDetailsQueryExtensions({
     this.daysUntilEvent,
     this.distToEvent,
-    this.mismanagementRoleFlags,
+    this.appAccessFlags,
     this.currencySymbol,
     this.digitsAfterDecimal,
     this.rsvpState,
@@ -23,7 +23,7 @@ class RunDetailsQueryExtensions {
 
   final num daysUntilEvent;
   num distToEvent;
-  final int mismanagementRoleFlags;
+  final int appAccessFlags;
   int digitsAfterDecimal;
   String currencySymbol;
   int rsvpState;
@@ -109,7 +109,7 @@ class RunDetailsQueryExtensions {
       daysUntilEvent: map['daysUntilEvent'],
       digitsAfterDecimal: map['digitsAfterDecimal'],
       currencySymbol: map['currencySymbol'],
-      mismanagementRoleFlags: map['mismanagementRoleFlags'],
+      appAccessFlags: map['appAccessFlags'],
       following: map['following'],
       rsvpState: map['rsvpState'],
       attendenceState: map['attendenceState'],
@@ -265,7 +265,7 @@ class QueryRuns {
         SELECT  
           evt.*,
           k.*,
-          coalesce(hkm.mismanagementRoleFlags,0) as mismanagementRoleFlags,
+          coalesce(hkm.appAccessFlags,0) as appAccessFlags,
           coalesce(hkm.following,0) as following,
           0 as rsvpState,
           0 as attendenceState,
@@ -292,7 +292,7 @@ class QueryRuns {
         SELECT  
           evt.*,
           k.*,
-          coalesce(hkm.mismanagementRoleFlags,0) as mismanagementRoleFlags,
+          coalesce(hkm.appAccessFlags,0) as appAccessFlags,
           coalesce(hkm.following,0) as following,
           coalesce(hem.rsvpState,0) as rsvpState,
           coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,

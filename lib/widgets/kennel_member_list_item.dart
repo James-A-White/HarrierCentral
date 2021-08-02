@@ -5,19 +5,17 @@ enum EnumMemberPopupActions {
   addOneMonth,
   addSixMonths,
   addOneYear,
-  // subtractOneMonth,
-  // subtractSixMonths,
   cancelMembership,
   permanentMembership,
-  // toggleHomeKennel,
-  // setHomeKennel,
-  // clearHomeKennel
+  editKennelAdmin,
+  editMismanagementRole,
 }
 
 class KennelMemberListItem extends StatelessWidget {
-  const KennelMemberListItem({@required this.kennelId, @required this.kennelMember, @required this.modifyMembershipCallback, @required this.toggleEmailPreferenceCallback});
+  const KennelMemberListItem(
+      {@required this.kennelListAggregate, @required this.kennelMember, @required this.modifyMembershipCallback, @required this.toggleEmailPreferenceCallback});
 
-  final String kennelId;
+  final KennelListAggregate kennelListAggregate;
   final KennelMembersResults kennelMember;
   final Function modifyMembershipCallback;
   final Function toggleEmailPreferenceCallback;
@@ -128,7 +126,7 @@ class KennelMemberListItem extends StatelessWidget {
                               style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
                               textAlign: TextAlign.center,
                             ),
-                      kennelMember.membershipDateBeingUpdated ?? false
+                      kennelMember.memberInfoBeingUpdated ?? false
                           ? Text(
                               '<Updating membership>',
                               style: TextStyle(
@@ -156,6 +154,11 @@ class KennelMemberListItem extends StatelessWidget {
                                       TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
                                   textAlign: TextAlign.center,
                                 ),
+                      Row(children: <Widget>[
+                        if (kennelMember.appAccess.isAdmin) ...<Widget>[Icon(FontAwesome.gear, color: Colors.blue[800], size: 24.0)],
+                        if (kennelMember.appAccess.isAdmin && kennelMember.mismanagement.isOnMismanagement) ...<Widget>[const SizedBox(width: 10.0)],
+                        if (kennelMember.mismanagement.isOnMismanagement) ...<Widget>[Icon(MaterialCommunityIcons.account_tie, color: Colors.blue[800], size: 24.0)],
+                      ]),
                     ],
                   )),
               Column(children: <Widget>[
@@ -223,37 +226,6 @@ class KennelMemberListItem extends StatelessWidget {
                           ],
                           'returnValue': EnumMemberPopupActions.addOneYear,
                         },
-                        // <String, dynamic>{
-                        //   'title': 'Subtract one month',
-                        //   'icon': <Widget>[
-                        //     Container(
-                        //       height: 30,
-                        //       width: 30,
-                        //       child: const Icon(
-                        //           MaterialCommunityIcons
-                        //               .numeric_1_circle_outline,
-                        //           color: Colors.yellow),
-                        //     ),
-                        //   ],
-                        //   'returnValue':
-                        //       EnumMemberPopupActions.subtractOneMonth,
-                        // },
-                        // <String, dynamic>{
-                        //   'title': 'Subtract six months',
-                        //   'icon': <Widget>[
-                        //     Container(
-                        //       height: 30,
-                        //       width: 30,
-                        //       child: const Icon(
-                        //           MaterialCommunityIcons
-                        //               .numeric_6_circle_outline,
-                        //           color: Colors.yellow),
-                        //     ),
-                        //   ],
-                        //   'returnValue':
-                        //       EnumMemberPopupActions.subtractSixMonths,
-                        // },
-
                         <String, dynamic>{
                           'title': 'Permanent membership',
                           'icon': <Widget>[
@@ -265,7 +237,6 @@ class KennelMemberListItem extends StatelessWidget {
                           ],
                           'returnValue': EnumMemberPopupActions.permanentMembership,
                         },
-
                         <String, dynamic>{
                           'title': 'Cancel membership',
                           'icon': <Widget>[
@@ -277,36 +248,40 @@ class KennelMemberListItem extends StatelessWidget {
                           ],
                           'returnValue': EnumMemberPopupActions.cancelMembership,
                         },
-                        // kennelMember.homeKennelName == null
-                        //     ? <String, dynamic>{
-                        //         'title': 'Set home kennel',
-                        //         'icon': <Widget>[
-                        //           Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
-                        //           const Icon(FontAwesome.home, color: Colors.white, size: 23)
-                        //         ],
-                        //         'returnValue': EnumMemberPopupActions.setHomeKennel,
-                        //       }
-                        //     : kennelId == kennelMember.homeKennelId
-                        //         ? <String, dynamic>{
-                        //             'title': 'Clear home kennel',
-                        //             'icon': <Widget>[
-                        //               Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
-                        //               const Icon(FontAwesome.home, color: Colors.white, size: 23)
-                        //             ],
-                        //             'returnValue': EnumMemberPopupActions.clearHomeKennel,
-                        //           }
-                        //         : <String, dynamic>{
-                        //             'title': '', // NOTE: Because the title is empty, this button will not be displayed
-                        //             'icon': <Widget>[
-                        //               Container(
-                        //                 height: 30,
-                        //                 width: 30,
-                        //                 child: Icon(FontAwesome.times_circle, color: Colors.red.shade200),
-                        //               ),
-                        //             ],
-                        //             'returnValue': EnumMemberPopupActions.cancelMembership,
-                        //           },
                       ];
+
+                      // if the current user of this device is a superAdmin
+                      // give them the ability to set and clear admin flags for other
+                      // users
+                      if (kennelListAggregate.hkm.appAccess.isSuperAdmin) {
+                        buttons.add(
+                          <String, dynamic>{
+                            'title': 'Edit HC admin roles',
+                            'icon': <Widget>[
+                              Container(
+                                height: 30,
+                                width: 30,
+                                child: const Icon(FontAwesome.gear, color: Colors.white),
+                              ),
+                            ],
+                            'returnValue': EnumMemberPopupActions.editKennelAdmin,
+                          },
+                        );
+
+                        buttons.add(
+                          <String, dynamic>{
+                            'title': 'Edit mismanagement roles',
+                            'icon': <Widget>[
+                              Container(
+                                height: 30,
+                                width: 30,
+                                child: Icon(MaterialCommunityIcons.account_tie, color: Colors.blue.shade200),
+                              ),
+                            ],
+                            'returnValue': EnumMemberPopupActions.editMismanagementRole,
+                          },
+                        );
+                      }
 
                       final MultipleChoicePopup popup = MultipleChoicePopup(
                         key: UniqueKey(),
