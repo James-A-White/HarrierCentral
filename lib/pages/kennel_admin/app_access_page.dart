@@ -60,8 +60,10 @@ class _AppAccessPageState extends State<AppAccessPage> {
                           primary: Theme.of(context).accentColor,
                         ),
                         onPressed: () {
-                          // if mismanagementFlags = 1 that means this person has no role, so set all to zero, otherwise set the mmRoleIsOnMm flag
-                          Navigator.of(context).pop((appAccess.appAccessFlags & authAllFlags) <= 1 ? 0 : appAccess.appAccessFlags | authIsAdmin);
+                          // if appAccessFlags = 1 that means this person has no admin privileges, so set all to zero while at the same time preserving the superAdmin bit, otherwise set the authIsAdmin flag
+                          final int access =
+                              (appAccess.appAccessFlags & authAllFlags) <= 1 ? (appAccess.appAccessFlags & authIsSuperAdmin) : appAccess.appAccessFlags | authIsAdmin;
+                          Navigator.of(context).pop(access);
                         },
                         child: Text('Save changes', style: buttonTextStyle),
                       ),

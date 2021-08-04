@@ -18,7 +18,9 @@ class DrawerMenuState extends State<DrawerMenu> {
   static const int opacity = 160;
   static const Color textColor = Color.fromARGB(opacity, 255, 255, 255);
 
-  TextStyle style = const TextStyle(fontFamily: 'AvenirNext', fontStyle: FontStyle.normal, color: textColor, fontSize: 24.0, height: 1.0);
+  final TextStyle _style = const TextStyle(fontFamily: 'AvenirNext', fontStyle: FontStyle.normal, color: textColor, fontSize: 24.0, height: 1.0);
+
+  final String _userId = getStringPref(StringPrefsEnum.userId);
 
   @override
   Widget build(BuildContext context) {
@@ -71,10 +73,10 @@ class DrawerMenuState extends State<DrawerMenu> {
               // ),
               ListTile(
                 leading: const Icon(Icons.person, color: textColor),
-                title: Text('My Profile', style: style),
+                title: Text('My Profile', style: _style),
                 onTap: () async {
                   //onTabTapped(EnumAppPages.settings);
-                  final String userId = getStringPref(StringPrefsEnum.userId);
+                  //final String userId = getStringPref(StringPrefsEnum.userId);
                   Navigator.pop(context);
                   Navigator.push<dynamic>(
                     context,
@@ -84,7 +86,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                         return HasherProfilePage(
                           dataContext: EnumDataContext.user,
                           pageType: EnumMyProfilePageType.myProfile,
-                          hasherId: userId,
+                          hasherId: _userId,
                           uiElementsToDisplay:
                               HasherProfilePage.flagUiElement_distancePref | HasherProfilePage.flagUiElement_autoDisplayRunsDistance | HasherProfilePage.flagUiElement_logOutButton,
                         );
@@ -95,7 +97,7 @@ class DrawerMenuState extends State<DrawerMenu> {
               ),
               // ListTile(
               //   leading: const Icon(Icons.shopping_cart, color: textColor),
-              //   title: Text('In App Purchases', style: style),
+              //   title: Text('In App Purchases', style: _style),
               //   onTap: () async {
               //     Navigator.pop(context);
               //     Navigator.push<dynamic>(
@@ -119,7 +121,7 @@ class DrawerMenuState extends State<DrawerMenu> {
               // ),
               ListTile(
                 leading: const Icon(FontAwesome.question_circle, color: textColor),
-                title: Text('FAQs', style: style),
+                title: Text('FAQs', style: _style),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push<dynamic>(
@@ -151,7 +153,7 @@ class DrawerMenuState extends State<DrawerMenu> {
               // ),
               ListTile(
                 leading: const Icon(Icons.speaker_notes, color: textColor),
-                title: Text('Imprint', style: style),
+                title: Text('Imprint', style: _style),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push<dynamic>(
@@ -167,7 +169,7 @@ class DrawerMenuState extends State<DrawerMenu> {
               ),
               ListTile(
                 leading: const Icon(FontAwesome.legal, color: textColor),
-                title: Text('Legal', style: style),
+                title: Text('Legal', style: _style),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push<dynamic>(
@@ -184,7 +186,7 @@ class DrawerMenuState extends State<DrawerMenu> {
 
               ListTile(
                 leading: const Icon(MaterialCommunityIcons.shield_lock, color: textColor),
-                title: Text('Privacy Policy', style: style),
+                title: Text('Privacy Policy', style: _style),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push<dynamic>(
@@ -201,7 +203,7 @@ class DrawerMenuState extends State<DrawerMenu> {
 
               ListTile(
                 leading: const Icon(MaterialCommunityIcons.cloud_download, color: textColor),
-                title: Text('App Download Links', style: style),
+                title: Text('App Download Links', style: _style),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push<dynamic>(
@@ -218,7 +220,7 @@ class DrawerMenuState extends State<DrawerMenu> {
 
               ListTile(
                 leading: const Icon(FontAwesome.support, color: textColor),
-                title: Text('Support', style: style),
+                title: Text('Support', style: _style),
                 onTap: () async {
                   //onTabTapped(EnumAppPages.settings);
                   Navigator.pop(context);

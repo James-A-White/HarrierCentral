@@ -893,6 +893,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.1.8"
+  qonversion_flutter:
+    dependency: "direct main"
+    description:
+      name: qonversion_flutter
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.5.2"
   qr:
     dependency: transitive
     description:

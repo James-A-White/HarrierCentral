@@ -10,6 +10,44 @@ class InAppPurchasePage extends StatefulWidget {
 }
 
 class InAppPurchasePageState extends State<InAppPurchasePage> {
+  List<QProduct> _products;
+
+  Future<void> _getProducts() async {
+    _products = <QProduct>[];
+    try {
+      final QOfferings offerings = await Qonversion.offerings();
+      setState(() {
+        _products = offerings.main.products;
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  final String _userId = getStringPref(StringPrefsEnum.userId);
+
+  @override
+  void initState() {
+    _launchQonversion();
+    super.initState();
+  }
+
+  QLaunchResult _qLaunchResult;
+
+  Future<void> _launchQonversion() async {
+    await Qonversion.setDebugMode();
+
+    _qLaunchResult = await Qonversion.launch(
+      'MWZuq2mnsUxL-fvpm9Y5oIaUeXs-asAk',
+      isObserveMode: false,
+    );
+
+    await Qonversion.setUserId(_userId);
+
+    //await Qonversion.setAdvertisingID();
+    await _getProducts();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,7 +55,7 @@ class InAppPurchasePageState extends State<InAppPurchasePage> {
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
         title: const Text(
-          'My Profile',
+          'In App Purchases',
           style: TextStyle(
             color: Colors.white,
           ),
@@ -27,15 +65,55 @@ class InAppPurchasePageState extends State<InAppPurchasePage> {
         decoration: Backgrounds.defaultHcBackground(),
         child: Stack(
           alignment: AlignmentDirectional.center,
-          children: const <Widget>[
-            Positioned(
-                //top: 10,
-                //left: 20,
-                //width: MediaQuery.of(context).size.width,
-                child: InAppPurchasePageContent()),
+          children: <Widget>[
+            if (_products == null) ...<Widget>[],
+            if (_products != null) ...<Widget>[
+              ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: _products.length,
+                padding: const EdgeInsets.only(top: 5),
+                separatorBuilder: (BuildContext context, int index) => const Divider(
+                  height: 1.0,
+                  color: Colors.black45,
+                ),
+                //itemExtent: 58.0,
+                //shrinkWrap: true,
+                itemBuilder: (BuildContext context, int index) {
+                  return _productWidget(_products[index]);
+                },
+              ),
+            ],
           ],
         ),
       ),
+    );
+  }
+
+  Widget _productWidget(QProduct product) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        ListTile(
+          title: Text('Store ID: ${product.storeId}'),
+          subtitle: Text('Q ID: ${product.qonversionId}'),
+          trailing: product.skProduct != null ? Text(product.skProduct.localizedTitle) : null,
+          onTap: () => print(product.toJson()),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: FlatButton(
+            child: const Text('Buy'),
+            color: Colors.blue,
+            textColor: Colors.white,
+            onPressed: () async {
+              final Map<String, QPermission> permissions = await Qonversion.purchase(product.qonversionId);
+              final permission = permissions.values.firstWhere((element) => element.productId == product.qonversionId, orElse: () => null);
+
+              print(permission?.isActive);
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -44,33 +122,20 @@ class InAppPurchasePageContent extends StatefulWidget {
   const InAppPurchasePageContent({Key key}) : super(key: key);
 
   @override
-  _InAppPurchasePageContentState createState() =>
-      _InAppPurchasePageContentState();
+  _InAppPurchasePageContentState createState() => _InAppPurchasePageContentState();
 }
 
 class _InAppPurchasePageContentState extends State<InAppPurchasePageContent> {
-  TextStyle headingStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.yellow,
-      fontSize: 24.0,
-      height: 1.0);
+  TextStyle headingStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 24.0, height: 1.0);
 
-  TextStyle bodyStyle = const TextStyle(
-      fontFamily: 'AvenirNextRegular',
-      fontStyle: FontStyle.normal,
-      color: Colors.white,
-      fontSize: 20.0,
-      height: 1.0);
+  TextStyle bodyStyle = const TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 20.0, height: 1.0);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
-      child: Center(
-          child: Text(' In App Purchase\r\nPage Placeholder',
-              textAlign: TextAlign.center, style: headingStyle)),
+      child: Center(child: Text(' In App Purchase\r\nPage Placeholder', textAlign: TextAlign.center, style: headingStyle)),
     );
   }
 }

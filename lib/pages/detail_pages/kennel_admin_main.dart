@@ -76,9 +76,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
 
             String paymentLinkUrl = '';
 
-            if (((eventItem.eventPaymentUrl ?? '') != '') && (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
+            if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
               paymentLinkUrl = eventItem.eventPaymentUrl;
-            } else if (((kennelItem.kennelPaymentUrl ?? '') != '') && (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+            } else if (((kennelItem.kennelPaymentUrl ?? '') != '') &&
+                ((kennelItem.kennelPaymentUrlExpires == null) || (kennelItem.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
               paymentLinkUrl = kennelItem.kennelPaymentUrl;
             }
 

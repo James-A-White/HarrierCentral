@@ -138,9 +138,9 @@ class RunDetailPageState extends State<RunDetailPage> {
         final KennelsModel kennel = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
         String paymentLinkUrl = '';
 
-        if (((eventItem.eventPaymentUrl ?? '') != '') && (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now()))) {
+        if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
           paymentLinkUrl = eventItem.eventPaymentUrl;
-        } else if (((kennel.kennelPaymentUrl ?? '') != '') && (kennel.kennelPaymentUrlExpires.isAfter(DateTime.now()))) {
+        } else if (((kennel.kennelPaymentUrl ?? '') != '') && ((kennel.kennelPaymentUrlExpires == null) || (kennel.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
           paymentLinkUrl = kennel.kennelPaymentUrl;
         }
 
