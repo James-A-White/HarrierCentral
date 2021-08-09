@@ -108,7 +108,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
   Future<void> _refreshEventFromTables(bool forceRefresh) async {
     final String sortOrder = widget.pageType == FilterEventsPageType.future ? 'ASC' : 'DESC';
     final String dateComparer = widget.pageType == FilterEventsPageType.future ? '>=' : '<=';
-    final String dateOffset = widget.pageType == FilterEventsPageType.future ? '-5 minutes' : '+5 minutes';
+    //final String dateOffset = widget.pageType == FilterEventsPageType.future ? '-5 minutes' : '+5 minutes';
 
     final String userId = getStringPref(StringPrefsEnum.userId);
 
@@ -120,7 +120,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
           SELECT COUNT(*) as publishedRunCount  
           FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt 
           WHERE kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1
-          AND datetime(evt.eventStartDatetime) $dateComparer datetime('now','localtime','$dateOffset')
+          AND date(datetime(evt.eventStartDatetime)) $dateComparer date(datetime('now','localtime'))
           ''';
 
       _publishedRunCountSqlResult = await G0<Database>().rawQuery(sql);
@@ -145,7 +145,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
           FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt
           INNER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.kennelId = "${widget.kennel.kennel.kennelId}" and hkm.userId = "$userId"
           WHERE evt.kennelId = "${widget.kennel.kennel.kennelId}"
-          AND datetime(evt.eventStartDatetime) $dateComparer datetime('now','localtime','$dateOffset')
+          AND date(datetime(evt.eventStartDatetime)) $dateComparer date(datetime('now','localtime'))
           ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} $sortOrder, evt.${G0<TableModel>().eventsTableHelper.colEventNumber} $sortOrder
         
           ''';
@@ -159,7 +159,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
           final Map<String, dynamic> event = _allEventsSqlResult[i];
           DateTime eventDate = DateTime.tryParse(event['eventStartDatetime']);
           if (eventDate != null) {
-            eventDate = DateTime(eventDate.year, eventDate.month, eventDate.day);
+            eventDate = _toDateOnly(eventDate);
             if (_calendarEvents[eventDate] == null) {
               _calendarEvents[eventDate] = <Map<String, dynamic>>[];
             }
@@ -169,7 +169,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
             // are reflected in the UI when someone changes an event's
             // properties
             if (_calendarController?.selectedDay != null) {
-              if (eventDate == DateTime(_calendarController.selectedDay.year, _calendarController.selectedDay.month, _calendarController.selectedDay.day)) {
+              if (eventDate == _toDateOnly(_calendarController.selectedDay)) {
                 _selectedEvents.add(event);
               }
             }
@@ -430,6 +430,10 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
     );
   }
 
+  DateTime _toDateOnly(DateTime d) {
+    return d == null ? null : DateTime(d.year, d.month, d.day);
+  }
+
   Widget _calendarView() {
     return Column(children: <Widget>[
       //
@@ -471,8 +475,8 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
 
                   // only allow the date popup if the conditions allowing for new runs is met
                   if (datePressed != null &&
-                      datePressed.difference(DateTime.now()).inDays > 0 &&
-                      (_calendarEvents[DateTime(datePressed.year, datePressed.month, datePressed.day)]?.length ?? 0) == 0) {
+                      _toDateOnly(datePressed).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
+                      (_calendarEvents[_toDateOnly(datePressed)]?.length ?? 0) == 0) {
                     _showEventPopup(datePressed);
                   }
                 },
@@ -494,18 +498,20 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                     return FutureBuilder<DateTime>(
                         future: _dateBeingUpdated,
                         builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
-                          return ((snapshot.hasData) && (snapshot.data.year == date.year) && (snapshot.data.month == date.month) && (snapshot.data.day == date.day))
+                          return ((snapshot.hasData) && (_toDateOnly(snapshot.data) == _toDateOnly(date)))
                               ? Container(
                                   decoration: BoxDecoration(
-                                    color: (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) == 0
-                                        ? date.difference(DateTime.now()).inDays > 0
-                                            ? Colors.white
-                                            : Colors.grey.shade200
-                                        : (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) > 1
+                                    color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
+                                        ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays == 0
+                                            ? Colors.blue.shade100
+                                            : _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
+                                                ? Colors.white
+                                                : Colors.grey.shade200
+                                        : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
                                             ? Colors.red.shade100
-                                            : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isVisible'] == 0
+                                            : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
                                                 ? Colors.grey.shade300
-                                                : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isCountedRun'] == 1
+                                                : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
                                                     ? Colors.green.shade100
                                                     : Colors.yellow.shade200,
                                     border: Border.all(
@@ -524,15 +530,17 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                                   opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animationController),
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      color: (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) == 0
-                                          ? date.difference(DateTime.now()).inDays > 0
-                                              ? Colors.white
-                                              : Colors.grey.shade200
-                                          : (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) > 1
+                                      color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
+                                          ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays == 0
+                                              ? Colors.blue.shade100
+                                              : _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
+                                                  ? Colors.white
+                                                  : Colors.grey.shade200
+                                          : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
                                               ? Colors.red.shade100
-                                              : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isVisible'] == 0
+                                              : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
                                                   ? Colors.grey.shade300
-                                                  : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isCountedRun'] == 1
+                                                  : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
                                                       ? Colors.green.shade100
                                                       : Colors.yellow.shade200,
                                       border: Border.all(
@@ -556,7 +564,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                   todayDayBuilder: (BuildContext context, DateTime date, _) {
                     return Container(
                       decoration: BoxDecoration(
-                        color: Colors.orange.shade100,
+                        color: Colors.blue.shade100,
                         border: Border.all(
                           color: Colors.black26,
                           width: 1.0,
@@ -574,21 +582,21 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                     return FutureBuilder<DateTime>(
                         future: _dateBeingUpdated,
                         builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
-                          return ((snapshot.hasData) && (snapshot.data.year == date.year) && (snapshot.data.month == date.month) && (snapshot.data.day == date.day))
+                          return ((snapshot.hasData) && _toDateOnly(snapshot.data) == _toDateOnly(date))
                               ? Container(color: Colors.pink)
                               : Container(
                                   // margin: const EdgeInsets.all(4.0),
                                   // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
                                   decoration: BoxDecoration(
-                                    color: (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) == 0
-                                        ? date.difference(DateTime.now()).inDays > 0
+                                    color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
+                                        ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
                                             ? Colors.white
                                             : Colors.grey.shade200
-                                        : (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) > 1
+                                        : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
                                             ? Colors.red.shade100
-                                            : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isVisible'] == 0
+                                            : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
                                                 ? Colors.grey.shade300
-                                                : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isCountedRun'] == 1
+                                                : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
                                                     ? Colors.green.shade100
                                                     : Colors.yellow.shade200,
                                     border: Border.all(
@@ -600,7 +608,8 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                                   height: 50,
                                   child: Text(
                                     '${date.day}',
-                                    style: const TextStyle().copyWith(fontSize: 16.0, color: date.difference(DateTime.now()).inDays > 0 ? Colors.black : Colors.grey.shade500),
+                                    style: const TextStyle().copyWith(
+                                        fontSize: 16.0, color: _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0 ? Colors.black : Colors.grey.shade500),
                                   ),
                                 );
                         });
@@ -635,9 +644,8 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
             ),
             const SizedBox(height: 5.0),
             if (_calendarController?.selectedDay != null &&
-                _calendarController.selectedDay.difference(DateTime.now()).inDays > 0 &&
-                (_calendarEvents[DateTime(_calendarController.selectedDay.year, _calendarController.selectedDay.month, _calendarController.selectedDay.day)]?.length ?? 0) ==
-                    0) ...<Widget>[_buildButtons()],
+                _toDateOnly(_calendarController.selectedDay).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
+                (_calendarEvents[_toDateOnly(_calendarController.selectedDay)]?.length ?? 0) == 0) ...<Widget>[_buildButtons()],
           ],
         ),
       ),
@@ -705,11 +713,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
         isVisible: true,
         isCountedRun: type == eventFilterType_countEvent.value.toString() ? true : false,
         eventName: eventName,
-        eventStartDatetime: DateTime(
-          eventStartDate.year,
-          eventStartDate.month,
-          eventStartDate.day,
-        ),
+        eventStartDatetime: _toDateOnly(eventStartDate),
       )
           .then((void dummy) {
         _refreshEventFromTables(true).then((void dummy) {
