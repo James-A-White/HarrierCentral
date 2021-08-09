@@ -239,16 +239,16 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               title: Text(appBarText),
               centerTitle: true,
               actions: <IconButton>[
-                // IconButton(
-                //     icon: const Icon(Icons.qr_code_scanner_sharp),
-                //     onPressed: () {
-                //       Navigator.push<dynamic>(
-                //         context,
-                //         MaterialPageRoute<dynamic>(
-                //           builder: (BuildContext context) => const UserQrCodePage(),
-                //         ),
-                //       );
-                //     }),
+                IconButton(
+                    icon: const Icon(Icons.qr_code_scanner_sharp),
+                    onPressed: () {
+                      Navigator.push<dynamic>(
+                        context,
+                        MaterialPageRoute<dynamic>(
+                          builder: (BuildContext context) => const UserQrCodePage(),
+                        ),
+                      );
+                    }),
                 IconButton(
                     icon: Icon(isFlipped ? Icons.undo : Icons.info_outline),
                     onPressed: () {

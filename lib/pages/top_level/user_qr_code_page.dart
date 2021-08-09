@@ -10,20 +10,14 @@ class UserQrCodePage extends StatefulWidget {
 }
 
 class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProviderStateMixin {
-  List<Tab> tabs = <Tab>[];
-
-  String barcode = '';
-  bool isAdmin = true;
+  final List<Tab> _tabs = <Tab>[];
 
   //PageController _pageController;
   TabController _tabController;
 
-  final String userId = getStringPref(StringPrefsEnum.userId);
+  GlobalKey _tabKey;
 
-  GlobalKey tabKey;
-  GlobalKey<ScaffoldState> scaffoldKey;
-
-  AppBar appBar;
+  AppBar _appBar;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +30,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
           child: Scaffold(
-            appBar: appBar,
+            appBar: _appBar,
             body: Container(
               decoration: Backgrounds.defaultHcBackground(),
               child: Stack(
@@ -69,7 +63,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
                             tabBarIndicatorSize: TabBarIndicatorSize.tab,
                             indicatorRadius: 20.0,
                           ),
-                          tabs: tabs,
+                          tabs: _tabs,
                           controller: _tabController,
                         ),
                       ),
@@ -79,12 +73,12 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
                       top: 80,
                       bottom: 0,
                       child: Container(
-                        key: tabKey,
+                        key: _tabKey,
                         //color: Colors.teal,
                         width: MediaQuery.of(context).size.width,
                         child: TabBarView(
                           controller: _tabController,
-                          children: const <Widget>[QrCodeTab(), QrScannerTab()],
+                          children: const <Widget>[QrScannerTab(), QrCodeTab()],
                         ),
                       )),
                 ],
@@ -108,7 +102,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
     super.initState();
     _initTabs();
 
-    appBar = AppBar(
+    _appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
       actions: <IconButton>[
@@ -127,7 +121,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
     );
 
     //_pageController = PageController(initialPage: 0, keepPage: true);
-    _tabController = TabController(vsync: this, length: tabs.length);
+    _tabController = TabController(vsync: this, length: _tabs.length);
   }
 
   Future<bool> _displayInstructions(BuildContext context) async {
@@ -165,9 +159,6 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
       },
     );
   }
-
-  Color left = Colors.white;
-  Color right = Colors.white;
 
   // Widget _buildMenuBar(BuildContext context) {
   //   return Container(
@@ -218,9 +209,9 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
   // }
 
   void _initTabs() {
-    if (tabs.isEmpty) {
-      tabs.add(const Tab(text: 'Be Scanned'));
-      tabs.add(const Tab(text: 'Scan'));
+    if (_tabs.isEmpty) {
+      _tabs.add(const Tab(text: 'Scan'));
+      _tabs.add(const Tab(text: 'Be Scanned'));
     }
   }
 
@@ -245,8 +236,6 @@ class QrCodeTab extends StatefulWidget {
 class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   @override
   bool get wantKeepAlive => true;
-
-  Key tabKey;
 
   @override
   Widget build(BuildContext context) {
@@ -330,11 +319,18 @@ class QrScannerTab extends StatefulWidget {
   _QrScannerTabState createState() => _QrScannerTabState();
 }
 
-class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
-  String onScreenMessage = 'Waiting for Scan';
+enum EQrScannerState { waitingForScan, scanning, isProcessing, qrNotRecognized, dataRecorded }
 
-  QRViewController controller;
-  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+  String _onScreenMessage = 'Scanning paused';
+
+  QRViewController _controller;
+  EQrScannerState _state = EQrScannerState.waitingForScan;
+  bool _isScanning = false;
+  // bool _isProcessing = false;
+  // bool _dataRecorded = false;
+
+  final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
 
   @override
   bool get wantKeepAlive => true;
@@ -356,50 +352,74 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
 
   @override
   void dispose() {
-    controller?.dispose();
+    _isScanning = false;
+    if (_controller != null) {
+      _controller.stopCamera();
+      _controller.dispose();
+    }
+
     super.dispose();
   }
 
   @override
   void reassemble() {
     super.reassemble();
-    if (controller != null) {
+    if (_controller != null) {
       if (Platform.isAndroid) {
-        controller.pauseCamera();
+        _controller.pauseCamera();
+        _isScanning = false;
+        _onScreenMessage = 'Scanning paused';
+        _state = EQrScannerState.waitingForScan;
       } else if (Platform.isIOS) {
-        controller.resumeCamera();
+        _controller.resumeCamera();
+        _isScanning = true;
+        _onScreenMessage = 'Looking for QR Code';
+        _state = EQrScannerState.scanning;
       }
     }
   }
 
-  Future<void> scanUserBarcode() async {
-    if (controller != null) {
-      controller.resumeCamera();
+  Future<void> _toggleScanning() async {
+    if (_controller != null) {
+      setState(() {
+        if (_isScanning) {
+          _controller.pauseCamera();
+          _isScanning = false;
+          _onScreenMessage = 'Scanning paused';
+          _state = EQrScannerState.waitingForScan;
+        } else {
+          _controller.resumeCamera();
+          _isScanning = true;
+          _onScreenMessage = 'Looking for QR Code';
+          _state = EQrScannerState.scanning;
+        }
+      });
     }
   }
 
   //   // return Future<void>(() {});(() {});
   // }
 
-  Future<void> onCodeRead(dynamic scanResult) async {
-    final AudioCache audioPlayer = AudioCache(prefix: 'sounds/');
+  Future<void> _onCodeRead(dynamic scanResult) async {
+    final AudioCache audioPlayer = AudioCache(prefix: 'assets/sounds/');
     audioPlayer.play('camera.mp3');
 
-    setState(() => onScreenMessage = 'Processing QR Scan');
+    setState(() {
+      _onScreenMessage = 'Processing QR Scan';
+      _state = EQrScannerState.isProcessing;
+    });
     //await stopScanning();
 
     //final Map<String,String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_user | Utilities.qrScanTypeFlag_kennelRunEnd| Utilities.qrScanTypeFlag_kennelRunStart| Utilities.qrScanTypeFlag_runStart| Utilities.qrScanTypeFlag_runEnd);
     final Map<String, String> result = Utilities.validateScan(
         scanResult,
-        Utilities.qrScanTypeFlag_user |
-            Utilities.qrScanTypeFlag_runStart |
-            Utilities.qrScanTypeFlag_runEnd |
-            Utilities.qrScanTypeFlag_kennelRunEnd |
-            Utilities.qrScanTypeFlag_kennelRunStart);
+        //Utilities.qrScanTypeFlag_user |
+        Utilities.qrScanTypeFlag_runStart | Utilities.qrScanTypeFlag_runEnd | Utilities.qrScanTypeFlag_kennelRunEnd | Utilities.qrScanTypeFlag_kennelRunStart);
 
     if (result['validScan'] == 'false') {
       setState(() {
-        onScreenMessage = result['validHcQr'] == 'true' ? 'This QR code is not valid here' : 'QR code not recignized';
+        _state = EQrScannerState.qrNotRecognized;
+        _onScreenMessage = result['validHcQr'] == 'true' ? 'This QR code is not valid here' : 'QR code not recignized';
       });
     } else {
       final String prefix = result['prefix'];
@@ -426,10 +446,11 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
           List<dynamic> adHocData,
         ) {
           setState(() {
+            _state = EQrScannerState.dataRecorded;
             if ((adHocData != null) && (adHocData.isNotEmpty)) {
-              onScreenMessage = adHocData[0]['userMessage'];
+              _onScreenMessage = adHocData[0]['userMessage'];
             } else {
-              onScreenMessage = 'Processing Complete';
+              _onScreenMessage = 'Processing Complete';
             }
           });
         });
@@ -443,12 +464,12 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
           final num hoursUntilNextEvent = num.tryParse(eventId);
           setState(() {
             if (hoursUntilNextEvent > 24) {
-              onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent / 24)} days';
+              _onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent / 24)} days';
             } else {
               if (hoursUntilNextEvent >= 2) {
-                onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('##').format(hoursUntilNextEvent)} hours';
+                _onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('##').format(hoursUntilNextEvent)} hours';
               } else {
-                onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent * 60)} minute' +
+                _onScreenMessage = 'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent * 60)} minute' +
                             NumberFormat('###').format(hoursUntilNextEvent * 60) !=
                         '1'
                     ? 's'
@@ -459,7 +480,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
         } else {
           if (eventId == EMPTY_RESULT) {
             setState(() {
-              onScreenMessage = 'There is no event for this Kennel at this time';
+              _onScreenMessage = 'There is no event for this Kennel at this time';
             });
           } else {
             final String userId = getStringPref(StringPrefsEnum.userId);
@@ -472,9 +493,9 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
             ) {
               setState(() {
                 if ((adHocData != null) && (adHocData.isNotEmpty)) {
-                  onScreenMessage = adHocData[0]['userMessage'];
+                  _onScreenMessage = adHocData[0]['userMessage'];
                 } else {
-                  onScreenMessage = 'Processing Complete';
+                  _onScreenMessage = 'Processing Complete';
                 }
               });
             });
@@ -546,13 +567,22 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
     //     .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  String result;
+  String _result;
 
   void _onQRViewCreated(QRViewController controller) {
-    this.controller = controller;
-    controller.scannedDataStream.listen((Barcode scanData) {
+    _controller = controller;
+    setState(() {
+      _isScanning = true;
+      _onScreenMessage = 'Looking for QR Code';
+      _state = EQrScannerState.scanning;
+    });
+
+    _controller.scannedDataStream.listen((Barcode scanData) {
       setState(() {
-        result = scanData.code;
+        _result = scanData.code;
+        _onCodeRead(_result);
+        _controller.pauseCamera();
+        _isScanning = false;
       });
     });
   }
@@ -595,43 +625,63 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
                   padding: const EdgeInsets.all(11.0),
                   child: AspectRatio(
                     aspectRatio: 1.0,
-                    child: QRView(key: qrKey, onQRViewCreated: _onQRViewCreated),
+                    child: QRView(key: _qrKey, onQRViewCreated: _onQRViewCreated),
                   ),
                 ),
+                if ((!_isScanning) && (_state == EQrScannerState.waitingForScan)) ...<Widget>[
+                  Image.asset(
+                    'images/other/qr_scanner.png',
+                  ),
+                ],
+                if ((!_isScanning) && (_state == EQrScannerState.isProcessing)) ...<Widget>[
+                  Image.asset(
+                    'images/other/uploading_to_cloud.png',
+                  ),
+                ],
+                if ((!_isScanning) && (_state == EQrScannerState.dataRecorded)) ...<Widget>[
+                  Image.asset(
+                    'images/other/run_info_recorded.png',
+                  ),
+                ],
+                if ((!_isScanning) && (_state == EQrScannerState.qrNotRecognized)) ...<Widget>[
+                  Image.asset(
+                    'images/other/qr_not_recognized.png',
+                  ),
+                ],
               ],
             ),
           ),
         ),
         // // child:Container(
         // //   child: _cameraPreviewWidget(), width: 200.0, height: 200.0),
-
-        Container(
-          margin: const EdgeInsets.all(10.0),
-          //width: 280.0,
-          height: 40.0,
-          child: Connection.styleForConnected(
-            G0<AppModel>().connectionStatus,
-            ElevatedButton(
-                child: Text(
-                  //'Start scanning',
-                  controller == null ? 'Start Scanning' : 'Stop Scanning',
-                  style: const TextStyle(fontFamily: 'AvenirNextDemiBold', color: Colors.white, fontStyle: FontStyle.normal, fontSize: 22.0),
-                ),
-                onPressed: () {
-                  if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
-                    scanUserBarcode();
-                  }
-                }),
-          ),
-        ),
+        if (_state != EQrScannerState.dataRecorded) ...<Widget>[
+          Container(
+            margin: const EdgeInsets.all(10.0),
+            //width: 280.0,
+            height: 40.0,
+            child: Connection.styleForConnected(
+              G0<AppModel>().connectionStatus,
+              ElevatedButton(
+                  child: Text(
+                    _isScanning ? 'Stop Scanning' : 'Start Scanning',
+                    style: const TextStyle(fontFamily: 'AvenirNextDemiBold', color: Colors.white, fontStyle: FontStyle.normal, fontSize: 22.0),
+                  ),
+                  onPressed: () async {
+                    if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
+                      _toggleScanning();
+                    }
+                  }),
+            ),
+          )
+        ],
 
         Container(
           //color:Colors.yellow,
           //height: 80,
-          padding: const EdgeInsets.only(top: 20, bottom: 0),
+          padding: const EdgeInsets.only(top: 20, bottom: 30, left: 20, right: 20),
           child: Center(
             child: AutoSizeText(
-              onScreenMessage,
+              _onScreenMessage,
               //'This is a test of how ',
               //'This is a test of how this works with 2 lines ',
               //'this is a test of how 3 lines will fit Ill need a lot more text than that to make it work',

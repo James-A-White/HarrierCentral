@@ -21,14 +21,14 @@ class _CreateNewEventPopupState extends State<CreateNewEventPopup> {
         autofocus: true,
         focusNode: myFocusNodeFirstName,
         controller: eventNameAmountTextController,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        //keyboardType: const TextInputType.
         style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
         decoration: const InputDecoration(
-          border: InputBorder.none,
-          icon: Icon(
-            FontAwesome.money,
-            color: Colors.white,
-          ),
+          // border: InputBorder.none,
+          // icon: Icon(
+          //   FontAwesome.money,
+          //   color: Colors.white,
+          // ),
           hintText: 'Event name',
           hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
         ),

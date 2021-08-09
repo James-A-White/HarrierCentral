@@ -198,6 +198,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        resizeToAvoidBottomInset: false,
         // floatingActionButton: SpeedDial(
         //   // both default to 16
         //   marginEnd: 18,
@@ -445,6 +446,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
             ),
           ],
         ),
+        // TODO(James): Clean up builders to get rid of duplicate code
         child: Column(
           children: <Widget>[
             const Divider(color: Colors.black, height: 1.0),
@@ -495,10 +497,20 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                           return ((snapshot.hasData) && (snapshot.data.year == date.year) && (snapshot.data.month == date.month) && (snapshot.data.day == date.day))
                               ? Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.blue.shade100,
+                                    color: (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) == 0
+                                        ? date.difference(DateTime.now()).inDays > 0
+                                            ? Colors.white
+                                            : Colors.grey.shade200
+                                        : (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) > 1
+                                            ? Colors.red.shade100
+                                            : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isVisible'] == 0
+                                                ? Colors.grey.shade300
+                                                : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isCountedRun'] == 1
+                                                    ? Colors.green.shade100
+                                                    : Colors.yellow.shade200,
                                     border: Border.all(
-                                      color: Colors.blue,
-                                      width: 1.0,
+                                      color: Colors.red,
+                                      width: 3.0,
                                     ),
                                   ),
                                   // margin: const EdgeInsets.all(4.0),
@@ -512,10 +524,20 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                                   opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animationController),
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      color: Colors.blue.shade100,
+                                      color: (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) == 0
+                                          ? date.difference(DateTime.now()).inDays > 0
+                                              ? Colors.white
+                                              : Colors.grey.shade200
+                                          : (_calendarEvents[DateTime(date.year, date.month, date.day)]?.length ?? 0) > 1
+                                              ? Colors.red.shade100
+                                              : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isVisible'] == 0
+                                                  ? Colors.grey.shade300
+                                                  : _calendarEvents[DateTime(date.year, date.month, date.day)][0]['isCountedRun'] == 1
+                                                      ? Colors.green.shade100
+                                                      : Colors.yellow.shade200,
                                       border: Border.all(
-                                        color: Colors.blue,
-                                        width: 1.0,
+                                        color: Colors.red,
+                                        width: 3.0,
                                       ),
                                     ),
                                     // margin: const EdgeInsets.all(4.0),
