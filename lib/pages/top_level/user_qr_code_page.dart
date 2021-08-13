@@ -113,7 +113,7 @@ class _UserQrCodePageState extends State<UserQrCodePage> with SingleTickerProvid
             }),
       ],
       title: const Text(
-        'QR Page',
+        'Run check in page',
         style: TextStyle(
           color: Colors.white,
         ),
@@ -562,10 +562,10 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
   //   // return Future<void>(() {});(() {});
   // }
 
-  void showInSnackBar(String message) {
-    // _scaffoldKey.currentState
-    //     .showSnackBar(SnackBar(content: Text(message)));
-  }
+  // void showInSnackBar(String message) {
+  //   // _scaffoldKey.currentState
+  //   //     .showSnackBar(SnackBar(content: Text(message)));
+  // }
 
   String _result;
 
@@ -687,7 +687,7 @@ class _QrScannerTabState extends State<QrScannerTab> with AutomaticKeepAliveClie
               //'this is a test of how 3 lines will fit Ill need a lot more text than that to make it work',
               textAlign: TextAlign.center,
               maxLines: 3,
-              style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 26.0, height: 0.9),
+              style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 26.0, height: 1.15),
             ),
           ),
         ),

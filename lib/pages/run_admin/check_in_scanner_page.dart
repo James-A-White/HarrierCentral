@@ -9,7 +9,9 @@ class CheckInScannerPage extends StatefulWidget {
   _CheckInScannerPageState createState() => _CheckInScannerPageState();
 }
 
-bool isScanningAtRunStart = true;
+final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
+bool _isScanningAtRunStart = true;
+
 final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
 class _CheckInScannerPageState extends State<CheckInScannerPage> {
@@ -34,12 +36,11 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               Expanded(
-                child: Stack(
-                  alignment: AlignmentDirectional.center,
+                child: Column(
+                  //alignment: AlignmentDirectional.center,
                   children: <Widget>[
-                    Positioned(
-                      top: 30,
-                      width: MediaQuery.of(context).size.width * 0.86,
+                    Container(
+                      padding: const EdgeInsets.only(top: 30.0, left: 30.0, right: 30.0, bottom: 20.0),
                       child: const AutoSizeText(
                         'Use this scanner to scan Hasher barcodes at the start of the run so you know who is at the Hash and at the end of the run so you can ensure that no one is lost on trail.',
                         textAlign: TextAlign.justify,
@@ -47,239 +48,139 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
                         style: TextStyle(color: Colors.white, fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, fontSize: 16.0, height: 0.8),
                       ),
                     ),
-                    Positioned(
-                      top: 120.0,
-                      child: Container(
-                        //margin: const EdgeInsets.all(20.0),
-                        width: 280.0,
+                    if ((_state != EQrScannerState.scanning) || _isScanningAtRunStart) ...<Widget>[
+                      Container(
+                        padding: const EdgeInsets.only(bottom: 20.0),
                         child: ElevatedButton(
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                              (Set<MaterialState> states) {
-                                if (states.contains(MaterialState.disabled)) {
-                                  return Colors.grey.shade700;
-                                }
-                                return null; // Use the component's default.
-                              },
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                                (Set<MaterialState> states) {
+                                  if (states.contains(MaterialState.disabled)) {
+                                    return Colors.grey.shade700;
+                                  }
+                                  return null; // Use the component's default.
+                                },
+                              ),
+                              textStyle: MaterialStateProperty.resolveWith<TextStyle>(
+                                (Set<MaterialState> states) {
+                                  if (states.contains(MaterialState.disabled)) {
+                                    return TextStyle(color: Colors.grey.shade200);
+                                  }
+                                  return null; // Use the component's default.
+                                },
+                              ),
                             ),
-                            textStyle: MaterialStateProperty.resolveWith<TextStyle>(
-                              (Set<MaterialState> states) {
-                                if (states.contains(MaterialState.disabled)) {
-                                  return TextStyle(color: Colors.grey.shade200);
-                                }
-                                return null; // Use the component's default.
-                              },
+                            child: Text(
+                              ((_state == EQrScannerState.scanning) && _isScanningAtRunStart) ? 'Stop Scanning' : 'Scan at start of run',
+                              style: const TextStyle(
+                                  fontFamily: 'AvenirNextDemiBold',
+                                  //color: Colors.white,
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 22.0,
+                                  height: 1.0),
                             ),
-                          ),
+                            //disabledTextColor: Colors.grey[200],
 
-                          child: const Text(
-                            'Scan at start of run',
-                            //((controller != null) && isScanningAtRunStart) ? 'Stop Scanning' : 'Scan at start of run',
-                            style: TextStyle(
-                                fontFamily: 'AvenirNextDemiBold',
-                                //color: Colors.white,
-                                fontStyle: FontStyle.normal,
-                                fontSize: 22.0,
-                                height: 1.0),
-                          ),
-                          //disabledTextColor: Colors.grey[200],
-                          onPressed: null,
-                          // onPressed: ((controller != null) && !isScanningAtRunStart)
-                          //     ? null
-                          //     : () {
-                          //         isScanningAtRunStart = true;
-                          //         //scanUserBarcode();
-                          //       }
-                        ),
+                            onPressed: () {
+                              _isScanningAtRunStart = true;
+                              _toggleScanning();
+                            }),
                       ),
-                    ),
-                    Positioned(
-                      top: 190,
-                      bottom: 215,
-                      //width:150,
-                      //height:150,
-                      child: Container(
-                        padding: EdgeInsets.all(10 * (G0<DeviceInfo>().deviceMaxScaleFactor * 1.5)),
-                        child: Stack(
-                          alignment: AlignmentDirectional.center,
-                          children: <Widget>[
+                    ],
+                    Expanded(
+                      //padding: EdgeInsets.all(10 * (G0<DeviceInfo>().deviceMaxScaleFactor * 1.5)),
+                      child: Stack(
+                        alignment: AlignmentDirectional.center,
+                        children: <Widget>[
+                          Image.asset(
+                            'images/other/qr_scanner.png',
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(11.0),
+                            child: AspectRatio(
+                              aspectRatio: 1.0,
+                              child: QRView(key: _qrKey, onQRViewCreated: _onQRViewCreated),
+                            ),
+                          ),
+                          if ((!_isScanning) && (_state == EQrScannerState.waitingForScan)) ...<Widget>[
                             Image.asset(
                               'images/other/qr_scanner.png',
                             ),
-                            // (controller == null)
-                            //     ? Container()
-                            //     : Container(
-                            //         padding: const EdgeInsets.all(11.0),
-                            //         child: AspectRatio(
-                            //           aspectRatio: 1.0,
-                            //           child: QRReaderPreview(controller),
-                            //         ),
-                            //       ),
                           ],
-                        ),
+                          if ((!_isScanning) && (_state == EQrScannerState.isProcessing)) ...<Widget>[
+                            Image.asset(
+                              'images/other/uploading_to_cloud.png',
+                            ),
+                          ],
+                          if ((!_isScanning) && (_state == EQrScannerState.dataRecorded)) ...<Widget>[
+                            Image.asset(
+                              'images/other/run_info_recorded.png',
+                            ),
+                          ],
+                          if ((!_isScanning) && (_state == EQrScannerState.qrNotRecognized)) ...<Widget>[
+                            Image.asset(
+                              'images/other/qr_not_recognized.png',
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                    Positioned(
-                      bottom: 140.0,
-                      child: Container(
-                        //margin: const EdgeInsets.all(20.0),
-                        width: 280.0,
+                    if ((_state != EQrScannerState.scanning) || !_isScanningAtRunStart) ...<Widget>[
+                      Container(
+                        padding: const EdgeInsets.only(top: 20.0),
                         child: ElevatedButton(
-                          child: const Text(
-                            'Scan at end of run',
-                            //((controller != null) && !isScanningAtRunStart) ? 'Stop Scanning' : 'Scan at end of run',
-                            style: TextStyle(
-                                fontFamily: 'AvenirNextDemiBold',
-                                //color: Colors.white,
-                                fontStyle: FontStyle.normal,
-                                fontSize: 22.0,
-                                height: 1.0),
-                          ),
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                              (Set<MaterialState> states) {
-                                if (states.contains(MaterialState.disabled)) {
-                                  return Colors.grey.shade700;
-                                }
-                                return null; // Use the component's default.
-                              },
+                            child: Text(
+                              //'Scan at end of run',
+                              ((_state == EQrScannerState.scanning) && !_isScanningAtRunStart) ? 'Stop Scanning' : 'Scan at end of run',
+                              style: const TextStyle(
+                                  fontFamily: 'AvenirNextDemiBold',
+                                  //color: Colors.white,
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 22.0,
+                                  height: 1.0),
                             ),
-                            textStyle: MaterialStateProperty.resolveWith<TextStyle>(
-                              (Set<MaterialState> states) {
-                                if (states.contains(MaterialState.disabled)) {
-                                  return TextStyle(color: Colors.grey.shade200);
-                                }
-                                return null; // Use the component's default.
-                              },
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                                (Set<MaterialState> states) {
+                                  if (states.contains(MaterialState.disabled)) {
+                                    return Colors.grey.shade700;
+                                  }
+                                  return null; // Use the component's default.
+                                },
+                              ),
+                              textStyle: MaterialStateProperty.resolveWith<TextStyle>(
+                                (Set<MaterialState> states) {
+                                  if (states.contains(MaterialState.disabled)) {
+                                    return TextStyle(color: Colors.grey.shade200);
+                                  }
+                                  return null; // Use the component's default.
+                                },
+                              ),
                             ),
-                          ),
-                          // disabledColor: Colors.grey[700],
-                          // disabledTextColor: Colors.grey[200],
-
-                          onPressed: null,
-                          // onPressed: ((controller != null) && isScanningAtRunStart)
-                          //     ? null
-                          //     : () {
-                          //         isScanningAtRunStart = false;
-                          //         //scanUserBarcode();
-                          //       }
-                        ),
+                            onPressed: () {
+                              _isScanningAtRunStart = false;
+                              _toggleScanning();
+                            }),
                       ),
-                    ),
-                    Positioned(
-                      bottom: 40.0,
-                      width: MediaQuery.of(context).size.width - 40,
-                      child: Container(
-                        //color:Colors.yellow,
-                        height: 100,
-                        child: Center(
-                          child: AutoSizeText(
-                            onScreenMessage,
-                            //'This is a test of how ',
-                            //'This is a test of how this works with 2 lines ',
-                            //'this is a test of how 3 lines will fit Ill need a lot more text than that to make it work',
-                            textAlign: TextAlign.center,
-                            maxLines: 3,
-                            style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 26.0, height: 0.9),
-                          ),
+                    ],
+                    Container(
+                      //color:Colors.yellow,
+                      height: 100,
+                      child: Center(
+                        child: AutoSizeText(
+                          _onScreenMessage,
+                          //'This is a test of how ',
+                          //'This is a test of how this works with 2 lines ',
+                          //'this is a test of how 3 lines will fit Ill need a lot more text than that to make it work',
+                          textAlign: TextAlign.center,
+                          maxLines: 3,
+                          style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.yellow, fontSize: 26.0, height: 0.9),
                         ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0.0,
-                      // left: 30,
-                      // right: 30,
-                      child: TextButton(
-                        child: const Text('Learn more about this feature'),
-                        onPressed: () {
-                          _displayInstructions(context);
-                        },
                       ),
                     ),
                   ],
                 ),
               ),
-
-              // Text(
-              //   '${widget.kennelShortName} #${widget.eventNumber}',
-              //   textAlign: TextAlign.center,
-              //   style: const TextStyle(
-              //     color: Colors.white,
-              //       fontFamily: 'AvenirNextDemiBold',
-              //       fontStyle: FontStyle.normal,
-              //       fontSize: 24.0,
-              //       height: 1.0),
-              // ),
-              // Text(
-              //   widget.eventName,
-              //   textAlign: TextAlign.center,
-              //   style: const TextStyle(
-              //     color: Colors.white,
-              //       fontFamily: 'AvenirNextRegular',
-              //       fontStyle: FontStyle.normal,
-              //       fontSize: 28.0,
-              //       height: 1.0),
-              // ),
-              // Center(
-              //   child: Column(
-              //     children: <Widget>[
-              //       Container(
-              //         width: 320.0,
-              //         child: ElevatedButton(
-              //             child: const Text(
-              //               'Start Scanning: RUN START',
-              //               style: TextStyle(color: Colors.white),
-              //             ),
-              //             onPressed: () {
-              //               //scanUserBarcode(true, widget.eventId);
-              //             }),
-              //       ),
-
-              //       Container(
-              //         padding: const EdgeInsets.only(top: 30.0),
-              //         width: 320.0,
-              //         child: ElevatedButton(
-              //             child: const Text(
-              //               'Start Scanning: RUN END',
-              //               style: TextStyle(color: Colors.white),
-              //             ),
-              //             onPressed: () {
-              //               //scanUserBarcode(false, widget.eventId);
-              //             }),
-              //       ),
-
-              //       // Container(
-              //       //   child: MaterialButton(
-              //       //       onPressed: scan, child: const Text('Scan')),
-              //       //   padding: const EdgeInsets.all(8.0),
-              //       // ),
-              //       Padding(
-              //         padding:
-              //             const EdgeInsets.only(left: 24.0, right: 24.0, top: 35.0),
-              //         child: Text(
-              //           barcode,
-              //           textAlign: TextAlign.center,
-              //           style: const TextStyle(
-              //               fontFamily: 'AvenirNextDemiBold',
-              //               fontStyle: FontStyle.normal,
-              //               fontSize: 24.0,
-              //               height: 1.0),
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-              // Padding(
-              //   padding:
-              //       const EdgeInsets.only(left: 32.0, right: 32.0, bottom: 16.0),
-              //   child: TextButton(
-              //     textColor: themeLearnMoreLink,
-              //     child: const Text('Learn more about this feature'),
-              //     onPressed: () {
-              //       _displayInstructions(context);
-              //     },
-              //   ),
-              // ),
             ],
           ),
         ),
@@ -287,54 +188,77 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
     );
   }
 
-  String onScreenMessage = 'Waiting to start scanning';
+  String _onScreenMessage = 'Waiting to scan';
+  String _result;
 
-  //QRReaderController controller;
+  QRViewController _controller;
+  EQrScannerState _state = EQrScannerState.waitingForScan;
+  bool _isScanning = false;
 
-  // @override
-  // bool get wantKeepAlive => true;
+  void _onQRViewCreated(QRViewController controller) {
+    _controller = controller;
+    setState(() {
+      // _isScanning = true;
+      // _onScreenMessage = 'Looking for QR Code';
+      // _state = EQrScannerState.scanning;
+      //_toggleScanning();
+    });
 
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  // QR Code Scanner support
-  //
-  //
-  //
-  //
-  //
-  //
+    _controller.scannedDataStream.listen((Barcode scanData) {
+      setState(() {
+        _result = scanData.code;
+        _toggleScanning();
+        _onCodeRead(_result);
+      });
+    });
+  }
 
-  // List<CameraDescription> cameras;
+  @override
+  void reassemble() {
+    super.reassemble();
+    if (_controller != null) {
+      if (Platform.isAndroid) {
+        _controller.pauseCamera();
+        _isScanning = false;
+        _onScreenMessage = 'Scanning paused';
+        _state = EQrScannerState.waitingForScan;
+      } else if (Platform.isIOS) {
+        _controller.resumeCamera();
+        _isScanning = true;
+        _onScreenMessage = 'Looking for QR Code';
+        _state = EQrScannerState.scanning;
+      }
+    }
+  }
 
-  // Future<void> scanUserBarcode() async {
-  //   if (controller == null) {
-  //     setState(() => onScreenMessage = 'Scanning');
-  //     cameras = await availableCameras();
+  Future<void> _toggleScanning() async {
+    if (_controller != null) {
+      setState(() {
+        if (_isScanning) {
+          _controller.pauseCamera();
+          _isScanning = false;
+          _onScreenMessage = 'Scanning paused';
+          _state = EQrScannerState.waitingForScan;
+        } else {
+          _controller.resumeCamera();
+          _isScanning = true;
+          _onScreenMessage = 'Looking for QR Code';
+          _state = EQrScannerState.scanning;
+        }
+      });
+    }
+  }
 
-  //     onNewCameraSelected(cameras[0]);
-  //   } else {
-  //     await stopScanning();
-  //     setState(() => onScreenMessage = 'Waiting for scan');
-  //   }
-  // }
-
-  Future<void> onCodeRead(dynamic scanResult) async {
+  Future<void> _onCodeRead(dynamic scanResult) async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     final AudioCache audioPlayer = AudioCache(prefix: 'sounds/');
     audioPlayer.play('camera.mp3');
-
-    //await stopScanning();
 
     final Map<String, String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_user);
 
     if (result['validScan'] == 'false') {
       setState(() {
-        onScreenMessage = result['validHcQr'] == 'true' ? 'This QR code is not valid here' : 'QR code not recignized';
+        _onScreenMessage = result['validHcQr'] == 'true' ? 'This QR code is not valid here' : 'QR code not recignized';
       });
     } else {
       final String prefix = result['prefix'];
@@ -345,72 +269,69 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
         print('ERROR! The app should never reach this point.');
       } else {
         setState(() {
-          onScreenMessage = 'Processing QR Scan';
+          _onScreenMessage = 'Processing QR Scan';
         });
-        final int attendenceState = isScanningAtRunStart ? attendenceAtHash.value : attendenceOnIn.value;
+        final int attendenceState = _isScanningAtRunStart ? attendenceAtHash.value : attendenceOnIn.value;
 
-        CommonQueries.getUserIdFromUqr(prefix + content).then((String hasherId) {
-          G0<TableModel>()
-              .hasherEventMapService
-              .joinEvent(
+        G0<TableModel>()
+            .hasherEventMapService
+            .joinEvent(
                 widget.eventAggregate.event.eventId,
-                hasherId,
+                GUID_EMPTY, // normally the Hasher ID, but null when we are scanning
                 null,
                 AppDomainType.event,
                 rsvpState: rsvpYes.value,
                 attendenceState: attendenceState,
                 isHare: isHareNo.value,
                 virginVisitorType: enumHasher.value,
-              )
-              .then((
-            List<dynamic> adHocData,
-          ) {
-            setState(() {
-              if ((adHocData != null) && (adHocData.isNotEmpty)) {
-                final num amount = adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
-                IveCoreUtilities.showInSnackBar(context, _scaffoldKey, adHocData[0]['userMessage'], durationInSeconds: 10);
-                //
-                if ((adHocData[0]['isPaid'] != 0) || (amount <= 0)) {
-                  //scanUserBarcode();
-                  // Future<void>.delayed(const Duration(seconds: 4)).then((void dummy) {
-                  //   scanUserBarcode();
-                  // });
-                } else {
-                  final PaymentPopup pp = PaymentPopup(
-                    amount: amount,
-                    creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
-                    creditRemaining: 0,
-                    currencySymbol: widget.eventAggregate.extensions.curSym,
-                    hemId: adHocData[0]['hasherEventMapId'],
-                    decimalDigits: widget.eventAggregate.extensions.digAfterDec,
-                    // valueChanged: (num value) {
-                    //   finalValue = value;
-                    // },
-                  );
+                userQrCode: prefix + content)
+            .then((
+          List<dynamic> adHocData,
+        ) {
+          setState(() {
+            if ((adHocData != null) && (adHocData.isNotEmpty)) {
+              final num amount = adHocData[0]['isMember'] == 1 ? widget.eventAggregate.extensions.memberPrice : widget.eventAggregate.extensions.nonMemberPrice;
+              IveCoreUtilities.showInSnackBar(context, _scaffoldKey, adHocData[0]['userMessage'], durationInSeconds: 5);
+              //
+              if ((adHocData[0]['isPaid'] != 0) || (amount <= 0)) {
+                //scanUserBarcode();
+                // Future<void>.delayed(const Duration(seconds: 4)).then((void dummy) {
+                //   scanUserBarcode();
+                // });
+              } else {
+                final PaymentPopup pp = PaymentPopup(
+                  amount: amount,
+                  creditAllowed: 1, // TODO(James): fix this in the DB so that Kennnels can disable credit
+                  creditRemaining: 0,
+                  currencySymbol: widget.eventAggregate.extensions.curSym,
+                  hemId: adHocData[0]['hasherEventMapId'],
+                  decimalDigits: widget.eventAggregate.extensions.digAfterDec,
+                  // valueChanged: (num value) {
+                  //   finalValue = value;
+                  // },
+                );
 
-                  final Future<PaymentPopupResult> dlg = showDialog<PaymentPopupResult>(
-                      context: context,
-                      barrierDismissible: false, // user must tap button!
-                      builder: (BuildContext context) {
-                        return pp;
+                final Future<PaymentPopupResult> dlg = showDialog<PaymentPopupResult>(
+                    context: context,
+                    barrierDismissible: false, // user must tap button!
+                    builder: (BuildContext context) {
+                      return pp;
+                    });
+
+                dlg.then(
+                  (PaymentPopupResult popupResult) {
+                    if (popupResult.transactionType != -1) {
+                      setState(() {
+                        _onScreenMessage = 'Please wait, processing payment';
                       });
 
-                  dlg.then(
-                    (PaymentPopupResult popupResult) {
-                      if (popupResult.transactionType != -1) {
-                        setState(() {
-                          onScreenMessage = 'Please wait, processing payment';
-                        });
-
-                        payForEvent(adHocData[0]['hasherEventMapId'], popupResult.transactionType, popupResult.transactionValue);
-                      }
-                    },
-                  );
-                }
-              } else {
-                onScreenMessage = 'Processing Complete';
+                      payForEvent(adHocData[0]['hasherEventMapId'], popupResult.transactionType, popupResult.transactionValue);
+                    }
+                  },
+                );
               }
-            });
+            }
+            _onScreenMessage = 'Processing Complete';
           });
         });
       }
@@ -476,35 +397,35 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
           final String amountPaid =
               IveCoreUtilities.getFormattedMoney(paymentResult[0]['creditAmount'], widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym);
 
-          onScreenMessage = paymentResult[0]['hasherWhoPaid'];
+          _onScreenMessage = paymentResult[0]['hasherWhoPaid'];
 
           if (paymentResult[0]['attendenceState'] == attendenceAtHash.value) {
-            onScreenMessage += ' is checked in and';
+            _onScreenMessage += ' is checked in and';
           } else if (paymentResult[0]['attendenceState'] == attendenceOnIn.value) {
-            onScreenMessage += ' is On Inn and';
+            _onScreenMessage += ' is On Inn and';
           }
 
           switch (paymentType) {
             case 1:
-              onScreenMessage += ' has not paid and needs to pay for the Hash';
+              _onScreenMessage += ' has not paid and needs to pay for the Hash';
               break;
             case 2:
-              onScreenMessage += ' enjoyed a FREE Hash today';
+              _onScreenMessage += ' enjoyed a FREE Hash today';
               break;
             case 3:
-              onScreenMessage += ' has paid $amountPaid in cash';
+              _onScreenMessage += ' has paid $amountPaid in cash';
               break;
             case 4:
-              onScreenMessage += ' has paid $amountPaid by bank transfer';
+              _onScreenMessage += ' has paid $amountPaid by bank transfer';
               break;
             case 5:
-              onScreenMessage += ' has paid $amountPaid in cash';
+              _onScreenMessage += ' has paid $amountPaid in cash';
               break;
             case 6:
-              onScreenMessage += ' has paid $amountPaid using Hash credit';
+              _onScreenMessage += ' has paid $amountPaid using Hash credit';
               break;
             case 7:
-              onScreenMessage += ' has paid $amountPaid by bank transfer';
+              _onScreenMessage += ' has paid $amountPaid by bank transfer';
               break;
             default:
               break;
@@ -579,34 +500,34 @@ class _CheckInScannerPageState extends State<CheckInScannerPage> {
     //     .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<bool> _displayInstructions(BuildContext context) async {
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Hasher Scanner'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: const <Widget>[
-                Text(
-                  'Harrier Central admins can use this page to scan in Hashers both at the beginning of runs (to record who is at the run) and the end of runs (to make sure everone is back safely).\r\n\r\nThis screen also makes it possible to record who has paid and who has not.',
-                  textAlign: TextAlign.justify,
-                  style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
-                )
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('OK, Got it!'),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // Future<bool> _displayInstructions(BuildContext context) async {
+  //   return showDialog<bool>(
+  //     context: context,
+  //     barrierDismissible: false, // user must tap button!
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('Hasher Scanner'),
+  //         content: SingleChildScrollView(
+  //           child: ListBody(
+  //             children: const <Widget>[
+  //               Text(
+  //                 'Harrier Central admins can use this page to scan in Hashers both at the beginning of runs (to record who is at the run) and the end of runs (to make sure everone is back safely).\r\n\r\nThis screen also makes it possible to record who has paid and who has not.',
+  //                 textAlign: TextAlign.justify,
+  //                 style: TextStyle(fontFamily: 'AvenirNextRegular', fontStyle: FontStyle.normal, fontSize: 16.0, height: 1.0),
+  //               )
+  //             ],
+  //           ),
+  //         ),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             child: const Text('OK, Got it!'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(true);
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 }

@@ -1032,23 +1032,23 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
     );
   }
 
-  Widget buildScanResultSnackbar(BuildContext contextl, String resultStr) {
-    final SnackBar snackbar = SnackBar(
-      duration: const Duration(seconds: 4),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text(
-            resultStr,
-            style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0),
-          ),
-        ],
-      ),
-      backgroundColor: Theme.of(context).accentColor,
-    );
+  // Widget buildScanResultSnackbar(BuildContext contextl, String resultStr) {
+  //   final SnackBar snackbar = SnackBar(
+  //     duration: const Duration(seconds: 4),
+  //     content: Column(
+  //       mainAxisSize: MainAxisSize.min,
+  //       children: <Widget>[
+  //         Text(
+  //           resultStr,
+  //           style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 1.0),
+  //         ),
+  //       ],
+  //     ),
+  //     backgroundColor: Theme.of(context).accentColor,
+  //   );
 
-    return snackbar;
-  }
+  //   return snackbar;
+  // }
 
   SnackBar buildRsvpAndPaymentSnackbar(BuildContext context, ScaffoldState scaffoldState, CheckInPackModel packMember) {
     final SnackBar snackbar = PaymentSnackBar(

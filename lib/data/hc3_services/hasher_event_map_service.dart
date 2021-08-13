@@ -210,8 +210,19 @@ class HasherEventMapService {
     return <String, String>{'result': 'No valid email address found', 'email': ''};
   }
 
-  Future<List<dynamic>> joinEvent(String eventId, String hasherId, String hasherEventMapId, AppDomainType appDomainType,
-      {int rsvpState = -1, int attendenceState = -1, int isHare = -1, int virginVisitorType = 0, int notificationState = -1, int emailAlertState = -1}) async {
+  Future<List<dynamic>> joinEvent(
+    String eventId,
+    String hasherId,
+    String hasherEventMapId,
+    AppDomainType appDomainType, {
+    int rsvpState = -1,
+    int attendenceState = -1,
+    int isHare = -1,
+    int virginVisitorType = 0,
+    int notificationState = -1,
+    int emailAlertState = -1,
+    String userQrCode,
+  }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
       return null;
       // TODO(James): fix this so we can return a bool
@@ -252,7 +263,7 @@ class HasherEventMapService {
     final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
     final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
-    final String body = jsonEncode(<String, Object>{
+    final Map<String, Object> bodyMap = <String, Object>{
       'userId': userId,
       'accessToken': accessToken,
       'eventId': eventId,
@@ -267,8 +278,14 @@ class HasherEventMapService {
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
-      'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString()
-    });
+      'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString(),
+    };
+
+    if (userQrCode != null) {
+      bodyMap.addAll(<String, Object>{'userQrCode': userQrCode});
+    }
+
+    final String body = jsonEncode(bodyMap);
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_join_event', body);
 
@@ -310,16 +327,15 @@ class HasherEventMapService {
           G0<TableModel>().paymentsTableHelper.getTableName(appDomainType),
           G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
         );
-    final num _kennelCreditsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().kennelCreditsTableHelper,
-          G0<TableModel>().kennelCreditsTableHelper.getTableName(appDomainType),
-          G0<TableModel>().kennelCreditsTableHelper.colUpdatedAtValue,
-        );
+    // final num _kennelCreditsLastUpdated = await G0<TableModel>().baseService.getLastUpdatedTime(
+    //       G0<Database>(),
+    //       G0<TableModel>().kennelCreditsTableHelper,
+    //       G0<TableModel>().kennelCreditsTableHelper.getTableName(appDomainType),
+    //       G0<TableModel>().kennelCreditsTableHelper.colUpdatedAtValue,
+    //     );
 
     final DateTime hasherEventMapUpdatedAfter = _hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_hasherEventMapLastUpdated + 1000);
     final DateTime paymentsUpdatedAfter = _paymentsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_paymentsLastUpdated + 1000);
-    final DateTime kennelCreditsUpdatedAfter = _kennelCreditsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMillisecondsSinceEpoch(_kennelCreditsLastUpdated + 1000);
 
     final String body = jsonEncode(<String, Object>{
       'userId': userId,
@@ -331,8 +347,7 @@ class HasherEventMapService {
       'email': email,
       'phoneNumber': phoneNumber,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
-      'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
-      'kennelCreditsUpdatedAfter': kennelCreditsUpdatedAfter.toString()
+      'paymentsUpdatedAfter': paymentsUpdatedAfter.toString()
     });
 
     final String responseBody = await ServiceCommon.sendHttpPost('hc3_join_event_as_visitor', body);
