@@ -146,7 +146,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             await G0<TableModel>()
                 .hasherEventMapService
                 .joinEvent(result.eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value);
-            futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
+            if (futureRunsListPageKey?.currentState != null) {
+              futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
+            }
           }
         }
       }
