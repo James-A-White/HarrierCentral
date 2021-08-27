@@ -1,292 +1,272 @@
--- /****** Object:  Index [IX_KennelSpatialIndex]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_KennelSpatialIndex]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_KennelSpatialIndex] ON [HC].[Kennel]
 -- GO
--- /****** Object:  Index [IX_City_SpatialLocation]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_City_SpatialLocation]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_City_SpatialLocation] ON [HC].[City]
 -- GO
--- EXEC sys.sp_dropextendedproperty @name=N'microsoft_database_tools_support' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'sysdiagrams'
--- GO
--- /****** Object:  Trigger [tgUpdate]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [tgUpdate]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC3W].[tgUpdate]
 -- GO
--- /****** Object:  Trigger [tgUpdateSaHasher]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [tgUpdateSaHasher]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC3W].[tgUpdateSaHasher]
 -- GO
--- /****** Object:  Trigger [tgUpdateAdKennel]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [tgUpdateAdKennel]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC3W].[tgUpdateAdKennel]
 -- GO
--- /****** Object:  Trigger [tgUpdateAdHasherList]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [tgUpdateAdHasherList]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC3W].[tgUpdateAdHasherList]
 -- GO
--- /****** Object:  Trigger [tgUpdateAdHasher]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [tgUpdateAdHasher]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC3W].[tgUpdateAdHasher]
 -- GO
--- /****** Object:  Trigger [tgInsertVwAdEventList]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [tgInsertVwAdEventList]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC3W].[tgInsertVwAdEventList]
 -- GO
--- /****** Object:  Trigger [tgUpdateAdEvent]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [tgUpdateAdEvent]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC3W].[tgUpdateAdEvent]
 -- GO
--- /****** Object:  Trigger [tgInsertVwAdEmailTemplateList]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [tgInsertVwAdEmailTemplateList]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC3W].[tgInsertVwAdEmailTemplateList]
 -- GO
--- /****** Object:  Trigger [tgDeleteAdEmailTemplateList]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [tgDeleteAdEmailTemplateList]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC3W].[tgDeleteAdEmailTemplateList]
 -- GO
--- /****** Object:  Trigger [trgVwOfficeForms_KennelImport]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgVwOfficeForms_KennelImport]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [EXT].[trgVwOfficeForms_KennelImport]
 -- GO
--- /****** Object:  Trigger [trgUpdateModifiedOnDateForRegion]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgUpdateModifiedOnDateForRegion]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgUpdateModifiedOnDateForRegion]
 -- GO
--- /****** Object:  Trigger [TR_Meetings_InsertUpdateDelete]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [TR_Meetings_InsertUpdateDelete]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[TR_Meetings_InsertUpdateDelete]
 -- GO
--- /****** Object:  Trigger [trgLocateLogin]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgLocateLogin]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgLocateLogin]
 -- GO
--- /****** Object:  Trigger [trgUpdateModifiedOnDateForKennels]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgUpdateModifiedOnDateForKennels]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgUpdateModifiedOnDateForKennels]
 -- GO
--- /****** Object:  Trigger [trgUpdateKennelGeolocation]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgUpdateKennelGeolocation]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgUpdateKennelGeolocation]
 -- GO
--- /****** Object:  Trigger [trgConfigureFacebookToken]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgConfigureFacebookToken]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgConfigureFacebookToken]
 -- GO
--- /****** Object:  Trigger [GenerateExtApiKey]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [GenerateExtApiKey]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[GenerateExtApiKey]
 -- GO
--- /****** Object:  Trigger [trgUpdateModifiedOnDateForHasherKennelMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgUpdateModifiedOnDateForHasherKennelMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgUpdateModifiedOnDateForHasherKennelMap]
 -- GO
--- /****** Object:  Trigger [trgUpdateModifiedOnDateForHasherEventMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgUpdateModifiedOnDateForHasherEventMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgUpdateModifiedOnDateForHasherEventMap]
 -- GO
--- /****** Object:  Trigger [trgUpdateModifiedOnDateForNames]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgUpdateModifiedOnDateForNames]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgUpdateModifiedOnDateForNames]
 -- GO
--- /****** Object:  Trigger [trgLinkToDboUsers]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgLinkToDboUsers]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgLinkToDboUsers]
 -- GO
--- /****** Object:  Trigger [trgInsertHkmRecordForHomeHash]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgInsertHkmRecordForHomeHash]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgInsertHkmRecordForHomeHash]
 -- GO
--- /****** Object:  Trigger [trgGenerateQrCode]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgGenerateQrCode]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgGenerateQrCode]
 -- GO
--- /****** Object:  Trigger [trgCalculateHasherGeolocation]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgCalculateHasherGeolocation]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgCalculateHasherGeolocation]
 -- GO
--- /****** Object:  Trigger [trgUpdateModifiedOnDateForEvent]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgUpdateModifiedOnDateForEvent]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgUpdateModifiedOnDateForEvent]
 -- GO
--- /****** Object:  Trigger [trgUpdateHemDates]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgUpdateHemDates]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgUpdateHemDates]
 -- GO
--- /****** Object:  Trigger [trgRecalculateRunCounts]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgRecalculateRunCounts]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgRecalculateRunCounts]
 -- GO
--- /****** Object:  Trigger [trgUpdateModifiedOnDateForCountry]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgUpdateModifiedOnDateForCountry]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgUpdateModifiedOnDateForCountry]
 -- GO
--- /****** Object:  Trigger [trgUpdateModifiedOnDateForCity]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgUpdateModifiedOnDateForCity]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgUpdateModifiedOnDateForCity]
 -- GO
--- /****** Object:  Trigger [trgUpdateGeolocation]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgUpdateGeolocation]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[trgUpdateGeolocation]
 -- GO
--- /****** Object:  Trigger [TR_BusinessUnits_InsertUpdateDelete]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [TR_BusinessUnits_InsertUpdateDelete]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [HC].[TR_BusinessUnits_InsertUpdateDelete]
 -- GO
--- /****** Object:  Trigger [TR_HasherFriendMap_InsertUpdateDelete]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [TR_HasherFriendMap_InsertUpdateDelete]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [Hashers].[TR_HasherFriendMap_InsertUpdateDelete]
 -- GO
--- /****** Object:  Trigger [TR_HasherEventMap_InsertUpdateDelete]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [TR_HasherEventMap_InsertUpdateDelete]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [Hashers].[TR_HasherEventMap_InsertUpdateDelete]
 -- GO
--- /****** Object:  Trigger [trgLinkToHcHasher]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgLinkToHcHasher]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [dbo].[trgLinkToHcHasher]
 -- GO
--- /****** Object:  Trigger [trgAddRoles]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Trigger [trgAddRoles]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP TRIGGER [dbo].[trgAddRoles]
 -- GO
--- /****** Object:  StoredProcedure [WORDZ].[sp_ExportWordzToJson]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [WORDZ].[sp_ExportWordzToJson]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [WORDZ].[sp_ExportWordzToJson]
 -- GO
--- /****** Object:  StoredProcedure [HC3W].[not_used_getUsersForAdmin]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3W].[not_used_getUsersForAdmin]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3W].[not_used_getUsersForAdmin]
 -- GO
--- /****** Object:  StoredProcedure [HC3W].[not_used_getEvents]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3W].[not_used_getEvents]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3W].[not_used_getEvents]
 -- GO
--- /****** Object:  StoredProcedure [HC3W].[importKennel]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3W].[importKennel]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3W].[importKennel]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[utilApi_mergeUsers]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[utilApi_mergeUsers]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[utilApi_mergeUsers]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[syncUserData]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[syncUserData]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[syncUserData]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[syncKennelAdminData]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[syncKennelAdminData]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[syncKennelAdminData]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[syncEventAdminData]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[syncEventAdminData]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[syncEventAdminData]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[rptKennelRunStats]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[rptKennelRunStats]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[rptKennelRunStats]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[rptApi_sendScheduledEmails]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[rptApi_sendScheduledEmails]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[rptApi_sendScheduledEmails]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[rptApi_emailRunDetails]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[rptApi_emailRunDetails]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[rptApi_emailRunDetails]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[processThirdPartyLogin]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[processThirdPartyLogin]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[processThirdPartyLogin]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[processPayment]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[processPayment]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[processPayment]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[processFacebookLogin]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[processFacebookLogin]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[processFacebookLogin]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[nonApi_updateHasherCreditBalance]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[nonApi_updateHasherCreditBalance]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[nonApi_updateHasherCreditBalance]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[nonApi_testRunCounts]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[nonApi_testRunCounts]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[nonApi_testRunCounts]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[nonApi_fixRunCountsInHkm]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[nonApi_fixRunCountsInHkm]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[nonApi_fixRunCountsInHkm]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[logEmailsSent]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[logEmailsSent]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[logEmailsSent]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[joinKennel]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[joinKennel]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[joinKennel]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[joinEventAsVisitor]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[joinEventAsVisitor]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[joinEventAsVisitor]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[joinEvent]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[joinEvent]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[joinEvent]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[getRuns]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[getRuns]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[getRuns]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[getResetCode]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[getResetCode]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[getResetCode]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[getPaymentReport]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[getPaymentReport]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[getPaymentReport]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[getMyKennelRunTotals]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[getMyKennelRunTotals]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[getMyKennelRunTotals]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[extApi_getKennelPayments]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[extApi_getKennelPayments]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[extApi_getKennelPayments]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[extApi_getKennelMembers]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[extApi_getKennelMembers]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[extApi_getKennelMembers]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[extApi_getKennelEmailList]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[extApi_getKennelEmailList]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[extApi_getKennelEmailList]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[authorizeDevice]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[authorizeDevice]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[authorizeDevice]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[approveLogin]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[approveLogin]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[approveLogin]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[admin_dataIntegrityCheck]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[admin_dataIntegrityCheck]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[admin_dataIntegrityCheck]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[addEditUser]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[addEditUser]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[addEditUser]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[addEditReceipt]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[addEditReceipt]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[addEditReceipt]
 -- GO
--- /****** Object:  StoredProcedure [HC3].[addEditEvent]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[addEditEvent]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC3].[addEditEvent]
 -- GO
--- /****** Object:  StoredProcedure [HC2].[getRuns]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC2].[getRuns]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC2].[getRuns]
 -- GO
--- /****** Object:  StoredProcedure [HC2].[getPaymentReport]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC2].[getPaymentReport]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC2].[getPaymentReport]
 -- GO
--- /****** Object:  StoredProcedure [HC2].[getMyKennelRunTotals]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC2].[getMyKennelRunTotals]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC2].[getMyKennelRunTotals]
 -- GO
--- /****** Object:  StoredProcedure [HC].[nonApi_updateRunNumbers]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC].[nonApi_updateRunNumbers]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC].[nonApi_updateRunNumbers]
 -- GO
--- /****** Object:  StoredProcedure [HC].[nonApi_updateEventFromExternalIntegration]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC].[nonApi_updateEventFromExternalIntegration]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC].[nonApi_updateEventFromExternalIntegration]
 -- GO
--- /****** Object:  StoredProcedure [HC].[nonApi_rptKennelRunStats]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC].[nonApi_rptKennelRunStats]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC].[nonApi_rptKennelRunStats]
 -- GO
--- /****** Object:  StoredProcedure [HC].[nonApi_logError]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC].[nonApi_logError]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC].[nonApi_logError]
 -- GO
--- /****** Object:  StoredProcedure [HC].[nonApi_getUserInviteCode]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC].[nonApi_getUserInviteCode]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC].[nonApi_getUserInviteCode]
 -- GO
--- /****** Object:  StoredProcedure [HC].[nonApi_fbAppEvent]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC].[nonApi_fbAppEvent]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC].[nonApi_fbAppEvent]
 -- GO
--- /****** Object:  StoredProcedure [HC].[nonApi_adjustHasherRunCounts]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [HC].[nonApi_adjustHasherRunCounts]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [HC].[nonApi_adjustHasherRunCounts]
 -- GO
--- /****** Object:  StoredProcedure [EXT].[ProcessKennelImports]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [EXT].[ProcessKennelImports]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [EXT].[ProcessKennelImports]
 -- GO
--- /****** Object:  StoredProcedure [EXT].[ImportNewKennel]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [EXT].[ImportNewKennel]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [EXT].[ImportNewKennel]
 -- GO
--- /****** Object:  StoredProcedure [DEV].[RecompileHc2AndHc3]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [DEV].[RecompileHc2AndHc3]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [DEV].[RecompileHc2AndHc3]
 -- GO
--- /****** Object:  StoredProcedure [DEV].[DeleteUser]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [DEV].[MergeUsers]    Script Date: 8/27/2021 12:06:42 PM ******/
+-- DROP PROCEDURE [DEV].[MergeUsers]
+-- GO
+-- /****** Object:  StoredProcedure [DEV].[DeleteUser]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [DEV].[DeleteUser]
 -- GO
--- /****** Object:  StoredProcedure [DEV].[deleteTestUsers]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [DEV].[deleteTestUsers]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [DEV].[deleteTestUsers]
 -- GO
--- /****** Object:  StoredProcedure [DEV].[DeleteKennel]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [DEV].[DeleteKennel]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [DEV].[DeleteKennel]
 -- GO
--- /****** Object:  StoredProcedure [DEV].[CleanDb]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [DEV].[CleanDb]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [DEV].[CleanDb]
 -- GO
--- /****** Object:  StoredProcedure [DEV].[backupTables]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  StoredProcedure [DEV].[backupTables]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP PROCEDURE [DEV].[backupTables]
--- GO
--- /****** Object:  StoredProcedure [dbo].[sp_upgraddiagrams]    Script Date: 8/9/2021 8:40:23 PM ******/
--- DROP PROCEDURE [dbo].[sp_upgraddiagrams]
--- GO
--- /****** Object:  StoredProcedure [dbo].[sp_renamediagram]    Script Date: 8/9/2021 8:40:23 PM ******/
--- DROP PROCEDURE [dbo].[sp_renamediagram]
--- GO
--- /****** Object:  StoredProcedure [dbo].[sp_helpdiagrams]    Script Date: 8/9/2021 8:40:23 PM ******/
--- DROP PROCEDURE [dbo].[sp_helpdiagrams]
--- GO
--- /****** Object:  StoredProcedure [dbo].[sp_helpdiagramdefinition]    Script Date: 8/9/2021 8:40:23 PM ******/
--- DROP PROCEDURE [dbo].[sp_helpdiagramdefinition]
--- GO
--- /****** Object:  StoredProcedure [dbo].[sp_dropdiagram]    Script Date: 8/9/2021 8:40:23 PM ******/
--- DROP PROCEDURE [dbo].[sp_dropdiagram]
--- GO
--- /****** Object:  StoredProcedure [dbo].[sp_creatediagram]    Script Date: 8/9/2021 8:40:23 PM ******/
--- DROP PROCEDURE [dbo].[sp_creatediagram]
--- GO
--- /****** Object:  StoredProcedure [dbo].[sp_alterdiagram]    Script Date: 8/9/2021 8:40:23 PM ******/
--- DROP PROCEDURE [dbo].[sp_alterdiagram]
 -- GO
 -- ALTER TABLE [HC].[Event] DROP CONSTRAINT [CK_Event_IsVisible]
 -- GO
@@ -562,6 +542,8 @@
 -- GO
 -- ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_AllowSelfPayment]
 -- GO
+-- ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_KennelFeaturesTier]
+-- GO
 -- ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_DefaultRunStartTime]
 -- GO
 -- ALTER TABLE [HC].[Kennel] DROP CONSTRAINT [DF_Kennel_DefaultEventPriceForNonMembers]
@@ -711,8 +693,6 @@
 -- ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_UseFbLocation]
 -- GO
 -- ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_UseFbData]
--- GO
--- ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_Event_CanEditRunAttendence]
 -- GO
 -- ALTER TABLE [HC].[Event] DROP CONSTRAINT [DF_HC_Event_MinimumRequired]
 -- GO
@@ -892,697 +872,693 @@
 -- GO
 -- ALTER TABLE [dbo].[BusinessUnits] DROP CONSTRAINT [DF_BusinessUnits_id]
 -- GO
--- /****** Object:  Index [IX_KennelSongMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_KennelSongMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_KennelSongMap] ON [UNUSED].[KennelSongMap]
 -- GO
--- /****** Object:  Index [IX_RegionUpdated]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_RegionUpdated]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_RegionUpdated] ON [HC].[Region]
 -- GO
--- /****** Object:  Index [IX_PaymentReference]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_PaymentReference]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_PaymentReference] ON [HC].[Payment]
 -- GO
--- /****** Object:  Index [IX_HasherKennelMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_HasherKennelMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_HasherKennelMap] ON [HC].[HasherKennelMap]
 -- GO
--- /****** Object:  Index [IX_HasherFriendMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_HasherFriendMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_HasherFriendMap] ON [HC].[HasherFriendMap]
 -- GO
--- /****** Object:  Index [IX_HasherEventMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_HasherEventMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_HasherEventMap] ON [HC].[HasherEventMap]
 -- GO
--- /****** Object:  Index [IX_HasherUniqueEmail]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_HasherUniqueEmail]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_HasherUniqueEmail] ON [HC].[Hasher]
 -- GO
--- /****** Object:  Index [IX_EventByKennelIsCountedStartDateAbsEvtNum]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_EventByKennelIsCountedStartDateAbsEvtNum]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_EventByKennelIsCountedStartDateAbsEvtNum] ON [HC].[Event]
 -- GO
--- /****** Object:  Index [IX_Event_KidIsCountedDeleted2]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_Event_KidIsCountedDeleted2]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_Event_KidIsCountedDeleted2] ON [HC].[Event]
 -- GO
--- /****** Object:  Index [i1]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [i1]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [i1] ON [HC].[ErrorLog]
 -- GO
--- /****** Object:  Index [IX_CountryUpdated]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_CountryUpdated]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_CountryUpdated] ON [HC].[Country]
 -- GO
--- /****** Object:  Index [IX_CityUpdated]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_CityUpdated]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_CityUpdated] ON [HC].[City]
 -- GO
--- /****** Object:  Index [IX_UserUniqueEmail]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_UserUniqueEmail]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_UserUniqueEmail] ON [dbo].[Users]
 -- GO
--- /****** Object:  Index [UQ_UserRoles_UserId_RoleId]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [UQ_UserRoles_UserId_RoleId]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [UQ_UserRoles_UserId_RoleId] ON [dbo].[UserRoles]
 -- GO
--- /****** Object:  Index [IX_UserRoles_RoleId_UserId]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_UserRoles_RoleId_UserId]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_UserRoles_RoleId_UserId] ON [dbo].[UserRoles]
 -- GO
--- /****** Object:  Index [IX_UserPref_UID_PrefType_Name]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_UserPref_UID_PrefType_Name]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_UserPref_UID_PrefType_Name] ON [dbo].[UserPreferences]
 -- GO
--- /****** Object:  Index [UQ_UserPerm_UserId_PermKey]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [UQ_UserPerm_UserId_PermKey]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [UQ_UserPerm_UserId_PermKey] ON [dbo].[UserPermissions]
 -- GO
--- /****** Object:  Index [UQ_RolePerm_RoleId_PermKey]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [UQ_RolePerm_RoleId_PermKey]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [UQ_RolePerm_RoleId_PermKey] ON [dbo].[RolePermissions]
 -- GO
--- /****** Object:  Index [IX_Exceptions_Hash_App_Cre_Del]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_Exceptions_Hash_App_Cre_Del]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_Exceptions_Hash_App_Cre_Del] ON [dbo].[Exceptions]
 -- GO
--- /****** Object:  Index [IX_Exceptions_GUID_App_Del_Cre]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_Exceptions_GUID_App_Del_Cre]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_Exceptions_GUID_App_Del_Cre] ON [dbo].[Exceptions]
 -- GO
--- /****** Object:  Index [IX_Exceptions_App_Del_Cre]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_Exceptions_App_Del_Cre]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_Exceptions_App_Del_Cre] ON [dbo].[Exceptions]
 -- GO
--- /****** Object:  Table [WORDZ].[WordzAudio]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [WORDZ].[WordzAudio]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[WORDZ].[WordzAudio]') AND type in (N'U'))
 -- DROP TABLE [WORDZ].[WordzAudio]
 -- GO
--- /****** Object:  Table [WORDZ].[Wordz]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [WORDZ].[Wordz]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[WORDZ].[Wordz]') AND type in (N'U'))
 -- DROP TABLE [WORDZ].[Wordz]
 -- GO
--- /****** Object:  Table [WORDZ].[WordFreq]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [WORDZ].[WordFreq]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[WORDZ].[WordFreq]') AND type in (N'U'))
 -- DROP TABLE [WORDZ].[WordFreq]
 -- GO
--- /****** Object:  Table [UNUSED].[Song]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [UNUSED].[Song]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[Song]') AND type in (N'U'))
 -- DROP TABLE [UNUSED].[Song]
 -- GO
--- /****** Object:  Table [UNUSED].[KennelSongMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [UNUSED].[KennelSongMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[KennelSongMap]') AND type in (N'U'))
 -- DROP TABLE [UNUSED].[KennelSongMap]
 -- GO
--- /****** Object:  Table [UNUSED].[Haberdashery]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [UNUSED].[Haberdashery]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[Haberdashery]') AND type in (N'U'))
 -- DROP TABLE [UNUSED].[Haberdashery]
 -- GO
--- /****** Object:  Table [UNUSED].[FeaturedSong]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [UNUSED].[FeaturedSong]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[FeaturedSong]') AND type in (N'U'))
 -- DROP TABLE [UNUSED].[FeaturedSong]
 -- GO
--- /****** Object:  Table [UNUSED].[FeaturedKennel]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [UNUSED].[FeaturedKennel]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[FeaturedKennel]') AND type in (N'U'))
 -- DROP TABLE [UNUSED].[FeaturedKennel]
 -- GO
--- /****** Object:  Table [UNUSED].[FeaturedEvent]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [UNUSED].[FeaturedEvent]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[UNUSED].[FeaturedEvent]') AND type in (N'U'))
 -- DROP TABLE [UNUSED].[FeaturedEvent]
 -- GO
--- /****** Object:  Table [Transactions].[HaberdasherySale]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [Transactions].[HaberdasherySale]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Transactions].[HaberdasherySale]') AND type in (N'U'))
 -- DROP TABLE [Transactions].[HaberdasherySale]
 -- GO
--- /****** Object:  Table [Transactions].[EventRegistration]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [Transactions].[EventRegistration]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Transactions].[EventRegistration]') AND type in (N'U'))
 -- DROP TABLE [Transactions].[EventRegistration]
 -- GO
--- /****** Object:  Table [Kennels].[Mismanagement]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [Kennels].[Mismanagement]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Kennels].[Mismanagement]') AND type in (N'U'))
 -- DROP TABLE [Kennels].[Mismanagement]
 -- GO
--- /****** Object:  Table [Kennels].[Haberdashery]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [Kennels].[Haberdashery]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Kennels].[Haberdashery]') AND type in (N'U'))
 -- DROP TABLE [Kennels].[Haberdashery]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[WebAppLogin]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[WebAppLogin]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[WebAppLogin]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[WebAppLogin]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[ServerStatus]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[ServerStatus]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[ServerStatus]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[ServerStatus]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[RunCounts]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[RunCounts]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[RunCounts]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[RunCounts]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[Region]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[Region]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Region]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[Region]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[Recepit]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[Recepit]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Recepit]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[Recepit]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[Payment]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[Payment]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Payment]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[Payment]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[LoginNotifications]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[LoginNotifications]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[LoginNotifications]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[LoginNotifications]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[LaunchAndLogin]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[LaunchAndLogin]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[LaunchAndLogin]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[LaunchAndLogin]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[KennelCredit]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[KennelCredit]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[KennelCredit]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[KennelCredit]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[KennelAuthorization]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[KennelAuthorization]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[KennelAuthorization]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[KennelAuthorization]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[Kennel]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[Kennel]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Kennel]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[Kennel]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[HasherOwnEvent]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[HasherOwnEvent]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[HasherOwnEvent]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[HasherOwnEvent]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[HasherKennelMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[HasherKennelMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[HasherKennelMap]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[HasherKennelMap]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[HasherFriendMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[HasherFriendMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[HasherFriendMap]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[HasherFriendMap]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[HasherEventMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[HasherEventMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[HasherEventMap]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[HasherEventMap]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[Hasher]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[Hasher]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Hasher]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[Hasher]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[Event]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[Event]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Event]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[Event]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[EmailTemplate]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[EmailTemplate]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[EmailTemplate]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[EmailTemplate]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[EmailLog]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[EmailLog]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[EmailLog]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[EmailLog]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[Country]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[Country]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[Country]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[Country]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[City]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[City]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC_BACKUP].[City]') AND type in (N'U'))
 -- DROP TABLE [HC_BACKUP].[City]
 -- GO
--- /****** Object:  Table [HC].[WebAppLogin]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[WebAppLogin]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[WebAppLogin]') AND type in (N'U'))
 -- DROP TABLE [HC].[WebAppLogin]
 -- GO
--- /****** Object:  Table [HC].[ServerStatus]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[ServerStatus]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[ServerStatus]') AND type in (N'U'))
 -- DROP TABLE [HC].[ServerStatus]
 -- GO
--- /****** Object:  Table [HC].[Meetings]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[Meetings]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Meetings]') AND type in (N'U'))
 -- DROP TABLE [HC].[Meetings]
 -- GO
--- /****** Object:  Table [HC].[LoginNotifications]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[LoginNotifications]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[LoginNotifications]') AND type in (N'U'))
 -- DROP TABLE [HC].[LoginNotifications]
 -- GO
--- /****** Object:  Table [HC].[KennelCredit]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[KennelCredit]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[KennelCredit]') AND type in (N'U'))
 -- DROP TABLE [HC].[KennelCredit]
 -- GO
--- /****** Object:  Table [HC].[KennelAuthorization]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[KennelAuthorization]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[KennelAuthorization]') AND type in (N'U'))
 -- DROP TABLE [HC].[KennelAuthorization]
 -- GO
--- /****** Object:  Table [HC].[HasherOwnEvent]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[HasherOwnEvent]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[HasherOwnEvent]') AND type in (N'U'))
 -- DROP TABLE [HC].[HasherOwnEvent]
 -- GO
--- /****** Object:  Table [HC].[HasherFriendMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[HasherFriendMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[HasherFriendMap]') AND type in (N'U'))
 -- DROP TABLE [HC].[HasherFriendMap]
 -- GO
--- /****** Object:  Table [HC].[ErrorLog]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[ErrorLog]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[ErrorLog]') AND type in (N'U'))
 -- DROP TABLE [HC].[ErrorLog]
 -- GO
--- /****** Object:  Table [HC].[BusinessUnits]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[BusinessUnits]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[BusinessUnits]') AND type in (N'U'))
 -- DROP TABLE [HC].[BusinessUnits]
 -- GO
--- /****** Object:  Table [Hashers].[HasherFriendMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [Hashers].[HasherFriendMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Hashers].[HasherFriendMap]') AND type in (N'U'))
 -- DROP TABLE [Hashers].[HasherFriendMap]
 -- GO
--- /****** Object:  Table [Hashers].[HasherEventMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [Hashers].[HasherEventMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Hashers].[HasherEventMap]') AND type in (N'U'))
 -- DROP TABLE [Hashers].[HasherEventMap]
 -- GO
--- /****** Object:  Table [EXT].[Zapier_GCal]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [EXT].[Zapier_GCal]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[Zapier_GCal]') AND type in (N'U'))
 -- DROP TABLE [EXT].[Zapier_GCal]
 -- GO
--- /****** Object:  Table [EXT].[Zapier_FbEvent]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [EXT].[Zapier_FbEvent]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[Zapier_FbEvent]') AND type in (N'U'))
 -- DROP TABLE [EXT].[Zapier_FbEvent]
 -- GO
--- /****** Object:  Index [IX_Timezone]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [IX_Timezone]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [IX_Timezone] ON [DomainValues].[Timezone] WITH ( ONLINE = OFF )
 -- GO
--- /****** Object:  Table [DomainValues].[Timezone]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [DomainValues].[Timezone]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[Timezone]') AND type in (N'U'))
 -- DROP TABLE [DomainValues].[Timezone]
 -- GO
--- /****** Object:  Table [DomainValues].[MismanagementEnum]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [DomainValues].[MismanagementEnum]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[MismanagementEnum]') AND type in (N'U'))
 -- DROP TABLE [DomainValues].[MismanagementEnum]
 -- GO
--- /****** Object:  Table [DomainValues].[KennelStatusEnum]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [DomainValues].[KennelStatusEnum]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[KennelStatusEnum]') AND type in (N'U'))
 -- DROP TABLE [DomainValues].[KennelStatusEnum]
 -- GO
--- /****** Object:  Table [DomainValues].[EventThemeType]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [DomainValues].[EventThemeType]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[EventThemeType]') AND type in (N'U'))
 -- DROP TABLE [DomainValues].[EventThemeType]
 -- GO
--- /****** Object:  Table [DomainValues].[EventRegistrationType]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [DomainValues].[EventRegistrationType]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[EventRegistrationType]') AND type in (N'U'))
 -- DROP TABLE [DomainValues].[EventRegistrationType]
 -- GO
--- /****** Object:  Table [DomainValues].[EventGeographicScope]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [DomainValues].[EventGeographicScope]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[EventGeographicScope]') AND type in (N'U'))
 -- DROP TABLE [DomainValues].[EventGeographicScope]
 -- GO
--- /****** Object:  Table [DomainValues].[CurrencyCodes]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [DomainValues].[CurrencyCodes]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[CurrencyCodes]') AND type in (N'U'))
 -- DROP TABLE [DomainValues].[CurrencyCodes]
 -- GO
--- /****** Object:  Table [DEV].[WindowsTimezoneMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [DEV].[WindowsTimezoneMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[WindowsTimezoneMap]') AND type in (N'U'))
 -- DROP TABLE [DEV].[WindowsTimezoneMap]
 -- GO
--- /****** Object:  Table [DEV].[timezone]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [DEV].[timezone]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[timezone]') AND type in (N'U'))
 -- DROP TABLE [DEV].[timezone]
 -- GO
--- /****** Object:  Table [DEV].[ImportHashers]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [DEV].[ImportHashers]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[ImportHashers]') AND type in (N'U'))
 -- DROP TABLE [DEV].[ImportHashers]
 -- GO
--- /****** Object:  Table [DEV].[EnumPaymentTypes]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [DEV].[EnumPaymentTypes]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DEV].[EnumPaymentTypes]') AND type in (N'U'))
 -- DROP TABLE [DEV].[EnumPaymentTypes]
 -- GO
--- /****** Object:  Table [dbo].[Year2020]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[Year2020]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Year2020]') AND type in (N'U'))
 -- DROP TABLE [dbo].[Year2020]
 -- GO
--- /****** Object:  Table [dbo].[world_cities_table]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[world_cities_table]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[world_cities_table]') AND type in (N'U'))
 -- DROP TABLE [dbo].[world_cities_table]
 -- GO
--- /****** Object:  Index [UC_Version]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Index [UC_Version]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP INDEX [UC_Version] ON [dbo].[VersionInfo] WITH ( ONLINE = OFF )
 -- GO
--- /****** Object:  Table [dbo].[VersionInfo]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[VersionInfo]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[VersionInfo]') AND type in (N'U'))
 -- DROP TABLE [dbo].[VersionInfo]
 -- GO
--- /****** Object:  Table [dbo].[UserRoles]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[UserRoles]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UserRoles]') AND type in (N'U'))
 -- DROP TABLE [dbo].[UserRoles]
 -- GO
--- /****** Object:  Table [dbo].[UserPreferences]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[UserPreferences]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UserPreferences]') AND type in (N'U'))
 -- DROP TABLE [dbo].[UserPreferences]
 -- GO
--- /****** Object:  Table [dbo].[UserPermissions]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[UserPermissions]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UserPermissions]') AND type in (N'U'))
 -- DROP TABLE [dbo].[UserPermissions]
 -- GO
--- /****** Object:  Table [dbo].[tempImport]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[tempImport]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[tempImport]') AND type in (N'U'))
 -- DROP TABLE [dbo].[tempImport]
 -- GO
--- /****** Object:  Table [dbo].[sysdiagrams]    Script Date: 8/9/2021 8:40:23 PM ******/
--- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[sysdiagrams]') AND type in (N'U'))
--- DROP TABLE [dbo].[sysdiagrams]
--- GO
--- /****** Object:  Table [dbo].[SourceData]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[SourceData]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[SourceData]') AND type in (N'U'))
 -- DROP TABLE [dbo].[SourceData]
 -- GO
--- /****** Object:  Table [dbo].[Roles]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[Roles]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Roles]') AND type in (N'U'))
 -- DROP TABLE [dbo].[Roles]
 -- GO
--- /****** Object:  Table [dbo].[RolePermissions]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[RolePermissions]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[RolePermissions]') AND type in (N'U'))
 -- DROP TABLE [dbo].[RolePermissions]
 -- GO
--- /****** Object:  Table [dbo].[MeetingTypes]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[MeetingTypes]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingTypes]') AND type in (N'U'))
 -- DROP TABLE [dbo].[MeetingTypes]
 -- GO
--- /****** Object:  Table [dbo].[Meetings]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[Meetings]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Meetings]') AND type in (N'U'))
 -- DROP TABLE [dbo].[Meetings]
 -- GO
--- /****** Object:  Table [dbo].[MeetingLocations]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[MeetingLocations]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingLocations]') AND type in (N'U'))
 -- DROP TABLE [dbo].[MeetingLocations]
 -- GO
--- /****** Object:  Table [dbo].[MeetingDecisions]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[MeetingDecisions]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingDecisions]') AND type in (N'U'))
 -- DROP TABLE [dbo].[MeetingDecisions]
 -- GO
--- /****** Object:  Table [dbo].[MeetingDecisionRelevant]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[MeetingDecisionRelevant]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingDecisionRelevant]') AND type in (N'U'))
 -- DROP TABLE [dbo].[MeetingDecisionRelevant]
 -- GO
--- /****** Object:  Table [dbo].[MeetingAttendees]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[MeetingAttendees]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingAttendees]') AND type in (N'U'))
 -- DROP TABLE [dbo].[MeetingAttendees]
 -- GO
--- /****** Object:  Table [dbo].[MeetingAgendaTypes]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[MeetingAgendaTypes]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingAgendaTypes]') AND type in (N'U'))
 -- DROP TABLE [dbo].[MeetingAgendaTypes]
 -- GO
--- /****** Object:  Table [dbo].[MeetingAgendas]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[MeetingAgendas]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingAgendas]') AND type in (N'U'))
 -- DROP TABLE [dbo].[MeetingAgendas]
 -- GO
--- /****** Object:  Table [dbo].[MeetingAgendaRelevant]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[MeetingAgendaRelevant]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MeetingAgendaRelevant]') AND type in (N'U'))
 -- DROP TABLE [dbo].[MeetingAgendaRelevant]
 -- GO
--- /****** Object:  Table [dbo].[Languages]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[Languages]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Languages]') AND type in (N'U'))
 -- DROP TABLE [dbo].[Languages]
 -- GO
--- /****** Object:  Table [dbo].[Exceptions]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[Exceptions]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Exceptions]') AND type in (N'U'))
 -- DROP TABLE [dbo].[Exceptions]
 -- GO
--- /****** Object:  Table [dbo].[currency]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[currency]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[currency]') AND type in (N'U'))
 -- DROP TABLE [dbo].[currency]
 -- GO
--- /****** Object:  Table [dbo].[Contacts]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[Contacts]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Contacts]') AND type in (N'U'))
 -- DROP TABLE [dbo].[Contacts]
 -- GO
--- /****** Object:  Table [dbo].[BusinessUnits]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[BusinessUnits]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[BusinessUnits]') AND type in (N'U'))
 -- DROP TABLE [dbo].[BusinessUnits]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteFixWordz]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteFixWordz]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteFixWordz]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteFixDutchWordz]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteFixDutchWordz]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteFixDutchWordz]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteFixCaps]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteFixCaps]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteFixCaps]
 -- GO
--- /****** Object:  UserDefinedFunction [HC].[DelimitedSplit8K]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  UserDefinedFunction [HC].[DelimitedSplit8K]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP FUNCTION [HC].[DelimitedSplit8K]
 -- GO
--- /****** Object:  View [HC3W].[vwAdEmailTemplateList]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3W].[vwAdEmailTemplateList]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC3W].[vwAdEmailTemplateList]
 -- GO
--- /****** Object:  View [HC3W].[vwAdDuplicates]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3W].[vwAdDuplicates]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC3W].[vwAdDuplicates]
 -- GO
--- /****** Object:  Table [HC].[LaunchAndLogin]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[LaunchAndLogin]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[LaunchAndLogin]') AND type in (N'U'))
 -- DROP TABLE [HC].[LaunchAndLogin]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteTempKennelList]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteTempKennelList]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteTempKennelList]
 -- GO
--- /****** Object:  View [HC].[vwEventCommonFields]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC].[vwEventCommonFields]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC].[vwEventCommonFields]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteSlippery2]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteSlippery2]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteSlippery2]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteSlippery]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteSlippery]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteSlippery]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteOpeeRuns]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteOpeeRuns]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteOpeeRuns]
 -- GO
--- /****** Object:  View [HC3W].[vwSaHasherPermissions]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3W].[vwSaHasherPermissions]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC3W].[vwSaHasherPermissions]
 -- GO
--- /****** Object:  View [dbo].[vw_insertHkmRecords]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_insertHkmRecords]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_insertHkmRecords]
 -- GO
--- /****** Object:  View [dbo].[vw_insertHashers]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_insertHashers]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_insertHashers]
 -- GO
--- /****** Object:  View [EXT].[vwOfficeForms_KennelImport]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [EXT].[vwOfficeForms_KennelImport]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [EXT].[vwOfficeForms_KennelImport]
 -- GO
--- /****** Object:  Table [EXT].[OfficeForms_KennelImport]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [EXT].[OfficeForms_KennelImport]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[OfficeForms_KennelImport]') AND type in (N'U'))
 -- DROP TABLE [EXT].[OfficeForms_KennelImport]
 -- GO
--- /****** Object:  Table [dbo].[Users]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [dbo].[Users]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Users]') AND type in (N'U'))
 -- DROP TABLE [dbo].[Users]
 -- GO
--- /****** Object:  Table [EXT].[FbAppEvent]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [EXT].[FbAppEvent]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[EXT].[FbAppEvent]') AND type in (N'U'))
 -- DROP TABLE [EXT].[FbAppEvent]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteEditPayments]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteEditPayments]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteEditPayments]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteEditNetherlands]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteEditNetherlands]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteEditNetherlands]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteEditFILTHhash]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteEditFILTHhash]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteEditFILTHhash]
 -- GO
--- /****** Object:  View [HC].[deleteTempCities]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC].[deleteTempCities]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC].[deleteTempCities]
 -- GO
--- /****** Object:  View [dbo].[vw_dev_kennelMembership]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_dev_kennelMembership]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_dev_kennelMembership]
 -- GO
--- /****** Object:  View [HC3W].[vwAdHasher]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3W].[vwAdHasher]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC3W].[vwAdHasher]
 -- GO
--- /****** Object:  View [HC3W].[vwAdHashCashReport]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3W].[vwAdHashCashReport]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC3W].[vwAdHashCashReport]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteEditFacebookKennels]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteEditFacebookKennels]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteEditFacebookKennels]
 -- GO
--- /****** Object:  View [HC3W].[vwAdProfitLossReport]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3W].[vwAdProfitLossReport]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC3W].[vwAdProfitLossReport]
 -- GO
--- /****** Object:  Table [HC].[Receipt]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[Receipt]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Receipt]') AND type in (N'U'))
 -- DROP TABLE [HC].[Receipt]
 -- GO
--- /****** Object:  View [dbo].[DEL_ImportEvents]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[DEL_ImportEvents]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[DEL_ImportEvents]
 -- GO
--- /****** Object:  View [HC3].[vwMmByKennel]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3].[vwMmByKennel]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC3].[vwMmByKennel]
 -- GO
--- /****** Object:  Table [DomainValues].[MisManagementRoles]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [DomainValues].[MisManagementRoles]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[DomainValues].[MisManagementRoles]') AND type in (N'U'))
 -- DROP TABLE [DomainValues].[MisManagementRoles]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteTheWhites]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteTheWhites]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteTheWhites]
 -- GO
--- /****** Object:  View [HC3W].[vwAdEvent]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3W].[vwAdEvent]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC3W].[vwAdEvent]
 -- GO
--- /****** Object:  View [HC3W].[vwAdHasherList]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3W].[vwAdHasherList]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC3W].[vwAdHasherList]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteDnhRuns]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteDnhRuns]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteDnhRuns]
 -- GO
--- /****** Object:  View [HC3W].[vwAdRunAttendence]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3W].[vwAdRunAttendence]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC3W].[vwAdRunAttendence]
 -- GO
--- /****** Object:  Table [HC].[RunCounts]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[RunCounts]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[RunCounts]') AND type in (N'U'))
 -- DROP TABLE [HC].[RunCounts]
 -- GO
--- /****** Object:  Table [HC].[Payment]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[Payment]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Payment]') AND type in (N'U'))
 -- DROP TABLE [HC].[Payment]
 -- GO
--- /****** Object:  View [HC3W].[vwAdEventList]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3W].[vwAdEventList]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC3W].[vwAdEventList]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteMe_importEvents]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3W].[vwSaSignupReport]    Script Date: 8/27/2021 12:06:42 PM ******/
+-- DROP VIEW [HC3W].[vwSaSignupReport]
+-- GO
+-- /****** Object:  View [dbo].[vw_deleteMe_importEvents]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteMe_importEvents]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteMe_facebookIds]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteMe_facebookIds]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteMe_facebookIds]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteImportHemRecords]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteImportHemRecords]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteImportHemRecords]
 -- GO
--- /****** Object:  Table [HC].[HasherEventMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[HasherEventMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[HasherEventMap]') AND type in (N'U'))
 -- DROP TABLE [HC].[HasherEventMap]
 -- GO
--- /****** Object:  View [HC3W].[vwAdKennelList]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3W].[vwAdKennelList]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC3W].[vwAdKennelList]
 -- GO
--- /****** Object:  Table [HC].[City]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[City]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[City]') AND type in (N'U'))
 -- DROP TABLE [HC].[City]
 -- GO
--- /****** Object:  Table [HC].[Region]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[Region]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Region]') AND type in (N'U'))
 -- DROP TABLE [HC].[Region]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteAddHashers]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteAddHashers]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteAddHashers]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteFilthRuns]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteFilthRuns]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteFilthRuns]
 -- GO
--- /****** Object:  View [HC].[vwEventAdjusted]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC].[vwEventAdjusted]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC].[vwEventAdjusted]
 -- GO
--- /****** Object:  View [dbo].[vwEventAdjusted]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vwEventAdjusted]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vwEventAdjusted]
 -- GO
--- /****** Object:  View [HC3W].[vwAdKennel]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3W].[vwAdKennel]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC3W].[vwAdKennel]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteHcPhotos]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteHcPhotos]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteHcPhotos]
 -- GO
--- /****** Object:  View [HC3W].[vwSaHasher]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3W].[vwSaHasher]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC3W].[vwSaHasher]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteCurrencyTest]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteCurrencyTest]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [dbo].[vw_deleteCurrencyTest]
 -- GO
--- /****** Object:  Table [HC].[Country]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[Country]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Country]') AND type in (N'U'))
 -- DROP TABLE [HC].[Country]
 -- GO
--- /****** Object:  View [HC3W].[vwAdEmailLogList]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  View [HC3W].[vwAdEmailLogList]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP VIEW [HC3W].[vwAdEmailLogList]
 -- GO
--- /****** Object:  Table [HC].[Kennel]    Script Date: 8/9/2021 8:40:23 PM ******/
--- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Kennel]') AND type in (N'U'))
--- DROP TABLE [HC].[Kennel]
--- GO
--- /****** Object:  Table [HC].[EmailTemplate]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[EmailTemplate]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[EmailTemplate]') AND type in (N'U'))
 -- DROP TABLE [HC].[EmailTemplate]
 -- GO
--- /****** Object:  Table [HC].[Event]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[Event]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Event]') AND type in (N'U'))
 -- DROP TABLE [HC].[Event]
 -- GO
--- /****** Object:  Table [HC].[Hasher]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[Hasher]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Hasher]') AND type in (N'U'))
 -- DROP TABLE [HC].[Hasher]
 -- GO
--- /****** Object:  Table [HC].[HasherKennelMap]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[HasherKennelMap]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[HasherKennelMap]') AND type in (N'U'))
 -- DROP TABLE [HC].[HasherKennelMap]
 -- GO
--- /****** Object:  Table [HC].[EmailLog]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Table [HC].[Kennel]    Script Date: 8/27/2021 12:06:42 PM ******/
+-- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[Kennel]') AND type in (N'U'))
+-- DROP TABLE [HC].[Kennel]
+-- GO
+-- /****** Object:  Table [HC].[EmailLog]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[HC].[EmailLog]') AND type in (N'U'))
 -- DROP TABLE [HC].[EmailLog]
 -- GO
--- /****** Object:  UserDefinedFunction [HC].[NUMBER_TO_STR_BASE]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  UserDefinedFunction [HC].[NUMBER_TO_STR_BASE]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP FUNCTION [HC].[NUMBER_TO_STR_BASE]
 -- GO
--- /****** Object:  UserDefinedFunction [HC].[InlineMax]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  UserDefinedFunction [HC].[InlineMax]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP FUNCTION [HC].[InlineMax]
 -- GO
--- /****** Object:  UserDefinedFunction [HC].[GENERATE_SIX_RANDOM_CHARACTERS]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  UserDefinedFunction [HC].[GENERATE_SIX_RANDOM_CHARACTERS]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP FUNCTION [HC].[GENERATE_SIX_RANDOM_CHARACTERS]
 -- GO
--- /****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN_V2]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN_V2]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP FUNCTION [HC].[CREATE_ACCESS_TOKEN_V2]
 -- GO
--- /****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP FUNCTION [HC].[CREATE_ACCESS_TOKEN]
 -- GO
--- /****** Object:  UserDefinedFunction [HC].[CHECK_ACCESS_TOKEN]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  UserDefinedFunction [HC].[CHECK_ACCESS_TOKEN]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP FUNCTION [HC].[CHECK_ACCESS_TOKEN]
 -- GO
--- /****** Object:  UserDefinedFunction [dbo].[fn_diagramobjects]    Script Date: 8/9/2021 8:40:23 PM ******/
--- DROP FUNCTION [dbo].[fn_diagramobjects]
--- GO
--- /****** Object:  Schema [WORDZ]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [WORDZ]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [WORDZ]
 -- GO
--- /****** Object:  Schema [UNUSED]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [UNUSED]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [UNUSED]
 -- GO
--- /****** Object:  Schema [Transactions]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [Transactions]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [Transactions]
 -- GO
--- /****** Object:  Schema [Kennels]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [Kennels]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [Kennels]
 -- GO
--- /****** Object:  Schema [HC3W]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [HC3W]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [HC3W]
 -- GO
--- /****** Object:  Schema [HC3]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [HC3]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [HC3]
 -- GO
--- /****** Object:  Schema [HC2]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [HC2]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [HC2]
 -- GO
--- /****** Object:  Schema [HC_BACKUP]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [HC_BACKUP]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [HC_BACKUP]
 -- GO
--- /****** Object:  Schema [HC]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [HC]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [HC]
 -- GO
--- /****** Object:  Schema [Hashers]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [Hashers]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [Hashers]
 -- GO
--- /****** Object:  Schema [Geography]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [Geography]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [Geography]
 -- GO
--- /****** Object:  Schema [EXT]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [EXT]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [EXT]
 -- GO
--- /****** Object:  Schema [Events]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [Events]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [Events]
 -- GO
--- /****** Object:  Schema [DomainValues]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [DomainValues]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [DomainValues]
 -- GO
--- /****** Object:  Schema [DEV]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [DEV]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [DEV]
 -- GO
--- /****** Object:  Schema [Admin]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Schema [Admin]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP SCHEMA [Admin]
 -- GO
--- /****** Object:  User [officeFormsUser]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  User [officeFormsUser]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP USER [officeFormsUser]
 -- GO
--- /****** Object:  User [zapieruser]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  User [zapieruser]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP USER [zapieruser]
 -- GO
--- /****** Object:  Database [HarrierCentralWebDb]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Database [HarrierCentralWebDb]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- DROP DATABASE [HarrierCentralWebDb]
 -- GO
--- /****** Object:  Database [HarrierCentralWebDb]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  Database [HarrierCentralWebDb]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- CREATE DATABASE [HarrierCentralWebDb]  (EDITION = 'Basic', SERVICE_OBJECTIVE = 'Basic', MAXSIZE = 2 GB) WITH CATALOG_COLLATION = SQL_Latin1_General_CP1_CI_AS;
 -- GO
 -- ALTER DATABASE [HarrierCentralWebDb] SET COMPATIBILITY_LEVEL = 150
@@ -1627,114 +1603,61 @@
 -- GO
 -- ALTER DATABASE [HarrierCentralWebDb] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLEANUP_POLICY = (STALE_QUERY_THRESHOLD_DAYS = 7), DATA_FLUSH_INTERVAL_SECONDS = 900, INTERVAL_LENGTH_MINUTES = 60, MAX_STORAGE_SIZE_MB = 10, QUERY_CAPTURE_MODE = AUTO, SIZE_BASED_CLEANUP_MODE = AUTO, MAX_PLANS_PER_QUERY = 200, WAIT_STATS_CAPTURE_MODE = ON)
 -- GO
--- /****** Object:  User [zapieruser]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  User [zapieruser]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- CREATE USER [zapieruser] FOR LOGIN [zapierlogin] WITH DEFAULT_SCHEMA=[EXT]
 -- GO
--- /****** Object:  User [officeFormsUser]    Script Date: 8/9/2021 8:40:23 PM ******/
+-- /****** Object:  User [officeFormsUser]    Script Date: 8/27/2021 12:06:42 PM ******/
 -- CREATE USER [officeFormsUser] FOR LOGIN [officeFormsLogin] WITH DEFAULT_SCHEMA=[EXT]
 -- GO
--- /****** Object:  Schema [Admin]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [Admin]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [Admin]
 -- GO
--- /****** Object:  Schema [DEV]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [DEV]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [DEV]
 -- GO
--- /****** Object:  Schema [DomainValues]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [DomainValues]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [DomainValues]
 -- GO
--- /****** Object:  Schema [Events]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [Events]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [Events]
 -- GO
--- /****** Object:  Schema [EXT]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [EXT]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [EXT]
 -- GO
--- /****** Object:  Schema [Geography]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [Geography]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [Geography]
 -- GO
--- /****** Object:  Schema [Hashers]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [Hashers]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [Hashers]
 -- GO
--- /****** Object:  Schema [HC]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [HC]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [HC]
 -- GO
--- /****** Object:  Schema [HC_BACKUP]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [HC_BACKUP]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [HC_BACKUP]
 -- GO
--- /****** Object:  Schema [HC2]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [HC2]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [HC2]
 -- GO
--- /****** Object:  Schema [HC3]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [HC3]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [HC3]
 -- GO
--- /****** Object:  Schema [HC3W]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [HC3W]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [HC3W]
 -- GO
--- /****** Object:  Schema [Kennels]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [Kennels]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [Kennels]
 -- GO
--- /****** Object:  Schema [Transactions]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [Transactions]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [Transactions]
 -- GO
--- /****** Object:  Schema [UNUSED]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [UNUSED]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [UNUSED]
 -- GO
--- /****** Object:  Schema [WORDZ]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Schema [WORDZ]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE SCHEMA [WORDZ]
 -- GO
--- /****** Object:  UserDefinedFunction [dbo].[fn_diagramobjects]    Script Date: 8/9/2021 8:40:24 PM ******/
--- SET ANSI_NULLS ON
--- GO
--- SET QUOTED_IDENTIFIER ON
--- GO
-
--- 	CREATE FUNCTION [dbo].[fn_diagramobjects]() 
--- 	RETURNS int
--- 	WITH EXECUTE AS N'dbo'
--- 	AS
--- 	BEGIN
--- 		declare @id_upgraddiagrams		int
--- 		declare @id_sysdiagrams			int
--- 		declare @id_helpdiagrams		int
--- 		declare @id_helpdiagramdefinition	int
--- 		declare @id_creatediagram	int
--- 		declare @id_renamediagram	int
--- 		declare @id_alterdiagram 	int 
--- 		declare @id_dropdiagram		int
--- 		declare @InstalledObjects	int
-
--- 		select @InstalledObjects = 0
-
--- 		select 	@id_upgraddiagrams = object_id(N'dbo.sp_upgraddiagrams'),
--- 			@id_sysdiagrams = object_id(N'dbo.sysdiagrams'),
--- 			@id_helpdiagrams = object_id(N'dbo.sp_helpdiagrams'),
--- 			@id_helpdiagramdefinition = object_id(N'dbo.sp_helpdiagramdefinition'),
--- 			@id_creatediagram = object_id(N'dbo.sp_creatediagram'),
--- 			@id_renamediagram = object_id(N'dbo.sp_renamediagram'),
--- 			@id_alterdiagram = object_id(N'dbo.sp_alterdiagram'), 
--- 			@id_dropdiagram = object_id(N'dbo.sp_dropdiagram')
-
--- 		if @id_upgraddiagrams is not null
--- 			select @InstalledObjects = @InstalledObjects + 1
--- 		if @id_sysdiagrams is not null
--- 			select @InstalledObjects = @InstalledObjects + 2
--- 		if @id_helpdiagrams is not null
--- 			select @InstalledObjects = @InstalledObjects + 4
--- 		if @id_helpdiagramdefinition is not null
--- 			select @InstalledObjects = @InstalledObjects + 8
--- 		if @id_creatediagram is not null
--- 			select @InstalledObjects = @InstalledObjects + 16
--- 		if @id_renamediagram is not null
--- 			select @InstalledObjects = @InstalledObjects + 32
--- 		if @id_alterdiagram  is not null
--- 			select @InstalledObjects = @InstalledObjects + 64
--- 		if @id_dropdiagram is not null
--- 			select @InstalledObjects = @InstalledObjects + 128
-		
--- 		return @InstalledObjects 
--- 	END
-	
--- GO
--- /****** Object:  UserDefinedFunction [HC].[CHECK_ACCESS_TOKEN]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  UserDefinedFunction [HC].[CHECK_ACCESS_TOKEN]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -1755,7 +1678,7 @@
 --  DECLARE @try30 int = 0
  
 --  -- Uncomment the lines below to disable access token checks  SELECT GETDATE()
---  IF (DATEADD(minute,-60,getdate()) < '2021-07-28 15:27:46.893') 
+--  IF (DATEADD(minute,-60,getdate()) < '2021-08-13 21:16:59.540') 
 --  BEGIN
 -- 	RETURN 1
 --  END
@@ -1818,7 +1741,7 @@
 --  RETURN 1  
 -- END  
 -- GO
--- /****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -1842,7 +1765,7 @@
 
 
 -- GO
--- /****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN_V2]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  UserDefinedFunction [HC].[CREATE_ACCESS_TOKEN_V2]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -1867,7 +1790,7 @@
 
 
 -- GO
--- /****** Object:  UserDefinedFunction [HC].[GENERATE_SIX_RANDOM_CHARACTERS]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  UserDefinedFunction [HC].[GENERATE_SIX_RANDOM_CHARACTERS]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -1896,7 +1819,7 @@
 --      RETURN(@prefix+RIGHT('AAAAAA' + @numberString,6));
 -- END
 -- GO
--- /****** Object:  UserDefinedFunction [HC].[InlineMax]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  UserDefinedFunction [HC].[InlineMax]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -1910,7 +1833,7 @@
 --   return isnull(@val2,@val1)
 -- end
 -- GO
--- /****** Object:  UserDefinedFunction [HC].[NUMBER_TO_STR_BASE]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  UserDefinedFunction [HC].[NUMBER_TO_STR_BASE]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -1935,7 +1858,7 @@
 --      RETURN(@numberString);
 -- END
 -- GO
--- /****** Object:  Table [HC].[EmailLog]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Table [HC].[EmailLog]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -1953,218 +1876,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC].[HasherKennelMap]    Script Date: 8/9/2021 8:40:24 PM ******/
--- SET ANSI_NULLS ON
--- GO
--- SET QUOTED_IDENTIFIER ON
--- GO
--- CREATE TABLE [HC].[HasherKennelMap](
--- 	[id] [uniqueidentifier] NOT NULL,
--- 	[UserId] [uniqueidentifier] NOT NULL,
--- 	[KennelId] [uniqueidentifier] NOT NULL,
--- 	[Following] [smallint] NOT NULL,
--- 	[IsMember] [smallint] NOT NULL,
--- 	[IsKennelFollowing] [smallint] NOT NULL,
--- 	[IsHomeKennel] [smallint] NOT NULL,
--- 	[KennelNotificationPreference] [smallint] NOT NULL,
--- 	[KennelEmailAlertPreference] [smallint] NOT NULL,
--- 	[MismanagementRoles] [int] NOT NULL,
--- 	[MismanagementRoleFlags] [int] NOT NULL,
--- 	[HcWebPermissionFlags] [int] NOT NULL,
--- 	[UserRoleFlags] [int] NOT NULL,
--- 	[AppAccessFlags] [int] NULL,
--- 	[HistoricalPackRunCount] [smallint] NOT NULL,
--- 	[HistoricalHaringCount] [smallint] NOT NULL,
--- 	[HistoricalCountIsEstimate] [smallint] NOT NULL,
--- 	[CurrentPackRunCount] [smallint] NOT NULL,
--- 	[CurrentHaringCount] [smallint] NOT NULL,
--- 	[DateOfLastRun] [datetimeoffset](7) NULL,
--- 	[MembershipExpirationDate] [datetimeoffset](7) NULL,
--- 	[MemberSince] [datetimeoffset](7) NULL,
--- 	[CanEditRunAttendence] [smallint] NOT NULL,
--- 	[removed] [smallint] NOT NULL,
--- 	[updatedAt] [datetimeoffset](7) NOT NULL,
---  CONSTRAINT [PK_HasherKennelMap] PRIMARY KEY CLUSTERED 
--- (
--- 	[id] ASC
--- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
--- ) ON [PRIMARY]
--- GO
--- /****** Object:  Table [HC].[Hasher]    Script Date: 8/9/2021 8:40:24 PM ******/
--- SET ANSI_NULLS ON
--- GO
--- SET QUOTED_IDENTIFIER ON
--- GO
--- CREATE TABLE [HC].[Hasher](
--- 	[id] [uniqueidentifier] NOT NULL,
--- 	[HomeKennelId] [uniqueidentifier] NULL,
--- 	[MotherKennelId] [uniqueidentifier] NULL,
--- 	[SupportCode] [nvarchar](50) NOT NULL,
--- 	[ResetCode] [nvarchar](50) NOT NULL,
--- 	[QR_code] [nvarchar](50) NOT NULL,
--- 	[QR_secret_code] [uniqueidentifier] NOT NULL,
--- 	[DisplayName] [nvarchar](250) NOT NULL,
--- 	[HashName] [nvarchar](250) NULL,
--- 	[FirstName] [nvarchar](250) NULL,
--- 	[LastName] [nvarchar](250) NULL,
--- 	[Email] [nvarchar](250) NOT NULL,
--- 	[Photo] [nvarchar](250) NULL,
--- 	[Gender] [nvarchar](50) NULL,
--- 	[FacebookId] [nvarchar](250) NULL,
--- 	[FacebookAccessToken] [nvarchar](1000) NULL,
--- 	[FacebookAccessTokenLastUpdated] [datetimeoffset](7) NULL,
--- 	[ThirdPartyLoginType] [nvarchar](120) NULL,
--- 	[ThirdPartyUserId] [nvarchar](1000) NULL,
--- 	[ThirdPartyAccessToken] [nvarchar](1000) NULL,
--- 	[ThirdPartyAuthorizationCode] [nvarchar](1000) NULL,
--- 	[ThirdPartyTokenLastUpdated] [datetimeoffset](7) NULL,
--- 	[ThirdPartyAccessTokenExpires] [datetimeoffset](7) NULL,
--- 	[Locale] [nvarchar](50) NULL,
--- 	[Description] [nvarchar](4000) NULL,
--- 	[HomeLatitude] [decimal](12, 9) NULL,
--- 	[HomeLongitude] [decimal](13, 9) NULL,
--- 	[HomeGeolocation] [geography] NULL,
--- 	[NameDisplayPreference] [smallint] NOT NULL,
--- 	[Preferences] [int] NOT NULL,
--- 	[HcWebUserId] [int] NULL,
--- 	[IncludeInGlobalHashDirectory] [smallint] NOT NULL,
--- 	[Removed] [smallint] NULL,
--- 	[version] [timestamp] NOT NULL,
--- 	[createdAt] [datetimeoffset](7) NOT NULL,
--- 	[updatedAt] [datetimeoffset](7) NOT NULL,
--- 	[deleted] [bit] NOT NULL,
--- 	[SingleSignOnId] [nvarchar](250) NULL,
--- 	[SingleSignOnType] [nvarchar](50) NULL,
--- 	[ResetCodeLastUpdated] [datetimeoffset](7) NULL,
--- 	[IsBetaTester] [smallint] NOT NULL,
---  CONSTRAINT [PK_Hasher] PRIMARY KEY CLUSTERED 
--- (
--- 	[id] ASC
--- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
--- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
--- GO
--- /****** Object:  Table [HC].[Event]    Script Date: 8/9/2021 8:40:24 PM ******/
--- SET ANSI_NULLS ON
--- GO
--- SET QUOTED_IDENTIFIER ON
--- GO
--- CREATE TABLE [HC].[Event](
--- 	[id] [uniqueidentifier] NOT NULL,
--- 	[EventStartDatetime] [datetimeoffset](7) NULL,
--- 	[EventEndDatetime] [datetimeoffset](7) NULL,
--- 	[KennelId] [uniqueidentifier] NOT NULL,
--- 	[IsVisible] [smallint] NOT NULL,
--- 	[IsCountedRun] [smallint] NOT NULL,
--- 	[IsPromotedEvent] [smallint] NOT NULL,
--- 	[EventGeographicScope] [smallint] NOT NULL,
--- 	[ThemeRunType] [int] NOT NULL,
--- 	[Tags1] [int] NOT NULL,
--- 	[Tags2] [int] NOT NULL,
--- 	[Tags3] [int] NOT NULL,
--- 	[AbsoluteEventNumber] [smallint] NULL,
--- 	[EventNumber] [smallint] NOT NULL,
--- 	[EventNumberIncrement] [smallint] NOT NULL,
--- 	[DoTrackHashCash] [smallint] NOT NULL,
--- 	[EventPriceForMembers] [decimal](10, 4) NULL,
--- 	[EventPriceForNonMembers] [decimal](10, 4) NULL,
--- 	[EventPriceForExtras] [decimal](10, 4) NULL,
--- 	[ExtrasDescription] [nvarchar](250) NULL,
--- 	[EventCurrencyType] [nvarchar](10) NULL,
--- 	[BankScheme] [nvarchar](10) NULL,
--- 	[BankAccountNumber] [nvarchar](50) NULL,
--- 	[BankBic] [nvarchar](50) NULL,
--- 	[BankBeneficiary] [nvarchar](150) NULL,
--- 	[EventPaymentScheme] [nvarchar](10) NULL,
--- 	[EventPaymentUrl] [nvarchar](2000) NULL,
--- 	[EventPaymentUrlExpires] [datetimeoffset](7) NULL,
--- 	[UnconfirmedBankXferCount] [int] NOT NULL,
--- 	[UserEventCounterIncrement] [smallint] NOT NULL,
--- 	[EventName] [nvarchar](250) NOT NULL,
--- 	[EventDescription] [nvarchar](4000) NULL,
--- 	[EventImage] [nvarchar](500) NULL,
--- 	[EventImageOffsetX] [smallint] NULL,
--- 	[EventImageOffsetY] [smallint] NULL,
--- 	[LocationOneLineDesc] [nvarchar](250) NULL,
--- 	[LocationCity] [nvarchar](250) NULL,
--- 	[LocationStreet] [nvarchar](250) NULL,
--- 	[LocationPostCode] [nvarchar](250) NULL,
--- 	[LocationSubRegion] [nvarchar](250) NULL,
--- 	[LocationRegion] [nvarchar](250) NULL,
--- 	[LocationCountry] [nvarchar](250) NULL,
--- 	[Latitude] [decimal](18, 15) NULL,
--- 	[Longitude] [decimal](19, 15) NULL,
--- 	[EventGeolocation] [geography] NULL,
--- 	[MinimumParticipantsRequired] [smallint] NOT NULL,
--- 	[MaximumParticipantsAllowed] [smallint] NULL,
--- 	[Organizer_HasherId] [uniqueidentifier] NULL,
--- 	[CanEditRunAttendence] [smallint] NOT NULL,
--- 	[Hares] [nvarchar](2500) NULL,
--- 	[UseFbRunDetails] [smallint] NOT NULL,
--- 	[UseFbLocation] [smallint] NOT NULL,
--- 	[UseFbLatLon] [smallint] NOT NULL,
--- 	[UpdateDataFromFacebook] [smallint] NOT NULL,
--- 	[EventSource] [nvarchar](50) NOT NULL,
--- 	[EventFacebookId] [nvarchar](250) NULL,
--- 	[FacebookRecordLastUpdated] [datetimeoffset](7) NULL,
--- 	[FbEventName] [nvarchar](250) NULL,
--- 	[FbEventDescription] [nvarchar](4000) NULL,
--- 	[FbEventStartDatetime] [datetimeoffset](7) NULL,
--- 	[FbEventImage] [nvarchar](500) NULL,
--- 	[FbEventImageOffsetX] [smallint] NULL,
--- 	[FbEventImageOffsetY] [smallint] NULL,
--- 	[FbLocationOneLineDesc] [nvarchar](250) NULL,
--- 	[FbLocationCity] [nvarchar](250) NULL,
--- 	[FbLocationStreet] [nvarchar](250) NULL,
--- 	[FbLocationPostCode] [nvarchar](250) NULL,
--- 	[FbLocationSubRegion] [nvarchar](250) NULL,
--- 	[FbLocationRegion] [nvarchar](250) NULL,
--- 	[FbLocationCountry] [nvarchar](250) NULL,
--- 	[FbLatitude] [decimal](18, 15) NULL,
--- 	[FbLongitude] [decimal](19, 15) NULL,
--- 	[FbEventGeoLocation] [geography] NULL,
--- 	[PublishToGoogleId] [nvarchar](250) NULL,
--- 	[removed] [smallint] NOT NULL,
--- 	[deleted] [bit] NOT NULL,
--- 	[lastModified] [datetimeoffset](7) NOT NULL,
--- 	[version] [timestamp] NOT NULL,
--- 	[createdAt] [datetimeoffset](7) NOT NULL,
--- 	[updatedAt] [datetimeoffset](7) NOT NULL,
---  CONSTRAINT [PK_Event] PRIMARY KEY CLUSTERED 
--- (
--- 	[id] ASC
--- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
--- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
--- GO
--- /****** Object:  Table [HC].[EmailTemplate]    Script Date: 8/9/2021 8:40:24 PM ******/
--- SET ANSI_NULLS ON
--- GO
--- SET QUOTED_IDENTIFIER ON
--- GO
--- CREATE TABLE [HC].[EmailTemplate](
--- 	[id] [uniqueidentifier] NOT NULL,
--- 	[KennelId] [uniqueidentifier] NOT NULL,
--- 	[EventId] [uniqueidentifier] NULL,
--- 	[Description] [nvarchar](250) NOT NULL,
--- 	[Subject] [nvarchar](250) NOT NULL,
--- 	[Template] [nvarchar](max) NOT NULL,
--- 	[EmailTypeFlag] [int] NOT NULL,
--- 	[HoursBeforeRun] [smallint] NOT NULL,
--- 	[DaysBeforeRun] [smallint] NOT NULL,
--- 	[SendToAll] [smallint] NOT NULL,
--- 	[SendToMembers] [smallint] NOT NULL,
--- 	[SendToMismanagement] [smallint] NOT NULL,
--- 	[SendToFollowers] [smallint] NOT NULL,
--- 	[SendToVisitors] [smallint] NOT NULL,
--- 	[ReplyToEmailAddress] [nvarchar](250) NOT NULL,
--- 	[SenderName] [nvarchar](250) NOT NULL,
--- 	[SendWhenHareAssigned] [smallint] NOT NULL,
---  CONSTRAINT [PK_EmailTemplate] PRIMARY KEY CLUSTERED 
--- (
--- 	[id] ASC
--- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
--- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
--- GO
--- /****** Object:  Table [HC].[Kennel]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Table [HC].[Kennel]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2223,6 +1935,8 @@
 -- 	[KennelPaymentUrlExpires3] [datetimeoffset](7) NULL,
 -- 	[KennelPaymentMemberSurcharge3] [decimal](10, 4) NULL,
 -- 	[KennelPaymentNonMemberSurcharge3] [decimal](10, 4) NULL,
+-- 	[KennelFeaturesTier] [smallint] NOT NULL,
+-- 	[KennelFeaturesExpire] [datetimeoffset](7) NULL,
 -- 	[AllowSelfPayment] [smallint] NOT NULL,
 -- 	[AllowNegativeCredit] [smallint] NOT NULL,
 -- 	[CityId] [uniqueidentifier] NOT NULL,
@@ -2246,7 +1960,218 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 -- GO
--- /****** Object:  View [HC3W].[vwAdEmailLogList]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Table [HC].[HasherKennelMap]    Script Date: 8/27/2021 12:06:44 PM ******/
+-- SET ANSI_NULLS ON
+-- GO
+-- SET QUOTED_IDENTIFIER ON
+-- GO
+-- CREATE TABLE [HC].[HasherKennelMap](
+-- 	[id] [uniqueidentifier] NOT NULL,
+-- 	[UserId] [uniqueidentifier] NOT NULL,
+-- 	[KennelId] [uniqueidentifier] NOT NULL,
+-- 	[Following] [smallint] NOT NULL,
+-- 	[IsMember] [smallint] NOT NULL,
+-- 	[IsKennelFollowing] [smallint] NOT NULL,
+-- 	[IsHomeKennel] [smallint] NOT NULL,
+-- 	[KennelNotificationPreference] [smallint] NOT NULL,
+-- 	[KennelEmailAlertPreference] [smallint] NOT NULL,
+-- 	[MismanagementRoles] [int] NOT NULL,
+-- 	[MismanagementRoleFlags] [int] NOT NULL,
+-- 	[HcWebPermissionFlags] [int] NOT NULL,
+-- 	[UserRoleFlags] [int] NOT NULL,
+-- 	[AppAccessFlags] [int] NULL,
+-- 	[HistoricalPackRunCount] [smallint] NOT NULL,
+-- 	[HistoricalHaringCount] [smallint] NOT NULL,
+-- 	[HistoricalCountIsEstimate] [smallint] NOT NULL,
+-- 	[CurrentPackRunCount] [smallint] NOT NULL,
+-- 	[CurrentHaringCount] [smallint] NOT NULL,
+-- 	[DateOfLastRun] [datetimeoffset](7) NULL,
+-- 	[MembershipExpirationDate] [datetimeoffset](7) NULL,
+-- 	[MemberSince] [datetimeoffset](7) NULL,
+-- 	[CanEditRunAttendence] [smallint] NOT NULL,
+-- 	[removed] [smallint] NOT NULL,
+-- 	[updatedAt] [datetimeoffset](7) NOT NULL,
+--  CONSTRAINT [PK_HasherKennelMap] PRIMARY KEY CLUSTERED 
+-- (
+-- 	[id] ASC
+-- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+-- ) ON [PRIMARY]
+-- GO
+-- /****** Object:  Table [HC].[Hasher]    Script Date: 8/27/2021 12:06:44 PM ******/
+-- SET ANSI_NULLS ON
+-- GO
+-- SET QUOTED_IDENTIFIER ON
+-- GO
+-- CREATE TABLE [HC].[Hasher](
+-- 	[id] [uniqueidentifier] NOT NULL,
+-- 	[HomeKennelId] [uniqueidentifier] NULL,
+-- 	[MotherKennelId] [uniqueidentifier] NULL,
+-- 	[SupportCode] [nvarchar](50) NOT NULL,
+-- 	[ResetCode] [nvarchar](50) NOT NULL,
+-- 	[QR_code] [nvarchar](50) NOT NULL,
+-- 	[QR_secret_code] [uniqueidentifier] NOT NULL,
+-- 	[DisplayName] [nvarchar](250) NOT NULL,
+-- 	[HashName] [nvarchar](250) NULL,
+-- 	[FirstName] [nvarchar](250) NULL,
+-- 	[LastName] [nvarchar](250) NULL,
+-- 	[Email] [nvarchar](250) NOT NULL,
+-- 	[Photo] [nvarchar](250) NULL,
+-- 	[Gender] [nvarchar](50) NULL,
+-- 	[FacebookId] [nvarchar](250) NULL,
+-- 	[FacebookAccessToken] [nvarchar](1000) NULL,
+-- 	[FacebookAccessTokenLastUpdated] [datetimeoffset](7) NULL,
+-- 	[ThirdPartyLoginType] [nvarchar](120) NULL,
+-- 	[ThirdPartyUserId] [nvarchar](1000) NULL,
+-- 	[ThirdPartyAccessToken] [nvarchar](1000) NULL,
+-- 	[ThirdPartyAuthorizationCode] [nvarchar](1000) NULL,
+-- 	[ThirdPartyTokenLastUpdated] [datetimeoffset](7) NULL,
+-- 	[ThirdPartyAccessTokenExpires] [datetimeoffset](7) NULL,
+-- 	[Locale] [nvarchar](50) NULL,
+-- 	[Description] [nvarchar](4000) NULL,
+-- 	[HomeLatitude] [decimal](12, 9) NULL,
+-- 	[HomeLongitude] [decimal](13, 9) NULL,
+-- 	[HomeGeolocation] [geography] NULL,
+-- 	[NameDisplayPreference] [smallint] NOT NULL,
+-- 	[Preferences] [int] NOT NULL,
+-- 	[HcWebUserId] [int] NULL,
+-- 	[IncludeInGlobalHashDirectory] [smallint] NOT NULL,
+-- 	[Removed] [smallint] NULL,
+-- 	[version] [timestamp] NOT NULL,
+-- 	[createdAt] [datetimeoffset](7) NOT NULL,
+-- 	[updatedAt] [datetimeoffset](7) NOT NULL,
+-- 	[deleted] [bit] NOT NULL,
+-- 	[SingleSignOnId] [nvarchar](250) NULL,
+-- 	[SingleSignOnType] [nvarchar](50) NULL,
+-- 	[ResetCodeLastUpdated] [datetimeoffset](7) NULL,
+-- 	[IsBetaTester] [smallint] NOT NULL,
+--  CONSTRAINT [PK_Hasher] PRIMARY KEY CLUSTERED 
+-- (
+-- 	[id] ASC
+-- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+-- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+-- GO
+-- /****** Object:  Table [HC].[Event]    Script Date: 8/27/2021 12:06:44 PM ******/
+-- SET ANSI_NULLS ON
+-- GO
+-- SET QUOTED_IDENTIFIER ON
+-- GO
+-- CREATE TABLE [HC].[Event](
+-- 	[id] [uniqueidentifier] NOT NULL,
+-- 	[EventStartDatetime] [datetimeoffset](7) NULL,
+-- 	[EventEndDatetime] [datetimeoffset](7) NULL,
+-- 	[KennelId] [uniqueidentifier] NOT NULL,
+-- 	[IsVisible] [smallint] NOT NULL,
+-- 	[IsCountedRun] [smallint] NOT NULL,
+-- 	[IsPromotedEvent] [smallint] NOT NULL,
+-- 	[EventGeographicScope] [smallint] NOT NULL,
+-- 	[ThemeRunType] [int] NOT NULL,
+-- 	[Tags1] [int] NOT NULL,
+-- 	[Tags2] [int] NOT NULL,
+-- 	[Tags3] [int] NOT NULL,
+-- 	[AbsoluteEventNumber] [smallint] NULL,
+-- 	[EventNumber] [smallint] NOT NULL,
+-- 	[EventNumberIncrement] [smallint] NOT NULL,
+-- 	[DoTrackHashCash] [smallint] NOT NULL,
+-- 	[EventPriceForMembers] [decimal](10, 4) NULL,
+-- 	[EventPriceForNonMembers] [decimal](10, 4) NULL,
+-- 	[EventPriceForExtras] [decimal](10, 4) NULL,
+-- 	[ExtrasDescription] [nvarchar](250) NULL,
+-- 	[EventCurrencyType] [nvarchar](10) NULL,
+-- 	[BankScheme] [nvarchar](10) NULL,
+-- 	[BankAccountNumber] [nvarchar](50) NULL,
+-- 	[BankBic] [nvarchar](50) NULL,
+-- 	[BankBeneficiary] [nvarchar](150) NULL,
+-- 	[EventPaymentScheme] [nvarchar](10) NULL,
+-- 	[EventPaymentUrl] [nvarchar](2000) NULL,
+-- 	[EventPaymentUrlExpires] [datetimeoffset](7) NULL,
+-- 	[UnconfirmedBankXferCount] [int] NOT NULL,
+-- 	[UserEventCounterIncrement] [smallint] NOT NULL,
+-- 	[EventName] [nvarchar](250) NOT NULL,
+-- 	[EventDescription] [nvarchar](4000) NULL,
+-- 	[EventImage] [nvarchar](500) NULL,
+-- 	[EventImageOffsetX] [smallint] NULL,
+-- 	[EventImageOffsetY] [smallint] NULL,
+-- 	[LocationOneLineDesc] [nvarchar](250) NULL,
+-- 	[LocationCity] [nvarchar](250) NULL,
+-- 	[LocationStreet] [nvarchar](250) NULL,
+-- 	[LocationPostCode] [nvarchar](250) NULL,
+-- 	[LocationSubRegion] [nvarchar](250) NULL,
+-- 	[LocationRegion] [nvarchar](250) NULL,
+-- 	[LocationCountry] [nvarchar](250) NULL,
+-- 	[Latitude] [decimal](18, 15) NULL,
+-- 	[Longitude] [decimal](19, 15) NULL,
+-- 	[EventGeolocation] [geography] NULL,
+-- 	[MinimumParticipantsRequired] [smallint] NOT NULL,
+-- 	[MaximumParticipantsAllowed] [smallint] NULL,
+-- 	[Organizer_HasherId] [uniqueidentifier] NULL,
+-- 	[CanEditRunAttendence] [smallint] NULL,
+-- 	[Hares] [nvarchar](2500) NULL,
+-- 	[UseFbRunDetails] [smallint] NOT NULL,
+-- 	[UseFbLocation] [smallint] NOT NULL,
+-- 	[UseFbLatLon] [smallint] NOT NULL,
+-- 	[UpdateDataFromFacebook] [smallint] NOT NULL,
+-- 	[EventSource] [nvarchar](50) NOT NULL,
+-- 	[EventFacebookId] [nvarchar](250) NULL,
+-- 	[FacebookRecordLastUpdated] [datetimeoffset](7) NULL,
+-- 	[FbEventName] [nvarchar](250) NULL,
+-- 	[FbEventDescription] [nvarchar](4000) NULL,
+-- 	[FbEventStartDatetime] [datetimeoffset](7) NULL,
+-- 	[FbEventImage] [nvarchar](500) NULL,
+-- 	[FbEventImageOffsetX] [smallint] NULL,
+-- 	[FbEventImageOffsetY] [smallint] NULL,
+-- 	[FbLocationOneLineDesc] [nvarchar](250) NULL,
+-- 	[FbLocationCity] [nvarchar](250) NULL,
+-- 	[FbLocationStreet] [nvarchar](250) NULL,
+-- 	[FbLocationPostCode] [nvarchar](250) NULL,
+-- 	[FbLocationSubRegion] [nvarchar](250) NULL,
+-- 	[FbLocationRegion] [nvarchar](250) NULL,
+-- 	[FbLocationCountry] [nvarchar](250) NULL,
+-- 	[FbLatitude] [decimal](18, 15) NULL,
+-- 	[FbLongitude] [decimal](19, 15) NULL,
+-- 	[FbEventGeoLocation] [geography] NULL,
+-- 	[PublishToGoogleId] [nvarchar](250) NULL,
+-- 	[removed] [smallint] NOT NULL,
+-- 	[deleted] [bit] NOT NULL,
+-- 	[lastModified] [datetimeoffset](7) NOT NULL,
+-- 	[version] [timestamp] NOT NULL,
+-- 	[createdAt] [datetimeoffset](7) NOT NULL,
+-- 	[updatedAt] [datetimeoffset](7) NOT NULL,
+--  CONSTRAINT [PK_Event] PRIMARY KEY CLUSTERED 
+-- (
+-- 	[id] ASC
+-- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+-- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+-- GO
+-- /****** Object:  Table [HC].[EmailTemplate]    Script Date: 8/27/2021 12:06:44 PM ******/
+-- SET ANSI_NULLS ON
+-- GO
+-- SET QUOTED_IDENTIFIER ON
+-- GO
+-- CREATE TABLE [HC].[EmailTemplate](
+-- 	[id] [uniqueidentifier] NOT NULL,
+-- 	[KennelId] [uniqueidentifier] NOT NULL,
+-- 	[EventId] [uniqueidentifier] NULL,
+-- 	[Description] [nvarchar](250) NOT NULL,
+-- 	[Subject] [nvarchar](250) NOT NULL,
+-- 	[Template] [nvarchar](max) NOT NULL,
+-- 	[EmailTypeFlag] [int] NOT NULL,
+-- 	[HoursBeforeRun] [smallint] NOT NULL,
+-- 	[DaysBeforeRun] [smallint] NOT NULL,
+-- 	[SendToAll] [smallint] NOT NULL,
+-- 	[SendToMembers] [smallint] NOT NULL,
+-- 	[SendToMismanagement] [smallint] NOT NULL,
+-- 	[SendToFollowers] [smallint] NOT NULL,
+-- 	[SendToVisitors] [smallint] NOT NULL,
+-- 	[ReplyToEmailAddress] [nvarchar](250) NOT NULL,
+-- 	[SenderName] [nvarchar](250) NOT NULL,
+-- 	[SendWhenHareAssigned] [smallint] NOT NULL,
+--  CONSTRAINT [PK_EmailTemplate] PRIMARY KEY CLUSTERED 
+-- (
+-- 	[id] ASC
+-- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+-- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+-- GO
+-- /****** Object:  View [HC3W].[vwAdEmailLogList]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2274,7 +2199,7 @@
 -- INNER JOIN HC.EmailLog elog on elog.EventId = e.id
 -- WHERE ((hkm.HcWebPermissionFlags & 0x0001) = 0x0001 AND h.HcWebUserId IS NOT NULL) OR (h.HcWebUserId < 10)
 -- GO
--- /****** Object:  Table [HC].[Country]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Table [HC].[Country]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2302,7 +2227,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteCurrencyTest]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteCurrencyTest]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2310,11 +2235,12 @@
 -- create view [dbo].[vw_deleteCurrencyTest] as
 -- select c.CountryName, c.CurrencySymbol, c.DigitsAfterDecimal,c.id from HC.Country c
 -- GO
--- /****** Object:  View [HC3W].[vwSaHasher]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [HC3W].[vwSaHasher]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
 -- GO
+
 
 
 -- CREATE VIEW [HC3W].[vwSaHasher] AS
@@ -2346,10 +2272,12 @@
 --       ,[version]
 --       ,[createdAt]
 --       ,[updatedAt]
+-- 	  ,cast(createdAt as DateTime) as createdAtDate
+-- 	  ,cast(updatedAt as DateTime) as updatedAtDate
 --       ,[deleted]
 --   FROM [HC].[Hasher] WHERE Removed = 0
 -- GO
--- /****** Object:  View [dbo].[vw_deleteHcPhotos]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteHcPhotos]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2358,21 +2286,11 @@
 -- select Photo,id,DisplayName from HC.Hasher
 -- where createdAt > dateadd(day,-20,getdate())
 -- GO
--- /****** Object:  View [HC3W].[vwAdKennel]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [HC3W].[vwAdKennel]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
 -- GO
-
-
-
-
-
-
-
-
-
-
 
 -- CREATE VIEW [HC3W].[vwAdKennel] AS
 
@@ -2418,6 +2336,8 @@
 --       ,[KennelPaymentUrlExpires3]
 -- 	  ,[KennelPaymentMemberSurcharge3]
 -- 	  ,[KennelPaymentNonMemberSurcharge3]
+-- 	  ,[KennelFeaturesExpire]
+-- 	  ,[KennelFeaturesTier]
 -- 	  ,[AllowSelfPayment]
 -- 	  ,[AllowNegativeCredit]
 
@@ -2452,7 +2372,7 @@
 
 -- FROM HC.Kennel
 -- GO
--- /****** Object:  View [dbo].[vwEventAdjusted]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [dbo].[vwEventAdjusted]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2526,7 +2446,7 @@
 --   INNER JOIN HC.Kennel k on evt.KennelId = k.id
 --   INNER JOIN HC.Country co on co.id = k.CountryId
 -- GO
--- /****** Object:  View [HC].[vwEventAdjusted]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [HC].[vwEventAdjusted]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2601,7 +2521,7 @@
 --   INNER JOIN HC.Kennel k on evt.KennelId = k.id
 --   INNER JOIN HC.Country co on co.id = k.CountryId
 -- GO
--- /****** Object:  View [dbo].[vw_deleteFilthRuns]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteFilthRuns]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2609,7 +2529,7 @@
 -- create view [dbo].[vw_deleteFilthRuns] AS
 -- select * from HC.event  where KennelId = '5029DE3A-D231-47AA-BE72-ECE9BCCD55D1'
 -- GO
--- /****** Object:  View [dbo].[vw_deleteAddHashers]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteAddHashers]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2619,7 +2539,7 @@
 -- CREATE view [dbo].[vw_deleteAddHashers] as
 -- select FirstName,LastName,HashName,Email from HC.Hasher 
 -- GO
--- /****** Object:  Table [HC].[Region]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Table [HC].[Region]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2637,7 +2557,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC].[City]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Table [HC].[City]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2663,7 +2583,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 -- GO
--- /****** Object:  View [HC3W].[vwAdKennelList]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [HC3W].[vwAdKennelList]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2732,7 +2652,7 @@
 -- INNER JOIN HC.Country co on r.CountryId = co.id
 -- WHERE ((hkm.MismanagementRoleFlags & 0x0001) != 0 AND h.HcWebUserId IS NOT NULL) OR (h.HcWebUserId < 10)
 -- GO
--- /****** Object:  Table [HC].[HasherEventMap]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Table [HC].[HasherEventMap]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2766,7 +2686,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteImportHemRecords]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteImportHemRecords]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2774,7 +2694,7 @@
 -- create view [dbo].[vw_deleteImportHemRecords] as 
 -- select top 10 EventId,UserId,UserStartEvent,Rsvp,RsvpState,AttendenceState,IsHare,VirginVisitorType from HC.HasherEventMap
 -- GO
--- /****** Object:  View [dbo].[vw_deleteMe_facebookIds]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteMe_facebookIds]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2783,7 +2703,7 @@
 -- as
 -- select top 20 * from HC.Kennel where KennelFacebookId is not null
 -- GO
--- /****** Object:  View [dbo].[vw_deleteMe_importEvents]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteMe_importEvents]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2791,7 +2711,28 @@
 -- create view [dbo].[vw_deleteMe_importEvents] as
 -- select top 1 id,EventStartDatetime,KennelId,EventName,EventDescription from HC.Event
 -- GO
--- /****** Object:  View [HC3W].[vwAdEventList]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [HC3W].[vwSaSignupReport]    Script Date: 8/27/2021 12:06:44 PM ******/
+-- SET ANSI_NULLS ON
+-- GO
+-- SET QUOTED_IDENTIFIER ON
+-- GO
+
+
+-- CREATE view [HC3W].[vwSaSignupReport] as
+
+-- -- select * from [HC3W].[vwSaSignupReport]
+
+-- select 
+-- newid() as id,
+-- cast(updatedAt as date) as updatedDate,
+-- count(*) as allActivity,
+-- count(case when cast(createdAt as date) = cast(updatedAt as Date) then 1 else null end) as newAccounts,
+-- (select count(*) from HC.Hasher where cast(createdAt as date) <= cast(h1.updatedAt as Date)) as totalAccounts
+-- from HC.Hasher h1
+-- group by cast(updatedAt as date)
+
+-- GO
+-- /****** Object:  View [HC3W].[vwAdEventList]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2844,7 +2785,7 @@
 -- INNER JOIN HC.Hasher h ON hkm.UserId = h.id
 -- WHERE ((hkm.MismanagementRoleFlags & 0x0001) != 0 AND h.HcWebUserId IS NOT NULL) OR (h.HcWebUserId < 10)
 -- GO
--- /****** Object:  Table [HC].[Payment]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Table [HC].[Payment]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2879,7 +2820,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC].[RunCounts]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Table [HC].[RunCounts]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2900,7 +2841,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  View [HC3W].[vwAdRunAttendence]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [HC3W].[vwAdRunAttendence]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2971,7 +2912,7 @@
 -- AND hem.AttendenceState >= 20
 -- AND e.IsVisible = 1
 -- GO
--- /****** Object:  View [dbo].[vw_deleteDnhRuns]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteDnhRuns]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -2981,23 +2922,11 @@
 
 -- select * from HC.Event where EventName like '%DNH-19%'
 -- GO
--- /****** Object:  View [HC3W].[vwAdHasherList]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [HC3W].[vwAdHasherList]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
 -- GO
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -3042,10 +2971,13 @@
 --   INNER JOIN HC.Hasher h2 on h2.id = hkm2.UserId
 --   INNER JOIN HC.Kennel k2 on k2.id = hkm2.KennelId
 --   WHERE (((hkm.HcWebPermissionFlags & 0x0001) = 0x0001 AND h.HcWebUserId IS NOT NULL) OR (h.HcWebUserId < 10))
---   AND hkm2.KennelId = hkm.KennelId AND hkm2.Following = 1 --AND h2.Removed = 0
+--   AND hkm2.KennelId = hkm.KennelId AND hkm2.Following = 1 
+--   AND h.Removed = 0
+--   AND h2.Removed = 0
+--   --AND h2.Removed = 0
 --   --order by k2.KennelShortName, h2.DisplayName, h.HcWebUserId
 -- GO
--- /****** Object:  View [HC3W].[vwAdEvent]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [HC3W].[vwAdEvent]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3136,7 +3068,7 @@
 --       ,[updatedAt]
 --   FROM [HC].[Event]
 -- GO
--- /****** Object:  View [dbo].[vw_deleteTheWhites]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteTheWhites]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3144,7 +3076,7 @@
 -- CREATE VIEW [dbo].[vw_deleteTheWhites] AS
 -- select * from HC.Hasher where LastName = 'White'
 -- GO
--- /****** Object:  Table [DomainValues].[MisManagementRoles]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Table [DomainValues].[MisManagementRoles]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3162,7 +3094,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  View [HC3].[vwMmByKennel]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [HC3].[vwMmByKennel]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3182,7 +3114,7 @@
 -- GROUP BY hkm.KennelId
 
 -- GO
--- /****** Object:  View [dbo].[DEL_ImportEvents]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [dbo].[DEL_ImportEvents]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3192,7 +3124,7 @@
 
 -- select KennelId,EventName, EventDescription, EventStartDatetime FROM HC.Event
 -- GO
--- /****** Object:  Table [HC].[Receipt]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  Table [HC].[Receipt]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3219,7 +3151,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  View [HC3W].[vwAdProfitLossReport]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [HC3W].[vwAdProfitLossReport]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3267,7 +3199,7 @@
 
 
 -- GO
--- /****** Object:  View [dbo].[vw_deleteEditFacebookKennels]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteEditFacebookKennels]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3275,7 +3207,7 @@
 -- create view [dbo].[vw_deleteEditFacebookKennels] as 
 -- select * from HC.Kennel where KennelFacebookId is not null
 -- GO
--- /****** Object:  View [HC3W].[vwAdHashCashReport]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [HC3W].[vwAdHashCashReport]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3343,11 +3275,12 @@
 -- AND e.IsVisible = 1
 -- AND e.DoTrackHashCash = 1
 -- GO
--- /****** Object:  View [HC3W].[vwAdHasher]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [HC3W].[vwAdHasher]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
 -- GO
+
 
 
 
@@ -3434,9 +3367,11 @@
 --   INNER JOIN HC.Kennel k2 on k2.id = hkm2.KennelId
 --   WHERE (((hkm.HcWebPermissionFlags & 0x0001) = 0x0001 AND h.HcWebUserId IS NOT NULL) OR (h.HcWebUserId < 10))
 --   AND hkm2.KennelId = hkm.KennelId AND hkm2.Following = 1
+--   AND h.Removed = 0
+--   AND h2.Removed = 0
 --   --order by k2.KennelShortName, h2.DisplayName, h.HcWebUserId
 -- GO
--- /****** Object:  View [dbo].[vw_dev_kennelMembership]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [dbo].[vw_dev_kennelMembership]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3458,7 +3393,7 @@
 -- inner join HC.Kennel k on hkm.KennelId = k.id
 -- order by h.HashName,k.KennelName
 -- GO
--- /****** Object:  View [HC].[deleteTempCities]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [HC].[deleteTempCities]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3471,28 +3406,28 @@
 
 -- select * from HC.City where Latitude between 52 and 53 and Longitude  between 4 and  5
 -- GO
--- /****** Object:  View [dbo].[vw_deleteEditFILTHhash]    Script Date: 8/9/2021 8:40:24 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteEditFILTHhash]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
 -- GO
 -- create view [dbo].[vw_deleteEditFILTHhash] as select * from HC.Kennel where KennelName like '%FILTH%'
 -- GO
--- /****** Object:  View [dbo].[vw_deleteEditNetherlands]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteEditNetherlands]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
 -- GO
 -- create view [dbo].[vw_deleteEditNetherlands] as select * from HC.Country h where h.CountryName like '%nether%'
 -- GO
--- /****** Object:  View [dbo].[vw_deleteEditPayments]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteEditPayments]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
 -- GO
 -- create view [dbo].[vw_deleteEditPayments] as select * from HC.Payment
 -- GO
--- /****** Object:  Table [EXT].[FbAppEvent]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [EXT].[FbAppEvent]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3521,7 +3456,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[Users]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[Users]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3554,7 +3489,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [EXT].[OfficeForms_KennelImport]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [EXT].[OfficeForms_KennelImport]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3601,7 +3536,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  View [EXT].[vwOfficeForms_KennelImport]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [EXT].[vwOfficeForms_KennelImport]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3659,7 +3594,7 @@
 --   WHERE ki.removed = 0
 
 -- GO
--- /****** Object:  View [dbo].[vw_insertHashers]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [dbo].[vw_insertHashers]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3674,7 +3609,7 @@
 --       ,[Email]
 --   FROM [HC].[Hasher]
 -- GO
--- /****** Object:  View [dbo].[vw_insertHkmRecords]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [dbo].[vw_insertHkmRecords]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3682,7 +3617,7 @@
 -- create view [dbo].[vw_insertHkmRecords] as 
 -- select userId, kennelId from HC.HasherKennelMap
 -- GO
--- /****** Object:  View [HC3W].[vwSaHasherPermissions]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [HC3W].[vwSaHasherPermissions]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3721,7 +3656,7 @@
 
 
 -- GO
--- /****** Object:  View [dbo].[vw_deleteOpeeRuns]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteOpeeRuns]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3730,7 +3665,7 @@
 -- [dbo].[vw_deleteOpeeRuns] as 
 -- select * from HC.HasherEventMap where userId = '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC'
 -- GO
--- /****** Object:  View [dbo].[vw_deleteSlippery]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteSlippery]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3738,7 +3673,7 @@
 -- create view [dbo].[vw_deleteSlippery] AS
 -- select * from HC.Hasher h where h.DisplayName like '%Slippery Edg%'
 -- GO
--- /****** Object:  View [dbo].[vw_deleteSlippery2]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteSlippery2]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3748,7 +3683,7 @@
 -- INNER JOIN HC.HasherKennelMap hkm on hkm.UserId = h.id
 -- where h.DisplayName like '%Slippery Edg%'
 -- GO
--- /****** Object:  View [HC].[vwEventCommonFields]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [HC].[vwEventCommonFields]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3811,14 +3746,14 @@
 -- 		inner join HC.City c on c.id = k.CityId
 		
 -- GO
--- /****** Object:  View [dbo].[vw_deleteTempKennelList]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteTempKennelList]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
 -- GO
 -- create view [dbo].[vw_deleteTempKennelList] as select * from HC.Kennel where kennelLogo like 'http%'
 -- GO
--- /****** Object:  Table [HC].[LaunchAndLogin]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC].[LaunchAndLogin]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3840,7 +3775,7 @@
 -- 	[CityId] [uniqueidentifier] NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  View [HC3W].[vwAdDuplicates]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [HC3W].[vwAdDuplicates]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3900,7 +3835,7 @@
 -- AND a.SupportCode > b.SupportCode
 -- AND a.Removed = 0 AND b.Removed = 0
 -- GO
--- /****** Object:  View [HC3W].[vwAdEmailTemplateList]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [HC3W].[vwAdEmailTemplateList]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3939,7 +3874,7 @@
 -- INNER JOIN HC.EmailTemplate em on em.KennelId = k.id
 -- WHERE ((hkm.HcWebPermissionFlags & 0x0001) = 0x0001 AND h.HcWebUserId IS NOT NULL) OR (h.HcWebUserId < 10)
 -- GO
--- /****** Object:  UserDefinedFunction [HC].[DelimitedSplit8K]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  UserDefinedFunction [HC].[DelimitedSplit8K]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3978,7 +3913,7 @@
 --    FROM cteLen l
 -- ;
 -- GO
--- /****** Object:  View [dbo].[vw_deleteFixCaps]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteFixCaps]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3987,7 +3922,7 @@
 -- select id,DutchOriginal,Dutch from Wordz where ASCII(left(DutchOriginal, 1)) 
 -- between ASCII('A') and ASCII('Z') and Dutch is not null
 -- GO
--- /****** Object:  View [dbo].[vw_deleteFixDutchWordz]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteFixDutchWordz]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -3996,7 +3931,7 @@
 -- as
 -- select id,Dutch,DutchOut from Wordz where Dutch like '%,%' and DutchOut is null
 -- GO
--- /****** Object:  View [dbo].[vw_deleteFixWordz]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  View [dbo].[vw_deleteFixWordz]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4007,7 +3942,7 @@
 
 
 -- GO
--- /****** Object:  Table [dbo].[BusinessUnits]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[BusinessUnits]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4026,7 +3961,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[Contacts]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[Contacts]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4045,7 +3980,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[currency]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[currency]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4056,7 +3991,7 @@
 -- 	[symbol] [nvarchar](100) NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[Exceptions]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[Exceptions]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4088,7 +4023,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[Languages]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[Languages]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4103,7 +4038,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[MeetingAgendaRelevant]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[MeetingAgendaRelevant]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4118,7 +4053,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[MeetingAgendas]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[MeetingAgendas]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4139,7 +4074,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[MeetingAgendaTypes]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[MeetingAgendaTypes]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4153,7 +4088,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[MeetingAttendees]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[MeetingAttendees]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4170,7 +4105,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[MeetingDecisionRelevant]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[MeetingDecisionRelevant]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4185,7 +4120,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[MeetingDecisions]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[MeetingDecisions]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4207,7 +4142,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[MeetingLocations]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[MeetingLocations]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4224,7 +4159,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[Meetings]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[Meetings]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4255,7 +4190,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[MeetingTypes]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[MeetingTypes]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4269,7 +4204,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[RolePermissions]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[RolePermissions]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4284,7 +4219,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[Roles]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[Roles]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4298,7 +4233,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[SourceData]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[SourceData]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4334,29 +4269,7 @@
 -- 	[is_draft] [nvarchar](25) NULL
 -- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[sysdiagrams]    Script Date: 8/9/2021 8:40:25 PM ******/
--- SET ANSI_NULLS ON
--- GO
--- SET QUOTED_IDENTIFIER ON
--- GO
--- CREATE TABLE [dbo].[sysdiagrams](
--- 	[name] [sysname] NOT NULL,
--- 	[principal_id] [int] NOT NULL,
--- 	[diagram_id] [int] IDENTITY(1,1) NOT NULL,
--- 	[version] [int] NULL,
--- 	[definition] [varbinary](max) NULL,
--- PRIMARY KEY CLUSTERED 
--- (
--- 	[diagram_id] ASC
--- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
---  CONSTRAINT [UK_principal_name] UNIQUE NONCLUSTERED 
--- (
--- 	[principal_id] ASC,
--- 	[name] ASC
--- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
--- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
--- GO
--- /****** Object:  Table [dbo].[tempImport]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[tempImport]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4366,7 +4279,7 @@
 -- 	[eventId] [uniqueidentifier] NOT NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[UserPermissions]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[UserPermissions]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4382,7 +4295,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[UserPreferences]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[UserPreferences]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4399,7 +4312,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[UserRoles]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[UserRoles]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4414,7 +4327,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[VersionInfo]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[VersionInfo]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4425,13 +4338,13 @@
 -- 	[Description] [nvarchar](1024) NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Index [UC_Version]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [UC_Version]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE UNIQUE CLUSTERED INDEX [UC_Version] ON [dbo].[VersionInfo]
 -- (
 -- 	[Version] ASC
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[world_cities_table]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[world_cities_table]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4448,7 +4361,7 @@
 -- 	[province] [nvarchar](43) NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [dbo].[Year2020]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [dbo].[Year2020]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4469,7 +4382,7 @@
 -- 	[StartPlus10] [datetime] NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [DEV].[EnumPaymentTypes]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [DEV].[EnumPaymentTypes]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4479,7 +4392,7 @@
 -- 	[name] [nvarchar](50) NOT NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [DEV].[ImportHashers]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [DEV].[ImportHashers]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4495,7 +4408,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [DEV].[timezone]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [DEV].[timezone]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4513,7 +4426,7 @@
 -- 	[timezone] [nvarchar](500) NOT NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [DEV].[WindowsTimezoneMap]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [DEV].[WindowsTimezoneMap]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4524,7 +4437,7 @@
 -- 	[Timezones] [nvarchar](3500) NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [DomainValues].[CurrencyCodes]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [DomainValues].[CurrencyCodes]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4539,7 +4452,7 @@
 -- 	[CultureCode] [nvarchar](50) NOT NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [DomainValues].[EventGeographicScope]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [DomainValues].[EventGeographicScope]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4553,7 +4466,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [DomainValues].[EventRegistrationType]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [DomainValues].[EventRegistrationType]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4567,7 +4480,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [DomainValues].[EventThemeType]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [DomainValues].[EventThemeType]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4581,7 +4494,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [DomainValues].[KennelStatusEnum]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [DomainValues].[KennelStatusEnum]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4595,7 +4508,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [DomainValues].[MismanagementEnum]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [DomainValues].[MismanagementEnum]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4610,7 +4523,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [DomainValues].[Timezone]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [DomainValues].[Timezone]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4628,13 +4541,13 @@
 -- GO
 -- SET ANSI_PADDING ON
 -- GO
--- /****** Object:  Index [IX_Timezone]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_Timezone]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE CLUSTERED INDEX [IX_Timezone] ON [DomainValues].[Timezone]
 -- (
 -- 	[FullTimezone] ASC
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [EXT].[Zapier_FbEvent]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [EXT].[Zapier_FbEvent]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4663,7 +4576,7 @@
 -- 	[updatedTime] [datetimeoffset](7) NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [EXT].[Zapier_GCal]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [EXT].[Zapier_GCal]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4686,7 +4599,7 @@
 -- 	[iCalUID] [nvarchar](250) NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [Hashers].[HasherEventMap]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [Hashers].[HasherEventMap]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4703,7 +4616,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [Hashers].[HasherFriendMap]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [Hashers].[HasherFriendMap]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4720,7 +4633,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC].[BusinessUnits]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC].[BusinessUnits]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4737,7 +4650,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC].[ErrorLog]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC].[ErrorLog]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4753,7 +4666,7 @@
 -- 	[kennelId] [uniqueidentifier] NULL,
 -- 	[eventId] [uniqueidentifier] NULL,
 -- 	[deviceId] [nvarchar](250) NULL,
--- 	[string_1] [nvarchar](1000) NULL,
+-- 	[string_1] [nvarchar](4000) NULL,
 -- 	[string_2] [nvarchar](1000) NULL,
 -- 	[string_3] [nvarchar](1000) NULL,
 -- 	[string_4] [nvarchar](1000) NULL,
@@ -4767,7 +4680,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC].[HasherFriendMap]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC].[HasherFriendMap]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4785,7 +4698,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC].[HasherOwnEvent]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC].[HasherOwnEvent]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4812,7 +4725,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC].[KennelAuthorization]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC].[KennelAuthorization]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4841,7 +4754,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC].[KennelCredit]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC].[KennelCredit]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4860,7 +4773,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC].[LoginNotifications]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC].[LoginNotifications]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4881,7 +4794,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC].[Meetings]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC].[Meetings]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4898,7 +4811,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC].[ServerStatus]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC].[ServerStatus]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4916,7 +4829,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC].[WebAppLogin]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC].[WebAppLogin]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4940,7 +4853,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[City]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[City]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4962,7 +4875,7 @@
 -- 	[updatedAt] [datetimeoffset](7) NOT NULL
 -- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[Country]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[Country]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -4986,7 +4899,7 @@
 -- 	[updatedAt] [datetimeoffset](7) NOT NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[EmailLog]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[EmailLog]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5000,7 +4913,7 @@
 -- 	[ServerReply] [nvarchar](2500) NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[EmailTemplate]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[EmailTemplate]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5025,7 +4938,7 @@
 -- 	[SendWhenHareAssigned] [smallint] NOT NULL
 -- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[Event]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[Event]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5106,7 +5019,7 @@
 -- 	[updatedAt] [datetimeoffset](7) NOT NULL
 -- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[Hasher]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[Hasher]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5145,7 +5058,7 @@
 -- 	[deleted] [bit] NOT NULL
 -- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[HasherEventMap]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[HasherEventMap]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5175,7 +5088,7 @@
 -- 	[updatedAt] [datetimeoffset](7) NOT NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[HasherFriendMap]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[HasherFriendMap]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5189,7 +5102,7 @@
 -- 	[FriendSince] [datetimeoffset](7) NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[HasherKennelMap]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[HasherKennelMap]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5222,7 +5135,7 @@
 -- 	[updatedAt] [datetimeoffset](7) NOT NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[HasherOwnEvent]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[HasherOwnEvent]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5256,7 +5169,7 @@
 -- 	[updatedAt] [datetimeoffset](7) NOT NULL
 -- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[Kennel]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[Kennel]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5314,7 +5227,7 @@
 -- 	[deleted] [bit] NOT NULL
 -- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[KennelAuthorization]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[KennelAuthorization]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5339,7 +5252,7 @@
 -- 	[Notes] [nvarchar](1000) NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[KennelCredit]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[KennelCredit]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5354,7 +5267,7 @@
 -- 	[removed] [smallint] NOT NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[LaunchAndLogin]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[LaunchAndLogin]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5376,7 +5289,7 @@
 -- 	[CityId] [uniqueidentifier] NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[LoginNotifications]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[LoginNotifications]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5393,7 +5306,7 @@
 -- 	[CreatedDate] [datetimeoffset](7) NOT NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[Payment]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[Payment]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5422,7 +5335,7 @@
 -- 	[updatedAt] [datetimeoffset](7) NOT NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[Recepit]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[Recepit]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5445,7 +5358,7 @@
 -- 	[updatedAt] [datetimeoffset](7) NOT NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[Region]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[Region]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5459,7 +5372,7 @@
 -- 	[updatedAt] [datetimeoffset](7) NOT NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[RunCounts]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[RunCounts]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5473,7 +5386,7 @@
 -- 	[updatedAt] [datetimeoffset](7) NOT NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[ServerStatus]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[ServerStatus]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5487,7 +5400,7 @@
 -- 	[ImageRootUrl] [nvarchar](250) NOT NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [HC_BACKUP].[WebAppLogin]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [HC_BACKUP].[WebAppLogin]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5507,7 +5420,7 @@
 -- 	[Version] [nvarchar](20) NULL
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [Kennels].[Haberdashery]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [Kennels].[Haberdashery]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5527,7 +5440,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [Kennels].[Mismanagement]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [Kennels].[Mismanagement]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5545,7 +5458,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [Transactions].[EventRegistration]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [Transactions].[EventRegistration]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5563,7 +5476,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [Transactions].[HaberdasherySale]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [Transactions].[HaberdasherySale]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5579,7 +5492,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [UNUSED].[FeaturedEvent]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [UNUSED].[FeaturedEvent]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5594,7 +5507,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [UNUSED].[FeaturedKennel]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [UNUSED].[FeaturedKennel]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5609,7 +5522,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [UNUSED].[FeaturedSong]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [UNUSED].[FeaturedSong]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5624,7 +5537,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [UNUSED].[Haberdashery]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [UNUSED].[Haberdashery]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5648,7 +5561,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [UNUSED].[KennelSongMap]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [UNUSED].[KennelSongMap]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5664,7 +5577,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [UNUSED].[Song]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [UNUSED].[Song]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5691,7 +5604,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 -- GO
--- /****** Object:  Table [WORDZ].[WordFreq]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [WORDZ].[WordFreq]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5708,7 +5621,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [WORDZ].[Wordz]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [WORDZ].[Wordz]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5731,7 +5644,7 @@
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- ) ON [PRIMARY]
 -- GO
--- /****** Object:  Table [WORDZ].[WordzAudio]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Table [WORDZ].[WordzAudio]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -5743,7 +5656,7 @@
 -- GO
 -- SET ANSI_PADDING ON
 -- GO
--- /****** Object:  Index [IX_Exceptions_App_Del_Cre]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_Exceptions_App_Del_Cre]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE NONCLUSTERED INDEX [IX_Exceptions_App_Del_Cre] ON [dbo].[Exceptions]
 -- (
 -- 	[ApplicationName] ASC,
@@ -5753,7 +5666,7 @@
 -- GO
 -- SET ANSI_PADDING ON
 -- GO
--- /****** Object:  Index [IX_Exceptions_GUID_App_Del_Cre]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_Exceptions_GUID_App_Del_Cre]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE NONCLUSTERED INDEX [IX_Exceptions_GUID_App_Del_Cre] ON [dbo].[Exceptions]
 -- (
 -- 	[GUID] ASC,
@@ -5764,7 +5677,7 @@
 -- GO
 -- SET ANSI_PADDING ON
 -- GO
--- /****** Object:  Index [IX_Exceptions_Hash_App_Cre_Del]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_Exceptions_Hash_App_Cre_Del]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE NONCLUSTERED INDEX [IX_Exceptions_Hash_App_Cre_Del] ON [dbo].[Exceptions]
 -- (
 -- 	[ErrorHash] ASC,
@@ -5775,7 +5688,7 @@
 -- GO
 -- SET ANSI_PADDING ON
 -- GO
--- /****** Object:  Index [UQ_RolePerm_RoleId_PermKey]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [UQ_RolePerm_RoleId_PermKey]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE UNIQUE NONCLUSTERED INDEX [UQ_RolePerm_RoleId_PermKey] ON [dbo].[RolePermissions]
 -- (
 -- 	[RoleId] ASC,
@@ -5784,7 +5697,7 @@
 -- GO
 -- SET ANSI_PADDING ON
 -- GO
--- /****** Object:  Index [UQ_UserPerm_UserId_PermKey]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [UQ_UserPerm_UserId_PermKey]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE UNIQUE NONCLUSTERED INDEX [UQ_UserPerm_UserId_PermKey] ON [dbo].[UserPermissions]
 -- (
 -- 	[UserId] ASC,
@@ -5793,7 +5706,7 @@
 -- GO
 -- SET ANSI_PADDING ON
 -- GO
--- /****** Object:  Index [IX_UserPref_UID_PrefType_Name]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_UserPref_UID_PrefType_Name]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE UNIQUE NONCLUSTERED INDEX [IX_UserPref_UID_PrefType_Name] ON [dbo].[UserPreferences]
 -- (
 -- 	[UserId] ASC,
@@ -5801,14 +5714,14 @@
 -- 	[Name] ASC
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- GO
--- /****** Object:  Index [IX_UserRoles_RoleId_UserId]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_UserRoles_RoleId_UserId]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE NONCLUSTERED INDEX [IX_UserRoles_RoleId_UserId] ON [dbo].[UserRoles]
 -- (
 -- 	[RoleId] ASC,
 -- 	[UserId] ASC
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- GO
--- /****** Object:  Index [UQ_UserRoles_UserId_RoleId]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [UQ_UserRoles_UserId_RoleId]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE UNIQUE NONCLUSTERED INDEX [UQ_UserRoles_UserId_RoleId] ON [dbo].[UserRoles]
 -- (
 -- 	[UserId] ASC,
@@ -5817,31 +5730,31 @@
 -- GO
 -- SET ANSI_PADDING ON
 -- GO
--- /****** Object:  Index [IX_UserUniqueEmail]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_UserUniqueEmail]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE UNIQUE NONCLUSTERED INDEX [IX_UserUniqueEmail] ON [dbo].[Users]
 -- (
 -- 	[Email] ASC
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- GO
--- /****** Object:  Index [IX_CityUpdated]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_CityUpdated]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE NONCLUSTERED INDEX [IX_CityUpdated] ON [HC].[City]
 -- (
 -- 	[updatedAt] ASC
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- GO
--- /****** Object:  Index [IX_CountryUpdated]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_CountryUpdated]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE NONCLUSTERED INDEX [IX_CountryUpdated] ON [HC].[Country]
 -- (
 -- 	[updatedAt] ASC
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- GO
--- /****** Object:  Index [i1]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [i1]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE NONCLUSTERED INDEX [i1] ON [HC].[ErrorLog]
 -- (
 -- 	[updatedAt] ASC
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- GO
--- /****** Object:  Index [IX_Event_KidIsCountedDeleted2]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_Event_KidIsCountedDeleted2]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE NONCLUSTERED INDEX [IX_Event_KidIsCountedDeleted2] ON [HC].[Event]
 -- (
 -- 	[KennelId] ASC,
@@ -5850,7 +5763,7 @@
 -- )
 -- INCLUDE([AbsoluteEventNumber]) WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- GO
--- /****** Object:  Index [IX_EventByKennelIsCountedStartDateAbsEvtNum]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_EventByKennelIsCountedStartDateAbsEvtNum]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE NONCLUSTERED INDEX [IX_EventByKennelIsCountedStartDateAbsEvtNum] ON [HC].[Event]
 -- (
 -- 	[KennelId] ASC,
@@ -5861,7 +5774,7 @@
 -- GO
 -- SET ANSI_PADDING ON
 -- GO
--- /****** Object:  Index [IX_HasherUniqueEmail]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_HasherUniqueEmail]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE UNIQUE NONCLUSTERED INDEX [IX_HasherUniqueEmail] ON [HC].[Hasher]
 -- (
 -- 	[Email] ASC
@@ -5869,7 +5782,7 @@
 -- GO
 -- SET ANSI_PADDING ON
 -- GO
--- /****** Object:  Index [IX_HasherEventMap]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_HasherEventMap]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE UNIQUE NONCLUSTERED INDEX [IX_HasherEventMap] ON [HC].[HasherEventMap]
 -- (
 -- 	[EventId] ASC,
@@ -5877,14 +5790,14 @@
 -- 	[DisplayName] ASC
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- GO
--- /****** Object:  Index [IX_HasherFriendMap]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_HasherFriendMap]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE UNIQUE NONCLUSTERED INDEX [IX_HasherFriendMap] ON [HC].[HasherFriendMap]
 -- (
 -- 	[UserId] ASC,
 -- 	[Friend_UserId] ASC
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- GO
--- /****** Object:  Index [IX_HasherKennelMap]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_HasherKennelMap]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE UNIQUE NONCLUSTERED INDEX [IX_HasherKennelMap] ON [HC].[HasherKennelMap]
 -- (
 -- 	[KennelId] ASC,
@@ -5893,19 +5806,19 @@
 -- GO
 -- SET ANSI_PADDING ON
 -- GO
--- /****** Object:  Index [IX_PaymentReference]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_PaymentReference]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE UNIQUE NONCLUSTERED INDEX [IX_PaymentReference] ON [HC].[Payment]
 -- (
 -- 	[PaymentReference] ASC
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- GO
--- /****** Object:  Index [IX_RegionUpdated]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_RegionUpdated]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE NONCLUSTERED INDEX [IX_RegionUpdated] ON [HC].[Region]
 -- (
 -- 	[updatedAt] ASC
 -- )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 -- GO
--- /****** Object:  Index [IX_KennelSongMap]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Index [IX_KennelSongMap]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- CREATE UNIQUE NONCLUSTERED INDEX [IX_KennelSongMap] ON [UNUSED].[KennelSongMap]
 -- (
 -- 	[KennelId] ASC,
@@ -6090,8 +6003,6 @@
 -- GO
 -- ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_HC_Event_MinimumRequired]  DEFAULT ((1)) FOR [MinimumParticipantsRequired]
 -- GO
--- ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_CanEditRunAttendence]  DEFAULT ((0)) FOR [CanEditRunAttendence]
--- GO
 -- ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_UseFbData]  DEFAULT ((0)) FOR [UseFbRunDetails]
 -- GO
 -- ALTER TABLE [HC].[Event] ADD  CONSTRAINT [DF_Event_UseFbLocation]  DEFAULT ((0)) FOR [UseFbLocation]
@@ -6241,6 +6152,8 @@
 -- ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_DefaultEventPriceForNonMembers]  DEFAULT ((0)) FOR [DefaultEventPriceForNonMembers]
 -- GO
 -- ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_DefaultRunStartTime]  DEFAULT ('12:00:00.0000000') FOR [DefaultRunStartTime]
+-- GO
+-- ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_KennelFeaturesTier]  DEFAULT ((0)) FOR [KennelFeaturesTier]
 -- GO
 -- ALTER TABLE [HC].[Kennel] ADD  CONSTRAINT [DF_Kennel_AllowSelfPayment]  DEFAULT ((1)) FOR [AllowSelfPayment]
 -- GO
@@ -6707,406 +6620,7 @@
 -- GO
 -- ALTER TABLE [HC].[Event] CHECK CONSTRAINT [CK_Event_IsVisible]
 -- GO
--- /****** Object:  StoredProcedure [dbo].[sp_alterdiagram]    Script Date: 8/9/2021 8:40:25 PM ******/
--- SET ANSI_NULLS ON
--- GO
--- SET QUOTED_IDENTIFIER ON
--- GO
-
--- 	CREATE PROCEDURE [dbo].[sp_alterdiagram]
--- 	(
--- 		@diagramname 	sysname,
--- 		@owner_id	int	= null,
--- 		@version 	int,
--- 		@definition 	varbinary(max)
--- 	)
--- 	WITH EXECUTE AS 'dbo'
--- 	AS
--- 	BEGIN
--- 		set nocount on
-	
--- 		declare @theId 			int
--- 		declare @retval 		int
--- 		declare @IsDbo 			int
-		
--- 		declare @UIDFound 		int
--- 		declare @DiagId			int
--- 		declare @ShouldChangeUID	int
-	
--- 		if(@diagramname is null)
--- 		begin
--- 			RAISERROR ('Invalid ARG', 16, 1)
--- 			return -1
--- 		end
-	
--- 		execute as caller;
--- 		select @theId = DATABASE_PRINCIPAL_ID();	 
--- 		select @IsDbo = IS_MEMBER(N'db_owner'); 
--- 		if(@owner_id is null)
--- 			select @owner_id = @theId;
--- 		revert;
-	
--- 		select @ShouldChangeUID = 0
--- 		select @DiagId = diagram_id, @UIDFound = principal_id from dbo.sysdiagrams where principal_id = @owner_id and name = @diagramname 
-		
--- 		if(@DiagId IS NULL or (@IsDbo = 0 and @theId <> @UIDFound))
--- 		begin
--- 			RAISERROR ('Diagram does not exist or you do not have permission.', 16, 1);
--- 			return -3
--- 		end
-	
--- 		if(@IsDbo <> 0)
--- 		begin
--- 			if(@UIDFound is null or USER_NAME(@UIDFound) is null) -- invalid principal_id
--- 			begin
--- 				select @ShouldChangeUID = 1 ;
--- 			end
--- 		end
-
--- 		-- update dds data			
--- 		update dbo.sysdiagrams set definition = @definition where diagram_id = @DiagId ;
-
--- 		-- change owner
--- 		if(@ShouldChangeUID = 1)
--- 			update dbo.sysdiagrams set principal_id = @theId where diagram_id = @DiagId ;
-
--- 		-- update dds version
--- 		if(@version is not null)
--- 			update dbo.sysdiagrams set version = @version where diagram_id = @DiagId ;
-
--- 		return 0
--- 	END
-	
--- GO
--- /****** Object:  StoredProcedure [dbo].[sp_creatediagram]    Script Date: 8/9/2021 8:40:25 PM ******/
--- SET ANSI_NULLS ON
--- GO
--- SET QUOTED_IDENTIFIER ON
--- GO
-
--- 	CREATE PROCEDURE [dbo].[sp_creatediagram]
--- 	(
--- 		@diagramname 	sysname,
--- 		@owner_id		int	= null, 	
--- 		@version 		int,
--- 		@definition 	varbinary(max)
--- 	)
--- 	WITH EXECUTE AS 'dbo'
--- 	AS
--- 	BEGIN
--- 		set nocount on
-	
--- 		declare @theId int
--- 		declare @retval int
--- 		declare @IsDbo	int
--- 		declare @userName sysname
--- 		if(@version is null or @diagramname is null)
--- 		begin
--- 			RAISERROR (N'E_INVALIDARG', 16, 1);
--- 			return -1
--- 		end
-	
--- 		execute as caller;
--- 		select @theId = DATABASE_PRINCIPAL_ID(); 
--- 		select @IsDbo = IS_MEMBER(N'db_owner');
--- 		revert; 
-		
--- 		if @owner_id is null
--- 		begin
--- 			select @owner_id = @theId;
--- 		end
--- 		else
--- 		begin
--- 			if @theId <> @owner_id
--- 			begin
--- 				if @IsDbo = 0
--- 				begin
--- 					RAISERROR (N'E_INVALIDARG', 16, 1);
--- 					return -1
--- 				end
--- 				select @theId = @owner_id
--- 			end
--- 		end
--- 		-- next 2 line only for test, will be removed after define name unique
--- 		if EXISTS(select diagram_id from dbo.sysdiagrams where principal_id = @theId and name = @diagramname)
--- 		begin
--- 			RAISERROR ('The name is already used.', 16, 1);
--- 			return -2
--- 		end
-	
--- 		insert into dbo.sysdiagrams(name, principal_id , version, definition)
--- 				VALUES(@diagramname, @theId, @version, @definition) ;
-		
--- 		select @retval = @@IDENTITY 
--- 		return @retval
--- 	END
-	
--- GO
--- /****** Object:  StoredProcedure [dbo].[sp_dropdiagram]    Script Date: 8/9/2021 8:40:25 PM ******/
--- SET ANSI_NULLS ON
--- GO
--- SET QUOTED_IDENTIFIER ON
--- GO
-
--- 	CREATE PROCEDURE [dbo].[sp_dropdiagram]
--- 	(
--- 		@diagramname 	sysname,
--- 		@owner_id	int	= null
--- 	)
--- 	WITH EXECUTE AS 'dbo'
--- 	AS
--- 	BEGIN
--- 		set nocount on
--- 		declare @theId 			int
--- 		declare @IsDbo 			int
-		
--- 		declare @UIDFound 		int
--- 		declare @DiagId			int
-	
--- 		if(@diagramname is null)
--- 		begin
--- 			RAISERROR ('Invalid value', 16, 1);
--- 			return -1
--- 		end
-	
--- 		EXECUTE AS CALLER;
--- 		select @theId = DATABASE_PRINCIPAL_ID();
--- 		select @IsDbo = IS_MEMBER(N'db_owner'); 
--- 		if(@owner_id is null)
--- 			select @owner_id = @theId;
--- 		REVERT; 
-		
--- 		select @DiagId = diagram_id, @UIDFound = principal_id from dbo.sysdiagrams where principal_id = @owner_id and name = @diagramname 
--- 		if(@DiagId IS NULL or (@IsDbo = 0 and @UIDFound <> @theId))
--- 		begin
--- 			RAISERROR ('Diagram does not exist or you do not have permission.', 16, 1)
--- 			return -3
--- 		end
-	
--- 		delete from dbo.sysdiagrams where diagram_id = @DiagId;
-	
--- 		return 0;
--- 	END
-	
--- GO
--- /****** Object:  StoredProcedure [dbo].[sp_helpdiagramdefinition]    Script Date: 8/9/2021 8:40:25 PM ******/
--- SET ANSI_NULLS ON
--- GO
--- SET QUOTED_IDENTIFIER ON
--- GO
-
--- 	CREATE PROCEDURE [dbo].[sp_helpdiagramdefinition]
--- 	(
--- 		@diagramname 	sysname,
--- 		@owner_id	int	= null 		
--- 	)
--- 	WITH EXECUTE AS N'dbo'
--- 	AS
--- 	BEGIN
--- 		set nocount on
-
--- 		declare @theId 		int
--- 		declare @IsDbo 		int
--- 		declare @DiagId		int
--- 		declare @UIDFound	int
-	
--- 		if(@diagramname is null)
--- 		begin
--- 			RAISERROR (N'E_INVALIDARG', 16, 1);
--- 			return -1
--- 		end
-	
--- 		execute as caller;
--- 		select @theId = DATABASE_PRINCIPAL_ID();
--- 		select @IsDbo = IS_MEMBER(N'db_owner');
--- 		if(@owner_id is null)
--- 			select @owner_id = @theId;
--- 		revert; 
-	
--- 		select @DiagId = diagram_id, @UIDFound = principal_id from dbo.sysdiagrams where principal_id = @owner_id and name = @diagramname;
--- 		if(@DiagId IS NULL or (@IsDbo = 0 and @UIDFound <> @theId ))
--- 		begin
--- 			RAISERROR ('Diagram does not exist or you do not have permission.', 16, 1);
--- 			return -3
--- 		end
-
--- 		select version, definition FROM dbo.sysdiagrams where diagram_id = @DiagId ; 
--- 		return 0
--- 	END
-	
--- GO
--- /****** Object:  StoredProcedure [dbo].[sp_helpdiagrams]    Script Date: 8/9/2021 8:40:25 PM ******/
--- SET ANSI_NULLS ON
--- GO
--- SET QUOTED_IDENTIFIER ON
--- GO
-
--- 	CREATE PROCEDURE [dbo].[sp_helpdiagrams]
--- 	(
--- 		@diagramname sysname = NULL,
--- 		@owner_id int = NULL
--- 	)
--- 	WITH EXECUTE AS N'dbo'
--- 	AS
--- 	BEGIN
--- 		DECLARE @user sysname
--- 		DECLARE @dboLogin bit
--- 		EXECUTE AS CALLER;
--- 			SET @user = USER_NAME();
--- 			SET @dboLogin = CONVERT(bit,IS_MEMBER('db_owner'));
--- 		REVERT;
--- 		SELECT
--- 			[Database] = DB_NAME(),
--- 			[Name] = name,
--- 			[ID] = diagram_id,
--- 			[Owner] = USER_NAME(principal_id),
--- 			[OwnerID] = principal_id
--- 		FROM
--- 			sysdiagrams
--- 		WHERE
--- 			(@dboLogin = 1 OR USER_NAME(principal_id) = @user) AND
--- 			(@diagramname IS NULL OR name = @diagramname) AND
--- 			(@owner_id IS NULL OR principal_id = @owner_id)
--- 		ORDER BY
--- 			4, 5, 1
--- 	END
-	
--- GO
--- /****** Object:  StoredProcedure [dbo].[sp_renamediagram]    Script Date: 8/9/2021 8:40:25 PM ******/
--- SET ANSI_NULLS ON
--- GO
--- SET QUOTED_IDENTIFIER ON
--- GO
-
--- 	CREATE PROCEDURE [dbo].[sp_renamediagram]
--- 	(
--- 		@diagramname 		sysname,
--- 		@owner_id		int	= null,
--- 		@new_diagramname	sysname
-	
--- 	)
--- 	WITH EXECUTE AS 'dbo'
--- 	AS
--- 	BEGIN
--- 		set nocount on
--- 		declare @theId 			int
--- 		declare @IsDbo 			int
-		
--- 		declare @UIDFound 		int
--- 		declare @DiagId			int
--- 		declare @DiagIdTarg		int
--- 		declare @u_name			sysname
--- 		if((@diagramname is null) or (@new_diagramname is null))
--- 		begin
--- 			RAISERROR ('Invalid value', 16, 1);
--- 			return -1
--- 		end
-	
--- 		EXECUTE AS CALLER;
--- 		select @theId = DATABASE_PRINCIPAL_ID();
--- 		select @IsDbo = IS_MEMBER(N'db_owner'); 
--- 		if(@owner_id is null)
--- 			select @owner_id = @theId;
--- 		REVERT;
-	
--- 		select @u_name = USER_NAME(@owner_id)
-	
--- 		select @DiagId = diagram_id, @UIDFound = principal_id from dbo.sysdiagrams where principal_id = @owner_id and name = @diagramname 
--- 		if(@DiagId IS NULL or (@IsDbo = 0 and @UIDFound <> @theId))
--- 		begin
--- 			RAISERROR ('Diagram does not exist or you do not have permission.', 16, 1)
--- 			return -3
--- 		end
-	
--- 		-- if((@u_name is not null) and (@new_diagramname = @diagramname))	-- nothing will change
--- 		--	return 0;
-	
--- 		if(@u_name is null)
--- 			select @DiagIdTarg = diagram_id from dbo.sysdiagrams where principal_id = @theId and name = @new_diagramname
--- 		else
--- 			select @DiagIdTarg = diagram_id from dbo.sysdiagrams where principal_id = @owner_id and name = @new_diagramname
-	
--- 		if((@DiagIdTarg is not null) and  @DiagId <> @DiagIdTarg)
--- 		begin
--- 			RAISERROR ('The name is already used.', 16, 1);
--- 			return -2
--- 		end		
-	
--- 		if(@u_name is null)
--- 			update dbo.sysdiagrams set [name] = @new_diagramname, principal_id = @theId where diagram_id = @DiagId
--- 		else
--- 			update dbo.sysdiagrams set [name] = @new_diagramname where diagram_id = @DiagId
--- 		return 0
--- 	END
-	
--- GO
--- /****** Object:  StoredProcedure [dbo].[sp_upgraddiagrams]    Script Date: 8/9/2021 8:40:25 PM ******/
--- SET ANSI_NULLS ON
--- GO
--- SET QUOTED_IDENTIFIER ON
--- GO
-
--- 	CREATE PROCEDURE [dbo].[sp_upgraddiagrams]
--- 	AS
--- 	BEGIN
--- 		IF OBJECT_ID(N'dbo.sysdiagrams') IS NOT NULL
--- 			return 0;
-	
--- 		CREATE TABLE dbo.sysdiagrams
--- 		(
--- 			name sysname NOT NULL,
--- 			principal_id int NOT NULL,	-- we may change it to varbinary(85)
--- 			diagram_id int PRIMARY KEY IDENTITY,
--- 			version int,
-	
--- 			definition varbinary(max)
--- 			CONSTRAINT UK_principal_name UNIQUE
--- 			(
--- 				principal_id,
--- 				name
--- 			)
--- 		);
-
-
--- 		/* Add this if we need to have some form of extended properties for diagrams */
--- 		/*
--- 		IF OBJECT_ID(N'dbo.sysdiagram_properties') IS NULL
--- 		BEGIN
--- 			CREATE TABLE dbo.sysdiagram_properties
--- 			(
--- 				diagram_id int,
--- 				name sysname,
--- 				value varbinary(max) NOT NULL
--- 			)
--- 		END
--- 		*/
-
--- 		IF OBJECT_ID(N'dbo.dtproperties') IS NOT NULL
--- 		begin
--- 			insert into dbo.sysdiagrams
--- 			(
--- 				[name],
--- 				[principal_id],
--- 				[version],
--- 				[definition]
--- 			)
--- 			select	 
--- 				convert(sysname, dgnm.[uvalue]),
--- 				DATABASE_PRINCIPAL_ID(N'dbo'),			-- will change to the sid of sa
--- 				0,							-- zero for old format, dgdef.[version],
--- 				dgdef.[lvalue]
--- 			from dbo.[dtproperties] dgnm
--- 				inner join dbo.[dtproperties] dggd on dggd.[property] = 'DtgSchemaGUID' and dggd.[objectid] = dgnm.[objectid]	
--- 				inner join dbo.[dtproperties] dgdef on dgdef.[property] = 'DtgSchemaDATA' and dgdef.[objectid] = dgnm.[objectid]
-				
--- 			where dgnm.[property] = 'DtgSchemaNAME' and dggd.[uvalue] like N'_EA3E6268-D998-11CE-9454-00AA00A3F36E_' 
--- 			return 2;
--- 		end
--- 		return 1;
--- 	END
-	
--- GO
--- /****** Object:  StoredProcedure [DEV].[backupTables]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [DEV].[backupTables]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -7158,7 +6672,7 @@
 -- select * into HC_BACKUP.ServerStatus FROM HC.ServerStatus
 -- select * into HC_BACKUP.WebAppLogin FROM HC.WebAppLogin
 -- GO
--- /****** Object:  StoredProcedure [DEV].[CleanDb]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [DEV].[CleanDb]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -7172,7 +6686,7 @@
 -- delete from HC.Payment where HasherEventMapId not in (select id from HC.HasherEventMap)
 -- delete from HC.RunCounts where id not in (select RunCountId from HC.HasherEventMap)
 -- GO
--- /****** Object:  StoredProcedure [DEV].[DeleteKennel]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [DEV].[DeleteKennel]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -7229,7 +6743,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [DEV].[deleteTestUsers]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [DEV].[deleteTestUsers]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -7250,7 +6764,7 @@
 
 -- drop table #temp
 -- GO
--- /****** Object:  StoredProcedure [DEV].[DeleteUser]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [DEV].[DeleteUser]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -7275,7 +6789,75 @@
 -- delete from HC.Hasher where id = @id
 -- delete from dbo.Users where email = @email
 -- GO
--- /****** Object:  StoredProcedure [DEV].[RecompileHc2AndHc3]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [DEV].[MergeUsers]    Script Date: 8/27/2021 12:06:44 PM ******/
+-- SET ANSI_NULLS ON
+-- GO
+-- SET QUOTED_IDENTIFIER ON
+-- GO
+
+-- CREATE PROC [DEV].[MergeUsers]
+
+-- 	@oldUserId uniqueidentifier,
+-- 	@newUserId uniqueidentifier
+
+-- AS
+
+-- --declare @oldUserId uniqueidentifier = '98791C72-6B44-46A9-AE5B-8F3F040E4217'
+-- --declare @newUserId uniqueidentifier = '3A9AC483-5168-498E-810A-F242A9F0960D'
+
+-- -- first, move any events from the old user to the new user
+-- update hemOld 
+-- SET UserId = @newUserId, updatedAt = getdate()
+-- from HC.HasherEventMap hemOld
+-- where 
+-- hemOld.removed != 1
+-- AND hemOld.UserId = @oldUserId
+-- and hemOld.EventId not in (select EventId from HC.HasherEventMap hemNew where hemNew.UserId = @newUserId)
+
+-- -- now flag as removed any events from hemOld that were also in hemNew, this will
+-- -- cause these records to be removed from the phone of the user
+-- update hemOld
+-- set removed = 1,updatedAt = getdate()
+-- from HC.HasherEventMap hemOld
+-- where 
+-- hemOld.removed != 1
+-- AND hemOld.UserId = @oldUserId
+-- and hemOld.EventId in (select EventId from HC.HasherEventMap hemNew where hemNew.UserId = @newUserId)
+
+-- -- now, move any events from the old user to the new user
+-- update payOld 
+-- SET UserId = @newUserId, updatedAt = getdate()
+-- from HC.Payment payOld
+-- where 
+-- payOld.removed != 1
+-- AND payOld.UserId = @oldUserId
+-- and payOld.EventId not in (select EventId from HC.Payment payNew where payNew.UserId = @newUserId)
+
+-- -- now flag as removed any payments from hemOld that were also in hemNew, this will
+-- -- cause these records to be removed from the phone of the user
+-- update payOld
+-- set removed = 1,updatedAt = getdate()
+-- from HC.Payment payOld
+-- where 
+-- payOld.removed != 1
+-- AND payOld.UserId = @oldUserId
+-- and payOld.EventId in (select EventId from HC.Payment payNew where payNew.UserId = @newUserId)
+
+-- -- clear out hkm records that may be floating around
+-- update HC.HasherKennelMap set removed = 1,updatedAt = getdate() where UserId = @oldUserId and removed != 1
+
+-- -- and finally flag the old user to be deleted
+-- update HC.Hasher set removed = 1, updatedAt = getdate() FROM HC.Hasher where id = @oldUserId and removed != 1
+
+-- declare @email nvarchar(250)
+-- SELECT @email = h.Email FROM HC.Hasher h where id = @oldUserId
+
+-- UPDATE dbo.Users set IsActive = 0,PasswordHash = '' WHERE Email = @email
+
+
+
+-- GO
+-- /****** Object:  StoredProcedure [DEV].[RecompileHc2AndHc3]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -7294,7 +6876,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [EXT].[ImportNewKennel]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [EXT].[ImportNewKennel]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -7388,7 +6970,7 @@
 
 -- END
 -- GO
--- /****** Object:  StoredProcedure [EXT].[ProcessKennelImports]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [EXT].[ProcessKennelImports]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -7454,7 +7036,7 @@
 
 -- END
 -- GO
--- /****** Object:  StoredProcedure [HC].[nonApi_adjustHasherRunCounts]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC].[nonApi_adjustHasherRunCounts]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -7612,7 +7194,7 @@
 -- END
 
 -- GO
--- /****** Object:  StoredProcedure [HC].[nonApi_fbAppEvent]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC].[nonApi_fbAppEvent]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -7720,7 +7302,7 @@
 
 -- END
 -- GO
--- /****** Object:  StoredProcedure [HC].[nonApi_getUserInviteCode]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC].[nonApi_getUserInviteCode]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -7769,7 +7351,7 @@
 
 -- END
 -- GO
--- /****** Object:  StoredProcedure [HC].[nonApi_logError]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC].[nonApi_logError]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -7850,7 +7432,7 @@
 
 -- END
 -- GO
--- /****** Object:  StoredProcedure [HC].[nonApi_rptKennelRunStats]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC].[nonApi_rptKennelRunStats]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -7975,7 +7557,7 @@
 -- DROP TABLE #temp
 
 -- GO
--- /****** Object:  StoredProcedure [HC].[nonApi_updateEventFromExternalIntegration]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC].[nonApi_updateEventFromExternalIntegration]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -8025,9 +7607,29 @@
 -- 	DECLARE @lon DECIMAL(19,15)
 -- 	DECLARE @geo GEOGRAPHY
 
+
+-- -- look for events on the same day and choose the one that is closest
+-- -- to the start time of the event being passed to this stored proc
+-- declare @closestEvent uniqueidentifier
+
+-- IF NOT EXISTS (SELECT * FROM HC.Event evt where evt.EventFacebookId = @ExternalEventId)
+-- BEGIN
+-- 	SELECT top 1 @closestEvent = id 
+-- 	from HC.Event evt 
+-- 	where evt.KennelId = @KennelId
+-- 	and cast(evt.EventStartDatetime as date) = cast(@StartTime as date)
+-- 	and evt.EventFacebookId is null
+-- 	order by abs(datediff(minute,evt.EventStartDateTime,@StartTime)) 
+-- END
+
+
 -- --IF (SELECT COUNT(*) FROM HC.Event evt where evt.EventFacebookId = @FacebookEventId and evt.KennelId = @KennelId) > 0
--- IF (SELECT COUNT(*) FROM HC.Event evt where evt.KennelId = @KennelId AND ((coalesce(evt.EventFacebookId,'') = @ExternalEventId) 
--- OR ((evt.EventStartDatetime = cast (@StartTime as datetimeoffset)) AND (evt.EventFacebookId is null)))) > 0 -- this second line catches cases where we have an existing event in the server on the same date time as an event that has been added to FB, in this case we want to update the exsiting event with the FB data so we use EventStartDatetime and not FbEventStartDatetime
+-- IF (((SELECT COUNT(*) FROM HC.Event evt where evt.KennelId = @KennelId AND ((coalesce(evt.EventFacebookId,'') = @ExternalEventId))) > 0)
+-- OR
+-- (@closestEvent is not null) -- this second line catches cases where we have an existing event in the server on the same date as an event that has been added to FB, in this case we want to update the exsiting event with the FB data so we use EventStartDatetime and not FbEventStartDatetime
+-- )
+
+
 -- BEGIN
 -- 	DECLARE @timeChanged NVARCHAR(20)
 -- 	DECLARE @nameChanged NVARCHAR(20)
@@ -8046,7 +7648,7 @@
 -- 		,@eventId = id
 -- 		,@serverLat = FbLatitude
 -- 		,@serverLon = FbLongitude
--- 		FROM HC.Event evt WHERE evt.KennelId = @KennelId AND ((coalesce(evt.EventFacebookId,'') = @ExternalEventId) OR ((evt.EventStartDatetime = cast (@StartTime as datetimeoffset)) AND (evt.EventFacebookId is null)))
+-- 		FROM HC.Event evt WHERE evt.KennelId = @KennelId AND ((coalesce(evt.EventFacebookId,'') = @ExternalEventId) OR ((@closestEvent is not null) AND (evt.EventFacebookId is null) AND (evt.id = @closestEvent)))
 -- 	--FROM HC.Event evt WHERE 
 -- 	--  evt.EventFacebookId = @FacebookEventId 
 -- 	--  AND evt.KennelId = @KennelId
@@ -8084,12 +7686,16 @@
 
 --       ,[AbsoluteEventNumber] = coalesce(@AbsoluteEventNumber,evt.[AbsoluteEventNumber])
 
--- 	  ,[IsCountedRun] = coalesce(@IsCountedRun,evt.[IsCountedRun])
--- 	  ,[IsVisible] = coalesce(@IsVisible,evt.[IsVisible])
+-- 	  ,[IsCountedRun] = case when @closestEvent is not null then 1 else coalesce(@IsCountedRun,evt.[IsCountedRun]) end
+-- 	  ,[IsVisible] = case when @closestEvent is not null then 1 else coalesce(@IsVisible,evt.[IsVisible]) end
 -- 	  ,[updatedAt] = getdate()
+-- 	  ,[UpdateDataFromFacebook] = case when @closestEvent is not null then 1 else evt.[UpdateDataFromFacebook] end
+-- 	  ,[UseFbLatLon] = case when @closestEvent is not null then 1 else evt.[UseFbLatLon] end
+-- 	  ,[UseFbLocation] = case when @closestEvent is not null then 1 else evt.[UseFbLocation] end
+--       ,[UseFbRunDetails] = case when @closestEvent is not null then 1 else evt.[UseFbRunDetails] end
 
 -- 	  FROM HC.Event evt WHERE id = @eventId
--- 	  AND evt.UpdateDataFromFacebook != 0
+-- 	  AND ((evt.UpdateDataFromFacebook != 0) OR (@closestEvent is not null))
 -- 	  AND 
 -- 	  (
 --       ((@ForceUpdate IS NOT NULL) AND (@ForceUpdate = 1))
@@ -8225,7 +7831,7 @@
 
 -- END
 -- GO
--- /****** Object:  StoredProcedure [HC].[nonApi_updateRunNumbers]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC].[nonApi_updateRunNumbers]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -8317,7 +7923,7 @@
 
 -- END
 -- GO
--- /****** Object:  StoredProcedure [HC2].[getMyKennelRunTotals]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC2].[getMyKennelRunTotals]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -8393,7 +7999,7 @@
 
   
 -- GO
--- /****** Object:  StoredProcedure [HC2].[getPaymentReport]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC2].[getPaymentReport]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -8604,7 +8210,7 @@
 
   
 -- GO
--- /****** Object:  StoredProcedure [HC2].[getRuns]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC2].[getRuns]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -8687,7 +8293,7 @@
 
   
 -- GO
--- /****** Object:  StoredProcedure [HC3].[addEditEvent]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[addEditEvent]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -8804,7 +8410,7 @@
 -- 	if ((@endDatetime IS NOT NULL) AND (@endDatetime <= '1/1/1901')) SET @endDatetime = NULL
 -- 	if (@isCountedRun = -1) SET @isCountedRun = NULL
 -- 	if (@isVisible = -1) SET @isVisible = NULL
--- 	if (@userCanEditRunAttendence = -1) SET @userCanEditRunAttendence = NULL
+-- 	--if (@userCanEditRunAttendence = -1) SET @userCanEditRunAttendence = NULL
 -- 	if (@isPromotedEvent = -1) SET @isPromotedEvent = NULL
 -- 	if (@eventGeographicScope = -1) SET @eventGeographicScope = NULL
 -- 	if (@ThemeRunType = -1) SET @ThemeRunType = NULL
@@ -8877,7 +8483,7 @@
 -- 			EventEndDatetime = coalesce(@endDatetime,EventEndDatetime),
 -- 			IsCountedRun = coalesce(@isCountedRun,IsCountedRun,0),
 -- 			IsVisible = coalesce(@isVisible,IsVisible),
--- 			CanEditRunAttendence = coalesce(@userCanEditRunAttendence,CanEditRunAttendence),
+-- 			CanEditRunAttendence = case when @userCanEditRunAttendence = -1 then null else coalesce(@userCanEditRunAttendence,CanEditRunAttendence) end,
 -- 			IsPromotedEvent = coalesce(@isPromotedEvent,IsPromotedEvent),
 -- 			EventGeographicScope = coalesce(@eventGeographicScope,EventGeographicScope),
 -- 			ThemeRunType = coalesce(@ThemeRunType,ThemeRunType,0),
@@ -8959,6 +8565,7 @@
 -- 						,IsCountedRun
 -- 						,IsVisible
 -- 						,IsPromotedEvent
+-- 						,CanEditRunAttendence
 -- 						,EventGeographicScope
 -- 						,ThemeRunType
 -- 						,EventName
@@ -8972,6 +8579,7 @@
 -- 						,EventImage
 -- 						,EventImageOffsetX
 -- 						,EventImageOffsetY
+
 -- 						,Latitude
 -- 						,Longitude
 -- 						,FbLatitude
@@ -8992,6 +8600,7 @@
 -- 						,coalesce(@isCountedRun,0)
 -- 						,coalesce(@isVisible,1)
 -- 						,coalesce(@isPromotedEvent,0)
+-- 						,case when @userCanEditRunAttendence = -1 then null else coalesce(@userCanEditRunAttendence,0) end
 -- 						,coalesce(@eventGeographicScope,0)
 -- 						,coalesce(@ThemeRunType,0)
 -- 						,@eventName
@@ -9053,7 +8662,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[addEditReceipt]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[addEditReceipt]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -9248,7 +8857,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[addEditUser]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[addEditUser]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -9543,7 +9152,7 @@
 -- 			--		  )
 -- 			--END
 
--- 			IF ((@filthKennelId is not null) AND (@kennelId != @filthKennelId))
+-- 			IF ((@filthKennelId is not null) AND ((@kennelId IS NULL) OR (@kennelId != @filthKennelId)))
 -- 			BEGIN
 -- 			   INSERT INTO [HC].[HasherKennelMap]
 -- 			   (
@@ -9645,7 +9254,7 @@
 -- 			coalesce(h.FacebookId,'') as facebookId,
 -- 			coalesce(h.QR_code,'') as qrCode,
 -- 			coalesce(h.QR_secret_code,'') as qrSecretCode,
--- 			--coalesce(h.Preferences,0) as preferences,
+-- 			cast(coalesce(h.Preferences,14 + coalesce(@useUsaMiles,0)) as nvarchar(20)) as preferences,
 -- 			--coalesce(h.IncludeInGlobalHashDirectory,0) as includeInGlobalHashDirectory,
 -- 			coalesce(h.updatedAt,getdate()) as updatedAt,
 -- 			coalesce(h.Removed,0) as removed
@@ -9715,7 +9324,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[admin_dataIntegrityCheck]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[admin_dataIntegrityCheck]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -9736,7 +9345,7 @@
 -- order by k.KennelShortName, e.EventStartDatetime, PaidDate desc
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[approveLogin]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[approveLogin]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -9916,7 +9525,7 @@
 
 -- END
 -- GO
--- /****** Object:  StoredProcedure [HC3].[authorizeDevice]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[authorizeDevice]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -10010,7 +9619,7 @@
 -- END
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[extApi_getKennelEmailList]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[extApi_getKennelEmailList]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -10036,7 +9645,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[extApi_getKennelMembers]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[extApi_getKennelMembers]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -10081,7 +9690,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[extApi_getKennelPayments]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[extApi_getKennelPayments]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -10148,7 +9757,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[getMyKennelRunTotals]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[getMyKennelRunTotals]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -10255,7 +9864,7 @@
 
   
 -- GO
--- /****** Object:  StoredProcedure [HC3].[getPaymentReport]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[getPaymentReport]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -10466,7 +10075,7 @@
 
   
 -- GO
--- /****** Object:  StoredProcedure [HC3].[getResetCode]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[getResetCode]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -10522,7 +10131,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[getRuns]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[getRuns]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -10607,7 +10216,7 @@
 
   
 -- GO
--- /****** Object:  StoredProcedure [HC3].[joinEvent]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[joinEvent]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -10632,7 +10241,8 @@
 --  @hasherEventMapUpdatedAfter nvarchar(50),
 --  @hasherKennelMapUpdatedAfter nvarchar(50),
 --  @paymentsUpdatedAfter nvarchar(50),
---  @kennelCreditsUpdatedAfter nvarchar(50) = 'ignore'
+--  @kennelCreditsUpdatedAfter nvarchar(50) = 'ignore',
+--  @userQrCode nvarchar(50) = 'ignore'
 
 -- AS
 
@@ -10691,31 +10301,100 @@
 -- 		RETURN
 -- 	END
 
--- DECLARE @kennelId uniqueidentifier
--- DECLARE @isHareNumeric smallint
--- DECLARE @rsvpStateNumeric smallint
--- DECLARE @attendenceStateNumeric smallint
--- DECLARE @virginVisitorTypeNumeric smallint
--- DECLARE @notificationStateNumeric smallint
--- DECLARE @emailAlertStateNumeric smallint
--- DECLARE @serverMessage nvarchar(250)
--- DECLARE @hasherName nvarchar(120)
--- DECLARE @isMember int
+-- DECLARE  @kennelId uniqueidentifier
+-- 		,@isHareNumeric smallint
+-- 		,@rsvpStateNumeric smallint
+-- 		,@attendenceStateNumeric smallint
+-- 		,@virginVisitorTypeNumeric smallint
+-- 		,@notificationStateNumeric smallint
+-- 		,@emailAlertStateNumeric smallint
+-- 		,@serverMessage nvarchar(250)
+-- 		,@hasherName nvarchar(120)
+-- 		,@isMember int
+-- 		,@eventName nvarchar(250)
+-- 		,@previousAttendence int
+-- 		,@alreadyText nvarchar(50)
+-- 		,@memberPrice smallmoney
+-- 		,@nonMemberPrice smallmoney
+-- 		,@eventPrice smallmoney
 
--- DECLARE @previousAttendence int, 
--- 		@alreadyText nvarchar(50),
--- 		@memberPrice smallmoney,
--- 		@nonMemberPrice smallmoney,
--- 		@eventPrice smallmoney
-
--- SET @isHareNumeric = coalesce(CAST(@isHare as smallint),-1)
--- SET @rsvpStateNumeric = coalesce(CAST(@rsvpState as smallint),-1)
--- SET @attendenceStateNumeric = coalesce(CAST(@attendenceState as smallint),-1)
--- SET @virginVisitorTypeNumeric = coalesce(CAST(@virginVisitorType as smallint),-1)
--- SET @notificationStateNumeric = coalesce(CAST(@notificationState as smallint),-1)
--- SET @emailAlertStateNumeric = coalesce(CAST(@emailAlertState as smallint),-1)
+-- SET @isHareNumeric = CAST(coalesce(@isHare,'-1') as smallint)
+-- SET @rsvpStateNumeric = CAST(coalesce(@rsvpState,'-1') as smallint)
+-- SET @attendenceStateNumeric = CAST(coalesce(@attendenceState,'-1') as smallint)
+-- SET @virginVisitorTypeNumeric = CAST(coalesce(@virginVisitorType,'-1') as smallint)
+-- SET @notificationStateNumeric = CAST(coalesce(@notificationState,'-1') as smallint)
+-- SET @emailAlertStateNumeric = CAST(coalesce(@emailAlertState,'-1') as smallint)
 
 -- if (@hasherEventMapId = '00000000-0000-0000-0000-000000000000') SET @hasherEventMapId = null
+
+-- if ((@hasherId = '00000000-0000-0000-0000-000000000000') AND (@userQrCode != 'ignore'))
+-- BEGIN
+-- 	SELECT @hasherId = h.id from HC.Hasher h where h.QR_code = @userQrCode
+-- 	if (@hasherId is null)
+-- 	BEGIN
+
+-- 		SET @errorId = newid()
+
+-- 		INSERT HC.ErrorLog (id, HcVersion, ErrorName,ErrorDescription,ProcName,userId, string_1) VALUES (@errorId,'3300','User QR code not found','The User QR code scanned does not exist: The user has probably been deleted or the code was changed. Stored proc = ' + OBJECT_NAME(@@PROCID),OBJECT_NAME(@@PROCID),@userId,@accessToken)
+
+-- 		SELECT 
+-- 		@errorId as errorId,
+-- 		cast (3300 as int) as errorType 
+-- 		,'User QR code not found' as errorTitle
+-- 		,'The User QR code was not found in our database' as errorUserMessage
+-- 		,'This user may habe been deleted or their code was changed.' as debugMessage
+-- 		,OBJECT_NAME(@@PROCID) as errorProc
+-- 		RETURN
+
+-- 	END
+-- END
+
+
+-- --if ((@rsvpStateNumeric < 1) OR (@rsvpStateNumeric > 3))
+-- --BEGIN
+-- --		SET @errorId = newid()
+
+-- --		DECLARE @paramText nvarchar(4000) = ''
+
+-- --		SELECT @paramText = @paramText + 'UserId:' + case when @userId is null then '<null>' else cast(@userId as nvarchar(100)) end + ','
+-- --		SELECT @paramText = @paramText + 'AccessToken:' + case when @accessToken is null then '<null>' else cast(@accessToken as nvarchar(500)) end + ','
+-- --		SELECT @paramText = @paramText + 'EventId:' + case when @eventId is null then '<null>' else cast(@eventId as nvarchar(100)) end + ','
+-- --		SELECT @paramText = @paramText + 'HasherId:' + case when @hasherId is null then '<null>' else cast(@hasherId as nvarchar(100)) end + ','
+-- --		SELECT @paramText = @paramText + 'HasherEventMapId:' + case when @hasherEventMapId is null then '<null>' else cast(@hasherEventMapId as nvarchar(100)) end + ','
+-- --		SELECT @paramText = @paramText + 'IsHare:' + case when @isHare is null then '<null>' else cast(@isHare as nvarchar(100)) end + ','
+-- --		SELECT @paramText = @paramText + 'RsvpState:' + case when @rsvpState is null then '<null>' else cast(@rsvpState as nvarchar(100)) end + ','
+-- --		SELECT @paramText = @paramText + 'AttendenceState:' + case when @attendenceState is null then '<null>' else cast(@attendenceState as nvarchar(100)) end + ','
+-- --		SELECT @paramText = @paramText + 'VirginVisitorType:' + case when @virginVisitorType is null then '<null>' else cast(@virginVisitorType as nvarchar(100)) end + ','
+-- --		SELECT @paramText = @paramText + 'NotificationState:' + case when @notificationState is null then '<null>' else cast(@notificationState as nvarchar(100)) end + ','
+-- --		SELECT @paramText = @paramText + 'EmailAlertState:' + case when @emailAlertState is null then '<null>' else cast(@emailAlertState as nvarchar(100)) end + ','
+-- --		SELECT @paramText = @paramText + 'HasherEventMapUpdatedAfter:' + case when @hasherEventMapUpdatedAfter is null then '<null>' else cast(@hasherEventMapUpdatedAfter as nvarchar(100)) end + ','
+-- --		SELECT @paramText = @paramText + 'HasherKennelMapUpdatedAfter:' + case when @hasherKennelMapUpdatedAfter is null then '<null>' else cast(@hasherKennelMapUpdatedAfter as nvarchar(100)) end + ','
+-- --		SELECT @paramText = @paramText + 'PaymentsUpdatedAfter:' + case when @paymentsUpdatedAfter is null then '<null>' else cast(@paymentsUpdatedAfter as nvarchar(100)) end + ','
+-- --		SELECT @paramText = @paramText + 'KennelCreditsUpdatedAfter:' + case when @kennelCreditsUpdatedAfter is null then '<null>' else cast(@kennelCreditsUpdatedAfter as nvarchar(100)) end + ','
+-- --		SELECT @paramText = @paramText + 'UserQrCode:' + case when @userQrCode is null then '<null>' else cast(@userQrCode as nvarchar(100)) end + ','
+
+-- --		INSERT HC.ErrorLog 
+-- --		(
+-- --			id, 
+-- --			HcVersion, 
+-- --			ErrorName,
+-- --			ErrorDescription,
+-- --			ProcName,
+-- --			userId, 
+-- --			string_1
+-- --		) 
+-- --		VALUES 
+-- --		(
+-- --			@errorId,
+-- --			'5100',
+-- --			'Zero inserted in HEM',
+-- --			'Zero value for RSPV State inserted in HEM. Stored proc = ' + OBJECT_NAME(@@PROCID),OBJECT_NAME(@@PROCID),
+-- --			@userId,
+-- --			@paramText
+-- --		)
+
+-- --END
+
 
 -- DECLARE @specialCase1Count int
 
@@ -10806,7 +10485,8 @@
 -- 				@hasherName = coalesce(@hasherName,h.displayName + ' is '),
 -- 				@isMember = case when coalesce(hkm.MembershipExpirationDate,'1/1/2000') > getdate() then 1 else 0 end,
 -- 				@memberPrice = coalesce(e.eventPriceForMembers,k.defaultEventPriceForMembers,0),
--- 				@nonMemberPrice = coalesce(e.eventPriceForNonMembers,k.defaultEventPriceForNonMembers,0)
+-- 				@nonMemberPrice = coalesce(e.eventPriceForNonMembers,k.defaultEventPriceForNonMembers,0),
+-- 				@eventName = e.EventName
 -- 			from HC.Event e
 -- 			INNER JOIN HC.Kennel k on k.id = e.KennelId
 -- 			LEFT OUTER JOIN HC.HasherEventMap hem on hem.EventId = e.id AND hem.UserId = @hasherId
@@ -10825,7 +10505,31 @@
 -- 				   ,[TotalHaringAllKennels]
 -- 				   ,[updatedAt]) VALUES (0,0,0,0,GETDATE())
 		
--- 				INSERT INTO HC.HasherEventMap(id,UserId,EventId,RunCountId,updatedAt) VALUES (@hasherEventMapId,@hasherId,@eventId,@@IDENTITY,getdate()) 
+-- 				INSERT INTO HC.HasherEventMap
+-- 				(
+-- 					id,
+-- 					UserId,
+-- 					EventId,
+-- 					RunCountId,
+-- 					Rsvp,
+-- 					RsvpState,
+-- 					EventNotificationPreference,
+-- 					EventEmailAlertPreference,
+-- 					updatedAt
+-- 				) 
+-- 				VALUES 
+-- 				(
+-- 					@hasherEventMapId,
+-- 					@hasherId,
+-- 					@eventId,
+-- 					@@IDENTITY,
+-- 					getdate(),
+-- 					--case when coalesce(@rsvpStateNumeric,2) != 0 then coalesce(@rsvpStateNumeric,2) else 2 end,	-- put the RSVP state in... if for some reason we don't have it, leave it as a 'maybe'... this is an error and shouldn't happen
+-- 					case when @rsvpStateNumeric != -1 then @rsvpStateNumeric else 0 end,	-- put the RSVP state in... if for some reason we don't have it, leave it as a 'maybe'... this is an error and shouldn't happen
+-- 					case when @notificationStateNumeric != -1 then @notificationStateNumeric else null end,
+-- 					case when @emailAlertStateNumeric != -1 then @emailAlertStateNumeric else null end,
+-- 					getdate()
+-- 				) 
 -- 			END
 -- 		END
 -- 		ELSE
@@ -10834,7 +10538,8 @@
 -- 			@kennelId = e.kennelId,
 -- 			@isMember = case when coalesce(hkm.MembershipExpirationDate,'1/1/2000') > getdate() then 1 else 0 end, -- membership determination required for payment popup 
 -- 			@memberPrice = coalesce(e.eventPriceForMembers,k.defaultEventPriceForMembers,0),
--- 			@nonMemberPrice = coalesce(e.eventPriceForNonMembers,k.defaultEventPriceForNonMembers,0)
+-- 			@nonMemberPrice = coalesce(e.eventPriceForNonMembers,k.defaultEventPriceForNonMembers,0),
+-- 			@eventName = e.EventName
 -- 			FROM HC.Event e 
 -- 			INNER JOIN HC.Kennel k on k.id = e.KennelId
 -- 			LEFT OUTER JOIN HC.HasherKennelMap hkm on hkm.kennelId = e.kennelId AND hkm.userId = @hasherId
@@ -10851,7 +10556,7 @@
 -- 		UPDATE HC.HasherEventMap SET 
 -- 			IsHare = case when @isHareNumeric <> -1 then @isHareNumeric else IsHare end,
 -- 			RsvpState = case when @rsvpStateNumeric <> -1 then @rsvpStateNumeric else RsvpState end,
--- 			Rsvp = case when @rsvpState <> -1 then getdate() else Rsvp end,
+-- 			Rsvp = case when @rsvpStateNumeric <> -1 then getdate() else Rsvp end,
 -- 			AttendenceState = case when @attendenceStateNumeric <> -1 then @attendenceStateNumeric else AttendenceState end,
 -- 			VirginVisitorType = case when @virginVisitorTypeNumeric <> -1 then @virginVisitorTypeNumeric else VirginVisitorType end,
 -- 			EventNotificationPreference = case when @notificationStateNumeric = 0 THEN NULL WHEN  @notificationStateNumeric <> -1 THEN @notificationStateNumeric ELSE EventNotificationPreference end,
@@ -10859,7 +10564,7 @@
 -- 			updatedAt = getdate()
 -- 			WHERE id = @hasherEventMapId
 
--- 		SET @serverMessage = @hasherName + coalesce(@alreadyText,'') + 'recorded as ' + case when @attendenceStateNumeric = 20 then 'at the Hash'  when @attendenceStateNumeric = 30 then 'On Inn' end
+-- 		SET @serverMessage = @hasherName + coalesce(@alreadyText,'') + 'recorded as ' + case when @attendenceStateNumeric = 20 then 'on the Hash trail at ' + coalesce(@eventName,'the Hash') when @attendenceStateNumeric = 30 then 'On Inn' end
 
 -- 		DECLARE @payCount int
 
@@ -10954,6 +10659,38 @@
 -- 		END
 -- 	END
 
+-- -- finally, check to see if a Hasher is registered for more than one run
+-- -- happening in a two hour period (if the RsvpState = 3, which means I will attend
+
+-- IF (
+-- 		(@rsvpStateNumeric = 3)
+--   AND	(@hasherEventMapId is not null)
+--   AND	(@hasherEventMapId != '00000000-0000-0000-0000-000000000000')
+--   AND	(@kennelId is not null)
+-- )
+-- BEGIN
+-- 	update HC.HasherEventMap set RsvpState = 1,
+-- 		updatedAt = getdate() where id in
+-- 	(
+-- 		select 
+-- 		hem2.id
+-- 		from HC.HasherEventMap hem1
+-- 		inner join HC.Event evt1 on hem1.EventId = evt1.id,
+-- 		HC.HasherEventMap hem2
+-- 		inner join HC.Event evt2 on hem2.EventId = evt2.id
+-- 		where hem1.UserId = @hasherId and evt1.KennelId = @kennelId 
+-- 		and hem1.id = @hasherEventMapId 
+-- 		and evt2.KennelId = @kennelId
+-- 		and hem2.UserId = @hasherId
+-- 		and evt1.id != evt2.id
+-- 		-- filter out events so we only consider those that are within 2 hours
+-- 		and abs(datediff(hour,evt1.EventStartDatetime,evt2.EventStartDatetime)) <= 2
+-- 		-- only look for HEM records where the RsvpState is 3, or I'm coming
+-- 		and hem2.RsvpState = 3
+-- 	)
+
+-- END
+
 
 
 -- -- send back adHoc data to support cases when the user was scanned in at a Hash
@@ -11025,7 +10762,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[joinEventAsVisitor]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[joinEventAsVisitor]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -11104,8 +10841,8 @@
 -- 	END
 
 -- DECLARE @isGenericUserPresent smallint  
--- DECLARE @kennelId uniqueidentifier   
--- DECLARE @hasherEventMapId uniqueidentifier
+-- 		,@kennelId uniqueidentifier   
+-- 		,@hasherEventMapId uniqueidentifier
 
 -- -- only two types of Virgin/Visitors at the moment... check to make sure it's one of these
 -- IF ((@VirginVisitorType = 1) OR (@VirginVisitorType = 2))  
@@ -11132,7 +10869,8 @@
 -- 				,[HashName]            
 -- 				,[Description]       
 -- 				,[HomeLatitude]       
--- 				,[HomeLongitude])   
+-- 				,[HomeLongitude]
+-- 				,[Email])   
 -- 				SELECT     
 -- 					k.id    
 -- 					,'Placeholder user for visitors / virgins for ' + k.KennelName 
@@ -11141,59 +10879,66 @@
 -- 					,'Placeholder user' 
 -- 					,'Placeholder user for visitors / virgins for ' + k.KennelName    
 -- 					,coalesce(k.Latitude,0)
--- 					,coalesce(k.Longitude,0)   
+-- 					,coalesce(k.Longitude,0)
+-- 					,'noreply@harriercentral.com'
 -- 				FROM HC.Event e 
 -- 				INNER JOIN HC.Kennel k 
 -- 				ON e.KennelId = k.id   
 -- 				WHERE e.id = @eventId AND e.deleted = 0 and e.IsVisible <> 0   
 		
--- 		END    
+-- 		END 
 
--- 		SET @hasherEventMapId = NEWID()
+-- 		SELECT @hasherEventMapId = hem.id from HC.HasherEventMap hem where hem.EventId = @eventId AND hem.DisplayName is not null and hem.DisplayName = @displayName
+		
+-- 		IF (@hasherEventMapId is null)
+-- 		BEGIN
 
--- 		-- Now, insert a record for the visitor (virgin) into HC.HasherEventMap and return 'Success' as the result
--- 		INSERT INTO HC.RunCounts ([TotalPackRunsThisKennel]
--- 			   ,[TotalHaringThisKennel]
--- 			   ,[TotalPackRunsAllKennels]
--- 			   ,[TotalHaringAllKennels]
--- 			   ,[updatedAt]) VALUES (0,0,0,0,GETDATE())
+-- 			SET @hasherEventMapId = NEWID()
 
--- 		INSERT INTO [HC].[HasherEventMap]
--- 				   ([id]
--- 				   ,[EventId]
--- 				   ,[RunCountId]
--- 				   ,[UserId]
--- 				   ,[UserStartEvent]
--- 				   ,[EventCost]
--- 				   ,[Rsvp]
--- 				   ,[RsvpState]
--- 				   ,[AttendenceState]
--- 				   ,[VirginVisitorType] -- 0 = HasherInSystem, 1 = Virgin, 2 = Visitor
--- 				   ,[DisplayName]
--- 				   ,[Email]
--- 				   ,[PhoneNumber]
--- 				   ,[updatedAt])
+-- 			-- Now, insert a record for the visitor (virgin) into HC.HasherEventMap and return 'Success' as the result
+-- 			INSERT INTO HC.RunCounts ([TotalPackRunsThisKennel]
+-- 				   ,[TotalHaringThisKennel]
+-- 				   ,[TotalPackRunsAllKennels]
+-- 				   ,[TotalHaringAllKennels]
+-- 				   ,[updatedAt]) VALUES (0,0,0,0,GETDATE())
 
--- 				SELECT @hasherEventMapId
--- 					,@eventId
--- 					,@@IDENTITY
--- 					,e.KennelId  -- Virgins and Visitors don't have their own UserId, so we put in the KennelId instead as a flag
--- 					,getdate()
--- 					,e.EventPriceForNonMembers
--- 					,getdate()
--- 					,3 -- RSVP state as 'coming'
--- 					,@attendenceState
--- 					,@virginVisitorType
--- 					,@displayName
--- 					,@email
--- 					,@phoneNumber
--- 					,getdate()
--- 					from HC.Event e where e.id = @eventId and e.deleted = 0 and e.IsVisible <> 0
+-- 			INSERT INTO [HC].[HasherEventMap]
+-- 					   ([id]
+-- 					   ,[EventId]
+-- 					   ,[RunCountId]
+-- 					   ,[UserId]
+-- 					   ,[UserStartEvent]
+-- 					   ,[EventCost]
+-- 					   ,[Rsvp]
+-- 					   ,[RsvpState]
+-- 					   ,[AttendenceState]
+-- 					   ,[VirginVisitorType] -- 0 = HasherInSystem, 1 = Virgin, 2 = Visitor
+-- 					   ,[DisplayName]
+-- 					   ,[Email]
+-- 					   ,[PhoneNumber]
+-- 					   ,[updatedAt])
 
+-- 					SELECT @hasherEventMapId
+-- 						,@eventId
+-- 						,@@IDENTITY
+-- 						,e.KennelId  -- Virgins and Visitors don't have their own UserId, so we put in the KennelId instead as a flag
+-- 						,getdate()
+-- 						,e.EventPriceForNonMembers
+-- 						,getdate()
+-- 						,3 -- RSVP state as 'coming'
+-- 						,@attendenceState
+-- 						,@virginVisitorType
+-- 						,@displayName
+-- 						,@email
+-- 						,@phoneNumber
+-- 						,getdate()
+-- 						from HC.Event e where e.id = @eventId and e.deleted = 0 and e.IsVisible <> 0
 
--- -- send back adHoc data to support cases when the user was scanned in at a Hash
+-- 			END
 
--- SELECT
+-- 	-- send back adHoc data to support cases when the user was scanned in at a Hash
+
+-- 	SELECT
 -- 		1 as adHocDataId,
 -- 		@hasherEventMapId as hasherEventMapId
 
@@ -11220,7 +10965,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[joinKennel]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[joinKennel]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -11494,7 +11239,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[logEmailsSent]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[logEmailsSent]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -11518,7 +11263,7 @@
 --      VALUES
 --            (@templateId,@eventId,GETDATE(),@emailsSent,@response)
 -- GO
--- /****** Object:  StoredProcedure [HC3].[nonApi_fixRunCountsInHkm]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[nonApi_fixRunCountsInHkm]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -11552,7 +11297,7 @@
 
 -- drop table #temp
 -- GO
--- /****** Object:  StoredProcedure [HC3].[nonApi_testRunCounts]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[nonApi_testRunCounts]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -11578,7 +11323,7 @@
 
 -- drop table #temp
 -- GO
--- /****** Object:  StoredProcedure [HC3].[nonApi_updateHasherCreditBalance]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[nonApi_updateHasherCreditBalance]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -11638,7 +11383,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[processFacebookLogin]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[processFacebookLogin]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -11917,7 +11662,7 @@
 -- END
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[processPayment]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[processPayment]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -12092,7 +11837,30 @@
 -- 				   ,[TotalHaringAllKennels]
 -- 				   ,[updatedAt]) VALUES (0,0,0,0,GETDATE())
 
--- 					INSERT HC.HasherEventMap (id,UserId,EventId,RunCountId,RsvpState,Rsvp,UserStartEvent,AttendenceState,updatedAt) VALUES (@hasherEventMapId,@userIdWhoPaid,@eventId,@@IDENTITY,3, getdate(),getdate(),coalesce(@minimumAttendenceValue,0),getdate())
+-- 					INSERT HC.HasherEventMap 
+-- 					(
+-- 						id,
+-- 						UserId,
+-- 						EventId,
+-- 						RunCountId,
+-- 						RsvpState,
+-- 						Rsvp,
+-- 						UserStartEvent,
+-- 						AttendenceState,
+-- 						updatedAt
+-- 					) 
+-- 					VALUES 
+-- 					(
+-- 						@hasherEventMapId,
+-- 						@userIdWhoPaid,
+-- 						@eventId,
+-- 						@@IDENTITY,
+-- 						3,
+-- 						getdate(),
+-- 						getdate(),
+-- 						coalesce(@minimumAttendenceValue,0),
+-- 						getdate()
+-- 					)
 -- 				END
 -- 			END
 
@@ -12286,7 +12054,7 @@
 
 -- END
 -- GO
--- /****** Object:  StoredProcedure [HC3].[processThirdPartyLogin]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[processThirdPartyLogin]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -12560,7 +12328,7 @@
 -- END
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[rptApi_emailRunDetails]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[rptApi_emailRunDetails]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -12622,7 +12390,8 @@
 -- 		h.DisplayName as sender,
 -- 		h.Email as senderEmail,
 
--- 		k.KennelShortName + ' run information ' + case when datalength(coalesce(evt.EventName,'')) = 0 then '' else 'for ' + evt.EventName end as SubjectLine,
+-- 		--k.KennelShortName + ' run information ' + case when datalength(coalesce(evt.EventName,'')) = 0 then '' else 'for ' + evt.EventName end as SubjectLine,
+-- 		'Run information for ' + k.KennelShortName + case when ((evt.EventNumber is not null) AND (evt.EventNumber > 0)) then ' #' + cast(evt.EventNumber as nvarchar(25)) else '' end + case when datalength(coalesce(evt.EventName,'')) = 0 then '' else ' - ' + evt.EventName end as SubjectLine,
 
 	
 -- 	'Hash Kennel: ' + k.kennelName +  CHAR(13)+CHAR(10) + 
@@ -12687,7 +12456,7 @@
 
 	
 -- GO
--- /****** Object:  StoredProcedure [HC3].[rptApi_sendScheduledEmails]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[rptApi_sendScheduledEmails]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -12840,7 +12609,7 @@
 
 	
 -- GO
--- /****** Object:  StoredProcedure [HC3].[rptKennelRunStats]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[rptKennelRunStats]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -12903,7 +12672,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[syncEventAdminData]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[syncEventAdminData]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -13235,7 +13004,7 @@
 -- END
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[syncKennelAdminData]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[syncKennelAdminData]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -13349,6 +13118,7 @@
 -- 			,[AllowSelfPayment] as allowSelfPayment
 -- 			,[MembershipDurationInMonths] as membershipDurationInMonths
 -- 			,[DistancePreference] as distancePreference
+-- 			,[CanEditRunAttendence] as canEditRunAttendence
 
 -- 			-- Doubles
 -- 			,coalesce(k.[Latitude],c.[Latitude]) as kennelLatitude
@@ -13455,7 +13225,7 @@
 -- END
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[syncUserData]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[syncUserData]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -13656,6 +13426,7 @@
 -- 			,[MembershipDurationInMonths] as membershipDurationInMonths
 -- 			,[DistancePreference] as distancePreference
 -- 			,[KennelPinColor] as kennelPinColor
+-- 			,[CanEditRunAttendence] as canEditRunAttendence
 
 -- 			-- Doubles
 -- 			,coalesce(k.[Latitude],c.[Latitude]) as kennelLatitude
@@ -13935,7 +13706,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [HC3].[utilApi_mergeUsers]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3].[utilApi_mergeUsers]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -14103,7 +13874,7 @@
 
 
 -- GO
--- /****** Object:  StoredProcedure [HC3W].[importKennel]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3W].[importKennel]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -14418,7 +14189,7 @@
 -- END
   
 -- GO
--- /****** Object:  StoredProcedure [HC3W].[not_used_getEvents]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3W].[not_used_getEvents]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -14482,7 +14253,7 @@
 -- END
   
 -- GO
--- /****** Object:  StoredProcedure [HC3W].[not_used_getUsersForAdmin]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [HC3W].[not_used_getUsersForAdmin]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -14526,7 +14297,7 @@
 -- END
   
 -- GO
--- /****** Object:  StoredProcedure [WORDZ].[sp_ExportWordzToJson]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  StoredProcedure [WORDZ].[sp_ExportWordzToJson]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -14551,7 +14322,7 @@
 
 -- drop table #temp
 -- GO
--- /****** Object:  Trigger [dbo].[trgAddRoles]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Trigger [dbo].[trgAddRoles]    Script Date: 8/27/2021 12:06:44 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -14589,7 +14360,7 @@
 -- GO
 -- ALTER TABLE [dbo].[Users] ENABLE TRIGGER [trgAddRoles]
 -- GO
--- /****** Object:  Trigger [dbo].[trgLinkToHcHasher]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Trigger [dbo].[trgLinkToHcHasher]    Script Date: 8/27/2021 12:06:45 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -14866,7 +14637,7 @@
 -- GO
 -- ALTER TABLE [dbo].[Users] ENABLE TRIGGER [trgLinkToHcHasher]
 -- GO
--- /****** Object:  Trigger [Hashers].[TR_HasherEventMap_InsertUpdateDelete]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Trigger [Hashers].[TR_HasherEventMap_InsertUpdateDelete]    Script Date: 8/27/2021 12:06:45 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -14875,7 +14646,7 @@
 -- GO
 -- ALTER TABLE [Hashers].[HasherEventMap] ENABLE TRIGGER [TR_HasherEventMap_InsertUpdateDelete]
 -- GO
--- /****** Object:  Trigger [Hashers].[TR_HasherFriendMap_InsertUpdateDelete]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Trigger [Hashers].[TR_HasherFriendMap_InsertUpdateDelete]    Script Date: 8/27/2021 12:06:45 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -14884,7 +14655,7 @@
 -- GO
 -- ALTER TABLE [Hashers].[HasherFriendMap] ENABLE TRIGGER [TR_HasherFriendMap_InsertUpdateDelete]
 -- GO
--- /****** Object:  Trigger [HC].[TR_BusinessUnits_InsertUpdateDelete]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Trigger [HC].[TR_BusinessUnits_InsertUpdateDelete]    Script Date: 8/27/2021 12:06:45 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -14893,7 +14664,7 @@
 -- GO
 -- ALTER TABLE [HC].[BusinessUnits] ENABLE TRIGGER [TR_BusinessUnits_InsertUpdateDelete]
 -- GO
--- /****** Object:  Trigger [HC].[trgUpdateGeolocation]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Trigger [HC].[trgUpdateGeolocation]    Script Date: 8/27/2021 12:06:45 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -14938,7 +14709,7 @@
 -- GO
 -- ALTER TABLE [HC].[City] ENABLE TRIGGER [trgUpdateGeolocation]
 -- GO
--- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForCity]    Script Date: 8/9/2021 8:40:25 PM ******/
+-- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForCity]    Script Date: 8/27/2021 12:06:45 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -14962,7 +14733,7 @@
 -- GO
 -- ALTER TABLE [HC].[City] ENABLE TRIGGER [trgUpdateModifiedOnDateForCity]
 -- GO
--- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForCountry]    Script Date: 8/9/2021 8:40:26 PM ******/
+-- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForCountry]    Script Date: 8/27/2021 12:06:45 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -14986,7 +14757,7 @@
 -- GO
 -- ALTER TABLE [HC].[Country] ENABLE TRIGGER [trgUpdateModifiedOnDateForCountry]
 -- GO
--- /****** Object:  Trigger [HC].[trgRecalculateRunCounts]    Script Date: 8/9/2021 8:40:26 PM ******/
+-- /****** Object:  Trigger [HC].[trgRecalculateRunCounts]    Script Date: 8/27/2021 12:06:45 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15015,12 +14786,11 @@
 -- GO
 -- ALTER TABLE [HC].[Event] ENABLE TRIGGER [trgRecalculateRunCounts]
 -- GO
--- /****** Object:  Trigger [HC].[trgUpdateHemDates]    Script Date: 8/9/2021 8:40:26 PM ******/
+-- /****** Object:  Trigger [HC].[trgUpdateHemDates]    Script Date: 8/27/2021 12:06:45 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
 -- GO
-
 -- CREATE TRIGGER [HC].[trgUpdateHemDates]
 --    ON  [HC].[Event]
 --    AFTER UPDATE
@@ -15044,16 +14814,24 @@
 -- 	BEGIN
 -- 		-- if any of the above are updated, we need to update the HEM tables on the mobile devices
 -- 		-- to remain in sync.
--- 		UPDATE HC.HasherEventMap set updatedAt = getdate() where EventId in (SELECT id from INSERTED)
+
+-- 		-- NOTE:The below line compiles and executes but is incorrect because the 
+-- 		-- INSERTED table should not contain a "phoneNumber" column. I think this is
+-- 		-- a bug in MSSQL
+
+-- 		-- UPDATE HC.HasherEventMap set updatedAt = getdate() where EventId in (SELECT phoneNumber from INSERTED)
+		
+-- 		UPDATE h 
+-- 		SET h.updatedAt = getdate() 
+-- 		FROM HC.HasherEventMap h 
+-- 		INNER JOIN INSERTED ins ON h.EventId = ins.id
 -- 	END
 
 -- END
-
-
 -- GO
 -- ALTER TABLE [HC].[Event] ENABLE TRIGGER [trgUpdateHemDates]
 -- GO
--- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForEvent]    Script Date: 8/9/2021 8:40:26 PM ******/
+-- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForEvent]    Script Date: 8/27/2021 12:06:45 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15076,7 +14854,7 @@
 -- GO
 -- ALTER TABLE [HC].[Event] ENABLE TRIGGER [trgUpdateModifiedOnDateForEvent]
 -- GO
--- /****** Object:  Trigger [HC].[trgCalculateHasherGeolocation]    Script Date: 8/9/2021 8:40:26 PM ******/
+-- /****** Object:  Trigger [HC].[trgCalculateHasherGeolocation]    Script Date: 8/27/2021 12:06:45 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15100,7 +14878,7 @@
 -- GO
 -- ALTER TABLE [HC].[Hasher] ENABLE TRIGGER [trgCalculateHasherGeolocation]
 -- GO
--- /****** Object:  Trigger [HC].[trgGenerateQrCode]    Script Date: 8/9/2021 8:40:26 PM ******/
+-- /****** Object:  Trigger [HC].[trgGenerateQrCode]    Script Date: 8/27/2021 12:06:46 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15255,7 +15033,7 @@
 -- GO
 -- ALTER TABLE [HC].[Hasher] ENABLE TRIGGER [trgGenerateQrCode]
 -- GO
--- /****** Object:  Trigger [HC].[trgInsertHkmRecordForHomeHash]    Script Date: 8/9/2021 8:40:26 PM ******/
+-- /****** Object:  Trigger [HC].[trgInsertHkmRecordForHomeHash]    Script Date: 8/27/2021 12:06:46 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15328,7 +15106,7 @@
 -- GO
 -- ALTER TABLE [HC].[Hasher] ENABLE TRIGGER [trgInsertHkmRecordForHomeHash]
 -- GO
--- /****** Object:  Trigger [HC].[trgLinkToDboUsers]    Script Date: 8/9/2021 8:40:27 PM ******/
+-- /****** Object:  Trigger [HC].[trgLinkToDboUsers]    Script Date: 8/27/2021 12:06:46 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15368,7 +15146,7 @@
 -- GO
 -- ALTER TABLE [HC].[Hasher] ENABLE TRIGGER [trgLinkToDboUsers]
 -- GO
--- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForNames]    Script Date: 8/9/2021 8:40:27 PM ******/
+-- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForNames]    Script Date: 8/27/2021 12:06:46 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15392,7 +15170,7 @@
 -- GO
 -- ALTER TABLE [HC].[Hasher] ENABLE TRIGGER [trgUpdateModifiedOnDateForNames]
 -- GO
--- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForHasherEventMap]    Script Date: 8/9/2021 8:40:27 PM ******/
+-- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForHasherEventMap]    Script Date: 8/27/2021 12:06:46 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15416,7 +15194,7 @@
 -- GO
 -- ALTER TABLE [HC].[HasherEventMap] ENABLE TRIGGER [trgUpdateModifiedOnDateForHasherEventMap]
 -- GO
--- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForHasherKennelMap]    Script Date: 8/9/2021 8:40:27 PM ******/
+-- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForHasherKennelMap]    Script Date: 8/27/2021 12:06:46 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15440,7 +15218,7 @@
 -- GO
 -- ALTER TABLE [HC].[HasherKennelMap] ENABLE TRIGGER [trgUpdateModifiedOnDateForHasherKennelMap]
 -- GO
--- /****** Object:  Trigger [HC].[GenerateExtApiKey]    Script Date: 8/9/2021 8:40:27 PM ******/
+-- /****** Object:  Trigger [HC].[GenerateExtApiKey]    Script Date: 8/27/2021 12:06:47 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15479,7 +15257,7 @@
 -- GO
 -- ALTER TABLE [HC].[Kennel] ENABLE TRIGGER [GenerateExtApiKey]
 -- GO
--- /****** Object:  Trigger [HC].[trgConfigureFacebookToken]    Script Date: 8/9/2021 8:40:27 PM ******/
+-- /****** Object:  Trigger [HC].[trgConfigureFacebookToken]    Script Date: 8/27/2021 12:06:47 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15555,7 +15333,7 @@
 -- GO
 -- ALTER TABLE [HC].[Kennel] ENABLE TRIGGER [trgConfigureFacebookToken]
 -- GO
--- /****** Object:  Trigger [HC].[trgUpdateKennelGeolocation]    Script Date: 8/9/2021 8:40:27 PM ******/
+-- /****** Object:  Trigger [HC].[trgUpdateKennelGeolocation]    Script Date: 8/27/2021 12:06:47 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15623,7 +15401,7 @@
 -- GO
 -- ALTER TABLE [HC].[Kennel] ENABLE TRIGGER [trgUpdateKennelGeolocation]
 -- GO
--- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForKennels]    Script Date: 8/9/2021 8:40:27 PM ******/
+-- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForKennels]    Script Date: 8/27/2021 12:06:47 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15642,11 +15420,23 @@
 -- 			WHERE id in (SELECT id from INSERTED)
 -- 	END
 
+-- 	---- if the run attendence is changed at the Kennel level
+-- 	---- make sure we update all Events for the Kennel where
+-- 	---- the CanEditRunAttendence is null so that they are
+-- 	---- propagated to the mobile devices
+-- 	--IF UPDATE(CanEditRunAttendence)
+-- 	--BEGIN
+-- 	--	UPDATE HC.Event Set updatedAt = GETDATE() FROM HC.Event 
+-- 	--		WHERE KennelId in (SELECT id from INSERTED) 
+-- 	--		AND CanEditRunAttendence is null
+-- 	--	SET NOCOUNT ON
+-- 	--END
+
 -- END
 -- GO
 -- ALTER TABLE [HC].[Kennel] ENABLE TRIGGER [trgUpdateModifiedOnDateForKennels]
 -- GO
--- /****** Object:  Trigger [HC].[trgLocateLogin]    Script Date: 8/9/2021 8:40:28 PM ******/
+-- /****** Object:  Trigger [HC].[trgLocateLogin]    Script Date: 8/27/2021 12:06:47 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15699,7 +15489,7 @@
 -- GO
 -- ALTER TABLE [HC].[LaunchAndLogin] ENABLE TRIGGER [trgLocateLogin]
 -- GO
--- /****** Object:  Trigger [HC].[TR_Meetings_InsertUpdateDelete]    Script Date: 8/9/2021 8:40:28 PM ******/
+-- /****** Object:  Trigger [HC].[TR_Meetings_InsertUpdateDelete]    Script Date: 8/27/2021 12:06:47 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15708,7 +15498,7 @@
 -- GO
 -- ALTER TABLE [HC].[Meetings] ENABLE TRIGGER [TR_Meetings_InsertUpdateDelete]
 -- GO
--- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForRegion]    Script Date: 8/9/2021 8:40:28 PM ******/
+-- /****** Object:  Trigger [HC].[trgUpdateModifiedOnDateForRegion]    Script Date: 8/27/2021 12:06:47 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15732,7 +15522,7 @@
 -- GO
 -- ALTER TABLE [HC].[Region] ENABLE TRIGGER [trgUpdateModifiedOnDateForRegion]
 -- GO
--- /****** Object:  Trigger [EXT].[trgVwOfficeForms_KennelImport]    Script Date: 8/9/2021 8:40:28 PM ******/
+-- /****** Object:  Trigger [EXT].[trgVwOfficeForms_KennelImport]    Script Date: 8/27/2021 12:06:48 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15803,7 +15593,7 @@
 
 -- END
 -- GO
--- /****** Object:  Trigger [HC3W].[tgDeleteAdEmailTemplateList]    Script Date: 8/9/2021 8:40:30 PM ******/
+-- /****** Object:  Trigger [HC3W].[tgDeleteAdEmailTemplateList]    Script Date: 8/27/2021 12:06:49 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15835,7 +15625,7 @@
 -- 		 DEALLOCATE xCrsr
 -- END;
 -- GO
--- /****** Object:  Trigger [HC3W].[tgInsertVwAdEmailTemplateList]    Script Date: 8/9/2021 8:40:30 PM ******/
+-- /****** Object:  Trigger [HC3W].[tgInsertVwAdEmailTemplateList]    Script Date: 8/27/2021 12:06:50 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15916,7 +15706,7 @@
 
 -- END
 -- GO
--- /****** Object:  Trigger [HC3W].[tgUpdateAdEvent]    Script Date: 8/9/2021 8:40:30 PM ******/
+-- /****** Object:  Trigger [HC3W].[tgUpdateAdEvent]    Script Date: 8/27/2021 12:06:50 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -15976,7 +15766,7 @@
 --       [MinimumParticipantsRequired] = i.MinimumParticipantsRequired,
 --       [MaximumParticipantsAllowed] = i.MaximumParticipantsAllowed,
 --       [Organizer_HasherId] = i.Organizer_HasherId, 
---       [CanEditRunAttendence] = i.CanEditRunAttendence,
+--       [CanEditRunAttendence] = case when i.CanEditRunAttendence = -1 then null else i.CanEditRunAttendence end,
 --       [Hares] = i.Hares, 
 --       [UseFbRunDetails] = i.UseFbRunDetails,
 --       [UseFbLocation] = i.UseFbLocation,
@@ -16009,7 +15799,7 @@
 
 -- END
 -- GO
--- /****** Object:  Trigger [HC3W].[tgInsertVwAdEventList]    Script Date: 8/9/2021 8:40:30 PM ******/
+-- /****** Object:  Trigger [HC3W].[tgInsertVwAdEventList]    Script Date: 8/27/2021 12:06:50 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -16103,7 +15893,7 @@
 
 -- END
 -- GO
--- /****** Object:  Trigger [HC3W].[tgUpdateAdHasher]    Script Date: 8/9/2021 8:40:30 PM ******/
+-- /****** Object:  Trigger [HC3W].[tgUpdateAdHasher]    Script Date: 8/27/2021 12:06:50 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -16199,7 +15989,7 @@
 -- 	 END
 -- END;
 -- GO
--- /****** Object:  Trigger [HC3W].[tgUpdateAdHasherList]    Script Date: 8/9/2021 8:40:30 PM ******/
+-- /****** Object:  Trigger [HC3W].[tgUpdateAdHasherList]    Script Date: 8/27/2021 12:06:50 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -16332,7 +16122,7 @@
 
 -- END;
 -- GO
--- /****** Object:  Trigger [HC3W].[tgUpdateAdKennel]    Script Date: 8/9/2021 8:40:31 PM ******/
+-- /****** Object:  Trigger [HC3W].[tgUpdateAdKennel]    Script Date: 8/27/2021 12:06:50 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -16373,6 +16163,8 @@
 -- 			,t.[KennelCoverPhoto]							=i.[KennelCoverPhoto]
 -- 			,t.[KennelWebsiteUrl]							=i.[KennelWebsiteUrl]
 -- 			,t.[KennelMismanagementTeam]					=i.[KennelMismanagementTeam]
+-- 			--,t.[KennelFeaturesTier]							=i.[KennelFeaturesTier]
+-- 			--,t.[KennelFeaturesExpire]						=i.[KennelFeaturesExpire]
 -- 			,t.[DefaultEventPriceForMembers]				=i.[DefaultEventPriceForMembers]
 -- 			,t.[DefaultEventPriceForNonMembers]			=i.[DefaultEventPriceForNonMembers]
 -- 			,t.[DefaultEventCurrencyType]					=i.[DefaultEventCurrencyType]
@@ -16447,6 +16239,8 @@
 -- 			,[KennelCoverPhoto]
 -- 			,[KennelWebsiteUrl]
 -- 			,[KennelMismanagementTeam]
+-- 			--,[KennelFeaturesTier]
+-- 			--,[KennelFeaturesExpire]
 -- 			,[DefaultEventPriceForMembers]
 -- 			,[DefaultEventPriceForNonMembers]
 -- 			,[DefaultEventCurrencyType]
@@ -16516,6 +16310,8 @@
 -- 		  ,i.[KennelCoverPhoto]
 -- 		  ,i.[KennelWebsiteUrl]
 -- 		  ,i.[KennelMismanagementTeam]
+-- 		  --,i.[KennelFeaturesTier]
+-- 		  --,i.[KennelFeaturesExpire]
 -- 		  ,i.[DefaultEventPriceForMembers]
 -- 		  ,i.[DefaultEventPriceForNonMembers]
 -- 		  ,i.[DefaultEventCurrencyType]
@@ -16571,7 +16367,7 @@
 
 -- END
 -- GO
--- /****** Object:  Trigger [HC3W].[tgUpdateSaHasher]    Script Date: 8/9/2021 8:40:31 PM ******/
+-- /****** Object:  Trigger [HC3W].[tgUpdateSaHasher]    Script Date: 8/27/2021 12:06:50 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -16655,7 +16451,7 @@
 
 -- END;
 -- GO
--- /****** Object:  Trigger [HC3W].[tgUpdate]    Script Date: 8/9/2021 8:40:31 PM ******/
+-- /****** Object:  Trigger [HC3W].[tgUpdate]    Script Date: 8/27/2021 12:06:50 PM ******/
 -- SET ANSI_NULLS ON
 -- GO
 -- SET QUOTED_IDENTIFIER ON
@@ -16701,8 +16497,6 @@
 
 -- END;
 -- GO
--- EXEC sys.sp_addextendedproperty @name=N'microsoft_database_tools_support', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'sysdiagrams'
--- GO
 -- SET ARITHABORT ON
 -- SET CONCAT_NULL_YIELDS_NULL ON
 -- SET QUOTED_IDENTIFIER ON
@@ -16711,7 +16505,7 @@
 -- SET ANSI_WARNINGS ON
 -- SET NUMERIC_ROUNDABORT OFF
 -- GO
--- /****** Object:  Index [IX_City_SpatialLocation]    Script Date: 8/9/2021 8:40:31 PM ******/
+-- /****** Object:  Index [IX_City_SpatialLocation]    Script Date: 8/27/2021 12:06:51 PM ******/
 -- CREATE SPATIAL INDEX [IX_City_SpatialLocation] ON [HC].[City]
 -- (
 -- 	[CityGeolocation]
@@ -16727,7 +16521,7 @@
 -- SET ANSI_WARNINGS ON
 -- SET NUMERIC_ROUNDABORT OFF
 -- GO
--- /****** Object:  Index [IX_KennelSpatialIndex]    Script Date: 8/9/2021 8:40:31 PM ******/
+-- /****** Object:  Index [IX_KennelSpatialIndex]    Script Date: 8/27/2021 12:06:51 PM ******/
 -- CREATE SPATIAL INDEX [IX_KennelSpatialIndex] ON [HC].[Kennel]
 -- (
 -- 	[KennelGeolocation]
