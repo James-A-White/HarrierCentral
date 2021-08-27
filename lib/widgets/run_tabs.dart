@@ -32,8 +32,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   bool isAdmin = true;
   //bool _isLoading = true;
 
-  List<PackListAggregate> thePackList;
-  Map<String, dynamic> packCount = <String, dynamic>{};
+  List<PackListAggregate> _thePackList;
+  Map<String, dynamic> _packCount = <String, dynamic>{};
 
   Future<void> _refreshHemTableFromBackend(bool showLoadingIndicator) async {
     if (showLoadingIndicator) {
@@ -58,18 +58,19 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           hem.*,
           h.*
           FROM hasherEventMapForRunAdmin hem
-          LEFT OUTER JOIN hashers h on h.hasherId = hem.userId
-          WHERE hem.eventId = "${widget.futureRun.event.eventId}"
+          LEFT OUTER JOIN hashers h on h.${G0<TableModel>().hashersTableHelper.colHasherId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId}
+          WHERE hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = "${widget.futureRun.event.eventId}"
+          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState} >= 1 AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState} <= 3
           ''';
 
-    thePackList = <PackListAggregate>[];
+    _thePackList = <PackListAggregate>[];
     try {
       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(query);
 
       for (int i = 0; i < results.length; i++) {
         final HasherEventMapModel packItem = G0<TableModel>().hasherEventMapTableHelper.fromMap(results[i]);
         final HashersModel hasherItem = HashersModel.fromJson(results[i]);
-        thePackList.add(PackListAggregate(hem: packItem, hasher: hasherItem));
+        _thePackList.add(PackListAggregate(hem: packItem, hasher: hasherItem));
         if (packItem.userId == userId) {
           _thisUserIndex = i;
         }
@@ -83,7 +84,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   }
 
   Future<void> refreshPackCountFromTable(bool callSetState) async {
-    packCount = <String, dynamic>{};
+    _packCount = <String, dynamic>{};
 
     final String query = ''' 
         SELECT  
@@ -93,12 +94,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
           count(case when hem.isHare = 1 then 1 else null end) as isHareCount
           FROM hasherEventMapForRunAdmin hem
           WHERE hem.eventId = "${widget.futureRun.event.eventId}"
+          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState} >= 1 AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState} <= 3
           ''';
 
     try {
       G0<Database>().rawQuery(query).then((List<Map<String, dynamic>> results) {
         if (results.isNotEmpty) {
-          packCount = results[0];
+          _packCount = results[0];
         }
         if (callSetState) {
           setState(() {});
@@ -220,9 +222,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             icon: const Icon(FontAwesome.check_circle),
                             color: _thisUserIndex == -1
                                 ? Colors.grey
-                                : thePackList[_thisUserIndex].hem.rsvpState == rsvpYes.value
+                                : _thePackList[_thisUserIndex].hem.rsvpState == rsvpYes.value
                                     ? Colors.green
-                                    : (thePackList[_thisUserIndex].hem.rsvpState == -1 && rsvpRequested == rsvpYes)
+                                    : (_thePackList[_thisUserIndex].hem.rsvpState == -1 && rsvpRequested == rsvpYes)
                                         ? Colors.blue
                                         : Colors.grey,
                             //tooltip: 'Select to follow a Kennel',
@@ -250,7 +252,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         ],
                       ),
                       Text(
-                        (packCount['rsvpYesCount'] ?? 0) >= 0 ? (packCount['rsvpYesCount'] ?? 0).toString() : '',
+                        (_packCount['rsvpYesCount'] ?? 0) >= 0 ? (_packCount['rsvpYesCount'] ?? 0).toString() : '',
                         style: rsvpTitlesView,
                       ),
                     ],
@@ -284,9 +286,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             icon: const Icon(FontAwesome.question_circle),
                             color: _thisUserIndex == -1
                                 ? Colors.grey
-                                : thePackList[_thisUserIndex].hem.rsvpState == rsvpMaybe.value
+                                : _thePackList[_thisUserIndex].hem.rsvpState == rsvpMaybe.value
                                     ? Colors.orange
-                                    : (thePackList[_thisUserIndex].hem.rsvpState == -1 && rsvpRequested == rsvpMaybe)
+                                    : (_thePackList[_thisUserIndex].hem.rsvpState == -1 && rsvpRequested == rsvpMaybe)
                                         ? Colors.blue
                                         : Colors.grey,
                             //tooltip: 'Select to follow a Kennel',
@@ -300,7 +302,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         ],
                       ),
                       Text(
-                        (packCount['rsvpMaybeCount'] ?? 0) >= 0 ? (packCount['rsvpMaybeCount'] ?? 0).toString() : '',
+                        (_packCount['rsvpMaybeCount'] ?? 0) >= 0 ? (_packCount['rsvpMaybeCount'] ?? 0).toString() : '',
                         style: rsvpTitlesView,
                       ),
                       // Text(
@@ -345,9 +347,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             icon: const Icon(FontAwesome.times_circle),
                             color: _thisUserIndex == -1
                                 ? Colors.grey
-                                : thePackList[_thisUserIndex].hem.rsvpState == rsvpNo.value
+                                : _thePackList[_thisUserIndex].hem.rsvpState == rsvpNo.value
                                     ? Colors.red
-                                    : (thePackList[_thisUserIndex].hem.rsvpState == -1 && rsvpRequested == rsvpNo)
+                                    : (_thePackList[_thisUserIndex].hem.rsvpState == -1 && rsvpRequested == rsvpNo)
                                         ? Colors.blue
                                         : Colors.grey,
                             //tooltip: 'Select to follow a Kennel',
@@ -361,7 +363,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         ],
                       ),
                       Text(
-                        (packCount['rsvpNoCount'] ?? 0) >= 0 ? (packCount['rsvpNoCount'] ?? 0).toString() : '',
+                        (_packCount['rsvpNoCount'] ?? 0) >= 0 ? (_packCount['rsvpNoCount'] ?? 0).toString() : '',
                         style: rsvpTitlesView,
                       ),
 
@@ -404,9 +406,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             icon: const ImageIcon(AssetImage('images/icons/hare_icon.png')),
                             color: _thisUserIndex == -1
                                 ? Colors.grey
-                                : thePackList[_thisUserIndex].hem.isHare == isHareYes.value
+                                : _thePackList[_thisUserIndex].hem.isHare == isHareYes.value
                                     ? Colors.deepPurple
-                                    : thePackList[_thisUserIndex].hem.isHare == -1
+                                    : _thePackList[_thisUserIndex].hem.isHare == -1
                                         ? Colors.blue
                                         : Colors.grey,
                             //tooltip: 'Select to follow a Kennel',
@@ -418,8 +420,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 if (willHare) {
                                   setState(() {
                                     if (_thisUserIndex >= 0) {
-                                      thePackList[_thisUserIndex].hem.rsvpState = -1;
-                                      thePackList[_thisUserIndex].hem.isHare = -1;
+                                      _thePackList[_thisUserIndex].hem.rsvpState = -1;
+                                      _thePackList[_thisUserIndex].hem.isHare = -1;
                                       rsvpRequested = rsvpYes;
                                     }
                                   });
@@ -452,7 +454,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                         ],
                       ),
                       Text(
-                        (packCount['isHareCount'] ?? 0) >= 0 ? (packCount['isHareCount'] ?? 0).toString() : '',
+                        (_packCount['isHareCount'] ?? 0) >= 0 ? (_packCount['isHareCount'] ?? 0).toString() : '',
                         style: rsvpTitlesView,
                       ),
 
@@ -483,14 +485,14 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                   onRefresh: () => _refreshHemTableFromBackend(true),
                   child: StaggeredGridView.countBuilder(
                     crossAxisCount: 4,
-                    itemCount: thePackList?.length ?? 0,
+                    itemCount: _thePackList?.length ?? 0,
                     itemBuilder: (BuildContext context, int index) {
                       // if (thePackList[index].hem.userId == userId) {
                       //   thePackList[index].hem.rsvpState = widget.futureRun.extensions.rsvpState;
                       //   thePackList[index].hem.isHare = widget.futureRun.extensions.isHare;
                       // }
 
-                      return thePackList.isEmpty
+                      return _thePackList.isEmpty
                           ? Container(
                               color: Colors.grey[300],
                               width: 70.0,
@@ -501,10 +503,10 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                               onTap: () {
                                 String actionText = '';
 
-                                if (thePackList[index].hem.isHare == 1) {
+                                if (_thePackList[index].hem.isHare == 1) {
                                   actionText = ' will hare the Hash';
                                 } else {
-                                  switch (thePackList[index].hem.rsvpState) {
+                                  switch (_thePackList[index].hem.rsvpState) {
                                     case 1:
                                       actionText = ' will not join the Hash';
                                       break;
@@ -526,7 +528,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                 final SnackBar snackBar = SnackBar(
                                   duration: const Duration(seconds: 2),
                                   content: Text(
-                                    (thePackList[index].hasher.dispName ?? thePackList[index].hem.displayName) + actionText,
+                                    (_thePackList[index].hasher.dispName ?? _thePackList[index].hem.displayName) + actionText,
                                     style: const TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
                                   ),
                                   backgroundColor: Theme.of(context).accentColor,
@@ -536,9 +538,9 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                               },
                               child: Stack(
                                 children: <Widget>[
-                                  thePackList[index].hasher.photo.startsWith('http')
+                                  _thePackList[index].hasher.photo.startsWith('http')
                                       ? CachedNetworkImage(
-                                          imageUrl: thePackList[index].hasher.photo,
+                                          imageUrl: _thePackList[index].hasher.photo,
                                           //placeholder: HcCircularProgressIndicator(key: UniqueKey()),
                                           //errorWidget: const  Icon(Icons.error),
 
@@ -574,13 +576,13 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                           width: 300.0,
                                           height: 300.0,
                                           fit: BoxFit.fill)
-                                      : thePackList[index].hasher.photo.startsWith('bundle')
+                                      : _thePackList[index].hasher.photo.startsWith('bundle')
                                           ? Image(
                                               width: 300.0,
                                               height: 300.0,
                                               fit: BoxFit.fill,
                                               image: AssetImage(
-                                                  ('images/avatars/' + thePackList[index].hasher.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
+                                                  ('images/avatars/' + _thePackList[index].hasher.photo.toLowerCase().replaceFirst('bundle://', '') + '.jpg').toLowerCase()),
                                             )
                                           : const Image(
                                               width: 300.0,
@@ -598,16 +600,16 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                                           backgroundColor: Colors.white,
                                           radius: 11.0,
                                         ),
-                                        (thePackList[index].hem.rsvpState ?? 0) <= 0
+                                        (_thePackList[index].hem.rsvpState ?? 0) <= 0
                                             ? const CircleAvatar(
                                                 backgroundColor: Colors.blue,
                                                 radius: 10.0,
                                               )
-                                            : thePackList[index].hem.rsvpState == 1
+                                            : _thePackList[index].hem.rsvpState == 1
                                                 ? const Icon(FontAwesome.times_circle, color: Colors.red, size: 21.0)
-                                                : thePackList[index].hem.rsvpState == 2
+                                                : _thePackList[index].hem.rsvpState == 2
                                                     ? const Icon(FontAwesome.question_circle, color: Colors.orange, size: 21.0)
-                                                    : thePackList[index].hem.isHare == 0
+                                                    : _thePackList[index].hem.isHare == 0
                                                         ? const Icon(FontAwesome.check_circle, color: Colors.green, size: 21.0)
                                                         : Image.asset('images/icons/hare_icon.png', color: Colors.deepPurple, height: 18.0, width: 18.0),
                                       ],
@@ -618,7 +620,7 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                             ); // TODO(James): Replace this with another avatar for missing image
                     },
                     staggeredTileBuilder: (int index) {
-                      return thePackList[index].hem.isHare != 1 ? const StaggeredTile.count(1, 1) : const StaggeredTile.count(2, 2);
+                      return _thePackList[index].hem.isHare != 1 ? const StaggeredTile.count(1, 1) : const StaggeredTile.count(2, 2);
                     },
                     mainAxisSpacing: 8.0,
                     crossAxisSpacing: 8.0,
@@ -635,8 +637,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
   void setRsvpState(EnumRsvpState<int> rsvpState) {
     setState(() {
       if (_thisUserIndex >= 0) {
-        thePackList[_thisUserIndex].hem.rsvpState = -1;
-        thePackList[_thisUserIndex].hem.isHare = 0;
+        _thePackList[_thisUserIndex].hem.rsvpState = -1;
+        _thePackList[_thisUserIndex].hem.isHare = 0;
         rsvpRequested = rsvpState;
       }
     });
@@ -771,8 +773,8 @@ class RunTabsState extends State<RunTabs> with SingleTickerProviderStateMixin {
                   if (willHare) {
                     setState(() {
                       if (_thisUserIndex >= 0) {
-                        thePackList[_thisUserIndex].hem.rsvpState = -1;
-                        thePackList[_thisUserIndex].hem.isHare = -1;
+                        _thePackList[_thisUserIndex].hem.rsvpState = -1;
+                        _thePackList[_thisUserIndex].hem.isHare = -1;
                         rsvpRequested = rsvpYes;
                       }
                     });
