@@ -231,7 +231,7 @@ class _CreateNewAccountPageContentState extends State<CreateNewAccountPageConten
                               setStringPref(StringPrefsEnum.resetCode, result['resetCode']);
                               setStringPref(StringPrefsEnum.qrSecretCode, result['qrSecretCode']);
                               setStringPref(StringPrefsEnum.userId, result['hasherId']);
-                              final int preferences = int.tryParse(result['preferences']) ?? 0;
+                              final int preferences = int.tryParse(result['preferences'] ?? '14') ?? 14;
                               await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
                               isSuccessfulLoad = true;
 

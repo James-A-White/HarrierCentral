@@ -204,7 +204,7 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
 
   bool _isVisible = true;
   bool _isCountedRun = true;
-  bool _usersCanEditRunAttendence = false;
+  int _usersCanEditRunAttendence;
   bool _isPromotedEvent = false;
   int _eventGeographicScope = 1;
 
@@ -564,9 +564,15 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
                             ),
                             CheckboxFormField(
                               title: const Text('Users can edit run history'),
-                              initialValue: _updatedEventAggregate.event.canEditRunAttendence == 1,
+                              initialValue: _updatedEventAggregate.event.canEditRunAttendence == null ? null : _updatedEventAggregate.event.canEditRunAttendence == 1,
+                              tristate: true,
                               validator: (bool result) {
-                                _usersCanEditRunAttendence = result;
+                                if (result == null) {
+                                  _usersCanEditRunAttendence = -1;
+                                } else {
+                                  _usersCanEditRunAttendence = result ? 1 : 0;
+                                }
+
                                 return null;
                               },
                             ),
@@ -1476,7 +1482,7 @@ class _DetailsTabState extends State<DetailsTab> with AutomaticKeepAliveClientMi
 }
 
 class CheckboxFormField extends FormField<bool> {
-  CheckboxFormField({Widget title, FormFieldSetter<bool> onSaved, FormFieldValidator<bool> validator, bool initialValue = false})
+  CheckboxFormField({Widget title, FormFieldSetter<bool> onSaved, FormFieldValidator<bool> validator, bool initialValue = false, bool tristate = false})
       : super(
             onSaved: onSaved,
             validator: validator,
@@ -1485,6 +1491,7 @@ class CheckboxFormField extends FormField<bool> {
               return CheckboxListTile(
                 dense: state.hasError,
                 title: title,
+                tristate: tristate,
                 value: state.value,
                 onChanged: state.didChange,
                 subtitle: state.hasError

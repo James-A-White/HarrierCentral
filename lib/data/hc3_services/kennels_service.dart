@@ -18,6 +18,7 @@ class KennelsModel implements BaseModel {
       this.kennelWebsiteUrl,
       this.defaultEventCurrencyType,
       this.kennelStatus,
+      this.canEditRunAttendence,
       this.allowNegativeCredit,
       this.allowSelfPayment,
       this.kennelLatitude,
@@ -55,8 +56,7 @@ class KennelsModel implements BaseModel {
       this.updatedAt,
       this.removed});
 
-  factory KennelsModel.fromJson(Map<String, dynamic> json) =>
-      _$KennelsModelFromJson(json);
+  factory KennelsModel.fromJson(Map<String, dynamic> json) => _$KennelsModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$KennelsModelToJson(this);
 
@@ -73,6 +73,7 @@ class KennelsModel implements BaseModel {
   final String kennelWebsiteUrl;
   final String defaultEventCurrencyType;
   final int kennelStatus;
+  final int canEditRunAttendence;
   final int allowNegativeCredit;
   final int allowSelfPayment;
   final num kennelLatitude;
@@ -147,6 +148,7 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
   final String colKennelWebsiteUrl = 'kennelWebsiteUrl';
   final String colDefaultEventCurrencyType = 'defaultEventCurrencyType';
   final String colKennelStatus = 'kennelStatus';
+  final String colCanEditRunAttendence = 'canEditRunAttendence';
   final String colAllowNegativeCredit = 'allowNegativeCredit';
   final String colAllowSelfPayment = 'allowSelfPayment';
   final String colKennelLatitude = 'kennelLatitude';
@@ -167,29 +169,23 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
   final String colKennelPaymentUrl = 'kennelPaymentUrl';
   final String colKennelPaymentUrlExpires = 'kennelPaymentUrlExpires';
   final String colKennelPaymentMemberSurcharge = 'kennelPaymentMemberSurcharge';
-  final String colKennelPaymentNonMemberSurcharge =
-      'kennelPaymentNonMemberSurcharge';
+  final String colKennelPaymentNonMemberSurcharge = 'kennelPaymentNonMemberSurcharge';
   final String colKennelPaymentScheme2 = 'kennelPaymentScheme2';
   final String colKennelPaymentUrl2 = 'kennelPaymentUrl2';
   final String colKennelPaymentUrlExpires2 = 'kennelPaymentUrlExpires2';
-  final String colKennelPaymentMemberSurcharge2 =
-      'kennelPaymentMemberSurcharge2';
-  final String colKennelPaymentNonMemberSurcharge2 =
-      'kennelPaymentNonMemberSurcharge2';
+  final String colKennelPaymentMemberSurcharge2 = 'kennelPaymentMemberSurcharge2';
+  final String colKennelPaymentNonMemberSurcharge2 = 'kennelPaymentNonMemberSurcharge2';
   final String colKennelPaymentScheme3 = 'kennelPaymentScheme3';
   final String colKennelPaymentUrl3 = 'kennelPaymentUrl3';
   final String colKennelPaymentUrlExpires3 = 'kennelPaymentUrlExpires3';
-  final String colKennelPaymentMemberSurcharge3 =
-      'kennelPaymentMemberSurcharge3';
-  final String colKennelPaymentNonMemberSurcharge3 =
-      'kennelPaymentNonMemberSurcharge3';
+  final String colKennelPaymentMemberSurcharge3 = 'kennelPaymentMemberSurcharge3';
+  final String colKennelPaymentNonMemberSurcharge3 = 'kennelPaymentNonMemberSurcharge3';
   final String colRunCountStartDate = 'runCountStartDate';
   final String colKennelMismanagementTeam = 'kennelMismanagementTeam';
   final String colDistancePreference = 'distancePreference';
 
   @override
-  Future<dynamic> createTable(
-      Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -208,6 +204,7 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
             $colKennelWebsiteUrl TEXT,
             $colDefaultEventCurrencyType TEXT,
             $colKennelStatus INT,
+            $colCanEditRunAttendence INT,
             $colAllowNegativeCredit INT,
             $colAllowSelfPayment INT,
             $colKennelLatitude NUM,
@@ -251,12 +248,9 @@ class KennelsTableHelper extends BaseTableHelper with BaseFields {
   }
 
   @override
-  Future<void> createIndexes(
-      Database db, int version, dynamic appDomainType) async {
-    await db.execute(
-        'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
-    await db.execute(
-        'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
+  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
+    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
   }
 
   // @override

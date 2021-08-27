@@ -100,11 +100,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage> {
           e.${G0<TableModel>().eventsTableHelper.colEventName} as eventName,
           e.${G0<TableModel>().eventsTableHelper.colEventNumber} as eventNumber,
           e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} as eventStartDatetime,
-          e.${G0<TableModel>().eventsTableHelper.colCanEditRunAttendence} as canEditRunAttendence,
+          coalesce(e.${G0<TableModel>().eventsTableHelper.colCanEditRunAttendence},k.${G0<TableModel>().kennelsTableHelper.colCanEditRunAttendence}) as canEditRunAttendence,
           hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} as hemId,
           coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
           coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare
           FROM narrowEvents e
+          INNER JOIN kennels k on e.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
           LEFT OUTER JOIN hasherEventMap hem on hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = e.${G0<TableModel>().eventsTableHelper.colEventId} 
           AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId}  = "$userId"
           WHERE e.${G0<TableModel>().eventsTableHelper.colIsCountedRun} = 1 

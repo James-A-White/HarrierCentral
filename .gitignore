@@ -11,3 +11,14 @@ build/
 lib/util/remote_config.dart
 ios/
 android/
+android/.gradle/5.6.2/executionHistory/executionHistory.bin
+android/.gradle/5.6.2/executionHistory/executionHistory.lock
+android/.gradle/5.6.2/fileHashes/fileHashes.bin
+android/.gradle/5.6.2/fileHashes/fileHashes.lock
+android/.gradle/5.6.2/fileHashes/resourceHashesCache.bin
+android/.gradle/5.6.2/javaCompile/classAnalysis.bin
+android/.gradle/5.6.2/javaCompile/jarAnalysis.bin
+android/.gradle/5.6.2/javaCompile/javaCompile.lock
+android/.gradle/5.6.2/javaCompile/taskHistory.bin
+android/.gradle/buildOutputCleanup/buildOutputCleanup.lock
+android/.gradle/buildOutputCleanup/outputFiles.bin
