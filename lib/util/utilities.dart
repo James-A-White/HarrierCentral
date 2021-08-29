@@ -8,6 +8,9 @@ class LatLon {
 }
 
 class Utilities {
+  // this is an unused variable to suppress a LINT warning
+  int suppressWarning = 0;
+
   static const int qrScanTypeFlag_user = 0x00000001;
   static const int qrScanTypeFlag_userSecretCode = 0x00000002;
   static const int qrScanTypeFlag_runStart = 0x00000004;

@@ -46,6 +46,7 @@ enum IntPrefsEnum {
   mapShowSearchBar,
   mapShowKennels,
   isBetaTester,
+  isResettingCache,
 }
 
 enum DatePrefsEnum {

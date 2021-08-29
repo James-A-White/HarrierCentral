@@ -34,8 +34,6 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
 
       final String userId = getStringPref(StringPrefsEnum.userId);
 
-      final ApproveLoginService svc = ApproveLoginService();
-
       final DateTime lastFbUpdate = getDatePref(DatePrefsEnum.lastFbTokenUpdate) ?? DateTime(2020);
       final Duration fbTokenUpdateDelta = DateTime.now().difference(lastFbUpdate);
       String facebookAccessToken;
@@ -51,6 +49,7 @@ class _AppEntryPageState extends State<AppEntryPage> with SingleTickerProviderSt
         }
       }
 
+      final ApproveLoginService svc = ApproveLoginService();
       final ApproveLoginModel loginResult = await svc.approveLogin(context, facebookAccessToken);
 
       if (loginResult != null) {

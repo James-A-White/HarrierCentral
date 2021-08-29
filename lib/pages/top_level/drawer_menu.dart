@@ -84,12 +84,12 @@ class DrawerMenuState extends State<DrawerMenu> {
                       settings: const RouteSettings(),
                       builder: (BuildContext context) {
                         return HasherProfilePage(
-                          dataContext: EnumDataContext.user,
-                          pageType: EnumMyProfilePageType.myProfile,
-                          hasherId: _userId,
-                          uiElementsToDisplay:
-                              HasherProfilePage.flagUiElement_distancePref | HasherProfilePage.flagUiElement_autoDisplayRunsDistance | HasherProfilePage.flagUiElement_logOutButton,
-                        );
+                            dataContext: EnumDataContext.user,
+                            pageType: EnumMyProfilePageType.myProfile,
+                            hasherId: _userId,
+                            uiElementsToDisplay: HasherProfilePage.flagUiElement_distancePref |
+                                HasherProfilePage.flagUiElement_autoDisplayRunsDistance |
+                                HasherProfilePage.flagUiElement_logOutAndRefreshButton);
                       },
                     ),
                   );

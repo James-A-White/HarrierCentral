@@ -30,7 +30,7 @@ class HasherProfilePage extends StatefulWidget {
   static const int flagUiElement_inviteCode = 0x00000002;
   static const int flagUiElement_distancePref = 0x00000004;
   static const int flagUiElement_autoDisplayRunsDistance = 0x00000008;
-  static const int flagUiElement_logOutButton = 0x00000010;
+  static const int flagUiElement_logOutAndRefreshButton = 0x00000010;
 
   @override
   HasherProfilePageState createState() => HasherProfilePageState();
@@ -621,6 +621,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               Connection.styleForConnected(
                                                 G0<AppModel>().connectionStatus,
                                                 ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                    padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                                  ),
                                                   onPressed: () {
                                                     if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus)) {
                                                       Navigator.push(
@@ -641,9 +644,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       });
                                                     }
                                                   },
-                                                  child: Text('Update Profile Image', style: buttonTextStyle),
+                                                  child: Text('Update Profile Image', style: textStyleButton),
                                                 ),
                                               ),
+                                              const SizedBox(height: 15),
                                               (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_distancePref == 0)
                                                   ? Container()
                                                   : Column(
@@ -1034,53 +1038,106 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               // ),
                                             ],
                                           ),
-                                    (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_logOutButton == 0)
-                                        ? Container()
-                                        : Column(
-                                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                                            children: <Widget>[
-                                              FancyDivider(
-                                                key: UniqueKey(),
-                                                innerColor: Colors.white,
-                                                topMargin: 45.0,
-                                                bottomMargin: 20.0,
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(top: 25, bottom: 25),
-                                                child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                                                  Connection.styleForConnected(
-                                                    G0<AppModel>().connectionStatus,
-                                                    ElevatedButton(
-                                                      style: ElevatedButton.styleFrom(
-                                                        padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
-                                                      ),
-                                                      onPressed: () async {
-                                                        IveCoreUtilities.showAlert(
-                                                                context,
-                                                                'Log out?',
-                                                                'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nYou may have to manually close and re-open the app to log back in again if you choose to log out.',
-                                                                'Log out',
-                                                                showCancelButton: true,
-                                                                cancelButtonText: 'Stay logged in')
-                                                            .then((bool result) async {
-                                                          if (result) {
-                                                            await clearPrefs();
-                                                            await DBProvider.deleteDb(DB_NAME);
-                                                            await G0.reset();
-                                                            Phoenix.rebirth(context);
-                                                          }
-                                                        });
-                                                      },
-                                                      child: Text(
-                                                        'Log out',
-                                                        style: textStyleButton,
-                                                      ),
+                                    if (widget.uiElementsToDisplay & HasherProfilePage.flagUiElement_logOutAndRefreshButton != 0) ...<Widget>[
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        children: <Widget>[
+                                          FancyDivider(
+                                            key: UniqueKey(),
+                                            innerColor: Colors.white,
+                                            topMargin: 30.0,
+                                            bottomMargin: 20.0,
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                              children: <Widget>[
+                                                Connection.styleForConnected(
+                                                  G0<AppModel>().connectionStatus,
+                                                  ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(
+                                                      padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                                    ),
+                                                    onPressed: () async {
+                                                      IveCoreUtilities.showAlert(
+                                                              context,
+                                                              'Refresh cache',
+                                                              'Refreshing the cache removes all of the data stored on your phone by the Harrier Central app and reloads your profile from our backend servers.\r\n\r\nNormally you will only need to do this when asked to do so by our support team.',
+                                                              'Refresh cache',
+                                                              showCancelButton: true,
+                                                              cancelButtonText: 'Cancel')
+                                                          .then((bool result) async {
+                                                        if (result) {
+                                                          final String userId = getStringPref(StringPrefsEnum.userId);
+                                                          final String resetCode = getStringPref(StringPrefsEnum.resetCode);
+                                                          final String facebookAccessToken = getStringPref(StringPrefsEnum.facebookAccessToken);
+                                                          final String facebookId = getStringPref(StringPrefsEnum.facebookId);
+
+                                                          await clearPrefs();
+
+                                                          await setStringPref(StringPrefsEnum.userId, userId);
+                                                          await setStringPref(StringPrefsEnum.resetCode, resetCode);
+                                                          await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
+                                                          await setStringPref(StringPrefsEnum.facebookId, facebookId);
+                                                          await setIntPref(IntPrefsEnum.isResettingCache, 1);
+
+                                                          await DBProvider.deleteDb(DB_NAME);
+
+                                                          await G0.reset();
+                                                          Phoenix.rebirth(context);
+                                                        }
+                                                      });
+                                                    },
+                                                    child: Text(
+                                                      'Refresh cache',
+                                                      style: textStyleButton,
                                                     ),
                                                   ),
-                                                ]),
-                                              ),
-                                            ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 15, bottom: 40),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                              children: <Widget>[
+                                                Connection.styleForConnected(
+                                                  G0<AppModel>().connectionStatus,
+                                                  ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(
+                                                      padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                                    ),
+                                                    onPressed: () async {
+                                                      IveCoreUtilities.showAlert(
+                                                              context,
+                                                              'Log out?',
+                                                              'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
+                                                              'Log out',
+                                                              showCancelButton: true,
+                                                              cancelButtonText: 'Stay logged in')
+                                                          .then((bool result) async {
+                                                        if (result) {
+                                                          await clearPrefs();
+                                                          await DBProvider.deleteDb(DB_NAME);
+                                                          await G0.reset();
+                                                          Phoenix.rebirth(context);
+                                                        }
+                                                      });
+                                                    },
+                                                    child: Text(
+                                                      'Log out',
+                                                      style: textStyleButton,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),
