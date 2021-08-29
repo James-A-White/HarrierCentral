@@ -67,8 +67,8 @@ class HistoryListPageState extends State<HistoryListPage> {
     final String userId = getStringPref(StringPrefsEnum.userId);
 
     final String query = '''  
-          SELECT count(case when hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState} >= 20 then 1 else null end) + coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalPackRunCount},0) as totalRunsThisKennel,
-          count(case when hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare} = 1 then 1 else null end) + coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},0) as totalHaringThisKennel,
+          SELECT count(case when hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState} >= 20 AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} <= DateTime('now') then 1 else null end) + coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalPackRunCount},0) as totalRunsThisKennel,
+          count(case when hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare} = 1 AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} <= DateTime('now') then 1 else null end) + coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},0) as totalHaringThisKennel,
           k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},
           k.${G0<TableModel>().kennelsTableHelper.colKennelName},
           k.${G0<TableModel>().kennelsTableHelper.colKennelId},
