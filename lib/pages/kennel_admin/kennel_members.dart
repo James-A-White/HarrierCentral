@@ -398,7 +398,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                     if (snapshot?.data == null) {
                       return HcCircularProgressIndicator(key: UniqueKey());
                     } else {
-                      return getKennelMemberList(snapshot);
+                      return _getKennelMemberList(snapshot);
                     }
                   }),
             ),
@@ -410,7 +410,7 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
     );
   }
 
-  Column getKennelMemberList(AsyncSnapshot<List<KennelMembersResults>> snapshot) {
+  Column _getKennelMemberList(AsyncSnapshot<List<KennelMembersResults>> snapshot) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>[
@@ -428,135 +428,139 @@ class KennelMemberListState extends State<KennelMembersList> with SingleTickerPr
                         color: Colors.black45,
                       ),
                       physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: snapshot.data.length,
+                      itemCount: snapshot.data.length + 1,
                       itemBuilder: (BuildContext context, int index) {
-                        final KennelMembersResults item = snapshot.data[index];
-                        return Dismissible(
-                          key: Key(item.hasherId),
-                          confirmDismiss: (DismissDirection direction) {
-                            setState(() {
-                              // swipe from right to left to indicate that
-                              // the hasher either attended the run as a pack
-                              // member or as a hare
-                              if (direction == DismissDirection.endToStart) {
-                                modifyMembership(item, item.membershipDurationInMonths);
-                              } else {
-                                modifyMembership(item, -9999);
-                              }
-                            });
+                        if (index == snapshot.data.length) {
+                          return const SizedBox(height: 100.0);
+                        } else {
+                          final KennelMembersResults item = snapshot.data[index];
+                          return Dismissible(
+                            key: Key(item.hasherId),
+                            confirmDismiss: (DismissDirection direction) {
+                              setState(() {
+                                // swipe from right to left to indicate that
+                                // the hasher either attended the run as a pack
+                                // member or as a hare
+                                if (direction == DismissDirection.endToStart) {
+                                  modifyMembership(item, item.membershipDurationInMonths);
+                                } else {
+                                  modifyMembership(item, -9999);
+                                }
+                              });
 
-                            return Future<bool>.value(false);
-                          },
-                          background: Container(
-                              color: Colors.red,
-                              child: Row(children: const <Widget>[
-                                Padding(
-                                  padding: EdgeInsets.only(left: 10.0),
-                                  child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 15.0),
-                                  child: Text(
-                                      // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                      'Cancel\r\nmembership',
-                                      maxLines: 2,
-                                      style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                )
-                              ])),
-                          secondaryBackground: Container(
-                            color: Colors.green,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: <Widget>[
-                                const Padding(
-                                  padding: EdgeInsets.only(right: 15.0),
-                                  child: Icon(FontAwesome.plus_circle, color: Colors.white, size: 35.0),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 15.0),
-                                  child: Text(
-                                      //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                      'Add ${item.membershipDurationInMonths} months\r\nto membership',
-                                      style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
-                                )
-                              ],
+                              return Future<bool>.value(false);
+                            },
+                            background: Container(
+                                color: Colors.red,
+                                child: Row(children: const <Widget>[
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 10.0),
+                                    child: Icon(FontAwesome.times_circle, color: Colors.white, size: 35.0),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 15.0),
+                                    child: Text(
+                                        // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                        'Cancel\r\nmembership',
+                                        maxLines: 2,
+                                        style: TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                  )
+                                ])),
+                            secondaryBackground: Container(
+                              color: Colors.green,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: <Widget>[
+                                  const Padding(
+                                    padding: EdgeInsets.only(right: 15.0),
+                                    child: Icon(FontAwesome.plus_circle, color: Colors.white, size: 35.0),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 15.0),
+                                    child: Text(
+                                        //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                        'Add ${item.membershipDurationInMonths} months\r\nto membership',
+                                        style: const TextStyle(fontFamily: 'AvenirNextDemiBold', fontStyle: FontStyle.normal, color: Colors.white, fontSize: 17.0, height: 1.0)),
+                                  )
+                                ],
+                              ),
                             ),
-                          ),
-                          onDismissed: (DismissDirection direction) {
-                            print(direction.toString() + ' NOTE: We should never reach this point');
-                          },
-                          child: KennelMemberListItem(
-                              kennelListAggregate: widget.kennelListAggregate,
-                              kennelMember: snapshot.data[index],
-                              modifyMembershipCallback: (EnumMemberPopupActions retVal) {
-                                switch (retVal) {
-                                  case EnumMemberPopupActions.addOneMonth:
-                                    modifyMembership(snapshot.data[index], 1);
-                                    break;
-                                  case EnumMemberPopupActions.addSixMonths:
-                                    modifyMembership(snapshot.data[index], 6);
-                                    break;
-                                  case EnumMemberPopupActions.addOneYear:
-                                    modifyMembership(snapshot.data[index], 12);
-                                    break;
-                                  case EnumMemberPopupActions.permanentMembership:
-                                    modifyMembership(snapshot.data[index], 9999);
-                                    break;
-                                  case EnumMemberPopupActions.cancelMembership:
-                                    modifyMembership(snapshot.data[index], -9999);
-                                    break;
-                                  case EnumMemberPopupActions.editKennelAdmin:
-                                    Navigator.push<int>(
-                                      context,
-                                      MaterialPageRoute<int>(builder: (BuildContext context) => AppAccessPage(appAccess: snapshot.data[index].appAccessFlags)),
-                                    ).then((int result) {
-                                      if (result != null) {
-                                        setUserProperties(snapshot.data[index], appAccessFlags: result);
-                                      }
+                            onDismissed: (DismissDirection direction) {
+                              print(direction.toString() + ' NOTE: We should never reach this point');
+                            },
+                            child: KennelMemberListItem(
+                                kennelListAggregate: widget.kennelListAggregate,
+                                kennelMember: snapshot.data[index],
+                                modifyMembershipCallback: (EnumMemberPopupActions retVal) {
+                                  switch (retVal) {
+                                    case EnumMemberPopupActions.addOneMonth:
+                                      modifyMembership(snapshot.data[index], 1);
+                                      break;
+                                    case EnumMemberPopupActions.addSixMonths:
+                                      modifyMembership(snapshot.data[index], 6);
+                                      break;
+                                    case EnumMemberPopupActions.addOneYear:
+                                      modifyMembership(snapshot.data[index], 12);
+                                      break;
+                                    case EnumMemberPopupActions.permanentMembership:
+                                      modifyMembership(snapshot.data[index], 9999);
+                                      break;
+                                    case EnumMemberPopupActions.cancelMembership:
+                                      modifyMembership(snapshot.data[index], -9999);
+                                      break;
+                                    case EnumMemberPopupActions.editKennelAdmin:
+                                      Navigator.push<int>(
+                                        context,
+                                        MaterialPageRoute<int>(builder: (BuildContext context) => AppAccessPage(appAccess: snapshot.data[index].appAccessFlags)),
+                                      ).then((int result) {
+                                        if (result != null) {
+                                          setUserProperties(snapshot.data[index], appAccessFlags: result);
+                                        }
+                                      });
+                                      break;
+                                    case EnumMemberPopupActions.editMismanagementRole:
+                                      Navigator.push<int>(
+                                        context,
+                                        MaterialPageRoute<int>(
+                                            builder: (BuildContext context) => MismanagementRolesPage(mismanagementRoles: snapshot.data[index].mismanagementRoles)),
+                                      ).then((int result) {
+                                        if (result != null) {
+                                          setUserProperties(snapshot.data[index], mismanagementRoles: result);
+                                        }
+                                      });
+                                      break;
+                                    // case EnumMemberPopupActions.setHomeKennel:
+                                    //   setAsHomeKennel(snapshot.data[index], 1);
+                                    //   break;
+                                    // case EnumMemberPopupActions.clearHomeKennel:
+                                    //   setAsHomeKennel(snapshot.data[index], 0);
+                                    //   break;
+                                  }
+                                },
+                                toggleEmailPreferenceCallback: () {
+                                  if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
+                                      message:
+                                          'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
+                                    final HasherKennelMapService srv = HasherKennelMapService();
+                                    final int emailAlertStatus = snapshot.data[index].kennelEmailAlertPreference != 1 ? 1 : 2;
+                                    snapshot.data[index].kennelEmailAlertPreference = -1;
+                                    setState(() {});
+                                    srv
+                                        .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel,
+                                            emailAlertState: emailAlertStatus, targetUserId: snapshot.data[index].hasherId)
+                                        .then((
+                                      List<dynamic> queryResults,
+                                    ) {
+                                      setState(() {
+                                        if ((queryResults != null) && (queryResults.isNotEmpty)) {
+                                          snapshot.data[index].kennelEmailAlertPreference = queryResults[0]['kennelEmailAlertPreference'];
+                                        }
+                                      });
                                     });
-                                    break;
-                                  case EnumMemberPopupActions.editMismanagementRole:
-                                    Navigator.push<int>(
-                                      context,
-                                      MaterialPageRoute<int>(
-                                          builder: (BuildContext context) => MismanagementRolesPage(mismanagementRoles: snapshot.data[index].mismanagementRoles)),
-                                    ).then((int result) {
-                                      if (result != null) {
-                                        setUserProperties(snapshot.data[index], mismanagementRoles: result);
-                                      }
-                                    });
-                                    break;
-                                  // case EnumMemberPopupActions.setHomeKennel:
-                                  //   setAsHomeKennel(snapshot.data[index], 1);
-                                  //   break;
-                                  // case EnumMemberPopupActions.clearHomeKennel:
-                                  //   setAsHomeKennel(snapshot.data[index], 0);
-                                  //   break;
-                                }
-                              },
-                              toggleEmailPreferenceCallback: () {
-                                if (Connection.checkForConnection(context, G0<AppModel>().connectionStatus,
-                                    message:
-                                        'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.')) {
-                                  final HasherKennelMapService srv = HasherKennelMapService();
-                                  final int emailAlertStatus = snapshot.data[index].kennelEmailAlertPreference != 1 ? 1 : 2;
-                                  snapshot.data[index].kennelEmailAlertPreference = -1;
-                                  setState(() {});
-                                  srv
-                                      .updateHasherKennelStatus(widget.kennelListAggregate.kennel.kennelId, AppDomainType.kennel,
-                                          emailAlertState: emailAlertStatus, targetUserId: snapshot.data[index].hasherId)
-                                      .then((
-                                    List<dynamic> queryResults,
-                                  ) {
-                                    setState(() {
-                                      if ((queryResults != null) && (queryResults.isNotEmpty)) {
-                                        snapshot.data[index].kennelEmailAlertPreference = queryResults[0]['kennelEmailAlertPreference'];
-                                      }
-                                    });
-                                  });
-                                }
-                              }),
-                        );
+                                  }
+                                }),
+                          );
+                        }
                       },
                     ),
                   ),
