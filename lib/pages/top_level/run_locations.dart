@@ -581,7 +581,7 @@ class RunLocationsPageState extends State<RunLocationsPage> {
     if (isCountedRun == 0) {
       isEvent = 'activity';
     }
-    if ((eventScope ?? 0) != 0) {
+    if ((eventScope ?? 0) > 1) {
       isEvent = 'event';
     }
 
