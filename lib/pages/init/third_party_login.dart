@@ -166,7 +166,7 @@ class _LoginPageState extends State<ThirdPartyLogin> {
       final AccessToken accessToken = await FacebookAuth.instance.login();
 
       // get the user data
-      final Map<String, dynamic> userData = await FacebookAuth.instance.getUserData(fields: 'name,picture.width(300),email,birthday,gender,link,first_name,last_name');
+      final Map<String, dynamic> userData = await FacebookAuth.instance.getUserData(fields: 'name,picture.width(1000),email,birthday,gender,link,first_name,last_name');
 
       await setStringPref(StringPrefsEnum.facebookId, accessToken.userId);
       await setStringPref(StringPrefsEnum.facebookAccessToken, accessToken.token);
@@ -340,9 +340,9 @@ class _LoginPageState extends State<ThirdPartyLogin> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 15.0),
+            padding: const EdgeInsets.only(top: 25.0),
             child: TextButton(
-              child: const Text('Get started!', style: TextStyle(color: Colors.white)),
+              child: Text('Get started!', style: textStyleButton),
               onPressed: () async {
                 if (_formKey.currentState.validate()) {
                   setState(() {
@@ -365,6 +365,7 @@ class _LoginPageState extends State<ThirdPartyLogin> {
 
                     await setStringPref(StringPrefsEnum.facebookId, thirdPartyLoginType == 'facebook' ? result[0]['thirdPartyUserId'] : '');
                     await setStringPref(StringPrefsEnum.facebookAccessToken, thirdPartyLoginType == 'facebook' ? result[0]['thirdPartyAccessToken'] : '');
+                    await setStringPref(StringPrefsEnum.facebookProfilePhoto, thirdPartyLoginType == 'facebook' ? result[0]['photo'] : '');
 
                     await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, result[0]['thirdPartyAuthorizationCode']);
                     await setStringPref(StringPrefsEnum.thirdPartyAccessToken, result[0]['thirdPartyAccessToken']);
@@ -401,7 +402,22 @@ class _LoginPageState extends State<ThirdPartyLogin> {
                         'OK');
                   }
 
-                  Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
+                  //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
+                  final String fileNamePrefix = getStringPref(StringPrefsEnum.supportCode);
+                  //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
+
+                  Navigator.pushReplacement<dynamic, dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => ChooseProfileImage(
+                          isForThisDevice: true,
+                          fileNamePrefix: fileNamePrefix,
+                          currentProfileImage: null,
+                          popToCaller: false,
+                        ),
+                      ));
+
+                  //Navigator.pushReplacement<dynamic, dynamic>(context, MaterialPageRoute<dynamic>(builder: (BuildContext context) => const MainNavigationPage()));
                 }
               },
             ),
