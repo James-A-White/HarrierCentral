@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/pages/top_level/select_run_page.dart';
 import 'package:location_permissions/location_permissions.dart' as perms;
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 
@@ -120,41 +121,77 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
       final bool hasLoc = await checkLocationPermissions();
       if (hasLoc) {
-        final AreWeAtRunResult result = await CommonQueries.areWeAtRunStart();
-        if ((result.eventId != EMPTY_RESULT) && (result.distanceInMeters <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN)) {
-          final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
-            title: 'Check-in to Run',
-            eventImage: result.eventImage,
-            eventName: result.eventName,
-            kennelLogo: result.kennelLogo,
-            okButtonTitle: 'Yes',
-            cancelButtonTitle: 'No',
-            kennelShortName: result.kennelShortName,
-            eventNumber: result.eventNumber,
-          );
+        final List<AreWeAtRunResult> resultList = await CommonQueries.areWeAtRunStart();
+        final String userId = getStringPref(StringPrefsEnum.userId);
 
-          final EnumYesNo<int> retVal = await showDialog<EnumYesNo<int>>(
-              context: context,
-              barrierDismissible: false, // user must tap button!
-              builder: (BuildContext context) {
-                return popup;
-              });
+        if (resultList.length == 1) {
+          final AreWeAtRunResult result = resultList[0];
+          if ((result.eventId != EMPTY_RESULT) &&
+              (result.distanceInMeters <= GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) &&
+              (result.attendenceState < attendenceAtHash.value)) {
+            final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
+              title: 'Check-in to Run',
+              eventImage: result.eventImage,
+              eventName: result.eventName,
+              kennelLogo: result.kennelLogo,
+              okButtonTitle: 'Yes',
+              cancelButtonTitle: 'No',
+              kennelShortName: result.kennelShortName,
+              eventNumber: result.eventNumber,
+            );
 
-          final String userId = getStringPref(StringPrefsEnum.userId);
+            final EnumYesNo<int> retVal = await showDialog<EnumYesNo<int>>(
+                context: context,
+                barrierDismissible: false, // user must tap button!
+                builder: (BuildContext context) {
+                  return popup;
+                });
 
-          if (retVal == enumYesNo_Yes) {
-            await G0<TableModel>()
-                .hasherEventMapService
-                .joinEvent(result.eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value);
-            if (futureRunsListPageKey?.currentState != null) {
-              futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
+            if (retVal == enumYesNo_Yes) {
+              _checkInAtEvent(result.eventId, userId);
             }
+          }
+        } else if (resultList.length > 1) {
+          // look through the list of runs and determine if this hasher is
+          // at any of the runs on the list. If so, don't show the
+          // selection view
+          bool showRunList = true;
+
+          for (AreWeAtRunResult result in resultList) {
+            if (result.attendenceState >= attendenceAtHash.value) {
+              showRunList = false;
+              break;
+            }
+          }
+
+          if (showRunList) {
+            Navigator.push<dynamic>(
+              context,
+              MaterialPageRoute<dynamic>(
+                builder: (BuildContext context) => SelectRunPage(runList: resultList),
+              ),
+            ).then((dynamic doCheckIn) async {
+              if ((doCheckIn as bool) == true) {
+                for (AreWeAtRunResult result in resultList) {
+                  if (result.selected) {
+                    await _checkInAtEvent(result.eventId, userId);
+                  }
+                }
+              }
+            });
           }
         }
       }
 
       return true;
     });
+  }
+
+  Future<void> _checkInAtEvent(String eventId, String userId) async {
+    await G0<TableModel>().hasherEventMapService.joinEvent(eventId, userId, null, AppDomainType.user, rsvpState: rsvpYes.value, attendenceState: attendenceAtHash.value);
+    if (futureRunsListPageKey?.currentState != null) {
+      futureRunsListPageKey.currentState.forceRefreshFromTableExternal();
+    }
   }
 
   Future<bool> checkLocationPermissions() async {
