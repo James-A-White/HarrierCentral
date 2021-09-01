@@ -24,6 +24,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with SingleTick
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
@@ -301,7 +302,7 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
       ),
       child: KeyboardActions(
         config: _buildConfig(context),
-        tapOutsideBehavior: TapOutsideBehavior.opaqueDismiss,
+        tapOutsideBehavior: TapOutsideBehavior.none,
         child: Container(
           //elevation: 2.0,
           //decoration: Backgrounds.defaultHcBackgroundLight(),
@@ -1190,7 +1191,7 @@ class _DetailsTabState extends State<DetailsTab> with AutomaticKeepAliveClientMi
       ),
       child: KeyboardActions(
         config: _buildConfig(context),
-        tapOutsideBehavior: TapOutsideBehavior.opaqueDismiss,
+        tapOutsideBehavior: TapOutsideBehavior.none,
         child: Container(
           //elevation: 2.0,
           //decoration: Backgrounds.defaultHcBackgroundLight(),
