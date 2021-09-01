@@ -345,10 +345,21 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
-                            Image.asset(
-                              'images/other/creating_database.png',
-                              height: 250,
-                              width: 250,
+                            Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Text(
+                                'Filling your Harrier Central mug',
+                                style: headingStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Image.asset(
+                                'images/other/beer_pour.gif',
+                                // height: 250,
+                                // width: 250,
+                              ),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(20.0),
