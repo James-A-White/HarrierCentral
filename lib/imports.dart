@@ -5,7 +5,7 @@ export 'dart:io';
 export 'dart:math';
 export 'dart:typed_data';
 
-export 'package:audioplayers/audio_cache.dart';
+export 'package:audioplayers/audioplayers.dart';
 export 'package:auto_size_text/auto_size_text.dart';
 export 'package:cached_network_image/cached_network_image.dart';
 export 'package:chewie/chewie.dart';

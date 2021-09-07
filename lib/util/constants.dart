@@ -36,6 +36,7 @@ const int SPLASH_SCREEN_DISPLAY_TIME = 1;
 const LocationAccuracy BASE_APP_LOCATION_ACCURACY = LocationAccuracy.best;
 
 const String BASE_HCWEB_UPLOAD_URL = 'https://hcweb.azurewebsites.net/upload/';
+const String BASE_HCWEB_MOBILE_URL = 'HTTPS://P.HC-APP.COM/#/C?';
 
 const String BASE_API_URL = 'https://harrier.azurewebsites.net/api/';
 

@@ -297,9 +297,9 @@ class _QrCodeTabState extends State<QrCodeTab> with AutomaticKeepAliveClientMixi
                       QrImage(
                           backgroundColor: Colors.white,
                           padding: const EdgeInsets.all(10.0),
-                          data: userQrCode,
+                          data: BASE_HCWEB_MOBILE_URL + userQrCode,
                           //data: 'testing123',
-                          version: 2,
+                          version: 4,
                           //size: 200.0,
                           errorCorrectionLevel: 3),
                     ]),

@@ -24,6 +24,10 @@ class Utilities {
   static Map<String, String> validateScan(String scanText, int allowedScanTypes) {
     Map<String, String> result;
 
+    if (scanText.contains(BASE_HCWEB_MOBILE_URL)) {
+      scanText = scanText.replaceAll(BASE_HCWEB_MOBILE_URL, '');
+    }
+
     final int colonOffset = scanText.indexOf(':');
     if (colonOffset != 3) {
       result = <String, String>{'validScan': false.toString(), 'prefix': '', 'content': ''};

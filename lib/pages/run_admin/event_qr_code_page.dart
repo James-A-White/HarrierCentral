@@ -335,10 +335,10 @@ class _QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Singl
                 QrImage(
                     backgroundColor: Colors.white,
                     padding: const EdgeInsets.all(15.0),
-                    data: widget.qrPrefix + widget.qrContent.toUpperCase(),
+                    data: BASE_HCWEB_MOBILE_URL + widget.qrPrefix + widget.qrContent.toUpperCase(),
                     // data: (widget.isRunStart ? 'EVTSTART:' : 'EVTEND:') + widget.qrContent.toUpperCase(),
                     //data: 'testing123',
-                    version: 4,
+                    version: 6,
                     //size: 200.0,
                     errorCorrectionLevel: 3),
               ],
