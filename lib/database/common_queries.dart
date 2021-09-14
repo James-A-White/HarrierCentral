@@ -141,4 +141,136 @@ class CommonQueries {
     }
     return result;
   }
+
+  static Future<RunDetailAggregate> getNewEvent(String kennelId, String userId, DateTime eventStart) async {
+    RunDetailAggregate runDetailAggregate;
+    try {
+      const String dollarSign = r'$^';
+      final String sql = '''
+
+          SELECT 
+          k.*,
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMismanagementRoles},
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencyCode},c.${G0<TableModel>().countriesTableHelper.colCurrencyCode},"USD") as curCode,
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},c.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},2) as digAfterDec, 
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},c.${G0<TableModel>().countriesTableHelper.colCurrencySymbol},"$dollarSign") as curSym,
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForMembers},0) as memberPrice,
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForNonMembers},0) as nonMemberPrice
+          FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
+          LEFT OUTER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} c on c.countryId = k.countryId
+          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on "$kennelId" = hkm.kennelId,
+          hashers h  
+          WHERE k.${G0<TableModel>().kennelsTableHelper.colKennelId} = "$kennelId"
+          AND hkm.userId = "$userId"
+          AND h.hasherId = "$userId"
+          
+          ''';
+
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
+
+      if (results.isNotEmpty) {
+        final KennelsModel kennel = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
+
+        eventStart = eventStart.add(Duration(hours: kennel.defaultRunStartTime.hour - 12));
+        eventStart = eventStart.add(Duration(minutes: kennel.defaultRunStartTime.minute));
+
+        final EventModel eventItem = EventModel(
+          eventStartDatetime: eventStart,
+          kennelId: kennel.kennelId,
+          narrowEventLatitude: G0<DeviceInfo>().deviceLat + .0,
+          narrowEventLongitude: G0<DeviceInfo>().deviceLon + .0,
+          isVisible: 1,
+          isCountedRun: 1,
+          isPromotedEvent: 0,
+          eventGeographicScope: 1,
+          useFbLatLon: 0,
+          useFbRunDetails: 0,
+          useFbLocation: 0,
+          removed: 0,
+        );
+
+        final RunDetailQueryExtensions extensions = RunDetailQueryExtensions.fromMap(results[0]);
+
+        String paymentLinkUrl = '';
+
+        if (((kennel.kennelPaymentUrl ?? '') != '') && ((kennel.kennelPaymentUrlExpires == null) || (kennel.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
+          paymentLinkUrl = kennel.kennelPaymentUrl;
+        }
+
+        extensions.paymentUrl = paymentLinkUrl;
+        extensions.distToEvent = 0;
+
+        runDetailAggregate = RunDetailAggregate(event: eventItem, extensions: extensions, kennel: kennel);
+      }
+    } catch (e) {
+      print(e);
+    }
+
+    return runDetailAggregate;
+  }
+
+  static Future<RunDetailAggregate> getEventFromLocalCache(String eventId, String userId) async {
+    RunDetailAggregate runDetailAggregate;
+    try {
+      const String dollarSign = r'$^';
+      final String sql = '''
+
+          SELECT e.*,
+          k.*,
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
+          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMismanagementRoles},
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencyCode},c.${G0<TableModel>().countriesTableHelper.colCurrencyCode},"USD") as curCode,
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},c.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},2) as digAfterDec, 
+          coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},c.${G0<TableModel>().countriesTableHelper.colCurrencySymbol},"$dollarSign") as curSym,
+          coalesce(e.${G0<TableModel>().eventsTableHelper.colEventPriceForMembers},k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForMembers},0) as memberPrice,
+          coalesce(e.${G0<TableModel>().eventsTableHelper.colEventPriceForNonMembers},k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForNonMembers},0) as nonMemberPrice
+          FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} e
+          INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k on k.kennelId = e.kennelId
+          LEFT OUTER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} c on c.countryId = k.countryId
+          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on e.kennelId = hkm.kennelId,
+          hashers h  
+          WHERE e.eventId = "$eventId"
+          AND hkm.userId = "$userId"
+          AND h.hasherId = "$userId"
+          
+          ''';
+
+      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
+
+      final Geolocator locator = Geolocator();
+
+      final num dist = await locator.distanceBetween(
+        IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLat),
+        IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLon),
+        IveCoreUtilities.unInt(results[0]['narrowEventLatitude']),
+        IveCoreUtilities.unInt(
+          results[0]['narrowEventLongitude'],
+        ),
+      );
+
+      if (results.isNotEmpty) {
+        final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
+        final RunDetailQueryExtensions extensions = RunDetailQueryExtensions.fromMap(results[0]);
+        final KennelsModel kennel = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
+        String paymentLinkUrl = '';
+
+        if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
+          paymentLinkUrl = eventItem.eventPaymentUrl;
+        } else if (((kennel.kennelPaymentUrl ?? '') != '') && ((kennel.kennelPaymentUrlExpires == null) || (kennel.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
+          paymentLinkUrl = kennel.kennelPaymentUrl;
+        }
+
+        extensions.paymentUrl = paymentLinkUrl;
+        extensions.distToEvent = dist;
+        //extensions.distancePreference = results[0]['distancePreference'];
+
+        runDetailAggregate = RunDetailAggregate(event: eventItem, extensions: extensions, kennel: kennel);
+      }
+    } catch (e) {
+      print(e);
+    }
+
+    return runDetailAggregate;
+  }
 }

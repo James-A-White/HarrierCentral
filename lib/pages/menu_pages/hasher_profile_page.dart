@@ -1098,43 +1098,45 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ],
                                             ),
                                           ),
-                                          // Padding(
-                                          //   padding: const EdgeInsets.only(top: 15, bottom: 40),
-                                          //   child: Row(
-                                          //     mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                          //     children: <Widget>[
-                                          //       Connection.styleForConnected(
-                                          //         G0<AppModel>().connectionStatus,
-                                          //         ElevatedButton(
-                                          //           style: ElevatedButton.styleFrom(
-                                          //             padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
-                                          //           ),
-                                          //           onPressed: () async {
-                                          //             IveCoreUtilities.showAlert(
-                                          //                     context,
-                                          //                     'Log out?',
-                                          //                     'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
-                                          //                     'Log out',
-                                          //                     showCancelButton: true,
-                                          //                     cancelButtonText: 'Stay logged in')
-                                          //                 .then((bool result) async {
-                                          //               if (result) {
-                                          //                 await clearPrefs();
-                                          //                 await DBProvider.deleteDb(DB_NAME);
-                                          //                 await G0.reset();
-                                          //                 Phoenix.rebirth(context);
-                                          //               }
-                                          //             });
-                                          //           },
-                                          //           child: Text(
-                                          //             'Log out',
-                                          //             style: textStyleButton,
-                                          //           ),
-                                          //         ),
-                                          //       ),
-                                          //     ],
-                                          //   ),
-                                          // ),
+                                          if (widget.hasherId == '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC') ...<Widget>[
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 15, bottom: 40),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                children: <Widget>[
+                                                  Connection.styleForConnected(
+                                                    G0<AppModel>().connectionStatus,
+                                                    ElevatedButton(
+                                                      style: ElevatedButton.styleFrom(
+                                                        padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
+                                                      ),
+                                                      onPressed: () async {
+                                                        IveCoreUtilities.showAlert(
+                                                                context,
+                                                                'Log out?',
+                                                                'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
+                                                                'Log out',
+                                                                showCancelButton: true,
+                                                                cancelButtonText: 'Stay logged in')
+                                                            .then((bool result) async {
+                                                          if (result) {
+                                                            await clearPrefs();
+                                                            await DBProvider.deleteDb(DB_NAME);
+                                                            await G0.reset();
+                                                            Phoenix.rebirth(context);
+                                                          }
+                                                        });
+                                                      },
+                                                      child: Text(
+                                                        'Log out',
+                                                        style: textStyleButton,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ]
                                         ],
                                       ),
                                     ],

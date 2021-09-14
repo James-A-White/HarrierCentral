@@ -15,11 +15,11 @@ class FilterEventListItem extends StatelessWidget {
       onTap: () {
         Navigator.push<void>(
           context,
-          MaterialPageRoute<num>(
+          MaterialPageRoute<void>(
             builder: (BuildContext context) => RunDetailPage(eventId: event['eventId']),
           ),
         ).then((void dummy) {
-          //updateEvent(value);
+          updateEvent(eventFilterType_refreshOnly);
         });
       },
       child: Container(

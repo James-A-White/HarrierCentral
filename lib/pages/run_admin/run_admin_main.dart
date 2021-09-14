@@ -77,84 +77,27 @@ class RunDetailPageState extends State<RunDetailPage> {
 
   @override
   void initState() {
-    G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagsAllData, false, widget.eventId).then((bool result) {
-      refreshFromTables().then((void dummy) {
-        setState(() {
-          final String resultStr = result ? 'successfully' : 'unsuccessfully';
-          print('Event admin data synchronized $resultStr');
-        });
-      });
-    });
+    _getRunDetails(widget.eventId);
 
     _isBetaTester = getIntPref(IntPrefsEnum.isBetaTester);
 
     super.initState();
   }
 
-  String userId = getStringPref(StringPrefsEnum.userId);
-
-  Future<void> refreshFromTables() async {
-    try {
-      const String dollarSign = r'$^';
-
-      final String sql = '''
-
-          SELECT e.*,
-          k.*,
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMismanagementRoles},
-          coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencyCode},c.${G0<TableModel>().countriesTableHelper.colCurrencyCode},"USD") as curCode,
-          coalesce(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},c.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},2) as digAfterDec, 
-          coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},c.${G0<TableModel>().countriesTableHelper.colCurrencySymbol},"$dollarSign") as curSym,
-          coalesce(e.${G0<TableModel>().eventsTableHelper.colEventPriceForMembers},k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForMembers},0) as memberPrice,
-          coalesce(e.${G0<TableModel>().eventsTableHelper.colEventPriceForNonMembers},k.${G0<TableModel>().kennelsTableHelper.colDefaultPriceForNonMembers},0) as nonMemberPrice
-          FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} e
-          INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k on k.kennelId = e.kennelId
-          LEFT OUTER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} c on c.countryId = k.countryId
-          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on e.kennelId = hkm.kennelId,
-          hashers h  
-          WHERE e.eventId = "${widget.eventId}"
-          AND hkm.userId = "$userId"
-          AND h.hasherId = "$userId"
-          
-          ''';
-
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(sql);
-
-      final Geolocator locator = Geolocator();
-
-      final num dist = await locator.distanceBetween(
-        IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLat),
-        IveCoreUtilities.unInt(G0<DeviceInfo>().deviceLon),
-        IveCoreUtilities.unInt(results[0]['narrowEventLatitude']),
-        IveCoreUtilities.unInt(
-          results[0]['narrowEventLongitude'],
-        ),
-      );
-
-      if (results.isNotEmpty) {
-        final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(results[0]);
-        final RunDetailQueryExtensions extensions = RunDetailQueryExtensions.fromMap(results[0]);
-        final KennelsModel kennel = G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
-        String paymentLinkUrl = '';
-
-        if (((eventItem.eventPaymentUrl ?? '') != '') && ((eventItem.eventPaymentUrlExpires == null) || (eventItem.eventPaymentUrlExpires.isAfter(DateTime.now())))) {
-          paymentLinkUrl = eventItem.eventPaymentUrl;
-        } else if (((kennel.kennelPaymentUrl ?? '') != '') && ((kennel.kennelPaymentUrlExpires == null) || (kennel.kennelPaymentUrlExpires.isAfter(DateTime.now())))) {
-          paymentLinkUrl = kennel.kennelPaymentUrl;
-        }
-
-        extensions.paymentUrl = paymentLinkUrl;
-        extensions.distToEvent = dist;
-        //extensions.distancePreference = results[0]['distancePreference'];
-
-        _eventAggregate = RunDetailAggregate(event: eventItem, extensions: extensions, kennel: kennel);
-      }
-      _isLoading = false;
-    } catch (e) {
-      print(e);
-    }
+  void _getRunDetails(String eventId) {
+    G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagsAllData, false, eventId).then((bool result) {
+      CommonQueries.getEventFromLocalCache(widget.eventId, _userId).then((RunDetailAggregate rd) {
+        _eventAggregate = rd;
+        setState(() {
+          _isLoading = false;
+          final String resultStr = result ? 'successfully' : 'unsuccessfully';
+          print('Event admin data synchronized $resultStr');
+        });
+      });
+    });
   }
+
+  final String _userId = getStringPref(StringPrefsEnum.userId);
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -526,10 +469,13 @@ class RunDetailPageState extends State<RunDetailPage> {
                   Navigator.push<dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) => EditRunDetailsPage(_eventAggregate, () async {
-                                await refreshFromTables();
+                          builder: (BuildContext context) => EditRunDetailsPage(_eventAggregate, (String eventId) async {
+                                _eventAggregate = await CommonQueries.getEventFromLocalCache(eventId, _userId);
+                                _isLoading = false;
                                 return _eventAggregate;
-                              })));
+                              }))).then((void dummy) {
+                    _getRunDetails(widget.eventId);
+                  });
                 },
               ),
             ),

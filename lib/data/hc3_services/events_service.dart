@@ -263,7 +263,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
 }
 
 class EventsService extends BaseService {
-  Future<void> addEditEvent({
+  Future<String> addEditEvent({
     String eventId,
     bool isVisible,
     bool isCountedRun,
@@ -287,7 +287,7 @@ class EventsService extends BaseService {
     String locationOneLineDesc,
   }) async {
     if (G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected) {
-      return;
+      return '';
       // TODO(James): fix this so we can return a bool
       //return false;
     }
@@ -397,7 +397,15 @@ class EventsService extends BaseService {
       await G0<TableModel>().syncUserDataService.updateSqlTablesWithResultsFromBackendApiCall(responseBody);
     }
 
-    return;
+    final dynamic responseJson = jsonDecode(responseBody);
+
+    if (responseJson.length > 0) {
+      if (responseJson[0].length > 0) {
+        eventId = responseJson[0][0]['eventId'];
+      }
+    }
+
+    return eventId;
   }
 
   Future<Map<String, String>> sendRunDetailsByEmail({String eventId, String emailBody = ''}) async {

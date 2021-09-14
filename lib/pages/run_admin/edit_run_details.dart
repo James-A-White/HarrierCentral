@@ -17,6 +17,8 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with SingleTick
 
   TabController _tabController;
 
+  RunDetailAggregate _eventAggregate;
+
   final String userId = getStringPref(StringPrefsEnum.userId);
 
   GlobalKey tabKey;
@@ -119,9 +121,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with SingleTick
                     physics: const NeverScrollableScrollPhysics(),
                     controller: _tabController,
                     children: <Widget>[
-                      DetailsTab(widget.eventAggregate, widget.getUpdatedEventAggregate),
-                      LocationTab(widget.eventAggregate, widget.getUpdatedEventAggregate),
-                      OtherInfoTab(widget.eventAggregate, widget.getUpdatedEventAggregate),
+                      DetailsTab(_eventAggregate, widget.getUpdatedEventAggregate),
+                      LocationTab(_eventAggregate, widget.getUpdatedEventAggregate),
+                      OtherInfoTab(_eventAggregate, widget.getUpdatedEventAggregate),
                     ],
                   ),
                 )),
@@ -140,6 +142,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with SingleTick
   @override
   void initState() {
     super.initState();
+    _eventAggregate = widget.eventAggregate;
     _initTabs();
 
     _tabController = TabController(vsync: this, length: tabs.length);
@@ -723,12 +726,12 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
                                       child: Text('Save Details', style: buttonLabelStyleMedium),
                                       onPressed: () {
                                         setState(() {
-                                          _updateDetails();
+                                          _updateOtherDetails();
                                         });
                                       },
                                     ),
                                   ),
-                            // if ((widget.eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                            // if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
                             //   const SizedBox(width: 10.0),
                             //   Container(
                             //     width: 162.0,
@@ -763,11 +766,11 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
   //     final EventsService nSvc = EventsService();
   //     nSvc
   //         .addEditEvent(
-  //       eventId: widget.eventAggregate.event.eventId,
+  //       eventId: _eventAggregate.event.eventId,
   //       useFbRunDetails: 1,
   //     )
   //         .then((void dummy) async {
-  //       _updatedEventAggregate = await widget.getUpdatedEventAggregate();
+  //       _updatedEventAggregate = await widget.getUpdatedEventAggregate(eventId);
   //       setState(() {
   //         _isUpdating = false;
   //         setTextFields();
@@ -776,7 +779,7 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
   //   });
   // }
 
-  void _updateDetails() {
+  void _updateOtherDetails() {
     if (_detailsFormKey.currentState.validate()) {
       //    If all data are correct then save data to out variables
       _detailsFormKey.currentState.save();
@@ -786,7 +789,7 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
         final EventsService nSvc = EventsService();
         nSvc
             .addEditEvent(
-          eventId: widget.eventAggregate.event.eventId,
+          eventId: _updatedEventAggregate.event.eventId,
           eventPriceForMembers: _eventPriceForMembersController.text == '<default>' ? -2 : num.tryParse(_eventPriceForMembersController.text),
           eventPriceForNonMembers: _eventPriceForNonMembersController.text == '<default>' ? -2 : num.tryParse(_eventPriceForNonMembersController.text),
           // note for "auto" the value we send to the server is '0' because this will
@@ -800,8 +803,8 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
           eventGeographicScope: _eventGeographicScope,
           usersCanEditRunAttendence: _usersCanEditRunAttendence,
         )
-            .then((void dummy) async {
-          _updatedEventAggregate = await widget.getUpdatedEventAggregate();
+            .then((String eventId) async {
+          _updatedEventAggregate = await widget.getUpdatedEventAggregate(eventId);
           setState(() {
             _isUpdating = false;
             final SnackBar snackBar = SnackBar(
@@ -1006,38 +1009,43 @@ class _LocationTabState extends State<LocationTab> with AutomaticKeepAliveClient
                         : ElevatedButton(
                             child: Text('Set Location', style: buttonLabelStyleMedium),
                             onPressed: () {
-                              setState(() {
-                                _isUpdating = true;
-                                final EventsService nSvc = EventsService();
-                                nSvc
-                                    .addEditEvent(
-                                  eventId: widget.eventAggregate.event.eventId,
-                                  lat: mapController.center.latitude,
-                                  lon: mapController.center.longitude,
-                                  useFbLatLon: 0,
-                                )
-                                    .then((void dummy) async {
-                                  _updatedEventAggregate = await widget.getUpdatedEventAggregate();
-                                  setState(() {
-                                    _isUpdating = false;
-                                    final SnackBar snackBar = SnackBar(
-                                      duration: const Duration(seconds: 3),
-                                      content: const Text(
-                                        'Updated location saved in Harrier Central',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-                                      ),
-                                      backgroundColor: Theme.of(context).accentColor,
-                                    );
-                                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              if (_updatedEventAggregate?.event?.eventId == null) {
+                                IveCoreUtilities.showAlert(context, 'Please save details first',
+                                    'When creating a new event, please save the information on the Details tab before saving the location', 'OK');
+                              } else {
+                                setState(() {
+                                  _isUpdating = true;
+                                  final EventsService nSvc = EventsService();
+                                  nSvc
+                                      .addEditEvent(
+                                    eventId: _updatedEventAggregate.event.eventId,
+                                    lat: mapController.center.latitude,
+                                    lon: mapController.center.longitude,
+                                    useFbLatLon: 0,
+                                  )
+                                      .then((String eventId) async {
+                                    _updatedEventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                                    setState(() {
+                                      _isUpdating = false;
+                                      final SnackBar snackBar = SnackBar(
+                                        duration: const Duration(seconds: 3),
+                                        content: const Text(
+                                          'Updated location saved in Harrier Central',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                        ),
+                                        backgroundColor: Theme.of(context).accentColor,
+                                      );
+                                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                    });
                                   });
-                                });
 
-                                //_showEventPopup(_calendarController.selectedDay);
-                              });
+                                  //_showEventPopup(_calendarController.selectedDay);
+                                });
+                              }
                             },
                           ),
-                    if ((widget.eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                    if ((_updatedEventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
                       ElevatedButton(
                         child: Text('Use Facebook', style: buttonLabelStyleMedium),
                         onPressed: () {
@@ -1046,11 +1054,11 @@ class _LocationTabState extends State<LocationTab> with AutomaticKeepAliveClient
                             final EventsService nSvc = EventsService();
                             nSvc
                                 .addEditEvent(
-                              eventId: widget.eventAggregate.event.eventId,
+                              eventId: _updatedEventAggregate.event.eventId,
                               useFbLatLon: 1,
                             )
-                                .then((void dummy) async {
-                              _updatedEventAggregate = await widget.getUpdatedEventAggregate();
+                                .then((String eventId) async {
+                              _updatedEventAggregate = await widget.getUpdatedEventAggregate(eventId);
                               setState(() {
                                 _isUpdating = false;
                                 final SnackBar snackBar = SnackBar(
@@ -1125,10 +1133,12 @@ class _DetailsTabState extends State<DetailsTab> with AutomaticKeepAliveClientMi
   }
 
   void setTextFields() {
-    _eventNameController.text = _updatedEventAggregate.event.eventName;
-    _eventDescriptionController.text = _updatedEventAggregate.event.eventDescription;
-    _eventDatetimeController.text = _updatedEventAggregate.event.eventStartDatetime.toString();
-    _locationOneLineDescController.text = _updatedEventAggregate.event.locationOneLineDesc;
+    if (_updatedEventAggregate.event != null) {
+      _eventNameController.text = _updatedEventAggregate.event.eventName;
+      _eventDescriptionController.text = _updatedEventAggregate.event.eventDescription;
+      _eventDatetimeController.text = _updatedEventAggregate.event.eventStartDatetime.toString();
+      _locationOneLineDescController.text = _updatedEventAggregate.event.locationOneLineDesc;
+    }
   }
 
   @override
@@ -1376,12 +1386,12 @@ class _DetailsTabState extends State<DetailsTab> with AutomaticKeepAliveClientMi
                                       child: Text('Save Details', style: buttonLabelStyleMedium),
                                       onPressed: () {
                                         setState(() {
-                                          _updateDetails();
+                                          _updateMainRunDetails();
                                         });
                                       },
                                     ),
                                   ),
-                            if ((widget.eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                            if ((_updatedEventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
                               const SizedBox(width: 10.0),
                               Container(
                                 width: 162.0,
@@ -1416,11 +1426,11 @@ class _DetailsTabState extends State<DetailsTab> with AutomaticKeepAliveClientMi
       final EventsService nSvc = EventsService();
       nSvc
           .addEditEvent(
-        eventId: widget.eventAggregate.event.eventId,
+        eventId: _updatedEventAggregate.event.eventId,
         useFbRunDetails: 1,
       )
-          .then((void dummy) async {
-        _updatedEventAggregate = await widget.getUpdatedEventAggregate();
+          .then((String eventId) async {
+        _updatedEventAggregate = await widget.getUpdatedEventAggregate(eventId);
         setState(() {
           _isUpdating = false;
           setTextFields();
@@ -1439,7 +1449,7 @@ class _DetailsTabState extends State<DetailsTab> with AutomaticKeepAliveClientMi
     });
   }
 
-  void _updateDetails() {
+  void _updateMainRunDetails() {
     if (_detailsFormKey.currentState.validate()) {
       //    If all data are correct then save data to out variables
       _detailsFormKey.currentState.save();
@@ -1449,15 +1459,17 @@ class _DetailsTabState extends State<DetailsTab> with AutomaticKeepAliveClientMi
         final EventsService nSvc = EventsService();
         nSvc
             .addEditEvent(
-          eventId: widget.eventAggregate.event.eventId,
+          eventId: _updatedEventAggregate.event.eventId,
           eventName: _eventNameController.text,
           eventStartDatetime: DateTime.tryParse(_eventDatetimeController.text),
           eventDescription: _eventDescriptionController.text,
           locationOneLineDesc: _locationOneLineDescController.text,
           useFbRunDetails: 0,
+          isCountedRun: _updatedEventAggregate.event.isCountedRun == 1,
+          kennelId: _updatedEventAggregate.event.kennelId,
         )
-            .then((void dummy) async {
-          _updatedEventAggregate = await widget.getUpdatedEventAggregate();
+            .then((String eventId) async {
+          _updatedEventAggregate = await widget.getUpdatedEventAggregate(eventId);
           setState(() {
             _isUpdating = false;
             final SnackBar snackBar = SnackBar(

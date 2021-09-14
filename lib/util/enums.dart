@@ -249,6 +249,7 @@ class EnumEventFilterType<int> extends Enum<int> {
   const EnumEventFilterType(int val) : super(val);
 }
 
+const EnumEventFilterType<int> eventFilterType_refreshOnly = EnumEventFilterType<int>(0);
 const EnumEventFilterType<int> eventFilterType_hideEvent = EnumEventFilterType<int>(1);
 const EnumEventFilterType<int> eventFilterType_showEvent = EnumEventFilterType<int>(2);
 const EnumEventFilterType<int> eventFilterType_countEvent = EnumEventFilterType<int>(3);

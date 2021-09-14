@@ -29,7 +29,10 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
   void initState() {
     _initTabs();
     //_pageController = PageController(initialPage: 0, keepPage: true);
-    _tabController = TabController(vsync: this, length: tabs.length);
+    _tabController = TabController(vsync: this, length: _tabs.length);
+    _tabController.addListener(() {
+      setState(() {});
+    });
     _refreshSqlTablesFromBackend(true);
 
     super.initState();
@@ -40,16 +43,21 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
     );
 
     _animationController.forward();
+    Future<void>.delayed(const Duration(milliseconds: 500)).then((void dummy) {
+      setState(() {
+        // force the buttons on the calendar to be drawn
+      });
+    });
   }
 
   void _initTabs() {
-    if (tabs.isEmpty) {
-      tabs.add(const Tab(text: 'List'));
-      tabs.add(const Tab(text: 'Calendar'));
+    if (_tabs.isEmpty) {
+      _tabs.add(const Tab(text: 'Calendar'));
+      _tabs.add(const Tab(text: 'List'));
     }
   }
 
-  List<Tab> tabs = <Tab>[];
+  final List<Tab> _tabs = <Tab>[];
 
   TabController _tabController;
   CalendarController _calendarController;
@@ -62,8 +70,6 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
   Future<DateTime> _dateBeingUpdated = Future<DateTime>.value(null);
 
   //PageController _pageController;
-
-  GlobalKey tabKey;
 
   bool _isLoading = true;
 
@@ -400,7 +406,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                       tabBarIndicatorSize: TabBarIndicatorSize.tab,
                       indicatorRadius: 20.0,
                     ),
-                    tabs: tabs,
+                    tabs: _tabs,
                     controller: _tabController,
                   ),
                 ),
@@ -422,7 +428,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
-                  children: <Widget>[_listView(_allEventsSqlResult), _calendarView()],
+                  children: <Widget>[_calendarView(), _listView(_allEventsSqlResult)],
                 ),
               ),
             ],
@@ -458,6 +464,11 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
               //color: Colors.white,
               padding: const EdgeInsets.only(bottom: 10.0),
               child: TableCalendar(
+                onCalendarCreated: (DateTime firstVisibleDay, DateTime lastVisibleDay, CalendarFormat calendarFormat) {
+                  //if (_calendarController.selectedDay == null) {
+                  _calendarController.setSelectedDay(DateTime.now().add(const Duration(days: 1)), runCallback: false);
+                  //}
+                },
                 rowHeight: 35.0,
                 //startDay: DateTime.now(),
                 headerStyle: HeaderStyle(
@@ -646,6 +657,9 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
             if (_calendarController?.selectedDay != null &&
                 _toDateOnly(_calendarController.selectedDay).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
                 (_calendarEvents[_toDateOnly(_calendarController.selectedDay)]?.length ?? 0) == 0) ...<Widget>[_buildButtons()],
+            if (_calendarController?.selectedDay != null &&
+                _toDateOnly(_calendarController.selectedDay).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
+                (_calendarEvents[_toDateOnly(_calendarController.selectedDay)]?.length ?? 0) == 1) ...<Widget>[_buildEditButton()],
           ],
         ),
       ),
@@ -653,34 +667,92 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
     ]);
   }
 
+  Widget _buildEditButton() {
+    return Column(
+      children: <Widget>[
+        // ElevatedButton(
+        //   child: Text(
+        //     'Add run',
+        //     style: buttonLabelStyleMedium,
+        //   ),
+        //   onPressed: () {
+        //     setState(() {
+        //       //_calendarController.setCalendarFormat(CalendarFormat.month);
+        //     });
+        //   },
+        // ),
+
+        ElevatedButton(
+          child: Text('Edit event', style: buttonLabelStyleMedium),
+          onPressed: () async {
+            final dynamic rawEvent = _calendarEvents[_toDateOnly(_calendarController.selectedDay)][0];
+
+            if ((rawEvent != null) && (rawEvent['eventId'] != null)) {
+              RunDetailAggregate rda = await CommonQueries.getEventFromLocalCache(rawEvent['eventId'], getStringPref(StringPrefsEnum.userId));
+
+              Navigator.push<dynamic>(
+                  context,
+                  MaterialPageRoute<dynamic>(
+                      builder: (BuildContext context) => EditRunDetailsPage(rda, (String eventId) async {
+                            final String userId = getStringPref(StringPrefsEnum.userId);
+                            rda = await CommonQueries.getEventFromLocalCache(eventId, userId);
+                            _isLoading = false;
+                            return rda;
+                          }))).then((void dummy) {
+                _refreshSqlTablesFromBackend(true);
+              });
+            }
+          },
+        ),
+
+        const SizedBox(height: 18.0),
+      ],
+    );
+  }
+
   Widget _buildButtons() {
     return Column(
       children: <Widget>[
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            // ElevatedButton(
-            //   child: Text(
-            //     'Add run',
-            //     style: buttonLabelStyleMedium,
-            //   ),
-            //   onPressed: () {
-            //     setState(() {
-            //       //_calendarController.setCalendarFormat(CalendarFormat.month);
-            //     });
-            //   },
-            // ),
-            ElevatedButton(
-              child: Text('Add placeholder event', style: buttonLabelStyleMedium),
-              onPressed: () {
-                setState(() {
-                  _showEventPopup(_calendarController.selectedDay);
-                });
-              },
-            ),
-          ],
+        // ElevatedButton(
+        //   child: Text(
+        //     'Add run',
+        //     style: buttonLabelStyleMedium,
+        //   ),
+        //   onPressed: () {
+        //     setState(() {
+        //       //_calendarController.setCalendarFormat(CalendarFormat.month);
+        //     });
+        //   },
+        // ),
+
+        ElevatedButton(
+          child: Text('Add event', style: buttonLabelStyleMedium),
+          onPressed: () async {
+            RunDetailAggregate rda = await CommonQueries.getNewEvent(widget.kennel.kennel.kennelId, getStringPref(StringPrefsEnum.userId), _calendarController?.selectedDay);
+
+            Navigator.push<dynamic>(
+                context,
+                MaterialPageRoute<dynamic>(
+                    builder: (BuildContext context) => EditRunDetailsPage(rda, (String eventId) async {
+                          final String userId = getStringPref(StringPrefsEnum.userId);
+                          rda = await CommonQueries.getEventFromLocalCache(eventId, userId);
+                          _isLoading = false;
+                          return rda;
+                        }))).then((void dummy) {
+              _refreshSqlTablesFromBackend(true);
+            });
+          },
         ),
+        const SizedBox(height: 10.0),
+        ElevatedButton(
+          child: Text('Add event placeholder', style: buttonLabelStyleMedium),
+          onPressed: () {
+            setState(() {
+              _showEventPopup(_calendarController.selectedDay);
+            });
+          },
+        ),
+
         const SizedBox(height: 18.0),
       ],
     );
@@ -715,7 +787,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
         eventName: eventName,
         eventStartDatetime: _toDateOnly(eventStartDate),
       )
-          .then((void dummy) {
+          .then((String eventId) {
         _refreshEventFromTables(true).then((void dummy) {
           setState(() {
             _dateBeingUpdated = Future<DateTime>.value(null);
@@ -809,6 +881,9 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                   break;
                 case eventFilterType_setRunNumber:
                   setRunNumber(event, context);
+                  break;
+                case eventFilterType_refreshOnly:
+                  _refreshSqlTablesFromBackend(false);
                   break;
               }
             },
