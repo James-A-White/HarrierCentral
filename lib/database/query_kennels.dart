@@ -67,8 +67,12 @@ class QueryKennels {
   // it is important to have the beginning and end of the search field have a space
   // character to ensure that searches run properly.
 
+  // note: the tilde characters at the beginning and end of the search field ensure
+  // that the kennelName is searchable and whatever is at the end of the search field
+  // is also searchable
   static String searchField = '''
-               lower(k.${G0<TableModel>().kennelsTableHelper.colKennelName} 
+               lower(
+               "~ " || k.${G0<TableModel>().kennelsTableHelper.colKennelName} 
             || " " || k.${G0<TableModel>().kennelsTableHelper.colKennelShortName} 
             || " " || c.${G0<TableModel>().citiesTableHelper.colCityName} 
             || " " || r.${G0<TableModel>().regionsTableHelper.colRegionName} 
@@ -83,7 +87,7 @@ class QueryKennels {
               when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "OC" then "oceania" 
               when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
               else "" 
-              end
+              end || " ~" 
             )
           as searchText
           ''';
