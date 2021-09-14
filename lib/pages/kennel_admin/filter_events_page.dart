@@ -63,6 +63,8 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
   CalendarController _calendarController;
   AnimationController _animationController;
 
+  DateTime _selectedDate;
+
   List<Map<String, dynamic>> _allEventsSqlResult = <Map<String, dynamic>>[];
   List<Map<String, dynamic>> _publishedRunCountSqlResult = <Map<String, dynamic>>[];
   List<Map<String, dynamic>> _selectedEvents = <Map<String, dynamic>>[];
@@ -107,6 +109,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
 
   void _onDaySelected(DateTime day, List<dynamic> events, List<dynamic> holidays) {
     setState(() {
+      _selectedDate = day;
       _selectedEvents = events.cast<Map<String, dynamic>>();
     });
   }
@@ -465,8 +468,13 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
               padding: const EdgeInsets.only(bottom: 10.0),
               child: TableCalendar(
                 onCalendarCreated: (DateTime firstVisibleDay, DateTime lastVisibleDay, CalendarFormat calendarFormat) {
+                  if (_selectedDate == null) {
+                    _calendarController.setSelectedDay(DateTime.now().add(const Duration(days: 1)), runCallback: false);
+                  } else {
+                    _calendarController.setSelectedDay(_selectedDate);
+                  }
                   //if (_calendarController.selectedDay == null) {
-                  _calendarController.setSelectedDay(DateTime.now().add(const Duration(days: 1)), runCallback: false);
+                  //_calendarController.setSelectedDay(DateTime.now().add(const Duration(days: 1)), runCallback: false);
                   //}
                 },
                 rowHeight: 35.0,
@@ -483,6 +491,7 @@ class FilterEventsPageState extends State<FilterEventsPage> with TickerProviderS
                 ),
                 onDayLongPressed: (DateTime datePressed, List<dynamic> list1, List<dynamic> list2) {
                   _calendarController.setSelectedDay(datePressed);
+                  _selectedDate = datePressed;
 
                   // only allow the date popup if the conditions allowing for new runs is met
                   if (datePressed != null &&

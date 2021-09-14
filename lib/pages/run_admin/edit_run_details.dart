@@ -12,19 +12,99 @@ class EditRunDetailsPage extends StatefulWidget {
   _EditRunDetailsPageState createState() => _EditRunDetailsPageState();
 }
 
-class _EditRunDetailsPageState extends State<EditRunDetailsPage> with SingleTickerProviderStateMixin {
-  List<Tab> tabs = <Tab>[];
+class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+  final List<Tab> _tabs = <Tab>[];
 
   TabController _tabController;
+  bool _isUpdating = false;
 
   RunDetailAggregate _eventAggregate;
 
   final String userId = getStringPref(StringPrefsEnum.userId);
 
-  GlobalKey tabKey;
+  GlobalKey _tabKey;
+
+  final GlobalKey<FormState> _detailsFormKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _otherDetailsFormKey = GlobalKey<FormState>();
+
+  final MapController mapController = MapController();
+
+  final FocusNode _focusNodeAbsoluteEventNumber = FocusNode();
+  final FocusNode _focusNodeEventPriceForMembers = FocusNode();
+  final FocusNode _focusNodeEventPriceForNonMembers = FocusNode();
+  final FocusNode _focusNodeEventPriceForExtras = FocusNode();
+  final FocusNode _focusNodeExtrasDescription = FocusNode();
+  final FocusNode _focusNodeDatetime = FocusNode();
+  final FocusNode _focusNodeEventName = FocusNode();
+  final FocusNode _focusNodeEventDescription = FocusNode();
+  final FocusNode _focusNodeLocationOneLineDesc = FocusNode();
+
+  final TextEditingController _eventDatetimeController = TextEditingController();
+  final TextEditingController _eventNameController = TextEditingController();
+  final TextEditingController _eventDescriptionController = TextEditingController();
+  final TextEditingController _locationOneLineDescController = TextEditingController();
+  final TextEditingController _absoluteEventNumberController = TextEditingController();
+  final TextEditingController _eventPriceForMembersController = TextEditingController();
+  final TextEditingController _eventPriceForNonMembersController = TextEditingController();
+  final TextEditingController _eventPriceForExtrasController = TextEditingController();
+  final TextEditingController _extrasDescriptionController = TextEditingController();
+
+  bool _isVisible = true;
+  bool _isCountedRun = true;
+  int _usersCanEditRunAttendence;
+  bool _isPromotedEvent = false;
+  int _eventGeographicScope = 1;
+
+  @override
+  void dispose() {
+    _eventDatetimeController.dispose();
+    _eventNameController.dispose();
+    _eventDescriptionController.dispose();
+    _locationOneLineDescController.dispose();
+
+    _focusNodeDatetime.dispose();
+    _focusNodeEventName.dispose();
+    _focusNodeEventDescription.dispose();
+    _focusNodeLocationOneLineDesc.dispose();
+
+    _tabController.dispose();
+
+    _absoluteEventNumberController.dispose();
+    _eventPriceForMembersController.dispose();
+    _eventPriceForNonMembersController.dispose();
+    _eventPriceForExtrasController.dispose();
+    _extrasDescriptionController.dispose();
+
+    _focusNodeAbsoluteEventNumber.dispose();
+    _focusNodeEventPriceForMembers.dispose();
+    _focusNodeEventPriceForNonMembers.dispose();
+    _focusNodeEventPriceForExtras.dispose();
+    _focusNodeExtrasDescription.dispose();
+    super.dispose();
+  }
+
+  void _setTextFields() {
+    if (_eventAggregate.event != null) {
+      _eventNameController.text = _eventAggregate.event.eventName;
+      _eventDescriptionController.text = _eventAggregate.event.eventDescription;
+      _eventDatetimeController.text = _eventAggregate.event.eventStartDatetime.toString();
+      _locationOneLineDescController.text = _eventAggregate.event.locationOneLineDesc;
+
+      _absoluteEventNumberController.text = _eventAggregate.event.absoluteEventNumber?.toString() ?? '<auto>';
+      _eventPriceForMembersController.text = _eventAggregate.event.eventPriceForMembers?.toString() ?? '<default>';
+      _eventPriceForNonMembersController.text = _eventAggregate.event.eventPriceForNonMembers?.toString() ?? '<default>';
+      _eventPriceForExtrasController.text = _eventAggregate.event.eventPriceForExtras?.toString() ?? '<none>';
+      _extrasDescriptionController.text = _eventAggregate.event.extrasDescription ?? '<none>';
+      _eventGeographicScope = _eventAggregate.event.eventGeographicScope;
+    }
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -104,7 +184,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with SingleTick
                       tabBarIndicatorSize: TabBarIndicatorSize.tab,
                       indicatorRadius: 20.0,
                     ),
-                    tabs: tabs,
+                    tabs: _tabs,
                     controller: _tabController,
                   ),
                 ),
@@ -114,16 +194,17 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with SingleTick
                 top: 86,
                 bottom: 0,
                 child: Container(
-                  key: tabKey,
+                  key: _tabKey,
                   //color: Colors.teal,
                   width: MediaQuery.of(context).size.width,
                   child: TabBarView(
                     physics: const NeverScrollableScrollPhysics(),
                     controller: _tabController,
                     children: <Widget>[
-                      DetailsTab(_eventAggregate, widget.getUpdatedEventAggregate),
-                      LocationTab(_eventAggregate, widget.getUpdatedEventAggregate),
-                      OtherInfoTab(_eventAggregate, widget.getUpdatedEventAggregate),
+                      _buildDetailsPage(context),
+                      _buildMapPage(),
+                      _buildOtherDetailsPage(context)
+                      //OtherInfoTab(_eventAggregate, widget.getUpdatedEventAggregate),
                     ],
                   ),
                 )),
@@ -134,139 +215,28 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with SingleTick
   }
 
   @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
   void initState() {
     super.initState();
     _eventAggregate = widget.eventAggregate;
     _initTabs();
 
-    _tabController = TabController(vsync: this, length: tabs.length);
-    _tabController.addListener(() {
-      FocusScope.of(context).unfocus();
+    _setTextFields();
+
+    _focusNodeEventName.addListener(() {
+      setState(() {});
     });
-  }
 
-  // Color left = Colors.white;
-  // Color right = Colors.white;
+    _focusNodeEventDescription.addListener(() {
+      setState(() {});
+    });
 
-  void _initTabs() {
-    if (tabs.isEmpty) {
-      tabs.add(const Tab(text: 'Details'));
-      tabs.add(const Tab(text: 'Map'));
-      tabs.add(const Tab(text: 'Other'));
-      //tabs.add(const Tab(text: 'Date/Time'));
-    }
-  }
+    _focusNodeDatetime.addListener(() {
+      setState(() {});
+    });
 
-  // void _onSwitchToQrCode() {
-  //   _pageController.animateToPage(0,
-  //       duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
-  // }
-
-  // void _onSwitchToQrScanner() {
-  //   _pageController?.animateToPage(1,
-  //       duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
-  // }
-}
-
-class OtherInfoTab extends StatefulWidget {
-  const OtherInfoTab(this.eventAggregate, this.getUpdatedEventAggregate, {Key key}) : super(key: key);
-
-  final RunDetailAggregate eventAggregate;
-  final Function getUpdatedEventAggregate;
-
-  @override
-  _OtherInfoTabState createState() => _OtherInfoTabState();
-}
-
-class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
-  @override
-  bool get wantKeepAlive => true;
-
-  Key tabKey;
-  RunDetailAggregate _updatedEventAggregate;
-  bool _isUpdating = false;
-
-  final GlobalKey<FormState> _detailsFormKey = GlobalKey<FormState>();
-
-  final FocusNode _focusNodeAbsoluteEventNumber = FocusNode();
-  final FocusNode _focusNodeEventPriceForMembers = FocusNode();
-  final FocusNode _focusNodeEventPriceForNonMembers = FocusNode();
-  final FocusNode _focusNodeEventPriceForExtras = FocusNode();
-  final FocusNode _focusNodeExtrasDescription = FocusNode();
-
-  final TextEditingController _absoluteEventNumberController = TextEditingController();
-  final TextEditingController _eventPriceForMembersController = TextEditingController();
-  final TextEditingController _eventPriceForNonMembersController = TextEditingController();
-  final TextEditingController _eventPriceForExtrasController = TextEditingController();
-  final TextEditingController _extrasDescriptionController = TextEditingController();
-
-  bool _isVisible = true;
-  bool _isCountedRun = true;
-  int _usersCanEditRunAttendence;
-  bool _isPromotedEvent = false;
-  int _eventGeographicScope = 1;
-
-  @override
-  void dispose() {
-    _absoluteEventNumberController.dispose();
-    _eventPriceForMembersController.dispose();
-    _eventPriceForNonMembersController.dispose();
-    _eventPriceForExtrasController.dispose();
-    _extrasDescriptionController.dispose();
-
-    _focusNodeAbsoluteEventNumber.dispose();
-    _focusNodeEventPriceForMembers.dispose();
-    _focusNodeEventPriceForNonMembers.dispose();
-    _focusNodeEventPriceForExtras.dispose();
-    _focusNodeExtrasDescription.dispose();
-
-    super.dispose();
-  }
-
-  void setTextFields() {
-    _absoluteEventNumberController.text = _updatedEventAggregate.event.absoluteEventNumber?.toString() ?? '<auto>';
-    _eventPriceForMembersController.text = _updatedEventAggregate.event.eventPriceForMembers?.toString() ?? '<default>';
-    _eventPriceForNonMembersController.text = _updatedEventAggregate.event.eventPriceForNonMembers?.toString() ?? '<default>';
-    _eventPriceForExtrasController.text = _updatedEventAggregate.event.eventPriceForExtras?.toString() ?? '<none>';
-    _extrasDescriptionController.text = _updatedEventAggregate.event.extrasDescription ?? '<none>';
-    _eventGeographicScope = _updatedEventAggregate.event.eventGeographicScope;
-  }
-
-  KeyboardActionsConfig _buildConfig(BuildContext context) {
-    return KeyboardActionsConfig(
-      keyboardActionsPlatform: KeyboardActionsPlatform.ALL,
-      keyboardBarColor: Colors.grey[200],
-      nextFocus: true,
-      actions: <KeyboardActionsItem>[
-        KeyboardActionsItem(
-          focusNode: _focusNodeAbsoluteEventNumber,
-        ),
-        KeyboardActionsItem(
-          focusNode: _focusNodeEventPriceForMembers,
-        ),
-        KeyboardActionsItem(
-          focusNode: _focusNodeEventPriceForNonMembers,
-        ),
-        KeyboardActionsItem(
-          focusNode: _focusNodeEventPriceForExtras,
-        ),
-        KeyboardActionsItem(
-          focusNode: _focusNodeExtrasDescription,
-        ),
-      ],
-    );
-  }
-
-  @override
-  void initState() {
-    _updatedEventAggregate = widget.eventAggregate;
-    setTextFields();
+    _focusNodeLocationOneLineDesc.addListener(() {
+      setState(() {});
+    });
 
     _focusNodeAbsoluteEventNumber.addListener(() {
       setState(() {});
@@ -288,13 +258,189 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
       setState(() {});
     });
 
-    super.initState();
+    _tabController = TabController(vsync: this, length: _tabs.length);
+    _tabController.addListener(() {
+      FocusScope.of(context).unfocus();
+    });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
+  // Color left = Colors.white;
+  // Color right = Colors.white;
 
+  void _initTabs() {
+    if (_tabs.isEmpty) {
+      _tabs.add(const Tab(text: 'Details'));
+      _tabs.add(const Tab(text: 'Map'));
+      _tabs.add(const Tab(text: 'Other'));
+      //tabs.add(const Tab(text: 'Date/Time'));
+    }
+  }
+
+  void _useFacebookDetails() {
+    setState(() {
+      _isUpdating = true;
+      final EventsService nSvc = EventsService();
+      nSvc
+          .addEditEvent(
+        eventId: _eventAggregate.event.eventId,
+        useFbRunDetails: 1,
+      )
+          .then((String eventId) async {
+        _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+        setState(() {
+          _isUpdating = false;
+          _setTextFields();
+          final SnackBar snackBar = SnackBar(
+            duration: const Duration(seconds: 3),
+            content: const Text(
+              'Run details being synced from Facebook',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+            ),
+            backgroundColor: Colors.blue.shade700,
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        });
+      });
+    });
+  }
+
+  void _updateRunDetails(bool isMainRunDetails) {
+    if (isMainRunDetails) {
+      if (_detailsFormKey.currentState.validate()) {
+        //    If all data are correct then save data to out variables
+        _detailsFormKey.currentState.save();
+
+        setState(() {
+          FocusScope.of(context).unfocus();
+
+          _isUpdating = true;
+          final EventsService nSvc = EventsService();
+          nSvc
+              .addEditEvent(
+            eventId: _eventAggregate.event.eventId,
+            eventName: _eventNameController.text,
+            eventStartDatetime: DateTime.tryParse(_eventDatetimeController.text),
+            eventDescription: _eventDescriptionController.text,
+            locationOneLineDesc: _locationOneLineDescController.text,
+            useFbRunDetails: 0,
+            isCountedRun: _eventAggregate.event.isCountedRun == 1,
+            kennelId: _eventAggregate.event.kennelId,
+            eventPriceForMembers: _eventPriceForMembersController.text == '<default>' ? -2 : num.tryParse(_eventPriceForMembersController.text),
+            eventPriceForNonMembers: _eventPriceForNonMembersController.text == '<default>' ? -2 : num.tryParse(_eventPriceForNonMembersController.text),
+            eventPriceForExtras: _eventPriceForExtrasController.text == '<none>' ? -2 : num.tryParse(_eventPriceForExtrasController.text),
+          )
+              .then((String eventId) async {
+            _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+            setState(() {
+              _isUpdating = false;
+              final SnackBar snackBar = SnackBar(
+                duration: const Duration(seconds: 3),
+                content: const Text(
+                  'Run details have been saved',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                ),
+                backgroundColor: Colors.blue.shade700,
+              );
+              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+            });
+          });
+        });
+      }
+    } else {
+      if (_eventAggregate.event.eventId == null) {
+        IveCoreUtilities.showAlert(context, 'Please save Details first',
+                'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK')
+            .then((void dummy) {
+          _tabController.animateTo(0);
+        });
+      } else {
+        if (_otherDetailsFormKey.currentState.validate()) {
+          //    If all data are correct then save data to out variables
+          _otherDetailsFormKey.currentState.save();
+          setState(() {
+            FocusScope.of(context).unfocus();
+            _isUpdating = true;
+            final EventsService nSvc = EventsService();
+            nSvc
+                .addEditEvent(
+              eventId: _eventAggregate.event.eventId,
+              eventPriceForMembers: _eventPriceForMembersController.text == '<default>' ? -2 : num.tryParse(_eventPriceForMembersController.text),
+              eventPriceForNonMembers: _eventPriceForNonMembersController.text == '<default>' ? -2 : num.tryParse(_eventPriceForNonMembersController.text),
+              // note for "auto" the value we send to the server is '0' because this will
+              // remove any previous absoluteEventNumber that is stored there
+              absoluteEventNumber: _absoluteEventNumberController.text == '<auto>' ? 0 : num.tryParse(_absoluteEventNumberController.text),
+              eventPriceForExtras: _eventPriceForExtrasController.text == '<none>' ? -2 : num.tryParse(_eventPriceForExtrasController.text),
+              extrasDescription: _extrasDescriptionController.text,
+              isCountedRun: _isCountedRun,
+              isVisible: _isVisible,
+              isPromotedEvent: _isPromotedEvent,
+              eventGeographicScope: _eventGeographicScope,
+              usersCanEditRunAttendence: _usersCanEditRunAttendence,
+            )
+                .then((String eventId) async {
+              _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+              setState(() {
+                _isUpdating = false;
+                final SnackBar snackBar = SnackBar(
+                  duration: const Duration(seconds: 3),
+                  content: const Text(
+                    'Other info has been saved',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                  ),
+                  backgroundColor: Colors.blue.shade700,
+                );
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              });
+            });
+          });
+        }
+      }
+    }
+  }
+
+  KeyboardActionsConfig _buildConfig(BuildContext context) {
+    return KeyboardActionsConfig(
+      keyboardActionsPlatform: KeyboardActionsPlatform.ALL,
+      keyboardBarColor: Colors.grey[200],
+      nextFocus: true,
+      actions: <KeyboardActionsItem>[
+        KeyboardActionsItem(
+          focusNode: _focusNodeEventName,
+        ),
+        KeyboardActionsItem(
+          focusNode: _focusNodeEventDescription,
+        ),
+
+        KeyboardActionsItem(
+          focusNode: _focusNodeAbsoluteEventNumber,
+        ),
+        KeyboardActionsItem(
+          focusNode: _focusNodeEventPriceForMembers,
+        ),
+        KeyboardActionsItem(
+          focusNode: _focusNodeEventPriceForNonMembers,
+        ),
+        KeyboardActionsItem(
+          focusNode: _focusNodeEventPriceForExtras,
+        ),
+        KeyboardActionsItem(
+          focusNode: _focusNodeExtrasDescription,
+        ),
+
+        // KeyboardActionsItem(
+        //   focusNode: focusNodeDatetime,
+        // ),
+        KeyboardActionsItem(
+          focusNode: _focusNodeLocationOneLineDesc,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailsPage(BuildContext context) {
     return Theme(
       data: Theme.of(context).copyWith(
         disabledColor: Colors.grey,
@@ -324,7 +470,457 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
                       Container(
                         margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
                         padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
-                        child: Text(_updatedEventAggregate.event.useFbRunDetails == 1 ? 'Run data from Facebook' : 'Run data from Harrier Central',
+                        child: Text(_eventAggregate.event.useFbRunDetails == 1 ? 'Run data from Facebook' : 'Run data from Harrier Central',
+                            textAlign: TextAlign.center, style: headingStyle20Black),
+                        decoration: BoxDecoration(
+                          color: Colors.yellow[100],
+                          border: Border.all(width: 2.0),
+                          borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                        ),
+                      ),
+                      Container(
+                        color: _focusNodeEventName.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                        margin: const EdgeInsets.only(top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        child: TextFormField(
+                          focusNode: _focusNodeEventName,
+                          controller: _eventNameController,
+                          minLines: 1,
+                          maxLines: 2,
+                          onChanged: (String text) {
+                            //widget.EventName = text;
+                          },
+                          keyboardType: TextInputType.multiline,
+                          validator: (String val) {
+                            if (val.isEmpty) {
+                              return 'Please provide an event name';
+                            } else {
+                              return null;
+                            }
+                          },
+                          textCapitalization: TextCapitalization.sentences,
+                          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                          decoration: InputDecoration(
+                            labelText: 'Event name',
+                            fillColor: Colors.red,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              borderSide: const BorderSide(),
+                            ),
+                            hintText: 'Event Name',
+                            hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        color: _focusNodeEventDescription.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                        margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        child: TextFormField(
+                          onChanged: (String text) {
+                            //widget.EventDescription = text;
+                          },
+                          maxLines: null,
+                          focusNode: _focusNodeEventDescription,
+                          controller: _eventDescriptionController,
+                          validator: (String val) {
+                            if (val.isEmpty) {
+                              return 'Please provide an event description';
+                            } else {
+                              return null;
+                            }
+                          },
+                          keyboardType: TextInputType.multiline,
+                          textCapitalization: TextCapitalization.sentences,
+                          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                          decoration: InputDecoration(
+                            labelText: 'Event Description',
+                            fillColor: Colors.red,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              borderSide: const BorderSide(),
+                            ),
+                            hintText: 'Event Description',
+                            hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        color: _focusNodeLocationOneLineDesc.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                        margin: const EdgeInsets.only(top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        child: TextFormField(
+                          focusNode: _focusNodeLocationOneLineDesc,
+                          controller: _locationOneLineDescController,
+                          minLines: 1,
+                          maxLines: 2,
+                          onChanged: (String text) {
+                            //widget.EventName = text;
+                          },
+                          keyboardType: TextInputType.multiline,
+                          validator: (String val) {
+                            if (val.isEmpty) {
+                              return 'Please provide a location description';
+                            } else {
+                              return null;
+                            }
+                          },
+                          textCapitalization: TextCapitalization.sentences,
+                          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                          decoration: InputDecoration(
+                            labelText: 'Location one-line description',
+                            fillColor: Colors.red,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              borderSide: const BorderSide(),
+                            ),
+                            hintText: 'Location description',
+                            hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        color: _focusNodeDatetime.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                        margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        child: DateTimePicker(
+                          decoration: InputDecoration(
+                            labelText: 'Date / Time',
+                            fillColor: Colors.red,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              borderSide: const BorderSide(),
+                            ),
+                            //hintText: 'Event Number (or \'<auto>\')',
+                            hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                          ),
+                          focusNode: _focusNodeDatetime,
+                          controller: _eventDatetimeController,
+                          type: DateTimePickerType.dateTime,
+                          use24HourFormat: false,
+                          locale: const Locale('en', 'US'),
+                          dateMask: 'E, d MMM, yyyy, h:mm a',
+                          //initialValue: DateTime.now().toString(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                          //icon: const Icon(Icons.event),
+                          dateLabelText: 'Date',
+                          timeLabelText: 'Hour',
+                          // selectableDayPredicate: (DateTime date) {
+                          //   // Disable weekend days to select from the calendar
+                          //   if (date.weekday == 6 || date.weekday == 7) {
+                          //     return false;
+                          //   }
+
+                          //   return true;
+                          // },
+                          // onChanged: (val) => print(val),
+                          validator: (String val) {
+                            //print(val);
+                            return null;
+                          },
+                          //onSaved: (val) => print(val),
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(top: 10.0, bottom: 60.0, left: 25.0, right: 25.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          //crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            _isUpdating
+                                ? Container(
+                                    height: 70.0,
+                                    width: 70.0,
+                                    child: HcCircularProgressIndicator(key: UniqueKey()),
+                                  )
+                                : Container(
+                                    width: 162.0,
+                                    child: ElevatedButton(
+                                      child: Text('Save Details', style: buttonLabelStyleMedium),
+                                      onPressed: () {
+                                        setState(() {
+                                          _updateRunDetails(true);
+                                        });
+                                      },
+                                    ),
+                                  ),
+                            if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                              const SizedBox(width: 10.0),
+                              Container(
+                                width: 162.0,
+                                child: ElevatedButton(
+                                  child: Text('Use Facebook', style: buttonLabelStyleMedium),
+                                  onPressed: () {
+                                    setState(() {
+                                      _isUpdating = true;
+                                      _useFacebookDetails();
+                                    });
+                                  },
+                                ),
+                              ),
+                            ]
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMapPage() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Expanded(
+          child: Stack(
+            alignment: AlignmentDirectional.center,
+            children: <Widget>[
+              // Container(
+              //   //decoration: Backgrounds.defaultHcBackground(),
+              //   height: MediaQuery.of(context).size.height - 300,
+              //   child:
+
+              FlutterMap(
+                mapController: mapController,
+                options: MapOptions(
+                  center: LatLng(_eventAggregate.event.narrowEventLatitude + .0, _eventAggregate.event.narrowEventLongitude + .0),
+                  zoom: 14.0,
+                  minZoom: 1.0,
+                  maxZoom: 18.0,
+                  // plugins: <MarkerClusterPlugin>[
+                  //   MarkerClusterPlugin(),
+                  // ],
+                ),
+                layers: <LayerOptions>[
+                  TileLayerOptions(
+                      urlTemplate:
+                          //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                      //subdomains: ['a', 'b', 'c']),
+                      subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
+                  MarkerLayerOptions(
+                    markers: <Marker>[
+                      Marker(
+                        height: 50.0,
+                        width: 50.0,
+                        point: LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0),
+                        builder: (BuildContext ctx) => Container(
+                          padding: const EdgeInsets.all(1.0),
+                          height: 50.0,
+                          width: 50.0,
+                          child: IgnorePointer(
+                            ignoring: true,
+                            child: Image.asset(
+                              'images/other/map_current_location.png',
+                              height: 50.0,
+                              width: 50.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Marker(
+                        width: 120.0,
+                        height: 120.0,
+                        point: LatLng(_eventAggregate.event.narrowEventLatitude + .0, _eventAggregate.event.narrowEventLongitude + .0),
+                        builder: (BuildContext ctx) => GestureDetector(
+                          //onTap: () => _launchMaps(widget.futureRun.event),
+                          child: Container(
+                            padding: const EdgeInsets.only(bottom: 58.0),
+                            child: Image.asset('images/icons/map_pin_foot.png'),
+                            //child: FlutterLogo(colors: Colors.purple),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+
+              IgnorePointer(
+                ignoring: true,
+                child: Image.asset('images/other/map_center_target.png', height: 300.0, width: 300.0),
+              ),
+              Positioned(
+                left: 10.0,
+                right: 10.0,
+                bottom: 40.0,
+                child: Container(
+                  padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+                  child: Text(_eventAggregate.event.useFbLatLon == 1 ? 'Location from Facebook' : 'Location from Harrier Central',
+                      textAlign: TextAlign.center, style: headingStyle20Black),
+                  decoration: BoxDecoration(
+                    color: Colors.yellow[100],
+                    border: Border.all(width: 2.0),
+                    borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 10.0,
+                top: 10.0,
+                child: GestureDetector(
+                  onTap: () {
+                    mapController.move(
+                      LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0),
+                      mapController.zoom,
+                    );
+                  },
+                  child: Container(
+                    height: 50.0,
+                    width: 50.0,
+                    child: Image.asset('images/other/set_map_to_current_location.png'),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 70.0,
+                top: 10.0,
+                child: GestureDetector(
+                  onTap: () {
+                    mapController.move(
+                      LatLng(_eventAggregate.event.narrowEventLatitude + .0, _eventAggregate.event.narrowEventLongitude + .0),
+                      mapController.zoom,
+                    );
+                  },
+                  child: Container(
+                    height: 50.0,
+                    width: 50.0,
+                    child: Image.asset('images/other/set_map_to_event_location.png'),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 10.0,
+                right: 10.0,
+                bottom: 80.0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    _isUpdating
+                        ? Container(
+                            height: 70.0,
+                            width: 70.0,
+                            child: HcCircularProgressIndicator(key: UniqueKey()),
+                          )
+                        : ElevatedButton(
+                            child: Text('Set Location', style: buttonLabelStyleMedium),
+                            onPressed: () {
+                              if (_eventAggregate?.event?.eventId == null) {
+                                IveCoreUtilities.showAlert(context, 'Please save details first',
+                                        'When creating a new event, please save the information on the Details tab before saving the location', 'OK')
+                                    .then((void dummy) {
+                                  _tabController.animateTo(0);
+                                });
+                              } else {
+                                setState(() {
+                                  _isUpdating = true;
+                                  final EventsService nSvc = EventsService();
+                                  nSvc
+                                      .addEditEvent(
+                                    eventId: _eventAggregate.event.eventId,
+                                    lat: mapController.center.latitude,
+                                    lon: mapController.center.longitude,
+                                    useFbLatLon: 0,
+                                  )
+                                      .then((String eventId) async {
+                                    _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                                    setState(() {
+                                      _isUpdating = false;
+                                      final SnackBar snackBar = SnackBar(
+                                        duration: const Duration(seconds: 3),
+                                        content: const Text(
+                                          'Updated location saved in Harrier Central',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                        ),
+                                        backgroundColor: Colors.blue.shade700,
+                                      );
+                                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                    });
+                                  });
+
+                                  //_showEventPopup(_calendarController.selectedDay);
+                                });
+                              }
+                            },
+                          ),
+                    if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                      ElevatedButton(
+                        child: Text('Use Facebook', style: buttonLabelStyleMedium),
+                        onPressed: () {
+                          setState(() {
+                            _isUpdating = true;
+                            final EventsService nSvc = EventsService();
+                            nSvc
+                                .addEditEvent(
+                              eventId: _eventAggregate.event.eventId,
+                              useFbLatLon: 1,
+                            )
+                                .then((String eventId) async {
+                              _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                              setState(() {
+                                _isUpdating = false;
+                                final SnackBar snackBar = SnackBar(
+                                  duration: const Duration(seconds: 3),
+                                  content: const Text(
+                                    'Location is being synced from Facebook',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                  ),
+                                  backgroundColor: Colors.blue.shade700,
+                                );
+                                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              });
+                            });
+                          });
+                        },
+                      ),
+                    ]
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOtherDetailsPage(BuildContext context) {
+    return Theme(
+      data: Theme.of(context).copyWith(
+        disabledColor: Colors.grey,
+        iconTheme: IconTheme.of(context).copyWith(
+          color: Colors.red.shade700,
+          size: 35,
+        ),
+      ),
+      child: KeyboardActions(
+        config: _buildConfig(context),
+        tapOutsideBehavior: TapOutsideBehavior.none,
+        child: Container(
+          //elevation: 2.0,
+          //decoration: Backgrounds.defaultHcBackgroundLight(),
+          // shape: RoundedRectangleBorder(
+          //   borderRadius: BorderRadius.circular(8.0),
+          // ),
+          child: SingleChildScrollView(
+            child: Form(
+              key: _otherDetailsFormKey,
+              child: Wrap(
+                children: <Widget>[
+                  Column(
+                    //mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Container(
+                        margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
+                        padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
+                        child: Text(_eventAggregate.event.useFbRunDetails == 1 ? 'Run data from Facebook' : 'Run data from Harrier Central',
                             textAlign: TextAlign.center, style: headingStyle20Black),
                         decoration: BoxDecoration(
                           color: Colors.yellow[100],
@@ -556,11 +1152,11 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
                                 _isVisible = result;
                                 return null;
                               },
-                              initialValue: _updatedEventAggregate.event.isVisible == 1,
+                              initialValue: _eventAggregate.event.isVisible == 1,
                             ),
                             CheckboxFormField(
                               title: const Text('Count this run'),
-                              initialValue: _updatedEventAggregate.event.isCountedRun == 1,
+                              initialValue: _eventAggregate.event.isCountedRun == 1,
                               validator: (bool result) {
                                 _isCountedRun = result;
                                 return null;
@@ -568,7 +1164,7 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
                             ),
                             CheckboxFormField(
                               title: const Text('Users can edit run history'),
-                              initialValue: _updatedEventAggregate.event.canEditRunAttendence == null ? null : _updatedEventAggregate.event.canEditRunAttendence == 1,
+                              initialValue: _eventAggregate.event.canEditRunAttendence == null ? null : _eventAggregate.event.canEditRunAttendence == 1,
                               tristate: true,
                               validator: (bool result) {
                                 if (result == null) {
@@ -582,7 +1178,7 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
                             ),
                             CheckboxFormField(
                               title: const Text('Promote this run'),
-                              initialValue: _updatedEventAggregate.event.isPromotedEvent == 1,
+                              initialValue: _eventAggregate.event.isPromotedEvent == 1,
                               validator: (bool result) {
                                 _isPromotedEvent = result;
                                 return null;
@@ -721,12 +1317,12 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
                                     child: HcCircularProgressIndicator(key: UniqueKey()),
                                   )
                                 : Container(
-                                    width: 162.0,
+                                    width: 300.0,
                                     child: ElevatedButton(
-                                      child: Text('Save Details', style: buttonLabelStyleMedium),
+                                      child: Text('Save Other Information', style: buttonLabelStyleMedium),
                                       onPressed: () {
                                         setState(() {
-                                          _updateOtherDetails();
+                                          _updateRunDetails(false);
                                         });
                                       },
                                     ),
@@ -758,739 +1354,6 @@ class _OtherInfoTabState extends State<OtherInfoTab> with AutomaticKeepAliveClie
         ),
       ),
     );
-  }
-
-  // void _useFacebookDetails() {
-  //   setState(() {
-  //     _isUpdating = true;
-  //     final EventsService nSvc = EventsService();
-  //     nSvc
-  //         .addEditEvent(
-  //       eventId: _eventAggregate.event.eventId,
-  //       useFbRunDetails: 1,
-  //     )
-  //         .then((void dummy) async {
-  //       _updatedEventAggregate = await widget.getUpdatedEventAggregate(eventId);
-  //       setState(() {
-  //         _isUpdating = false;
-  //         setTextFields();
-  //       });
-  //     });
-  //   });
-  // }
-
-  void _updateOtherDetails() {
-    if (_detailsFormKey.currentState.validate()) {
-      //    If all data are correct then save data to out variables
-      _detailsFormKey.currentState.save();
-
-      setState(() {
-        _isUpdating = true;
-        final EventsService nSvc = EventsService();
-        nSvc
-            .addEditEvent(
-          eventId: _updatedEventAggregate.event.eventId,
-          eventPriceForMembers: _eventPriceForMembersController.text == '<default>' ? -2 : num.tryParse(_eventPriceForMembersController.text),
-          eventPriceForNonMembers: _eventPriceForNonMembersController.text == '<default>' ? -2 : num.tryParse(_eventPriceForNonMembersController.text),
-          // note for "auto" the value we send to the server is '0' because this will
-          // remove any previous absoluteEventNumber that is stored there
-          absoluteEventNumber: _absoluteEventNumberController.text == '<auto>' ? 0 : num.tryParse(_absoluteEventNumberController.text),
-          eventPriceForExtras: _eventPriceForExtrasController.text == '<none>' ? -2 : num.tryParse(_eventPriceForExtrasController.text),
-          extrasDescription: _extrasDescriptionController.text,
-          isCountedRun: _isCountedRun,
-          isVisible: _isVisible,
-          isPromotedEvent: _isPromotedEvent,
-          eventGeographicScope: _eventGeographicScope,
-          usersCanEditRunAttendence: _usersCanEditRunAttendence,
-        )
-            .then((String eventId) async {
-          _updatedEventAggregate = await widget.getUpdatedEventAggregate(eventId);
-          setState(() {
-            _isUpdating = false;
-            final SnackBar snackBar = SnackBar(
-              duration: const Duration(seconds: 3),
-              content: const Text(
-                'Information has been saved',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-              ),
-              backgroundColor: Theme.of(context).accentColor,
-            );
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-          });
-        });
-      });
-    } else {
-//    If all data are not valid then start auto validation.
-      // setState(() {
-      //   _autoValidate = true;
-      // });
-    }
-  }
-}
-
-class LocationTab extends StatefulWidget {
-  const LocationTab(this.eventAggregate, this.getUpdatedEventAggregate, {Key key}) : super(key: key);
-
-  final RunDetailAggregate eventAggregate;
-  final Function getUpdatedEventAggregate;
-
-  @override
-  _LocationTabState createState() => _LocationTabState();
-}
-
-class _LocationTabState extends State<LocationTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
-  @override
-  bool get wantKeepAlive => true;
-
-  Key tabKey;
-  RunDetailAggregate _updatedEventAggregate;
-  bool _isUpdating = false;
-
-  final MapController mapController = MapController();
-
-  @override
-  void initState() {
-    _updatedEventAggregate = widget.eventAggregate;
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    return runLocationsBody();
-    // return Stack(children: <Widget>[
-    //   Container(height: MediaQuery.of(context).size.height, width: MediaQuery.of(context).size.width),
-    //   Positioned(top: 0, left: 0, width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.height, child: runLocationsBody()),
-    //   OfflineModeRibbon(
-    //     showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus.not_connected,
-    //     lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
-    //     ribbonImage: 'images/icons/offline_mode.png',
-    //   ),
-    // ]);
-  }
-
-  Widget runLocationsBody() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Expanded(
-          child: Stack(
-            alignment: AlignmentDirectional.center,
-            children: <Widget>[
-              // Container(
-              //   //decoration: Backgrounds.defaultHcBackground(),
-              //   height: MediaQuery.of(context).size.height - 300,
-              //   child:
-
-              FlutterMap(
-                mapController: mapController,
-                options: MapOptions(
-                  center: LatLng(_updatedEventAggregate.event.narrowEventLatitude + .0, _updatedEventAggregate.event.narrowEventLongitude + .0),
-                  zoom: 14.0,
-                  minZoom: 1.0,
-                  maxZoom: 18.0,
-                  // plugins: <MarkerClusterPlugin>[
-                  //   MarkerClusterPlugin(),
-                  // ],
-                ),
-                layers: <LayerOptions>[
-                  TileLayerOptions(
-                      urlTemplate:
-                          //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                      //subdomains: ['a', 'b', 'c']),
-                      subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
-                  MarkerLayerOptions(
-                    markers: <Marker>[
-                      Marker(
-                        height: 50.0,
-                        width: 50.0,
-                        point: LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0),
-                        builder: (BuildContext ctx) => Container(
-                          padding: const EdgeInsets.all(1.0),
-                          height: 50.0,
-                          width: 50.0,
-                          child: IgnorePointer(
-                            ignoring: true,
-                            child: Image.asset(
-                              'images/other/map_current_location.png',
-                              height: 50.0,
-                              width: 50.0,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Marker(
-                        width: 120.0,
-                        height: 120.0,
-                        point: LatLng(_updatedEventAggregate.event.narrowEventLatitude + .0, _updatedEventAggregate.event.narrowEventLongitude + .0),
-                        builder: (BuildContext ctx) => GestureDetector(
-                          //onTap: () => _launchMaps(widget.futureRun.event),
-                          child: Container(
-                            padding: const EdgeInsets.only(bottom: 58.0),
-                            child: Image.asset('images/icons/map_pin_foot.png'),
-                            //child: FlutterLogo(colors: Colors.purple),
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-
-              IgnorePointer(
-                ignoring: true,
-                child: Image.asset('images/other/map_center_target.png', height: 300.0, width: 300.0),
-              ),
-              Positioned(
-                left: 10.0,
-                right: 10.0,
-                bottom: 40.0,
-                child: Container(
-                  padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
-                  child: Text(_updatedEventAggregate.event.useFbLatLon == 1 ? 'Location from Facebook' : 'Location from Harrier Central',
-                      textAlign: TextAlign.center, style: headingStyle20Black),
-                  decoration: BoxDecoration(
-                    color: Colors.yellow[100],
-                    border: Border.all(width: 2.0),
-                    borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 10.0,
-                top: 10.0,
-                child: GestureDetector(
-                  onTap: () {
-                    mapController.move(
-                      LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0),
-                      mapController.zoom,
-                    );
-                  },
-                  child: Container(
-                    height: 50.0,
-                    width: 50.0,
-                    child: Image.asset('images/other/set_map_to_current_location.png'),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 70.0,
-                top: 10.0,
-                child: GestureDetector(
-                  onTap: () {
-                    mapController.move(
-                      LatLng(_updatedEventAggregate.event.narrowEventLatitude + .0, _updatedEventAggregate.event.narrowEventLongitude + .0),
-                      mapController.zoom,
-                    );
-                  },
-                  child: Container(
-                    height: 50.0,
-                    width: 50.0,
-                    child: Image.asset('images/other/set_map_to_event_location.png'),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 10.0,
-                right: 10.0,
-                bottom: 80.0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    _isUpdating
-                        ? Container(
-                            height: 70.0,
-                            width: 70.0,
-                            child: HcCircularProgressIndicator(key: UniqueKey()),
-                          )
-                        : ElevatedButton(
-                            child: Text('Set Location', style: buttonLabelStyleMedium),
-                            onPressed: () {
-                              if (_updatedEventAggregate?.event?.eventId == null) {
-                                IveCoreUtilities.showAlert(context, 'Please save details first',
-                                    'When creating a new event, please save the information on the Details tab before saving the location', 'OK');
-                              } else {
-                                setState(() {
-                                  _isUpdating = true;
-                                  final EventsService nSvc = EventsService();
-                                  nSvc
-                                      .addEditEvent(
-                                    eventId: _updatedEventAggregate.event.eventId,
-                                    lat: mapController.center.latitude,
-                                    lon: mapController.center.longitude,
-                                    useFbLatLon: 0,
-                                  )
-                                      .then((String eventId) async {
-                                    _updatedEventAggregate = await widget.getUpdatedEventAggregate(eventId);
-                                    setState(() {
-                                      _isUpdating = false;
-                                      final SnackBar snackBar = SnackBar(
-                                        duration: const Duration(seconds: 3),
-                                        content: const Text(
-                                          'Updated location saved in Harrier Central',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-                                        ),
-                                        backgroundColor: Theme.of(context).accentColor,
-                                      );
-                                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                    });
-                                  });
-
-                                  //_showEventPopup(_calendarController.selectedDay);
-                                });
-                              }
-                            },
-                          ),
-                    if ((_updatedEventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
-                      ElevatedButton(
-                        child: Text('Use Facebook', style: buttonLabelStyleMedium),
-                        onPressed: () {
-                          setState(() {
-                            _isUpdating = true;
-                            final EventsService nSvc = EventsService();
-                            nSvc
-                                .addEditEvent(
-                              eventId: _updatedEventAggregate.event.eventId,
-                              useFbLatLon: 1,
-                            )
-                                .then((String eventId) async {
-                              _updatedEventAggregate = await widget.getUpdatedEventAggregate(eventId);
-                              setState(() {
-                                _isUpdating = false;
-                                final SnackBar snackBar = SnackBar(
-                                  duration: const Duration(seconds: 3),
-                                  content: const Text(
-                                    'Location is being synced from Facebook',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-                                  ),
-                                  backgroundColor: Theme.of(context).accentColor,
-                                );
-                                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                              });
-                            });
-                          });
-                        },
-                      ),
-                    ]
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class DetailsTab extends StatefulWidget {
-  const DetailsTab(this.eventAggregate, this.getUpdatedEventAggregate, {Key key}) : super(key: key);
-
-  final RunDetailAggregate eventAggregate;
-  final Function getUpdatedEventAggregate;
-
-  @override
-  _DetailsTabState createState() => _DetailsTabState();
-}
-
-class _DetailsTabState extends State<DetailsTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
-  @override
-  bool get wantKeepAlive => true;
-
-  RunDetailAggregate _updatedEventAggregate;
-  bool _isUpdating = false;
-
-  final GlobalKey<FormState> _detailsFormKey = GlobalKey<FormState>();
-
-  final FocusNode _focusNodeDatetime = FocusNode();
-  final FocusNode _focusNodeEventName = FocusNode();
-  final FocusNode _focusNodeEventDescription = FocusNode();
-  final FocusNode _focusNodeLocationOneLineDesc = FocusNode();
-
-  final TextEditingController _eventDatetimeController = TextEditingController();
-  final TextEditingController _eventNameController = TextEditingController();
-  final TextEditingController _eventDescriptionController = TextEditingController();
-  final TextEditingController _locationOneLineDescController = TextEditingController();
-
-  @override
-  void dispose() {
-    _eventDatetimeController.dispose();
-    _eventNameController.dispose();
-    _eventDescriptionController.dispose();
-    _locationOneLineDescController.dispose();
-
-    _focusNodeDatetime.dispose();
-    _focusNodeEventName.dispose();
-    _focusNodeEventDescription.dispose();
-    _focusNodeLocationOneLineDesc.dispose();
-
-    super.dispose();
-  }
-
-  void setTextFields() {
-    if (_updatedEventAggregate.event != null) {
-      _eventNameController.text = _updatedEventAggregate.event.eventName;
-      _eventDescriptionController.text = _updatedEventAggregate.event.eventDescription;
-      _eventDatetimeController.text = _updatedEventAggregate.event.eventStartDatetime.toString();
-      _locationOneLineDescController.text = _updatedEventAggregate.event.locationOneLineDesc;
-    }
-  }
-
-  @override
-  void initState() {
-    _updatedEventAggregate = widget.eventAggregate;
-    setTextFields();
-
-    _focusNodeEventName.addListener(() {
-      setState(() {});
-    });
-
-    _focusNodeEventDescription.addListener(() {
-      setState(() {});
-    });
-
-    _focusNodeDatetime.addListener(() {
-      setState(() {});
-    });
-
-    _focusNodeLocationOneLineDesc.addListener(() {
-      setState(() {});
-    });
-
-    super.initState();
-  }
-
-  KeyboardActionsConfig _buildConfig(BuildContext context) {
-    return KeyboardActionsConfig(
-      keyboardActionsPlatform: KeyboardActionsPlatform.ALL,
-      keyboardBarColor: Colors.grey[200],
-      nextFocus: true,
-      actions: <KeyboardActionsItem>[
-        KeyboardActionsItem(
-          focusNode: _focusNodeEventName,
-        ),
-        KeyboardActionsItem(
-          focusNode: _focusNodeEventDescription,
-        ),
-        // KeyboardActionsItem(
-        //   focusNode: focusNodeDatetime,
-        // ),
-        KeyboardActionsItem(
-          focusNode: _focusNodeLocationOneLineDesc,
-        ),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-
-    return Theme(
-      data: Theme.of(context).copyWith(
-        disabledColor: Colors.grey,
-        iconTheme: IconTheme.of(context).copyWith(
-          color: Colors.red.shade700,
-          size: 35,
-        ),
-      ),
-      child: KeyboardActions(
-        config: _buildConfig(context),
-        tapOutsideBehavior: TapOutsideBehavior.none,
-        child: Container(
-          //elevation: 2.0,
-          //decoration: Backgrounds.defaultHcBackgroundLight(),
-          // shape: RoundedRectangleBorder(
-          //   borderRadius: BorderRadius.circular(8.0),
-          // ),
-          child: SingleChildScrollView(
-            child: Form(
-              key: _detailsFormKey,
-              child: Wrap(
-                children: <Widget>[
-                  Column(
-                    //mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Container(
-                        margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
-                        padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
-                        child: Text(_updatedEventAggregate.event.useFbRunDetails == 1 ? 'Run data from Facebook' : 'Run data from Harrier Central',
-                            textAlign: TextAlign.center, style: headingStyle20Black),
-                        decoration: BoxDecoration(
-                          color: Colors.yellow[100],
-                          border: Border.all(width: 2.0),
-                          borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                        ),
-                      ),
-                      Container(
-                        color: _focusNodeEventName.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                        margin: const EdgeInsets.only(top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
-                        child: TextFormField(
-                          focusNode: _focusNodeEventName,
-                          controller: _eventNameController,
-                          minLines: 1,
-                          maxLines: 2,
-                          onChanged: (String text) {
-                            //widget.EventName = text;
-                          },
-                          keyboardType: TextInputType.multiline,
-                          validator: (String val) {
-                            if (val.isEmpty) {
-                              return 'Please provide an event name';
-                            } else {
-                              return null;
-                            }
-                          },
-                          textCapitalization: TextCapitalization.sentences,
-                          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                          decoration: InputDecoration(
-                            labelText: 'Event name',
-                            fillColor: Colors.red,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(),
-                            ),
-                            hintText: 'Event Name',
-                            hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        color: _focusNodeEventDescription.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                        margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
-                        child: TextFormField(
-                          onChanged: (String text) {
-                            //widget.EventDescription = text;
-                          },
-                          maxLines: null,
-                          focusNode: _focusNodeEventDescription,
-                          controller: _eventDescriptionController,
-                          validator: (String val) {
-                            if (val.isEmpty) {
-                              return 'Please provide an event description';
-                            } else {
-                              return null;
-                            }
-                          },
-                          keyboardType: TextInputType.multiline,
-                          textCapitalization: TextCapitalization.sentences,
-                          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                          decoration: InputDecoration(
-                            labelText: 'Event Description',
-                            fillColor: Colors.red,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(),
-                            ),
-                            hintText: 'Event Description',
-                            hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        color: _focusNodeLocationOneLineDesc.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                        margin: const EdgeInsets.only(top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
-                        child: TextFormField(
-                          focusNode: _focusNodeLocationOneLineDesc,
-                          controller: _locationOneLineDescController,
-                          minLines: 1,
-                          maxLines: 2,
-                          onChanged: (String text) {
-                            //widget.EventName = text;
-                          },
-                          keyboardType: TextInputType.multiline,
-                          validator: (String val) {
-                            if (val.isEmpty) {
-                              return 'Please provide a location description';
-                            } else {
-                              return null;
-                            }
-                          },
-                          textCapitalization: TextCapitalization.sentences,
-                          style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                          decoration: InputDecoration(
-                            labelText: 'Location one-line description',
-                            fillColor: Colors.red,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(),
-                            ),
-                            hintText: 'Location description',
-                            hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        color: _focusNodeDatetime.hasFocus ? Colors.yellow.shade50 : Colors.white,
-                        margin: const EdgeInsets.only(top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
-                        child: DateTimePicker(
-                          decoration: InputDecoration(
-                            labelText: 'Date / Time',
-                            fillColor: Colors.red,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(),
-                            ),
-                            //hintText: 'Event Number (or \'<auto>\')',
-                            hintStyle: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                          ),
-                          focusNode: _focusNodeDatetime,
-                          controller: _eventDatetimeController,
-                          type: DateTimePickerType.dateTime,
-                          use24HourFormat: false,
-                          locale: const Locale('en', 'US'),
-                          dateMask: 'E, d MMM, yyyy, h:mm a',
-                          //initialValue: DateTime.now().toString(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100),
-                          //icon: const Icon(Icons.event),
-                          dateLabelText: 'Date',
-                          timeLabelText: 'Hour',
-                          // selectableDayPredicate: (DateTime date) {
-                          //   // Disable weekend days to select from the calendar
-                          //   if (date.weekday == 6 || date.weekday == 7) {
-                          //     return false;
-                          //   }
-
-                          //   return true;
-                          // },
-                          // onChanged: (val) => print(val),
-                          validator: (String val) {
-                            //print(val);
-                            return null;
-                          },
-                          //onSaved: (val) => print(val),
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 10.0, bottom: 60.0, left: 25.0, right: 25.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          //crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            _isUpdating
-                                ? Container(
-                                    height: 70.0,
-                                    width: 70.0,
-                                    child: HcCircularProgressIndicator(key: UniqueKey()),
-                                  )
-                                : Container(
-                                    width: 162.0,
-                                    child: ElevatedButton(
-                                      child: Text('Save Details', style: buttonLabelStyleMedium),
-                                      onPressed: () {
-                                        setState(() {
-                                          _updateMainRunDetails();
-                                        });
-                                      },
-                                    ),
-                                  ),
-                            if ((_updatedEventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
-                              const SizedBox(width: 10.0),
-                              Container(
-                                width: 162.0,
-                                child: ElevatedButton(
-                                  child: Text('Use Facebook', style: buttonLabelStyleMedium),
-                                  onPressed: () {
-                                    setState(() {
-                                      _isUpdating = true;
-                                      _useFacebookDetails();
-                                    });
-                                  },
-                                ),
-                              ),
-                            ]
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _useFacebookDetails() {
-    setState(() {
-      _isUpdating = true;
-      final EventsService nSvc = EventsService();
-      nSvc
-          .addEditEvent(
-        eventId: _updatedEventAggregate.event.eventId,
-        useFbRunDetails: 1,
-      )
-          .then((String eventId) async {
-        _updatedEventAggregate = await widget.getUpdatedEventAggregate(eventId);
-        setState(() {
-          _isUpdating = false;
-          setTextFields();
-          final SnackBar snackBar = SnackBar(
-            duration: const Duration(seconds: 3),
-            content: const Text(
-              'Run details being synced from Facebook',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-            ),
-            backgroundColor: Theme.of(context).accentColor,
-          );
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-        });
-      });
-    });
-  }
-
-  void _updateMainRunDetails() {
-    if (_detailsFormKey.currentState.validate()) {
-      //    If all data are correct then save data to out variables
-      _detailsFormKey.currentState.save();
-
-      setState(() {
-        _isUpdating = true;
-        final EventsService nSvc = EventsService();
-        nSvc
-            .addEditEvent(
-          eventId: _updatedEventAggregate.event.eventId,
-          eventName: _eventNameController.text,
-          eventStartDatetime: DateTime.tryParse(_eventDatetimeController.text),
-          eventDescription: _eventDescriptionController.text,
-          locationOneLineDesc: _locationOneLineDescController.text,
-          useFbRunDetails: 0,
-          isCountedRun: _updatedEventAggregate.event.isCountedRun == 1,
-          kennelId: _updatedEventAggregate.event.kennelId,
-        )
-            .then((String eventId) async {
-          _updatedEventAggregate = await widget.getUpdatedEventAggregate(eventId);
-          setState(() {
-            _isUpdating = false;
-            final SnackBar snackBar = SnackBar(
-              duration: const Duration(seconds: 3),
-              content: const Text(
-                'Run details have been saved',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-              ),
-              backgroundColor: Theme.of(context).accentColor,
-            );
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-          });
-        });
-      });
-    } else {
-//    If all data are not valid then start auto validation.
-      // setState(() {
-      //   _autoValidate = true;
-      // });
-    }
   }
 }
 
