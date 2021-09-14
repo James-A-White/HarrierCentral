@@ -16,7 +16,7 @@ class KennelsListPageState extends State<KennelsListPage> {
   final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
   String _searchText;
-  final ScrollController _scrollController = ScrollController(initialScrollOffset: 57);
+  final ScrollController _scrollController = ScrollController(initialScrollOffset: 0);
 
   List<KennelListAggregate> _filteredList = <KennelListAggregate>[];
 
