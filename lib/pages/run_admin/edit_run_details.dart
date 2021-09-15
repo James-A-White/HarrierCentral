@@ -20,14 +20,14 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
 
   RunDetailAggregate _eventAggregate;
 
-  final String userId = getStringPref(StringPrefsEnum.userId);
+  LatLng _mapCenter;
 
   GlobalKey _tabKey;
 
   final GlobalKey<FormState> _detailsFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _otherDetailsFormKey = GlobalKey<FormState>();
 
-  final MapController mapController = MapController();
+  final GlobalKey<MyFlutterMapState> _mapKey = GlobalKey<MyFlutterMapState>();
 
   final FocusNode _focusNodeAbsoluteEventNumber = FocusNode();
   final FocusNode _focusNodeEventPriceForMembers = FocusNode();
@@ -218,6 +218,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
   void initState() {
     super.initState();
     _eventAggregate = widget.eventAggregate;
+    _mapCenter = LatLng(_eventAggregate.event.narrowEventLatitude + .0, _eventAggregate.event.narrowEventLongitude + .0);
     _initTabs();
 
     _setTextFields();
@@ -684,62 +685,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
               //   height: MediaQuery.of(context).size.height - 300,
               //   child:
 
-              FlutterMap(
-                mapController: mapController,
-                options: MapOptions(
-                  center: LatLng(_eventAggregate.event.narrowEventLatitude + .0, _eventAggregate.event.narrowEventLongitude + .0),
-                  zoom: 14.0,
-                  minZoom: 1.0,
-                  maxZoom: 18.0,
-                  // plugins: <MarkerClusterPlugin>[
-                  //   MarkerClusterPlugin(),
-                  // ],
-                ),
-                layers: <LayerOptions>[
-                  TileLayerOptions(
-                      urlTemplate:
-                          //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                      //subdomains: ['a', 'b', 'c']),
-                      subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
-                  MarkerLayerOptions(
-                    markers: <Marker>[
-                      Marker(
-                        height: 50.0,
-                        width: 50.0,
-                        point: LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0),
-                        builder: (BuildContext ctx) => Container(
-                          padding: const EdgeInsets.all(1.0),
-                          height: 50.0,
-                          width: 50.0,
-                          child: IgnorePointer(
-                            ignoring: true,
-                            child: Image.asset(
-                              'images/other/map_current_location.png',
-                              height: 50.0,
-                              width: 50.0,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Marker(
-                        width: 120.0,
-                        height: 120.0,
-                        point: LatLng(_eventAggregate.event.narrowEventLatitude + .0, _eventAggregate.event.narrowEventLongitude + .0),
-                        builder: (BuildContext ctx) => GestureDetector(
-                          //onTap: () => _launchMaps(widget.futureRun.event),
-                          child: Container(
-                            padding: const EdgeInsets.only(bottom: 58.0),
-                            child: Image.asset('images/icons/map_pin_foot.png'),
-                            //child: FlutterLogo(colors: Colors.purple),
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-
+              MyFlutterMap(LatLng(_eventAggregate.event.narrowEventLatitude + .0, _eventAggregate.event.narrowEventLongitude + .0), _mapCenter, 1.0, 18.0, 14.0, _mapKey),
               IgnorePointer(
                 ignoring: true,
                 child: Image.asset('images/other/map_center_target.png', height: 300.0, width: 300.0),
@@ -764,10 +710,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                 top: 10.0,
                 child: GestureDetector(
                   onTap: () {
-                    mapController.move(
-                      LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0),
-                      mapController.zoom,
-                    );
+                    setState(() {
+                      _mapCenter = LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0);
+                    });
                   },
                   child: Container(
                     height: 50.0,
@@ -781,10 +726,9 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                 top: 10.0,
                 child: GestureDetector(
                   onTap: () {
-                    mapController.move(
-                      LatLng(_eventAggregate.event.narrowEventLatitude + .0, _eventAggregate.event.narrowEventLongitude + .0),
-                      mapController.zoom,
-                    );
+                    setState(() {
+                      _mapCenter = LatLng(_eventAggregate.event.narrowEventLatitude + .0, _eventAggregate.event.narrowEventLongitude + .0);
+                    });
                   },
                   child: Container(
                     height: 50.0,
@@ -819,11 +763,12 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                                 setState(() {
                                   _isUpdating = true;
                                   final EventsService nSvc = EventsService();
+                                  _mapCenter = _mapKey.currentState.mapController.center;
                                   nSvc
                                       .addEditEvent(
                                     eventId: _eventAggregate.event.eventId,
-                                    lat: mapController.center.latitude,
-                                    lon: mapController.center.longitude,
+                                    lat: _mapKey.currentState.mapController.center.latitude,
+                                    lon: _mapKey.currentState.mapController.center.longitude,
                                     useFbLatLon: 0,
                                   )
                                       .then((String eventId) async {
@@ -1381,4 +1326,90 @@ class CheckboxFormField extends FormField<bool> {
                 controlAffinity: ListTileControlAffinity.leading,
               );
             });
+}
+
+class MyFlutterMap extends StatefulWidget {
+  const MyFlutterMap(this.eventLocation, this.mapCenter, this.minZoom, this.maxZoom, this.zoom, Key key) : super(key: key);
+
+  final LatLng eventLocation;
+  final LatLng mapCenter;
+  final num minZoom;
+  final num maxZoom;
+  final num zoom;
+
+  @override
+  MyFlutterMapState createState() => MyFlutterMapState();
+}
+
+class MyFlutterMapState extends State<MyFlutterMap> {
+  final MapController mapController = MapController();
+
+  LatLng _oldCenter;
+
+  @override
+  void initState() {
+    _oldCenter = widget.mapCenter;
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // only move the map if the center has changed
+    if (_oldCenter != widget.mapCenter) {
+      mapController.move(widget.mapCenter, mapController.zoom);
+      _oldCenter = widget.mapCenter;
+    }
+    return FlutterMap(
+      mapController: mapController,
+      options: MapOptions(
+        center: widget.mapCenter,
+        zoom: widget.zoom,
+        minZoom: widget.minZoom,
+        maxZoom: widget.maxZoom,
+      ),
+      layers: <LayerOptions>[
+        TileLayerOptions(
+            urlTemplate:
+                //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+            //subdomains: ['a', 'b', 'c']),
+            subdomains: <String>['mt0', 'mt1', 'mt2', 'mt3']),
+        MarkerLayerOptions(
+          markers: <Marker>[
+            Marker(
+              height: 50.0,
+              width: 50.0,
+              point: LatLng(G0<DeviceInfo>().deviceLat + .0, G0<DeviceInfo>().deviceLon + .0),
+              builder: (BuildContext ctx) => Container(
+                padding: const EdgeInsets.all(1.0),
+                height: 50.0,
+                width: 50.0,
+                child: IgnorePointer(
+                  ignoring: true,
+                  child: Image.asset(
+                    'images/other/map_current_location.png',
+                    height: 50.0,
+                    width: 50.0,
+                  ),
+                ),
+              ),
+            ),
+            Marker(
+              width: 120.0,
+              height: 120.0,
+              point: widget.eventLocation,
+              builder: (BuildContext ctx) => GestureDetector(
+                //onTap: () => _launchMaps(widget.futureRun.event),
+                child: Container(
+                  padding: const EdgeInsets.only(bottom: 58.0),
+                  child: Image.asset('images/icons/map_pin_foot.png'),
+                  //child: FlutterLogo(colors: Colors.purple),
+                ),
+              ),
+            ),
+          ],
+        )
+      ],
+    );
+  }
 }
