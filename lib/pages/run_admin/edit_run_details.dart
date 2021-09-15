@@ -55,6 +55,11 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
   bool _isPromotedEvent = false;
   int _eventGeographicScope = 1;
 
+  Future<File> _imageFromCamera;
+  Future<File> _imageFromGallery;
+  SelectedImageTypeEnum _imageTypeSelection = SelectedImageTypeEnum.none;
+  SelectedImageTypeEnum _previousImageTypeSelection = SelectedImageTypeEnum.none;
+
   @override
   void dispose() {
     _eventDatetimeController.dispose();
@@ -203,6 +208,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
                     children: <Widget>[
                       _buildDetailsPage(context),
                       _buildMapPage(),
+                      _buildImagePage(),
                       _buildOtherDetailsPage(context)
                       //OtherInfoTab(_eventAggregate, widget.getUpdatedEventAggregate),
                     ],
@@ -272,6 +278,7 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
     if (_tabs.isEmpty) {
       _tabs.add(const Tab(text: 'Details'));
       _tabs.add(const Tab(text: 'Map'));
+      _tabs.add(const Tab(text: 'Image'));
       _tabs.add(const Tab(text: 'Other'));
       //tabs.add(const Tab(text: 'Date/Time'));
     }
@@ -669,6 +676,194 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
         ),
       ),
     );
+  }
+
+  Widget _buildImagePage() {
+    return FutureBuilder<File>(
+        future: _imageFromGallery,
+        builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
+          if (snapshot.hasData) {
+            return Column(children: <Widget>[
+              const SizedBox(height: 20),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.all(20.0),
+                  child: Image.file(snapshot.data, fit: BoxFit.scaleDown),
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                child: Text('Use this image', style: buttonLabelStyleMedium),
+                onPressed: () {
+                  //_getImageFromCameraOrGallery(ImageSource.gallery);
+                },
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  _isUpdating
+                      ? Container(
+                          height: 70.0,
+                          width: 70.0,
+                          child: HcCircularProgressIndicator(key: UniqueKey()),
+                        )
+                      : ElevatedButton(
+                          child: Text('Select from gallery', style: buttonLabelStyleMedium),
+                          onPressed: () {
+                            _getImageFromCameraOrGallery(ImageSource.gallery);
+                          },
+                        ),
+                  if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                    ElevatedButton(
+                      child: Text('Use Facebook', style: buttonLabelStyleMedium),
+                      onPressed: () {
+                        setState(() {
+                          _isUpdating = true;
+                          final EventsService nSvc = EventsService();
+                          nSvc
+                              .addEditEvent(
+                            eventId: _eventAggregate.event.eventId,
+                            useFbLatLon: 1,
+                          )
+                              .then((String eventId) async {
+                            _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                            setState(() {
+                              _isUpdating = false;
+                              final SnackBar snackBar = SnackBar(
+                                duration: const Duration(seconds: 3),
+                                content: const Text(
+                                  'Location is being synced from Facebook',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                ),
+                                backgroundColor: Colors.blue.shade700,
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                            });
+                          });
+                        });
+                      },
+                    ),
+                  ]
+                ],
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                child: Text('Use original image', style: buttonLabelStyleMedium),
+                onPressed: () {
+                  setState(() {
+                    _imageFromGallery = Future<File>.value(null);
+                  });
+                },
+              ),
+              const SizedBox(height: 40),
+            ]);
+          } else {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                if (_eventAggregate?.event?.eventImage != null) ...<Widget>[
+                  Container(
+                    margin: const EdgeInsets.all(20.0),
+                    child: Column(
+                      children: <Widget>[
+                        CachedNetworkImage(
+                          imageUrl: _eventAggregate.event.eventImage,
+                          // errorWidget:
+                          //     (BuildContext context, String url, Exception error) =>
+                          //         const  Icon(Icons.error),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: <Widget>[
+                            _isUpdating
+                                ? Container(
+                                    height: 70.0,
+                                    width: 70.0,
+                                    child: HcCircularProgressIndicator(key: UniqueKey()),
+                                  )
+                                : ElevatedButton(
+                                    child: Text('Select from gallery', style: buttonLabelStyleMedium),
+                                    onPressed: () {
+                                      _getImageFromCameraOrGallery(ImageSource.gallery);
+                                    },
+                                  ),
+                            if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                              ElevatedButton(
+                                child: Text('Use Facebook', style: buttonLabelStyleMedium),
+                                onPressed: () {
+                                  setState(() {
+                                    _isUpdating = true;
+                                    final EventsService nSvc = EventsService();
+                                    nSvc
+                                        .addEditEvent(
+                                      eventId: _eventAggregate.event.eventId,
+                                      useFbLatLon: 1,
+                                    )
+                                        .then((String eventId) async {
+                                      _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                                      setState(() {
+                                        _isUpdating = false;
+                                        final SnackBar snackBar = SnackBar(
+                                          duration: const Duration(seconds: 3),
+                                          content: const Text(
+                                            'Location is being synced from Facebook',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                          ),
+                                          backgroundColor: Colors.blue.shade700,
+                                        );
+                                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                      });
+                                    });
+                                  });
+                                },
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 70),
+                      ],
+                    ),
+                  ),
+                ]
+              ],
+            );
+          }
+        });
+  }
+
+  void _getImageFromCameraOrGallery(ImageSource source) {
+    setState(() {
+      ImagePicker().getImage(source: source).then((PickedFile image) {
+        setState(() {
+          if (image == null) {
+            // setState(() {
+            //   _selectedRadioValue = _previouslySelectedRadioValue;
+            //   _imageTypeSelection = _previousImageTypeSelection;
+            // });
+          } else {
+            final Future<File> img = ImageCropper.cropImage(
+                sourcePath: image.path,
+                //aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
+                //aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
+                // maxWidth: 300,
+                // maxHeight: 300,
+                compressFormat: ImageCompressFormat.jpg,
+                compressQuality: 50);
+
+            if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
+              _imageFromCamera = img;
+            } else {
+              _imageFromGallery = img;
+            }
+          }
+        });
+      });
+    });
   }
 
   Widget _buildMapPage() {

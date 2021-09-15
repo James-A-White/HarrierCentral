@@ -15,13 +15,13 @@ class ChooseProfileImage extends StatefulWidget {
   _ChooseProfileImageState createState() => _ChooseProfileImageState();
 }
 
-enum _SelectedImageTypeEnum { none, avatar, fromCamera, fromGallery, fromFacebook, fromNetwork }
+enum SelectedImageTypeEnum { none, avatar, fromCamera, fromGallery, fromFacebook, fromNetwork }
 
 class _ChooseProfileImageState extends State<ChooseProfileImage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  _SelectedImageTypeEnum _imageTypeSelection = _SelectedImageTypeEnum.none;
-  _SelectedImageTypeEnum _previousImageTypeSelection = _SelectedImageTypeEnum.none;
+  SelectedImageTypeEnum _imageTypeSelection = SelectedImageTypeEnum.none;
+  SelectedImageTypeEnum _previousImageTypeSelection = SelectedImageTypeEnum.none;
 
   final num _thumbnailSize = 50.0;
   final num _uploadingImageSize = 180.0;
@@ -60,15 +60,15 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           height: _thumbnailSize,
           fit: BoxFit.fill);
 
-      _imageTypeSelection = _SelectedImageTypeEnum.fromFacebook;
+      _imageTypeSelection = SelectedImageTypeEnum.fromFacebook;
     }
 
     if (widget.currentProfileImage == null) {
-      _imageTypeSelection = _SelectedImageTypeEnum.none;
+      _imageTypeSelection = SelectedImageTypeEnum.none;
     } else if (widget.currentProfileImage.toLowerCase().startsWith('bundle://')) {
-      _imageTypeSelection = _SelectedImageTypeEnum.avatar;
+      _imageTypeSelection = SelectedImageTypeEnum.avatar;
     } else if (widget.currentProfileImage.toLowerCase().startsWith('http')) {
-      _imageTypeSelection = _SelectedImageTypeEnum.fromNetwork;
+      _imageTypeSelection = SelectedImageTypeEnum.fromNetwork;
     }
 
     SystemChrome.setPreferredOrientations(<DeviceOrientation>[
@@ -82,7 +82,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     });
   }
 
-  Widget getImageSourceButton({String label, _SelectedImageTypeEnum selectedImageType, String iosIcon, String androidIcon, bool disabled = false}) {
+  Widget getImageSourceButton({String label, SelectedImageTypeEnum selectedImageType, String iosIcon, String androidIcon, bool disabled = false}) {
     return Container(
       padding: const EdgeInsets.only(right: 10.0, top: 10.0, bottom: 5.0),
       width: 120,
@@ -204,7 +204,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                   label: 'Camera',
                                   iosIcon: 'images/icons/ios_camera.png',
                                   androidIcon: 'images/icons/android_camera.png',
-                                  selectedImageType: _SelectedImageTypeEnum.fromCamera),
+                                  selectedImageType: SelectedImageTypeEnum.fromCamera),
                             ),
                             Positioned(
                               top: 0,
@@ -213,13 +213,13 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                   label: 'Gallery',
                                   iosIcon: 'images/icons/ios_gallery.png',
                                   androidIcon: 'images/icons/android_gallery.png',
-                                  selectedImageType: _SelectedImageTypeEnum.fromGallery),
+                                  selectedImageType: SelectedImageTypeEnum.fromGallery),
                             ),
                             Positioned(
                               bottom: 0,
                               left: 0,
                               child: getImageSourceButton(
-                                  label: 'Avatar', iosIcon: 'images/icons/avatar.png', androidIcon: 'images/icons/avatar.png', selectedImageType: _SelectedImageTypeEnum.avatar),
+                                  label: 'Avatar', iosIcon: 'images/icons/avatar.png', androidIcon: 'images/icons/avatar.png', selectedImageType: SelectedImageTypeEnum.avatar),
                             ),
                             Positioned(
                               bottom: 0,
@@ -228,7 +228,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                                   label: 'Facebook',
                                   iosIcon: 'images/icons/facebook.png',
                                   androidIcon: 'images/icons/facebook.png',
-                                  selectedImageType: _SelectedImageTypeEnum.fromFacebook,
+                                  selectedImageType: SelectedImageTypeEnum.fromFacebook,
                                   disabled: _facebookProfileImage == null),
                             ),
                           ],
@@ -250,7 +250,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                             margin: const EdgeInsets.all(0.0),
                             child: Image.asset('images/other/white_square.jpg', width: 400, height: 400, fit: BoxFit.fitHeight),
                           ),
-                          (_imageTypeSelection == _SelectedImageTypeEnum.none)
+                          (_imageTypeSelection == SelectedImageTypeEnum.none)
                               ? Container(
                                   margin: const EdgeInsets.all(6.0),
                                   // Positioned(
@@ -280,11 +280,11 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                     Positioned(
                       bottom: 20.0,
                       child: TextButton(
-                        style: TextButton.styleFrom(backgroundColor: _imageTypeSelection == _SelectedImageTypeEnum.none ? Colors.grey : Theme.of(context).accentColor),
+                        style: TextButton.styleFrom(backgroundColor: _imageTypeSelection == SelectedImageTypeEnum.none ? Colors.grey : Theme.of(context).accentColor),
                         //color: imageTypeSelection == _SelectedImageTypeEnum.none ? Colors.grey : Theme.of(context).accentColor,
                         child: const Text('Next'),
                         onPressed: () {
-                          if (_imageTypeSelection != _SelectedImageTypeEnum.none) {
+                          if (_imageTypeSelection != SelectedImageTypeEnum.none) {
                             _processAndContinue();
                           }
                         },
@@ -367,30 +367,30 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     }
 
     switch (_imageTypeSelection) {
-      case _SelectedImageTypeEnum.none:
+      case SelectedImageTypeEnum.none:
         break;
-      case _SelectedImageTypeEnum.avatar:
+      case SelectedImageTypeEnum.avatar:
         profileImageUrl = 'bundle://avatar-$_selectedAvatarIcon'.toLowerCase();
         break;
-      case _SelectedImageTypeEnum.fromCamera:
-      case _SelectedImageTypeEnum.fromGallery:
-      case _SelectedImageTypeEnum.fromFacebook:
+      case SelectedImageTypeEnum.fromCamera:
+      case SelectedImageTypeEnum.fromGallery:
+      case SelectedImageTypeEnum.fromFacebook:
         profileImageUrl = BASE_PROFILE_PHOTOS_URL + fileName;
         break;
-      case _SelectedImageTypeEnum.fromNetwork:
+      case SelectedImageTypeEnum.fromNetwork:
         profileImageUrl = widget.currentProfileImage;
         break;
     }
 
-    if (_imageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
+    if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
       _imageFromCamera.then((File file) {
         _upload(file, fileName);
       });
-    } else if (_imageTypeSelection == _SelectedImageTypeEnum.fromGallery) {
+    } else if (_imageTypeSelection == SelectedImageTypeEnum.fromGallery) {
       _imageFromGallery.then((File file) {
         _upload(file, fileName);
       });
-    } else if (_imageTypeSelection == _SelectedImageTypeEnum.fromFacebook) {
+    } else if (_imageTypeSelection == SelectedImageTypeEnum.fromFacebook) {
       _imageFromFacebook.then((File file) {
         _upload(file, fileName);
       });
@@ -452,7 +452,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     );
 
     switch (_imageTypeSelection) {
-      case _SelectedImageTypeEnum.avatar:
+      case SelectedImageTypeEnum.avatar:
         if (_selectedAvatarIcon != null) {
           returnWidget = Image.asset('images/avatars/avatar-$_selectedAvatarIcon.jpg', fit: BoxFit.fill);
         } else if ((widget.currentProfileImage != null) && (widget.currentProfileImage.startsWith('bundle://'))) {
@@ -460,13 +460,13 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           returnWidget = Image.asset(avatarPath, fit: BoxFit.fill);
         }
         break;
-      case _SelectedImageTypeEnum.fromCamera:
+      case SelectedImageTypeEnum.fromCamera:
         returnWidget = _previewImage();
         break;
-      case _SelectedImageTypeEnum.fromGallery:
+      case SelectedImageTypeEnum.fromGallery:
         returnWidget = _previewImage();
         break;
-      case _SelectedImageTypeEnum.fromFacebook:
+      case SelectedImageTypeEnum.fromFacebook:
         // returnWidget = Container(
         //   constraints: const BoxConstraints(),
         //   child: FittedBox(child: _facebookProfileImage, fit: BoxFit.contain),
@@ -499,7 +499,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
               );
   }
 
-  void _handleRadioValueChange(_SelectedImageTypeEnum value, {bool forceOpen = false}) {
+  void _handleRadioValueChange(SelectedImageTypeEnum value, {bool forceOpen = false}) {
     setState(() {
       _previouslySelectedRadioValue = _selectedRadioValue;
       _selectedRadioValue = value.index;
@@ -508,7 +508,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
     });
 
     switch (_imageTypeSelection) {
-      case _SelectedImageTypeEnum.avatar:
+      case SelectedImageTypeEnum.avatar:
         if (forceOpen || (_selectedAvatarIcon == null)) {
           Navigator.push<dynamic>(
             context,
@@ -529,17 +529,17 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
           });
         }
         break;
-      case _SelectedImageTypeEnum.fromCamera:
+      case SelectedImageTypeEnum.fromCamera:
         if (forceOpen || (_imageFromCamera == null)) {
           _getImageFromCameraOrGallery(ImageSource.camera);
         }
         break;
-      case _SelectedImageTypeEnum.fromGallery:
+      case SelectedImageTypeEnum.fromGallery:
         if (forceOpen || (_imageFromGallery == null)) {
           _getImageFromCameraOrGallery(ImageSource.gallery);
         }
         break;
-      case _SelectedImageTypeEnum.fromFacebook:
+      case SelectedImageTypeEnum.fromFacebook:
         if (forceOpen || (_imageFromFacebook == null)) {
           _getImageFromFacebook();
         }
@@ -592,7 +592,7 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
                 compressFormat: ImageCompressFormat.jpg,
                 compressQuality: 50);
 
-            if (_imageTypeSelection == _SelectedImageTypeEnum.fromCamera) {
+            if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
               _imageFromCamera = img;
             } else {
               _imageFromGallery = img;
@@ -605,9 +605,9 @@ class _ChooseProfileImageState extends State<ChooseProfileImage> {
 
   Widget _previewImage() {
     return FutureBuilder<File>(
-        future: (_imageTypeSelection == _SelectedImageTypeEnum.fromCamera)
+        future: (_imageTypeSelection == SelectedImageTypeEnum.fromCamera)
             ? _imageFromCamera
-            : (_imageTypeSelection == _SelectedImageTypeEnum.fromFacebook)
+            : (_imageTypeSelection == SelectedImageTypeEnum.fromFacebook)
                 ? _imageFromFacebook
                 : _imageFromGallery,
         builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
