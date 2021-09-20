@@ -652,27 +652,47 @@ class CheckInPackPageState extends State<CheckInPackPage> with SingleTickerProvi
               Expanded(
                 child: Column(
                   children: <Widget>[
-                    TextField(
-                      autocorrect: false,
-                      onChanged: (String text) {
-                        setState(() {
-                          searchText = text;
-                          filterPackListResults();
-                        });
-                      },
-                      focusNode: searchFocusNode,
-                      controller: searchController,
-                      keyboardType: TextInputType.text,
-                      style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        icon: Icon(
-                          FontAwesome.search,
-                          color: Colors.black,
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: TextField(
+                            autocorrect: false,
+                            onChanged: (String text) {
+                              setState(() {
+                                searchText = text;
+                                filterPackListResults();
+                              });
+                            },
+                            focusNode: searchFocusNode,
+                            controller: searchController,
+                            keyboardType: TextInputType.text,
+                            style: const TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0, color: Colors.black),
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              icon: Icon(
+                                FontAwesome.search,
+                                color: Colors.black,
+                              ),
+                              hintText: 'Enter Hash or mortal name',
+                              hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                            ),
+                          ),
                         ),
-                        hintText: 'Enter Hash or mortal name',
-                        hintStyle: TextStyle(fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                      ),
+                        Container(
+                          width: 40,
+                          child: TextButton(
+                            style: TextButton.styleFrom(backgroundColor: Colors.white),
+                            child: Text('X', style: TextStyle(color: Colors.grey.shade700)),
+                            onPressed: () {
+                              searchController.text = '';
+                              searchText = '';
+                              setState(() {
+                                filterPackListResults();
+                              });
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                     Text(searchTypeText, style: highlightSearchType ? localFootnoteSmallRed : localFootnoteSmall)
                   ],
