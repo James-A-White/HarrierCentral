@@ -806,92 +806,119 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
             );
           } else {
             return Column(
-              // mainAxisAlignment: MainAxisAlignment.center,
-              // crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 if (_eventAggregate?.event?.eventImage != null) ...<Widget>[
-                  Container(
-                    margin: const EdgeInsets.all(20.0),
-                    height: 500,
-                    child: Column(
-                      //mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Expanded(
-                          child: CachedNetworkImage(
-                            imageUrl: _eventAggregate.event.eventImage,
-                            // errorWidget:
-                            //     (BuildContext context, String url, Exception error) =>
-                            //         const  Icon(Icons.error),
+                  Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.all(20.0),
+                      //height: G0<DeviceInfo>().deviceHeight - 235,
+                      child: Column(
+                        //mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Expanded(
+                            child: CachedNetworkImage(
+                              imageUrl: _eventAggregate.event.eventImage,
+                              // errorWidget:
+                              //     (BuildContext context, String url, Exception error) =>
+                              //         const  Icon(Icons.error),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: <Widget>[
-                            _isUpdating
-                                ? Container(
-                                    height: 70.0,
-                                    width: 70.0,
-                                    child: HcCircularProgressIndicator(key: UniqueKey()),
-                                  )
-                                : Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                          const SizedBox(height: 20),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: <Widget>[
+                              _isUpdating
+                                  ? Container(
+                                      height: 70.0,
+                                      width: 70.0,
+                                      child: HcCircularProgressIndicator(key: UniqueKey()),
+                                    )
+                                  : Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                                        ),
+                                        child: Text('Select from gallery', style: buttonLabelStyleMedium),
+                                        onPressed: () {
+                                          _getImageFromCameraOrGallery(ImageSource.gallery);
+                                        },
                                       ),
-                                      child: Text('Select from gallery', style: buttonLabelStyleMedium),
-                                      onPressed: () {
-                                        _getImageFromCameraOrGallery(ImageSource.gallery);
-                                      },
                                     ),
-                                  ),
-                            if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
-                              const SizedBox(height: 10),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
-                                  ),
-                                  child: Text('Use Facebook', style: buttonLabelStyleMedium),
-                                  onPressed: () {
-                                    setState(() {
-                                      _isUpdating = true;
-                                      final EventsService nSvc = EventsService();
-                                      nSvc
-                                          .addEditEvent(
-                                        eventId: _eventAggregate.event.eventId,
-                                        useFbImage: 1,
-                                      )
-                                          .then((String eventId) async {
-                                        _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
-                                        setState(() {
-                                          _isUpdating = false;
-                                          final SnackBar snackBar = SnackBar(
-                                            duration: const Duration(seconds: 3),
-                                            content: const Text(
-                                              'Image is being synced from Facebook',
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
-                                            ),
-                                            backgroundColor: Colors.blue.shade700,
-                                          );
-                                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
+                                const SizedBox(height: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                                    ),
+                                    child: Text('Use Facebook', style: buttonLabelStyleMedium),
+                                    onPressed: () {
+                                      setState(() {
+                                        _isUpdating = true;
+                                        final EventsService nSvc = EventsService();
+                                        nSvc
+                                            .addEditEvent(
+                                          eventId: _eventAggregate.event.eventId,
+                                          useFbImage: 1,
+                                        )
+                                            .then((String eventId) async {
+                                          _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+                                          setState(() {
+                                            _isUpdating = false;
+                                            final SnackBar snackBar = SnackBar(
+                                              duration: const Duration(seconds: 3),
+                                              content: const Text(
+                                                'Image is being synced from Facebook',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(fontFamily: 'AvenirNextCondensedDemiBold', fontStyle: FontStyle.normal, fontSize: 20.0, height: 0.85),
+                                              ),
+                                              backgroundColor: Colors.blue.shade700,
+                                            );
+                                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                          });
                                         });
                                       });
-                                    });
-                                  },
+                                    },
+                                  ),
                                 ),
-                              ),
+                              ],
                             ],
-                          ],
-                        ),
-                        const SizedBox(height: 70),
-                      ],
+                          ),
+                          const SizedBox(height: 40),
+                        ],
+                      ),
                     ),
                   ),
-                ]
+                ],
+                if (_eventAggregate?.event?.eventImage == null) ...<Widget>[
+                  Text(
+                    'No image available',
+                    textAlign: TextAlign.center,
+                    style: largeTitleStyle.copyWith(color: Colors.black),
+                  ),
+                  _isUpdating
+                      ? Container(
+                          height: 70.0,
+                          width: 70.0,
+                          child: HcCircularProgressIndicator(key: UniqueKey()),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 50.0),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 40), // double.infinity is the width and 30 is the height
+                            ),
+                            child: Text('Select from gallery', style: buttonLabelStyleMedium),
+                            onPressed: () {
+                              _getImageFromCameraOrGallery(ImageSource.gallery);
+                            },
+                          ),
+                        ),
+                ],
               ],
             );
           }
@@ -919,33 +946,41 @@ class _EditRunDetailsPageState extends State<EditRunDetailsPage> with AutomaticK
   }
 
   void _getImageFromCameraOrGallery(ImageSource source) {
-    setState(() {
-      ImagePicker().getImage(source: source).then((PickedFile image) {
-        setState(() {
-          if (image == null) {
-            // setState(() {
-            //   _selectedRadioValue = _previouslySelectedRadioValue;
-            //   _imageTypeSelection = _previousImageTypeSelection;
-            // });
-          } else {
-            final Future<File> img = ImageCropper.cropImage(
-                sourcePath: image.path,
-                //aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
-                //aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
-                maxWidth: 1000,
-                maxHeight: 1000,
-                compressFormat: ImageCompressFormat.jpg,
-                compressQuality: 50);
-
-            if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
-              _imageFromCamera = img;
+    if (_eventAggregate.event.eventId == null) {
+      IveCoreUtilities.showAlert(context, 'Please save Details first',
+              'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.', 'OK')
+          .then((void dummy) {
+        _tabController.animateTo(0);
+      });
+    } else {
+      setState(() {
+        ImagePicker().getImage(source: source).then((PickedFile image) {
+          setState(() {
+            if (image == null) {
+              // setState(() {
+              //   _selectedRadioValue = _previouslySelectedRadioValue;
+              //   _imageTypeSelection = _previousImageTypeSelection;
+              // });
             } else {
-              _imageFromGallery = img;
+              final Future<File> img = ImageCropper.cropImage(
+                  sourcePath: image.path,
+                  //aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
+                  //aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
+                  maxWidth: 1000,
+                  maxHeight: 1000,
+                  compressFormat: ImageCompressFormat.jpg,
+                  compressQuality: 50);
+
+              if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
+                _imageFromCamera = img;
+              } else {
+                _imageFromGallery = img;
+              }
             }
-          }
+          });
         });
       });
-    });
+    }
   }
 
   Widget _buildMapPage() {
